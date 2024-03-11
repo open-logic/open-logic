@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - feature/initial
-  schedule:
-    - cron '0 3 * * 1'
   workflow_dispatch:
+  #schedule:
+  #  - cron '0 3 * * 1'
+  
   
 jobs:
   simulation:
