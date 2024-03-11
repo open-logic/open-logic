@@ -1,5 +1,5 @@
 name: analyze-issues
-run-name: ${{ github.actor }} is HDL Sumlations
+run-name: ${{ github.actor }} is Analyzing Issues
 on:
   workflow_dispatch:
   schedule:

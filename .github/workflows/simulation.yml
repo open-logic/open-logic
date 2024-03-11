@@ -1,5 +1,5 @@
 name: simulation
-run-name: ${{ github.actor }} is HDL Sumlations
+run-name: ${{ github.actor }} is HDL Simlations
 on:
   push:
     branches:
