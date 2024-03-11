@@ -14,6 +14,10 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v4
       - name: Analyze Issues
+        env:
+          TEST_SECRET: ${{ secrets.TEST_SECRET }}
+          ISSUES_TOKEN: ${{ secrets.ISSUES_TOKEN }}
+          GCS_PASSPHRASE: ${{ secrets.GCS_PASSPHRASE }}
         run: |
          source ./.github/workflows/install_gcs_key.sh
          source ./.github/workflows/install_python.sh
