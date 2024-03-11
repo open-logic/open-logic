@@ -1,0 +1,20 @@
+name: simulation
+run-name: ${{ github.actor }} is HDL Sumlations
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1'
+  
+jobs:
+  analyze-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+      - name: Analyze Issues
+        run: |
+         source ./.github/workflows/install_gcs_key.sh
+         source ./.github/workflows/analyze_issues.sh
+         echo "Issues updated"

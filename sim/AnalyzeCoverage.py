@@ -1,18 +1,18 @@
-#Usage: python3 AnalyzeCoverage.py [--batches]
+#Usage: python3 AnalyzeCoverage.py [--badges]
 ########################################################################################################################
 # Imports
 ########################################################################################################################
 import os
 import json
-from Batch import create_coverage_version_batch, create_coverage_batch
+from Batge import create_coverage_version_batge, create_coverage_batge
 import sys
 
 ########################################################################################################################
 # Parse Arguments
 ########################################################################################################################
-UPDATE_BATCHES = False
-if "--batches" in sys.argv:
-    UPDATE_BATCHES = True
+UPDATE_BATGES = False
+if "--batges" in sys.argv:
+    UPDATE_BATGES = True
 
 ########################################################################################################################
 # Types
@@ -62,10 +62,10 @@ for line in fd.readlines():
 #*** Generate Output ***
 for entity in entities:
     print(f"{entity.name:40}: {entity.coverage}%")
-    if UPDATE_BATCHES:
-        create_coverage_batch(entity.name, entity.coverage)
-if UPDATE_BATCHES:
-    create_coverage_version_batch()
+    if UPDATE_BATGES:
+        create_coverage_batge(entity.name, entity.coverage)
+if UPDATE_BATGES:
+    create_coverage_version_batge()
 
 
 

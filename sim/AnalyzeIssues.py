@@ -1,12 +1,14 @@
-#Usage: python3 AnalyzeIssues.py <github-token>
+#Usage: python3 AnalyzeIssues.py <github-token> <google-cloud-token>
 ########################################################################################################################
 # Imports
 ########################################################################################################################
+import os
+import json
 from github import Github
 import sys
 from glob import glob
 from enum import Enum
-from Batch import create_issues_batch
+from Batge import create_issues_batge
 
 ########################################################################################################################
 # Types
@@ -20,6 +22,12 @@ class Labels(Enum):
 ########################################################################################################################
 
 github_token = sys.argv[1]
+gcs_token = sys.argv[2]
+
+# write GCS json file
+os.environ["GCS_FILE"] = "~/gcs.json"
+with open("~/gcs.json", "w") as f:
+    f.write()
 
 # Authenticate to GitHub
 g = Github(github_token)
@@ -40,6 +48,6 @@ for entity in EntityNames:
     entity_issues = repo.get_issues(labels=[entity]).totalCount
     potential_bugs = repo.get_issues(labels=[entity, Labels.POTENTIAL_BUG.value]).totalCount
     confirmed_bugs = repo.get_issues(labels=[entity, Labels.CONFIRMED_BUG.value]).totalCount
-    create_issues_batch(entity, entity_issues, potential_bugs > 0, confirmed_bugs > 0)
+    create_issues_batge(entity, entity_issues, potential_bugs > 0, confirmed_bugs > 0)
 
 
