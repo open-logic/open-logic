@@ -6,7 +6,7 @@
 
 ## Status Information
 
-![issues](https://img.shields.io/badge/issues-0-green)![issues](https://img.shields.io/badge/statement coverage-98.3%-green)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_cc_simple.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_cc_simple.json?cacheSeconds=0)
 
 VHDL Source: [olo_base_cc_simple](../../src/base/vhdl/olo_base_cc_simple.vhd)
 
