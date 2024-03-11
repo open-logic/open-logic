@@ -1,0 +1,12 @@
+#Pycharm files
+**/*/.idea/
+**/*/__pycache__/
+
+#Vunit files
+sim/vunit_out/
+sim/coverage_data
+sim/coverage_report.txt
+sim/transcript
+
+#drawio files
+*.bkp

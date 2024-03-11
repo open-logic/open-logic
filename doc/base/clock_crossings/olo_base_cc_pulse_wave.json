@@ -1,0 +1,8 @@
+{signal: [
+  {name: 'In_Clk',        wave: 'P.............', period:1},  
+  {name: 'In_Pulse[0]',   wave: '010...........'},
+  {name: 'In_Pulse[1]',   wave: '010...........'},
+  {name: 'Out_Clk',       wave: 'P......', period:2},
+  {name: 'Out_Pulse[0]',  wave: '0.......1.0...'},
+  {name: 'Out_Pulse[1]',  wave: '0.........1.0.'},
+]}
