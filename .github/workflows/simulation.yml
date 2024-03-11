@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} is HDL Sumlations
 on:
   push:
     branches:
-      - main
+      - feature/initial
   #schedule:
   #  - cron '0 3 * * 1'
   #workflow_dispatch:
