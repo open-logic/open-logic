@@ -23,11 +23,6 @@ class Labels(Enum):
 
 github_token = sys.argv[1]
 
-# write GCS json file
-os.environ["GCS_FILE"] = "~/gcs.json"
-with open("~/gcs.json", "w") as f:
-    f.write()
-
 # Authenticate to GitHub
 g = Github(github_token)
 
