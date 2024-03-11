@@ -16,5 +16,6 @@ jobs:
       - name: Analyze Issues
         run: |
          source ./.github/workflows/install_gcs_key.sh
+         source ./.github/workflows/install_python.sh
          source ./.github/workflows/analyze_issues.sh
          echo "Issues updated"
