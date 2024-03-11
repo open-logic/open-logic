@@ -1,6 +1,8 @@
 <img src="./doc/Logo.png" alt="Logo" width="400">
 
-![example workflow](https://github.com/obruendl/VUnitTest/actions/workflows/simulation.yml/badge.svg) ![issues](https://img.shields.io/badge/last coverage githash-4abef32d-blue)![issues](https://img.shields.io/badge/last coverage-03_Feb_2022-blue)
+![example workflow](https://github.com/obruendl/open-logic/actions/workflows/simulation.yml/badge.svg) 
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/version.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/date.json?cacheSeconds=0)
 
 # Open Logic - A VHDL Standard Library
 
