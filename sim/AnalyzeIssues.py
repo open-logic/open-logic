@@ -20,8 +20,6 @@ class Labels(Enum):
 ########################################################################################################################
 # Script
 ########################################################################################################################
-print(sys.argv)
-exit()
 github_token = sys.argv[1]
 
 # Authenticate to GitHub
@@ -44,5 +42,6 @@ for entity in EntityNames:
     potential_bugs = repo.get_issues(labels=[entity, Labels.POTENTIAL_BUG.value]).totalCount
     confirmed_bugs = repo.get_issues(labels=[entity, Labels.CONFIRMED_BUG.value]).totalCount
     create_issues_batge(entity, entity_issues, potential_bugs > 0, confirmed_bugs > 0)
+    print(f"{entity:40} issues:{entity_issues:3} potential:{potential_bugs:3} confirmed:{confirmed_bugs:3}")
 
 
