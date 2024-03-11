@@ -1,4 +1,4 @@
-name: simulation
+name: analyze-issues
 run-name: ${{ github.actor }} is HDL Sumlations
 on:
   workflow_dispatch:
