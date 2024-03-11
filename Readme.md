@@ -34,10 +34,12 @@ Open source HDL projects exist but they are by far not as popular as open source
 
 1. Every entity comes with a testbench.
 2. The project comes with a CI workflow, which regularly runs all simulations. The batch on the very top of this page indicates if there is a problem. As long as it is green - you know that all testbenches pass.
-3. Indicators for open issues on every entity. In the documentation of every piece of code, you can find a batch that informs you about the number of issues related to this piece of code, if there are *potential bugs* (orange color) or even *confirmed bugs* (red color).
+3. Indicators for open issues on every entity. In the documentation of every piece of code, you can find a batch that informs you about the number of issues related to this piece of code, if there are *potential bugs* (orange color) or even *confirmed bugs* (red color).<br>
    ![issues](https://img.shields.io/badge/issues-0-green) ![issues](https://img.shields.io/badge/issues-2-orange) ![issues](https://img.shields.io/badge/issues-2-red)
-4. Indicator for code coverage on every entity. In the documentation of every piece of code, you can find a batch stating the code coverage. Additionally a batch in this readme states for which git-commit coverage was last analyzed..
-   ![issues](https://img.shields.io/badge/statement coverage-98.3%-green)
+4. Indicator for code coverage on every entity. In the documentation of every piece of code, you can find a batge stating the code coverage. <br>
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_cc_bits.json?cacheSeconds=0) <br>
+Additionally a batges in this readme states for which git-commit coverage was last analyzed. <br>
+   ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/version.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/date.json?cacheSeconds=0)
 
 Note that a non-zero number of issues not necessarily is a bad sign - issues include things like feature requests. But probably you at least want to check the issues in detail if the color is not green.
 
