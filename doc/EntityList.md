@@ -17,8 +17,8 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | [olo_base_cc_reset](./base/olo_base_cc_reset.md) | Synchronization of resets between two clock domains (bi-directional) |
 | [olo_base_cc_bits](./base/olo_base_cc_bits.md)   | Transfer a group of individual single bit signals from one clock domain to another clock domain |
 | [olo_base_cc_pulse](./base/olo_base_cc_pulse.md) | Transfer single-cycle pulses from one clock domain to another clock domain |
-| [olo_base_cc_simple](olo_base_cc_simple.md)      | Transfer selectively valid data from one clock domain to another clock domain (data/valid pair) |
-| [olo_base_cc_status](olo_base_cc_status.md)      | Transfer status and configuration information from one clock domain to another clock domain. The update rate is relatively low but consistency is guaranteed |
+| [olo_base_cc_simple](./base/olo_base_cc_simple.md)      | Transfer selectively valid data from one clock domain to another clock domain (data/valid pair) |
+| [olo_base_cc_status](./base/olo_base_cc_status.md)      | Transfer status and configuration information from one clock domain to another clock domain. The update rate is relatively low but consistency is guaranteed |
 
 ## axi
 
