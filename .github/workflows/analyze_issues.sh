@@ -2,4 +2,5 @@
 
 #Run simulations
 cd ./sim
-python3 AnalyzeIssues.py $ISSUES_TOKEN
+echo $TEST_SECRET
+python3 AnalyzeIssues.py $TEST_SECRET
