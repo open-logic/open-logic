@@ -10,3 +10,11 @@ sim/transcript
 
 #drawio files
 *.bkp
+
+#Modelsim files
+*.opt
+_info
+*.qdb
+*.qpg
+*.qtl
+_vmake
