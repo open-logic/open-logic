@@ -8,7 +8,7 @@
 
 ### Entities
 
-All entities are named in the form *olo\_\<area\>\_\<function\>* where *area* is the [area](#area) according to the definition in this document and *function* describes the functionality of the entity.
+All entities are named in the form *olo\_\<area\>\_\<function\>* where *area* is according to the definition in this [Readme.md](./Readme.md) and *function* describes the functionality of the entity.
 
 Example: An asynchronous FIFO (*fifo_async*) in the *base* area would be named *olo_base_fifo_async*.
 
@@ -19,6 +19,14 @@ Ports are named in the form *\<interface\>_\<signal\>* .
 Usually signals are grouped into interfaces. For example a block may have an AXI4-Stream input interface named *Param* in this case the AXI4-Stream signals *TDATA*, *TVALID* and *TREADY* would be named *Param_TData*, *Param_TValid* and *Param_Tready*.
 
 Ports do not have any *_i* or *_o* suffixes to define their direction. the direction is visible from the entity declaration (keywords *in* and *out*). 
+
+### Constants
+
+Constants shall have *_c* suffixes.
+
+### Generics
+
+Generics shall have *_g* suffixes.
 
 ### Versions
 

@@ -5,19 +5,19 @@ from enum import Enum
 import subprocess
 import datetime
 
-class BatchColor(Enum):
+class BadgeColor(Enum):
     GREEN = "green"
     RED = "red"
     ORANGE = "orange"
     GREY = "lightgrey"
     BLUE = "blue"
 
-class BatchFolder(Enum):
+class BadgeFolder(Enum):
     COVERAGE = "coverage"
     ISSUES = "issues"
 
 
-def create_batch(text : str, value : str, color : BatchColor, folder : BatchFolder, filename : str):
+def create_badge(text : str, value : str, color : BadgeColor, folder : BadgeFolder, filename : str):
     BUCKET_NAME = "open-logic-badges"
     CREDENTIALS_FILE = os.getenv("GCS_FILE")
 
@@ -34,30 +34,30 @@ def create_batch(text : str, value : str, color : BatchColor, folder : BatchFold
 
     blob.upload_from_string(json.dumps(batch), predefined_acl='publicRead')
 
-def create_coverage_batch(entity : str, value : float):
-    color = BatchColor.RED
+def create_coverage_badge(entity : str, value : float):
+    color = BadgeColor.RED
     if value > 98.0:
-        color = BatchColor.GREEN
+        color = BadgeColor.GREEN
     elif value > 90.0:
-        color = BatchColor.ORANGE
-    create_batch("statement coverage", f"{value:.1f}%", color, BatchFolder.COVERAGE, entity)
+        color = BadgeColor.ORANGE
+    create_badge("statement coverage", f"{value:.1f}%", color, BadgeFolder.COVERAGE, entity)
 
-def create_coverage_version_batch():
-    #Hash Batch
+def create_coverage_version_badge():
+    #Hash Batge
     hash = subprocess.check_output("git log -1 --pretty=format:%h", shell=True, encoding="utf-8")
-    create_batch("last coverage git-hash", hash, BatchColor.BLUE, BatchFolder.COVERAGE, "version")
+    create_badge("last coverage git-hash", hash, BadgeColor.BLUE, BadgeFolder.COVERAGE, "version")
 
-    #Date Batch
+    #Date Batge
     date = datetime.date.today()
     date_str = date.strftime("%d-%b-%Y")
-    create_batch("last coverage date", date_str, BatchColor.BLUE, BatchFolder.COVERAGE, "date")
+    create_badge("last coverage date", date_str, BadgeColor.BLUE, BadgeFolder.COVERAGE, "date")
 
 
-def create_issues_batch(entity : str, count : int, potential_bugs : bool, confirmed_bugs : bool):
-    color = BatchColor.RED
+def create_issues_badge(entity : str, count : int, potential_bugs : bool, confirmed_bugs : bool):
+    color = BadgeColor.RED
     if not confirmed_bugs:
         if not potential_bugs:
-            color = BatchColor.GREEN
+            color = BadgeColor.GREEN
         else:
-            color = BatchColor.ORANGE
-    create_batch("issues", str(count), color, BatchFolder.ISSUES, entity)
+            color = BadgeColor.ORANGE
+    create_badge("issues", str(count), color, BadgeFolder.ISSUES, entity)
