@@ -8,7 +8,7 @@ from github import Github
 import sys
 from glob import glob
 from enum import Enum
-from Batge import create_issues_batge
+from Badge import create_issues_badge
 
 ########################################################################################################################
 # Types
@@ -41,7 +41,7 @@ for entity in EntityNames:
     entity_issues = repo.get_issues(labels=[entity]).totalCount
     potential_bugs = repo.get_issues(labels=[entity, Labels.POTENTIAL_BUG.value]).totalCount
     confirmed_bugs = repo.get_issues(labels=[entity, Labels.CONFIRMED_BUG.value]).totalCount
-    create_issues_batge(entity, entity_issues, potential_bugs > 0, confirmed_bugs > 0)
+    create_issues_badge(entity, entity_issues, potential_bugs > 0, confirmed_bugs > 0)
     print(f"{entity:40} issues:{entity_issues:3} potential:{potential_bugs:3} confirmed:{confirmed_bugs:3}")
 
 

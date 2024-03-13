@@ -14,9 +14,9 @@ VHDL Source: [olo_base_cc_reset](../../src/base/vhdl/olo_base_cc_reset.vhd)
 
 This component synchronizes reset inputs from two clock domains in both directions. Whenever a reset is received from on one clock domain, it produces reset outputs on both clock domains and ensures that both reset outputs are asserted at the same time for at least one clock cycle before they are released again.
 
-This type of reset synchronization is required in many clock crossings. Usually sides of the clock crossing must be reset at the same time to avoid unwanted behavior in corner conditions around resets.
+This type of reset synchronization is required in many clock crossings. Usually both sides of the clock crossing must be reset at the same time to avoid unwanted behavior in corner conditions around resets.
 
-When using the block, you should connect any reset request signals to *A/B_RstINn and reset your logic with the outputs *A/B_RstOut*.
+When using the block, you should connect any reset request signals to *A/B_RstIn* and reset your logic with the outputs *A/B_RstOut*.
 
 This block follows the general [clock-crossing principles](clock_crossing_principles.md). Read through them for more information.
 

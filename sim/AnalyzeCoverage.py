@@ -4,15 +4,15 @@
 ########################################################################################################################
 import os
 import json
-from Batge import create_coverage_version_batge, create_coverage_batge
+from Badge import create_coverage_version_badge, create_coverage_badge
 import sys
 
 ########################################################################################################################
 # Parse Arguments
 ########################################################################################################################
-UPDATE_BATGES = False
-if "--batges" in sys.argv:
-    UPDATE_BATGES = True
+UPDATE_BADGES = False
+if "--badges" in sys.argv:
+    UPDATE_BADGES = True
 
 ########################################################################################################################
 # Types
@@ -62,10 +62,10 @@ for line in fd.readlines():
 #*** Generate Output ***
 for entity in entities:
     print(f"{entity.name:40}: {entity.coverage}%")
-    if UPDATE_BATGES:
-        create_coverage_batge(entity.name, entity.coverage)
-if UPDATE_BATGES:
-    create_coverage_version_batge()
+    if UPDATE_BADGES:
+        create_coverage_badge(entity.name, entity.coverage)
+if UPDATE_BADGES:
+    create_coverage_version_badge()
 
 
 

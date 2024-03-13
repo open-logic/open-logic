@@ -14,12 +14,9 @@ VHDL Source: [olo_base_cc_pulse](../../src/base/vhdl/olo_base_cc_pulse.vhd)
 
 This component implements a clock crossing for transferring single pulses from one clock domain to another (completely asynchronous clocks).
 
-The entity shall only be used for single-cycle pulses and the pulse frequency must be lower than the frequency of the slower clock for it to work correctly.
+The entity shall only be used for single-cycle pulses and the pulse frequency must be lower than twice the frequency of the slower clock for it to work correctly.
 
-The entity does only guarantee that all pulses arrive at the destination clock domain. It does not guarantee that pulses that occur in the same clock cycle on the source clock domain, occur on the target clock domain in the same clock cycle. As a result it should only be used to do
-clock-crossings for individual pulses.
-
-This entity does also do the clock-crossing for the reset by using "asynchronously assert, synchronously de-assert" synchronizer chains and applying all attributes to synthesize them correctly.
+The entity does only guarantee that all pulses arrive at the destination clock domain. It does not guarantee that pulses that occur in the same clock cycle on the source clock domain, occur on the target clock domain in the same clock cycle. As a result it should only be used to do clock-crossings for individual pulses.
 
 This block follows the general [clock-crossing principles](clock_crossing_principles.md). Read through them for more information.
 
