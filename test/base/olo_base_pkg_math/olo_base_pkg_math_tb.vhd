@@ -44,6 +44,8 @@ begin
         variable strb : string(1 to 5) := "blubb";
         variable usa, usb : unsigned(2 downto 0);
         variable tra, trb, trc : t_areal(0 to 1);
+        variable taint : t_ainteger(0 to 3);
+        variable tabool : t_abool(0 to 3);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -129,6 +131,21 @@ begin
         check_equal(trc(0), tra(0),    "choose(true, tra, trb)"); 
         trc := choose(false, tra, trb);
         check_equal(trc(0), trb(0),   "choose(false, tra, trb)"); 
+
+        -- count (t_ainteger)
+        taint := (1, 2, 3, 2);
+        check_equal(count(taint, 2), 2,    "count -> 2"); 
+        check_equal(count(taint, 3), 1,    "count -> 3"); 
+
+        -- count (t_abool)
+        tabool := (true, false, true, true);
+        check_equal(count(tabool, true), 3,    "count -> true"); 
+        check_equal(count(tabool, false), 1,   "count -> false"); 
+
+        -- count (std_logic_vector)
+        stdlva := "010";
+        check_equal(count(stdlva, '1'), 1,    "count -> '1''"); 
+        check_equal(count(stdlva, '0'), 2,    "count -> '0'"); 
     
         wait for 1 ns;
 
