@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} is HDL Simlations
 on:
   push:
     branches:
-      - feature/initial
+      - main
   workflow_dispatch:
   schedule:
     - cron: '0 3 * * 1'
