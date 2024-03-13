@@ -18,6 +18,7 @@ library vunit_lib;
 
 library olo;
     use olo.olo_base_pkg_math.all;
+    use olo.olo_base_pkg_array.all;
 
 ------------------------------------------------------------------------------
 -- Entity
@@ -38,6 +39,11 @@ begin
     -- TB is not very vunit-ish because it is a package TB
     test_runner_watchdog(runner, 1 ms);
     p_control : process
+        variable stdlva, stdlvb : std_logic_vector(2 downto 0);
+        variable stra : string(1 to 3) := "bla";
+        variable strb : string(1 to 5) := "blubb";
+        variable usa, usb : unsigned(2 downto 0);
+        variable tra, trb, trc : t_areal(0 to 1);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -85,7 +91,45 @@ begin
         check_equal(olo.olo_base_pkg_math.min(-4.0,3.0), -4.0,  "min(-4.0,3.0)wrong");
         check_equal(olo.olo_base_pkg_math.min(3.0,-4.0), -4.0,  "min(3.0,-4.0) wrong");
         check_equal(olo.olo_base_pkg_math.min(1.2,1.3), 1.2,    "min(1.2,1.3) wrong");
-         
+
+        -- choose (std_logic)
+        check_equal(choose(true, true, false), true,    "choose(true, true, false)"); 
+        check_equal(choose(true, false, true), false,   "choose(true, false, true)"); 
+        check_equal(choose(false, true, false), false,  "choose(false, true, false)"); 
+        check_equal(choose(false, false, true), true,   "choose(false, false, true)"); 
+
+        -- choose (std_logic_vector)
+        stdlva := "000";
+        stdlvb := "111";
+        check_equal(choose(true, stdlva, stdlvb), stdlva,   "choose(true, 000, 111)"); 
+        check_equal(choose(false, stdlva, stdlvb), stdlvb,  "choose(false, 000, 111)"); 
+
+        -- choose (integer)
+        check_equal(choose(true, 2, 3), 2,   "choose(true, 2, 3)"); 
+        check_equal(choose(false, 2, 3), 3,  "choose(false, 2, 3)"); 
+
+        -- choose (real)
+        check_equal(choose(true, 2.0, 3.0), 2.0,   "choose(true, 2.0, 3.0)"); 
+        check_equal(choose(false, 2.0, 3.0), 3.0,  "choose(false, 2.0, 3.0)"); 
+
+        -- choose (string)
+        check_equal(choose(true, stra, strb), stra,     "choose(true, bla, blubb)"); 
+        check_equal(choose(false, stra, strb), strb,    "choose(false, bla, blubb)"); 
+
+        -- choose (unsigned)
+        usa := "000";
+        usb := "111";
+        check_equal(choose(true, usa, usb), usa,    "choose(true, usa, usb)"); 
+        check_equal(choose(false, usa, usb), usb,   "choose(false, usa, usb)"); 
+
+        -- choose (t_areal)
+        tra := (0.1, 0.2);
+        trb := (2.0, 3.0);
+        trc := choose(true, tra, trb);
+        check_equal(trc(0), tra(0),    "choose(true, tra, trb)"); 
+        trc := choose(false, tra, trb);
+        check_equal(trc(0), trb(0),   "choose(false, tra, trb)"); 
+    
         wait for 1 ns;
 
         -- TB done
