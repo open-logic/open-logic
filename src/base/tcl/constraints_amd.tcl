@@ -1,11 +1,13 @@
 #Constraints must be enabled for Implementation only (disabled for synthesis)
 
+puts "OLO Constraints TCL loaded"
 
 #olo_base_cc_reset
 #.. no constraints required
 
 #olo_base_cc_bits
 foreach my_cell [get_cell -hierarchical -quiet *i_olo_base_cc_bits_constraints_region] {
+    puts "OLO - Found cell $my_cell"
     set launch_clk [get_clocks -of_objects [get_pins $my_cell/In_Clk]]
     set latch_clk [get_clocks -of_objects [get_pins $my_cell/Out_Clk]]
     set period [expr min([get_property PERIOD $launch_clk], [get_property PERIOD $latch_clk])]
@@ -18,6 +20,7 @@ foreach my_cell [get_cell -hierarchical -quiet *i_olo_base_cc_bits_constraints_r
 
 #olo_base_cc_simple
 foreach my_cell [get_cell -hierarchical -quiet *i_olo_base_cc_simple_constraints_region] {
+    puts "OLO - Found cell $my_cell"
     set launch_clk [get_clocks -of_objects [get_pins $my_cell/In_Clk]]
     set latch_clk [get_clocks -of_objects [get_pins $my_cell/Out_Clk]]
     set period [expr min([get_property PERIOD $launch_clk], [get_property PERIOD $latch_clk])]

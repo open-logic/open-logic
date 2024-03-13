@@ -63,11 +63,15 @@ for tb_name in cc_tbs:
             if N == D and N != 1:
                 continue
             tb.add_config(name=f'D={D}-N={N}', generics={'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
+olo_tb.test_bench('olo_base_pkg_math_tb').add_config(name='default')
 
 if USE_COVERAGE:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
     olo.set_compile_option('modelsim.vlog_flags', ['+cover=bs'])
     olo_tb.set_sim_option("enable_coverage", True)
+    #Add coverage for package TBs (otherwise coverage does not work)
+    olo_tb.get_source_file("*_pkg_*_tb.vhd").set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
+
     def post_run(results):
         results.merge_coverage(file_name='coverage_data')
 else:
