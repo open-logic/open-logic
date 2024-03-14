@@ -61,7 +61,19 @@ for tb_name in cc_tbs:
             if N == D and N != 1:
                 continue
             tb.add_config(name=f'D={D}-N={N}', generics={'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
-olo_tb.test_bench('olo_base_pkg_math_tb').add_config(name='default')
+# RAM TBs
+ram_tbs = ['olo_base_ram_sp_tb']
+for tb_name in ram_tbs:
+    tb = olo_tb.test_bench(tb_name)
+    for RamBehav in ['RBW', 'WBR']:
+        for Width in [5, 32]:
+            for Be in [True, False]:
+                if Width == 5 and Be == True:
+                    continue #No byte enables for non multiple of 8
+                tb.add_config(name=f'B={RamBehav}-W={Width}-Be={Be}', generics={'Width_g': Width, 'RamBehavior_g': RamBehav, 'UseByteEnable_g' : Be})
+
+if USE_GHDL:
+    olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 
 if USE_COVERAGE:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
