@@ -126,76 +126,82 @@ begin
         wait until rising_edge(Clk);
 
         -- Write 3 Values, Read back
-        if UseByteEnable_g then
-            Be <= (others => '1'); -- BE not checked -> all ones
+        if run("Basic") then
+            if UseByteEnable_g then
+                Be <= (others => '1'); -- BE not checked -> all ones
+            end if;
+            Write(1, 5, Clk, Addr, WrData, WrEna);
+            Write(2, 6, Clk, Addr, WrData, WrEna);
+            Write(3, 7, Clk, Addr, WrData, WrEna);
+            Check(1, 5, Clk, Addr, RdData, "3vrb: 1=5");
+            Check(2, 6, Clk, Addr, RdData, "3vrb: 2=6");
+            Check(3, 7, Clk, Addr, RdData, "3vrb: 3=7");
+            Check(1, 5, Clk, Addr, RdData, "3vrb: re-read 1=5");
+            Be <= (others => '0');
         end if;
-        Write(1, 5, Clk, Addr, WrData, WrEna);
-        Write(2, 6, Clk, Addr, WrData, WrEna);
-        Write(3, 7, Clk, Addr, WrData, WrEna);
-        Check(1, 5, Clk, Addr, RdData, "3vrb: 1=5");
-        Check(2, 6, Clk, Addr, RdData, "3vrb: 2=6");
-        Check(3, 7, Clk, Addr, RdData, "3vrb: 3=7");
-        Check(1, 5, Clk, Addr, RdData, "3vrb: re-read 1=5");
-        Be <= (others => '0');
 
         -- Check byte enables
-        if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then
-            -- Byte 0 test
-            Be <= (others => '1'); 
-            Write(1, 0, Clk, Addr, WrData, WrEna);
-            Be <= (others => '0'); 
-            Be(0) <= '1';
-            Write(1, 16#ABCD#, Clk, Addr, WrData, WrEna);
-            Check(1, 16#00CD#, Clk, Addr, RdData, "BE[0]");
-            -- Byte 1 test
-            Be <= (others => '0'); 
-            Be(1) <= '1';
-            Write(1, 16#1234#, Clk, Addr, WrData, WrEna);
-            Check(1, 16#12CD#, Clk, Addr, RdData, "BE[1]");
+        if run("ByteEnable") then
+            if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then        
+                -- Byte 0 test
+                Be <= (others => '1'); 
+                Write(1, 0, Clk, Addr, WrData, WrEna);
+                Be <= (others => '0'); 
+                Be(0) <= '1';
+                Write(1, 16#ABCD#, Clk, Addr, WrData, WrEna);
+                Check(1, 16#00CD#, Clk, Addr, RdData, "BE[0]");
+                -- Byte 1 test
+                Be <= (others => '0'); 
+                Be(1) <= '1';
+                Write(1, 16#1234#, Clk, Addr, WrData, WrEna);
+                Check(1, 16#12CD#, Clk, Addr, RdData, "BE[1]");
+            end if;
         end if;
 
         -- Read while write
-        -- Initialize
-        Be <= (others => '1'); 
-        Write(1, 5, Clk, Addr, WrData, WrEna);
-        Write(2, 6, Clk, Addr, WrData, WrEna);
-        Write(3, 7, Clk, Addr, WrData, WrEna);
-        wait until rising_edge(Clk);
-        WrEna <= '1';
-        Addr <= to_uslv(1, Addr'length);
-        WrData <= to_uslv(1, WrData'length);
-        wait until rising_edge(Clk);
-        Addr <= to_uslv(2, Addr'length);
-        WrData <= to_uslv(2, WrData'length);       
-        wait until rising_edge(Clk);
-        if RamBehavior_g = "RBW" then
-            check_equal(RdData, 5, "rw: 1=5");
-        else
-            check_equal(RdData, 1, "rw: 1=1 wbr");    
+        if run("ReadDuringWrite") then
+            -- Initialize
+            Be <= (others => '1'); 
+            Write(1, 5, Clk, Addr, WrData, WrEna);
+            Write(2, 6, Clk, Addr, WrData, WrEna);
+            Write(3, 7, Clk, Addr, WrData, WrEna);
+            wait until rising_edge(Clk);
+            WrEna <= '1';
+            Addr <= to_uslv(1, Addr'length);
+            WrData <= to_uslv(1, WrData'length);
+            wait until rising_edge(Clk);
+            Addr <= to_uslv(2, Addr'length);
+            WrData <= to_uslv(2, WrData'length);       
+            wait until rising_edge(Clk);
+            if RamBehavior_g = "RBW" then
+                check_equal(RdData, 5, "rw: 1=5");
+            else
+                check_equal(RdData, 1, "rw: 1=1 wbr");    
+            end if;
+            Addr <= to_uslv(3, Addr'length);
+            WrData <= to_uslv(3, WrData'length);    
+            wait until rising_edge(Clk);
+            if RamBehavior_g = "RBW" then
+                check_equal(RdData, 6, "rw: 2=6");
+            else
+                check_equal(RdData, 2, "rw: 2=2 wbr");
+            end if;    
+            Addr <= to_uslv(4, Addr'length);
+            WrData <= to_uslv(4, WrData'length);  
+            wait until rising_edge(Clk);
+            if RamBehavior_g = "RBW" then
+                check_equal(RdData, 7, "rw: 3=7");
+            else
+                check_equal(RdData, 3, "rw: 3=3 wbr");
+            end if;
+            Addr <= to_uslv(5, Addr'length);
+            WrData <= to_uslv(5, WrData'length);  
+            wait until rising_edge(Clk);
+            WrEna <= '0';
+            Check(1, 1, Clk, Addr, RdData, "rw: 1=1");
+            Check(2, 2, Clk, Addr, RdData, "rw: 2=2");
+            Check(3, 3, Clk, Addr, RdData, "rw: 3=3");
         end if;
-        Addr <= to_uslv(3, Addr'length);
-        WrData <= to_uslv(3, WrData'length);    
-        wait until rising_edge(Clk);
-        if RamBehavior_g = "RBW" then
-            check_equal(RdData, 6, "rw: 2=6");
-        else
-            check_equal(RdData, 2, "rw: 2=2 wbr");
-        end if;    
-        Addr <= to_uslv(4, Addr'length);
-        WrData <= to_uslv(4, WrData'length);  
-        wait until rising_edge(Clk);
-        if RamBehavior_g = "RBW" then
-            check_equal(RdData, 7, "rw: 3=7");
-        else
-            check_equal(RdData, 3, "rw: 3=3 wbr");
-        end if;
-        Addr <= to_uslv(5, Addr'length);
-        WrData <= to_uslv(5, WrData'length);  
-        wait until rising_edge(Clk);
-        WrEna <= '0';
-        Check(1, 1, Clk, Addr, RdData, "rw: 1=1");
-        Check(2, 2, Clk, Addr, RdData, "rw: 2=2");
-        Check(3, 3, Clk, Addr, RdData, "rw: 3=3");
 
         -- TB done
         test_runner_cleanup(runner);
