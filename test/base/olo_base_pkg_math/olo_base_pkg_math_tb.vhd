@@ -46,6 +46,7 @@ begin
         variable tra, trb, trc : t_areal(0 to 1);
         variable taint : t_ainteger(0 to 3);
         variable tabool : t_abool(0 to 3);
+        variable tra4 : t_areal(0 to 3);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -60,7 +61,8 @@ begin
         check_equal(log2ceil(8), 3, "log2ceil(8) wrong");
         check_equal(log2ceil(5), 3, "log2ceil(5) wrong");
         check_equal(log2ceil(2), 1, "log2ceil(2) wrong");
-        check_equal(log2ceil(1), 0, "log2ceil(1) wrong");        
+        check_equal(log2ceil(1), 0, "log2ceil(1) wrong");   
+        check_equal(log2ceil(0), 0, "log2ceil(1) wrong");    -- special case, returns zero to avoid errors when calculating bits for zero-lenth arrays
         
         -- islog2
         check_equal(islog2(8), true,  "islog2(8) wrong");
@@ -94,11 +96,17 @@ begin
         check_equal(olo.olo_base_pkg_math.min(3.0,-4.0), -4.0,  "min(3.0,-4.0) wrong");
         check_equal(olo.olo_base_pkg_math.min(1.2,1.3), 1.2,    "min(1.2,1.3) wrong");
 
-        -- choose (std_logic)
+        -- choose (bool)
         check_equal(choose(true, true, false), true,    "choose(true, true, false)"); 
         check_equal(choose(true, false, true), false,   "choose(true, false, true)"); 
         check_equal(choose(false, true, false), false,  "choose(false, true, false)"); 
         check_equal(choose(false, false, true), true,   "choose(false, false, true)"); 
+
+        -- choose (std_logic)
+        check_equal(choose(true, '1', '0'), '1',     "choose(true, '1'', '0')"); 
+        check_equal(choose(true, '0', '1'), '0',     "choose(true, '0'', '1')"); 
+        check_equal(choose(false, '1', '0'), '0',    "choose(false, '1', '0')"); 
+        check_equal(choose(false,  '0', '1'), '1',   "choose(false,  '0', '1')"); 
 
         -- choose (std_logic_vector)
         stdlva := "000";
@@ -146,6 +154,55 @@ begin
         stdlva := "010";
         check_equal(count(stdlva, '1'), 1,    "count -> '1''"); 
         check_equal(count(stdlva, '0'), 2,    "count -> '0'"); 
+
+        -- to_uslv
+        check_equal(to_uslv(3, 4), std_logic_vector(to_unsigned(3, 4)),    "to_uslv(3, 4)"); 
+
+        -- to_sslv
+        check_equal(to_sslv(3, 4), std_logic_vector(to_unsigned(3, 4)),  "to_sslv(3, 4)"); 
+        check_equal(to_sslv(-2, 5), std_logic_vector(to_signed(-2, 5)),  "to_sslv(-2, 5)"); 
+
+        -- from_uslv
+        stdlva := "010";
+        check_equal(from_uslv(stdlva), 2,    "from_uslv(010)"); 
+
+        -- from_sslv
+        stdlva := "010";
+        check_equal(from_sslv(stdlva), 2,    "from_sslv(010)"); 
+        stdlva := "110";
+        check_equal(from_sslv(stdlva), -2,   "from_sslv(110)"); 
+
+        -- from_str real
+        check_equal(from_str("1.0"), 1.0,           "from_str(1.0)", 0.001e-6);
+        check_equal(from_str(" 1.1"), 1.1,          "from_str( 1.1)", 0.001e-6);
+        check_equal(from_str("+0.1"), +0.1,         "from_str(+0.1)", 0.001e-6);
+        check_equal(from_str("-0.1"), -0.1,         "from_str(-0.1)", 0.001e-6);
+        check_equal(from_str("+12.2"), +12.2,       "from_str(+12.2)", 0.001e-6);
+        check_equal(from_str("-13.3"), -13.3,       "from_str(-13.3)", 0.001e-6);
+        check_equal(from_str("-13.3e2"), -13.3e2,   "from_str(-13.3e2)", 0.001e-6);
+        check_equal(from_str("12.2E-3"), 12.2E-3,   "from_str(12.2E-3)", 0.001e-6);
+
+        -- from_str real array
+        tra := from_str("0.1, -0.3e-2");
+        check_equal(tra(0), 0.1,           "from_str(t_areal) - 0", 0.001e-6);
+        check_equal(tra(1), -0.3e-2,       "from_str(t_areal) - 1", 0.001e-6);
+
+        -- max_a (int)
+        taint := (1, -3, 4, 2);
+        check_equal(max_a(taint), 4, "max_a(taint)");
+
+        -- max_a (real)
+        tra4 := (0.1, -0.3, 1.4, 0.2);
+        check_equal(max_a(tra4), 1.4, "max_a(tra4)");
+
+        -- min_a (int)
+        taint := (1, -3, 4, 2);
+        check_equal(min_a(taint), -3, "min_a(taint)");
+
+        -- min_a (real)
+        tra4 := (0.1, -0.3, 1.4, 0.2);
+        check_equal(min_a(tra4), -0.3, "min_a(tra4)");
+
     
         wait for 1 ns;
 
