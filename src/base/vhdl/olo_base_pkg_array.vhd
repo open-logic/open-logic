@@ -59,4 +59,45 @@ package olo_base_pkg_array is
     type t_areal is array (natural range <>) of real;
     type t_abool is array (natural range <>) of boolean;
 
+    function t_ainteger_to_t_areal(a : in t_ainteger) return t_areal;
+    function stdlv_to_t_abool(a : in std_logic_vector) return t_abool;
+    function t_abool_to_stdlv(a : in t_abool) return std_logic_vector;
+
 end package;
+
+------------------------------------------------------------------------------
+-- Package Body
+------------------------------------------------------------------------------
+package body olo_base_pkg_array is
+
+    function t_ainteger_to_t_areal(a : in t_ainteger) return t_areal is
+        variable x : t_areal(a'range);
+    begin
+        for i in a'low to a'high loop
+            x(i) := real(a(i));
+        end loop;
+        return x;
+    end function;
+
+    function stdlv_to_t_abool(a : in std_logic_vector) return t_abool is
+        variable x : t_abool(a'range);
+    begin
+        for i in a'low to a'high loop
+            x(i) := (a(i) = '1');
+        end loop;
+        return x;
+    end function;
+
+    function t_abool_to_stdlv(a : in t_abool) return std_logic_vector is
+        variable x : std_logic_vector(a'range);
+    begin
+        for i in a'low to a'high loop
+            if a(i) then
+                x(i) := '1';
+            else
+                x(i) := '0';
+            end if;
+        end loop;
+        return x;
+    end function;
+end olo_base_pkg_array;

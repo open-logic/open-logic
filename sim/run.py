@@ -6,8 +6,6 @@ import sys
 
 #Argument handling
 argv = sys.argv[1:]
-print(argv)
-print(sys.argv)
 USE_GHDL = True
 USE_COVERAGE = False
 if "--modelsim" in sys.argv:
@@ -70,7 +68,8 @@ if USE_COVERAGE:
     olo.set_compile_option('modelsim.vlog_flags', ['+cover=bs'])
     olo_tb.set_sim_option("enable_coverage", True)
     #Add coverage for package TBs (otherwise coverage does not work)
-    olo_tb.get_source_file("*_pkg_*_tb.vhd").set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
+    for f in olo_tb.get_source_files("*_pkg_*_tb.vhd"):
+        f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
 
     def post_run(results):
         results.merge_coverage(file_name='coverage_data')
