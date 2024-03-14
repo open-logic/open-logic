@@ -2,4 +2,4 @@
 
 #Run simulations
 cd ./sim
-python3 run.py
+python3 run.py -p 16
