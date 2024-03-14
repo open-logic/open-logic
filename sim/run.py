@@ -39,7 +39,6 @@ olo.add_source_files(files)
 
 # Add test helpers
 files = glob('../test/tb/legacy/*.vhd', recursive=True)
-print(files)
 olo_tb.add_source_files(files)
 
 # Add all tb VHDL files
