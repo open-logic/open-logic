@@ -61,7 +61,7 @@ for tb_name in cc_tbs:
                 continue
             tb.add_config(name=f'D={D}-N={N}', generics={'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
 # RAM TBs
-ram_tbs = ['olo_base_ram_sp_tb']
+ram_tbs = ['olo_base_ram_sp_tb', 'olo_base_ram_tdp_tb']
 for tb_name in ram_tbs:
     tb = olo_tb.test_bench(tb_name)
     for RamBehav in ['RBW', 'WBR']:

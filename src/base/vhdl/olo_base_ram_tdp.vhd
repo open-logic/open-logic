@@ -29,6 +29,7 @@ entity olo_base_ram_tdp is
     generic ( 
         Depth_g         : positive  := 1024;   
         Width_g         : positive  := 32;    
+        RdLatency_g     : positive  := 1;   
         RamStyle_g      : string    := "auto";   -- intel "M4K", "M9K", "M20K", "M144K", or "MLAB" - amd block, distributed, ultra, auto                 
         RamBehavior_g   : string    := "RBW";
         UseByteEnable_g : boolean   := false
@@ -57,8 +58,11 @@ architecture rtl of olo_base_ram_tdp is
     constant BeCount_c : integer := Width_g / 8;
 
     -- memory array
-    type mem_t is array (Depth_g - 1 downto 0) of std_logic_vector(Width_g - 1 downto 0);
-    shared variable mem : mem_t := (others => (others => '0'));
+    type data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
+    shared variable mem : data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
+
+    -- Read registers
+    signal a_rd_pipe, b_rd_pipe      : data_t(1 to RdLatency_g);
 
     -- AMD RAM implementation attribute
     attribute ram_style : string;
@@ -83,7 +87,7 @@ begin
     begin
         if rising_edge(A_Clk) then
             if RamBehavior_g = "RBW" then
-                A_RdData <= mem(to_integer(unsigned(A_Addr)));
+                a_rd_pipe(1) <= mem(to_integer(unsigned(A_Addr)));
             end if;
             if A_WrEna = '1' then
                 -- Write with byte enables
@@ -99,17 +103,20 @@ begin
                 end if;
             end if;
             if RamBehavior_g = "WBR" then
-                A_RdData <= mem(to_integer(unsigned(A_Addr)));
+                a_rd_pipe(1) <= mem(to_integer(unsigned(A_Addr)));
             end if;
+            -- Read-data pipeline registers
+            a_rd_pipe(2 to RdLatency_g) <= a_rd_pipe(1 to RdLatency_g-1);
         end if;
     end process;
+    A_RdData <= a_rd_pipe(RdLatency_g);
 
     -- Port B
     portb_p : process(B_Clk)
     begin
         if rising_edge(B_Clk) then
             if RamBehavior_g = "RBW" then
-                B_RdData <= mem(to_integer(unsigned(B_Addr)));
+                b_rd_pipe(1) <= mem(to_integer(unsigned(B_Addr)));
             end if;
             if B_WrEna = '1' then
                 -- Write with byte enables
@@ -125,10 +132,13 @@ begin
                 end if;
             end if;
             if RamBehavior_g = "WBR" then
-                B_RdData <= mem(to_integer(unsigned(B_Addr)));
+                b_rd_pipe(1) <= mem(to_integer(unsigned(B_Addr)));
             end if;
+            -- Read-data pipeline registers
+            b_rd_pipe(2 to RdLatency_g) <= b_rd_pipe(1 to RdLatency_g-1);
         end if;
     end process;
+    B_RdData <= b_rd_pipe(RdLatency_g);
 
 end architecture;
 
