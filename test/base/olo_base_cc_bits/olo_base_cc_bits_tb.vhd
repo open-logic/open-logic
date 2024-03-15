@@ -24,6 +24,7 @@ library olo;
 ------------------------------------------------------------------------------
 -- Entity
 ------------------------------------------------------------------------------
+-- vunit: run_all_in_same_sim
 entity olo_base_cc_bits_tb is
     generic (
         runner_cfg     : string;
@@ -98,45 +99,53 @@ begin
     begin
         test_runner_setup(runner, runner_cfg);
 
-        -- data transfer after resetting both
-        In_Rst <= '1';
-        Out_Rst <= '1';
-        wait for Time_Rst_Assert_c;
-        In_Rst <= '0';
-        Out_Rst <= '0';
-        wait for Time_Rst_Recover_c;
-        In_Data  <= X"AB";
-        WaitForValueStdlv(Out_Data, X"AB", Time_MaxDel_c, "Data not transferred 1");
-        In_Data  <= X"CD";
-        WaitForValueStdlv(Out_Data, X"CD", Time_MaxDel_c, "Data not transferred 2");
+        while test_suite loop
 
-        -- data transfer with A longer in reset
-        wait until rising_edge(In_Clk);
-        In_Rst <= '1';
-        Out_Rst <= '1';
-        wait for Time_Rst_Assert_c;
-        Out_Rst <= '0';
-        wait for 100 * SlowerClock_Period_c;
-        In_Rst <= '0';
-        wait for Time_Rst_Recover_c;
-        In_Data  <= X"12";
-        WaitForValueStdlv(Out_Data, X"12", Time_MaxDel_c, "Data not transferred 3");
-        In_Data  <= X"34";
-        WaitForValueStdlv(Out_Data, X"34", Time_MaxDel_c, "Data not transferred 4");
+            -- *** Reset ***
+            In_Rst <= '1';
+            Out_Rst <= '1';
+            wait for Time_Rst_Assert_c;
+            In_Rst <= '0';
+            Out_Rst <= '0';
+            wait for Time_Rst_Recover_c;
 
-        -- data transfer with B longer in reset
-        wait until rising_edge(In_Clk);
-        In_Rst <= '1';
-        Out_Rst <= '1';
-        wait for Time_Rst_Assert_c;
-        In_Rst <= '0';
-        wait for 100 * SlowerClock_Period_c;
-        Out_Rst <= '0';
-        wait for Time_Rst_Recover_c;
-        In_Data  <= X"56";
-        WaitForValueStdlv(Out_Data, X"56", Time_MaxDel_c, "Data not transferred 5");
-        In_Data  <= X"78";
-        WaitForValueStdlv(Out_Data, X"78", Time_MaxDel_c, "Data not transferred 6");
+            if run("SimpleTransfer") then
+                In_Data  <= X"AB";
+                WaitForValueStdlv(Out_Data, X"AB", Time_MaxDel_c, "Data not transferred 1");
+                In_Data  <= X"CD";
+                WaitForValueStdlv(Out_Data, X"CD", Time_MaxDel_c, "Data not transferred 2");
+
+            -- data transfer with A longer in reset
+            elsif run("LongResetA") then
+                wait until rising_edge(In_Clk);
+                In_Rst <= '1';
+                Out_Rst <= '1';
+                wait for Time_Rst_Assert_c;
+                Out_Rst <= '0';
+                wait for 100 * SlowerClock_Period_c;
+                In_Rst <= '0';
+                wait for Time_Rst_Recover_c;
+                In_Data  <= X"12";
+                WaitForValueStdlv(Out_Data, X"12", Time_MaxDel_c, "Data not transferred 3");
+                In_Data  <= X"34";
+                WaitForValueStdlv(Out_Data, X"34", Time_MaxDel_c, "Data not transferred 4");
+
+            -- data transfer with B longer in reset
+            elsif run("LongResetB") then
+                wait until rising_edge(In_Clk);
+                In_Rst <= '1';
+                Out_Rst <= '1';
+                wait for Time_Rst_Assert_c;
+                In_Rst <= '0';
+                wait for 100 * SlowerClock_Period_c;
+                Out_Rst <= '0';
+                wait for Time_Rst_Recover_c;
+                In_Data  <= X"56";
+                WaitForValueStdlv(Out_Data, X"56", Time_MaxDel_c, "Data not transferred 5");
+                In_Data  <= X"78";
+                WaitForValueStdlv(Out_Data, X"78", Time_MaxDel_c, "Data not transferred 6");
+            end if;
+        end loop;
 
         -- TB done
         test_runner_cleanup(runner);
