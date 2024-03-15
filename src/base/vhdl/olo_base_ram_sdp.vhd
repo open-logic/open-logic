@@ -29,17 +29,18 @@ entity olo_base_ram_sdp is
         Depth_g         : positive := 1024;     
         Width_g         : positive := 16; 
         IsAsync_g       : boolean  := false;
+        RdLatency_g     : positive := 1;  
         RamStyle_g      : string   := "auto";   -- intel "M4K", "M9K", "M20K", "M144K", or "MLAB" - amd block, distributed, ultra, auto
         RamBehavior_g   : string   := "RBW";
-        UseByteEnable_g : boolean   := false
+        UseByteEnable_g : boolean  := false
     );
     port (   
-        Wr_Clk      : in  std_logic;
+        Clk         : in  std_logic;
         Wr_Addr     : in  std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         Wr_Ena      : in  std_logic                                         := '1';
         Wr_Be       : in  std_logic_vector(Width_g / 8 - 1 downto 0)        := (others => '1'); 
         Wr_Data     : in  std_logic_vector(Width_g - 1 downto 0);
-        Rd_Clk      : in  std_logic;
+        Rd_Clk      : in  std_logic                                         := '0';
         Rd_Addr     : in  std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         Rd_Ena      : in  std_logic                                         := '1';
         Rd_Data     : out std_logic_vector(Width_g - 1 downto 0)
@@ -55,14 +56,19 @@ architecture rtl of olo_base_ram_sdp is
     constant BeCount_c : integer := Width_g / 8;
 
     -- memory array
-    type mem_t is array (Depth_g - 1 downto 0) of std_logic_vector(Width_g - 1 downto 0);
-    shared variable mem : mem_t := (others => (others => '0'));
+    type data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
+    shared variable mem : data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
 
-    -- AMD RAM implementation attribute
+    -- Read registers
+    signal rd_pipe      : data_t(1 to RdLatency_g);
+
+    -- AMD RAM implementation attributes
     attribute ram_style : string;
     attribute ram_style of mem : variable is RamStyle_g;
+    attribute shreg_extract : string;
+    attribute shreg_extract of rd_pipe : signal is "no";
 
-    -- Intel RAM implementation attribute
+    -- Intel RAM implementation attributes
     attribute ramstyle : string;
     attribute ramstyle of mem : variable is RamStyle_g;
 
@@ -78,12 +84,12 @@ begin
 
     -- Synchronous Implementation
     g_sync : if not IsAsync_g generate
-        ram_p : process(Wr_Clk)
+        ram_p : process(Clk)
         begin
-            if rising_edge(Wr_Clk) then
+            if rising_edge(Clk) then
                 if RamBehavior_g = "RBW" then
                     if Rd_Ena = '1' then
-                        Rd_Data <= mem(to_integer(unsigned(Rd_Addr)));
+                        rd_pipe(1) <= mem(to_integer(unsigned(Rd_Addr)));
                     end if;
                 end if;
                 if Wr_Ena = '1' then
@@ -101,9 +107,12 @@ begin
                 end if;
                 if RamBehavior_g = "WBR" then
                     if Rd_Ena = '1' then
-                        Rd_Data <= mem(to_integer(unsigned(Rd_Addr)));
+                        rd_pipe(1) <= mem(to_integer(unsigned(Rd_Addr)));
                     end if;
                 end if;
+
+                -- Read-data pipeline registers
+                rd_pipe(2 to RdLatency_g) <= rd_pipe(1 to RdLatency_g-1);
             end if;
         end process;
     end generate;
@@ -111,9 +120,9 @@ begin
     -- Asynchronous implementation
     g_async : if IsAsync_g generate
 
-        write_p : process(Wr_Clk)
+        write_p : process(Clk)
         begin
-            if rising_edge(Wr_Clk) then
+            if rising_edge(Clk) then
                 if Wr_Ena = '1' then
                     -- Write with byte enables
                     if UseByteEnable_g then
@@ -134,12 +143,18 @@ begin
         begin
             if rising_edge(Rd_Clk) then
                 if Rd_Ena = '1' then
-                    Rd_Data <= mem(to_integer(unsigned(Rd_Addr)));
+                    rd_pipe(1) <= mem(to_integer(unsigned(Rd_Addr)));
                 end if;
+
+                -- Read-data pipeline registers
+                rd_pipe(2 to RdLatency_g) <= rd_pipe(1 to RdLatency_g-1);
             end if;
         end process;
 
     end generate;
+
+    -- Output
+    Rd_Data <= rd_pipe(RdLatency_g);
 
 end architecture;
 
