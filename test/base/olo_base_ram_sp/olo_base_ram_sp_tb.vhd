@@ -27,6 +27,7 @@ entity olo_base_ram_sp_tb is
     generic (
         runner_cfg      : string;
         Width_g         : positive range 5 to 128  := 32; 
+        RdLatency_g     : positive range 1 to 2 := 1;
         RamBehavior_g   : string    := "RBW";
         UseByteEnable_g : boolean   := false
     );
@@ -73,7 +74,9 @@ architecture sim of olo_base_ram_sp_tb is
         wait until rising_edge(Clk);
         Addr <= to_uslv(address, Addr'length);
         wait until rising_edge(Clk); -- Address sampled
-        wait until rising_edge(Clk); 
+        for i in 1 to RdLatency_g loop
+            wait until rising_edge(Clk);
+        end loop; 
         check_equal(RdData, to_uslv(data, RdData'length), message);
     end procedure;
 
@@ -95,7 +98,8 @@ begin
     i_dut : entity olo.olo_base_ram_sp
         generic map (
             Depth_g         => 200,                                      
-            Width_g         => Width_g,                                                   
+            Width_g         => Width_g,    
+            RdLatency_g     => RdLatency_g,                                               
             RamBehavior_g   => RamBehavior_g,
             UseByteEnable_g => UseByteEnable_g
         )
@@ -176,26 +180,44 @@ begin
                 Addr <= to_uslv(2, Addr'length);
                 WrData <= to_uslv(2, WrData'length);       
                 wait until rising_edge(Clk);
-                if RamBehavior_g = "RBW" then
-                    check_equal(RdData, 5, "rw: 1=5");
-                else
-                    check_equal(RdData, 1, "rw: 1=1 wbr");    
+                if RdLatency_g = 1 then
+                    if RamBehavior_g = "RBW" then
+                        check_equal(RdData, 5, "rw: 1=5");
+                    else
+                        check_equal(RdData, 1, "rw: 1=1 wbr");    
+                    end if;
                 end if;
                 Addr <= to_uslv(3, Addr'length);
                 WrData <= to_uslv(3, WrData'length);    
                 wait until rising_edge(Clk);
-                if RamBehavior_g = "RBW" then
-                    check_equal(RdData, 6, "rw: 2=6");
-                else
-                    check_equal(RdData, 2, "rw: 2=2 wbr");
-                end if;    
+                if RdLatency_g = 1 then
+                    if RamBehavior_g = "RBW" then
+                        check_equal(RdData, 6, "rw: 2=6");
+                    else
+                        check_equal(RdData, 2, "rw: 2=2 wbr");
+                    end if;    
+                elsif RdLatency_g = 2 then
+                    if RamBehavior_g = "RBW" then
+                        check_equal(RdData, 5, "rw: 1=5");
+                    else
+                        check_equal(RdData, 1, "rw: 1=1 wbr");    
+                    end if;
+                end if;                    
                 Addr <= to_uslv(4, Addr'length);
                 WrData <= to_uslv(4, WrData'length);  
                 wait until rising_edge(Clk);
-                if RamBehavior_g = "RBW" then
-                    check_equal(RdData, 7, "rw: 3=7");
-                else
-                    check_equal(RdData, 3, "rw: 3=3 wbr");
+                if RdLatency_g = 1 then
+                    if RamBehavior_g = "RBW" then
+                        check_equal(RdData, 7, "rw: 3=7");
+                    else
+                        check_equal(RdData, 3, "rw: 3=3 wbr");
+                    end if;
+                elsif RdLatency_g = 2 then
+                    if RamBehavior_g = "RBW" then
+                        check_equal(RdData, 6, "rw: 2=6");
+                    else
+                        check_equal(RdData, 2, "rw: 2=2 wbr");
+                    end if; 
                 end if;
                 Addr <= to_uslv(5, Addr'length);
                 WrData <= to_uslv(5, WrData'length);  

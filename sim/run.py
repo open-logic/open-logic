@@ -65,11 +65,12 @@ ram_tbs = ['olo_base_ram_sp_tb']
 for tb_name in ram_tbs:
     tb = olo_tb.test_bench(tb_name)
     for RamBehav in ['RBW', 'WBR']:
-        for Width in [5, 32]:
-            for Be in [True, False]:
-                if Width == 5 and Be == True:
-                    continue #No byte enables for non multiple of 8
-                tb.add_config(name=f'B={RamBehav}-W={Width}-Be={Be}', generics={'Width_g': Width, 'RamBehavior_g': RamBehav, 'UseByteEnable_g' : Be})
+        for ReadLatency in [1, 2]:
+            for Width in [5, 32]:
+                for Be in [True, False]:
+                    if Width == 5 and Be == True:
+                        continue #No byte enables for non multiple of 8
+                    tb.add_config(name=f'B={RamBehav}-W={Width}-Be={Be}-Lat={ReadLatency}', generics={'Width_g': Width, 'RamBehavior_g': RamBehav, 'UseByteEnable_g' : Be, "RdLatency_g" : ReadLatency})
 ram_tbs = ['olo_base_ram_sdp_tb']
 for tb_name in ram_tbs:
     tb = olo_tb.test_bench(tb_name)
