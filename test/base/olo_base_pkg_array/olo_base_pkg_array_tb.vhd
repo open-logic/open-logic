@@ -22,6 +22,7 @@ library olo;
 ------------------------------------------------------------------------------
 -- Entity
 ------------------------------------------------------------------------------
+-- vunit: run_all_in_same_sim
 entity olo_base_pkg_array_tb is
     generic (
         runner_cfg     : string
@@ -46,28 +47,34 @@ begin
         test_runner_setup(runner, runner_cfg);
 
         wait for 1 ns;
-    
-        -- t_ainteger_to_t_areal
-        aint := (1, -2, 3);
-        areal := t_ainteger_to_t_areal(aint);
-        check_equal(areal(0), 1.0, "t_ainteger_to_t_areal->0", 0.001);
-        check_equal(areal(1), -2.0, "t_ainteger_to_t_areal->1", 0.001);
-        check_equal(areal(2), 3.0, "t_ainteger_to_t_areal->2", 0.001);
 
-        -- stdlv_to_t_abool
-        stdlv := "011";
-        abool := stdlv_to_t_abool(stdlv);
-        check_equal(abool(0), false, "stdlv_to_t_abool->0");
-        check_equal(abool(1), true,  "stdlv_to_t_abool->1");
-        check_equal(abool(2), true,  "stdlv_to_t_abool->2");
-
-        -- t_abool_to_stlv
-        abool := (true, true, false);
-        stdlv := t_abool_to_stdlv(abool);
-        check_equal(stdlv(0), '1',  "t_abool_to_stlv->0");
-        check_equal(stdlv(1), '1',  "t_abool_to_stlv->1");
-        check_equal(stdlv(2), '0',  "t_abool_to_stlv->2");
+        while test_suite loop
     
+            if run("t_ainteger_to_t_areal") then
+                aint := (1, -2, 3);
+                areal := t_ainteger_to_t_areal(aint);
+                check_equal(areal(0), 1.0, "t_ainteger_to_t_areal->0", 0.001);
+                check_equal(areal(1), -2.0, "t_ainteger_to_t_areal->1", 0.001);
+                check_equal(areal(2), 3.0, "t_ainteger_to_t_areal->2", 0.001);
+
+            elsif run("stdlv_to_t_abool") then
+                stdlv := "011";
+                abool := stdlv_to_t_abool(stdlv);
+                check_equal(abool(0), false, "stdlv_to_t_abool->0");
+                check_equal(abool(1), true,  "stdlv_to_t_abool->1");
+                check_equal(abool(2), true,  "stdlv_to_t_abool->2");
+
+            elsif run("t_abool_to_stlv") then
+                abool := (true, true, false);
+                stdlv := t_abool_to_stdlv(abool);
+                check_equal(stdlv(0), '1',  "t_abool_to_stlv->0");
+                check_equal(stdlv(1), '1',  "t_abool_to_stlv->1");
+                check_equal(stdlv(2), '0',  "t_abool_to_stlv->2");
+
+            end if;
+
+        end loop;
+
         wait for 1 ns;
 
         -- TB done

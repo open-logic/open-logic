@@ -25,6 +25,7 @@ library olo;
 ------------------------------------------------------------------------------
 -- Entity
 ------------------------------------------------------------------------------
+-- vunit: run_all_in_same_sim
 entity olo_base_cc_simple_tb is
     generic (
         runner_cfg     : string;
@@ -124,83 +125,84 @@ begin
     begin
         test_runner_setup(runner, runner_cfg);
 
-        -- Reset
-        In_RstIn <= '1';
-        Out_RstIn <= '1';
-        wait for 1 us;
+        while test_suite loop
 
-        -- Check if both sides are in reset
-        check(In_RstOut = '1', "In_RstOut not asserted");
-        check(Out_RstOut = '1', "Out_RstOut not asserted");
-
-        -- Remove reset
-        wait until rising_edge(In_Clk);
-        In_RstIn <= '0';
-        wait until rising_edge(Out_Clk);
-        Out_RstIn <= '0';
-        wait for 1 us;
-
-        -- Check if both sides exited reset
-        check(In_RstOut = '0', "In_RstOut not de-asserted");
-        check(Out_RstOut = '0', "Out_RstOut not de-asserted");
-
-
-        -- *** Reset Tests ***        
-        if run("Reset") then
-        
-            -- Check if RstA is propagated to both sides
-            PulseSig(In_RstIn, In_Clk);
+            -- Reset
+            In_RstIn <= '1';
+            Out_RstIn <= '1';
             wait for 1 us;
-            check(In_RstOut = '0', "In_RstOut not de-asserted after In_RstIn");
-            check(Out_RstOut = '0', "Out_RstOut not de-asserted after In_RstIn");
-            check(In_RstOut'last_event < 1 us, "In_RstOut not asserted after In_RstIn");
-            check(Out_RstOut'last_event < 1 us, "Out_RstOut not asserted afterIn_RstIn");
 
-            -- Check if RstB is propagated to both sides
-            PulseSig(Out_RstIn, Out_Clk);
+            -- Check if both sides are in reset
+            check(In_RstOut = '1', "In_RstOut not asserted");
+            check(Out_RstOut = '1', "Out_RstOut not asserted");
+
+            -- Remove reset
+            wait until rising_edge(In_Clk);
+            In_RstIn <= '0';
+            wait until rising_edge(Out_Clk);
+            Out_RstIn <= '0';
             wait for 1 us;
-            check(In_RstOut = '0', "In_RstOut not de-asserted after Out_RstIn");
-            check(Out_RstOut = '0', "Out_RstOut not de-asserted after Out_RstIn");
-            check(In_RstOut'last_event < 1 us, "In_RstOut not asserted after Out_RstIn");
-            check(Out_RstOut'last_event < 1 us, "Out_RstOut not asserted after Out_RstIn");
 
-        -- *** Data Tests ***
-        elsif run("Transfer") then
+            -- Check if both sides exited reset
+            check(In_RstOut = '0', "In_RstOut not de-asserted");
+            check(Out_RstOut = '0', "Out_RstOut not de-asserted");
 
-            wait until rising_edge(In_Clk);
-            In_Data <= X"AB";
-            In_Valid  <= '1';
-            wait until rising_edge(In_Clk);
-            In_Data <= X"00";
-            In_Valid  <= '0';
-            wait until rising_edge(Out_Clk) and Out_Valid = '1';
-            check_equal(Out_Data, 16#AB#, "Received wrong value 1");
-            CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 1");
+            -- *** Reset Tests ***        
+            if run("Reset") then
+            
+                -- Check if RstA is propagated to both sides
+                PulseSig(In_RstIn, In_Clk);
+                wait for 1 us;
+                check(In_RstOut = '0', "In_RstOut not de-asserted after In_RstIn");
+                check(Out_RstOut = '0', "Out_RstOut not de-asserted after In_RstIn");
+                check(In_RstOut'last_event < 1 us, "In_RstOut not asserted after In_RstIn");
+                check(Out_RstOut'last_event < 1 us, "Out_RstOut not asserted afterIn_RstIn");
 
-            wait until rising_edge(In_Clk);
-            In_Data <= X"CD";
-            In_Valid  <= '1';
-            wait until rising_edge(In_Clk);
-            In_Data <= X"00";
-            In_Valid  <= '0';
-            wait until rising_edge(Out_Clk) and Out_Valid = '1';
-            check_equal(Out_Data, 16#CD#, "Received wrong value 2");
-            CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 2");
+                -- Check if RstB is propagated to both sides
+                PulseSig(Out_RstIn, Out_Clk);
+                wait for 1 us;
+                check(In_RstOut = '0', "In_RstOut not de-asserted after Out_RstIn");
+                check(Out_RstOut = '0', "Out_RstOut not de-asserted after Out_RstIn");
+                check(In_RstOut'last_event < 1 us, "In_RstOut not asserted after Out_RstIn");
+                check(Out_RstOut'last_event < 1 us, "Out_RstOut not asserted after Out_RstIn");
 
-        elsif run("MaxRate") then            
-            for i in 1 to 10 loop  
-                wait until rising_edge(In_Clk);   
-                stdlv := std_logic_vector(to_unsigned(i, In_Data'length));       
-                In_Data <= stdlv;
-                In_Valid  <= '1';
-                check_axi_stream(net, slave_axi_stream, stdlv, blocking => false);                
+            -- *** Data Tests ***
+            elsif run("Transfer") then
+
                 wait until rising_edge(In_Clk);
+                In_Data <= X"AB";
+                In_Valid  <= '1';
+                wait until rising_edge(In_Clk);
+                In_Data <= X"00";
                 In_Valid  <= '0';
-                wait for MaxRatePeriod_c-ClkOut_Period_c;
-            end loop;
-            wait_until_idle(net, as_sync(slave_axi_stream));
-        end if;        
+                wait until rising_edge(Out_Clk) and Out_Valid = '1';
+                check_equal(Out_Data, 16#AB#, "Received wrong value 1");
+                CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 1");
 
+                wait until rising_edge(In_Clk);
+                In_Data <= X"CD";
+                In_Valid  <= '1';
+                wait until rising_edge(In_Clk);
+                In_Data <= X"00";
+                In_Valid  <= '0';
+                wait until rising_edge(Out_Clk) and Out_Valid = '1';
+                check_equal(Out_Data, 16#CD#, "Received wrong value 2");
+                CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 2");
+
+            elsif run("MaxRate") then            
+                for i in 1 to 10 loop  
+                    wait until rising_edge(In_Clk);   
+                    stdlv := std_logic_vector(to_unsigned(i, In_Data'length));       
+                    In_Data <= stdlv;
+                    In_Valid  <= '1';
+                    check_axi_stream(net, slave_axi_stream, stdlv, blocking => false);                
+                    wait until rising_edge(In_Clk);
+                    In_Valid  <= '0';
+                    wait for MaxRatePeriod_c-ClkOut_Period_c;
+                end loop;
+                wait_until_idle(net, as_sync(slave_axi_stream));
+            end if;        
+        end loop;
         -- TB done
         test_runner_cleanup(runner);
     end process;

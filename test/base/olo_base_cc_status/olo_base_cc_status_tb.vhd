@@ -24,6 +24,7 @@ library olo;
 ------------------------------------------------------------------------------
 -- Entity
 ------------------------------------------------------------------------------
+-- vunit: run_all_in_same_sim
 entity olo_base_cc_status_tb is
     generic (
         runner_cfg     : string;
@@ -102,91 +103,95 @@ begin
     begin
         test_runner_setup(runner, runner_cfg);
 
-        -- Reset
-        In_RstIn <= '1';
-        Out_RstIn <= '1';
-        wait for 1 us;
+        while test_suite loop
 
-        -- Check if both sides are in reset
-        check(In_RstOut = '1', "In_RstOut not asserted");
-        check(Out_RstOut = '1', "Out_RstOut not asserted");
-
-        -- Remove reset
-        wait until rising_edge(In_Clk);
-        In_RstIn <= '0';
-        wait until rising_edge(Out_Clk);
-        Out_RstIn <= '0';
-        wait for 1 us;
-
-        -- Check if both sides exited reset
-        check(In_RstOut = '0', "In_RstOut not de-asserted");
-        check(Out_RstOut = '0', "Out_RstOut not de-asserted");
-
-        -- *** Reset Tests ***
-        if run("Reset") then
-
-            -- Check if RstA is propagated to both sides
-            wait until rising_edge(In_Clk);
+            -- Reset
             In_RstIn <= '1';
+            Out_RstIn <= '1';
+            wait for 1 us;
+
+            -- Check if both sides are in reset
+            check(In_RstOut = '1', "In_RstOut not asserted");
+            check(Out_RstOut = '1', "Out_RstOut not asserted");
+
+            -- Remove reset
             wait until rising_edge(In_Clk);
             In_RstIn <= '0';
-            wait for 1 us;
-            check(In_RstOut = '0', "In_RstOut not de-asserted after In_RstIn");
-            check(Out_RstOut = '0', "Out_RstOut not de-asserted after In_RstIn");
-            check(In_RstOut'last_event < 1 us, "In_RstOut not asserted after In_RstIn");
-            check(Out_RstOut'last_event < 1 us, "Out_RstOut not asserted after In_RstIn");
-
-            -- Check if RstB is propagated to both sides
-            wait until rising_edge(Out_Clk);
-            Out_RstIn <= '1';
             wait until rising_edge(Out_Clk);
             Out_RstIn <= '0';
             wait for 1 us;
-            check(In_RstOut = '0', "In_RstOut not de-asserted after Out_RstIn");
-            check(Out_RstOut = '0', "Out_RstOut not de-asserted after Out_RstIn");
-            check(In_RstOut'last_event < 1 us, "In_RstOut not asserted after Out_RstIn");
-            check(Out_RstOut'last_event < 1 us, "Out_RstOut not asserted after Out_RstIn");
 
-        -- *** Data Tests ***
-        elsif run("Data") then
-            -- data transfer after resetting both
-            In_RstIn <= '1';
-            Out_RstIn <= '1';
-            wait for Time_Rst_Assert_c;
-            In_RstIn <= '0';
-            Out_RstIn <= '0';
-            wait for Time_Rst_Recover_c;
-            In_Data  <= X"AB";
-            WaitForValueStdlv(Out_Data, X"AB", Time_MaxDel_c, "Data not transferred 1");
-            In_Data  <= X"CD";
-            WaitForValueStdlv(Out_Data, X"CD", Time_MaxDel_c, "Data not transferred 2");
+            -- Check if both sides exited reset
+            check(In_RstOut = '0', "In_RstOut not de-asserted");
+            check(Out_RstOut = '0', "Out_RstOut not de-asserted");            
 
-            -- data transfer with A longer in reset
-            In_RstIn <= '1';
-            Out_RstIn <= '1';
-            wait for Time_Rst_Assert_c;
-            Out_RstIn <= '0';
-            wait for 100 * SlowerClock_Period_c;
-            In_RstIn <= '0';
-            wait for Time_Rst_Recover_c;
-            In_Data  <= X"12";
-            WaitForValueStdlv(Out_Data, X"12", Time_MaxDel_c, "Data not transferred 3");
-            In_Data  <= X"34";
-            WaitForValueStdlv(Out_Data, X"34", Time_MaxDel_c, "Data not transferred 4");
+            -- *** Reset Tests ***
+            if run("Reset") then
 
-            -- data transfer with B longer in reset
-            In_RstIn <= '1';
-            Out_RstIn <= '1';
-            wait for Time_Rst_Assert_c;
-            In_RstIn <= '0';
-            wait for 100 * SlowerClock_Period_c;
-            Out_RstIn <= '0';
-            wait for Time_Rst_Recover_c;
-            In_Data  <= X"56";
-            WaitForValueStdlv(Out_Data, X"56", Time_MaxDel_c, "Data not transferred 5");
-            In_Data  <= X"78";
-            WaitForValueStdlv(Out_Data, X"78", Time_MaxDel_c, "Data not transferred 6");
-        end if;
+                -- Check if RstA is propagated to both sides
+                wait until rising_edge(In_Clk);
+                In_RstIn <= '1';
+                wait until rising_edge(In_Clk);
+                In_RstIn <= '0';
+                wait for 1 us;
+                check(In_RstOut = '0', "In_RstOut not de-asserted after In_RstIn");
+                check(Out_RstOut = '0', "Out_RstOut not de-asserted after In_RstIn");
+                check(In_RstOut'last_event < 1 us, "In_RstOut not asserted after In_RstIn");
+                check(Out_RstOut'last_event < 1 us, "Out_RstOut not asserted after In_RstIn");
+
+                -- Check if RstB is propagated to both sides
+                wait until rising_edge(Out_Clk);
+                Out_RstIn <= '1';
+                wait until rising_edge(Out_Clk);
+                Out_RstIn <= '0';
+                wait for 1 us;
+                check(In_RstOut = '0', "In_RstOut not de-asserted after Out_RstIn");
+                check(Out_RstOut = '0', "Out_RstOut not de-asserted after Out_RstIn");
+                check(In_RstOut'last_event < 1 us, "In_RstOut not asserted after Out_RstIn");
+                check(Out_RstOut'last_event < 1 us, "Out_RstOut not asserted after Out_RstIn");
+
+            -- *** Data Tests ***
+            elsif run("Data") then
+                -- data transfer after resetting both
+                In_RstIn <= '1';
+                Out_RstIn <= '1';
+                wait for Time_Rst_Assert_c;
+                In_RstIn <= '0';
+                Out_RstIn <= '0';
+                wait for Time_Rst_Recover_c;
+                In_Data  <= X"AB";
+                WaitForValueStdlv(Out_Data, X"AB", Time_MaxDel_c, "Data not transferred 1");
+                In_Data  <= X"CD";
+                WaitForValueStdlv(Out_Data, X"CD", Time_MaxDel_c, "Data not transferred 2");
+
+                -- data transfer with A longer in reset
+                In_RstIn <= '1';
+                Out_RstIn <= '1';
+                wait for Time_Rst_Assert_c;
+                Out_RstIn <= '0';
+                wait for 100 * SlowerClock_Period_c;
+                In_RstIn <= '0';
+                wait for Time_Rst_Recover_c;
+                In_Data  <= X"12";
+                WaitForValueStdlv(Out_Data, X"12", Time_MaxDel_c, "Data not transferred 3");
+                In_Data  <= X"34";
+                WaitForValueStdlv(Out_Data, X"34", Time_MaxDel_c, "Data not transferred 4");
+
+                -- data transfer with B longer in reset
+                In_RstIn <= '1';
+                Out_RstIn <= '1';
+                wait for Time_Rst_Assert_c;
+                In_RstIn <= '0';
+                wait for 100 * SlowerClock_Period_c;
+                Out_RstIn <= '0';
+                wait for Time_Rst_Recover_c;
+                In_Data  <= X"56";
+                WaitForValueStdlv(Out_Data, X"56", Time_MaxDel_c, "Data not transferred 5");
+                In_Data  <= X"78";
+                WaitForValueStdlv(Out_Data, X"78", Time_MaxDel_c, "Data not transferred 6");
+            end if;
+
+        end loop;
 
         -- TB done
         test_runner_cleanup(runner);

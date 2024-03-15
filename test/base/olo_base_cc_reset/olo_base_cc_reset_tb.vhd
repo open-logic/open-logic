@@ -23,6 +23,7 @@ library olo;
 ------------------------------------------------------------------------------
 -- Entity
 ------------------------------------------------------------------------------
+-- vunit: run_all_in_same_sim
 entity olo_base_cc_reset_tb is
     generic (
         runner_cfg     : string;
@@ -104,106 +105,109 @@ begin
         check(LastRstA > 0 ns, "reset A not detected");
         check(LastRstB > 0 ns, "reset B not detected");
 
-        -- Check if singla RST A  pulse is distribued to both sides and held
-        if run("RstA-Distribution") then
-            -- long pulse
-            wait until rising_edge(A_Clk);
-            A_RstIn <= '1';
-            wait for PropagationTime_c;
-            check_equal(B_RstOut, '1', "assert B 2.1");
-            check_equal(A_RstOut, '1', "assert A 2.1");
-            wait for PropagationTime_c;
-            CheckNoActivityStdl(B_RstOut, PropagationTime_c, "unexpected activity B 2.1");
-            CheckNoActivityStdl(A_RstOut, PropagationTime_c, "unexpected activity A 2.1");
-            wait until rising_edge(A_Clk);
-            A_RstIn <= '0';
-            wait for RemovalTime_c;
-            check_equal(B_RstOut, '0', "deassert B 2.1");
-            check_equal(A_RstOut, '0', "deassert A 2.1");
+        while test_suite loop
 
-            -- short pulse
-            wait for 1 us;
-            PulseSig(A_RstIn, A_Clk);
-            wait for PropagationTime_c;
-            check(LastRstA > now-PropagationTime_c-0.5 us, "reset A not detected 2.2");
-            check(LastRstB > now-PropagationTime_c-0.5 us, "reset B not detected 2.2");
-            wait for RemovalTime_c;
-            check_equal(B_RstOut, '0', "deassert B 2.2");
-            check_equal(A_RstOut, '0', "deassert A 2.2");
-
-        -- Check if singla RST B  pulse is distribued to both sides and held
-        elsif run("RstB-Distribution") then
-            -- long pulse
-            wait until rising_edge(B_Clk);
-            B_RstIn <= '1';
-            wait for PropagationTime_c;
-            check_equal(B_RstOut, '1', "assert B 3.1");
-            check_equal(A_RstOut, '1', "assert A 3.1");
-            wait for PropagationTime_c;
-            CheckNoActivityStdl(B_RstOut, PropagationTime_c, "unexpected activity B 3.1");
-            CheckNoActivityStdl(A_RstOut, PropagationTime_c, "unexpected activity A 3.1");
-            wait until rising_edge(B_Clk);
-            B_RstIn <= '0';
-            wait for RemovalTime_c;
-            check_equal(B_RstOut, '0', "deassert B 3.1");
-            check_equal(A_RstOut, '0', "deassert A 3.1");
-            
-            -- short pulse
-            wait for 1 us;
-            PulseSig(B_RstIn, B_Clk);
-            wait for PropagationTime_c;
-            check(LastRstA > now-PropagationTime_c-0.5 us, "reset A not detected 3.2");
-            check(LastRstB > now-PropagationTime_c-0.5 us, "reset B not detected 3.2");
-            wait for RemovalTime_c;
-            check_equal(B_RstOut, '0', "deassert B 3.2");
-            check_equal(A_RstOut, '0', "deassert A 3.2");
-
-
-        -- Check ignore glitches RST B
-        elsif run("RstB-GlitchIgnore") then
-            wait until rising_edge(B_Clk);
-            wait for ClkB_Period_c/10;
-            B_RstIn <= '1';
-            wait for ClkB_Period_c/2;
-            B_RstIn <= '0';
-            wait for RemovalTime_c;
-            check(B_RstOut'last_event >= RemovalTime_c, "RstB glitch affected RstB");
-            check(A_RstOut'last_event >= RemovalTime_c, "RstB glitch affected RstA");
-
-        -- Check ignore glitches RST A
-        elsif run("RstA-GlitchIgnore") then
-            wait until rising_edge(A_Clk);
-            wait for ClkA_Period_c/10;
-            A_RstIn <= '1';
-            wait for ClkA_Period_c/2;
-            A_RstIn <= '0';
-            wait for RemovalTime_c;
-            check(B_RstOut'last_event >= RemovalTime_c, "RstA glitch affected RstB");
-            check(A_RstOut'last_event >= RemovalTime_c, "RstA glitch affected RstA");
-
-        -- Check hold both
-        elsif run("HoldBoth") then
-            wait until rising_edge(B_Clk);
-            B_RstIn <= '1';
-            wait until rising_edge(A_Clk);
-            A_RstIn <= '1';
-            wait until rising_edge(A_Clk);
-            WaitForValueStdl(A_RstOut, '1', PropagationTime_c, "assert A 6"); -- Wait until both resets asserted
-            WaitForValueStdl(B_RstOut, '1', PropagationTime_c, "assert B 6"); -- Wait until both resets asserted
-            for i in 0 to 9 loop
+            -- Check if singla RST A  pulse is distribued to both sides and held
+            if run("RstA-Distribution") then
+                -- long pulse
                 wait until rising_edge(A_Clk);
-                check_equal(A_RstOut, '1', "hold A 6");
+                A_RstIn <= '1';
+                wait for PropagationTime_c;
+                check_equal(B_RstOut, '1', "assert B 2.1");
+                check_equal(A_RstOut, '1', "assert A 2.1");
+                wait for PropagationTime_c;
+                CheckNoActivityStdl(B_RstOut, PropagationTime_c, "unexpected activity B 2.1");
+                CheckNoActivityStdl(A_RstOut, PropagationTime_c, "unexpected activity A 2.1");
+                wait until rising_edge(A_Clk);
+                A_RstIn <= '0';
+                wait for RemovalTime_c;
+                check_equal(B_RstOut, '0', "deassert B 2.1");
+                check_equal(A_RstOut, '0', "deassert A 2.1");
+
+                -- short pulse
+                wait for 1 us;
+                PulseSig(A_RstIn, A_Clk);
+                wait for PropagationTime_c;
+                check(LastRstA > now-PropagationTime_c-0.5 us, "reset A not detected 2.2");
+                check(LastRstB > now-PropagationTime_c-0.5 us, "reset B not detected 2.2");
+                wait for RemovalTime_c;
+                check_equal(B_RstOut, '0', "deassert B 2.2");
+                check_equal(A_RstOut, '0', "deassert A 2.2");
+
+            -- Check if singla RST B  pulse is distribued to both sides and held
+            elsif run("RstB-Distribution") then
+                -- long pulse
                 wait until rising_edge(B_Clk);
-                check_equal(B_RstOut, '1', "hold B 6");
-            end loop;
-            wait until rising_edge(B_Clk);
-            B_RstIn <= '0';
-            wait until rising_edge(A_Clk);
-            A_RstIn <= '0';
-            wait for RemovalTime_c;
-            check_equal(B_RstOut, '0', "deassert B 6");
-            check_equal(A_RstOut, '0', "deassert A 6"); 
-        end if; 
+                B_RstIn <= '1';
+                wait for PropagationTime_c;
+                check_equal(B_RstOut, '1', "assert B 3.1");
+                check_equal(A_RstOut, '1', "assert A 3.1");
+                wait for PropagationTime_c;
+                CheckNoActivityStdl(B_RstOut, PropagationTime_c, "unexpected activity B 3.1");
+                CheckNoActivityStdl(A_RstOut, PropagationTime_c, "unexpected activity A 3.1");
+                wait until rising_edge(B_Clk);
+                B_RstIn <= '0';
+                wait for RemovalTime_c;
+                check_equal(B_RstOut, '0', "deassert B 3.1");
+                check_equal(A_RstOut, '0', "deassert A 3.1");
+                
+                -- short pulse
+                wait for 1 us;
+                PulseSig(B_RstIn, B_Clk);
+                wait for PropagationTime_c;
+                check(LastRstA > now-PropagationTime_c-0.5 us, "reset A not detected 3.2");
+                check(LastRstB > now-PropagationTime_c-0.5 us, "reset B not detected 3.2");
+                wait for RemovalTime_c;
+                check_equal(B_RstOut, '0', "deassert B 3.2");
+                check_equal(A_RstOut, '0', "deassert A 3.2");
+
+
+            -- Check ignore glitches RST B
+            elsif run("RstB-GlitchIgnore") then
+                wait until rising_edge(B_Clk);
+                wait for ClkB_Period_c/10;
+                B_RstIn <= '1';
+                wait for ClkB_Period_c/2;
+                B_RstIn <= '0';
+                wait for RemovalTime_c;
+                check(B_RstOut'last_event >= RemovalTime_c, "RstB glitch affected RstB");
+                check(A_RstOut'last_event >= RemovalTime_c, "RstB glitch affected RstA");
+
+            -- Check ignore glitches RST A
+            elsif run("RstA-GlitchIgnore") then
+                wait until rising_edge(A_Clk);
+                wait for ClkA_Period_c/10;
+                A_RstIn <= '1';
+                wait for ClkA_Period_c/2;
+                A_RstIn <= '0';
+                wait for RemovalTime_c;
+                check(B_RstOut'last_event >= RemovalTime_c, "RstA glitch affected RstB");
+                check(A_RstOut'last_event >= RemovalTime_c, "RstA glitch affected RstA");
+
+            -- Check hold both
+            elsif run("HoldBoth") then
+                wait until rising_edge(B_Clk);
+                B_RstIn <= '1';
+                wait until rising_edge(A_Clk);
+                A_RstIn <= '1';
+                wait until rising_edge(A_Clk);
+                WaitForValueStdl(A_RstOut, '1', PropagationTime_c, "assert A 6"); -- Wait until both resets asserted
+                WaitForValueStdl(B_RstOut, '1', PropagationTime_c, "assert B 6"); -- Wait until both resets asserted
+                for i in 0 to 9 loop
+                    wait until rising_edge(A_Clk);
+                    check_equal(A_RstOut, '1', "hold A 6");
+                    wait until rising_edge(B_Clk);
+                    check_equal(B_RstOut, '1', "hold B 6");
+                end loop;
+                wait until rising_edge(B_Clk);
+                B_RstIn <= '0';
+                wait until rising_edge(A_Clk);
+                A_RstIn <= '0';
+                wait for RemovalTime_c;
+                check_equal(B_RstOut, '0', "deassert B 6");
+                check_equal(A_RstOut, '0', "deassert A 6"); 
+            end if; 
+        end loop;
 
         -- TB done
         test_runner_cleanup(runner);
