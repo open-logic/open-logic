@@ -8,7 +8,16 @@ Note that components are split into categories.
 
 ## base
 
-### Clock Crossings (*olo_base_cc_<...>*)
+### Packages (olo_base_pkg_\<...\>)
+
+Packages with type declarations and functions used in *Open Logic* internally or on its interfaces. 
+
+| Package                                            | Description                                                |
+| -------------------------------------------------- | ---------------------------------------------------------- |
+| [olo_base_pkg_array](./base/olo_base_pkg_array.md) | Array type definitions (e.g. arrays of *std_logic_vector*) |
+| [olo_base_pkg_math](./base/olo_base_pkg_math.md)   | Mathematic functions (e.g. *log2*)                         |
+
+### Clock Crossings (*olo_base_cc_\<...\>*)
 
 Clock crossings are a key topic and they all follow the same [clock crossing principles](./base/clock_crossing_principles.md)
 
@@ -19,6 +28,14 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | [olo_base_cc_pulse](./base/olo_base_cc_pulse.md) | Transfer single-cycle pulses from one clock domain to another clock domain |
 | [olo_base_cc_simple](./base/olo_base_cc_simple.md)      | Transfer selectively valid data from one clock domain to another clock domain (data/valid pair) |
 | [olo_base_cc_status](./base/olo_base_cc_status.md)      | Transfer status and configuration information from one clock domain to another clock domain. The update rate is relatively low but consistency is guaranteed |
+
+### RAM Implementations (olo_base_ram_\<...\>)
+
+| Entity                                         | Description          |
+| ---------------------------------------------- | -------------------- |
+| [olo_base_ram_sp](./base/olo_base_ram_sp.md)   | Single port RAM      |
+| [olo_base_ram_sdp](./base/olo_base_ram_sdp.md) | Simple dual-port RAM |
+| [olo_base_ram_tdp](./base/olo_base_ram_tdp.md) | True dual-port RAM   |
 
 ## axi
 
