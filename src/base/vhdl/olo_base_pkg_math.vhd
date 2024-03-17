@@ -31,7 +31,7 @@ package olo_base_pkg_math is
 
     function log2ceil(arg : in natural) return natural;
 
-    function isLog2(arg : in natural) return boolean;
+    function isPower2(arg : in natural) return boolean;
 
     function max(a : in integer;
                  b : in integer) return integer;
@@ -165,8 +165,8 @@ package body olo_base_pkg_math is
         return log2(arg * 2 - 1);
     end function;
 
-    -- *** isLog2 ***
-    function isLog2(arg : in natural) return boolean is
+    -- *** isPower2 ***
+    function isPower2(arg : in natural) return boolean is
     begin
         if log2(arg) = log2ceil(arg) then
             return true;

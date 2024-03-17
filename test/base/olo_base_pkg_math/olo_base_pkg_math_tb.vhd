@@ -67,11 +67,11 @@ begin
                 check_equal(log2ceil(1), 0, "log2ceil(1) wrong");   
                 check_equal(log2ceil(0), 0, "log2ceil(1) wrong");    -- special case, returns zero to avoid errors when calculating bits for zero-lenth arrays
         
-            elsif run("islog2") then
-                check_equal(islog2(8), true,  "islog2(8) wrong");
-                check_equal(islog2(5), false, "islog2(5) wrong");
-                check_equal(islog2(2), true,  "islog2(2) wrong");
-                check_equal(islog2(1), true, "islog2(1) wrong");     
+            elsif run("isPower2") then
+                check_equal(isPower2(8), true,  "islog2(8) wrong");
+                check_equal(isPower2(5), false, "islog2(5) wrong");
+                check_equal(isPower2(2), true,  "islog2(2) wrong");
+                check_equal(isPower2(1), true, "islog2(1) wrong");     
         
             elsif run("max-integer") then
                 check_equal(max(3,4), 4,    "max(3,4) wrong"); 
