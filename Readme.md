@@ -22,6 +22,14 @@ Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 * [interface](./doc/EntityList#interface)  - any logic related to device external interfaces 
   * requires: *base*
 
+It's suggested that you compile ALL files of the areas you need (plus their dependencies) into one VHDL library. You are free to choose any library name and you are also free to use the same single library for *Open Logic* files and user-code.
+
+## Detailed Documentation
+
+* [Entity List](./doc/EntityList.md)
+* [Coding Conventions](./doc/Conventions.md)
+* [How To...](./doc/HowTo.md)
+
 ## Project Philosophy
 
 *Open Logic* is not the first open source VHDL library - so you might ask yourself what makes it different and why you should use this one. The project follows the philosophy below - the decision whether this matches what you are looking for is yours.
@@ -78,65 +86,3 @@ I decided to create *Open Logic* instead of more actively working on the PSI lib
 - [ ] Build reference designs and training materials
 
 New functionality may be added at any time (also between above steps).
-
-## How To ...
-
-### ... Run Simulations
-
-If you want to run simulations on your PC, you need the following prerequisites:
-
-1. *Python 3* must be installed
-2. VUnit must be installed: `pip3 install vunit_hdl`
-3. Simulator must be installed and added to the *PATH* environment variable  
-   1. Default choice: [GHDL](https://github.com/ghdl/ghdl/releases)
-   2. Alternative (used for code-coverage analysis): Questasim. 
-
-To run the simulations, navigate to *<root>/sim* and execute the following command:
-
-```
-python3 run.py            # For GHDL
-python3 run.py --modelsim # For Modelsim/QuestaSim
-```
-
-You should now see an output indicating that all tests pass.
-
-![simulation](./doc/general/Simulation.png)
-
-
-
-### ... Analyze Coverage
-
-To analyze code-coverage, the Questasim simulator must be used and coverage must be enabled. After simulations with coverage enabled are ran, the coverage can be reported nicely formated in the console by runnign the corresponding python script.
-
-```
-python3 run.py --modelsim --coverage
-python3 ./AnalyzeCoverage.py 
-```
-
-You should now see a clean summary of the statement coverage:
-
-![simulation](./doc/general/Coverage.png)
-
-
-
-### ... Update Badges
-
-The issue badges are updated every night using a GitHub workflow.
-
-For the code coverage badges, the situation is a bit more complicated because Questasim is required to produce coverage and Questasim is non-free and licensed to specific PCs.
-
-In order to update coverage badges, a PC with the following prerequisites is required:
-
-1. Questasim must be installed (including license setup)
-2. A credential JSON file giving access to the google cloud storage folder below is required and the path to it must be stored in the environment variable *GCS_FILE*: <br>https://storage.googleapis.com/open-logic-badges
-   The google cloud storage is maintained by [obruendl](oliver.bruendler@gmx.ch).
-
-To update the coverage badges, simply execute the following commands:
-
-```
-python3 run.py --modelsim --coverage
-python3 ./AnalyzeCoverage.py --badges
-```
-
-
-

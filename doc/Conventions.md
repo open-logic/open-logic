@@ -1,6 +1,6 @@
-<img src="./doc/Logo.png" alt="Logo" width="400">
+<img src="../doc/Logo.png" alt="Logo" width="400">
 
-[Back to **Readme**](./Readme.md)
+[Back to **Readme**](../Readme.md)
 
 # Open Logic - Coding Conventions
 
@@ -8,9 +8,11 @@
 
 ### Entities
 
-All entities are named in the form *olo\_\<area\>\_\<function\>* where *area* is according to the definition in this [Readme.md](./Readme.md) and *function* describes the functionality of the entity.
+All entities are named in the form *olo\_\<area\>\_\<function\>* where *area* is according to the definition in this [Readme.md](../Readme.md) and *function* describes the functionality of the entity.
 
 Example: An asynchronous FIFO (*fifo_async*) in the *base* area would be named *olo_base_fifo_async*.
+
+The naming convention is important to avoid name-clashes when compiling many *Open Logic* files into the same VHDL library (where also user-code may be compiled into).
 
 ### Ports
 
