@@ -22,22 +22,22 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 
 ## Generics
 
-| Name    | type     | Description                             |
-| :------ | :------- | :-------------------------------------- |
-| Width_g | positive | Width of the data-signal to clock-cross |
+| Name    | Type     | Default | Description                             |
+| :------ | :------- | ------- | :-------------------------------------- |
+| Width_g | positive | -       | Width of the data-signal to clock-cross |
 
 ## Interfaces
 
-| Name       | In/Out | Length    | Description                                                  |
-| :--------- | :----- | :-------- | :----------------------------------------------------------- |
-| In_Clk     | in     | 1         | Source clock                                                 |
-| In_RstIn   | in     | 1         | Reset input (high-active, synchronous to *In_Clk*)           |
-| In_RstOut  | out    | 1         | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *In_Clk*) |
-| In_Data    | in     | *Width_g* | Input data (synchronous to *In_Clk*)                         |
-| Out_Clk    | in     | 1         | Destination clock                                            |
-| Out_RstIn  | in     | 1         | Reset input (high-active, synchronous to *Out_Clk*)          |
-| Out_RstOut | out    | 1         | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *Out_Clk*) |
-| Out_Data   | out    | *Width_g* | Output data (synchronous to *Out_Clk*)                       |
+| Name       | In/Out | Length    | Default | Description                                                  |
+| :--------- | :----- | :-------- | ------- | :----------------------------------------------------------- |
+| In_Clk     | in     | 1         | -       | Source clock                                                 |
+| In_RstIn   | in     | 1         | '0'     | Reset input (high-active, synchronous to *In_Clk*)           |
+| In_RstOut  | out    | 1         | -       | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *In_Clk*) |
+| In_Data    | in     | *Width_g* | -       | Input data (synchronous to *In_Clk*)                         |
+| Out_Clk    | in     | 1         | -       | Destination clock                                            |
+| Out_RstIn  | in     | 1         | '0'     | Reset input (high-active, synchronous to *Out_Clk*)          |
+| Out_RstOut | out    | 1         | -       | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *Out_Clk*) |
+| Out_Data   | out    | *Width_g* | -       | Output data (synchronous to *Out_Clk*)                       |
 
 ## Architecture
 

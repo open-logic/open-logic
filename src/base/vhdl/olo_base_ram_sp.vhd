@@ -27,8 +27,8 @@ library work;
 ------------------------------------------------------------------------------
 entity olo_base_ram_sp is
     generic (
-        Depth_g         : positive  := 1024;                                         
-        Width_g         : positive  := 32;   
+        Depth_g         : positive;                                         
+        Width_g         : positive;   
         RdLatency_g     : positive  := 1;     
         RamStyle_g      : string    := "auto";   -- intel "M4K", "M9K", "M20K", "M144K", or "MLAB" - amd block, distributed, ultra, auto                                                  
         RamBehavior_g   : string    := "RBW";

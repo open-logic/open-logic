@@ -19,20 +19,20 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 
 ## Generics
 
-| Name    | type     | Description                                             |
-| :------ | :------- | :------------------------------------------------------ |
-| Width_g | positive | Number of data bits to implement the clock crossing for |
+| Name    | Type     | Default | Description                                             |
+| :------ | :------- | ------- | :------------------------------------------------------ |
+| Width_g | positive | 1       | Number of data bits to implement the clock crossing for |
 
 ## Interfaces
 
-| Name     | In/Out | Length    | Description                                                  |
-| :------- | :----- | :-------- | :----------------------------------------------------------- |
-| In_Clk   | in     | 1         | Source clock                                                 |
-| In_Rst   | in     | 1         | Reset input (high-active, synchronous to *In_Clk*)           |
-| In_Data  | in     | *Width_g* | Vector of independent input bits (synchronous to *In_Clk*)   |
-| Out_Clk  | in     | 1         | Destination clock                                            |
-| Out_Rst  | in     | 1         | Reset input (high-active, synchronous to *Out_Clk*)          |
-| Out_Data | out    | *Width_g* | Vector of independent output bits (synchronous to *Out_Clk*) |
+| Name     | In/Out | Length    | Default | Description                                                  |
+| :------- | :----- | :-------- | ------- | :----------------------------------------------------------- |
+| In_Clk   | in     | 1         | -       | Source clock                                                 |
+| In_Rst   | in     | 1         | '0'     | Reset input (high-active, synchronous to *In_Clk*)           |
+| In_Data  | in     | *Width_g* | -       | Vector of independent input bits (synchronous to *In_Clk*)   |
+| Out_Clk  | in     | 1         | -       | Destination clock                                            |
+| Out_Rst  | in     | 1         | '0'     | Reset input (high-active, synchronous to *Out_Clk*)          |
+| Out_Data | out    | *Width_g* | -       | Vector of independent output bits (synchronous to *Out_Clk*) |
 
 ## Architecture
 
