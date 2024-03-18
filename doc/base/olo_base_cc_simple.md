@@ -30,14 +30,14 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 | :--------- | :----- | :-------- | ------- | :----------------------------------------------------------- |
 | In_Clk     | in     | 1         | -       | Source clock                                                 |
 | In_RstIn   | in     | 1         | '0'     | Reset input (high-active, synchronous to *In_Clk*)           |
-| In_RstOut  | out    | 1         | -       | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *In_Clk*)) |
+| In_RstOut  | out    | 1         | N/A     | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *In_Clk*)) |
 | In_Data    | in     | *Width_g* | -       | Input data (synchronous to *In_Clk*)                         |
 | In_Valid   | in     | 1         | -       | AXI4-Stream handshaking signal for *In_Data*                 |
 | Out_Clk    | in     | 1         | -       | Destination clock                                            |
 | Out_RstIn  | in     | 1         | '0'     | Reset input (high-active, synchronous to *Out_Clk*)          |
-| Out_RstOut | out    | 1         | -       | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *Out_Clk*)) |
-| Out_Data   | out    | *Width_g* | -       | Output data (synchronous to *Out_Clk*)                       |
-| Out_Valid  | out    | 1         | -       | AXI4-Stream handshaking signal for *Out_Data*                |
+| Out_RstOut | out    | 1         | N/A     | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *Out_Clk*)) |
+| Out_Data   | out    | *Width_g* | N/A     | Output data (synchronous to *Out_Clk*)                       |
+| Out_Valid  | out    | 1         | N/A     | AXI4-Stream handshaking signal for *Out_Data*                |
 
 ## Architecture
 

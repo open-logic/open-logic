@@ -32,7 +32,7 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 | In_Data  | in     | *Width_g* | -       | Vector of independent input bits (synchronous to *In_Clk*)   |
 | Out_Clk  | in     | 1         | -       | Destination clock                                            |
 | Out_Rst  | in     | 1         | '0'     | Reset input (high-active, synchronous to *Out_Clk*)          |
-| Out_Data | out    | *Width_g* | -       | Vector of independent output bits (synchronous to *Out_Clk*) |
+| Out_Data | out    | *Width_g* | N/A     | Vector of independent output bits (synchronous to *Out_Clk*) |
 
 ## Architecture
 
