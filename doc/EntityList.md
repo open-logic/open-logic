@@ -37,6 +37,13 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | [olo_base_ram_sdp](./base/olo_base_ram_sdp.md) | Simple dual-port RAM |
 | [olo_base_ram_tdp](./base/olo_base_ram_tdp.md) | True dual-port RAM   |
 
+### FIFO Implementations (olo_base_fifo_\<...\>)
+
+| Entity                                               | Description                                        |
+| ---------------------------------------------------- | -------------------------------------------------- |
+| [olo_base_fifo_sync](./base/olo_base_fifo_sync.md)   | Synchronous FIFO (single clock)                    |
+| [olo_base_fifo_async](./base/olo_base_fifo_async.md) | Asynchronous FIFO (separate write and read clocks) |
+
 ## axi
 
 No content yet.

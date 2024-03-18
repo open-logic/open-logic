@@ -84,6 +84,24 @@ for tb_name in ram_tbs:
                         tb.add_config(name=f'B={RamBehav}-W={Width}-Be={Be}-Async={Async}-Lat={ReadLatency}',
                                       generics={'Width_g': Width, 'RamBehavior_g': RamBehav, 'UseByteEnable_g' : Be, "RdLatency_g" : ReadLatency, "IsAsync_g" : Async})
 
+#FIFO TBs
+fifo_tbs = ['olo_base_fifo_sync_tb']
+for tb_name in fifo_tbs:
+    tb = olo_tb.test_bench(tb_name)
+    for RamBehav in ['RBW', 'WBR']:
+        for RstState in [0, 1]:
+            for Depth in [32, 128]:
+                for AlmFull in [True, False]:
+                    for AlmEmpty in [True, False]:
+                        tb.add_config(name=f'B={RamBehav}-D={Depth}-RdyRst={RstState}-AlmF={AlmFull}-AlmE={AlmEmpty}',
+                                      generics={'RamBehavior_g': RamBehav, 'Depth_g': Depth, 'ReadyRstState_g': RstState,
+                                                "AlmFullOn_g": AlmFull, "AlmEmptyOn_g": AlmEmpty})
+
+"-galm_full_on_g=true -galm_empty_on_g=true -gdepth_g=32 -grdy_rst_state_g=1" \
+"-galm_full_on_g=true -galm_empty_on_g=true -gdepth_g=32 -grdy_rst_state_g=0" \
+"-galm_full_on_g=false -galm_empty_on_g=false -gdepth_g=128 -gram_behavior_g=RBW" \
+"-galm_full_on_g=false -galm_empty_on_g=false -gdepth_g=128 -gram_behavior_g=WBR"
+
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 

@@ -42,20 +42,20 @@ entity olo_base_fifo_sync is
           Rst           : in  std_logic;
           -- Input Data
           In_Data       : in  std_logic_vector(Width_g - 1 downto 0);
-          In_Valid      : in  std_logic;
+          In_Valid      : in  std_logic                                             := '1';
           In_Ready      : out std_logic;
+          In_Level      : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
           -- Output Data
           Out_Data      : out std_logic_vector(Width_g - 1 downto 0);
           Out_Valid     : out std_logic;
-          Out_Ready     : in  std_logic;
-          -- Input Status
+          Out_Ready     : in  std_logic                                             := '1';
+          Out_Level     : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
+          -- Status
           Full          : out std_logic; 
           AlmFull       : out std_logic;
-          InLevel       : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
-          -- Output Status
           Empty         : out std_logic; 
-          AlmEmpty      : out std_logic;
-          OutLevel      : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0)
+          AlmEmpty      : out std_logic
+          
     );
 end entity;
 
@@ -66,8 +66,8 @@ end entity;
 architecture rtl of olo_base_fifo_sync is
 
     type two_process_r is record
-        WrLevel : std_logic_vector(InLevel'range);
-        RdLevel : std_logic_vector(OutLevel'range);
+        WrLevel : std_logic_vector(In_Level'range);
+        RdLevel : std_logic_vector(Out_Level'range);
         RdUp    : std_logic;
         WrDown  : std_logic;
         WrAddr  : std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
@@ -162,8 +162,8 @@ begin
     end process;
 
     -- Synchronous Outputs
-    OutLevel <= r.RdLevel;
-    InLevel  <= r.WrLevel;
+    Out_Level <= r.RdLevel;
+    In_Level  <= r.WrLevel;
 
     p_seq : process(Clk)
     begin
