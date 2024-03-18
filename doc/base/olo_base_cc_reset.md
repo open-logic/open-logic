@@ -26,14 +26,14 @@ This entity does not have any generics.
 
 ## Interfaces
 
-| Name     | In/Out | Length | Description                                        |
-| :------- | :----- | :----- | :------------------------------------------------- |
-| A_Clk    | in     | 1      | Clock domain A clock                               |
-| A_RstIn  | in     | 1      | Reset input (high-active, synchronous to *A_Clk*)  |
-| A_RstOut | out    | 1      | Reset output (high-active, synchronous to *A_Clk*) |
-| B_Clk    | in     | 1      | Clock domain B clock                               |
-| B_RstIn  | in     | 1      | Reset input (high-active, synchronous to *B_Clk*)  |
-| B_RstOut | out    | 1      | Reset output (high-active, synchronous to *B_Clk*) |
+| Name     | In/Out | Length | Default | Description                                        |
+| :------- | :----- | :----- | ------- | :------------------------------------------------- |
+| A_Clk    | in     | 1      | -       | Clock domain A clock                               |
+| A_RstIn  | in     | 1      | '0'     | Reset input (high-active, synchronous to *A_Clk*)  |
+| A_RstOut | out    | 1      | -       | Reset output (high-active, synchronous to *A_Clk*) |
+| B_Clk    | in     | 1      | -       | Clock domain B clock                               |
+| B_RstIn  | in     | 1      | '0'     | Reset input (high-active, synchronous to *B_Clk*)  |
+| B_RstOut | out    | 1      | -       | Reset output (high-active, synchronous to *B_Clk*) |
 
 ## Architecture
 
