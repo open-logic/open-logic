@@ -106,26 +106,24 @@ begin
     begin
         test_runner_setup(runner, runner_cfg);
 
-        -- *** Reset Tests ***
-        info("Reset Tests");
-
-        -- Reset
-        In_RstIn <= '1';
-        Out_RstIn <= '1';
-        wait for MaxReactionTime_c;
-
-        -- Check if both sides are in reset
-        check(In_RstOut = '1', "In_RstOut not asserted");
-        check(Out_RstOut = '1', "Out_RstOut not asserted");
-
-        -- Remove reset
-        wait until rising_edge(In_Clk);
-        In_RstIn <= '0';
-        wait until rising_edge(Out_Clk);
-        Out_RstIn <= '0';
-        wait for MaxReactionTime_c;
-
         while test_suite loop
+
+            -- Reset
+            In_RstIn <= '1';
+            Out_RstIn <= '1';
+            wait for MaxReactionTime_c;
+
+            -- Check if both sides are in reset
+            check(In_RstOut = '1', "In_RstOut not asserted");
+            check(Out_RstOut = '1', "Out_RstOut not asserted");
+
+            -- Remove reset
+            wait until rising_edge(In_Clk);
+            In_RstIn <= '0';
+            wait until rising_edge(Out_Clk);
+            Out_RstIn <= '0';
+            wait for MaxReactionTime_c;
+
             -- *** Reset Tests ***
             if run("Reset") then
 
