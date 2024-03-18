@@ -16,9 +16,6 @@ library ieee;
 library vunit_lib;
 	context vunit_lib.vunit_context;
 
-library work;
-    use work.olo_test_activity_pkg.all;
-
 library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
