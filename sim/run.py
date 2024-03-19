@@ -85,7 +85,7 @@ for tb_name in ram_tbs:
                                       generics={'Width_g': Width, 'RamBehavior_g': RamBehav, 'UseByteEnable_g' : Be, "RdLatency_g" : ReadLatency, "IsAsync_g" : Async})
 
 #FIFO TBs
-fifo_tbs = ['olo_base_fifo_sync_tb']
+fifo_tbs = ['olo_base_fifo_sync_tb', 'olo_base_fifo_async_tb']
 for tb_name in fifo_tbs:
     tb = olo_tb.test_bench(tb_name)
     for RamBehav in ['RBW', 'WBR']:
