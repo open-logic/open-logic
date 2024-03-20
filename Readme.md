@@ -45,7 +45,7 @@ Open source HDL projects exist but they are by far not as popular as open source
 3. Indicators for open issues on every entity. In the documentation of every piece of code, you can find a badge, which informs you about the number of issues related to this piece of code and if there are *potential bugs* (orange color) or even *confirmed bugs* (red color).<br>
    ![issues](https://img.shields.io/badge/issues-0-green) ![issues](https://img.shields.io/badge/issues-2-orange) ![issues](https://img.shields.io/badge/issues-2-red)
 4. Indicator for code coverage on every entity. In the documentation of every piece of code, you can find badges stating the code coverage. <br>
-   ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_cc_bits.json?cacheSeconds=0)![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_cc_bits.json?cacheSeconds=0) <br>
+   ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_cc_bits.json?cacheSeconds=0)![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_cc_bits.json?cacheSeconds=0)  <br>
    Additionally badges in this readme state when and for which git-commit coverage was last analyzed. <br>
    ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/version.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/date.json?cacheSeconds=0)
 
