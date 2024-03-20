@@ -16,6 +16,7 @@ Packages with type declarations and functions used in *Open Logic* internally or
 | -------------------------------------------------- | ---------------------------------------------------------- |
 | [olo_base_pkg_array](./base/olo_base_pkg_array.md) | Array type definitions (e.g. arrays of *std_logic_vector*) |
 | [olo_base_pkg_math](./base/olo_base_pkg_math.md)   | Mathematic functions (e.g. *log2*)                         |
+| [olo_base_pkg_logic](./base/olo_base_pkg_logic.md) | Mathematic functions (e.g. *binaryToGray*)                 |
 
 ### Clock Crossings (*olo_base_cc_\<...\>*)
 

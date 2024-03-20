@@ -89,13 +89,14 @@ Implemented for the following \<A\> / \<T\> combinations:
 * t_abool / boolean
 * std_logic_vector / std_logic
 
-### to_uslv() / to_sslv()
+### toUslv() / toSslv() / toStdl()
 
-Convert an integer value to a signed/unsigned std_logic_vector representation of a given length.
+Convert an integer value to a signed/unsigned std_logic_vector representation of a given length or a std_logic representation.
 
 ``` 
-function to_uslv(input : integer; len   : integer) return std_logic_vector;
-function to_sslv(input : integer; len   : integer) return std_logic_vector;
+function toUslv(input : integer; len   : integer) return std_logic_vector;
+function toSslv(input : integer; len   : integer) return std_logic_vector;
+function toStdl(input : integer range 0 to 1) return std_logic;
 ```
 
 This function is implemented as pure simplification to avoid typing the very popular conversion below over and over again:
@@ -103,16 +104,17 @@ This function is implemented as pure simplification to avoid typing the very pop
 ``` 
 a := std_logic_vector(to_unsigned(someInteger, a'length));
 -- The same can now be written simpler
-a := to_uslv(someInteger, a'length);
+a := toUslv(someInteger, a'length);
 ```
 
-### from_uslv() / from_sslv()
+### fromUslv() / fromSslv() / fromStdl()
 
-Convert a signed/unsigned std_logic_vector value into integer representation.
+Convert a signed/unsigned std_logic_vector value or a std_logic value into integer representation.
 
 ```
-function from_uslv(input : std_logic_vector) return integer;
-function from_sslv(input : std_logic_vector) return integer;
+function fromUslv(input : std_logic_vector) return integer;
+function fromSslv(input : std_logic_vector) return integer;
+function fromStdl(input : std_logic) return integer;
 ```
 
 This function is implemented as pure simplification to avoid typing the very popular conversion below over and over again:
@@ -120,15 +122,15 @@ This function is implemented as pure simplification to avoid typing the very pop
 ``` 
 a := to_integer(unsigned(someStdLogicVector));
 -- The same can now be written simpler
-a := from_uslv(someStdLogicVector);
+a := fromUslv(someStdLogicVector);
 ```
 
-### from_string()
+### fromString()
 
 This function converts a string into other types. 
 
 ```
-function from_str(input : string) return <T>;
+function fromString(input : string) return <T>;
 ```
 
 The \<T\> types is is implemented for plus some examples of the strings it takes for the corresponding conversion are given below:
@@ -141,13 +143,13 @@ The \<T\> types is is implemented for plus some examples of the strings it takes
   * "1.234, -1.234e3, +5.67E-12"
   * Values separated by comma (,) and NO brackets
 
-### min_a() / max_a()
+### minArray() / maxArray()
 
 Return the minumum / maximum value out of an array.
 
 ```
-function max_a(a : in <A>) return <T>;
-function min_a(a : in <A>) return <T>;
+function maxArray(a : in <A>) return <T>;
+function minArray(a : in <A>) return <T>;
 ```
 
 Implemented for the following \<A\> / \<T\> combinations:

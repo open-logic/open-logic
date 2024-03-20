@@ -167,6 +167,23 @@ begin
                 Wr_Be <= (others => '0');
             end if;
 
+            -- No read enable
+            if run("NoRdEna") then
+                Wr_Be <= (others => '1'); 
+                Write(0, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena); -- Addr0 must be used because Check always returns to zero
+                Write(1, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);   
+                if IsAsync_g then
+                    Check(0, 5, Rd_Clk, Rd_Addr, Rd_Data, "No update with Rd_Ena = '1'");     
+                    Rd_Ena <= '0';       
+                    Check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "Unexpected Update with Rd_Ena = '0'"); 
+                else
+                    Check(0, 5, Clk, Rd_Addr, Rd_Data, "No update with Rd_Ena = '1'");
+                    Rd_Ena <= '0';  
+                    Check(1, 5, Clk, Rd_Addr, Rd_Data, "Unexpected Update with Rd_Ena = '0'");
+                end if;
+            end if;
+            Rd_Ena <= '1';  
+
             -- Check byte enables
             if run("ByteEnable") then
                 if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then        

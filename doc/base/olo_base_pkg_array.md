@@ -55,9 +55,9 @@ variable z : t_areal(0 to 1); -- An array of 2 reals
 Convert one array type into another.
 
 ```
-function t_ainteger_to_t_areal(a : in t_ainteger) return t_areal;
-function stdlv_to_t_abool(a : in std_logic_vector) return t_abool;
-function t_abool_to_stdlv(a : in t_abool) return std_logic_vector;
+function aInteger2aReal(a : in t_ainteger) return t_areal;
+function stdlv2aBool(a : in std_logic_vector) return t_abool;
+function aBool2stdlv(a : in t_abool) return std_logic_vector;
 ```
 
 For *bool* and *std_logic_vector* '1' is converted to *true* and '0' to *false*.

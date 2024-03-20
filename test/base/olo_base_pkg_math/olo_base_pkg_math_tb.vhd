@@ -165,6 +165,10 @@ begin
                 check_equal(toSslv(3, 4), std_logic_vector(to_unsigned(3, 4)),  "toSslv(3, 4)"); 
                 check_equal(toSslv(-2, 5), std_logic_vector(to_signed(-2, 5)),  "toSslv(-2, 5)"); 
 
+            elsif run("toStdl") then
+                check_equal(toStdl(1), '1', "toStdl(1)");
+                check_equal(toStdl(0), '0', "toStdl(0)");
+
             elsif run("fromUslv") then
                 stdlva := "010";
                 check_equal(fromUslv(stdlva), 2,    "fromUslv(010)"); 
@@ -173,9 +177,15 @@ begin
                 stdlva := "010";
                 check_equal(fromSslv(stdlva), 2,    "fromSslv(010)"); 
                 stdlva := "110";
-                check_equal(fromSslv(stdlva), -2,   "fromSslv(110)"); 
+                check_equal(fromSslv(stdlva), -2,   "fromSslv(110)");
+                
+            elsif run("fromStdl") then
+                check_equal(fromStdl('0'), 0, "fromStdl('0')");
+                check_equal(fromStdl('1'), 1, "fromStdl('1')");
 
             elsif run("fromString-real") then
+                check_equal(fromString("2 "), 2.0,            "fromString(2 )", 0.001e-6);
+                check_equal(fromString("2"), 2.0,             "fromString(2)", 0.001e-6);
                 check_equal(fromString("1.0"), 1.0,           "fromString(1.0)", 0.001e-6);
                 check_equal(fromString(" 1.1"), 1.1,          "fromString( 1.1)", 0.001e-6);
                 check_equal(fromString("+0.1"), +0.1,         "fromString(+0.1)", 0.001e-6);
@@ -189,6 +199,9 @@ begin
                 tra := fromString("0.1, -0.3e-2");
                 check_equal(tra(0), 0.1,           "fromString(t_areal) - 0", 0.001e-6);
                 check_equal(tra(1), -0.3e-2,       "fromString(t_areal) - 1", 0.001e-6);
+                tra := fromString("0.1,");
+                check_equal(tra(1), 0.0,       "fromString(t_areal) - 2a", 0.001e-6); -- empty last array element is interpreted as zero
+                check_equal(tra(0), 0.1,       "fromString(t_areal) - 2b", 0.001e-6); 
 
             elsif run("maxArray-int") then
                 taint := (1, -3, 4, 2);
