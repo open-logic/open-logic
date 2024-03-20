@@ -22,6 +22,10 @@ Usually signals are grouped into interfaces. For example a block may have an AXI
 
 Ports do not have any *_i* or *_o* suffixes to define their direction. the direction is visible from the entity declaration (keywords *in* and *out*). 
 
+### Functions
+
+Functions shall use *lowerCamelCase*.
+
 ### Constants
 
 Constants shall have *_c* suffixes.

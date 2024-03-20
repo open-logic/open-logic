@@ -82,7 +82,7 @@ begin
             AlmEmptyOn_g        => AlmEmptyOn_g,
             AlmEmptyLevel_g     => AlmEmptyLevel_c,
             RamBehavior_g       => RamBehavior_g,
-            ReadyRstState_g     => int_to_std_logic(ReadyRstState_g)
+            ReadyRstState_g     => toStdl(ReadyRstState_g)
         )
         port map (
             Clk       => Clk,
@@ -122,7 +122,7 @@ begin
             Rst <= '1';
             wait until rising_edge(Clk);
             -- check if ready state during reset is correct
-            check_equal(int_to_std_logic(ReadyRstState_g), In_Ready, "In_Ready reset state not according to generic");
+            check_equal(toStdl(ReadyRstState_g), In_Ready, "In_Ready reset state not according to generic");
             wait for 1 us;
         
             -- Remove reset
@@ -220,7 +220,7 @@ begin
                 -- Fill FIFO
                 for i in 0 to Depth_g - 1 loop
                     In_Valid  <= '1';
-                    In_Data <= to_uslv(i, In_Data'length);
+                    In_Data <= toUslv(i, In_Data'length);
                     wait until falling_edge(Clk);
                 end loop;
                 In_Valid  <= '0';
@@ -348,7 +348,7 @@ begin
                         -- Write data
                         for i in 0 to 4 loop
                             In_Valid  <= '1';
-                            In_Data <= to_uslv(i, In_Data'length);
+                            In_Data <= toUslv(i, In_Data'length);
                             wait until falling_edge(Clk);
                             for k in 1 to wrDel loop
                                 In_Valid  <= '0';

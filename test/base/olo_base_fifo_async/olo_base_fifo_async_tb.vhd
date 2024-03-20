@@ -91,7 +91,7 @@ begin
             AlmEmptyOn_g    => AlmEmptyOn_g,
             AlmEmptyLevel_g => AlmEmptyLevel_c,
             RamBehavior_g   => RamBehavior_g,
-            ReadyRstState_g => int_to_std_logic(ReadyRstState_g)
+            ReadyRstState_g => toStdl(ReadyRstState_g)
       )
       port map(
             -- Control Ports
@@ -143,7 +143,7 @@ begin
             -- check if ready state during reset is correct
             wait for 20 ns;                     -- reset must be transferred to other clock domain
             wait until rising_edge(In_Clk);
-            check_equal(In_Ready, int_to_std_logic(ReadyRstState_g) , "In_Ready reset state not according to generic");
+            check_equal(In_Ready, toStdl(ReadyRstState_g) , "In_Ready reset state not according to generic");
             wait for 1 us;
 
             -- Remove reset

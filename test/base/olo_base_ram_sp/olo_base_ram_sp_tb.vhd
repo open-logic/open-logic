@@ -54,13 +54,13 @@ architecture sim of olo_base_ram_sp_tb is
                         signal WrEna : out std_logic) is
     begin
         wait until rising_edge(Clk);
-        Addr <= to_uslv(address, Addr'length);
-        WrData <= to_uslv(data, WrData'length);
+        Addr <= toUslv(address, Addr'length);
+        WrData <= toUslv(data, WrData'length);
         WrEna <= '1';
         wait until rising_edge(Clk);
         WrEna <= '0';
-        Addr <= to_uslv(0, Addr'length);
-        WrData <= to_uslv(0, WrData'length);
+        Addr <= toUslv(0, Addr'length);
+        WrData <= toUslv(0, WrData'length);
     end procedure;
 
     procedure Check(    address : natural;
@@ -71,12 +71,12 @@ architecture sim of olo_base_ram_sp_tb is
                         message : string) is
     begin
         wait until rising_edge(Clk);
-        Addr <= to_uslv(address, Addr'length);
+        Addr <= toUslv(address, Addr'length);
         wait until rising_edge(Clk); -- Address sampled
         for i in 1 to RdLatency_g loop
             wait until rising_edge(Clk);
         end loop; 
-        check_equal(RdData, to_uslv(data, RdData'length), message);
+        check_equal(RdData, toUslv(data, RdData'length), message);
     end procedure;
 
     -------------------------------------------------------------------------
@@ -173,11 +173,11 @@ begin
                 Write(3, 7, Clk, Addr, WrData, WrEna);
                 wait until rising_edge(Clk);
                 WrEna <= '1';
-                Addr <= to_uslv(1, Addr'length);
-                WrData <= to_uslv(1, WrData'length);
+                Addr <= toUslv(1, Addr'length);
+                WrData <= toUslv(1, WrData'length);
                 wait until rising_edge(Clk);
-                Addr <= to_uslv(2, Addr'length);
-                WrData <= to_uslv(2, WrData'length);       
+                Addr <= toUslv(2, Addr'length);
+                WrData <= toUslv(2, WrData'length);       
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
@@ -186,8 +186,8 @@ begin
                         check_equal(RdData, 1, "rw: 1=1 wbr");    
                     end if;
                 end if;
-                Addr <= to_uslv(3, Addr'length);
-                WrData <= to_uslv(3, WrData'length);    
+                Addr <= toUslv(3, Addr'length);
+                WrData <= toUslv(3, WrData'length);    
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
@@ -202,8 +202,8 @@ begin
                         check_equal(RdData, 1, "rw: 1=1 wbr");    
                     end if;
                 end if;                    
-                Addr <= to_uslv(4, Addr'length);
-                WrData <= to_uslv(4, WrData'length);  
+                Addr <= toUslv(4, Addr'length);
+                WrData <= toUslv(4, WrData'length);  
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
@@ -218,8 +218,8 @@ begin
                         check_equal(RdData, 2, "rw: 2=2 wbr");
                     end if; 
                 end if;
-                Addr <= to_uslv(5, Addr'length);
-                WrData <= to_uslv(5, WrData'length);  
+                Addr <= toUslv(5, Addr'length);
+                WrData <= toUslv(5, WrData'length);  
                 wait until rising_edge(Clk);
                 WrEna <= '0';
                 Check(1, 1, Clk, Addr, RdData, "rw: 1=1");

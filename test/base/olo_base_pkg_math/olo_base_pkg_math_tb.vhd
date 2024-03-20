@@ -158,53 +158,53 @@ begin
                 check_equal(count(stdlva, '1'), 1,    "count -> '1''"); 
                 check_equal(count(stdlva, '0'), 2,    "count -> '0'"); 
 
-            elsif run("to_uslv") then
-                check_equal(to_uslv(3, 4), std_logic_vector(to_unsigned(3, 4)),    "to_uslv(3, 4)"); 
+            elsif run("toUslv") then
+                check_equal(toUslv(3, 4), std_logic_vector(to_unsigned(3, 4)),    "toUslv(3, 4)"); 
 
-            elsif run("to_sslv") then
-                check_equal(to_sslv(3, 4), std_logic_vector(to_unsigned(3, 4)),  "to_sslv(3, 4)"); 
-                check_equal(to_sslv(-2, 5), std_logic_vector(to_signed(-2, 5)),  "to_sslv(-2, 5)"); 
+            elsif run("toSslv") then
+                check_equal(toSslv(3, 4), std_logic_vector(to_unsigned(3, 4)),  "toSslv(3, 4)"); 
+                check_equal(toSslv(-2, 5), std_logic_vector(to_signed(-2, 5)),  "toSslv(-2, 5)"); 
 
-            elsif run("from_uslv") then
+            elsif run("fromUslv") then
                 stdlva := "010";
-                check_equal(from_uslv(stdlva), 2,    "from_uslv(010)"); 
+                check_equal(fromUslv(stdlva), 2,    "fromUslv(010)"); 
 
-            elsif run("from_sslv") then
+            elsif run("fromSslv") then
                 stdlva := "010";
-                check_equal(from_sslv(stdlva), 2,    "from_sslv(010)"); 
+                check_equal(fromSslv(stdlva), 2,    "fromSslv(010)"); 
                 stdlva := "110";
-                check_equal(from_sslv(stdlva), -2,   "from_sslv(110)"); 
+                check_equal(fromSslv(stdlva), -2,   "fromSslv(110)"); 
 
-            elsif run("from_str-real") then
-                check_equal(from_str("1.0"), 1.0,           "from_str(1.0)", 0.001e-6);
-                check_equal(from_str(" 1.1"), 1.1,          "from_str( 1.1)", 0.001e-6);
-                check_equal(from_str("+0.1"), +0.1,         "from_str(+0.1)", 0.001e-6);
-                check_equal(from_str("-0.1"), -0.1,         "from_str(-0.1)", 0.001e-6);
-                check_equal(from_str("+12.2"), +12.2,       "from_str(+12.2)", 0.001e-6);
-                check_equal(from_str("-13.3"), -13.3,       "from_str(-13.3)", 0.001e-6);
-                check_equal(from_str("-13.3e2"), -13.3e2,   "from_str(-13.3e2)", 0.001e-6);
-                check_equal(from_str("12.2E-3"), 12.2E-3,   "from_str(12.2E-3)", 0.001e-6);
+            elsif run("fromString-real") then
+                check_equal(fromString("1.0"), 1.0,           "fromString(1.0)", 0.001e-6);
+                check_equal(fromString(" 1.1"), 1.1,          "fromString( 1.1)", 0.001e-6);
+                check_equal(fromString("+0.1"), +0.1,         "fromString(+0.1)", 0.001e-6);
+                check_equal(fromString("-0.1"), -0.1,         "fromString(-0.1)", 0.001e-6);
+                check_equal(fromString("+12.2"), +12.2,       "fromString(+12.2)", 0.001e-6);
+                check_equal(fromString("-13.3"), -13.3,       "fromString(-13.3)", 0.001e-6);
+                check_equal(fromString("-13.3e2"), -13.3e2,   "fromString(-13.3e2)", 0.001e-6);
+                check_equal(fromString("12.2E-3"), 12.2E-3,   "fromString(12.2E-3)", 0.001e-6);
 
-            elsif run("from_str-t_areal") then
-                tra := from_str("0.1, -0.3e-2");
-                check_equal(tra(0), 0.1,           "from_str(t_areal) - 0", 0.001e-6);
-                check_equal(tra(1), -0.3e-2,       "from_str(t_areal) - 1", 0.001e-6);
+            elsif run("fromString-t_areal") then
+                tra := fromString("0.1, -0.3e-2");
+                check_equal(tra(0), 0.1,           "fromString(t_areal) - 0", 0.001e-6);
+                check_equal(tra(1), -0.3e-2,       "fromString(t_areal) - 1", 0.001e-6);
 
-            elsif run("max_a-int") then
+            elsif run("maxArray-int") then
                 taint := (1, -3, 4, 2);
-                check_equal(max_a(taint), 4, "max_a(taint)");
+                check_equal(maxArray(taint), 4, "maxArray(taint)");
 
-            elsif run("max_a-real") then
+            elsif run("maxArray-real") then
                 tra4 := (0.1, -0.3, 1.4, 0.2);
-                check_equal(max_a(tra4), 1.4, "max_a(tra4)");
+                check_equal(maxArray(tra4), 1.4, "maxArray(tra4)");
 
-            elsif run("min_a-int") then
+            elsif run("minArray-int") then
                 taint := (1, -3, 4, 2);
-                check_equal(min_a(taint), -3, "min_a(taint)");
+                check_equal(minArray(taint), -3, "minArray(taint)");
 
-            elsif run("min_a-real") then
+            elsif run("minArray-real") then
                 tra4 := (0.1, -0.3, 1.4, 0.2);
-                check_equal(min_a(tra4), -0.3, "min_a(tra4)");
+                check_equal(minArray(tra4), -0.3, "minArray(tra4)");
 
             end if;
         end loop;

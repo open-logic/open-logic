@@ -56,13 +56,13 @@ architecture sim of olo_base_ram_sdp_tb is
                         signal WrEna : out std_logic) is
     begin
         wait until rising_edge(Clk);
-        Addr <= to_uslv(address, Addr'length);
-        WrData <= to_uslv(data, WrData'length);
+        Addr <= toUslv(address, Addr'length);
+        WrData <= toUslv(data, WrData'length);
         WrEna <= '1';
         wait until rising_edge(Clk);
         WrEna <= '0';
-        Addr <= to_uslv(0, Addr'length);
-        WrData <= to_uslv(0, WrData'length);
+        Addr <= toUslv(0, Addr'length);
+        WrData <= toUslv(0, WrData'length);
     end procedure;
 
     procedure Check(    address : natural;
@@ -73,13 +73,13 @@ architecture sim of olo_base_ram_sdp_tb is
                         message : string) is
     begin
         wait until rising_edge(Clk);
-        Addr <= to_uslv(address, Addr'length);
+        Addr <= toUslv(address, Addr'length);
         wait until rising_edge(Clk); -- Address sampled
-        Addr <= to_uslv(0, Addr'length);
+        Addr <= toUslv(0, Addr'length);
         for i in 1 to RdLatency_g loop
             wait until rising_edge(Clk);
         end loop; 
-        check_equal(RdData, to_uslv(data, RdData'length), message);
+        check_equal(RdData, toUslv(data, RdData'length), message);
     end procedure;
 
     -------------------------------------------------------------------------
@@ -204,13 +204,13 @@ begin
                     Write(3, 7, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                     wait until rising_edge(Clk);
                     Wr_Ena <= '1';
-                    Wr_Addr <= to_uslv(1, Wr_Addr'length);
-                    Rd_Addr <= to_uslv(1, Rd_Addr'length);
-                    Wr_Data <= to_uslv(1, Wr_Data'length);
+                    Wr_Addr <= toUslv(1, Wr_Addr'length);
+                    Rd_Addr <= toUslv(1, Rd_Addr'length);
+                    Wr_Data <= toUslv(1, Wr_Data'length);
                     wait until rising_edge(Clk);
-                    Wr_Addr <= to_uslv(2, Wr_Addr'length);
-                    Rd_Addr <= to_uslv(2, Rd_Addr'length);
-                    Wr_Data <= to_uslv(2, Wr_Data'length);       
+                    Wr_Addr <= toUslv(2, Wr_Addr'length);
+                    Rd_Addr <= toUslv(2, Rd_Addr'length);
+                    Wr_Data <= toUslv(2, Wr_Data'length);       
                     wait until rising_edge(Clk);
                     if RdLatency_g = 1 then
                         if RamBehavior_g = "RBW" then
@@ -219,9 +219,9 @@ begin
                             check_equal(Rd_Data, 1, "rw: 1=1 wbr");    
                         end if;
                     end if;
-                    Wr_Addr <= to_uslv(3, Wr_Addr'length);
-                    Rd_Addr <= to_uslv(3, Rd_Addr'length);
-                    Wr_Data <= to_uslv(3, Wr_Data'length);    
+                    Wr_Addr <= toUslv(3, Wr_Addr'length);
+                    Rd_Addr <= toUslv(3, Rd_Addr'length);
+                    Wr_Data <= toUslv(3, Wr_Data'length);    
                     wait until rising_edge(Clk);
                     if RdLatency_g = 1 then
                         if RamBehavior_g = "RBW" then
@@ -236,9 +236,9 @@ begin
                             check_equal(Rd_Data, 1, "rw: 1=1 wbr");    
                         end if;
                     end if;                   
-                    Wr_Addr <= to_uslv(4, Wr_Addr'length);
-                    Rd_Addr <= to_uslv(4, Rd_Addr'length);
-                    Wr_Data <= to_uslv(4, Wr_Data'length);  
+                    Wr_Addr <= toUslv(4, Wr_Addr'length);
+                    Rd_Addr <= toUslv(4, Rd_Addr'length);
+                    Wr_Data <= toUslv(4, Wr_Data'length);  
                     wait until rising_edge(Clk);
                     if RdLatency_g = 1 then
                         if RamBehavior_g = "RBW" then
@@ -253,9 +253,9 @@ begin
                             check_equal(Rd_Data, 2, "rw: 2=2 wbr");
                         end if;   
                     end if;
-                    Wr_Addr <= to_uslv(5, Wr_Addr'length);
-                    Rd_Addr <= to_uslv(5, Rd_Addr'length);
-                    Wr_Data <= to_uslv(5, Wr_Data'length);  
+                    Wr_Addr <= toUslv(5, Wr_Addr'length);
+                    Rd_Addr <= toUslv(5, Rd_Addr'length);
+                    Wr_Data <= toUslv(5, Wr_Data'length);  
                     wait until rising_edge(Clk);
                     Wr_Ena <= '0';
                     Check(1, 1, Clk, Rd_Addr, Rd_Data, "rw: 1=1");

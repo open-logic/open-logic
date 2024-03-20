@@ -43,7 +43,7 @@ entity olo_base_fifo_async is
         In_Rst          : in  std_logic;    
         In_RstOut       : out std_logic;                          
         In_Data         : in  std_logic_vector(Width_g-1 downto 0); 
-        In_Valid        : in  std_logic;                              
+        In_Valid        : in  std_logic := '1';                              
         In_Ready        : out std_logic;         
         -- Input Status
         In_Full         : out std_logic;                              
@@ -57,7 +57,7 @@ entity olo_base_fifo_async is
         Out_RstOut      : out std_logic;
         Out_Data        : out std_logic_vector(Width_g-1 downto 0); 
         Out_Valid       : out std_logic; 
-        Out_Ready       : in  std_logic; 
+        Out_Ready       : in  std_logic := '1'; 
         -- Output Status
         Out_Full        : out std_logic;  
         Out_Empty       : out std_logic;
@@ -201,12 +201,12 @@ begin
 
         -- *** Address Clock domain crossings ***
         -- Bin->Gray is simple, can be done without additional FF
-        vi.WrAddrGray := binary_to_gray(std_logic_vector(vi.WrAddr));
-        vo.RdAddrGray := binary_to_gray(std_logic_vector(vo.RdAddr));
+        vi.WrAddrGray := binaryToGray(std_logic_vector(vi.WrAddr));
+        vo.RdAddrGray := binaryToGray(std_logic_vector(vo.RdAddr));
 
         -- Gray->Bin involves some logic, needs additional FF
-        vi.RdAddr := unsigned(gray_to_binary(RdAddrGray));
-        vo.WrAddr := unsigned(gray_to_binary(WrAddrGray));
+        vi.RdAddr := unsigned(grayToBinary(RdAddrGray));
+        vo.WrAddr := unsigned(grayToBinary(WrAddrGray));
 
         -- *** Assign signal ***
         ri_next <= vi;
