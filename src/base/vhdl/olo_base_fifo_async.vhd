@@ -40,7 +40,8 @@ entity olo_base_fifo_async is
     port (   
         -- Input interface
         In_Clk          : in  std_logic;                              
-        In_Rst          : in  std_logic;                              
+        In_Rst          : in  std_logic;    
+        In_RstOut       : out std_logic;                          
         In_Data         : in  std_logic_vector(Width_g-1 downto 0); 
         In_Valid        : in  std_logic;                              
         In_Ready        : out std_logic;         
@@ -53,6 +54,7 @@ entity olo_base_fifo_async is
         -- Output Interface
         Out_Clk         : in  std_logic; 
         Out_Rst         : in  std_logic; 
+        Out_RstOut      : out std_logic;
         Out_Data        : out std_logic_vector(Width_g-1 downto 0); 
         Out_Valid       : out std_logic; 
         Out_Ready       : in  std_logic; 
@@ -294,6 +296,8 @@ begin
             B_RstIn     => Out_Rst,                           
             B_RstOut    => RstOutInt
         );
+    Out_RstOut <= RstOutInt;
+    In_RstOut <= RstInInt;
     
 
 end architecture;
