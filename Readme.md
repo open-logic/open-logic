@@ -77,6 +77,8 @@ I decided to create *Open Logic* instead of more actively working on the PSI lib
 * I want full freedom of applying non-backwards compatible changes where required to improve quality.
 * I want full freedom to revise any conceptual decisions I do not (anymore) agree with.
 
+For users switching from *psi_common* to *Open Logic* there is a [Porting Guide](./doc/PsiCommonPorting.md), which describes the correspondences between the two libraries.
+
 ## Next Steps
 
 - [x] Building the infrastructure (documentation, CI pipelines, etc.) based on a small subset of the functionality
