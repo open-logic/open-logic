@@ -6,7 +6,7 @@
 
 ## Status Information
 
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_cc_pulse.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_cc_pulse.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_cc_pulse.json?cacheSeconds=0)![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_cc_pulse.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_cc_pulse.json?cacheSeconds=0)
 
 VHDL Source: [olo_base_cc_pulse](../../src/base/vhdl/olo_base_cc_pulse.vhd)
 
@@ -32,12 +32,12 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 | :--------- | :----- | :------------ | ------- | :----------------------------------------------------------- |
 | In_Clk     | in     | 1             | -       | Source clock                                                 |
 | In_RstIn   | in     | 1             | '0'     | Reset input (high-active, synchronous to *In_Clk*)           |
-| In_RstOut  | out    | 1             | -       | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *In_Clk*)) |
+| In_RstOut  | out    | 1             | N/A     | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *In_Clk*)) |
 | In_Pulse   | in     | *NumPulses_g* | -       | Vector of independent input pulses (synchronous to *In_Clk*) |
 | Out_Clk    | in     | 1             | -       | Destination clock                                            |
 | Out_RstIn  | in     | 1             | '0'     | Reset input (high-active, synchronous to *Out_Clk*)          |
-| Out_RstOut | out    | 1             | -       | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *Out_Clk*) |
-| Out_Pulse  | out    | *NumPulses_g* | -       | Vector of independent output pulses (synchronous to *Out_Clk*) |
+| Out_RstOut | out    | 1             | N/A     | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *Out_Clk*) |
+| Out_Pulse  | out    | *NumPulses_g* | N/A     | Vector of independent output pulses (synchronous to *Out_Clk*) |
 
 ## Architecture
 

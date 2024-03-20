@@ -6,7 +6,7 @@
 
 ## Status Information
 
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_ram_sp.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_ram_sp.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_ram_sp.json?cacheSeconds=0)![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_ram_sp.json?cacheSeconds=0)![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_ram_sp.json?cacheSeconds=0)
 
 VHDL Source: [olo_base_ram_sp](../../src/base/vhdl/olo_base_ram_sp.vhd)
 
@@ -36,7 +36,7 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 | Be     | in     | *Width_g*/8           | All '1' | Byte-enables<br>Ignored if *UseByteEnable_g* = false         |
 | WrEna  | in     | 1                     | '1'     | Write enable. The memory cell at *Addr* is written only if *WrEna*='1'. |
 | WrData | in     | *Width_g*             | -       | Write data                                                   |
-| RdData | out    | *Width_g*             | -       | Read data                                                    |
+| RdData | out    | *Width_g*             | N/A     | Read data                                                    |
 
 ## Architecture
 

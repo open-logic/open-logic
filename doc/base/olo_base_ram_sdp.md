@@ -6,7 +6,7 @@
 
 ## Status Information
 
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_ram_sdp.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_ram_sdp.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_ram_sdp.json?cacheSeconds=0)![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_ram_sdp.json?cacheSeconds=0)![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_ram_sdp.json?cacheSeconds=0)
 
 VHDL Source: [olo_base_ram_sdp](../../src/base/vhdl/olo_base_ram_sdp.vhd)
 
@@ -42,7 +42,7 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 | Rd_Clk  | in     | 1                     | '0'     | Read-clock - Only used if *IsAsync_g*=true, otherwise *Clk* is used for the read-port. |
 | Rd_Addr | in     | ceil(log2(*Depth_g*)) | -       | Read address                                                 |
 | Rd_Ena  | in     | 1                     | '1'     | Read enable                                                  |
-| Rd_Data | out    | *Width_g*             | -       | Read data                                                    |
+| Rd_Data | out    | *Width_g*             | N/A     | Read data                                                    |
 
 ## Architecture
 

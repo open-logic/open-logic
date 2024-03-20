@@ -22,6 +22,10 @@ Usually signals are grouped into interfaces. For example a block may have an AXI
 
 Ports do not have any *_i* or *_o* suffixes to define their direction. the direction is visible from the entity declaration (keywords *in* and *out*). 
 
+### Functions
+
+Functions shall use *lowerCamelCase*.
+
 ### Constants
 
 Constants shall have *_c* suffixes.
@@ -32,7 +36,9 @@ Generics shall have *_g* suffixes.
 
 ### Versions
 
-[Semantic Versioning](https://semver.org/) is used for naming of releases.
+[Semantic Versioning](https://semver.org/) is used for naming of releases from 1.0.0 onwards.
+
+0.x.y relealses are considered early development and do not increase major version number in case of breaking backward compatibility.
 
 ## Coding Convention
 

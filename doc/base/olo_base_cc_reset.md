@@ -6,7 +6,7 @@
 
 ## Status Information
 
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_cc_reset.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_cc_reset.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_cc_reset.json?cacheSeconds=0)![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_cc_reset.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_cc_reset.json?cacheSeconds=0)
 
 VHDL Source: [olo_base_cc_reset](../../src/base/vhdl/olo_base_cc_reset.vhd)
 
@@ -27,13 +27,13 @@ This entity does not have any generics.
 ## Interfaces
 
 | Name     | In/Out | Length | Default | Description                                        |
-| :------- | :----- | :----- | ------- | :------------------------------------------------- |
+| :------- | :----- | :----- | :------ | :------------------------------------------------- |
 | A_Clk    | in     | 1      | -       | Clock domain A clock                               |
 | A_RstIn  | in     | 1      | '0'     | Reset input (high-active, synchronous to *A_Clk*)  |
-| A_RstOut | out    | 1      | -       | Reset output (high-active, synchronous to *A_Clk*) |
+| A_RstOut | out    | 1      | N/A     | Reset output (high-active, synchronous to *A_Clk*) |
 | B_Clk    | in     | 1      | -       | Clock domain B clock                               |
 | B_RstIn  | in     | 1      | '0'     | Reset input (high-active, synchronous to *B_Clk*)  |
-| B_RstOut | out    | 1      | -       | Reset output (high-active, synchronous to *B_Clk*) |
+| B_RstOut | out    | 1      | N/A     | Reset output (high-active, synchronous to *B_Clk*) |
 
 ## Architecture
 

@@ -16,6 +16,7 @@ Packages with type declarations and functions used in *Open Logic* internally or
 | -------------------------------------------------- | ---------------------------------------------------------- |
 | [olo_base_pkg_array](./base/olo_base_pkg_array.md) | Array type definitions (e.g. arrays of *std_logic_vector*) |
 | [olo_base_pkg_math](./base/olo_base_pkg_math.md)   | Mathematic functions (e.g. *log2*)                         |
+| [olo_base_pkg_logic](./base/olo_base_pkg_logic.md) | Mathematic functions (e.g. *binaryToGray*)                 |
 
 ### Clock Crossings (*olo_base_cc_\<...\>*)
 
@@ -36,6 +37,13 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | [olo_base_ram_sp](./base/olo_base_ram_sp.md)   | Single port RAM      |
 | [olo_base_ram_sdp](./base/olo_base_ram_sdp.md) | Simple dual-port RAM |
 | [olo_base_ram_tdp](./base/olo_base_ram_tdp.md) | True dual-port RAM   |
+
+### FIFO Implementations (olo_base_fifo_\<...\>)
+
+| Entity                                               | Description                                        |
+| ---------------------------------------------------- | -------------------------------------------------- |
+| [olo_base_fifo_sync](./base/olo_base_fifo_sync.md)   | Synchronous FIFO (single clock)                    |
+| [olo_base_fifo_async](./base/olo_base_fifo_async.md) | Asynchronous FIFO (separate write and read clocks) |
 
 ## axi
 

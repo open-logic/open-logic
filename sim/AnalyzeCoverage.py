@@ -4,7 +4,7 @@
 ########################################################################################################################
 import os
 import json
-from Badge import create_coverage_version_badge, create_coverage_badge
+from Badge import create_coverage_version_badge, create_coverage_badge, create_branch_badge
 import sys
 
 ########################################################################################################################
@@ -20,29 +20,21 @@ if "--badges" in sys.argv:
 class Entity:
     def __init__(self):
         self.name = None
-        self.coverage = None
+        self.statements = None
+        self.branches = None
 
     def parse_name_line(self, line : str):
         filename = line.split("/")[-1]
         self.name = filename.split(".")[0]
 
-    def parse_coverage_line(self, line : str):
+    def parse_statement_line(self, line : str):
         parts = line.split()
-        self.coverage = float(parts[-1].replace("%", ""))
+        self.statements = float(parts[-1].replace("%", ""))
 
-    def get_batch_json(self):
-        color = "red"
-        if self.coverage > 98.0:
-            color = "green"
-        elif self.coverage > 90.0:
-            color = "orange"
-        batch = {
-            "schemaVersion": 1,
-            "label": "statement coverage",
-            "message": f"{self.coverage}%",
-            "color": color
-        }
-        return json.dumps(batch)
+    def parse_branch_line(self, line : str):
+        parts = line.split()
+        self.branches = float(parts[-1].replace("%", ""))
+
 
 ########################################################################################################################
 # Script
@@ -55,15 +47,19 @@ for line in fd.readlines():
     if "File:" in line:
         entity = Entity()
         entity.parse_name_line(line)
+    if "Branches" in line:
+        entity.parse_branch_line(line)
     if "Statements" in line:
-        entity.parse_coverage_line(line)
+        entity.parse_statement_line(line)
         entities.append(entity)
 
 #*** Generate Output ***
+print("Entity:                        Statements Branches")
 for entity in entities:
-    print(f"{entity.name:40}: {entity.coverage}%")
+    print(f"{entity.name:25}: {entity.statements:9}% {entity.branches:9}%")
     if UPDATE_BADGES:
-        create_coverage_badge(entity.name, entity.coverage)
+        create_coverage_badge(entity.name, entity.statements)
+        create_branch_badge(entity.name, entity.branches)
 if UPDATE_BADGES:
     create_coverage_version_badge()
 

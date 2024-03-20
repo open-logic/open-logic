@@ -6,7 +6,7 @@
 
 ## Status Information
 
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_cc_bits.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_cc_bits.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_cc_bits.json?cacheSeconds=0)![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_cc_bits.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_cc_bits.json?cacheSeconds=0)
 
 VHDL Source: [olo_base_cc_bits](../../src/base/vhdl/olo_base_cc_bits.vhd)
 
@@ -32,7 +32,7 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 | In_Data  | in     | *Width_g* | -       | Vector of independent input bits (synchronous to *In_Clk*)   |
 | Out_Clk  | in     | 1         | -       | Destination clock                                            |
 | Out_Rst  | in     | 1         | '0'     | Reset input (high-active, synchronous to *Out_Clk*)          |
-| Out_Data | out    | *Width_g* | -       | Vector of independent output bits (synchronous to *Out_Clk*) |
+| Out_Data | out    | *Width_g* | N/A     | Vector of independent output bits (synchronous to *Out_Clk*) |
 
 ## Architecture
 

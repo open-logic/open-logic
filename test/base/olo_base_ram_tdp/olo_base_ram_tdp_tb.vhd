@@ -55,13 +55,13 @@ architecture sim of olo_base_ram_tdp_tb is
                         signal WrEna : out std_logic) is
     begin
         wait until rising_edge(Clk);
-        Addr <= to_uslv(address, Addr'length);
-        WrData <= to_uslv(data, WrData'length);
+        Addr <= toUslv(address, Addr'length);
+        WrData <= toUslv(data, WrData'length);
         WrEna <= '1';
         wait until rising_edge(Clk);
         WrEna <= '0';
-        Addr <= to_uslv(0, Addr'length);
-        WrData <= to_uslv(0, WrData'length);
+        Addr <= toUslv(0, Addr'length);
+        WrData <= toUslv(0, WrData'length);
     end procedure;
 
     procedure Check(    address : natural;
@@ -72,13 +72,13 @@ architecture sim of olo_base_ram_tdp_tb is
                         message : string) is
     begin
         wait until rising_edge(Clk);
-        Addr <= to_uslv(address, Addr'length);
+        Addr <= toUslv(address, Addr'length);
         wait until rising_edge(Clk); -- Address sampled
-        Addr <= to_uslv(0, Addr'length);
+        Addr <= toUslv(0, Addr'length);
         for i in 1 to RdLatency_g loop
             wait until rising_edge(Clk);
         end loop; 
-        check_equal(RdData, to_uslv(data, RdData'length), message);
+        check_equal(RdData, toUslv(data, RdData'length), message);
     end procedure;
 
     procedure BasicCheck(   signal Wr_Clk  : in std_logic;
@@ -91,7 +91,7 @@ architecture sim of olo_base_ram_tdp_tb is
                             signal Rd_Data : in std_logic_vector) is
     begin
         if UseByteEnable_g then
-            Wr_Be <= to_sslv(-1, Wr_Be'length); -- BE not checked -> all ones
+            Wr_Be <= toSslv(-1, Wr_Be'length); -- BE not checked -> all ones
         end if;
         Write(1, 5, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
         Write(2, 6, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
@@ -100,7 +100,7 @@ architecture sim of olo_base_ram_tdp_tb is
         Check(2, 6, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 2=6");
         Check(3, 7, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 3=7");
         Check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: re-read 1=5");
-        Wr_Be <= to_sslv(0, Wr_Be'length);
+        Wr_Be <= toSslv(0, Wr_Be'length);
     end procedure;
 
     procedure ByteEnableCheck( signal Wr_Clk    : in std_logic;
@@ -115,15 +115,15 @@ architecture sim of olo_base_ram_tdp_tb is
     begin
         if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then        
             -- Byte 0 test
-            Wr_Be <= to_sslv(-1, Wr_Be'length); -- BE not checked -> all ones
+            Wr_Be <= toSslv(-1, Wr_Be'length); -- BE not checked -> all ones
             Write(1, 0, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
-            Wr_Be <= to_sslv(0, Wr_Be'length);
+            Wr_Be <= toSslv(0, Wr_Be'length);
             Wr_Be(0) <= '1';
             Write(1, 16#ABCD#, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
             Check(1, 16#00CD#, Wr_Clk, Wr_Addr, Wr_RdData, "BE[0]-A");
             Check(1, 16#00CD#, Rd_Clk, Rd_Addr, Rd_Data, "BE[0]-B");
             -- Byte 1 test
-            Wr_Be <= to_sslv(0, Wr_Be'length);
+            Wr_Be <= toSslv(0, Wr_Be'length);
             Wr_Be(1) <= '1';
             Write(1, 16#1234#, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
             Check(1, 16#12CD#, Wr_Clk, Wr_Addr, Wr_RdData, "BE[0]-A");
@@ -139,17 +139,17 @@ architecture sim of olo_base_ram_tdp_tb is
                                 signal RdData : in std_logic_vector) is
     begin
                 -- Initialize
-                Be <= to_sslv(-1, Be'length); -- BE not checked -> all ones
+                Be <= toSslv(-1, Be'length); -- BE not checked -> all ones
                 Write(1, 5, Clk, Addr, WrData, WrEna);
                 Write(2, 6, Clk, Addr, WrData, WrEna);
                 Write(3, 7, Clk, Addr, WrData, WrEna);
                 wait until rising_edge(Clk);
                 WrEna <= '1';
-                Addr <= to_uslv(1, Addr'length);
-                WrData <= to_uslv(1, WrData'length);
+                Addr <= toUslv(1, Addr'length);
+                WrData <= toUslv(1, WrData'length);
                 wait until rising_edge(Clk);
-                Addr <= to_uslv(2, Addr'length);
-                WrData <= to_uslv(2, WrData'length);       
+                Addr <= toUslv(2, Addr'length);
+                WrData <= toUslv(2, WrData'length);       
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
@@ -158,8 +158,8 @@ architecture sim of olo_base_ram_tdp_tb is
                         check_equal(RdData, 1, "rw: 1=1 wbr");    
                     end if;
                 end if;
-                Addr <= to_uslv(3, Addr'length);
-                WrData <= to_uslv(3, WrData'length);    
+                Addr <= toUslv(3, Addr'length);
+                WrData <= toUslv(3, WrData'length);    
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
@@ -174,8 +174,8 @@ architecture sim of olo_base_ram_tdp_tb is
                         check_equal(RdData, 1, "rw: 1=1 wbr");    
                     end if;
                 end if;                   
-                Addr <= to_uslv(4, Addr'length);
-                WrData <= to_uslv(4, WrData'length);  
+                Addr <= toUslv(4, Addr'length);
+                WrData <= toUslv(4, WrData'length);  
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
@@ -190,8 +190,8 @@ architecture sim of olo_base_ram_tdp_tb is
                         check_equal(RdData, 2, "rw: 2=2 wbr");
                     end if;   
                 end if;
-                Addr <= to_uslv(5, Addr'length);
-                WrData <= to_uslv(5, WrData'length);  
+                Addr <= toUslv(5, Addr'length);
+                WrData <= toUslv(5, WrData'length);  
                 wait until rising_edge(Clk);
                 WrEna <= '0';
                 Check(1, 1, Clk, Addr, RdData, "rw: 1=1");

@@ -89,32 +89,36 @@ package olo_base_pkg_math is
                    v : in std_logic) return integer;
 
     -- conversion function int to slv
-    function to_uslv(input : integer;
-                     len   : integer) return std_logic_vector;
+    function toUslv(input : integer;
+                    len   : integer) return std_logic_vector;
 
-    function to_sslv(input : integer;
-                     len   : integer) return std_logic_vector;
+    function toSslv(input : integer;
+                    len   : integer) return std_logic_vector;
+
+    function toStdl(input : integer range 0 to 1) return std_logic;
 
     -- conversion function slv to int
-    function from_uslv(input : std_logic_vector) return integer;
+    function fromUslv(input : std_logic_vector) return integer;
 
-    function from_sslv(input : std_logic_vector) return integer;
+    function fromSslv(input : std_logic_vector) return integer;
+
+    function fromStdl(input : std_logic) return integer;
 
     -- convert string to real
-    function from_str(input : string) return real;
+    function fromString(input : string) return real;
 
     -- convert string  to real array
-    function from_str(input : string) return t_areal;
+    function fromString(input : string) return t_areal;
 
 
     -- get max/min from array type interger /real
-    function max_a(a : in t_ainteger) return integer;
+    function maxArray(a : in t_ainteger) return integer;
 
-    function max_a(a : in t_areal) return real;
+    function maxArray(a : in t_areal) return real;
 
-    function min_a(a : in t_ainteger) return integer;
+    function minArray(a : in t_ainteger) return integer;
 
-    function min_a(a : in t_areal) return real;
+    function minArray(a : in t_areal) return real;
 
 end package;
 
@@ -353,33 +357,54 @@ package body olo_base_pkg_math is
     end function;
 
     -- *** integer to unsigned slv  ***
-    function to_uslv(input : integer;
-                     len   : integer) return std_logic_vector is
+    function toUslv(input : integer;
+                    len   : integer) return std_logic_vector is
     begin
         return std_logic_vector(to_unsigned(input, len));
     end function;
 
     -- *** integer to signed slv  ***
-    function to_sslv(input : integer;
-                     len   : integer) return std_logic_vector is
+    function toSslv(input : integer;
+                    len   : integer) return std_logic_vector is
     begin
         return std_logic_vector(to_signed(input, len));
     end function;
 
-    -- *** integer to unsigned slv  ***
-    function from_uslv(input : std_logic_vector) return integer is
+    -- *** integer to stdl ***
+    function toStdl(input : integer range 0 to 1) return std_logic is
+    begin
+        if input = 1 then
+            return '1';
+        else
+            return '0';
+        end if;
+    end function;
+
+    -- *** integer from unsigned slv  ***
+    function fromUslv(input : std_logic_vector) return integer is
     begin
         return to_integer(unsigned(input));
     end function;
 
-    -- *** integer to signed slv  ***
-    function from_sslv(input : std_logic_vector) return integer is
+    -- *** integer from signed slv  ***
+    function fromSslv(input : std_logic_vector) return integer is
     begin
         return to_integer(signed(input));
     end function;
 
+    -- *** integer from stdl ***
+    function fromStdl(input : std_logic) return integer is
+    begin
+        assert input = '0' or input = '1' report "fromStdl(): Illegal argument" severity error;
+        if input = '0' then
+            return 0;
+        else
+            return 1;
+        end if;
+    end function;
+
     -- convert string to real
-    function from_str(input : string) return real is
+    function fromString(input : string) return real is
         constant Nbsp_c       : character := character'val(160);
         variable Idx_v        : integer   := input'low;
         variable IsNeg_v      : boolean   := false;
@@ -452,7 +477,7 @@ package body olo_base_pkg_math is
     end function;
 
     -- convert string to real array
-    function from_str(input : string) return t_areal is
+    function fromString(input : string) return t_areal is
         variable arr      : t_areal(0 to count_array_str_elements(input) - 1) := (others => 0.0);
         variable aIdx     : natural                                           := 0;
         variable startIdx : natural                                           := 1;
@@ -462,20 +487,20 @@ package body olo_base_pkg_math is
         while idx <= input'high loop
             if input(idx) = ',' then
                 endIdx    := idx - 1;
-                arr(aIdx) := from_str(input(startIdx to endIdx));
+                arr(aIdx) := fromString(input(startIdx to endIdx));
                 aIdx      := aIdx + 1;
                 startIdx  := idx + 1;
             end if;
             idx := idx + 1;
         end loop;
         if startIdx <= input'high then
-            arr(aIdx) := from_str(input(startIdx to input'high));
+            arr(aIdx) := fromString(input(startIdx to input'high));
         end if;
         return arr;
     end function;
 
     --*** get the maximum out of an array of integer ***
-    function max_a(a : in t_ainteger) return integer is
+    function maxArray(a : in t_ainteger) return integer is
         variable max_v : integer := 0;
     begin
         for idx in a'low to a'high loop
@@ -487,7 +512,7 @@ package body olo_base_pkg_math is
     end function;
 
     --*** get the maximum out of an array of real ***
-    function max_a(a : in t_areal) return real is
+    function maxArray(a : in t_areal) return real is
         variable max_v : real := 0.0;
     begin
         for idx in a'low to a'high loop
@@ -499,7 +524,7 @@ package body olo_base_pkg_math is
     end function;
 
     --*** get the minimum out of an array of integer ***
-    function min_a(a : in t_ainteger) return integer is
+    function minArray(a : in t_ainteger) return integer is
         variable min_v : integer := 0;
     begin
         for idx in a'low to a'high loop
@@ -511,7 +536,7 @@ package body olo_base_pkg_math is
     end function;
 
     --*** get the minimum out of an array of real ***
-    function min_a(a : in t_areal) return real is
+    function minArray(a : in t_areal) return real is
         variable min_v : real := 0.0;
     begin
         for idx in a'low to a'high loop

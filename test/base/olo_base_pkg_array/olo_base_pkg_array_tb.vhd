@@ -49,26 +49,26 @@ begin
 
         while test_suite loop
     
-            if run("t_ainteger_to_t_areal") then
+            if run("aInteger2aReal") then
                 aint := (1, -2, 3);
-                areal := t_ainteger_to_t_areal(aint);
-                check_equal(areal(0), 1.0, "t_ainteger_to_t_areal->0", 0.001);
-                check_equal(areal(1), -2.0, "t_ainteger_to_t_areal->1", 0.001);
-                check_equal(areal(2), 3.0, "t_ainteger_to_t_areal->2", 0.001);
+                areal := aInteger2aReal(aint);
+                check_equal(areal(0), 1.0, "aInteger2aReal->0", 0.001);
+                check_equal(areal(1), -2.0, "aInteger2aReal->1", 0.001);
+                check_equal(areal(2), 3.0, "aInteger2aReal->2", 0.001);
 
-            elsif run("stdlv_to_t_abool") then
+            elsif run("stdlv2aBool") then
                 stdlv := "011";
-                abool := stdlv_to_t_abool(stdlv);
-                check_equal(abool(0), false, "stdlv_to_t_abool->0");
-                check_equal(abool(1), true,  "stdlv_to_t_abool->1");
-                check_equal(abool(2), true,  "stdlv_to_t_abool->2");
+                abool := stdlv2aBool(stdlv);
+                check_equal(abool(0), false, "stdlv2aBool->0");
+                check_equal(abool(1), true,  "stdlv2aBool->1");
+                check_equal(abool(2), true,  "stdlv2aBool->2");
 
-            elsif run("t_abool_to_stlv") then
+            elsif run("aBool2stdlv") then
                 abool := (true, true, false);
-                stdlv := t_abool_to_stdlv(abool);
-                check_equal(stdlv(0), '1',  "t_abool_to_stlv->0");
-                check_equal(stdlv(1), '1',  "t_abool_to_stlv->1");
-                check_equal(stdlv(2), '0',  "t_abool_to_stlv->2");
+                stdlv := aBool2stdlv(abool);
+                check_equal(stdlv(0), '1',  "aBool2stdlv->0");
+                check_equal(stdlv(1), '1',  "aBool2stdlv->1");
+                check_equal(stdlv(2), '0',  "aBool2stdlv->2");
 
             end if;
 
