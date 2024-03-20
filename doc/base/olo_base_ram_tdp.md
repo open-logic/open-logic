@@ -29,6 +29,8 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 
 ## Interfaces
 
+### Port A
+
 | Name     | In/Out | Length                | Default | Description                                                  |
 | :------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | A_Clk    | in     | 1                     | -       | Port A clock                                                 |
@@ -37,6 +39,11 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 | A_WrEna  | in     | 1                     | '0'     | Port A write enable. The memory cell at *A_Addr* is written only if *A_WrEna*='1'. |
 | A_WrData | in     | *Width_g*             | 0       | Port A write data                                            |
 | A_RdData | out    | *Width_g*             | N/A     | Port A read data                                             |
+
+### Port B
+
+| Name     | In/Out | Length                | Default | Description                                                  |
+| :------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | B_Clk    | in     | 1                     | -       | Port B clock                                                 |
 | B_Addr   | in     | ceil(log2(*Depth_g*)) | -       | Port B address                                               |
 | B_Be     | in     | *Width_g*/8           | All '1' | Port B byte-enables<br>Ignored if *UseByteEnable_g* = false  |

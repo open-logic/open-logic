@@ -36,17 +36,34 @@ The RAM behavior (read-before-write or write-before-read) can be selected. This 
 
 ## Interfaces
 
+### Control
+
+| Name | In/Out | Length | Default | Description                                     |
+| :--- | :----- | :----- | ------- | :---------------------------------------------- |
+| Clk  | in     | 1      | -       | Clock                                           |
+| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to *Clk*) |
+
+### Input Data
+
+| Name     | In/Out | Length    | Default | Description                                  |
+| :------- | :----- | :-------- | ------- | :------------------------------------------- |
+| In_Data  | in     | *Width_g* | -       | Input data                                   |
+| In_Valid | in     | 1         | '1'     | AXI4-Stream handshaking signal for *In_Data* |
+| In_Ready | out    | 1         | N/A     | AXI4-Stream handshaking signal for *In_Data* |
+
+### Output Data
+
+| Name      | In/Out | Length    | Default | Description                                   |
+| :-------- | :----- | :-------- | ------- | :-------------------------------------------- |
+| Out_Data  | out    | *Width_g* | N/A     | Output data                                   |
+| Out_Valid | out    | 1         | N/A     | AXI4-Stream handshaking signal for *Out_Data* |
+| Out_Ready | in     | 1         | '1'     | AXI4-Stream handshaking signal for *Out_Data* |
+
+### Status
+
 | Name      | In/Out | Length                  | Default | Description                                                  |
 | :-------- | :----- | :---------------------- | ------- | :----------------------------------------------------------- |
-| Clk       | in     | 1                       | -       | Clock                                                        |
-| Rst       | in     | 1                       | -       | Reset input (high-active, synchronous to *Clk*)              |
-| In_Data   | in     | *Width_g*               | -       | Input data                                                   |
-| In_Valid  | in     | 1                       | '1'     | AXI4-Stream handshaking signal for *In_Data*                 |
-| In_Ready  | out    | 1                       | N/A     | AXI4-Stream handshaking signal for *In_Data*                 |
 | In_Level  | out    | ceil(log2(*Depth_g*+1)) | N/A     | FIFO fill level calculated on the write side. <br>Write operations are reflected in the level immediately, read operations are reflected with a delay of one clock cycle. |
-| Out_Data  | out    | *Width_g*               | N/A     | Output data                                                  |
-| Out_Valid | out    | 1                       | N/A     | AXI4-Stream handshaking signal for *Out_Data*                |
-| Out_Ready | in     | 1                       | '1'     | AXI4-Stream handshaking signal for *Out_Data*                |
 | Out_Level | out    | ceil(log2(*Depth_g*+1)) | N/A     | FIFO fill level calculated on the read side. <br>Read operations are reflected in the level immediately, write operations are reflected with a delay of one clock cycle. |
 | Full      | out    | 1                       | N/A     | Status flag. Asserted if the FIFO is full.                   |
 | Empty     | out    | 1                       | N/A     | Status flag. Asserted if the FIFO is empty.                  |
