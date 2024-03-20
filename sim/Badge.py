@@ -14,6 +14,7 @@ class BadgeColor(Enum):
 
 class BadgeFolder(Enum):
     COVERAGE = "coverage"
+    BRANCHES = "branches"
     ISSUES = "issues"
 
 
@@ -36,11 +37,19 @@ def create_badge(text : str, value : str, color : BadgeColor, folder : BadgeFold
 
 def create_coverage_badge(entity : str, value : float):
     color = BadgeColor.RED
-    if value > 98.0:
+    if value > 90.0:
         color = BadgeColor.GREEN
-    elif value > 90.0:
+    elif value > 95.0:
         color = BadgeColor.ORANGE
     create_badge("statement coverage", f"{value:.1f}%", color, BadgeFolder.COVERAGE, entity)
+
+def create_branch_badge(entity : str, value : float):
+    color = BadgeColor.RED
+    if value > 90.0:
+        color = BadgeColor.GREEN
+    elif value > 95.0:
+        color = BadgeColor.ORANGE
+    create_badge("branch coverage", f"{value:.1f}%", color, BadgeFolder.BRANCHES, entity)
 
 def create_coverage_version_badge():
     #Hash Batge
