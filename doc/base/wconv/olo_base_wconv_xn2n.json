@@ -1,0 +1,10 @@
+{signal: [
+  {name: 'Clk',          wave: 'P............', period:2},  
+  {name: 'In_Valid',     wave: '010.10.10.10.', period:2},
+  {name: 'In_Data',      wave: 'x2x.2x.2x.2x.', data:["0xAB", "0xCD", "0xEF", "0x12"], period:2},
+  {name: 'In_WordEna',   wave: 'x2x.2x.2x.2x.', data:["11", "01", "10", "01"],period:2},
+  {name: 'In_Last',      wave: '0...10....10.', period:2},
+  {name: 'Out_Valid',    wave: '0.1.010..1010', period:2},
+  {name: 'Out_Data',     wave: 'x.22x2x..2x2x', data:["0xB", "0xA", "0xD", "0xE", "0x2"], period:2},
+  {name: 'Out_Last',     wave: '0....10....10', period:2},
+]}
