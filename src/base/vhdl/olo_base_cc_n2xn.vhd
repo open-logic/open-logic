@@ -26,7 +26,7 @@ library ieee;
 ------------------------------------------------------------------------------
 entity olo_base_cc_n2xn is
     generic (
-        Width_g       : integer   := 8
+        Width_g       : positive   := 8
     );
     port (   
         In_Clk      : in  std_logic;                              

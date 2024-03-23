@@ -32,7 +32,7 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 | :--------- | :----- | :------------ | ------- | :----------------------------------------------------------- |
 | In_Clk     | in     | 1             | -       | Source clock                                                 |
 | In_RstIn   | in     | 1             | '0'     | Reset input (high-active, synchronous to *In_Clk*)           |
-| In_RstOut  | out    | 1             | N/A     | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *In_Clk*)) |
+| In_RstOut  | out    | 1             | N/A     | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *In_Clk*) |
 | In_Pulse   | in     | *NumPulses_g* | -       | Vector of independent input pulses (synchronous to *In_Clk*) |
 | Out_Clk    | in     | 1             | -       | Destination clock                                            |
 | Out_RstIn  | in     | 1             | '0'     | Reset input (high-active, synchronous to *Out_Clk*)          |
