@@ -1,0 +1,118 @@
+------------------------------------------------------------------------------
+--	Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+--  Copyright (c) 2024 by Oliver Bründler
+--	All rights reserved.
+--  Authors: Oliver Bruendler
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+-- Description
+------------------------------------------------------------------------------
+-- This entity implements a simple data-width conversion. The input width
+-- must be an integer multiple of the output width (Wi = n*Wo)
+
+------------------------------------------------------------------------------
+-- Libraries
+------------------------------------------------------------------------------
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+    use ieee.math_real.all;
+
+library work;
+    use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_logic.all;
+
+------------------------------------------------------------------------------
+-- Entity
+------------------------------------------------------------------------------
+entity olo_base_wconv_xn2n is
+    generic (
+        InWidth_g  : natural; 
+        OutWidth_g : natural
+    );
+  port (   
+        Clk         : in  std_logic;                                                       
+        Rst         : in  std_logic;                                                       
+        In_Valid    : in  std_logic;                                                       
+        In_Ready    : out std_logic;                                                       
+        In_Data     : in  std_logic_vector(InWidth_g - 1 downto 0);                       
+        In_Last     : in  std_logic                                                 := '0';  
+        In_WordEna  : in  std_logic_vector(InWidth_g / OutWidth_g - 1 downto 0)     := (others => '1');  
+        Out_Valid   : out std_logic;                                                     
+        Out_Ready   : in  std_logic                                                 := '1'; 
+        Out_Data    : out std_logic_vector(OutWidth_g - 1 downto 0); 
+        Out_Last    : out std_logic
+    );               
+end entity;
+
+
+architecture rtl of olo_base_wconv_xn2n is
+
+    -- *** Constants ***
+    constant RatioReal_c : real    := real(InWidth_g) / real(OutWidth_g);
+    constant RatioInt_c  : integer := integer(RatioReal_c);
+
+    -- *** Two Process Method ***
+    type two_process_r is record
+        Data     : std_logic_vector(InWidth_g - 1 downto 0);
+        DataVld  : std_logic_vector(RatioInt_c - 1 downto 0);
+        DataLast : std_logic_vector(RatioInt_c - 1 downto 0);
+    end record;
+    signal r, r_next : two_process_r;
+
+begin
+    assert floor(RatioReal_c) = ceil(RatioReal_c) report "olo_base_wconv_xn2n: Ratio OutWidth_g/InWidth_g must be an integer number" severity error;
+    assert OutWidth_g < InWidth_g report "olo_base_wconv_n2xn: OutWidth_g must be smaller than InWidth_g" severity error;
+
+    p_comb : process(r, In_Valid, In_Data, Out_Ready, In_WordEna, In_Last)
+          variable v         : two_process_r;
+          variable IsReady_v : std_logic;
+    begin
+        -- *** hold variables stable ***
+        v := r;
+
+        -- Halt detection
+        IsReady_v := '1';
+        if unsigned(r.DataVld(r.DataVld'high downto 1)) /= 0 then
+            IsReady_v := '0';
+        elsif r.DataVld(0) = '1' and Out_Ready = '0' then
+            IsReady_v := '0';
+        end if;
+
+        -- Get new data
+        if IsReady_v = '1' and In_Valid = '1' then
+            v.Data                     := In_Data;
+            v.DataVld                  := In_WordEna;
+            -- Assert last to the correct data-word
+            for i in 0 to RatioInt_c - 2 loop
+                v.DataLast(i) := In_WordEna(i) and not In_WordEna(i + 1) and In_Last;
+            end loop;
+            v.DataLast(RatioInt_c - 1) := In_WordEna(RatioInt_c - 1) and In_Last;
+        elsif (Out_Ready = '1') and (unsigned(r.DataVld) /= 0) then
+            v.Data     := zerosVector(OutWidth_g) & r.Data(r.Data'left downto OutWidth_g);
+            v.DataVld  := '0' & r.DataVld(r.DataVld'left downto 1);
+            v.DataLast := '0' & r.DataLast(r.DataLast'left downto 1);
+        end if;
+
+        -- Outputs
+        Out_Data  <= r.Data(OutWidth_g - 1 downto 0);
+        In_Ready  <= IsReady_v;
+        Out_Valid  <= r.DataVld(0);
+        Out_Last <= r.DataLast(0);
+
+        -- *** assign signal ***
+        r_next <= v;
+    end process;
+
+    p_seq : process(Clk)
+    begin
+        if rising_edge(Clk) then
+            r <= r_next;
+            if Rst = '1' then
+                r.DataVld <= (others => '0');
+            end if;
+        end if;
+    end process;
+
+end architecture;

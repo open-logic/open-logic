@@ -64,6 +64,6 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_tickgenerator               | Not ported yet      | -                                          |
 | psi_common_trigger_analog              | Won't be ported     | Not generic enough for a library component |
 | psi_common_trigger_digital             | Won't be ported     | Not generic enough for a library component |
-| psi_common_wconv_n2xn                  | Not ported yet      | -                                          |
-| psi_common_wconv_xn2n                  | Not ported yet      | -                                          |
+| psi_common_wconv_n2xn                  | olo_base_wconv_n2xn | -                                          |
+| psi_common_wconv_xn2n                  | olo_base_wconv_xn2n | -                                          |
 

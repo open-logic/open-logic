@@ -45,6 +45,15 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | [olo_base_fifo_sync](./base/olo_base_fifo_sync.md)   | Synchronous FIFO (single clock)                    |
 | [olo_base_fifo_async](./base/olo_base_fifo_async.md) | Asynchronous FIFO (separate write and read clocks) |
 
+### Width Conversions (olo_base_wconv_\<...\>)
+
+| Entity                                               | Description                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Increase word width by an integer factor (*OutWidth = InWidth x N*) |
+| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Decrease word width by an integer factor (*OutWidth = InWidth / N*) |
+
+### 
+
 ## axi
 
 No content yet.
