@@ -53,8 +53,8 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_status_cc                   | olo_base_cc_status  | -                                          |
 | psi_common_strobe_divider              | Not ported yet      | -                                          |
 | psi_common_strobe_generator            | Not ported yet      | -                                          |
-| psi_common_sync_cc_n2xn                | Not ported yet      | -                                          |
-| psi_common_sync_cc_xn2n                | Not ported yet      | -                                          |
+| psi_common_sync_cc_n2xn                | olo_base_cc_n2xn    | -                                          |
+| psi_common_sync_cc_xn2n                | olo_base_cc_xn2n    | -                                          |
 | psi_common_sync_fifo                   | olo_base_fifo_sync  | -                                          |
 | psi_common_tdm_mux                     | Not ported yet      | -                                          |
 | psi_common_tdm_par                     | Not ported yet      | -                                          |
