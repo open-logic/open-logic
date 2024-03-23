@@ -60,6 +60,14 @@ for tb_name in cc_tbs:
             if N == D and N != 1:
                 continue
             tb.add_config(name=f'D={D}-N={N}', generics={'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
+
+# Sync Clock Crossings
+scc_tbs = ['olo_base_cc_xn2n_tb', 'olo_base_cc_n2xn_tb']
+for tb_name in scc_tbs:
+    tb = olo_tb.test_bench(tb_name)
+    for R in [2, 3, 19]:
+        tb.add_config(name=f'R={R}', generics={'ClockRatio_g': R})
+
 # RAM TBs
 ram_tbs = ['olo_base_ram_sp_tb', 'olo_base_ram_tdp_tb']
 for tb_name in ram_tbs:
