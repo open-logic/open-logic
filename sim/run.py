@@ -112,6 +112,15 @@ for tb_name in wconv_tbs:
     for Ratio in [2, 3]:
         tb.add_config(name=f'R={Ratio}', generics={'WidthRatio_g': Ratio})
 
+#Pipeline TB
+pl_tb = 'olo_base_pl_stage_tb'
+tb = olo_tb.test_bench(pl_tb)
+for Stages in [0, 1, 5]:
+    for UseReady in [True, False]:
+        for RandomStall in [True, False]:
+            tb.add_config(name=f'Stg={Stages}-Rdy={UseReady}-Rnd={RandomStall}',
+                          generics={'Stages_g': Stages, 'UseReady_g': UseReady, 'RandomStall_g': RandomStall})
+
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 

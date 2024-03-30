@@ -54,7 +54,11 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Increase word width by an integer factor (*OutWidth = InWidth x N*) |
 | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Decrease word width by an integer factor (*OutWidth = InWidth / N*) |
 
-### 
+### Miscellaneous 
+
+| Entity                                           | Description                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------ |
+| [olo_base_pl_stage](./base/olo_base_pl_stage.md) | Implements one or more pipeline stages (register stages) - with or without support for backpressure (Ready) |
 
 ## axi
 
