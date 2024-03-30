@@ -32,12 +32,12 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_logic_pkg                   | olo_base_pkg_logic  | -                                          |
 | psi_common_math_pkg                    | olo_base_pkg_math   | -                                          |
 | psi_common_min_max_sum                 | Not ported yet      | -                                          |
-| psi_common_multi_pl_stage              | Not ported yet      | -                                          |
+| psi_common_multi_pl_stage              | olo_base_pl_stage   | Use *Stages_g*=1                           |
 | psi_common_par_ser                     | Not ported yet      | -                                          |
 | psi_common_par_tdm                     | Not ported yet      | -                                          |
 | psi_common_par_tdm_cfg                 | Not ported yet      | -                                          |
 | psi_common_ping_pong                   | Not ported yet      | -                                          |
-| psi_common_pl_stage                    | Not ported yet      | -                                          |
+| psi_common_pl_stage                    | olo_base_pl_stage   | -                                          |
 | psi_common_prbs                        | Not ported yet      | -                                          |
 | psi_common_pulse_cc                    | olo_base_cc_pulse   | -                                          |
 | psi_common_pulse_generator_ctrl_static | Won't be ported     | Not generic enough for a library component |

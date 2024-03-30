@@ -1,0 +1,11 @@
+{signal: [
+  {name: 'Clk',          wave: 'P.......', period:2},  
+  {name: 'In_Valid',     wave: '01....0.', period:2},
+  {name: 'In_Ready',     wave: '1..0.1..', period:2},
+  {name: 'In_Data',   	 wave: 'x345..x.', data:["0xAB", "0xCD", "0xEF", "01"],period:2},
+  {name: 'Out_Valid',    wave: '0.1....0', period:2},
+  {name: 'Out_Ready',    wave: '1.0.1...', period:2},
+  {name: 'Out_Data',     wave: 'x.3..45x', data:["0xAB", "0xCD", "0xEF"], period:2},
+  {name: 'RegMain',      wave: 'x.3..45x', data:["0xAB", "0xCD", "0xEF"], period:2},
+  {name: 'RegShadow',	 wave: 'x..4.x..', data:["0xCD"], period:2}
+]}
