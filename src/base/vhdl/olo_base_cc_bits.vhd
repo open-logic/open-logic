@@ -148,10 +148,10 @@ architecture rtl of olo_base_cc_bits_constraints_entity is
     signal In_Clk_Sig : std_logic;
 
     -- Synthesis attributes Xilinx
-    attribute dont_touch             : boolean;
-    attribute keep                   : string;
-    attribute dont_touch of In_Clk_Sig       : signal is true;
-    attribute keep of In_Clk_Sig             : signal is "yes"; 
+    attribute dont_touch                    : boolean;
+    attribute keep                          : string;
+    attribute dont_touch of In_Clk_Sig      : signal is true;
+    attribute keep of In_Clk_Sig            : signal is "yes"; 
 
 
 begin
