@@ -129,22 +129,23 @@ BramThreshold = 16
 for Delay in [0, 1, 2, 3, 8, 30, 32]:
     for Resource in ["BRAM", "SRL", "AUTO"]:
         for RstState in [True, False]:
-            for RandomStall in [True, False]:
-                #Skip illegal configurations
-                if (Resource == "BRAM" and Delay < 3):
-                    continue
-                #Create test configurations
-                RamBehav = "RBW"
-                tb.add_config(name=f'D={Delay}-R={Resource}-RS={RstState}-Rnd={RandomStall}-B={RamBehav}',
-                          generics={'Delay_g': Delay, 'Resource_g': Resource, 'RstState_g': RstState,
-                                    'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
-                #Skip Ram behavior for non-ram cases
-                if (Resource != "BRAM") and (Resource != "AUTO" or Delay < BramThreshold):
-                    continue
-                RamBehav = "WBR"
-                tb.add_config(name=f'D={Delay}-R={Resource}-RS={RstState}-Rnd={RandomStall}-B={RamBehav}',
-                          generics={'Delay_g': Delay, 'Resource_g': Resource, 'RstState_g': RstState,
-                                    'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
+            #Random-Stall is sufficient (non-random is only used for debugging purposes)
+            RandomStall = True
+            #Skip illegal configurations
+            if (Resource == "BRAM" and Delay < 3):
+                continue
+            #Create test configurations
+            RamBehav = "RBW"
+            tb.add_config(name=f'D={Delay}-R={Resource}-RS={RstState}-Rnd={RandomStall}-B={RamBehav}',
+                      generics={'Delay_g': Delay, 'Resource_g': Resource, 'RstState_g': RstState,
+                                'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
+            #Skip Ram behavior for non-ram cases
+            if (Resource != "BRAM") and (Resource != "AUTO" or Delay < BramThreshold):
+                continue
+            RamBehav = "WBR"
+            tb.add_config(name=f'D={Delay}-R={Resource}-RS={RstState}-Rnd={RandomStall}-B={RamBehav}',
+                      generics={'Delay_g': Delay, 'Resource_g': Resource, 'RstState_g': RstState,
+                                'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
 
 
 
