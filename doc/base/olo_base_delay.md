@@ -39,6 +39,8 @@ In cases a delayed version of an AXI4-Stream with back-pressure (*Ready* signal)
 | RstState_g      | boolean  | true    | true: 0 is outputted for the first *Delay_g* data beats after reset<br />false: No special handling for reset, the content of the delay-line is output after reset. |
 | RamBehavior_g   | string   | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 
+Note that BlockRAM as resource are only a valid choice for *Delay_g* >= 3. For lower *Delay_g* values, "SRL" or "AUTO" must be chosen as resource.
+
 ## Interfaces
 
 ### Control
