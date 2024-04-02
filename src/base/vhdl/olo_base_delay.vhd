@@ -28,10 +28,10 @@ entity olo_base_delay is
     generic (
         Width_g         : positive;
         Delay_g         : natural;
-        Resource_g      : string   := "AUTO";   -- AUTO, SRL or BRAM
-        BramThreshold_g : positive := 128;      -- Number of delay taps to start using BRAM from (if Resource_g = AUTO)
-        RstState_g      : boolean  := True;     -- True = '0' is outputted after reset, '1' after reset the existing state is outputted
-        RamBehavior_g   : string   := "RBW"     -- "RBW" = read-before-write, "WBR" = write-before-read
+        Resource_g      : string                            := "AUTO";   
+        BramThreshold_g : positive range 3 to positive'high := 128;    
+        RstState_g      : boolean                           := True;     
+        RamBehavior_g   : string                            := "RBW" 
     );
     port(
         -- Control Ports

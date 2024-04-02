@@ -34,8 +34,8 @@ In cases a delayed version of an AXI4-Stream with back-pressure (*Ready* signal)
 | :-------------- | :------- | ------- | :----------------------------------------------------------- |
 | Width_g         | positive | -       | Data width                                                   |
 | Delay_g         | natural  | -       | Number of samples / data-beats of delay                      |
-| Resource_g      | string   | "AUTO"  | The following values are possible:<br />- "BRAM": Always use BlockRAM <br />- "SRL": Always use shift registers<br />- "AUTO": Automatically select based on *Delay_g* and *BramThreshold_g* |
-| BramThreshold_g | positive | 128     | In case of *Resource_g*="AUTO", BlockRAM is used when *Delay_g*>*BramThreshold_g* and shift registers are used otherwise. |
+| Resource_g      | string   | "AUTO"  | The following values are possible:<br />- "BRAM": Always use BlockRAM  (only allowed for *Delay_g* >= 3)<br />- "SRL": Always use shift registers<br />- "AUTO": Automatically select based on *Delay_g* and *BramThreshold_g* |
+| BramThreshold_g | positive | 128     | In case of *Resource_g*="AUTO", BlockRAM is used when *Delay_g*>*BramThreshold_g* and shift registers are used otherwise.<br />Must be greater or equal to 3. |
 | RstState_g      | boolean  | true    | true: 0 is outputted for the first *Delay_g* data beats after reset<br />false: No special handling for reset, the content of the delay-line is output after reset. |
 | RamBehavior_g   | string   | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 
