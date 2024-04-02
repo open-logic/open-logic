@@ -1,0 +1,7 @@
+{signal: [
+  {name: 'Clk',          wave: 'P........', period:2},  
+  {name: 'Valid',        wave: '01....01.', period:2},
+  {name: 'Ready',        wave: '1..0.1...', period:2},
+  {name: 'Data',   	     wave: 'x345..x67', data:["1", "2", "3", "4", "5"],period:2},
+  {name: 'Data_Delayed', wave: 'x..3..4.5', data:["1", "2", "3"], period:2},
+]}

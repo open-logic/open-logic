@@ -121,6 +121,36 @@ for Stages in [0, 1, 5]:
             tb.add_config(name=f'Stg={Stages}-Rdy={UseReady}-Rnd={RandomStall}',
                           generics={'Stages_g': Stages, 'UseReady_g': UseReady, 'RandomStall_g': RandomStall})
 
+#Delay TB
+delay_tb = 'olo_base_delay_tb'
+tb = olo_tb.test_bench(delay_tb)
+#No BRAM cases
+BramThreshold = 16
+for Delay in [0, 1, 2, 3, 8, 30, 32]:
+    for Resource in ["BRAM", "SRL", "AUTO"]:
+        for RstState in [True, False]:
+            #Random-Stall is sufficient (non-random is only used for debugging purposes)
+            RandomStall = True
+            #Skip illegal configurations
+            if (Resource == "BRAM" and Delay < 3):
+                continue
+            #Create test configurations
+            RamBehav = "RBW"
+            tb.add_config(name=f'D={Delay}-R={Resource}-RS={RstState}-Rnd={RandomStall}-B={RamBehav}',
+                      generics={'Delay_g': Delay, 'Resource_g': Resource, 'RstState_g': RstState,
+                                'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
+            #Skip Ram behavior for non-ram cases
+            if (Resource != "BRAM") and (Resource != "AUTO" or Delay < BramThreshold):
+                continue
+            RamBehav = "WBR"
+            tb.add_config(name=f'D={Delay}-R={Resource}-RS={RstState}-Rnd={RandomStall}-B={RamBehav}',
+                      generics={'Delay_g': Delay, 'Resource_g': Resource, 'RstState_g': RstState,
+                                'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
+
+
+
+
+
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 

@@ -1,0 +1,7 @@
+{signal: [             
+  {name: 'Clk',                        wave: 'P.........', period:2},  
+  {name: 'In_Valid',                   wave: '0101...011', period:2},
+  {name: 'In_Data',   	               wave: 'x3x4567x89', data:["1", "2", "3", "4", "5", "6","7"],period:2},
+  {name: 'Out_Data[RstState_g=true]',  wave: '2....345.6', data:["0", "1", "2", "3","4"], period:2},
+  {name: 'Out_Data[RstState_g=false]', wave: 'x....345.6', data:["1", "2", "3", "4"], period:2},
+]}
