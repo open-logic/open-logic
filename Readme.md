@@ -67,6 +67,14 @@ This goal is self explaining. It is implemented as follows:
 
 Thanks to the *pure VHDL* philosophy, *Open Logic* simulates fast and is fully supported by the open-source GHDL simulator. This is crucial for an open-source project because it allows participating on the development at zero tool-cost.
 
+## How to Contribute
+
+Of course you are more than welcome to contribute to the project.
+
+The easiest way of doing so, is by simply using *Open Logic* - and report any issues you find. That may be an idea for a new feature, a bug or simply unclear documentation. Any feedback is appreciated and will help improving the usability of *Open Logic*.
+
+If you want to contribute code, ideally you fork to your own GitHub account and hand in your changes as Pull-Request. You are welcome to discuss your ideas beforehand with (ideally as an issue in GitHub) - this might shorten the path to get your code accepted in *Open Logic*.
+
 ## Origin of the Project
 
 The *Open Logic* project is based on the [psi_common](https://github.com/paulscherrerinstitute/psi_common/tree/57aa85217e727b5fbddf8f000b270ab77602b03e) library provided by Paul Scherrer Institute. I would like to give credits to the authors of this library, especially Benoit Stef, who maintained the project after I left PSI.

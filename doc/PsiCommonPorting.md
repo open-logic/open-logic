@@ -24,7 +24,7 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_bit_cc                      | olo_base_cc_bits    | -                                          |
 | psi_common_clk_meas                    | Not ported yet      | -                                          |
 | psi_common_debouncer                   | Not ported yet      | -                                          |
-| pis_common_delay                       | Not ported yet      | -                                          |
+| pis_common_delay                       | olo_base_delay      | -                                          |
 | psi_common_delay_cfg                   | Not ported yet      | -                                          |
 | psi_common_dyn_sft                     | Not ported yet      | -                                          |
 | psi_common_find_min_max                | Not ported yet      | -                                          |

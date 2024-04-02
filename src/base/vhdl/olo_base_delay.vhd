@@ -55,7 +55,6 @@ architecture rtl of olo_base_delay is
     signal RstStateCnt : integer range 0 to Delay_g - 1;
     attribute shreg_extract : string;
     attribute srl_style : string;
-
 begin
 
     -- *** Assertions ***
@@ -68,7 +67,7 @@ begin
         type Srl_t is array (0 to MemTaps_c - 1) of std_logic_vector(Width_g - 1 downto 0);
         signal SrlSig : Srl_t := (others => (others => '0'));
     	attribute shreg_extract of SrlSig : signal is "true";
-    	attribute srl_style of SrlSig : signal is "srl"; 
+    	attribute srl_style of SrlSig : signal is "srl";
     begin
         p_srl : process(Clk)
         begin
