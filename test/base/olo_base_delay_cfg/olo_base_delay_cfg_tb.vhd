@@ -93,7 +93,7 @@ begin
 
         while test_suite loop
 
-            InDelay := 100 ns;
+            InDelay := 0 ns;
             CheckFrom <= 0;
 
             -- Reset

@@ -153,7 +153,7 @@ tb = olo_tb.test_bench(delay_cfg_tb)
 for SupportZero in [True, False]:
     for RamBehav in ["RBW", "WBR"]:
         # Random-Stall is sufficient (non-random is only used for debugging purposes)
-        RandomStall = False
+        RandomStall = True
         tb.add_config(name=f'SZ={SupportZero}-Rnd={RandomStall}-B={RamBehav}',
               generics={'SupportZero_g': SupportZero, 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
 
