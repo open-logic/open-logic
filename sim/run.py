@@ -147,7 +147,15 @@ for Delay in [0, 1, 2, 3, 8, 30, 32]:
                       generics={'Delay_g': Delay, 'Resource_g': Resource, 'RstState_g': RstState,
                                 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
 
-
+#DelayCfg TB
+delay_cfg_tb = 'olo_base_delay_Cfg_tb'
+tb = olo_tb.test_bench(delay_cfg_tb)
+for SupportZero in [True, False]:
+    for RamBehav in ["RBW", "WBR"]:
+        # Random-Stall is sufficient (non-random is only used for debugging purposes)
+        RandomStall = False
+        tb.add_config(name=f'SZ={SupportZero}-Rnd={RandomStall}-B={RamBehav}',
+              generics={'SupportZero_g': SupportZero, 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
 
 
 
