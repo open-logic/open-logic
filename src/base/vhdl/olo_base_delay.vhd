@@ -39,7 +39,7 @@ entity olo_base_delay is
         Rst      : in  std_logic;
         -- Data
         In_Data  : in  std_logic_vector(Width_g-1 downto 0);
-        In_Valid : in  std_logic;
+        In_Valid : in  std_logic                                := '1';
         Out_Data : out std_logic_vector(Width_g-1 downto 0)
     );
 end entity;

@@ -14,6 +14,8 @@ VHDL Source: [olo_base_delay](../../src/base/vhdl/olo_base_delay.vhd)
 
 This component is an efficient implementation for delay chains. It uses FPGA memory resources (Block-RAM and distributed RAM resp. SRLs) for implementing the delays (instead of many FFs). The last delay stage is always implemented in FFs to ensure good timing (RAM outputs are usually slow).
 
+The delay is specified as a number of data-beats (samples). For a delay in clock-cycles, simply connect *In_Valid*='1' - or lave *In_Valid* unconnected to rely on its default value.
+
 One Problem with using RAM resources to implement delays is that they don't have a reset, so the content of the RAM persists after resetting the logic. The *olo_base_delay* entity works around this issue by some logic that ensures that any persisting data is replaced by zeros after a reset. The replacement is done at the output of the *olo_base_delay*, so no time to overwrite memory cells after a reset is required and the entity is ready to operate on the first clock cycle after the reset.
 
 If the delay is implemented using a RAM, the behavior of the RAM (read-before-write or write-before-read) can be selected to allow efficient implementation independently of the target technology.
