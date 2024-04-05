@@ -85,10 +85,14 @@ begin
             v.Data                     := In_Data;
             v.DataVld                  := In_WordEna;
             -- Assert last to the correct data-word
-            for i in 0 to RatioInt_c - 2 loop
-                v.DataLast(i) := In_WordEna(i) and not In_WordEna(i + 1) and In_Last;
+            v.DataLast := (others => '0');
+            for i in RatioInt_c-1 downto 0 loop
+                if In_WordEna(i) = '1' and In_Last = '1' then
+                    v.DataLast(i) := '1';
+                    exit;
+                end if;
             end loop;
-            v.DataLast(RatioInt_c - 1) := In_WordEna(RatioInt_c - 1) and In_Last;
+
         elsif (Out_Ready = '1') and (unsigned(r.DataVld) /= 0) then
             v.Data     := zerosVector(OutWidth_g) & r.Data(r.Data'left downto OutWidth_g);
             v.DataVld  := '0' & r.DataVld(r.DataVld'left downto 1);
