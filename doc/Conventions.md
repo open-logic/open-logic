@@ -103,6 +103,17 @@ In this implementation, *A* results in a D-FF with reset and *B* results in a D-
 
 All optional generics and ports have default values. If a user does not need optional ports or generics, he does not have to care about them and find out what would be an appropriate default value.
 
+### TDM (Time Division Multiplexing)
+
+Rules:
+
+-	If multiple signals are transferred TDM (time-division-multiplexed) over the same interface and all signals have the same sample rate, no additional channel indicator is implemented and looping through the channels is implicit (e.g. for a three channel link, samples are transferred in the channel order 0-1-2-0-1-2-…).
+
+The entities blocks can be used to convert between parallel channel handling and TDM:
+
+- [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) - Parallel to TDM
+- [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) - TMD to Parallel
+
 ## Testbenching
 
 ### VUnit

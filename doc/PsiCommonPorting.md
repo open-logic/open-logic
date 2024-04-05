@@ -33,9 +33,9 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_math_pkg                    | [olo_base_pkg_math](./base/olo_base_pkg_math.md)     | -                                                            |
 | psi_common_min_max_sum                 | Not ported yet                                       | -                                                            |
 | psi_common_multi_pl_stage              | [olo_base_pl_stage](./base/olo_base_pl_stage.md)     | -                                                            |
-| psi_common_par_ser                     | Not ported yet                                       | -                                                            |
-| psi_common_par_tdm                     | Not ported yet                                       | -                                                            |
-| psi_common_par_tdm_cfg                 | Not ported yet                                       | -                                                            |
+| psi_common_par_ser                     | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Use the following mappings:<br />- *InWidth_g* = Width<br />- *OutWidth_g* = 1<br />- Use *Out_Ready* to control the bit-rate<br />- Some features are not 1:1 ported (e.g. overrun control and signalling start of frame) |
+| psi_common_par_tdm                     | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Use the following mappings:<br />- *InWidth_g* = NumberOfChannels x ChannelWidth<br />- *OutWidth_g* = ChannelWidth |
+| psi_common_par_tdm_cfg                 | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | use the following mappings:<br />- *InWidth_g* = NumberOfChannels x ChannelWidth<br />- *OutWidth_g* = ChannelWidth<br />- *In Last* = '1'<br />- *In_WordEna* = Lowest *EnabledChannels*  bits '1', others '0' |
 | psi_common_ping_pong                   | Not ported yet                                       | -                                                            |
 | psi_common_pl_stage                    | [olo_base_pl_stage](./base/olo_base_pl_stage.md)     | Use *Stages_g*=1                                             |
 | psi_common_prbs                        | Not ported yet                                       | -                                                            |

@@ -51,8 +51,8 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
-| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Increase word width by an integer factor (*OutWidth = InWidth x N*) |
-| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Decrease word width by an integer factor (*OutWidth = InWidth / N*) |
+| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Increase word width by an integer factor (*OutWidth = InWidth x N*)<br />Convert from TDM to parallel (see [Conventions](./Conventions.md)) |
+| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Decrease word width by an integer factor (*OutWidth = InWidth / N*)<br />Convert from parallel to TDM (see [Conventions](./Conventions.md)) |
 
 ### Miscellaneous 
 

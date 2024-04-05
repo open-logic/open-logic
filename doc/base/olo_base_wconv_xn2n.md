@@ -16,6 +16,8 @@ This component implements a data width conversion from a multiple N-bits to a N-
 
 The width conversion does support back-to-back conversions (*Out_Valid/In_ready* can stay high all the time).
 
+This block can also be used for *Parallel to TDM* conversion. 
+
 The entity does little-endian data alignment as shown in the figure below.
 
 ![Data alignment](./wconv/olo_base_wconv_xn2n_align.svg)
@@ -29,6 +31,8 @@ Note that with the assertion of *In_Last* at least one byte of the data must be 
 ![Wave](./wconv/olo_base_wconv_xn2n.svg)
 
 This entity does only do a width conversion but not clock crossing. If a double-clock-half-width conversion is required, [olo_base_cc_n2xn](./olo_base_cc_n2xn)  component can be used in front of the width conversion.
+
+
 
 ## Generics
 
