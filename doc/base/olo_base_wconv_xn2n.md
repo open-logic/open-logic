@@ -16,7 +16,7 @@ This component implements a data width conversion from a multiple N-bits to a N-
 
 The width conversion does support back-to-back conversions (*Out_Valid/In_ready* can stay high all the time).
 
-This block can also be used for *Parallel to TDM* conversion. 
+This block can also be used for *Parallel to TDM* conversion (see [Conventions](../Conventions.md))
 
 The entity does little-endian data alignment as shown in the figure below.
 

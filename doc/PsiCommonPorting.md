@@ -33,9 +33,9 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_math_pkg                    | [olo_base_pkg_math](./base/olo_base_pkg_math.md)     | -                                                            |
 | psi_common_min_max_sum                 | Not ported yet                                       | -                                                            |
 | psi_common_multi_pl_stage              | [olo_base_pl_stage](./base/olo_base_pl_stage.md)     | -                                                            |
-| psi_common_par_ser                     | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Use the following mappings:<br />- *InWidth_g* = Width<br />- *OutWidth_g* = 1<br />- Use *Out_Ready* to control the bit-rate<br />- Some features are not 1:1 ported (e.g. overrun control and signalling start of frame) |
+| psi_common_par_ser                     | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Use the following mappings:<br />- *InWidth_g* = Width<br />- *OutWidth_g* = 1<br />- Use *Out_Ready* to control the bit-rate (e.g. through *olo_base_strobe_generator*)<br />- Some features are not 1:1 ported (e.g. overrun control and signalling start of frame) |
 | psi_common_par_tdm                     | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Use the following mappings:<br />- *InWidth_g* = NumberOfChannels x ChannelWidth<br />- *OutWidth_g* = ChannelWidth |
-| psi_common_par_tdm_cfg                 | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | use the following mappings:<br />- *InWidth_g* = NumberOfChannels x ChannelWidth<br />- *OutWidth_g* = ChannelWidth<br />- *In Last* = '1'<br />- *In_WordEna* = Lowest *EnabledChannels*  bits '1', others '0' |
+| psi_common_par_tdm_cfg                 | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Use the following mappings:<br />- *InWidth_g* = NumberOfChannels x ChannelWidth<br />- *OutWidth_g* = ChannelWidth<br />- *In Last* = '1'<br />- *In_WordEna* = Lowest *EnabledChannels*  bits '1', others '0' |
 | psi_common_ping_pong                   | Not ported yet                                       | -                                                            |
 | psi_common_pl_stage                    | [olo_base_pl_stage](./base/olo_base_pl_stage.md)     | Use *Stages_g*=1                                             |
 | psi_common_prbs                        | Not ported yet                                       | -                                                            |
@@ -57,8 +57,8 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_sync_cc_xn2n                | [olo_base_cc_xn2n](./base/olo_base_cc_xn2n.md)       | -                                                            |
 | psi_common_sync_fifo                   | [olo_base_fifo_sync](./base/olo_base_fifo_sync.md)   | -                                                            |
 | psi_common_tdm_mux                     | Not ported yet                                       | -                                                            |
-| psi_common_tdm_par                     | Not ported yet                                       | -                                                            |
-| psi_common_tdm_par_cfg                 | Not ported yet                                       | -                                                            |
+| psi_common_tdm_par                     | [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Use the following mappings:<br />- *OutWidth_g* = NumberOfChannels x ChannelWidth<br />- *InWidth_g* = ChannelWidth<br />- *Out_WordEna* = *keep* on Parallel side |
+| psi_common_tdm_par_cfg                 | [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | The functionality is not ported 1:1. Instead of selecting the number of channels through a separate signal, it is suggested to use *In_Last* to signal the last channel of the TDM input. This way *olo_base_wconv_n2xn* works naturally. |
 | psi_common_tdp_ram                     | [olo_base_ram_tdp](./base/olo_base_ram_tdp.md)       | Use *UseByteEnable_g*=False                                  |
 | psi_common_tdp_ram_be                  | [olo_base_ram_tdp](./base/olo_base_ram_tdp.md)       | Use *UseByteEnable_g*=True                                   |
 | psi_common_tickgenerator               | Not ported yet                                       | -                                                            |
