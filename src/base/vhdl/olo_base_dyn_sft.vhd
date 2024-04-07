@@ -104,8 +104,11 @@ begin
                 TempData_v                                                                   := (others => '0');
                 TempData_v(Select_v * StepSize_v + Width_g - 1 downto Select_v * StepSize_v) := r.Data(stg);
                 v.Data(stg + 1)                                                              := TempData_v(Width_g - 1 downto 0);
+            -- Excluded from coverage because this line can't be reached in valid configurations
+            -- coverage off
             else
                 report "###ERROR###: olo_base_dyn_sft - Direction_g must be LEFT or RIGHT, is '" & Direction_g & "'" severity error;
+            -- coverage on
             end if;
             v.Shift(stg + 1) := shiftRight(r.Shift(stg), SelBitsPerStageLimited_c, '0');
             v.Vld(stg + 1)   := r.Vld(stg);
