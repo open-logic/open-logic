@@ -61,6 +61,7 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | [olo_base_pl_stage](./base/olo_base_pl_stage.md)   | Implements one or more pipeline stages (register stages) - with or without support for backpressure (Ready) |
 | [olo_base_delay](./base/olo_base_delay.md)         | Fixed duration delay (fixed number of data-beats)            |
 | [olo_base_delay_cfg](./base/olo_base_delay_cfg.md) | Configurable duration delay (runtime configurable number of data-beats) |
+| [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)     | Dynamic barrel shifter (number of bits to shift is configurable per sample at runtime) |
 
 ## axi
 

@@ -26,7 +26,7 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_debouncer                   | Not ported yet                                       | -                                                            |
 | pis_common_delay                       | [olo_base_delay](./base/olo_base_delay.md)           | -                                                            |
 | psi_common_delay_cfg                   | [olo_base_delay_cfg](./base/olo_base_delay_cfg.md)   | *Hold_g* behavior is not ported (considered as not generic enough for a library component). |
-| psi_common_dyn_sft                     | Not ported yet                                       | -                                                            |
+| psi_common_dyn_sft                     | [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)       | -                                                            |
 | psi_common_find_min_max                | Not ported yet                                       | -                                                            |
 | psi_common_i2c_master                  | Not ported yet                                       | -                                                            |
 | psi_common_logic_pkg                   | [olo_base_pkg_logic](./base/olo_base_pkg_logic.md)   | -                                                            |
