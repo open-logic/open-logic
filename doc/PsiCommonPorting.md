@@ -45,7 +45,7 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_pulse_shaper_cfg            | Not ported yet                                       | -                                                            |
 | psi_common_ramp_gene                   | Won't be ported                                      | Not generic enough for a library component                   |
 | psi_common_sdp_ram                     | [olo_base_ram_sdp](./base/olo_base_ram_sdp.md)       | Use *UseByteEnable_g*=False                                  |
-| psi_common_ser_par                     | Not ported yet                                       | -                                                            |
+| psi_common_ser_par                     | [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Use the following mappings:<br />- *InWidth_g* = 1<br />- *OutWidth_g* = Width<br /> |
 | psi_common_simple_cc                   | [olo_base_cc_simple](./base/olo_base_cc_simple.md)   | -                                                            |
 | psi_common_sp_ram_be                   | [olo_base_ram_sp](./base/olo_base_ram_sp.md)         | Use *UseByteEnable_g*=True                                   |
 | psi_common_spi_master                  | Not ported yet                                       | -                                                            |
