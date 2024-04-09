@@ -172,6 +172,13 @@ for Direction in ["LEFT", "RIGHT"]:
                               generics={'Direction_g': Direction, 'SelBitsPerStage_g': BitsPerStage,
                                         'MaxShift_g': MaxShift, 'SignExtend_g': SignExt})
 
+#Arbiters
+arb_prio_tb = 'olo_base_arb_prio_tb'
+tb = olo_tb.test_bench(arb_prio_tb)
+for Latency in [0, 1, 3]:
+    tb.add_config(name=f'L={Latency}', generics={'Latency_g': Latency})
+arb_rr_tb = 'olo_base_arb_rr_tb'
+#Only one config required, hence no "add_config" looping
 
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
