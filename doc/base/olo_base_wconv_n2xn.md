@@ -14,6 +14,8 @@ VHDL Source: [olo_base_wconv_n2xn](../../src/base/vhdl/olo_base_wconv_n2xn.vhd)
 
 This component implements a data width conversion from N-bits to a multiple of N-bits. The sample rate (*Valid* pulse rate) is reduced accordingly. The width conversion implements AXI-S handshaking signals to handle back-pressure.
 
+This block can also be used for *TDM to Parallel* conversion (see [Conventions](../Conventions.md))
+
 The with conversion supports back-to-back conversions (*In_Valid* can stay high all the time). It also handles the last-flag correctly according to AXI specification. If *In_Last* is asserted, all data is flushed out and the word enabled (*Out_WordEna*) at the output are set only for words that contain data. *Out_Last* is asserted accordingly. 
 
 Note that insteady of byte-enables, a word enable (*Out_WordEna*)  is implemented. It signals the validity of data on the granularity of *In_Data* words. This concept allows to correctly handle any data-widths, not only multiple of bytes.

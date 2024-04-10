@@ -47,28 +47,6 @@ architecture sim of olo_base_delay_cfg_tb is
     -------------------------------------------------------------------------
     constant Clk_Frequency_c   : real    := 100.0e6;
     constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
-    -------------------------------------------------------------------------
-    -- TB Defnitions
-    -------------------------------------------------------------------------
-    shared variable InDelay     : time := 0 ns;
-    signal CheckFrom            : integer;
-
-    -- *** Verification Compnents ***
-	constant axisMaster : axi_stream_master_t := new_axi_stream_master (
-		data_length => DataWidth_c,
-		stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
-	);
-
-    -- *** Procedures ***
-    procedure PushN(signal net : inout network_t;
-                    start : integer;
-                    count : integer ) is
-    begin
-        for i in start to start+count-1 loop
-            wait for InDelay;
-            push_axi_stream(net, axisMaster, toUslv(i, DataWidth_c));
-        end loop;
-    end procedure;
 
     -------------------------------------------------------------------------
     -- Interface Signals
@@ -80,6 +58,32 @@ architecture sim of olo_base_delay_cfg_tb is
     signal In_Data     : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0');                                               
     signal Out_Data    : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0'); 
 
+    -------------------------------------------------------------------------
+    -- TB Defnitions
+    -------------------------------------------------------------------------
+    shared variable InDelay         : time := 0 ns;
+    shared variable DataCounter     : integer;
+    shared variable StartChecking   : integer;
+
+    -- *** Verification Compnents ***
+	constant axisMaster : axi_stream_master_t := new_axi_stream_master (
+		data_length => DataWidth_c,
+		stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
+	);
+
+    -- *** Procedures ***
+    procedure PushN(signal net : inout network_t;
+                    count : integer ) is
+    begin
+        wait for 0.1 ns; -- make sure Delay signal is updated
+        StartChecking := max(DataCounter + 5, fromUslv(Delay)); -- start checking on 5th sample or delay (the bigger, output must be valid)
+        report integer'image(StartChecking);
+        for i in 0 to count-1 loop
+            wait for InDelay;
+            push_axi_stream(net, axisMaster, toUslv(DataCounter, DataWidth_c));
+            DataCounter := DataCounter + 1;
+        end loop;
+    end procedure;
 begin
 
     -------------------------------------------------------------------------
@@ -94,7 +98,7 @@ begin
         while test_suite loop
 
             InDelay := 0 ns;
-            CheckFrom <= 0;
+            DataCounter := 0;
 
             -- Reset
             wait until rising_edge(Clk);
@@ -107,64 +111,53 @@ begin
             if run("FixDelay0") then
                 -- Skip if zero is not supported
                 if SupportZero_g then
-                    CheckFrom <= 5;
                     Delay <= toUslv(0, Delay'length);
-                    PushN(net, 0, 20);
+                    PushN(net, 20);
                 end if;
             end if;
 
             if run("FixDelay1") then
-                CheckFrom <= 5;
                 Delay <= toUslv(1, Delay'length);
-                PushN(net, 0, 20);
+                PushN(net, 20);
             end if;   
             
             if run("FixDelay2") then
-                CheckFrom <= 5;
                 Delay <= toUslv(2, Delay'length);
-                PushN(net, 0, 20);
+                PushN(net, 20);
             end if;    
             
             if run("FixDelay3") then
-                CheckFrom <= 5;
                 Delay <= toUslv(3, Delay'length);
-                PushN(net, 0, 20);
+                PushN(net, 20);
             end if;      
 
             if run("FixDelay5") then
-                CheckFrom <= 5;
                 Delay <= toUslv(5, Delay'length);
-                PushN(net, 0, 20);
+                PushN(net, 20);
             end if;
 
             if run("FixDelayMax") then
-                CheckFrom <= MaxDelay_c;
                 Delay <= toUslv(MaxDelay_c, Delay'length);
-                PushN(net, 0, 40);
+                PushN(net, 40);
             end if;
             
             if run("IncreaseDelay") then
-                CheckFrom <= 5;
                 Delay <= toUslv(5, Delay'length);
-                PushN(net, 0, 40);   
+                PushN(net, 40);   
                 wait_until_idle(net, as_sync(axisMaster));
-                CheckFrom <= 40+5;
                 Delay <= toUslv(7, Delay'length);
-                PushN(net, 40, 40);                        
+                PushN(net, 40);                        
             end if;
 
             if run("DecreaseDelay") then
-                CheckFrom <= 7;
                 Delay <= toUslv(7, Delay'length);
-                PushN(net, 0, 40);   
+                PushN(net, 40);   
                 wait_until_idle(net, as_sync(axisMaster));
-                CheckFrom <= 40+5;
                 Delay <= toUslv(2, Delay'length);
-                PushN(net, 40, 10);     
+                PushN(net, 10);     
                 wait_until_idle(net, as_sync(axisMaster));  
-                CheckFrom <= 50+5;
                 Delay <= toUslv(1, Delay'length);
-                PushN(net, 50, 10);  
+                PushN(net, 10);  
             end if;
             
             wait_until_idle(net, as_sync(axisMaster));
@@ -222,7 +215,7 @@ begin
         if rising_edge(Clk) then
             if In_Valid = '1' then
                 -- Normal operation
-                if unsigned(In_Data) >= CheckFrom then
+                if unsigned(In_Data) >= StartChecking then
                     check_equal(Out_Data, fromUslv(In_Data)-fromUslv(Delay), "Wrong Value");
                 end if;
             end if;

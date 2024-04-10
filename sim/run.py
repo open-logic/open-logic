@@ -148,7 +148,6 @@ for Delay in [0, 1, 2, 3, 8, 30, 32]:
                                 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
 
 #DelayCfg TB
-delay_cfg_tb = 'olo_base_delay_Cfg_tb'
 tb = olo_tb.test_bench(delay_cfg_tb)
 for SupportZero in [True, False]:
     for RamBehav in ["RBW", "WBR"]:
@@ -158,6 +157,28 @@ for SupportZero in [True, False]:
               generics={'SupportZero_g': SupportZero, 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
 
 
+#Dynamic Shift TB
+dyn_sft_tb = 'olo_base_dyn_sft_tb'
+tb = olo_tb.test_bench(dyn_sft_tb)
+for Direction in ["LEFT", "RIGHT"]:
+    for BitsPerStage in [1,4,7]:
+        for MaxShift in [1, 10, 16]:
+            for SignExt in [True, False]:
+                #Sign extension only for right shift
+                if Direction == "LEFT" and SignExt:
+                    continue
+                #Add case
+                tb.add_config(name=f'D={Direction}-BPS={BitsPerStage}-MS={MaxShift}-SE{SignExt}',
+                              generics={'Direction_g': Direction, 'SelBitsPerStage_g': BitsPerStage,
+                                        'MaxShift_g': MaxShift, 'SignExtend_g': SignExt})
+
+#Arbiters
+arb_prio_tb = 'olo_base_arb_prio_tb'
+tb = olo_tb.test_bench(arb_prio_tb)
+for Latency in [0, 1, 3]:
+    tb.add_config(name=f'L={Latency}', generics={'Latency_g': Latency})
+arb_rr_tb = 'olo_base_arb_rr_tb'
+#Only one config required, hence no "add_config" looping
 
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])

@@ -1,0 +1,6 @@
+{signal: [             
+  {name: 'Clk',                        wave: 'P...........', period:2},  
+  {name: 'Valid',   	               wave: '1...0101....', period:2},
+  {name: 'Ready',                      wave: '1.......0101', period:2},
+  {name: 'Data',   	                   wave: '5345x3x45.3.', data:["CH0-0", "CH1-0", "CH2-0", "CH0-1", "CH1-1", "CH2-1","CH0-2", "CH1-2"], period:2},
+]}

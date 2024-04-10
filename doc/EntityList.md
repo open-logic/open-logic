@@ -51,8 +51,15 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
-| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Increase word width by an integer factor (*OutWidth = InWidth x N*) |
-| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Decrease word width by an integer factor (*OutWidth = InWidth / N*) |
+| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Increase word width by an integer factor (*OutWidth = InWidth x N*)<br />Convert from TDM to parallel (see [Conventions](./Conventions.md)) |
+| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Decrease word width by an integer factor (*OutWidth = InWidth / N*)<br />Convert from parallel to TDM (see [Conventions](./Conventions.md)) |
+
+### Arbiters (olo_base_arb_\<...\>)
+
+| Entity                                           | Description                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------ |
+| [olo_base_arb_prio](./base/olo_base_arb_prio.md) | Priority arbiter - Always selects the highest priority requester with a pending request. |
+| [olo_base_arb_rr](./base/olo_base_arb_rr.md)     | Round robin arbiter - iterate through all requesters with a pending request. |
 
 ### Miscellaneous 
 
@@ -61,6 +68,7 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | [olo_base_pl_stage](./base/olo_base_pl_stage.md)   | Implements one or more pipeline stages (register stages) - with or without support for backpressure (Ready) |
 | [olo_base_delay](./base/olo_base_delay.md)         | Fixed duration delay (fixed number of data-beats)            |
 | [olo_base_delay_cfg](./base/olo_base_delay_cfg.md) | Configurable duration delay (runtime configurable number of data-beats) |
+| [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)     | Dynamic barrel shifter (number of bits to shift is configurable per sample at runtime) |
 
 ## axi
 
