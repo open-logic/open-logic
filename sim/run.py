@@ -148,6 +148,7 @@ for Delay in [0, 1, 2, 3, 8, 30, 32]:
                                 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
 
 #DelayCfg TB
+delay_cfg_tb = 'olo_base_delay_cfg_tb'
 tb = olo_tb.test_bench(delay_cfg_tb)
 for SupportZero in [True, False]:
     for RamBehav in ["RBW", "WBR"]:
