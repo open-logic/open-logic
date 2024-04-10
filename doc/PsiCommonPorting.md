@@ -12,8 +12,8 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 
 | psi_common Entity                      | Open Logic Entity                                    | Comments / Generic Values                                    |
 | -------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
-| psi_common_arb_priority                | Not ported yet                                       | -                                                            |
-| psi_common_arb_round_robin             | Not ported yet                                       | -                                                            |
+| psi_common_arb_priority                | [olo_base_arb_prio](./base/olo_base_arb_prio.md)     | -                                                            |
+| psi_common_arb_round_robin             | [olo_base_arb_rr](./base/olo_base_arb_rr.md)         | -                                                            |
 | psi_common_async_fifo                  | [olo_base_fifo_async](./base/olo_base_fifo_async.md) | -                                                            |
 | psi_common_axi_master_full             | Not ported yet                                       | -                                                            |
 | psi_common_axi_master_simple           | Not ported yet                                       | -                                                            |
