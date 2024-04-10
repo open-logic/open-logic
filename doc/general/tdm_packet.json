@@ -1,0 +1,9 @@
+{signal: [             
+  {name: 'Clk',                        wave: 'P..............', period:1},  
+  {name: 'Valid',   	               wave: '1...0101.......', period:1},
+  {name: 'Ready',                      wave: '1.......0101...', period:1},
+  {name: 'Ready',                      wave: '1.......0101...', period:1},
+  {name: 'Last',                       wave: '0......10......', period:1},
+  {name: 'Data',   	                   wave: '5345x3x45.3.453', data: ["A0.0","B0.0","C0.0", "A0.1","B0.1","C0.1", "A1.0","B1.0","C1.0", "A1.1","B1.1","C0"],period:1},
+  {name: 'Packet',                     wave: '2.......2......', data:["0","1"],period:1},
+]}

@@ -16,10 +16,10 @@ Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 
 *Open Logic* is split into the following areas. You might use all of them or only the ones you need.
 
-* [base](./doc/EntityList#base) - basic logic to be used for device internal logic
-* [axi](./doc/EntityList#axi)  - any components related to AXI4/AXI4-Lite/AXI4-Stream interfaces
+* [base](./doc/EntityList.md#base) - basic logic to be used for device internal logic
+* [axi](./doc/EntityList.md#axi)  - any components related to AXI4/AXI4-Lite/AXI4-Stream interfaces
   * requires: *base*
-* [interface](./doc/EntityList#interface)  - any logic related to device external interfaces 
+* [interface](./doc/EntityList.md#interface)  - any logic related to device external interfaces 
   * requires: *base*
 
 It's suggested that you compile ALL files of the areas you need (plus their dependencies) into one VHDL library. You are free to choose any library name and you are also free to use the same single library for *Open Logic* files and user-code.
