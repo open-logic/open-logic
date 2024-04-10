@@ -48,7 +48,6 @@ architecture sim of olo_base_delay_cfg_tb is
     constant Clk_Frequency_c   : real    := 100.0e6;
     constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
 
-
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------

@@ -157,6 +157,7 @@ for SupportZero in [True, False]:
         tb.add_config(name=f'SZ={SupportZero}-Rnd={RandomStall}-B={RamBehav}',
               generics={'SupportZero_g': SupportZero, 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
 
+
 #Dynamic Shift TB
 dyn_sft_tb = 'olo_base_dyn_sft_tb'
 tb = olo_tb.test_bench(dyn_sft_tb)
