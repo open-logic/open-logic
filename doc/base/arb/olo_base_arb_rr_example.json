@@ -1,0 +1,7 @@
+{signal: [     
+  {name: 'Clk',            wave: 'p............', period:2},
+  {name: 'In_Req',   	   wave: '2......2...2.', data:["1011", "0110", "0000"], period:2},
+  {name: 'Out_Grant',      wave: '2.2224.4..22.', data:["1000", "0010", "0001", "1000", "0010", "0100", "0010", "0000"], period:2},
+  {name: 'Out_Valid',      wave: '1..........0.', period:2},
+  {name: 'Out_Ready',      wave: '01...0...10..', period:2}
+]}
