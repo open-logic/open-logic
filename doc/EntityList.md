@@ -22,15 +22,16 @@ Packages with type declarations and functions used in *Open Logic* internally or
 
 Clock crossings are a key topic and they all follow the same [clock crossing principles](./base/clock_crossing_principles.md)
 
-| Entity                                             | Description                                                  |
-| -------------------------------------------------- | ------------------------------------------------------------ |
-| [olo_base_cc_reset](./base/olo_base_cc_reset.md)   | Synchronization of resets between two clock domains (bi-directional) |
-| [olo_base_cc_bits](./base/olo_base_cc_bits.md)     | Transfer a group of individual single bit signals from one clock domain to another clock domain |
-| [olo_base_cc_pulse](./base/olo_base_cc_pulse.md)   | Transfer single-cycle pulses from one clock domain to another clock domain |
-| [olo_base_cc_simple](./base/olo_base_cc_simple.md) | Transfer selectively valid data from one clock domain to another clock domain (data/valid pair) |
-| [olo_base_cc_status](./base/olo_base_cc_status.md) | Transfer status and configuration information from one clock domain to another clock domain. The update rate is relatively low but consistency is guaranteed |
-| [olo_base_cc_n2xn](./base/olo_base_cc_n2xn.md)     | Transfer data from a slower clock to a faster phase aligned clock (output clock frequency is an exact integer multiple of the input clock frequency and the clocks are phase aligned). |
-| [olo_base_cc_xn2n](./base/olo_base_cc_xn2n.md)     | Transfer data from a faster clock to a slower phase aligned clock (input clock frequency is an exact integer multiple of the output clock frequency and the clocks are phase aligned). |
+| Entity                                               | Description                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_base_cc_reset](./base/olo_base_cc_reset.md)     | Synchronization of resets between two clock domains (bi-directional) |
+| [olo_base_cc_bits](./base/olo_base_cc_bits.md)       | Transfer a group of individual single bit signals from one clock domain to another clock domain |
+| [olo_base_cc_pulse](./base/olo_base_cc_pulse.md)     | Transfer single-cycle pulses from one clock domain to another clock domain |
+| [olo_base_cc_simple](./base/olo_base_cc_simple.md)   | Transfer selectively valid data from one clock domain to another clock domain (data/valid pair) |
+| [olo_base_cc_status](./base/olo_base_cc_status.md)   | Transfer status and configuration information from one clock domain to another clock domain. The update rate is relatively low but consistency is guaranteed |
+| [olo_base_cc_n2xn](./base/olo_base_cc_n2xn.md)       | Transfer data from a slower clock to a faster phase aligned clock (output clock frequency is an exact integer multiple of the input clock frequency and the clocks are phase aligned). |
+| [olo_base_cc_xn2n](./base/olo_base_cc_xn2n.md)       | Transfer data from a faster clock to a slower phase aligned clock (input clock frequency is an exact integer multiple of the output clock frequency and the clocks are phase aligned). |
+| [olo_base_fifo_async](./base/olo_base_fifo_async.md) | Asynchronous FIFO (separate write and read clocks)<br />This is not a pure clock-crossing entity but it can be used as such. |
 
 ### RAM Implementations (olo_base_ram_\<...\>)
 
@@ -60,6 +61,16 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | ------------------------------------------------ | ------------------------------------------------------------ |
 | [olo_base_arb_prio](./base/olo_base_arb_prio.md) | Priority arbiter - Always selects the highest priority requester with a pending request. |
 | [olo_base_arb_rr](./base/olo_base_arb_rr.md)     | Round robin arbiter - iterate through all requesters with a pending request. |
+
+### TDM (olo_base_tdm_<...>)
+
+See [Conventions](./Conventions.md) for a description about TDM (time-division-multiplexing).
+
+| Entity                                               | Description                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_base_tdm_mux](./base/olo_base_tdm_mux.md)       | Select one specific channel from a TDM signal.               |
+| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Convert from TDM to parallel (see [Conventions](./Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
+| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Convert from parallel to TDM (see [Conventions](./Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
 
 ### Miscellaneous 
 
