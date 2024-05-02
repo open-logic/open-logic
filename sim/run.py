@@ -181,6 +181,12 @@ for Latency in [0, 1, 3]:
 arb_rr_tb = 'olo_base_arb_rr_tb'
 #Only one config required, hence no "add_config" looping
 
+#strobe gorenerat
+strobe_generator_tb = 'olo_base_strobe_generator_tb'
+tb = olo_tb.test_bench(strobe_generator_tb)
+for Freq in ["10.0e6", "13.2e6"]:
+    tb.add_config(name=f'F={Freq}', generics={'FreqStrobeHz_g': Freq})
+
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 

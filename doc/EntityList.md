@@ -74,12 +74,13 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 
 ### Miscellaneous 
 
-| Entity                                             | Description                                                  |
-| -------------------------------------------------- | ------------------------------------------------------------ |
-| [olo_base_pl_stage](./base/olo_base_pl_stage.md)   | Implements one or more pipeline stages (register stages) - with or without support for backpressure (Ready) |
-| [olo_base_delay](./base/olo_base_delay.md)         | Fixed duration delay (fixed number of data-beats)            |
-| [olo_base_delay_cfg](./base/olo_base_delay_cfg.md) | Configurable duration delay (runtime configurable number of data-beats) |
-| [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)     | Dynamic barrel shifter (number of bits to shift is configurable per sample at runtime) |
+| Entity                                                       | Description                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [olo_base_pl_stage](./base/olo_base_pl_stage.md)             | Implements one or more pipeline stages (register stages) - with or without support for backpressure (Ready) |
+| [olo_base_delay](./base/olo_base_delay.md)                   | Fixed duration delay (fixed number of data-beats)            |
+| [olo_base_delay_cfg](./base/olo_base_delay_cfg.md)           | Configurable duration delay (runtime configurable number of data-beats) |
+| [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)               | Dynamic barrel shifter (number of bits to shift is configurable per sample at runtime) |
+| [olo_base_strobe_generator](./base/olo_base_strobe_generator.md) | Generate pulses at a fixed frequency                         |
 
 ## axi
 

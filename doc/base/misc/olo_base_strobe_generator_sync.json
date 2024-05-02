@@ -1,0 +1,9 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p.................'},
+  {name: 'In_Sync',      wave: '0..1xx0...........', node:'...a'},
+  {name: 'Out_Valid',    wave: '010.10...10...10..', node:'....b'},
+  ],
+  edge: [
+	'a~b sync'
+  ]
+ }
