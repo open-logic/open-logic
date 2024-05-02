@@ -28,12 +28,12 @@ library work;
 ------------------------------------------------------------------------------
 entity olo_base_arb_prio is
     generic (
-        Width_g    : natural;
+        Width_g    : positive;
         Latency_g  : natural   := 1
     );
     port (   
-        Clk         : in  std_logic;                             
-        Rst         : in  std_logic;                             
+        Clk        : in  std_logic;                             
+        Rst        : in  std_logic;                             
         In_Req     : in  std_logic_vector(Width_g-1 downto 0);
         Out_Grant  : out std_logic_vector(Width_g-1 downto 0)
     );

@@ -36,10 +36,10 @@ This entity does only do a width conversion but not clock crossing. If a double-
 
 ## Generics
 
-| Name       | Type    | Default | Description                                                  |
-| :--------- | :------ | ------- | :----------------------------------------------------------- |
-| InWidth_g  | natural | -       | Input width in bits. Must be an integer multiple of *OutWidth_g* |
-| OutWidth_g | natural | -       | Output width in bits.                                        |
+| Name       | Type     | Default | Description                                                  |
+| :--------- | :------- | ------- | :----------------------------------------------------------- |
+| InWidth_g  | positive | -       | Input width in bits. Must be an integer multiple of *OutWidth_g* |
+| OutWidth_g | positive | -       | Output width in bits.                                        |
 
 ## Interfaces
 

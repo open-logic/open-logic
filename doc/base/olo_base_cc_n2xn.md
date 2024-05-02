@@ -33,7 +33,7 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 | Name      | In/Out | Length    | Default | Description                                                  |
 | :-------- | :----- | :-------- | ------- | :----------------------------------------------------------- |
 | In_Clk    | in     | 1         | -       | Input clock                                                  |
-| In_RstIn  | in     | 1         | -       | Reset input (high-active, synchronous to *In_Clk*)           |
+| In_RstIn  | in     | 1         | '0'     | Reset input (high-active, synchronous to *In_Clk*)           |
 | In_RstOut | out    | 1         | N/A     | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *In_Clk*) |
 | In_Data   | in     | *Width_g* | -       | Input data                                                   |
 | In_Valid  | in     | 1         | '1'     | AXI4-Stream handshaking signal for *In_Data*                 |

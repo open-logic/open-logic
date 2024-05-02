@@ -24,7 +24,7 @@ This entity implements multiple pipeline stages with handshaking (AXI-S Ready/Va
 | Name       | Type     | Default | Description                                                  |
 | :--------- | :------- | ------- | :----------------------------------------------------------- |
 | Width_g    | positive | -       | Number of bits per FIFO entry (word-width)                   |
-| Stages_g   | natural  | -       | Number of register stages to implement                       |
+| Stages_g   | natural  | 1       | Number of register stages to implement                       |
 | UseReady_g | boolean  | true    | Support for backpressure only is implemented if this generic is set to *true* |
 
 ## Interfaces
