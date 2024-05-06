@@ -23,7 +23,7 @@ library work;
 ------------------------------------------------------------------------------
 -- Entity Declaration
 ------------------------------------------------------------------------------
-entity olo_base_strobe_divider is
+entity olo_base_strobe_div is
     generic (
         MaxRatio_g  : positive;
         Latency_g   : natural range 0 to 1  := 1       
@@ -41,7 +41,7 @@ end entity;
 ------------------------------------------------------------------------------
 -- Architecture Declaration
 ------------------------------------------------------------------------------
-architecture rtl of olo_base_strobe_divider is
+architecture rtl of olo_base_strobe_div is
 
     -- *** Two Process Method ***
     type two_process_r is record

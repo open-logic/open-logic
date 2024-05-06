@@ -23,14 +23,14 @@ library olo;
 -- Entity
 ------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_base_strobe_divider_tb is
+entity olo_base_strobe_div_tb is
     generic (
         runner_cfg      : string;
         Latency_g       : natural      := 1
     );
-end entity olo_base_strobe_divider_tb;
+end entity olo_base_strobe_div_tb;
 
-architecture sim of olo_base_strobe_divider_tb is
+architecture sim of olo_base_strobe_div_tb is
 
     -------------------------------------------------------------------------
     -- Constants
@@ -205,7 +205,7 @@ begin
     -------------------------------------------------------------------------
     -- DUT
     -------------------------------------------------------------------------
-    i_dut : entity olo.olo_base_strobe_divider
+    i_dut : entity olo.olo_base_strobe_div
         generic map (
             MaxRatio_g      => MaxRatio_c,
             Latency_g       => Latency_g

@@ -1,14 +1,14 @@
 <img src="../Logo.png" alt="Logo" width="400">
 
-# olo_base_strobe_generator
+# olo_base_strobe_gen
 
 [Back to **Entity List**](../EntityList.md)
 
 ## Status Information
 
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_strobe_generator.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_strobe_generator.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_strobe_generator.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_strobe_gen.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_strobe_gen.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_strobe_gen.json?cacheSeconds=0)
 
-VHDL Source: [olo_base_strobe_generator](../../src/base/vhdl/olo_base_strobe_generator.vhd)
+VHDL Source: [olo_base_strobe_gen](../../src/base/vhdl/olo_base_strobe_gen.vhd)
 
 ## Description
 

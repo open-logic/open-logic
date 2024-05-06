@@ -23,14 +23,14 @@ library olo;
 -- Entity
 ------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_base_strobe_generator_tb is
+entity olo_base_strobe_gen_tb is
     generic (
         runner_cfg      : string;
         FreqStrobeHz_g  : string      := "10.0e6"
     );
-end entity olo_base_strobe_generator_tb;
+end entity olo_base_strobe_gen_tb;
 
-architecture sim of olo_base_strobe_generator_tb is
+architecture sim of olo_base_strobe_gen_tb is
 
     -------------------------------------------------------------------------
     -- Constants
@@ -157,7 +157,7 @@ begin
     -------------------------------------------------------------------------
     -- DUT
     -------------------------------------------------------------------------
-    i_dut : entity olo.olo_base_strobe_generator
+    i_dut : entity olo.olo_base_strobe_gen
         generic map (
             FreqClkHz_g     => FreqClkHz_c,
             FreqStrobeHz_g  => FreqStrobeHz_c

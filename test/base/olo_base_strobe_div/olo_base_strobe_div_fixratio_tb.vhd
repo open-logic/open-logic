@@ -23,14 +23,15 @@ library olo;
 -- Entity
 ------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_base_strobe_divider_backpressonly_tb is
+entity olo_base_strobe_div_fixratio_tb is
     generic (
+        Ratio_g         : positive;
         runner_cfg      : string;
         Latency_g       : natural      := 1
     );
-end entity olo_base_strobe_divider_backpressonly_tb;
+end entity olo_base_strobe_div_fixratio_tb;
 
-architecture sim of olo_base_strobe_divider_backpressonly_tb is
+architecture sim of olo_base_strobe_div_fixratio_tb is
 
     -------------------------------------------------------------------------
     -- Constants
@@ -46,7 +47,7 @@ architecture sim of olo_base_strobe_divider_backpressonly_tb is
     -- Interface Signals
     -------------------------------------------------------------------------
     signal Clk         : std_logic                                              := '0';                              
-    signal Rst         : std_logic                                              := '0';                           
+    signal Rst         : std_logic                                              := '0';    
     signal In_Valid    : std_logic                                              := '0';
     signal Out_Valid   : std_logic                                              := '0';                              
     signal Out_Ready   : std_logic                                              := '1';                       
@@ -78,9 +79,18 @@ begin
                 Out_Ready <= '1';
 
                 for i in 0 to 5 loop
+                    time1_v := now;
+                    -- Not forwarded
+                    for j in 0 to Ratio_g-2 loop
+                        In_Valid <= '1';
+                        wait until rising_edge(Clk);
+                        In_Valid <= '0';
+                        wait until rising_edge(Clk);
+                    end loop;
                     -- Forwarded
                     In_Valid <= '1';
                     if Latency_g = 0 then
+                        check_relation(Out_Valid'last_event > (now-time1_v), "Unexpected strobe");
                         check_equal(Out_Valid, '0', "Unexpected strobe");
                         wait until falling_edge(Clk);
                         check_equal(Out_valid, '1', "Strobe not asserted");
@@ -91,6 +101,7 @@ begin
                     else
                         wait until rising_edge(Clk);
                         In_Valid <= '0';
+                        check_relation(Out_Valid'last_event > (now-time1_v), "Unexpected strobe");
                         wait until rising_edge(Clk);
                         check_equal(Out_valid, '1', "Strobe not asserted");
                         wait until rising_edge(Clk);
@@ -104,9 +115,18 @@ begin
                 Out_Ready <= '0';
 
                 for i in 0 to 5 loop
+                    time1_v := now;
+                    -- Not forwarded
+                    for j in 0 to Ratio_g-2 loop
+                        In_Valid <= '1';
+                        wait until rising_edge(Clk);
+                        In_Valid <= '0';
+                        wait until rising_edge(Clk);
+                    end loop;
                     -- Forwarded
                     In_Valid <= '1';
                     if Latency_g = 0 then
+                        check_relation(Out_Valid'last_event > (now-time1_v), "Unexpected strobe");
                         check_equal(Out_Valid, '0', "Unexpected strobe");
                         wait until falling_edge(Clk);
                         check_equal(Out_valid, '1', "Strobe not asserted");
@@ -114,6 +134,7 @@ begin
                         In_Valid <= '0'; 
                     else
                         wait until rising_edge(Clk);
+                        check_relation(Out_Valid'last_event > (now-time1_v), "Unexpected strobe");
                         In_Valid <= '0'; 
                     end if;
                     wait until rising_edge(Clk);
@@ -126,7 +147,6 @@ begin
                     Out_Ready <= '0'; 
                 end loop;         
             end if;  
-
             wait for 1 us;
 
         end loop;
@@ -143,14 +163,14 @@ begin
     -------------------------------------------------------------------------
     -- DUT
     -------------------------------------------------------------------------
-    i_dut : entity olo.olo_base_strobe_divider
+    i_dut : entity olo.olo_base_strobe_div
         generic map (
-            MaxRatio_g      => 1,
+            MaxRatio_g      => Ratio_g,
             Latency_g       => Latency_g
         )
         port map (
             Clk         => Clk,     
-            Rst         => Rst,     
+            Rst         => Rst,      
             In_Valid    => In_Valid,                               
             Out_Valid   => Out_Valid,  
             Out_Ready   => Out_Ready

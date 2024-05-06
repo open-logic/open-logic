@@ -74,14 +74,14 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 
 ### Miscellaneous 
 
-| Entity                                                       | Description                                                  |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [olo_base_pl_stage](./base/olo_base_pl_stage.md)             | Implements one or more pipeline stages (register stages) - with or without support for backpressure (Ready) |
-| [olo_base_delay](./base/olo_base_delay.md)                   | Fixed duration delay (fixed number of data-beats)            |
-| [olo_base_delay_cfg](./base/olo_base_delay_cfg.md)           | Configurable duration delay (runtime configurable number of data-beats) |
-| [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)               | Dynamic barrel shifter (number of bits to shift is configurable per sample at runtime) |
-| [olo_base_strobe_generator](./base/olo_base_strobe_generator.md) | Generate pulses at a fixed frequency                         |
-| [olo_base_strobe_divider](./base/olo_base_strobe_divider.md) | Only forward every N'th pulse (divide event frequency). <br />Can also be used to convert single-cycle pulses to acknowledged events (pulse stays active until acknowledged). |
+| Entity                                               | Description                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_base_pl_stage](./base/olo_base_pl_stage.md)     | Implements one or more pipeline stages (register stages) - with or without support for backpressure (Ready) |
+| [olo_base_delay](./base/olo_base_delay.md)           | Fixed duration delay (fixed number of data-beats)            |
+| [olo_base_delay_cfg](./base/olo_base_delay_cfg.md)   | Configurable duration delay (runtime configurable number of data-beats) |
+| [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)       | Dynamic barrel shifter (number of bits to shift is configurable per sample at runtime) |
+| [olo_base_strobe_gen](./base/olo_base_strobe_gen.md) | Strobe generator. Generate pulses at a fixed frequency       |
+| [olo_base_strobe_div](./base/olo_base_strobe_div.md) | Strobe divider. Only forward every N'th pulse (divide event frequency). <br />Can also be used to convert single-cycle pulses to acknowledged events (pulse stays active until acknowledged). |
 
 ## axi
 
