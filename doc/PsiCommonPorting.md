@@ -51,7 +51,7 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_spi_master                  | Not ported yet                                               | -                                                            |
 | psi_common_spi_master_cfg              | Not ported yet                                               | -                                                            |
 | psi_common_status_cc                   | [olo_base_cc_status](./base/olo_base_cc_status.md)           | -                                                            |
-| psi_common_strobe_divider              | Not ported yet                                               | -                                                            |
+| psi_common_strobe_divider              | [olo_base_strobe_divider](./base/olo_base_strobe_divider.md) | -                                                            |
 | psi_common_strobe_generator            | [olo_base_strobe_generator](./base/olo_base_strobe_generator.md) | -                                                            |
 | psi_common_sync_cc_n2xn                | [olo_base_cc_n2xn](./base/olo_base_cc_n2xn.md)               | -                                                            |
 | psi_common_sync_cc_xn2n                | [olo_base_cc_xn2n](./base/olo_base_cc_xn2n.md)               | -                                                            |

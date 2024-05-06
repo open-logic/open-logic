@@ -8,7 +8,7 @@
 
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_strobe_generator.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_strobe_generator.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_strobe_generator.json?cacheSeconds=0)
 
-VHDL Source: [olo_base_tdm_mux](../../src/base/vhdl/olo_base_tdm_mux.vhd)
+VHDL Source: [olo_base_strobe_generator](../../src/base/vhdl/olo_base_strobe_generator.vhd)
 
 ## Description
 

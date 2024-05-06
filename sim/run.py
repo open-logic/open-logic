@@ -181,11 +181,23 @@ for Latency in [0, 1, 3]:
 arb_rr_tb = 'olo_base_arb_rr_tb'
 #Only one config required, hence no "add_config" looping
 
-#strobe gorenerat
+#strobe generator
 strobe_generator_tb = 'olo_base_strobe_generator_tb'
 tb = olo_tb.test_bench(strobe_generator_tb)
 for Freq in ["10.0e6", "13.2e6"]:
     tb.add_config(name=f'F={Freq}', generics={'FreqStrobeHz_g': Freq})
+
+#strobe divider
+strobe_divider_tbs = ['olo_base_strobe_divider_tb', 'olo_base_strobe_divider_backpressonly_tb']
+for tb_name in strobe_divider_tbs:
+    tb = olo_tb.test_bench(tb_name)
+    for Latency in [0, 1]:
+        tb.add_config(name=f'L={Latency}', generics={'Latency_g': Latency})
+strobe_divider_fixratio_tb ='olo_base_strobe_divider_fixratio_tb'
+fixratio_tb = olo_tb.test_bench(strobe_divider_fixratio_tb)
+for Latency in [0, 1]:
+    for Ratio in [3, 4, 5, 6]:
+        fixratio_tb.add_config(name=f'L={Latency}-R={Ratio}', generics={'Latency_g': Latency, 'Ratio_g' : Ratio})
 
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])

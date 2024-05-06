@@ -81,6 +81,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_delay_cfg](./base/olo_base_delay_cfg.md)           | Configurable duration delay (runtime configurable number of data-beats) |
 | [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)               | Dynamic barrel shifter (number of bits to shift is configurable per sample at runtime) |
 | [olo_base_strobe_generator](./base/olo_base_strobe_generator.md) | Generate pulses at a fixed frequency                         |
+| [olo_base_strobe_divider](./base/olo_base_strobe_divider.md) | Only forward every N'th pulse (divide event frequency). <br />Can also be used to convert single-cycle pulses to acknowledged events (pulse stays active until acknowledged). |
 
 ## axi
 
