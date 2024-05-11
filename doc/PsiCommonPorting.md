@@ -38,7 +38,7 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_par_tdm_cfg                 | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Use the following mappings:<br />- *InWidth_g* = NumberOfChannels x ChannelWidth<br />- *OutWidth_g* = ChannelWidth<br />- *In Last* = '1'<br />- *In_WordEna* = Lowest *EnabledChannels*  bits '1', others '0' |
 | psi_common_ping_pong                   | Won't be ported                                      | Various vendor IP is available for making AXI4-Stream data available through AXI4 (e.g. AMD AXI4-Stream FIFO). I<br />Data handover to CPUs more-often is done through DMAs. Hence the functionality of this entity is  seldom required. |
 | psi_common_pl_stage                    | [olo_base_pl_stage](./base/olo_base_pl_stage.md)     | Use *Stages_g*=1                                             |
-| psi_common_prbs                        | Not ported yet                                       | -                                                            |
+| psi_common_prbs                        | [olo_base_prbs](./base/olo_base_prbs.md)             | -                                                            |
 | psi_common_pulse_cc                    | [olo_base_cc_pulse](./base/olo_base_cc_pulse.md)     | -                                                            |
 | psi_common_pulse_generator_ctrl_static | Won't be ported                                      | Not generic enough for a library component                   |
 | psi_common_pulse_shaper                | Not ported yet                                       | -                                                            |
