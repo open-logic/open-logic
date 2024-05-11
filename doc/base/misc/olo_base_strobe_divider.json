@@ -1,0 +1,7 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p.......................'},
+  {name: 'In_Valid',     wave: '0.10.10.10.10.10.10.10.1'},
+  {name: 'Out_Valid[Latency_g=0]',    wave: '0.......10.......10.....'},
+  {name: 'Out_Valid[Latency_g=1]',    wave: '0........10.......10....'}
+  ]
+ }

@@ -30,7 +30,7 @@ entity olo_base_cc_n2xn is
     );
     port (   
         In_Clk      : in  std_logic;                              
-        In_RstIn    : in  std_logic;    
+        In_RstIn    : in  std_logic                                 := '0';    
         In_RstOut   : out std_logic;                          
         In_Valid    : in  std_logic                                 := '1';                              
         In_Ready    : out std_logic;                              

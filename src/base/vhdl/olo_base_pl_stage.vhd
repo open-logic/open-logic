@@ -27,7 +27,7 @@ use ieee.std_logic_1164.all;
 ------------------------------------------------------------------------------
 entity olo_base_pl_stage is
     generic (
-        Width_g     : integer   := 8;
+        Width_g     : positive;
         UseReady_g  : boolean   := true;
         Stages_g    : natural   := 1
     ); 
@@ -36,7 +36,7 @@ entity olo_base_pl_stage is
         Clk         : in  std_logic;                              
         Rst         : in  std_logic;    
         -- Input                          
-        In_Valid    : in  std_logic;                              
+        In_Valid    : in  std_logic := '1';                              
         In_Ready    : out std_logic;                              
         In_Data     : in  std_logic_vector(Width_g-1 downto 0); 
         -- Output
@@ -53,7 +53,7 @@ architecture rtl of olo_base_pl_stage is
     -- Single Stage Entity forward-declaration (defined later in this file)
     component olo_base_pl_stage_single is
         generic (
-            Width_g     : integer   := 8;
+            Width_g     : positive;
             UseReady_g  : boolean   := true
         ); 
         port (   
@@ -125,7 +125,7 @@ use ieee.std_logic_1164.all;
 ------------------------------------------------------------------------------
 entity olo_base_pl_stage_single is
     generic (
-        Width_g     : integer   := 8;
+        Width_g     : positive;
         UseReady_g  : boolean   := true
     ); 
     port (   

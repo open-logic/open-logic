@@ -27,7 +27,7 @@ library work;
 ------------------------------------------------------------------------------
 entity olo_base_arb_rr is
     generic (
-        Width_g    : natural
+        Width_g    : positive
     );  
     port (   
         Clk         : in  std_logic;                                

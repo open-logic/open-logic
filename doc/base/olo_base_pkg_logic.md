@@ -16,7 +16,11 @@ This package contains different logic functions not defined in IEEE packages but
 
 ## Definitions
 
-None
+### Polynomial_Prbs<N>_c
+
+Common LFSR polynomials. X^N positions are marked by a one:
+
+x⁹ + x⁵ + 1 = "100010000" 
 
 ## Functions
 
@@ -61,13 +65,14 @@ Computation of the OR parallel prefix, which is useful for implementing arbiters
 ppcOr(inp : in std_logic_vector) return std_logic_vector;
 ```
 
-### reduceOr() / reduceAnd()
+### reduceOr() / reduceAnd() / reduceXor()
 
-OR or AND all bits in a *std_logic_vector*.
+OR, AND or XOR all bits in a *std_logic_vector*.
 
 ```
 reduceOr(vec : in std_logic_vector) return std_logic;
 reduceAnd(vec : in std_logic_vector) return std_logic;
+reduceXor(vec : in std_logic_vector) return std_logic;
 ```
 
 ### to01X()

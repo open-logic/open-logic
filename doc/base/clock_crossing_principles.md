@@ -17,21 +17,13 @@ set_max_delay -from [get_clocks <dst-clock>] to [get_clocks <src-clock>] -datapa
 
 ### Automatic Constraining
 
-For *AMD* tools (*Vivado*) an automatic constraint file exists, which automatically identifies all *Open Logic* clock-crossings and constrains them correctly. 
+For *AMD* tools (*Vivado*) an automatic constraint file exists, which automatically identifies all *Open Logic* clock-crossings and constrains them correctly. To use the automatic constraints file, follow the steps below.
 
-You can just add the file */src/base/tcl/constraints_amd.tcl* to your Vivado Project and enable it **for implementation only** (they cause errors when used for Synthesis):
+1. Create an empty TCL file and add it to the Vivado project as constraint.
+2. Enable the TCL file **for implementation only** (see screenshot below)
+3. In the TCL file, add a single line `source <path-to-open-logi>/src/base/tcl/constraints_amd.tcl`
 
 ![auto constraining](./clock_crossings/auto_constraining.png)
-
-The script only constrains data-paths within clock-crossings. If there are any other paths between the clocks, those are not constrained and hence still correctly reported as problems.
-
-The file **MUST** be configured to run *LATE* in the flow (after all clocks are defined in user XDC constraints):
-
-![RunLate](./clock_crossings/auto_constraining_late.png)
-
-
-
-The constraints generated are reported with the prefix `OLO AUTO-CONSTRAINT -` so you can always check if auto constraining works correctly.
 
 
 

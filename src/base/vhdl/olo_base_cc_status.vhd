@@ -27,7 +27,7 @@ library ieee;
 ------------------------------------------------------------------------------
 entity olo_base_cc_status is
     generic (
-        Width_g     : positive                           
+        Width_g     : positive                        
     );                              
   port (   
         In_Clk      : in  std_logic;                                

@@ -1,0 +1,8 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p............', period:2},
+  {name: 'In_Valid',   	 wave: '0101....01.0.', data:["1011", "0110", "0000"], period:2},
+  {name: 'In_ChSel',     wave: '2.....2......', data:["2", "1"], period:2},
+  {name: 'In_Data',      wave: 'x3x45634x56x.', data:["CH0-0","CH1-0", "CH2-0", "CH3-0", "CH0-1", "CH1-1", "CH2-1", "CH3-1"], period:2},
+  {name: 'Out_Valid',    wave: '0......10...1', period:2},
+  {name: 'Out_Data',     wave: 'x......5x...4', data:["CH2-0", "CH1-1"], period:2},
+]}

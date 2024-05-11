@@ -20,10 +20,10 @@ The arbiter can be implemented with or without an output registers. The waveform
 
 ## Generics
 
-| Name      | Type    | Default | Description                                                  |
-| :-------- | :------ | ------- | :----------------------------------------------------------- |
-| Width_g   | natural | -       | Number of requesters (number of bits in *In_Req* and *Out_Grant* vectors) |
-| Latency_g | natural | 1       | Number of output registers (0 means combinatorial output)    |
+| Name      | Type     | Default | Description                                                  |
+| :-------- | :------- | ------- | :----------------------------------------------------------- |
+| Width_g   | positive | -       | Number of requesters (number of bits in *In_Req* and *Out_Grant* vectors) |
+| Latency_g | natural  | 1       | Number of output registers (0 means combinatorial output)    |
 
 ## Interfaces
 

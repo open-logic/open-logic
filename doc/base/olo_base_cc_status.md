@@ -24,7 +24,7 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 
 | Name    | Type     | Default | Description                             |
 | :------ | :------- | ------- | :-------------------------------------- |
-| Width_g | positive | -       | Width of the data-signal to clock-cross |
+| Width_g | positive | 1       | Width of the data-signal to clock-cross |
 
 ## Interfaces
 

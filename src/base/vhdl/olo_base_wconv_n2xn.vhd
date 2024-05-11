@@ -28,8 +28,8 @@ library work;
 ------------------------------------------------------------------------------
 entity olo_base_wconv_n2xn is
     generic ( 
-        InWidth_g  : natural;  
-        OutWidth_g : natural
+        InWidth_g  : positive;  
+        OutWidth_g : positive
     );
     port ( 
         Clk          : in  std_logic;                                   

@@ -181,6 +181,32 @@ for Latency in [0, 1, 3]:
 arb_rr_tb = 'olo_base_arb_rr_tb'
 #Only one config required, hence no "add_config" looping
 
+#strobe generator
+strobe_gen_tb = 'olo_base_strobe_gen_tb'
+tb = olo_tb.test_bench(strobe_gen_tb)
+for Freq in ["10.0e6", "13.2e6"]:
+    tb.add_config(name=f'F={Freq}', generics={'FreqStrobeHz_g': Freq})
+
+#strobe divider
+strobe_div_tbs = ['olo_base_strobe_div_tb', 'olo_base_strobe_div_backpressonly_tb']
+for tb_name in strobe_div_tbs:
+    tb = olo_tb.test_bench(tb_name)
+    for Latency in [0, 1]:
+        tb.add_config(name=f'L={Latency}', generics={'Latency_g': Latency})
+strobe_div_fixratio_tb ='olo_base_strobe_div_fixratio_tb'
+fixratio_tb = olo_tb.test_bench(strobe_div_fixratio_tb)
+for Latency in [0, 1]:
+    for Ratio in [3, 4, 5, 6]:
+        fixratio_tb.add_config(name=f'L={Latency}-R={Ratio}', generics={'Latency_g': Latency, 'Ratio_g' : Ratio})
+
+
+#prbs
+prbs_tbs = ['olo_base_prbs4_tb']
+for tb_name in prbs_tbs:
+    tb = olo_tb.test_bench(tb_name)
+    for BitsPerSymbol in [1, 2, 3, 4]:
+        tb.add_config(name=f'BPS={BitsPerSymbol}', generics={'BitsPerSymbol_g': BitsPerSymbol})
+
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 

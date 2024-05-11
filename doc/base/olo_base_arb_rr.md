@@ -22,9 +22,9 @@ Especially interesting is the part in orange. At this point the arbiter does not
 
 ## Generics
 
-| Name    | Type    | Default | Description                                                  |
-| :------ | :------ | ------- | :----------------------------------------------------------- |
-| Width_g | natural | -       | Number of requesters (number of bits in *In_Req* and *Out_Grant* vectors) |
+| Name    | Type     | Default | Description                                                  |
+| :------ | :------- | ------- | :----------------------------------------------------------- |
+| Width_g | positive | -       | Number of requesters (number of bits in *In_Req* and *Out_Grant* vectors) |
 
 ## Interfaces
 

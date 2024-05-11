@@ -24,7 +24,7 @@ library ieee;
 ------------------------------------------------------------------------------
 entity olo_base_cc_simple is
     generic (
-        Width_g     : positive                                  
+        Width_g     : positive := 1                             
     );                              
     port (   
         In_Clk      : in  std_logic;                                  
@@ -45,80 +45,6 @@ end entity;
 ------------------------------------------------------------------------------
 architecture struct of olo_base_cc_simple is
 
-    component olo_base_cc_simple_constraints_entity is
-        generic (
-            Width_g     : positive := 16                                   
-        );                              
-        port (   
-            In_Clk      : in  std_logic;                                  
-            In_RstIn    : in  std_logic := '0';                                  
-            In_RstOut   : out std_logic;                                  
-            In_Data     : in  std_logic_vector(Width_g - 1 downto 0);     
-            In_Valid    : in  std_logic;                                  
-            Out_Clk     : in  std_logic;                                  
-            Out_RstIn   : in  std_logic := '0';                                  
-            Out_RstOut  : out std_logic;                                  
-            Out_Data    : out std_logic_vector(Width_g - 1 downto 0);     
-            Out_Valid   : out std_logic                                   
-        );    
-    end component;
-
-    -- Synthesis attributes Xilinx
-    attribute keep_hierarchy : string;
-    attribute keep_hierarchy of i_olo_base_cc_simple_constraints_region : label is "yes"; 
-
-begin
-
-    -- The component is wrapped to ease auto-constraining scripts 
-    -- ... which can search for a known instance name.
-    i_olo_base_cc_simple_constraints_region : component olo_base_cc_simple_constraints_entity
-        generic map (
-            Width_g => Width_g
-        )
-        port map (
-            In_Clk     => In_Clk,    
-            In_RstIn   => In_RstIn,  
-            In_RstOut  => In_RstOut, 
-            In_Data    => In_Data,   
-            In_Valid   => In_Valid,  
-            Out_Clk    => Out_Clk,   
-            Out_RstIn  => Out_RstIn, 
-            Out_RstOut => Out_RstOut,
-            Out_Data   => Out_Data,  
-            Out_Valid  => Out_Valid
-        );
-
-end;
-
-------------------------------------------------------------------------------
--- Implementation Entity
-------------------------------------------------------------------------------
-library ieee;
-    use ieee.std_logic_1164.all;
-    use ieee.numeric_std.all;
-
-entity olo_base_cc_simple_constraints_entity  is
-    generic (
-        Width_g     : positive := 16                                   
-    );                              
-    port (   
-        In_Clk      : in  std_logic;                                  
-        In_RstIn    : in  std_logic := '0';                                  
-        In_RstOut   : out std_logic;                                  
-        In_Data     : in  std_logic_vector(Width_g - 1 downto 0);     
-        In_Valid    : in  std_logic;                                  
-        Out_Clk     : in  std_logic;                                  
-        Out_RstIn   : in  std_logic := '0';                                  
-        Out_RstOut  : out std_logic;                                  
-        Out_Data    : out std_logic_vector(Width_g - 1 downto 0);     
-        Out_Valid   : out std_logic                                   
-    );                                  
-end entity;
-
-------------------------------------------------------------------------------
--- Implementation Architecture
-------------------------------------------------------------------------------
-architecture rtl of olo_base_cc_simple_constraints_entity is
     -- Input Domain signals
     signal RstInI      : std_logic;
     signal DataLatchIn : std_logic_vector(Width_g - 1 downto 0);

@@ -27,7 +27,7 @@ library ieee;
 ------------------------------------------------------------------------------
 entity olo_base_cc_pulse is
     generic (
-        NumPulses_g     : positive  := 1                                    
+        NumPulses_g     : positive := 1                                
     );                          
     port (   
         In_Clk          : in  std_logic;                                   
