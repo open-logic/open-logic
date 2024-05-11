@@ -53,11 +53,7 @@ end entity;
 
 architecture behav of olo_base_prbs is
     -- Signals
-    signal LfsrReg  : std_logic_vector(LfsrWidth_g-1 downto 0);
-
-  signal d0_s       : std_logic                                := '0';
-  signal q_s        : std_logic_vector((LfsrWidth_g - 1) downto 0) := (others => '0');
-  signal q_masked_s : std_logic_vector((LfsrWidth_g - 1) downto 0) := (others => '0');
+    signal LfsrReg  : std_logic_vector(LfsrWidth_g-1 downto 0); 
 begin
 
     assert Polynomial_g'length = LfsrWidth_g report "###ERROR###: olo_base_prbs - Polynomial_g width must match LfsrWidth_g" severity error;
