@@ -112,6 +112,13 @@ begin
                 check_equal(reduceAnd("1110"), '0', "reduceAnd(1110)");
                 check_equal(reduceAnd("1111"), '1', "reduceAnd(1111)");
 
+            elsif run("reduceXor") then
+                check_equal(reduceXor("0000"), '0', "reduceXor(0000)");
+                check_equal(reduceXor("0001"), '1', "reduceXor(0001)");
+                check_equal(reduceXor("0110"), '0', "reduceXor(0110)");
+                check_equal(reduceXor("1110"), '1', "reduceXor(1110)");
+                check_equal(reduceXor("1111"), '0', "reduceXor(1111)");
+
             elsif run("to01X-stdl") then
                 check_equal(to01X('0'), '0', "to01X('0')");
                 check_equal(to01X('1'), '1', "to01X('1')");

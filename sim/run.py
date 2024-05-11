@@ -199,6 +199,14 @@ for Latency in [0, 1]:
     for Ratio in [3, 4, 5, 6]:
         fixratio_tb.add_config(name=f'L={Latency}-R={Ratio}', generics={'Latency_g': Latency, 'Ratio_g' : Ratio})
 
+
+#prbs
+prbs_tbs = ['olo_base_prbs4_tb']
+for tb_name in prbs_tbs:
+    tb = olo_tb.test_bench(tb_name)
+    for BitsPerSymbol in [1, 2, 3, 4]:
+        tb.add_config(name=f'BPS={BitsPerSymbol}', generics={'BitsPerSymbol_g': BitsPerSymbol})
+
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 
