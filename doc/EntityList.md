@@ -86,7 +86,15 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 
 ## axi
 
-No content yet.
+### Miscellaneous
+
+| Entity                                                  | Description                                                  |
+| ------------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_axi_pl_stage](./axi/olo_axi_pl_stage.md)           | Implements a AXI4 pipeline stage, registering all signals of an AXI4 interface.<br />Can be used for AXI4-Lite as well. |
+| [olo_axi_lite_slave](./axi/olo_axi_lite_slave.md)       | Interface to attach user register banks and memories to the AXI4-Lite bus. |
+| [olo_axi_master_simple](./axi/olo_axi_master_simple.md) | AXI4 master - does execute arbitrarily sized transfer over AXI4. The *_simple* version of the master does only allow access to word-aligned addresses. |
+
+
 
 ## interface
 

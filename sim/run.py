@@ -49,6 +49,10 @@ olo_tb.add_source_files(files)
 if USE_GHDL:
     vu.add_compile_option('ghdl.a_flags', ['-frelaxed-rules', '-Wno-hide', '-Wno-shared'])
 
+########################################################################################################################
+# olo_base TBs
+########################################################################################################################
+
 # Clock Crossings
 cc_tbs = ['olo_base_cc_simple_tb', 'olo_base_cc_status_tb', 'olo_base_cc_bits_tb', 'olo_base_cc_pulse_tb', 'olo_base_cc_reset_tb']
 for tb_name in cc_tbs:
@@ -206,6 +210,43 @@ for tb_name in prbs_tbs:
     tb = olo_tb.test_bench(tb_name)
     for BitsPerSymbol in [1, 2, 3, 4]:
         tb.add_config(name=f'BPS={BitsPerSymbol}', generics={'BitsPerSymbol_g': BitsPerSymbol})
+
+########################################################################################################################
+# olo_axi TBs
+########################################################################################################################
+
+axi_lite_slave_tb = 'olo_axi_lite_slave_tb'
+tb = olo_tb.test_bench(axi_lite_slave_tb)
+for AxiAddrWidth in [8, 12, 16, 32]:
+    for AxiDataWidth in [8, 16, 32, 128]:
+        tb.add_config(name=f'A={AxiAddrWidth}-D={AxiDataWidth}',
+                      generics={'AxiAddrWidth_g': AxiAddrWidth, 'AxiDataWidth_g': AxiDataWidth})
+
+axi_master_simple_tb = 'olo_axi_master_simple_tb'
+tb = olo_tb.test_bench(axi_master_simple_tb)
+for ImplRead in [True, False]:
+    for ImplWrite in [True, False]:
+        #Skip illegal case where no functionality is implemented
+        if (not ImplRead) and (not ImplWrite): continue
+        for AddrWidth in [16, 20, 32]:
+            tb.add_config(name=f'R={ImplRead}-W={ImplWrite}-A={AddrWidth}',
+                        generics={'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiAddrWidth_g': AddrWidth})
+        for DataWidth in [16, 32, 64]:
+            tb.add_config(name=f'R={ImplRead}-W={ImplWrite}-D={DataWidth}',
+                        generics={'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiDataWidth_g': DataWidth})
+
+axi_pl_stage_tb = 'olo_axi_pl_stage_tb'
+tb = olo_tb.test_bench(axi_pl_stage_tb)
+for AddrWidth in [32, 64]:
+    tb.add_config(name=f'A={AddrWidth}',generics={'AddrWidth_g': AddrWidth})
+for DataWidth in [16, 64]:
+    tb.add_config(name=f'D={DataWidth}',generics={'DataWidth_g': DataWidth})
+for IdWidth in [0, 4]:
+    tb.add_config(name=f'I={IdWidth}', generics={'IdWidth_g': IdWidth})
+for UserWidth in [0, 4, 16]:
+    tb.add_config(name=f'U={UserWidth}', generics={'UserWidth_g': UserWidth})
+for Stages in [1, 4, 12]:
+    tb.add_config(name=f'S={Stages}', generics={'Stages_g': Stages})
 
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])

@@ -1,0 +1,8 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p.........', period:3},
+  {name: 'Rb_Addr',      wave: 'x3x..4x...', data:["0x100", "0x20C"], period:3},
+  {name: 'Rb_Rd',        wave: '010..10...', period:3},
+  {name: 'Rb_Valid',     wave: '0.10....10', period:3},
+  {name: 'Rb_RdData',    wave: 'x.3x....4x', data:["0xDEADBEEF", "0xC001D00D"],period:3}
+  ]
+ }
