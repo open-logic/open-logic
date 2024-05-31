@@ -30,9 +30,9 @@ entity olo_base_fifo_async is
         Width_g         : positive;              
         Depth_g         : positive;         -- must be power of two         
         AlmFullOn_g     : boolean   := false;   
-        AlmFullLevel_g  : natural;              
+        AlmFullLevel_g  : natural   := Depth_g;              
         AlmEmptyOn_g    : boolean   := false;   
-        AlmEmptyLevel_g : natural;              
+        AlmEmptyLevel_g : natural   := 0;              
         RamStyle_g      : string    := "auto";  
         RamBehavior_g   : string    := "RBW";   
         ReadyRstState_g : std_logic := '1'
