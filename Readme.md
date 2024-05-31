@@ -12,6 +12,8 @@
 
 Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 
+Maintainer: [obruendl](oliver.bruendler@gmx.ch)
+
 ## Structure
 
 *Open Logic* is split into the following areas. You might use all of them or only the ones you need.
