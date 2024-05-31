@@ -52,7 +52,6 @@ architecture rtl of olo_base_delay is
     signal MemOut      : std_logic_vector(Width_g - 1 downto 0);
     constant MemTaps_c : natural := work.olo_base_pkg_math.max(Delay_g - 1, 0);
 
-    signal RstStateCnt : integer range 0 to Delay_g - 1;
     attribute shreg_extract : string;
     attribute srl_style : string;
 begin
@@ -142,6 +141,8 @@ begin
     end generate;
 
     g_nonzero : if Delay_g > 0 generate
+        signal RstStateCnt : integer range 0 to Delay_g - 1;
+    begin
         p_outreg : process(Clk)
         begin
             if rising_edge(Clk) then
