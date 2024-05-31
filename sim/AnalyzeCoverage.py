@@ -21,7 +21,7 @@ class Entity:
     def __init__(self):
         self.name = None
         self.statements = None
-        self.branches = None
+        self.branches = 100.0 #Default 100%, if there are no branches the default is never modified
 
     def parse_name_line(self, line : str):
         filename = line.split("/")[-1]

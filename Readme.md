@@ -87,12 +87,3 @@ I decided to create *Open Logic* instead of more actively working on the PSI lib
 
 For users switching from *psi_common* to *Open Logic* there is a [Porting Guide](./doc/PsiCommonPorting.md), which describes the correspondences between the two libraries.
 
-## Next Steps
-
-- [x] Building the infrastructure (documentation, CI pipelines, etc.) based on a small subset of the functionality
-- [ ] Port functionality from *psi_common* which is trustable. Refactor where required and modify testbenches for VUnit compatibility.
-- [ ] Port functionality from *psi_common* which requires significant rework.
-- [ ] Port functionality from *psi_fix*
-- [ ] Build reference designs and training materials
-
-New functionality may be added at any time (also between above steps).
