@@ -65,7 +65,8 @@ entity olo_axi_master_simple is
         Wr_Valid        : in  std_logic                                                    := '0';            
         Wr_Ready        : out std_logic;                                                                      
         -- Read Data
-        Rd_Data         : out std_logic_vector(AxiDataWidth_g - 1 downto 0);                                 
+        Rd_Data         : out std_logic_vector(AxiDataWidth_g - 1 downto 0);                         
+        Rd_Last         : out std_logic;        
         Rd_Valid        : out std_logic;                                                                     
         Rd_Ready        : in  std_logic                                                    := '1';            
         -- Response
@@ -713,24 +714,34 @@ begin
 
         -- Read Data FIFO
         b_fifo_rd_data : block
+            signal InData, OutData : std_logic_vector(Rd_Data'length downto 0);
         begin
-            i_fifo_wr_data : entity work.olo_base_fifo_sync
+            -- Assemble Input data
+            InData(M_Axi_RData'high downto 0)   <= M_Axi_RData;
+            -- Only forward last flag for the last burst of a user transfer (RdRespIsLast) 
+            InData(M_Axi_RData'high + 1)        <= M_Axi_RLast and RdRespIsLast; 
+
+            -- FIFO
+            i_fifo_rd_data : entity work.olo_base_fifo_sync
                 generic map (
-                    Width_g        => Rd_Data'length,
+                    Width_g        => Rd_Data'length+1,
                     Depth_g        => DataFifoDepth_g,
                     RamBehavior_g  => RamBehavior_g
                 )
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Data     => M_Axi_RData,
+                    In_Data     => InData,
                     In_Valid    => M_Axi_RValid,
                     In_Ready    => M_Axi_RReady_I,
-                    Out_Data    => Rd_Data,
+                    Out_Data    => OutData,
                     Out_Valid   => RdDat_Vld_I,
                     Out_Ready   => Rd_Ready
                 );
-            
+
+            -- Disassemble Output data
+            Rd_Data      <= OutData(Rd_Data'high downto 0);            
+            Rd_Last      <= OutData(Rd_Data'high+1);
             Rd_Valid     <= RdDat_Vld_I;
             M_Axi_RReady <= M_Axi_RReady_I;
         end block;
