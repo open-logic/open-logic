@@ -122,6 +122,7 @@ architecture sim of olo_axi_master_simple_tb is
     signal Wr_Error        : std_logic;                                                                       
     signal Rd_Done         : std_logic;                                                                       
     signal Rd_Error        : std_logic;  
+    signal Rd_Last         : std_logic;
     
     -------------------------------------------------------------------------
     -- TB Defnitions
@@ -192,10 +193,15 @@ architecture sim of olo_axi_master_simple_tb is
                             increment       : natural               := 1;
                             beats           : natural               := 1) is
         variable Data : unsigned(AxiDataWidth_g-1 downto 0);
+        variable Last : std_logic := '0';
     begin
         Data := resize(startValue, AxiDataWidth_g);
         for i in 0 to beats-1 loop
-            check_axi_stream(net, rdDataSlave, std_logic_vector(Data), blocking => false, msg => "RdData " & integer'image(i));
+            -- Last is set on the last beat
+            if i = beats-1 then
+                Last := '1';
+            end if;
+            check_axi_stream(net, rdDataSlave, std_logic_vector(Data), blocking => false, tlast => Last, msg => "RdData " & integer'image(i));
             Data := Data + increment;
         end loop;
     end procedure;
@@ -645,7 +651,8 @@ begin
             -- Read Data
             Rd_Data        => Rd_Data,              
             Rd_Valid       => Rd_Valid,
-            Rd_Ready       => Rd_Ready,            
+            Rd_Ready       => Rd_Ready,  
+            Rd_Last        => Rd_Last,          
             -- Response
             Wr_Done        => Wr_Done,                                                                      
             Wr_Error       => Wr_Error,                                                               
@@ -711,7 +718,8 @@ begin
 	        aclk   => Clk,
 	        tvalid => Rd_Valid,
             tready => Rd_Ready,
-	        tdata  => Rd_Data   
+	        tdata  => Rd_Data,
+            tlast  => Rd_Last   
 	    );
 
     b_wr_cmd : block

@@ -117,11 +117,12 @@ Transaction requests are forwarded from the slave interface to the master interf
 
 ### User Read Data Interface
 
-| Name     | In/Out | Length           | Default | Description                       |
-| :------- | :----- | :--------------- | ------- | :-------------------------------- |
-| Rd_Data  | out    | *AxiDataWidth_g* | -       | Read data                         |
-| Rd_Valid | out    | 1                | -       | AXI-S handshaking signal for *Rd* |
-| Rd_Ready | in     | 1                | '0'     | AXI-S handshaking signal for *Rd* |
+| Name     | In/Out | Length           | Default | Description                                                  |
+| :------- | :----- | :--------------- | ------- | :----------------------------------------------------------- |
+| Rd_Data  | out    | *AxiDataWidth_g* | -       | Read data                                                    |
+| Rd_Last  | out    | 1                | -       | Indicates last word of data related to a *CmdRd* command. <br />The bit is related to the user command (*CmdRd*) and only set for the last AXI burst related to one user-command. |
+| Rd_Valid | out    | 1                | -       | AXI-S handshaking signal for *Rd*                            |
+| Rd_Ready | in     | 1                | '0'     | AXI-S handshaking signal for *Rd*                            |
 
 ### User Response Interface
 
