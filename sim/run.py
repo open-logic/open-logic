@@ -110,11 +110,15 @@ for tb_name in fifo_tbs:
                                                 "AlmFullOn_g": AlmFull, "AlmEmptyOn_g": AlmEmpty})
 
 #Width Converter TBs
-wconv_tbs = ['olo_base_wconv_xn2n_tb', 'olo_base_wconv_n2xn_tb']
-for tb_name in wconv_tbs:
-    tb = olo_tb.test_bench(tb_name)
-    for Ratio in [2, 3]:
-        tb.add_config(name=f'R={Ratio}', generics={'WidthRatio_g': Ratio})
+wconv_xn2n_tb = 'olo_base_wconv_xn2n_tb'
+tb = olo_tb.test_bench(wconv_xn2n_tb)
+for Ratio in [2, 3]:
+    tb.add_config(name=f'R={Ratio}', generics={'WidthRatio_g': Ratio})
+
+wconv_n2xn_tb = 'olo_base_wconv_n2xn_tb'
+tb = olo_tb.test_bench(wconv_n2xn_tb)
+for Ratio in [1, 2, 3]:
+    tb.add_config(name=f'R={Ratio}', generics={'WidthRatio_g': Ratio})
 
 #Pipeline TB
 pl_tb = 'olo_base_pl_stage_tb'
