@@ -34,8 +34,7 @@ entity olo_axi_master_full_tb is
     generic (
         AxiAddrWidth_g              : natural range 16 to 64   := 32;   
         AxiDataWidth_g              : natural range 16 to 64   := 32;
-        UserDataWidth_g             : natural                  := 16;   
-        AxiMaxOpenTransactions_g    : natural range 1 to 8     := 2;     
+        UserDataWidth_g             : natural                  := 16;             
         ImplRead_g                  : boolean                  := true; 
         ImplWrite_g                 : boolean                  := true; 
         RamBehavior_g               : string                   := "RBW"; 
@@ -47,9 +46,10 @@ architecture sim of olo_axi_master_full_tb is
     -------------------------------------------------------------------------
     -- Fixed Generics
     -------------------------------------------------------------------------   
-    constant UserTransactionSizeBits_c   : natural      := 20; 
+    constant UserTransactionSizeBits_c   : natural      := 10; 
     constant AxiMaxBeats_c               : natural      := 32;
     constant DataFifoDepth_c             : natural      := 16;
+    constant AxiMaxOpenTransactions_c    : natural      := 2;  
 
     -------------------------------------------------------------------------
     -- AXI Definition
@@ -194,7 +194,7 @@ architecture sim of olo_axi_master_full_tb is
             if i = beats-1 then
                 Last := '1';
             end if;
-            check_axi_stream(net, rdDataSlave, std_logic_vector(Data), blocking => false, msg => "RdData " & integer'image(i));
+            check_axi_stream(net, rdDataSlave, std_logic_vector(Data), blocking => false, tlast => Last, msg => "RdData " & integer'image(i));
             Data := Data + increment;
         end loop;
     end procedure;
@@ -394,7 +394,29 @@ begin
                         ExpectWrResponse(RespSuccess);
                     end loop;
                 end if;
-            end if;           
+            end if;      
+            
+            if run("BurstWritesPipelinedBackpressure") then
+                if ImplWrite_g then
+                    for i in 0 to 2 loop
+                        Addr_v := resize(X"08FF"+i, AxiAddrWidth_g);
+                        Data_v := resize(X"10"+16*i, UserDataWidth_g);
+                        DataBytes_v := 12*AxiBytes_c;
+                        AxiBeats_v := to_integer(AxiWordAddr(Addr_v+DataBytes_v-1)-AxiWordAddr(Addr_v))/AxiBytes_c+1;
+                        UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
+                        -- Slave
+                        expect_aw (net, axiSlave, AxiWordAddr(Addr_v), len => AxiBeats_v, burst => xBURST_INCR_c);
+                        expect_w_arbitrary (net, axiSlave, AxiBeats_v, DataAsVectorAliged(Addr_v, Data_v, bytes => DataBytes_v), StrbAsVectorAliged(Addr_v, DataBytes_v), delay => 200 ns, beatDelay => 100 ns);
+                        push_b(net, AxiSlave, resp => xRESP_OKAY_c);
+                        -- Master
+                        PushCommand(net, wrCmdMaster, Addr_v, DataBytes_v);
+                        PushWrData(net, Data_v, beats => UserBeats_v);                       
+                    end loop;
+                    for i in 0 to 2 loop
+                        ExpectWrResponse(RespSuccess);
+                    end loop;
+                end if;
+            end if; 
             
             -- *** Burst Reads ***
             if run("BurstReads") then
@@ -417,6 +439,27 @@ begin
                     end loop;
                 end if;
             end if; 
+
+            if run("BurstReadsPipelined") then
+                if ImplRead_g then
+                    for i in 0 to 2 loop
+                        Addr_v := resize(X"08FF"+i, AxiAddrWidth_g);
+                        Data_v := resize(X"10"+16*i, UserDataWidth_g);
+                        DataBytes_v := 2*AxiBytes_c;
+                        AxiBeats_v := to_integer(AxiWordAddr(Addr_v+DataBytes_v-1)-AxiWordAddr(Addr_v))/AxiBytes_c+1;
+                        UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
+                        -- Slave
+                        expect_ar (net, axiSlave, AxiWordAddr(Addr_v), len => AxiBeats_v, burst => xBURST_INCR_c);
+                        push_r_arbitrary (net, axiSlave, AxiBeats_v, DataAsVectorAliged(Addr_v, Data_v, bytes => DataBytes_v));
+                        -- Master
+                        PushCommand(net, rdCmdMaster, Addr_v, DataBytes_v);   
+                        ExpectRdData(net, Data_v, beats => UserBeats_v);                  
+                    end loop;
+                    for i in 0 to 2 loop
+                        ExpectRdResponse(RespSuccess);
+                    end loop;
+                end if;
+            end if;  
 
                     
             -- Wait for idle
@@ -446,7 +489,7 @@ begin
             AxiAddrWidth_g              => AxiAddrWidth_g, 
             AxiDataWidth_g              => AxiDataWidth_g,
             AxiMaxBeats_g               => AxiMaxBeats_c,
-            AxiMaxOpenTransactions_g    => AxiMaxOpenTransactions_g,  
+            AxiMaxOpenTransactions_g    => AxiMaxOpenTransactions_c,  
             -- User Configuration
             UserTransactionSizeBits_g   => UserTransactionSizeBits_c, 
             DataFifoDepth_g             => DataFifoDepth_c,
@@ -545,8 +588,8 @@ begin
 	        aclk   => Clk,
 	        tvalid => Rd_Valid,
             tready => Rd_Ready,
-	        tdata  => Rd_Data--,
-            --tlast  => Rd_Last   
+	        tdata  => Rd_Data,
+            tlast  => Rd_Last   
 	    );
 
     b_wr_cmd : block

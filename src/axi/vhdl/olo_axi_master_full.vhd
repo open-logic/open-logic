@@ -217,9 +217,10 @@ architecture rtl of olo_axi_master_full is
     signal AxiRdDat_Vld  : std_logic;
     signal AxiRdDat_Data : std_logic_vector(AxiDataWidth_g - 1 downto 0);
     signal AxiRdDat_Last : std_logic;
-    signal RdPl_Rdy    : std_logic;
-    signal RdPl_Data   : std_logic_vector(UserDataWidth_g - 1 downto 0);
-    signal RdPl_Vld    : std_logic;
+    signal RdPl_Rdy      : std_logic;
+    signal RdPl_Data     : std_logic_vector(UserDataWidth_g - 1 downto 0);
+    signal RdPl_Vld      : std_logic;
+    signal RdPl_Last     : std_logic;
 
 begin
 
@@ -227,6 +228,7 @@ begin
     assert isPower2(AxiDataWidth_g/8) report "olo_axi_master_full - AxiDataWidth_g must be a power of two of bytes" severity failure;
     assert UserDataWidth_g mod 8 = 0 report "olo_axi_master_full UserDataWidth_g must be a multiple of 8" severity failure;
     assert AxiDataWidth_g mod UserDataWidth_g = 0 report "olo_axi_master_full AxiDataWidth_g must be a multiple of UserDataWidth_g" severity failure;
+    assert UserTransactionSizeBits_g <= AxiAddrWidth_g report "olo_axi_master_full UserTransactionSizeBits_g must be smaller or equal to AxiAddrWidth_g" severity failure;
 
     -- *** Combinatorial Process ***
     p_comb : process(r, CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat, AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data, WrWconv_Rdy, WrPl_Vld, WrData_Vld, WrData_Data, WrData_Last, WrData_We, RdPl_Rdy)
@@ -235,7 +237,6 @@ begin
       variable RdAlignReady_v : std_logic;
       variable RdLowIdxInt_v  : integer range 0 to AxiBytes_c;
       variable RdDatBe_v      : std_logic_vector(AxiBytes_c - 1 downto 0);
-      variable RdDataLast_v   : std_logic;
     begin
         -- *** Keep two process variables stable ***
         v := r;
@@ -465,7 +466,6 @@ begin
             -- *** Data FSM ***
             v.RdDataEna  := '0';
             RdDatBe_v    := (others => '1');
-            RdDataLast_v := '0';
             case r.RdDataFsm is
 
                 when Idle_s =>
@@ -487,7 +487,6 @@ begin
                     end if;
                     if r.RdCurrentWord = r.RdDataWords then
                         RdDatBe_v    := RdDatBe_v and r.RdDatLastBe;
-                        RdDataLast_v := '1';
                     end if;
                     if (RdAlignReady_v = '1') and (AxiRdDat_Vld = '1') and (r.RdDataEna = '1') then
                         v.RdCurrentWord := r.RdCurrentWord + 1;
@@ -525,12 +524,13 @@ begin
             end if;
             -- get new data
             if RdAlignReady_v = '1' and AxiRdDat_Vld = '1' then
-                v.RdAlignReg(RdLowIdxInt_v * 8 + AxiDataWidth_g - 1 downto RdLowIdxInt_v * 8) := AxiRdDat_Data;
+                v.RdAlignReg(RdLowIdxInt_v * 8 + AxiDataWidth_g - 1 downto RdLowIdxInt_v * 8)   := AxiRdDat_Data;
                 v.RdAlignByteVld(RdLowIdxInt_v + AxiBytes_c - 1 downto RdLowIdxInt_v)           := RdDatBe_v;
-                v.RdAlignLast                                                                   := RdDataLast_v;
+                v.RdAlignLast                                                                   := AxiRdDat_Last;
             end if;
 
             -- Send data to FIFO
+            RdPl_Last <= r.RdAlignLast and not (reduceOr(r.RdAlignByteVld(r.RdAlignByteVld'high downto DataBytes_c))); -- assert when no more data is available after this beat
             RdPl_Data <= r.RdAlignReg(UserDataWidth_g - 1 downto 0);
             
         end if;
@@ -710,25 +710,31 @@ begin
 
     -- *** Read Releated Code ***
     g_read : if ImplRead_g generate
+        signal InData, OutData : std_logic_vector(UserDataWidth_g downto 0);
+    begin
         -- Read Data pipeline stage (for improved timing)
+        InData <= RdPl_Last & RdPl_Data;
         i_pl_rd_data : entity work.olo_base_pl_stage
             generic map (
-                Width_g     => UserDataWidth_g  
+                Width_g     => UserDataWidth_g+1  
             )
             port map (     
                 Clk         => Clk,
                 Rst         => Rst,
-                In_Data     => RdPl_Data,
+                In_Data     => InData,
                 In_Valid    => RdPl_Vld,
                 In_Ready    => RdPl_Rdy,
-                Out_Data    => Rd_Data,
+                Out_Data    => OutData,
                 Out_Valid   => Rd_Valid,
                 Out_Ready   => Rd_Ready
             );
+        Rd_Last <= OutData(UserDataWidth_g);
+        Rd_Data <= OutData(UserDataWidth_g-1 downto 0);
     end generate;
     g_nread : if not ImplRead_g generate
         Rd_Valid <= '0';
         Rd_Data <= (others => '0');
+        Rd_Last <= '0';
     end generate;
 
 end architecture;
