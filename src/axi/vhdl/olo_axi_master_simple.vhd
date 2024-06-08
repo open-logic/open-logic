@@ -238,6 +238,7 @@ begin
     assert AxiDataWidth_g mod 8 = 0 report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be a multiple of 8" severity failure;
     assert isPower2(AxiDataWidth_g/8) report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be 2^X bytes" severity failure;
 
+
     -- *** Combinatorial Process ***
     p_comb : process(r, M_Axi_AwReady, M_Axi_BValid, M_Axi_BResp, WrDataFifoORdy, WrDataFifoOVld, WrTransFifoOutVld, WrTransFifoBeats, WrRespIsLast, WrRespFifoVld, CmdWr_Addr, CmdWr_Size, CmdWr_LowLat, CmdWr_Valid, Wr_Valid, WrData_Rdy_I, M_Axi_ArReady, RdRespIsLast, RdRespFifoVld, RdRespLast, CmdRd_Addr, CmdRd_Size, CmdRd_LowLat, CmdRd_Valid, Rd_Ready, RdDat_Vld_I)
         variable v               : two_process_r;
