@@ -38,8 +38,7 @@ entity olo_axi_master_full is
         AxiMaxOpenTransactions_g   : natural range 1 to 8    := 8;    
         -- User Configuration
         UserTransactionSizeBits_g  : natural                 := 32;   
-        DataFifoDepth_g            : natural                 := 1024;
-        AxiFifoDepth_g             : natural                 := 512;  
+        DataFifoDepth_g            : natural                 := 1024; 
         UserDataWidth_g            : natural                 := 32;   
         ImplRead_g                 : boolean                 := true; 
         ImplWrite_g                : boolean                 := true; 
@@ -196,12 +195,12 @@ architecture rtl of olo_axi_master_full is
     signal r, r_next : two_process_r;
 
     -- *** Instantiation Signals ***
-    signal WrFifo_Data   : std_logic_vector(Wr_Data'range);
-    signal WrFifo_Vld    : std_logic;
+    signal WrPl_Data   : std_logic_vector(Wr_Data'range);
+    signal WrPl_Vld    : std_logic;
     signal AxiWrCmd_Rdy  : std_logic;
     signal AxiWrDat_Rdy  : std_logic;
     signal AxiWrDat_Data : std_logic_vector(AxiDataWidth_g - 1 downto 0);
-    signal WrFifo_Rdy    : std_logic;
+    signal WrPl_Rdy    : std_logic;
     signal AxiWrDat_Be   : std_logic_vector(AxiBytes_c - 1 downto 0);
     signal WrWconvEna    : std_logic;
     signal WrWconv_Vld   : std_logic;
@@ -218,9 +217,9 @@ architecture rtl of olo_axi_master_full is
     signal AxiRdDat_Vld  : std_logic;
     signal AxiRdDat_Data : std_logic_vector(AxiDataWidth_g - 1 downto 0);
     signal AxiRdDat_Last : std_logic;
-    signal RdFifo_Rdy    : std_logic;
-    signal RdFifo_Data   : std_logic_vector(UserDataWidth_g - 1 downto 0);
-    signal RdFifo_Vld    : std_logic;
+    signal RdPl_Rdy    : std_logic;
+    signal RdPl_Data   : std_logic_vector(UserDataWidth_g - 1 downto 0);
+    signal RdPl_Vld    : std_logic;
 
 begin
 
@@ -230,7 +229,7 @@ begin
     assert AxiDataWidth_g mod UserDataWidth_g = 0 report "olo_axi_master_full AxiDataWidth_g must be a multiple of UserDataWidth_g" severity failure;
 
     -- *** Combinatorial Process ***
-    p_comb : process(r, CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat, AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data, WrWconv_Rdy, WrFifo_Vld, WrData_Vld, WrData_Data, WrData_Last, WrData_We, RdFifo_Rdy)
+    p_comb : process(r, CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat, AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data, WrWconv_Rdy, WrPl_Vld, WrData_Vld, WrData_Data, WrData_Last, WrData_We, RdPl_Rdy)
       variable v              : two_process_r;
       variable WriteBe_v      : std_logic_vector(AxiBytes_c - 1 downto 0);
       variable RdAlignReady_v : std_logic;
@@ -307,7 +306,7 @@ begin
                     if r.WrWordsDone = r.WrDataWordsWc then
                         WrWconv_Last <= '1';
                     end if;
-                    if (WrWconv_Rdy = '1') and (WrFifo_Vld = '1') then
+                    if (WrWconv_Rdy = '1') and (WrPl_Vld = '1') then
                         v.WrWordsDone := r.WrWordsDone + 1;
                         if r.WrWordsDone = r.WrDataWordsWc then
                             v.WrWconvFsm := Idle_s;
@@ -399,7 +398,7 @@ begin
                     if (DataBytes_c < AxiBytes_c) and (unsigned(r.RdAlignByteVld(r.RdAlignByteVld'high downto i + DataBytes_c)) /= 0) then
                         RdAlignReady_v := '0';
                     -- if output is ready, new data can be accepted (back-to-back)
-                    elsif unsigned(r.RdAlignByteVld(r.RdAlignByteVld'high downto i)) /= 0 and RdFifo_Rdy = '0' then
+                    elsif unsigned(r.RdAlignByteVld(r.RdAlignByteVld'high downto i)) /= 0 and RdPl_Rdy = '0' then
                         RdAlignReady_v := '0';
                     end if;
                 end if;
@@ -511,17 +510,17 @@ begin
 
             -- *** Data Alignment ***
             AxiRdDat_Rdy <= RdAlignReady_v;
-            RdFifo_Vld   <= '0';
+            RdPl_Vld   <= '0';
             -- shift
-            if (RdFifo_Rdy = '1') and (RdAlignReady_v = '0' or AxiRdDat_Vld = '1' or r.RdAlignLast = '1') then
-                -- Shift is only done if data can be consumed (RdFifo_Rdy) and either no new data is required for the next shift (RdAlignReady_v = '0'),
+            if (RdPl_Rdy = '1') and (RdAlignReady_v = '0' or AxiRdDat_Vld = '1' or r.RdAlignLast = '1') then
+                -- Shift is only done if data can be consumed (RdPl_Rdy) and either no new data is required for the next shift (RdAlignReady_v = '0'),
                 -- .. the data is available (AxiRdDat_Vld = '1') or we are at the end of a transfer (r.RdAlignLast = '1')
                 v.RdAlignReg     := zerosVector(UserDataWidth_g) & r.RdAlignReg(r.RdAlignReg'left downto UserDataWidth_g);
                 v.RdAlignByteVld := zerosVector(DataBytes_c) & r.RdAlignByteVld(r.RdAlignByteVld'left downto DataBytes_c);
                 if r.RdAlignLast = '1' then
-                    RdFifo_Vld <= reduceOr(r.RdAlignByteVld(DataBytes_c - 1 downto 0));
+                    RdPl_Vld <= reduceOr(r.RdAlignByteVld(DataBytes_c - 1 downto 0));
                 else
-                    RdFifo_Vld <= reduceAnd(r.RdAlignByteVld(DataBytes_c - 1 downto 0));
+                    RdPl_Vld <= reduceAnd(r.RdAlignByteVld(DataBytes_c - 1 downto 0));
                 end if;
             end if;
             -- get new data
@@ -532,7 +531,7 @@ begin
             end if;
 
             -- Send data to FIFO
-            RdFifo_Data <= r.RdAlignReg(UserDataWidth_g - 1 downto 0);
+            RdPl_Data <= r.RdAlignReg(UserDataWidth_g - 1 downto 0);
             
         end if;
             
@@ -588,7 +587,7 @@ begin
             AxiMaxBeats_g               => AxiMaxBeats_g,
             AxiMaxOpenTransactions_g    => AxiMaxOpenTransactions_g,
             UserTransactionSizeBits_g   => UserTransactionSizeBits_g,
-            DataFifoDepth_g             => AxiFifoDepth_g,
+            DataFifoDepth_g             => DataFifoDepth_g,
             ImplRead_g                  => ImplRead_g,
             ImplWrite_g                 => ImplWrite_g,
             RamBehavior_g               => RamBehavior_g
@@ -666,11 +665,11 @@ begin
     g_write : if ImplWrite_g generate
 
         -- Write Data FIFO
-        WrFifo_Rdy <= WrWconv_Rdy and WrWconvEna;
-        i_fifo_wr_data : entity work.olo_base_fifo_sync
+        WrPl_Rdy <= WrWconv_Rdy and WrWconvEna;
+        -- Read Data pipeline stage (for improved timing)
+        i_pl_wr_data : entity work.olo_base_pl_stage
             generic map (
-                Width_g        => UserDataWidth_g,
-                Depth_g        => DataFifoDepth_g
+                Width_g        => UserDataWidth_g
             )
             port map (
                 Clk         => Clk,
@@ -678,13 +677,13 @@ begin
                 In_Data     => Wr_Data,
                 In_Valid    => Wr_Valid,
                 In_Ready    => Wr_Ready,
-                Out_Data    => WrFifo_Data,
-                Out_Valid   => WrFifo_Vld,
-                Out_Ready   => WrFifo_Rdy
+                Out_Data    => WrPl_Data,
+                Out_Valid   => WrPl_Vld,
+                Out_Ready   => WrPl_Rdy
             );
 
         -- Write Data With Conversion
-        WrWconv_Vld <= WrWconvEna and WrFifo_Vld;
+        WrWconv_Vld <= WrWconvEna and WrPl_Vld;
         WrData_Rdy  <= AxiWrDat_Rdy and WrDataEna;
         i_wc_wr : entity work.olo_base_wconv_n2xn
             generic map ( 
@@ -696,7 +695,7 @@ begin
                 Rst         => Rst,
                 In_Valid    => WrWconv_Vld,
                 In_Ready    => WrWconv_Rdy,
-                In_Data     => WrFifo_Data,
+                In_Data     => WrPl_Data,
                 In_Last     => WrWconv_Last,
                 Out_Valid   => WrData_Vld,
                 Out_Ready   => WrData_Rdy,
@@ -711,18 +710,17 @@ begin
 
     -- *** Read Releated Code ***
     g_read : if ImplRead_g generate
-        -- Read Data FIFO
-        i_fifo_rd_data : entity work.olo_base_fifo_sync
+        -- Read Data pipeline stage (for improved timing)
+        i_pl_rd_data : entity work.olo_base_pl_stage
             generic map (
-                Width_g     => UserDataWidth_g,
-                Depth_g     => DataFifoDepth_g     
+                Width_g     => UserDataWidth_g  
             )
             port map (     
                 Clk         => Clk,
                 Rst         => Rst,
-                In_Data     => RdFifo_Data,
-                In_Valid    => RdFifo_Vld,
-                In_Ready    => RdFifo_Rdy,
+                In_Data     => RdPl_Data,
+                In_Valid    => RdPl_Vld,
+                In_Ready    => RdPl_Rdy,
                 Out_Data    => Rd_Data,
                 Out_Valid   => Rd_Valid,
                 Out_Ready   => Rd_Ready

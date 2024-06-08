@@ -450,7 +450,6 @@ begin
             -- User Configuration
             UserTransactionSizeBits_g   => UserTransactionSizeBits_c, 
             DataFifoDepth_g             => DataFifoDepth_c,
-            AxiFifoDepth_g              => DataFifoDepth_c,
             UserDAtaWidth_g             => UserDataWidth_g,
             ImplRead_g                  => ImplRead_g,
             ImplWrite_g                 => ImplWrite_g,
