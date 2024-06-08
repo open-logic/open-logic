@@ -37,7 +37,7 @@ entity olo_axi_master_simple is
         AxiMaxBeats_g               : positive range 1 to 256  := 256;  
         AxiMaxOpenTransactions_g    : positive range 1 to 8    := 8;    
         -- User Configuration
-        UserTransactionSizeBits_g   : positive                 := 32;   
+        UserTransactionSizeBits_g   : positive                 := 24;   
         DataFifoDepth_g             : positive                 := 1024; 
         ImplRead_g                  : boolean                  := true; 
         ImplWrite_g                 : boolean                  := true; 
@@ -237,6 +237,7 @@ begin
 
     -- *** Assertions ***
     assert AxiDataWidth_g mod 8 = 0 report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be a multiple of 8" severity failure;
+    assert UserTransactionSizeBits_g < AxiAddrWidth_g-log2(AxiDataWidth_g/8) report "###ERROR###: olo_axi_master_simple UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-log2(AxiDataWidth_g/8), see documentation" severity failure;
 
     -- *** Combinatorial Process ***
     p_comb : process(r, M_Axi_AwReady, M_Axi_BValid, M_Axi_BResp, WrDataFifoORdy, WrDataFifoOVld, WrTransFifoOutVld, WrTransFifoBeats, WrRespIsLast, WrRespFifoVld, CmdWr_Addr, CmdWr_Size, CmdWr_LowLat, CmdWr_Valid, Wr_Valid, WrData_Rdy_I, M_Axi_ArReady, RdRespIsLast, RdRespFifoVld, RdRespLast, CmdRd_Addr, CmdRd_Size, CmdRd_LowLat, CmdRd_Valid, Rd_Ready, RdDat_Vld_I)
