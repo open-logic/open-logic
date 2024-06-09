@@ -59,11 +59,11 @@ There is no required timing relationship between command and data signals. So fo
 
 | Name                      | Type     | Default | Description                                                  |
 | :------------------------ | :------- | ------- | :----------------------------------------------------------- |
-| AxiAddrWidth_g            | positive | 32      | AXI4 address width (width of *AwAddr* and *ArAddr* signals)  |
-| AxiDataWidth_g            | positive | 32      | AXI data width (must be a power of 2)                        |
-| AxiMaxBeats_g             | positive | 256     | Maximum number of beats in one AXI transaction. <br />Values given by the AXI specification are 16 for AXI-3 and 256 for AXI-4. However, the user may choose any other number for scheduling reasons. |
-| AxiMaxOpenTransactions_g  | positive | 8       | Maximum number of AXI commands (AW/AR-channel) to send before the first command is completed (outstanding transactions). |
-| UserTransactionSizeBits_g | positive | 32      | Number of bits used to specify the number of beats to transfer on the user command interface. This is the only limiting factor for the transfer size requested. |
+| AxiAddrWidth_g            | positive | 32      | AXI4 address width (width of *AwAddr* and *ArAddr* signals)<br />Range: 12 ... 64 |
+| AxiDataWidth_g            | positive | 32      | AXI data width (must be a power of 2 of bytes)<br />Range: 8 ... 1024 |
+| AxiMaxBeats_g             | positive | 256     | Maximum number of beats in one AXI transaction. <br />Values given by the AXI specification are 16 for AXI-3 and 256 for AXI-4. However, the user may choose any other number for scheduling reasons.<br />Range: 1 ... 256 |
+| AxiMaxOpenTransactions_g  | positive | 8       | Maximum number of AXI commands (AW/AR-channel) to send before the first command is completed (outstanding transactions).<br />Range: 1 ... 8 |
+| UserTransactionSizeBits_g | positive | 24      | Number of bits used to specify the number of beats to transfer on the user command interface. This is the only limiting factor for the transfer size requested.<br />Must be small enough that a single transaction cannot exceed the address range covered by *AxiAddrWidth_g*. |
 | DataFifoDepth_g           | positive | 1024    | Number of entries in the read/write data FIFOs (in words, not bytes) |
 | ImplRead_g                | boolean  | true    | Implement read functionality (can be disabled to save resources) |
 | ImplWrite_g               | boolean  | true    | Implement write functionality (can be disabled to save resources) |
