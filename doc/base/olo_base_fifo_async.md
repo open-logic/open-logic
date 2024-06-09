@@ -27,7 +27,7 @@ An asynchronous FIFO is a clock-crossing and hence this block follows the genera
 | Name            | Type      | Default   | Description                                                  |
 | :-------------- | :-------- | --------- | :----------------------------------------------------------- |
 | Widht_g         | positive  | -         | Number of bits per FIFO entry (word-width)                   |
-| Depth_g         | positive  | .         | Number of FIFO entries                                       |
+| Depth_g         | positive  | .         | Number of FIFO entries. <br />This **must** be a power of two. See [Architecture](#Architecture) for more details. |
 | AlmFullOn_g     | boolean   | false     | If set to true, the *AlmFull* (almost full) status flag is generated (otherwise it is omitted) |
 | AlmFullLevel_g  | natural   | *Depth_g* | Level to generate *AlmFull* flag at. <br>Has no effect if *AlmFullOn_g* = false |
 | AlmEmptyOn_g    | boolean   | false     | If set to true, the *AlmEmpty* (almost empty) status flag is generated (otherwise it is omitted) |
@@ -86,6 +86,8 @@ The rough architecture of the FIFO is shown in the figure below. Note that the f
 ![Architecture](./fifo/olo_base_fifo_async.png)
 
 Read and write address counters are handled in their corresponding clock domain. The current address counter value is then transferred to the other clock-domain by converting it to gray code, synchronizing it using a double-stage synchronizer (using [olo_base_cc_bits](./olo_base_cc_bits.md)) and convert it back to a two's complement number. This approach ensures that a correct value is received, even if the clock edges are aligned in a way that causes metastability on the first flip-flop. Because the data is transferred in gray code, in this case either the correct value before an increment of the counter or the correct value after the increment is received, so the result is always correct.
+
+The gray-encoding approach only works for power of two FIFO depths. For any other FIFO depths, the gray encoded counter value would toggle more than one bit during the overflow and hence the clock domain crossing would not work safely. 
 
 All status information is calculated separately in both clock domains to make it available synchronously to both clocks.
 
