@@ -15,7 +15,7 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_arb_priority                | [olo_base_arb_prio](./base/olo_base_arb_prio.md)       | -                                                            |
 | psi_common_arb_round_robin             | [olo_base_arb_rr](./base/olo_base_arb_rr.md)           | -                                                            |
 | psi_common_async_fifo                  | [olo_base_fifo_async](./base/olo_base_fifo_async.md)   | -                                                            |
-| psi_common_axi_master_full             | Not ported yet                                         | -                                                            |
+| psi_common_axi_master_full             | [olo_axi_master_full](./axi/olo_ax_master_full.md)     | -                                                            |
 | psi_common_axi_master_simple           | [olo_axi_master_simple](./axi/olo_ax_master_simple.md) | -                                                            |
 | psi_common_axi_multi_pl_stage          | [olo_axi_pl_stage](./axi/olo_axi_pl_stage.md)          | -                                                            |
 | psi_common_axi_pkg                     | Won't be ported                                        | Package only is valid for a specific AXI implementation (IFC1210) with specific address and data widths. Hence the package is not generic. |
