@@ -70,73 +70,88 @@ architecture rtl of olo_base_wconv_n2xn is
 
 begin
     assert floor(RatioReal_c) = ceil(RatioReal_c) report "olo_base_wconv_n2xn: Ratio OutWidth_g/InWidth_g must be an integer number" severity error;
-    assert OutWidth_g > InWidth_g report "olo_base_wconv_n2xn: OutWidth_g must be bigger than InWidth_g" severity error;
+    assert OutWidth_g >= InWidth_g report "olo_base_wconv_n2xn: OutWidth_g must be bigger or equal than InWidth_g" severity error;
 
-    p_comb : process(r, In_Valid, In_Data, Out_Ready, In_Last)
-        variable v           : two_process_r;
-        variable IsStuck_v   : std_logic;
-        variable ShiftDone_v : boolean;
-    begin
-        -- *** hold variables stable ***
-        v := r;
+    -- Implement conversion logic only if required
+    g_convert : if OutWidth_g > InWidth_g generate    
 
-        -- Halt detection
-        ShiftDone_v := (r.DataVld(r.DataVld'high) = '1') or (r.DataLast = '1');
-        if ShiftDone_v and (r.Out_Valid = '1') and (Out_Ready = '0') then
-            IsStuck_v := '1';
-        else
-            IsStuck_v := '0';
-        end if;
+        p_comb : process(r, In_Valid, In_Data, Out_Ready, In_Last)
+            variable v           : two_process_r;
+            variable IsStuck_v   : std_logic;
+            variable ShiftDone_v : boolean;
+        begin
+            -- *** hold variables stable ***
+            v := r;
 
-        -- Reset OutVld when transfer occured
-        if (r.Out_Valid = '1') and (Out_Ready = '1') then
-            v.Out_Valid := '0';
-        end if;
-
-        -- Data Deserialization
-        if ShiftDone_v and ((r.Out_Valid = '0') or (Out_Ready = '1')) then
-            v.Out_Valid    := '1';
-            v.Out_Data    := r.Data;
-            v.Out_Last   := r.DataLast;
-            v.Out_WordEna     := r.DataVld;
-            v.DataVld  := (others => '0');
-            v.DataLast := '0';
-        end if;
-        if In_Valid = '1' and IsStuck_v = '0' then
-            v.Data((r.Cnt + 1) * InWidth_g - 1 downto r.Cnt * InWidth_g) := In_Data;
-            v.DataVld(r.Cnt)                                               := '1';
-            if In_Last = '1' then
-                v.DataLast := '1';
-            end if;
-            if (r.Cnt = RatioInt_c - 1) or (In_Last = '1') then
-                v.Cnt := 0;
+            -- Halt detection
+            ShiftDone_v := (r.DataVld(r.DataVld'high) = '1') or (r.DataLast = '1');
+            if ShiftDone_v and (r.Out_Valid = '1') and (Out_Ready = '0') then
+                IsStuck_v := '1';
             else
-                v.Cnt := r.Cnt + 1;
+                IsStuck_v := '0';
             end if;
-        end if;
 
-        -- Outputs
-        In_Ready <= not IsStuck_v;
-        Out_Valid    <= r.Out_Valid;
-        Out_Data    <= r.Out_Data;
-        Out_Last   <= r.Out_Last;
-        Out_WordEna     <= r.Out_WordEna;
-
-        -- *** assign signal ***
-        r_next <= v;
-    end process;
-
-    p_seq : process(Clk)
-    begin
-        if rising_edge(Clk) then
-            r <= r_next;
-            if Rst = '1' then
-                r.DataVld  <= (others => '0');
-                r.Out_Valid    <= '0';
-                r.Cnt      <= 0;
-                r.DataLast <= '0';
+            -- Reset OutVld when transfer occured
+            if (r.Out_Valid = '1') and (Out_Ready = '1') then
+                v.Out_Valid := '0';
             end if;
-        end if;
-    end process;
+
+            -- Data Deserialization
+            if ShiftDone_v and ((r.Out_Valid = '0') or (Out_Ready = '1')) then
+                v.Out_Valid    := '1';
+                v.Out_Data    := r.Data;
+                v.Out_Last   := r.DataLast;
+                v.Out_WordEna     := r.DataVld;
+                v.DataVld  := (others => '0');
+                v.DataLast := '0';
+            end if;
+            if In_Valid = '1' and IsStuck_v = '0' then
+                v.Data((r.Cnt + 1) * InWidth_g - 1 downto r.Cnt * InWidth_g) := In_Data;
+                v.DataVld(r.Cnt)                                               := '1';
+                if In_Last = '1' then
+                    v.DataLast := '1';
+                end if;
+                if (r.Cnt = RatioInt_c - 1) or (In_Last = '1') then
+                    v.Cnt := 0;
+                else
+                    v.Cnt := r.Cnt + 1;
+                end if;
+            end if;
+
+            -- Outputs
+            In_Ready <= not IsStuck_v;
+            Out_Valid    <= r.Out_Valid;
+            Out_Data    <= r.Out_Data;
+            Out_Last   <= r.Out_Last;
+            Out_WordEna     <= r.Out_WordEna;
+
+            -- *** assign signal ***
+            r_next <= v;
+        end process;
+
+        p_seq : process(Clk)
+        begin
+            if rising_edge(Clk) then
+                r <= r_next;
+                if Rst = '1' then
+                    r.DataVld  <= (others => '0');
+                    r.Out_Valid    <= '0';
+                    r.Cnt      <= 0;
+                    r.DataLast <= '0';
+                end if;
+            end if;
+        end process;
+
+    end generate g_convert;
+
+    -- No conversion required
+    g_equalwidth : if OutWidth_g = InWidth_g generate
+        Out_Valid <= In_Valid;
+        Out_Data  <= In_Data;
+        Out_Last  <= In_Last;
+        Out_WordEna <= (others => '1');
+        In_Ready  <= Out_Ready;
+        
+    end generate g_equalwidth;
 
 end architecture;
