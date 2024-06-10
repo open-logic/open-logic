@@ -46,7 +46,7 @@ architecture sim of olo_axi_master_simple_tb is
     -------------------------------------------------------------------------
     -- Fixed Generics
     -------------------------------------------------------------------------   
-    constant UserTransactionSizeBits_c   : natural      := 20; 
+    constant UserTransactionSizeBits_c   : natural      := 10; 
     constant AxiMaxBeats_c               : natural      := 32;
     constant DataFifoDepth_c             : natural      := 16;
 
