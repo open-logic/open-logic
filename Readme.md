@@ -21,7 +21,7 @@ Maintainer: [obruendl](oliver.bruendler@gmx.ch)
 * [base](./doc/EntityList.md#base) - basic logic to be used for device internal logic
 * [axi](./doc/EntityList.md#axi)  - any components related to AXI4/AXI4-Lite/AXI4-Stream interfaces
   * requires: *base*
-* [interface](./doc/EntityList.md#interface)  - any logic related to device external interfaces 
+* [intf](./doc/EntityList.md#intf)  - any logic related to device external interfaces 
   * requires: *base*
 
 It's suggested that you compile ALL files of the areas you need (plus their dependencies) into one VHDL library. You are free to choose any library name and you are also free to use the same single library for *Open Logic* files and user-code.

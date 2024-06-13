@@ -97,7 +97,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 
 
 
-## interface
+## intf
 
 No content yet.
 

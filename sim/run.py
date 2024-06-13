@@ -268,6 +268,16 @@ for UserWidth in [0, 4, 16]:
 for Stages in [1, 4, 12]:
     tb.add_config(name=f'S={Stages}', generics={'Stages_g': Stages})
 
+########################################################################################################################
+# olo_intf TBs
+########################################################################################################################
+i2c_master_tb = 'olo_intf_i2c_master_tb'
+tb = olo_tb.test_bench(i2c_master_tb)
+for BusFreq in [int(100e3), int(400e3), int(1e6)]:
+    tb.add_config(name=f'F={BusFreq}',generics={'BusFrequency_g': BusFreq})
+for IntTri in [True, False]:
+    tb.add_config(name=f'IntTri={IntTri}',generics={'InternalTriState_g': IntTri})
+
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 
