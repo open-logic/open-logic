@@ -24,7 +24,8 @@ library ieee;
 
 entity olo_intf_sync is
     generic (
-        Width_g : positive := 1
+        Width_g     : positive  := 1;
+        RstLevel_g  : std_logic := '0'
     );
     port (
         -- control signals
@@ -77,8 +78,8 @@ begin
             Reg0 <= DataAsync;
             Reg1 <= Reg0;
             if Rst = '1' then    
-                Reg0 <= (others => '0');
-                Reg1 <= (others => '0');
+                Reg0 <= (others => RstLevel_g);
+                Reg1 <= (others => RstLevel_g);
             end if;
         end if;
     end process;    
