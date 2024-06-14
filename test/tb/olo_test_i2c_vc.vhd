@@ -43,21 +43,24 @@ package olo_test_i2c_pkg is
     procedure i2c_push_start (
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
-        delay           : time                  := 0 ns  
+        delay           : time                  := 0 ns;
+        msg             : string                := ""
     );
 
     -- Send repeated start
     procedure i2c_push_repeated_start (
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
-        delay           : time                  := 0 ns  
+        delay           : time                  := 0 ns;  
+        msg             : string                := ""
     );
 
     -- Send stop (and switch to idle operation mode)
     procedure i2c_push_stop (
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
-        delay           : time                  := 0 ns  
+        delay           : time                  := 0 ns;  
+        msg             : string                := ""
     );
 
     -- Send address
@@ -68,7 +71,8 @@ package olo_test_i2c_pkg is
         isRead		    : boolean;
         addrBits        : natural range 7 to 10 := 7;
         expectedAck     : std_logic             := I2c_ACK;
-        delay           : time                  := 0 ns  
+        delay           : time                  := 0 ns;
+        msg             : string                := ""
     );
 
     -- *** Slave Operations ***
@@ -76,7 +80,8 @@ package olo_test_i2c_pkg is
     procedure i2c_expect_start(	
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;        
-        timeout		    : time		        := 1 ms
+        timeout		    : time		        := 1 ms;
+        msg             : string                := ""
     );	
 
     -- Wait for repeated start
@@ -84,7 +89,8 @@ package olo_test_i2c_pkg is
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;        
         timeout		    : time		        := 1 ms;
-        clkStretch      : time              := 0 ns
+        clkStretch      : time              := 0 ns;
+        msg             : string                := ""
     );	
 
     -- Wait for stop (and switch to idle operation mode)
@@ -92,7 +98,8 @@ package olo_test_i2c_pkg is
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;        
         timeout		    : time		        := 1 ms;
-        clkStretch      : time              := 0 ns
+        clkStretch      : time              := 0 ns;
+        msg             : string                := ""
     );
 
     -- Expect address
@@ -104,7 +111,8 @@ package olo_test_i2c_pkg is
         addrBits        : natural range 7 to 10 := 7;
         ackOutput       : std_logic             := I2c_ACK;
         timeout		    : time		            := 1 ms;
-        clkStretch      : time                  := 0 ns
+        clkStretch      : time                  := 0 ns;
+        msg             : string                := ""
     );
 
     -- *** General Operations ***
@@ -116,7 +124,8 @@ package olo_test_i2c_pkg is
         data		    : integer range -128 to 255;
         expectedAck     : std_logic                     := I2c_ACK;
         clkStretch      : time                          := 0 ns;  -- only allowed in slave mode
-        delay           : time                          := 0 ns -- only allowed in master mode
+        delay           : time                          := 0 ns; -- only allowed in master mode
+        msg             : string                        := ""
     );
 
     -- Receive RX Byte
@@ -125,19 +134,22 @@ package olo_test_i2c_pkg is
         I2cMaster       : olo_test_i2c_t;
         expData		    : integer range -128 to 255;
         ackOutput       : std_logic                     := I2c_ACK;
-        clkStretch      : time                          := 0 ns  -- only allowed in slave mode
+        clkStretch      : time                          := 0 ns;  -- only allowed in slave mode
+        msg             : string                        := ""
     );
 
     -- Force I2C VC in slave mode to master operation mode
     procedure i2c_force_master_mode (
         signal net      : inout network_t;
-        i2c             : olo_test_i2c_t
+        i2c             : olo_test_i2c_t;
+        msg             : string                := ""
     );
 
     -- Force releasing of the bus
     procedure i2c_force_bus_release (
         signal net      : inout network_t;
-        i2c             : olo_test_i2c_t
+        i2c             : olo_test_i2c_t;
+        msg             : string                := ""
     );
 
     -- *** VUnit Operations ***
@@ -176,36 +188,42 @@ package body olo_test_i2c_pkg is
     procedure i2c_push_start (
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
-        delay           : time                  := 0 ns  
+        delay           : time                  := 0 ns;
+        msg             : string                := ""  
     ) is
-        variable msg : msg_t := new_msg(I2cPushStartMsg);
+        variable Msg_v : msg_t := new_msg(I2cPushStartMsg);
     begin
-        push(msg, delay);
-        send(net, i2c.p_actor, msg);
+        push(Msg_v, delay);
+        push_string(Msg_v, msg);
+        send(net, i2c.p_actor, Msg_v);
     end procedure;
 
     -- Send repeated start (and switch to master operation mode)
     procedure i2c_push_repeated_start (
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
-        delay           : time                  := 0 ns  
+        delay           : time                  := 0 ns;
+        msg             : string                := "" 
     ) is
-        variable msg : msg_t := new_msg(I2cPushRepeatedStartMsg);
+        variable Msg_v : msg_t := new_msg(I2cPushRepeatedStartMsg);
     begin
-        push(msg, delay);
-        send(net, i2c.p_actor, msg);
+        push(Msg_v, delay);
+        push_string(Msg_v, msg);
+        send(net, i2c.p_actor, Msg_v);
     end procedure;
 
     -- Send stop (and switch to idle operation mode)
     procedure i2c_push_stop (
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
-        delay           : time                  := 0 ns  
+        delay           : time                  := 0 ns;
+        msg             : string                := "" 
     ) is
-        variable msg : msg_t := new_msg(I2cPushStopMsg);
+        variable Msg_v : msg_t := new_msg(I2cPushStopMsg);
     begin
-        push(msg, delay);
-        send(net, i2c.p_actor, msg);
+        push(Msg_v, delay);
+        push_string(Msg_v, msg);
+        send(net, i2c.p_actor, Msg_v);
     end procedure;
 
     -- Send address
@@ -216,16 +234,18 @@ package body olo_test_i2c_pkg is
         isRead		    : boolean;
         addrBits        : natural range 7 to 10 := 7;
         expectedAck     : std_logic             := I2c_ACK;
-        delay           : time                  := 0 ns  
+        delay           : time                  := 0 ns;
+        msg             : string                := "" 
     ) is
-        variable msg : msg_t := new_msg(I2cPushAddrMsg);
+        variable Msg_v : msg_t := new_msg(I2cPushAddrMsg);
     begin
-        push(msg, address);
-        push(msg, isRead);
-        push(msg, addrBits);
-        push(msg, expectedAck);
-        push(msg, delay);
-        send(net, i2c.p_actor, msg);
+        push(Msg_v, address);
+        push(Msg_v, isRead);
+        push(Msg_v, addrBits);
+        push(Msg_v, expectedAck);
+        push(Msg_v, delay);
+        push_string(Msg_v, msg);
+        send(net, i2c.p_actor, Msg_v);
     end procedure;
 
 
@@ -235,12 +255,14 @@ package body olo_test_i2c_pkg is
     procedure i2c_expect_start(	
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;        
-        timeout		    : time		        := 1 ms
+        timeout		    : time		        := 1 ms;
+        msg             : string                := ""
     ) is
-        variable msg : msg_t := new_msg(I2cExpectStartMsg);
+        variable Msg_v : msg_t := new_msg(I2cExpectStartMsg);
     begin
-        push(msg, timeout);
-        send(net, i2c.p_actor, msg);
+        push(Msg_v, timeout);
+        push_string(Msg_v, msg);
+        send(net, i2c.p_actor, Msg_v);
     end procedure;
 
     -- Wait for repeated start
@@ -248,13 +270,15 @@ package body olo_test_i2c_pkg is
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;        
         timeout		    : time		        := 1 ms;
-        clkStretch      : time              := 0 ns
+        clkStretch      : time              := 0 ns;
+        msg             : string                := ""
     ) is
-        variable msg : msg_t := new_msg(I2cExpectRepeatedStartMsg);
+        variable Msg_v : msg_t := new_msg(I2cExpectRepeatedStartMsg);
     begin
-        push(msg, timeout);
-        push(msg, clkStretch);
-        send(net, i2c.p_actor, msg);
+        push(Msg_v, timeout);
+        push(Msg_v, clkStretch);
+        push_string(Msg_v, msg);
+        send(net, i2c.p_actor, Msg_v);
     end procedure;
 
     -- Wait for stop (and switch to idle operation mode)
@@ -262,13 +286,15 @@ package body olo_test_i2c_pkg is
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;        
         timeout		    : time		        := 1 ms;
-        clkStretch      : time              := 0 ns
+        clkStretch      : time              := 0 ns;
+        msg             : string                := ""
     ) is
-        variable msg : msg_t := new_msg(I2cExpectStopMsg);
+        variable Msg_v : msg_t := new_msg(I2cExpectStopMsg);
     begin
-        push(msg, timeout);
-        push(msg, clkStretch);
-        send(net, i2c.p_actor, msg);
+        push(Msg_v, timeout);
+        push(Msg_v, clkStretch);
+        push_string(Msg_v, msg);
+        send(net, i2c.p_actor, Msg_v);
     end procedure;
 
     -- Expect address
@@ -280,17 +306,19 @@ package body olo_test_i2c_pkg is
         addrBits        : natural range 7 to 10 := 7;
         ackOutput       : std_logic             := I2c_ACK;
         timeout		    : time		            := 1 ms;
-        clkStretch      : time                  := 0 ns
+        clkStretch      : time                  := 0 ns;
+        msg             : string                := ""
     ) is
-        variable msg : msg_t := new_msg(I2cExpectAddrMsg);
+        variable Msg_v : msg_t := new_msg(I2cExpectAddrMsg);
     begin
-        push(msg, address);
-        push(msg, isRead);
-        push(msg, addrBits);
-        push(msg, ackOutput);
-        push(msg, timeout);
-        push(msg, clkStretch);
-        send(net, i2c.p_actor, msg);
+        push(Msg_v, address);
+        push(Msg_v, isRead);
+        push(Msg_v, addrBits);
+        push(Msg_v, ackOutput);
+        push(Msg_v, timeout);
+        push(Msg_v, clkStretch);
+        push_string(Msg_v, msg);
+        send(net, i2c.p_actor, Msg_v);
     end procedure;
 
     -- *** General Operations ***
@@ -302,15 +330,17 @@ package body olo_test_i2c_pkg is
         data		    : integer range -128 to 255;
         expectedAck     : std_logic                     := I2c_ACK;
         clkStretch      : time                          := 0 ns;  -- only allowed in slave mode
-        delay           : time                          := 0 ns -- only allowed in master mode
+        delay           : time                          := 0 ns; -- only allowed in master mode
+        msg             : string                        := ""
     ) is
-        variable msg : msg_t := new_msg(I2cPushTxByteMsg);
+        variable Msg_v : msg_t := new_msg(I2cPushTxByteMsg);
     begin
-        push(msg, data);
-        push(msg, expectedAck);
-        push(msg, clkStretch);
-        push(msg, delay);
-        send(net, I2cMaster.p_actor, msg);
+        push(Msg_v, data);
+        push(Msg_v, expectedAck);
+        push(Msg_v, clkStretch);
+        push(Msg_v, delay);
+        push_string(Msg_v, msg);
+        send(net, I2cMaster.p_actor, Msg_v);
     end procedure;
 
     -- Receive RX Byte
@@ -319,34 +349,40 @@ package body olo_test_i2c_pkg is
         I2cMaster       : olo_test_i2c_t;
         expData		    : integer range -128 to 255;
         ackOutput       : std_logic                     := I2c_ACK;
-        clkStretch      : time                          := 0 ns  -- only allowed in slave mode
+        clkStretch      : time                          := 0 ns;  -- only allowed in slave mode
+        msg             : string                        := ""
     ) is
-        variable msg : msg_t := new_msg(I2cExpectRxByteMsg);
+        variable Msg_v : msg_t := new_msg(I2cExpectRxByteMsg);
     begin
-        push(msg, expData);
-        push(msg, ackOutput);
-        push(msg, clkStretch);
-        send(net, I2cMaster.p_actor, msg);
+        push(Msg_v, expData);
+        push(Msg_v, ackOutput);
+        push(Msg_v, clkStretch);
+        push_string(Msg_v, msg);
+        send(net, I2cMaster.p_actor, Msg_v);
     end procedure;
 
     -- Force I2C VC in slave mode to master operation mode
     procedure i2c_force_master_mode (
         signal net      : inout network_t;
-        i2c             : olo_test_i2c_t
+        i2c             : olo_test_i2c_t;
+        msg             : string                := ""
     ) is
-        variable msg : msg_t := new_msg(I2cForceMasterModeMsg);
+        variable Msg_v : msg_t := new_msg(I2cForceMasterModeMsg);
     begin
-        send(net, i2c.p_actor, msg);
+        push_string(Msg_v, msg);
+        send(net, i2c.p_actor, Msg_v);
     end procedure;
 
     -- Force releasing of the bus
     procedure i2c_force_bus_release (
         signal net      : inout network_t;
-        i2c             : olo_test_i2c_t
+        i2c             : olo_test_i2c_t;
+        msg             : string                := ""
     ) is
-        variable msg : msg_t := new_msg(I2cForceBusReleaseMsg);
+        variable Msg_v : msg_t := new_msg(I2cForceBusReleaseMsg);
     begin
-        send(net, i2c.p_actor, msg);
+        push_string(Msg_v, msg);
+        send(net, i2c.p_actor, Msg_v);
     end procedure;
 
 
@@ -665,6 +701,7 @@ begin
         variable expectedAck    : std_logic;
         variable ackOutput      : std_logic;
         variable data           : integer;
+        variable msg_p          : string_ptr_t;
 
         -- Operation Mode
         type I2c_OperationMode_t is (I2c_IDLE, I2c_MASTER, I2c_SLAVE);
@@ -687,20 +724,21 @@ begin
             if msg_type = I2cPushStartMsg then
                 -- Push Start
                 delay := pop(request_msg);
+                msg_p := new_string_ptr(pop_string(request_msg));
 
                 -- delay
                 wait for delay;
 
                 -- Initial check
-                check(opmode = I2c_IDLE, "I2C must be idle before I2C-START can be sent [I2cPushStart]");
+                check(opmode = I2c_IDLE, to_string(msg_p) & " - I2C must be idle before I2C-START can be sent [I2cPushStart]");
                 opmode := I2c_MASTER;
-                LevelCheck(Scl, '1', "SCL must be 1 before I2C-START can be sent [I2cPushStart]");
-                LevelCheck(Scl, '1', "SDA must be 1 before I2C-START can be sent [I2cPushStart]");
+                LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 before I2C-START can be sent [I2cPushStart]");
+                LevelCheck(Scl, '1', to_string(msg_p) & " - SDA must be 1 before I2C-START can be sent [I2cPushStart]");
                 
                 -- Do start condition
                 wait for ClkQuartPeriod;
                 Sda <= '0';
-                LevelCheck(Scl, '1', "SCL must be 1 during SDA falling edge [I2cPushStart]");
+                LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA falling edge [I2cPushStart]");
                 wait for ClkQuartPeriod;
                 
                 -- Go to center of clk low period
@@ -711,28 +749,29 @@ begin
             elsif msg_type = I2cPushRepeatedStartMsg then
                 -- Push Repeated Start
                 delay := pop(request_msg);
+                msg_p := new_string_ptr(pop_string(request_msg));
 
                 -- delay
                 wait for delay;
 
                 -- Initial check
-                check(opmode = I2c_MASTER, "I2C must be in master mode before I2C-REPEATED-START can be sent [I2cPushRepeatedStart]");
+                check(opmode = I2c_MASTER, to_string(msg_p) & " - I2C must be in master mode before I2C-REPEATED-START can be sent [I2cPushRepeatedStart]");
                 if to01X(Scl) = '1' then
-                    LevelCheck(Sda, '1', "SDA must be 1 before procedure is called if SCL = 1 [I2cPushRepeatedStart]");
+                    LevelCheck(Sda, '1', to_string(msg_p) & " - SDA must be 1 before procedure is called if SCL = 1 [I2cPushRepeatedStart]");
                 end if;
             
                 -- Do repeated start
                 if Scl = '0' then
                     Sda <= 'Z';
                     wait for ClkQuartPeriod;
-                    LevelCheck(Sda, '1', "SDA held low by other device [I2cPushRepeatedStart]");
+                    LevelCheck(Sda, '1', to_string(msg_p) & " - SDA held low by other device [I2cPushRepeatedStart]");
                     Scl <= 'Z';
                     wait for ClkQuartPeriod;
-                    LevelCheck(Scl, '1', "SCL held low by other device [I2cPushRepeatedStart]");
+                    LevelCheck(Scl, '1', to_string(msg_p) & " - SCL held low by other device [I2cPushRepeatedStart]");
                 end if;
                 wait for ClkQuartPeriod;
                 Sda <= '0';
-                LevelCheck(Scl, '1', "SCL must be 1 during SDA falling edge [I2cPushRepeatedStart]");
+                LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA falling edge [I2cPushRepeatedStart]");
                 wait for ClkQuartPeriod;
 
                 -- Go to center of clk low period
@@ -742,14 +781,15 @@ begin
             elsif msg_type = I2cPushStopMsg then
                 -- Push Stop
                 delay := pop(request_msg);
+                msg_p := new_string_ptr(pop_string(request_msg));
 
                 -- delay
                 wait for delay;
 
                 -- Initial check
-                check(opmode = I2c_MASTER, "I2C must be in master mode before I2C-STOP can be sent [I2cPushStop]");
+                check(opmode = I2c_MASTER, to_string(msg_p) & " - I2C must be in master mode before I2C-STOP can be sent [I2cPushStop]");
                 if to01X(Scl) = '1' then
-                    LevelCheck(Sda, '0', "SDA must be 0 before procedure is called if SCL = 1 [I2cPushStop]");
+                    LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 before procedure is called if SCL = 1 [I2cPushStop]");
                 end if;
                 
                 -- Do stop
@@ -758,12 +798,12 @@ begin
                     wait for ClkQuartPeriod;
                     Scl <= 'Z';
                     wait for ClkQuartPeriod;
-                    LevelCheck(Scl, '1', "SCL held low by other device [I2cPushStop]");
+                    LevelCheck(Scl, '1', to_string(msg_p) & " - SCL held low by other device [I2cPushStop]");
                 else
                     wait for ClkQuartPeriod;		
                 end if;
                 Sda <= 'Z';
-                LevelCheck(Scl, '1', "SCL must be 1 during SDA rising edge [I2cPushStop]");
+                LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA rising edge [I2cPushStop]");
                 
                 -- Go to center of clk high period
                 wait for ClkQuartPeriod;
@@ -776,51 +816,53 @@ begin
                 addrBits := pop(request_msg);
                 expectedAck := pop(request_msg);
                 delay := pop(request_msg);
+                msg_p := new_string_ptr(pop_string(request_msg));
 
                 -- delay
                 wait for delay;
 
                 -- Initial check
-                check(opmode = I2c_MASTER, "I2C must be in master mode before I2C-ADDRESS can be sent [I2cPushAddr]");
+                check(opmode = I2c_MASTER, to_string(msg_p) & " - I2C must be in master mode before I2C-ADDRESS can be sent [I2cPushAddr]");
 
                 -- 7 Bit addressing
                 if AddrBits = 7 then
-                    SendByteInclClock(toUslv(Address, 7) & choose(isRead, '1', '0'), Scl, Sda, "7bit Address Transmission [I2cPushAddr]");
+                    SendByteInclClock(toUslv(Address, 7) & choose(isRead, '1', '0'), Scl, Sda, to_string(msg_p) & " - 7bit Address Transmission [I2cPushAddr]");
                     Sda <= 'Z';
-                    ReceiveBitInclClock(Ack_v, Scl, Sda, "7bit Addres ACK reception [I2cPushAddr]");
-                    check_equal(Ack_v, ExpectedAck, "7bit Address ACK [I2cPushAddr]");
+                    ReceiveBitInclClock(Ack_v, Scl, Sda, to_string(msg_p) & " - 7bit Addres ACK reception [I2cPushAddr]");
+                    check_equal(Ack_v, ExpectedAck, to_string(msg_p) & " - 7bit Address ACK [I2cPushAddr]");
                 -- 10 Bit addressing
                 elsif AddrBits = 10 then
                     -- First beat
-                    SendByteInclClock("11110" & toUslv(Address, 10)(9 downto 8) & choose(isRead, '1', '0'), Scl, Sda, "10bit Address Transmission, first beat [I2cPushAddr]");
+                    SendByteInclClock("11110" & toUslv(Address, 10)(9 downto 8) & choose(isRead, '1', '0'), Scl, Sda, to_string(msg_p) & " - 10bit Address Transmission, first beat [I2cPushAddr]");
                     Sda <= 'Z';
-                    ReceiveBitInclClock(Ack_v, Scl, Sda, "7bit Addres ACK reception for first address beat [I2cPushAddr]");
-                    check_equal(Ack_v, ExpectedAck, "10bit Address ACK for first address beat [I2cPushAddr]");
+                    ReceiveBitInclClock(Ack_v, Scl, Sda, to_string(msg_p) & " - 7bit Addres ACK reception for first address beat [I2cPushAddr]");
+                    check_equal(Ack_v, ExpectedAck, to_string(msg_p) & " - 10bit Address ACK for first address beat [I2cPushAddr]");
                     -- Second beat
-                    SendByteInclClock(toUslv(Address, 10)(7 downto 0) , Scl, Sda, "10bit Address Transmission, second beat [I2cPushAddr]");
+                    SendByteInclClock(toUslv(Address, 10)(7 downto 0) , Scl, Sda, to_string(msg_p) & " - 10bit Address Transmission, second beat [I2cPushAddr]");
                     Sda <= 'Z';
-                    ReceiveBitInclClock(Ack_v, Scl, Sda, "7bit Addres ACK reception for second address beat [I2cPushAddr]");
-                    check_equal(Ack_v, ExpectedAck, "10bit Address ACK for first second beat [I2cPushAddr]");
+                    ReceiveBitInclClock(Ack_v, Scl, Sda, to_string(msg_p) & " - 7bit Addres ACK reception for second address beat [I2cPushAddr]");
+                    check_equal(Ack_v, ExpectedAck, to_string(msg_p) & " - 10bit Address ACK for first second beat [I2cPushAddr]");
                 else
-                    error("I2cMasterSendAddr - Illegal addrBits (must be 7 or 10)");
+                    error(to_string(msg_p) & " - I2cMasterSendAddr - Illegal addrBits (must be 7 or 10)");
                 end if;
 
             -- *** Handle Slave Messages ***
             elsif msg_type = I2cExpectStartMsg then
                 -- Expect Start
                 timeout := pop(request_msg);
+                msg_p := new_string_ptr(pop_string(request_msg));
 
                 -- Initial check
-                check(opmode = I2c_IDLE, "I2C must be idle before I2C-START can be expected [I2cExpectStart]");
+                check(opmode = I2c_IDLE, to_string(msg_p) & " - I2C must be idle before I2C-START can be expected [I2cExpectStart]");
                 opmode := I2c_SLAVE;
-                LevelCheck(Scl, '1', "SCL must be 1 before I2C-START can be received [I2cExpectStart]");
-                LevelCheck(Sda, '1', "SDA must be 1 before I2C-START can be received [I2cExpectStart]");
+                LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 before I2C-START can be received [I2cExpectStart]");
+                LevelCheck(Sda, '1', to_string(msg_p) & " - SDA must be 1 before I2C-START can be received [I2cExpectStart]");
                 
                 -- Do start checking
-                LevelWait(Sda, '0', "SDA did not go low [I2cExpectStart]", timeout);
-                LevelCheck(Scl, '1', "SCL must be 1 during SDA falling edge [I2cExpectStart]");
-                LevelWait(Scl, '0', "SCL did not go low [I2cExpectStart]", timeout);
-                LevelCheck(Sda, '0', "SDA must be 0 during SCL falling edge [I2cExpectStart]");	
+                LevelWait(Sda, '0', to_string(msg_p) & " - SDA did not go low [I2cExpectStart]", timeout);
+                LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA falling edge [I2cExpectStart]");
+                LevelWait(Scl, '0', to_string(msg_p) & " - SCL did not go low [I2cExpectStart]", timeout);
+                LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 during SCL falling edge [I2cExpectStart]");	
 
                 -- Wait for center of SCL low
 		        wait for ClkQuartPeriod;
@@ -829,11 +871,12 @@ begin
                 -- Expect Repeated Start
                 timeout := pop(request_msg);
                 clkStretch := pop(request_msg);
+                msg_p := new_string_ptr(pop_string(request_msg));
 
                 -- Initial check
-                check(opmode = I2c_SLAVE, "I2C must be in slave mode before I2C-REPEATED-START can be expected [I2cExpectRepeatedStart]");
+                check(opmode = I2c_SLAVE, to_string(msg_p) & " - I2C must be in slave mode before I2C-REPEATED-START can be expected [I2cExpectRepeatedStart]");
                 if to01X(Scl) = '1' then
-                    LevelCheck(Sda, '1', "SDA must be 1 if SCL = 1 when waiting for a I2C-REPEATED-START [I2cExpectRepeatedStart]");
+                    LevelCheck(Sda, '1', to_string(msg_p) & " - SDA must be 1 if SCL = 1 when waiting for a I2C-REPEATED-START [I2cExpectRepeatedStart]");
                 end if;
             
                 -- Do Check
@@ -844,13 +887,13 @@ begin
                         wait for clkStretch;
                         Scl <= 'Z';
                     end if;	
-                    LevelWait(Scl, '1', "SCL did not go high [I2cExpectRepeatedStart]", timeout);
-                    LevelCheck(Sda, '1', "SDA must be 1 before SCL goes high [I2cExpectRepeatedStart]");
+                    LevelWait(Scl, '1', to_string(msg_p) & " - SCL did not go high [I2cExpectRepeatedStart]", timeout);
+                    LevelCheck(Sda, '1', to_string(msg_p) & " - SDA must be 1 before SCL goes high [I2cExpectRepeatedStart]");
                 end if;
-                LevelWait(Sda, '0', "SDA did not go low [I2cExpectRepeatedStart]", timeout);
-                LevelCheck(Scl, '1', "SCL must be 1 during SDA falling edge [I2cExpectRepeatedStart]");
-                LevelWait(Scl, '0', "SCL did not go low [I2cExpectRepeatedStart]", timeout);
-                LevelCheck(Sda, '0', "SDA must be 0 during SCL falling edge [I2cExpectRepeatedStart]");		
+                LevelWait(Sda, '0', to_string(msg_p) & " - SDA did not go low [I2cExpectRepeatedStart]", timeout);
+                LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA falling edge [I2cExpectRepeatedStart]");
+                LevelWait(Scl, '0', to_string(msg_p) & " - SCL did not go low [I2cExpectRepeatedStart]", timeout);
+                LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 during SCL falling edge [I2cExpectRepeatedStart]");		
                 
                 -- Wait for center of SCL low
                 wait for ClkQuartPeriod;
@@ -859,11 +902,12 @@ begin
                 -- Expect Stop
                 timeout := pop(request_msg);
                 clkStretch := pop(request_msg);
+                msg_p := new_string_ptr(pop_string(request_msg));
 
                 -- Initial check
-                check(opmode = I2c_SLAVE, "I2C must be in slave mode before I2C-STOP can be expected [I2cExpectStop]");
+                check(opmode = I2c_SLAVE, to_string(msg_p) & " - I2C must be in slave mode before I2C-STOP can be expected [I2cExpectStop]");
                 if to01X(Scl) = '1' then
-                    LevelCheck(Sda, '0', "SDA must be 0 if SCL = 1 when waiting for a I2C-STOP [I2cExpectStop]");
+                    LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 if SCL = 1 when waiting for a I2C-STOP [I2cExpectStop]");
                 end if;
                 
                 -- Do Check
@@ -874,11 +918,11 @@ begin
                         wait for clkStretch;
                         Scl <= 'Z';
                     end if;	
-                    LevelWait(Scl, '1', "SCL did not go high [I2cExpectStop]", timeout);
-                    LevelCheck(Sda, '0', "SDA must be 0 before SCL goes high [I2cExpectStop]");
+                    LevelWait(Scl, '1', to_string(msg_p) & " - SCL did not go high [I2cExpectStop]", timeout);
+                    LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 before SCL goes high [I2cExpectStop]");
                 end if;
-                LevelWait(Sda, '1', "SDA did not go high [I2cExpectStop]", timeout);
-                LevelCheck(Scl, '1', "SCL must be 1 during SDA rising edge [I2cExpectStop]");
+                LevelWait(Sda, '1', to_string(msg_p) & " - SDA did not go high [I2cExpectStop]", timeout);
+                LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA rising edge [I2cExpectStop]");
                 
                 -- Go to center of clk high period
                 wait for ClkQuartPeriod;
@@ -892,24 +936,25 @@ begin
                 ackOutput := pop(request_msg);
                 timeout := pop(request_msg);
                 clkStretch := pop(request_msg);
+                msg_p := new_string_ptr(pop_string(request_msg));
 
                 -- Initial check
-                check(opmode = I2c_SLAVE, "I2C must be in slave mode before I2C-ADDRESS can be expected [I2cExpectAddr]");
+                check(opmode = I2c_SLAVE, to_string(msg_p) & " - I2C must be in slave mode before I2C-ADDRESS can be expected [I2cExpectAddr]");
 
                 -- 7 Bit addressing
                 if AddrBits = 7 then
-                    ExpectByteExclClock(toUslv(Address, 7) & choose(isRead, '1', '0'), Scl, Sda, "7bit Address Reception [I2cExpectAddr]", ClkStretch => clkStretch);
-                    SendBitExclClock(ackOutput, Scl, Sda, "7bit Address ACK Transmission [I2cExpectAddr]", clkStretch => clkStretch);
+                    ExpectByteExclClock(toUslv(Address, 7) & choose(isRead, '1', '0'), Scl, Sda, to_string(msg_p) & " - 7bit Address Reception [I2cExpectAddr]", ClkStretch => clkStretch);
+                    SendBitExclClock(ackOutput, Scl, Sda, to_string(msg_p) & " - 7bit Address ACK Transmission [I2cExpectAddr]", clkStretch => clkStretch);
                 -- 10 Bit addressing
                 elsif AddrBits = 10 then
                     -- First beat
-                    ExpectByteExclClock("11110" & toUslv(Address, 10)(9 downto 8) & choose(isRead, '1', '0'), Scl, Sda, "10bit Address Reception, first beat [I2cExpectAddr]", clkStretch);
-                    SendBitExclClock(ackOutput, Scl, Sda, "10bit Address ACK Transmission, first beat [I2cExpectAddr]", ClkStretch => clkStretch);
+                    ExpectByteExclClock("11110" & toUslv(Address, 10)(9 downto 8) & choose(isRead, '1', '0'), Scl, Sda, to_string(msg_p) & " - 10bit Address Reception, first beat [I2cExpectAddr]", clkStretch);
+                    SendBitExclClock(ackOutput, Scl, Sda, to_string(msg_p) & " - 10bit Address ACK Transmission, first beat [I2cExpectAddr]", ClkStretch => clkStretch);
                     -- Second beat
-                    ExpectByteExclClock(toUslv(Address, 10)(7 downto 0), Scl, Sda, "10bit Address Reception, second beat [I2cExpectAddr]", ClkStretch => clkStretch);
-                    SendBitExclClock(ackOutput, Scl, Sda, "10bit Address ACK Transmission, second beat [I2cExpectAddr]", ClkStretch => clkStretch);
+                    ExpectByteExclClock(toUslv(Address, 10)(7 downto 0), Scl, Sda, to_string(msg_p) & " - 10bit Address Reception, second beat [I2cExpectAddr]", ClkStretch => clkStretch);
+                    SendBitExclClock(ackOutput, Scl, Sda, to_string(msg_p) & " - 10bit Address ACK Transmission, second beat [I2cExpectAddr]", ClkStretch => clkStretch);
                 else
-                    error("I2cExpectAddr - Illegal addrBits (must be 7 or 10)");
+                    error(to_string(msg_p) & " - I2cExpectAddr - Illegal addrBits (must be 7 or 10)");
                 end if;
 
             -- *** Handle General Messages ***
@@ -919,11 +964,12 @@ begin
                 expectedAck := pop(request_msg);
                 clkStretch := pop(request_msg);
                 delay := pop(request_msg);
+                msg_p := new_string_ptr(pop_string(request_msg));
 
                 -- Initial check
-                check(opmode = I2c_MASTER or opmode = I2c_SLAVE, "I2C must be in master or slave mode before I2C-TX-BYTE can be sent [I2cPushTxByte]");
-                check(opmode = I2c_SLAVE or clkStretch = 0 ns, "Clock stretching is only allowed in slave mode [I2cPushTxByte]");
-                check(opmode = I2c_MASTER or delay = 0 ns, "Delay is only allowed in master mode [I2cPushTxByte]");
+                check(opmode = I2c_MASTER or opmode = I2c_SLAVE, to_string(msg_p) & " - I2C must be in master or slave mode before I2C-TX-BYTE can be sent [I2cPushTxByte]");
+                check(opmode = I2c_SLAVE or clkStretch = 0 ns, to_string(msg_p) & " - Clock stretching is only allowed in slave mode [I2cPushTxByte]");
+                check(opmode = I2c_MASTER or delay = 0 ns, to_string(msg_p) & " - Delay is only allowed in master mode [I2cPushTxByte]");
 
                 -- Do data
                 if Data < 0 then
@@ -933,25 +979,26 @@ begin
                 end if;
                 if opmode = I2c_MASTER then
                     wait for delay;
-                    SendByteInclClock(Data_v, Scl, Sda, "Send byte in master mode [I2cPushTxByte]");
+                    SendByteInclClock(Data_v, Scl, Sda, to_string(msg_p) & " - Send byte in master mode [I2cPushTxByte]");
                     Sda <= 'Z';
-                    ReceiveBitInclClock(Ack_v, Scl, Sda, "data ACK in master mode [I2cPushTxByte]");
+                    ReceiveBitInclClock(Ack_v, Scl, Sda, to_string(msg_p) & " - data ACK in master mode [I2cPushTxByte]");
                 else
-                    SendByteExclClock(Data_v, Scl, Sda, "Send byte in slave mode [I2cPushTxByte]", ClkStretch => clkStretch);
+                    SendByteExclClock(Data_v, Scl, Sda, to_string(msg_p) & " - Send byte in slave mode [I2cPushTxByte]", ClkStretch => clkStretch);
                     I2cBusFree(Scl, Sda);
-                    ReceiveBitExclClock(Ack_v, Scl, Sda, "data ACK in slave mode [I2cPushTxByte]", ClkStretch => clkStretch);
+                    ReceiveBitExclClock(Ack_v, Scl, Sda, to_string(msg_p) & " - data ACK in slave mode [I2cPushTxByte]", ClkStretch => clkStretch);
                 end if;
-                check_equal(Ack_v, expectedAck, "data ACK [I2cPushTxByte]");
+                check_equal(Ack_v, expectedAck, to_string(msg_p) & " - data ACK [I2cPushTxByte]");
 
             elsif msg_type = I2cExpectRxByteMsg then
                 -- Expect RX Byte
                 data := pop(request_msg);
                 ackOutput := pop(request_msg);
                 clkStretch := pop(request_msg);
+                msg_p := new_string_ptr(pop_string(request_msg));
 
                 -- Initial check
-                check(opmode = I2c_MASTER or opmode = I2c_SLAVE, "I2C must be in master or slave mode before I2C-RX-BYTE can be expected [I2cExpectRxByte]");
-                check(opmode = I2c_SLAVE or clkStretch = 0 ns, "Clock stretching is only allowed in slave mode [I2cExpectRxByte]");
+                check(opmode = I2c_MASTER or opmode = I2c_SLAVE, to_string(msg_p) & " - I2C must be in master or slave mode before I2C-RX-BYTE can be expected [I2cExpectRxByte]");
+                check(opmode = I2c_SLAVE or clkStretch = 0 ns, to_string(msg_p) & " - Clock stretching is only allowed in slave mode [I2cExpectRxByte]");
 
                 -- Do data
                 if Data < 0 then
@@ -961,20 +1008,26 @@ begin
                 end if;
                 if opmode = I2c_MASTER then
                     Sda <= 'Z';
-                    ExpectByteInclClock(Data_v, Scl, Sda, "Receive byte in master mode [I2cExpectRxByte]");
-                    SendBitInclClock(ackOutput, Scl, Sda, "ACK in master mode [I2cExpectRxByte]");
+                    ExpectByteInclClock(Data_v, Scl, Sda, to_string(msg_p) & " - Receive byte in master mode [I2cExpectRxByte]");
+                    SendBitInclClock(ackOutput, Scl, Sda, to_string(msg_p) & " - ACK in master mode [I2cExpectRxByte]");
                 else
-                    ExpectByteExclClock(Data_v, Scl, Sda, "Receive byte in slave mode [I2cExpectRxByte]", ClkStretch => clkStretch);           
-                    SendBitExclClock(ackOutput, Scl, Sda, "ACK in slave mode [I2cExpectRxByte]", ClkStretch => clkStretch);
+                    ExpectByteExclClock(Data_v, Scl, Sda, to_string(msg_p) & " - Receive byte in slave mode [I2cExpectRxByte]", ClkStretch => clkStretch);           
+                    SendBitExclClock(ackOutput, Scl, Sda, to_string(msg_p) & " - ACK in slave mode [I2cExpectRxByte]", ClkStretch => clkStretch);
                     I2cBusFree(Scl, Sda);
                 end if;
 
             elsif msg_type = I2cForceMasterModeMsg then
+                -- Pop message
+                msg_p := new_string_ptr(pop_string(request_msg));
+
                 -- Force Master Mode
-                check(opmode = I2c_SLAVE, "I2C must be in slave mode before I2C-MASTER-MODE can be forced [I2cForceMasterMode]");
+                check(opmode = I2c_SLAVE, to_string(msg_p) & " - I2C must be in slave mode before I2C-MASTER-MODE can be forced [I2cForceMasterMode]");
                 opmode := I2c_MASTER;
 
             elsif msg_type = I2cForceBusReleaseMsg then
+                -- Pop message
+                msg_p := new_string_ptr(pop_string(request_msg));
+
                 -- Force Bus Release
                 I2cBusFree(Scl, Sda);
                 opmode := I2c_IDLE;

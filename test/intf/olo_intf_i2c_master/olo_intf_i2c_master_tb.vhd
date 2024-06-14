@@ -228,8 +228,8 @@ begin
             if run("Write2bAckNack") then
                 -- I2C Endpoint
                 i2c_expect_start(net, i2c_slave);
-                i2c_expect_rx_byte(net, i2c_slave, 16#42#);
-                i2c_expect_rx_byte(net, i2c_slave, 16#53#, I2c_NACK);
+                i2c_expect_rx_byte(net, i2c_slave, 16#42#, msg => "byte 0");
+                i2c_expect_rx_byte(net, i2c_slave, 16#53#, I2c_NACK, msg => "byte 1");
                 i2c_expect_stop(net, i2c_slave);
                 -- Commands
                 PushCommand(CMD_START);
@@ -268,8 +268,8 @@ begin
             if run("Read2bAckNack") then
                 -- I2C Endpoint
                 i2c_expect_start(net, i2c_slave);
-                i2c_push_tx_byte(net, i2c_slave, 16#36#);
-                i2c_push_tx_byte(net, i2c_slave, 16#47#, I2c_NACK);
+                i2c_push_tx_byte(net, i2c_slave, 16#36#, msg => "byte 0");
+                i2c_push_tx_byte(net, i2c_slave, 16#47#, I2c_NACK, msg => "byte 1");
                 i2c_expect_stop(net, i2c_slave);
                 -- Commands
                 PushCommand(CMD_START);
@@ -290,9 +290,9 @@ begin
             if run("WriteThenRead") then
                 -- I2C Endpoint
                 i2c_expect_start(net, i2c_slave);
-                i2c_expect_rx_byte(net, i2c_slave, 16#42#);
+                i2c_expect_rx_byte(net, i2c_slave, 16#42#, msg => "byte rx");
                 i2c_expect_repeated_start(net, i2c_slave);
-                i2c_push_tx_byte(net, i2c_slave, 16#36#, I2c_NACK);
+                i2c_push_tx_byte(net, i2c_slave, 16#36#, I2c_NACK, msg => "byte tx");
                 i2c_expect_stop(net, i2c_slave);
                 -- Commands
                 PushCommand(CMD_START);
@@ -316,9 +316,9 @@ begin
                 -- Write then read case
                 -- I2C Endpoint
                 i2c_expect_start(net, i2c_slave);
-                i2c_expect_rx_byte(net, i2c_slave, 16#52#, clkStretch => 2*Scl_Period_c);
+                i2c_expect_rx_byte(net, i2c_slave, 16#52#, clkStretch => 2*Scl_Period_c, msg => "byte rx");
                 i2c_expect_repeated_start(net, i2c_slave, clkStretch => 2*Scl_Period_c);
-                i2c_push_tx_byte(net, i2c_slave, 16#46#, I2c_NACK, clkStretch => 2*Scl_Period_c);
+                i2c_push_tx_byte(net, i2c_slave, 16#46#, I2c_NACK, clkStretch => 2*Scl_Period_c, msg => "byte tx");
                 i2c_expect_stop(net, i2c_slave, clkStretch => 2*Scl_Period_c);
                 -- Commands
                 PushCommand(CMD_START);
@@ -403,14 +403,14 @@ begin
             -- *** Test Arbitration ***
             if run("MultiMaster-SameWrite") then
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
-                i2c_expect_rx_byte(net, i2c_slave, 16#42#);
-                i2c_expect_stop(net, i2c_slave);
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
+                i2c_expect_rx_byte(net, i2c_slave, 16#42#, msg => "data slave");
+                i2c_expect_stop(net, i2c_slave, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master);
+                i2c_expect_start(net, i2c_master, msg => "start master");
                 i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#42#, delay => 100 ns);
-                i2c_push_stop(net, i2c_master, delay => 100 ns);
+                i2c_push_tx_byte(net, i2c_master, 16#42#, delay => 100 ns, msg => "data master");
+                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"42", true);
@@ -426,14 +426,14 @@ begin
 
             if run("MultiMaster-ArbLostWrite") then
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
-                i2c_expect_rx_byte(net, i2c_slave, 16#87#);
-                i2c_expect_stop(net, i2c_slave);
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
+                i2c_expect_rx_byte(net, i2c_slave, 16#87#, msg => "data slave");
+                i2c_expect_stop(net, i2c_slave, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master);
+                i2c_expect_start(net, i2c_master, msg => "start master");
                 i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#87#, delay => 100 ns);
-                i2c_push_stop(net, i2c_master, delay => 100 ns);
+                i2c_push_tx_byte(net, i2c_master, 16#87#, delay => 100 ns, msg => "data master");
+                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"A3", true);
@@ -450,16 +450,16 @@ begin
             if run("MultiMaster-ArbLostStop") then
                 -- Arbitration lost during stop (other master continues writing)
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
-                i2c_expect_rx_byte(net, i2c_slave, 16#A3#); -- from both masters
-                i2c_expect_rx_byte(net, i2c_slave, 16#12#); -- from VC master
-                i2c_expect_stop(net, i2c_slave);
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
+                i2c_expect_rx_byte(net, i2c_slave, 16#A3#, msg => "byte 0 slave"); -- from both masters
+                i2c_expect_rx_byte(net, i2c_slave, 16#12#, msg => "byte 1 slave"); -- from VC master
+                i2c_expect_stop(net, i2c_slave, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master);
+                i2c_expect_start(net, i2c_master, msg => "start master");
                 i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#A3#, delay => 100 ns);
-                i2c_push_tx_byte(net, i2c_master, 16#12#, delay => 100 ns);
-                i2c_push_stop(net, i2c_master, delay => 100 ns);
+                i2c_push_tx_byte(net, i2c_master, 16#A3#, delay => 100 ns, msg => "byte 0 master");
+                i2c_push_tx_byte(net, i2c_master, 16#12#, delay => 100 ns, msg => "byte 1 master");
+                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"A3", true);
@@ -476,16 +476,16 @@ begin
             if run("MultiMaster-ArbLostRepStartContinue") then
                 -- Arbitration lost during repeated start (other master continues writing)
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
-                i2c_expect_rx_byte(net, i2c_slave, 16#A3#); -- from both masters
-                i2c_expect_rx_byte(net, i2c_slave, 16#12#); -- from VC master
-                i2c_expect_stop(net, i2c_slave);
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
+                i2c_expect_rx_byte(net, i2c_slave, 16#A3#, msg => "byte 0 slave"); -- from both masters
+                i2c_expect_rx_byte(net, i2c_slave, 16#12#, msg => "byte 1 slave"); -- from VC master
+                i2c_expect_stop(net, i2c_slave, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master);
+                i2c_expect_start(net, i2c_master, msg => "start master");
                 i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#A3#, delay => 100 ns);
-                i2c_push_tx_byte(net, i2c_master, 16#12#, delay => 100 ns);
-                i2c_push_stop(net, i2c_master, delay => 100 ns);
+                i2c_push_tx_byte(net, i2c_master, 16#A3#, delay => 100 ns, msg => "byte 0 master");
+                i2c_push_tx_byte(net, i2c_master, 16#12#, delay => 100 ns, msg => "byte 1 master");
+                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"A3", true);
@@ -504,14 +504,14 @@ begin
             if run("MultiMaster-ArbLostRepStartStop") then
                 -- Arbitration lost during repeated start (other master sends stop)
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
-                i2c_expect_rx_byte(net, i2c_slave, 16#A3#); -- from both masters
-                i2c_expect_stop(net, i2c_slave);            -- from VC master
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
+                i2c_expect_rx_byte(net, i2c_slave, 16#A3#, msg => "data slave"); -- from both masters
+                i2c_expect_stop(net, i2c_slave, msg => "stop slave");            -- from VC master
                 -- I2C Master
-                i2c_expect_start(net, i2c_master);
+                i2c_expect_start(net, i2c_master, msg => "start master");
                 i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#A3#, delay => 100 ns);
-                i2c_push_stop(net, i2c_master, delay => 100 ns);
+                i2c_push_tx_byte(net, i2c_master, 16#A3#, delay => 100 ns, msg => "data master");
+                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"A3", true);
@@ -530,14 +530,14 @@ begin
             if run("MultiMaster-ArbLostBit1") then
                 -- Arbitration lost during bit 1 (other master sends a '0')
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
-                i2c_expect_rx_byte(net, i2c_slave, 16#C3#);
-                i2c_expect_stop(net, i2c_slave);
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
+                i2c_expect_rx_byte(net, i2c_slave, 16#C3#, msg => "data slave");
+                i2c_expect_stop(net, i2c_slave, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master);
+                i2c_expect_start(net, i2c_master, msg => "start master");
                 i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#C3#, delay => 100 ns);
-                i2c_push_stop(net, i2c_master, delay => 100 ns);
+                i2c_push_tx_byte(net, i2c_master, 16#C3#, delay => 100 ns, msg => "data master");
+                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"E3", true);
@@ -554,14 +554,14 @@ begin
             if run("MultiMaster-ArbLostByRepstart") then
                 -- Arbitration lost due to other master sending a repeated start during first data bit
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
-                i2c_expect_repeated_start(net, i2c_slave);
-                i2c_expect_stop(net, i2c_slave);
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
+                i2c_expect_repeated_start(net, i2c_slave, msg => "repstart slave");
+                i2c_expect_stop(net, i2c_slave, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master);
+                i2c_expect_start(net, i2c_master, msg => "start master");
                 i2c_force_master_mode(net, i2c_master);
-                i2c_push_repeated_start(net, i2c_master, delay => 100 ns);
-                i2c_push_stop(net, i2c_master, delay => 100 ns);
+                i2c_push_repeated_start(net, i2c_master, delay => 100 ns, msg => "repstart master");
+                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"E3", true);
@@ -578,11 +578,11 @@ begin
             if run("MultiMaster-ArbLostOtherStart") then
                 -- Arbitration lost due to other master sending a start before own start
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
-                i2c_expect_stop(net, i2c_slave);
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
+                i2c_expect_stop(net, i2c_slave, msg => "stop slave");
                 -- I2C Master
-                i2c_push_start(net, i2c_master);
-                i2c_push_stop(net, i2c_master);
+                i2c_push_start(net, i2c_master, delay => 100 ns, msg => "start master");
+                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
                 -- Commands
                 PushCommand(CMD_START, delay => 0.25 * Scl_Period_c);
                 PushCommand(CMD_STOP);
@@ -599,7 +599,7 @@ begin
                 -- ... This should never happen as long as the other master is a proper I2C master. However
                 -- ... it could happen if a non-multi-master-cabalbe master is connected to the bus.
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
                 i2c_force_bus_release(net, i2c_slave); -- return to idle state
                 -- data not checked because its not relevant               
                 -- Commands
@@ -626,7 +626,7 @@ begin
                 -- ... This should never happen as long as the other master is a proper I2C master. However
                 -- ... it could happen if a non-multi-master-cabalbe master is connected to the bus.
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
                 i2c_force_bus_release(net, i2c_slave); -- return to idle state
                 -- data not checked because its not relevant               
                 -- Commands
@@ -651,9 +651,9 @@ begin
             -- *** Test Bus Busy Timeout ***
             if run("BusBusyTimeout") then
                 -- I2C Slave
-                i2c_expect_start(net, i2c_slave);
+                i2c_expect_start(net, i2c_slave, msg => "start slave");
                 -- I2C Master
-                i2c_push_start(net, i2c_master);
+                i2c_push_start(net, i2c_master, msg => "start master");
                 i2c_force_bus_release(net, i2c_master);
                 -- Check Status
                 check_equal(Status_BusBusy, '0', "Status_BusBusy 0 start");
