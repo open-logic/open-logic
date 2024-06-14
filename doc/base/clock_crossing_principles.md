@@ -21,7 +21,7 @@ For *AMD* tools (*Vivado*) an automatic constraint file exists, which automatica
 
 1. Create an empty TCL file and add it to the Vivado project as constraint.
 2. Enable the TCL file **for implementation only** (see screenshot below)
-3. In the TCL file, add a single line `source <path-to-open-logi>/src/base/tcl/constraints_amd.tcl`
+3. In the TCL file, add a single line `source <path-to-open-logic>/src/base/tcl/constraints_amd.tcl`
 
 ![auto constraining](./clock_crossings/auto_constraining.png)
 
