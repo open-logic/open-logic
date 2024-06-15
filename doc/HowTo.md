@@ -25,7 +25,7 @@ Tipp: For faster runtimes, you may want to use multiple threads to execute simul
 
 You should now see an output indicating that all tests pass.
 
-![simulation](/home/oli/work/olo/open-logic/doc/general/Simulation.png)
+![simulation](./general/Simulation.png)
 
 ## ... Open a Simulation in the GUI
 
@@ -62,7 +62,7 @@ python3 ./AnalyzeCoverage.py
 
 You should now see a clean summary of the statement coverage:
 
-![simulation](/home/oli/work/olo/open-logic/doc/general/Coverage.png)
+![simulation](./general/Coverage.png)
 
 ## ... Update Badges
 

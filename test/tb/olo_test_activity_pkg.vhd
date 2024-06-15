@@ -16,6 +16,9 @@ library ieee;
 library vunit_lib;
 	context vunit_lib.vunit_context;
 
+library olo;
+    use olo.olo_base_pkg_math.all;
+
 ------------------------------------------------------------------------------
 -- Package Header
 ------------------------------------------------------------------------------
@@ -29,6 +32,12 @@ package olo_test_activity_pkg is
 	procedure CheckNoActivityStlv(signal Sig : in std_logic_vector;
 	                              IdleTime   : in time;
 	                              Msg        : in string := "");
+
+	-- Check when a signal had its last activity (without waiting)
+	procedure CheckLastActivity(signal Sig : in std_logic;
+	                            IdleTime   : in time;
+	                            Level      : in integer range -1 to 1 := -1; -- -1 = don't check, 0 = low, 1 = high
+	                            Msg        : in string := "");
 
 	-- pulse a signal
 	procedure PulseSig( signal Sig  : out std_logic;
@@ -72,6 +81,17 @@ package body olo_test_activity_pkg is
         check(Sig'last_event >= IdleTime, "CheckNoActivityStlv() failed: " & Msg);
 	end procedure;
 
+    -- *** CheckLastActivity ***
+    procedure CheckLastActivity(signal Sig : in std_logic;
+                                IdleTime   : in time;
+                                Level      : in integer range -1 to 1 := -1; -- -1 = don't check, 0 = low, 1 = high
+                                Msg        : in string := "") is
+    begin
+        check(Sig'last_event >= IdleTime, "CheckLastActivity() - unexpected activity: " & Msg);
+		if Level /= -1 then
+            check_equal(Sig, choose(Level = 0, '0', '1'), "CheckLastActivity() - wrong level: " & Msg);
+		end if;
+	end procedure;   
 
 	-- *** PulseSig ***
 	procedure PulseSig(signal Sig  : out std_logic;

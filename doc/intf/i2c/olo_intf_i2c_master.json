@@ -1,0 +1,10 @@
+{signal: [
+  {name: 'Cmd_Ready',      wave: '1.0..10...|....1.0...', period:2},
+  {name: 'Cmd_Valid',      wave: '010..10...|.....10...', period:2},
+  {name: 'Cmd_Command',    wave: 'x3x..4x...|.....5x...', data: ["START", "SEND", "STOP"], period:2},
+  {name: 'Resp_Valid',     wave: '0...10....|...10...10', period:2},
+  {name: 'Resp_Command',   wave: 'x...3x....|...4x...5x', data:["START", "SEND", "STOP"], period:2},
+  {name: 'Status_BusBusy', wave: '0.1.......|.........0', period:2},
+  {name: 'I2c_Scl',        wave: '1...0..1.0|.1.0...1..', period:2},
+  {name: 'I2c_Sda',        wave: '1..0..2...|2...0...1.', data:["Addr6", "ACK/NACK"], period:2},
+]}

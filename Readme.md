@@ -6,7 +6,7 @@
 
 # Open Logic - A VHDL Standard Library
 
-*Open Logic* aims to be what *stdlib* is for C/C++ projects. 
+*Open Logic* aims to be for HDL projects what what *stdlib* is for C/C++ projects. 
 
 *Open Logic* implements commonly used components in a reusable way and provide them under a permissive open source license (LGPL modified for FPGA usage, see [License.txt](./License.txt)), so the code can be used in commercial projects. 
 
@@ -21,7 +21,7 @@ Maintainer: [obruendl](oliver.bruendler@gmx.ch)
 * [base](./doc/EntityList.md#base) - basic logic to be used for device internal logic
 * [axi](./doc/EntityList.md#axi)  - any components related to AXI4/AXI4-Lite/AXI4-Stream interfaces
   * requires: *base*
-* [interface](./doc/EntityList.md#interface)  - any logic related to device external interfaces 
+* [intf](./doc/EntityList.md#intf)  - any logic related to device external interfaces 
   * requires: *base*
 
 It's suggested that you compile ALL files of the areas you need (plus their dependencies) into one VHDL library. You are free to choose any library name and you are also free to use the same single library for *Open Logic* files and user-code.
