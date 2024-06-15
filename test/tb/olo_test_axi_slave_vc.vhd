@@ -34,6 +34,7 @@ package olo_test_axi_slave_pkg is
         AddrWidth      : natural;
         IdWidth        : natural;
         UserWidth      : natural;
+        DataBytes      : natural;
     end record;
 
     -- Message Types
@@ -91,7 +92,7 @@ package olo_test_axi_slave_pkg is
         delay           : time                  := 0 ns    -- delay from valid to ready
     );
 
-    -- Expect W transaction
+    -- Expect W transaction (counter based)
     procedure expect_w (
         signal net      : inout network_t;
         AxiSlave        : olo_test_axi_slave_t;
@@ -100,6 +101,19 @@ package olo_test_axi_slave_pkg is
         beats           : natural               := 1;       -- number of beats to write
         firstStrb       : std_logic_vector      := "X";
         lastStrb        : std_logic_vector      := "X";
+        delay           : time                  := 0 ns;    -- delay from valid to ready
+        beatDelay       : time                  := 0 ns     -- delay between beats
+    );
+
+    -- Expect W transaction (arbitrary data)
+    -- allData and allStrb must have the correct length and contain all data and strobes for all beats concatenated.
+    -- The data and strobes at the right end (low index) are transferred first.
+    procedure expect_w_arbitrary (
+        signal net      : inout network_t;
+        AxiSlave        : olo_test_axi_slave_t;
+        beats           : natural               := 1;
+        allData         : unsigned;
+        allStrb         : std_logic_vector      := "X";
         delay           : time                  := 0 ns;    -- delay from valid to ready
         beatDelay       : time                  := 0 ns     -- delay between beats
     );
@@ -113,13 +127,27 @@ package olo_test_axi_slave_pkg is
         delay           : time                  := 0 ns    -- delay before executing transaction
     );
 
-    -- Push R transaction
+    -- Push R transaction (counter based)
     procedure push_r (
         signal net      : inout network_t;
         AxiSlave        : olo_test_axi_slave_t;
         startValue      : unsigned;
         increment       : natural               := 1; 
         beats           : natural               := 1;       -- number of beats to write
+        resp            : Resp_t                := xRESP_OKAY_c;
+        id              : std_logic_vector      := "X";
+        delay           : time                  := 0 ns;    -- delay before executing transaction
+        beatDelay       : time                  := 0 ns     -- delay between beats
+    );
+
+    -- Push R transaction (arbitrary data)
+    -- allData must have the correct length and contain all data for all beats concatenated.
+    -- The data at the right end (low index) are transferred first.
+    procedure push_r_arbitrary (
+        signal net      : inout network_t;
+        AxiSlave        : olo_test_axi_slave_t;
+        beats           : natural               := 1;
+        allData         : unsigned;
         resp            : Resp_t                := xRESP_OKAY_c;
         id              : std_logic_vector      := "X";
         delay           : time                  := 0 ns;    -- delay before executing transaction
@@ -133,6 +161,7 @@ package olo_test_axi_slave_pkg is
         AxiSlave        : olo_test_axi_slave_t;
         addr            : unsigned;
         data            : unsigned;
+        strb            : std_logic_vector := "X";
         AwReadyDelay    : time := 0 ns;
         WReadyDelay     : time := 0 ns;
         BValidDelay     : time := 0 ns
@@ -257,28 +286,69 @@ package body olo_test_axi_slave_pkg is
         delay           : time                  := 0 ns;    -- delay from valid to ready
         beatDelay       : time                  := 0 ns     -- delay between beats
     ) is
-        variable msg : msg_t;
-        variable firstStrb_v : std_logic_vector(AxiSlave.DataWidth/8-1 downto 0) := (others => '1');
-        variable lastStrb_v : std_logic_vector(AxiSlave.DataWidth/8-1 downto 0) := (others => '1');
+        variable allData_v : unsigned(AxiSlave.DataWidth*beats-1 downto 0);
+        variable allStrb_v : std_logic_vector(AxiSlave.DataBytes*beats-1 downto 0) := (others => '1');
+        variable Data_v : unsigned(AxiSlave.DataWidth-1 downto 0) := resize(startValue, AxiSlave.DataWidth);
     begin
         -- checks
         if firstStrb /= "X" then
-            check_equal(firstStrb'length, AxiSlave.DataWidth/8, "expect_w: firstStrb has wrong length");
-            firstStrb_v := firstStrb;
+            check_equal(firstStrb'length, AxiSlave.DataBytes, "expect_w: firstStrb has wrong length");
+            allStrb_v(AxiSlave.DataBytes-1 downto 0) := firstStrb;
         end if;
         if lastStrb /= "X" then
             check_equal(lastStrb'length, AxiSlave.DataWidth/8, "expect_w: lastStrb has wrong length");
-            lastStrb_v := lastStrb;
+            allStrb_v(allStrb_v'high downto allStrb_v'length-AxiSlave.DataBytes) := lastStrb;
         end if;
+        -- assemble data
+        for i in 0 to beats-1 loop
+            allData_v(AxiSlave.DataWidth*(i+1)-1 downto AxiSlave.DataWidth*i) := Data_v;
+            Data_v := Data_v + increment;
+            if i = 0 and firstStrb /= "X" then
+                allStrb_v(AxiSlave.DataBytes*(i+1)-1 downto AxiSlave.DataBytes*i) := firstStrb;
+            elsif i = beats-1 and lastStrb /= "X" then
+                allStrb_v(AxiSlave.DataBytes*(i+1)-1 downto AxiSlave.DataBytes*i) := lastStrb;
+            end if;
+        end loop;
+        -- implementation
+        expect_w_arbitrary(net, AxiSlave, beats, allData_v, allStrb_v, delay, beatDelay);
+    end;
+
+    procedure expect_w_arbitrary (
+        signal net      : inout network_t;
+        AxiSlave        : olo_test_axi_slave_t;
+        beats           : natural               := 1;
+        allData         : unsigned;
+        allStrb         : std_logic_vector      := "X";
+        delay           : time                  := 0 ns;    -- delay from valid to ready
+        beatDelay       : time                  := 0 ns     -- delay between beats
+    ) is
+        variable msg : msg_t;
+        variable allStrb_v : std_logic_vector(AxiSlave.DataWidth/8*beats-1 downto 0) := (others => '1');
+        variable Data_v : unsigned(AxiSlave.DataWidth-1 downto 0);
+        variable Strb_v : std_logic_vector(AxiSlave.DataWidth/8-1 downto 0);
+        variable Last_v : std_logic;
+    begin
+        -- checks
+        if allStrb /= "X" then
+            check_equal(allStrb'length, allStrb_v'length, "expect_w_arbitrary: allStrb has wrong length");
+            allStrb_v := allStrb;
+        end if;
+        check_equal(allData'length, AxiSlave.DataWidth*beats, "expect_w_arbitrary: allData has wrong length");
         -- implementation
         msg := new_msg(AxiWMsg);
-        push(msg, resize(startValue, AxiSlave.DataWidth));
-        push(msg, increment);
-        push(msg, beats);
-        push(msg, firstStrb_v);
-        push(msg, lastStrb_v);
         push(msg, delay);
         push(msg, beatDelay);
+        for i in 0 to beats-1 loop
+            Data_v := allData(AxiSlave.DataWidth*(i+1)-1 downto AxiSlave.DataWidth*i);
+            Strb_v := allStrb_v(AxiSlave.DataWidth/8*(i+1)-1 downto AxiSlave.DataWidth/8*i);
+            Last_v := '0';
+            if i = beats-1 then
+                Last_v := '1';
+            end if;
+            push(msg, Data_v);
+            push(msg, Strb_v);
+            push(msg, Last_v);
+        end loop;
         send(net, AxiSlave.p_actor, msg);
     end;
 
@@ -318,7 +388,8 @@ package body olo_test_axi_slave_pkg is
         delay           : time                  := 0 ns;    -- delay before executing transaction
         beatDelay       : time                  := 0 ns     -- delay between beats
     ) is
-        variable msg : msg_t;
+        variable allData_v : unsigned(AxiSlave.DataWidth*beats-1 downto 0);
+        variable Data_v : unsigned(AxiSlave.DataWidth-1 downto 0) := resize(startValue, AxiSlave.DataWidth);
         variable id_v : std_logic_vector(AxiSlave.IdWidth-1 downto 0) := (others => '0');
     begin
         -- checks
@@ -326,17 +397,54 @@ package body olo_test_axi_slave_pkg is
             check_equal(id'length, AxiSlave.IdWidth, "push_r: id has wrong length");
             id_v := id;
         end if;
+        -- assemble data
+        for i in 0 to beats-1 loop
+            allData_v(AxiSlave.DataWidth*(i+1)-1 downto AxiSlave.DataWidth*i) := Data_v;
+            Data_v := Data_v + increment;
+        end loop;
+        -- implementation
+        push_r_arbitrary(net, AxiSlave, beats, allData_v, resp, id_v, delay, beatDelay);
+    end;   
+    
+    procedure push_r_arbitrary (
+        signal net      : inout network_t;
+        AxiSlave        : olo_test_axi_slave_t;
+        beats           : natural               := 1;
+        allData         : unsigned;
+        resp            : Resp_t                := xRESP_OKAY_c;
+        id              : std_logic_vector      := "X";
+        delay           : time                  := 0 ns;    -- delay before executing transaction
+        beatDelay       : time                  := 0 ns     -- delay between beats
+    ) is
+        variable msg : msg_t;
+        variable id_v : std_logic_vector(AxiSlave.IdWidth-1 downto 0) := (others => '0');
+        variable Data_v : unsigned(AxiSlave.DataWidth-1 downto 0);
+        variable Last_v : std_logic;
+    begin
+        -- checks
+        if id /= "X" then
+            check_equal(id'length, AxiSlave.IdWidth, "push_r_arbitrary: id has wrong length");
+            id_v := id;
+        end if;
+        check_equal(allData'length, AxiSlave.DataWidth*beats, "push_r_arbitrary: allData has wrong length");
         -- implementation
         msg := new_msg(AxiRMsg);
-        push(msg, resize(startValue, AxiSlave.DataWidth));
-        push(msg, increment);
-        push(msg, beats);
         push(msg, resp);
         push(msg, id_v);
         push(msg, delay);
         push(msg, beatDelay);
+        for i in 0 to beats-1 loop
+            Data_v := allData(AxiSlave.DataWidth*(i+1)-1 downto AxiSlave.DataWidth*i);
+            Last_v := '0';
+            if i = beats-1 then
+                Last_v := '1';
+            end if;
+            push(msg, Data_v);
+            push(msg, Last_v);
+        end loop;
         send(net, AxiSlave.p_actor, msg);
-    end;    
+    end;
+    
 
     -- *** Push Compount Messages ***
     -- Single beat write
@@ -345,13 +453,14 @@ package body olo_test_axi_slave_pkg is
         AxiSlave        : olo_test_axi_slave_t;
         addr            : unsigned;
         data            : unsigned;
+        strb            : std_logic_vector := "X";
         AwReadyDelay    : time := 0 ns;
         WReadyDelay     : time := 0 ns;
         BValidDelay     : time := 0 ns
     ) is
     begin
         expect_aw(net, AxiSlave, addr, delay => AwReadyDelay);
-        expect_w(net, AxiSlave, data, delay => WReadyDelay);
+        expect_w(net, AxiSlave, data, firstStrb => strb, delay => WReadyDelay);
         push_b(net, AxiSlave, resp => xRESP_OKAY_c, delay => BValidDelay);
     end;
 
@@ -416,7 +525,8 @@ package body olo_test_axi_slave_pkg is
                 DataWidth => dataWidth, 
                 AddrWidth => addrWidth,
                 IdWidth => idWidth,
-                UserWidth => userWidth);
+                UserWidth => userWidth,
+                DataBytes => dataWidth/8);
     end;
         
     -- Casts
@@ -626,11 +736,8 @@ begin
     p_w : process
         variable msg : msg_t;
         variable msg_type : msg_type_t;
-        variable startValue : unsigned(instance.DataWidth-1 downto 0);
-        variable increment : natural;
-        variable beats : natural;
-        variable firstStrb : std_logic_vector(instance.DataWidth/8-1 downto 0);
-        variable lastStrb : std_logic_vector(instance.DataWidth/8-1 downto 0);
+        variable strb : std_logic_vector(instance.DataWidth/8-1 downto 0);
+        variable last : std_logic;
         variable delay : time;
         variable data : unsigned(instance.DataWidth-1 downto 0);
         variable beatDelay : time;
@@ -653,12 +760,7 @@ begin
             msg_type := message_type(msg);
             -- process message
             if msg_type = AxiWMsg then
-                -- Pop Information
-                startValue := pop(msg);
-                increment := pop(msg);
-                beats := pop(msg);
-                firstStrb := pop(msg);
-                lastStrb := pop(msg);
+                -- Pop delays
                 delay := pop(msg);
                 beatDelay := pop(msg);
                 -- Execute
@@ -668,31 +770,36 @@ begin
                     wait until rising_edge(Clk);
                 end if;
                 AxiSm.WReady   <= '1';
-                data := startValue;
-                for i in 0 to beats-1 loop
+                loop
+                    -- Pop Information
+                    data := pop(msg);
+                    strb := pop(msg);
+                    last := pop(msg);
                     wait until rising_edge(Clk) and AxiMs.WValid = '1';
                     -- Data
-                    check_equal(AxiMs.WData, data, "expect_w: WData not as expected");
+                    if signed(AxiMs.WStrb) = -1 then -- compare wordwise is all strobes are set
+                        check_equal(AxiMs.WData, data, "expect_w: WData not as expected");
+                    else -- compare bytewise otherwise
+                        for i in 0 to AxiMs.WData'length/8-1 loop
+                            if AxiMs.WStrb(i) = '1' then
+                                check_equal(AxiMs.WData(8*(i+1)-1 downto 8*i), data(8*(i+1)-1 downto 8*i), "expect_w: Wrong WData[" & integer'image(i) & "]");
+                            end if;
+                        end loop;
+                    end if;
                     -- Strobe
-                    if i = 0 then
-                        check_equal(AxiMs.WStrb, firstStrb, "expect_w: WStrbFirst not as expected");
-                    elsif i = beats-1 then
-                        check_equal(AxiMs.WStrb, lastStrb, "expect_w: WStrbLast not as expected");
-                    else
-                        check_equal(AxiMs.WStrb, onesVector(AxiMs.WStrb'length), "expect_w: WStrb not as expected");
-                    end if;
+                    check_equal(AxiMs.WStrb, strb, "expect_w: WStrb not as expected");
                     -- Last
-                    if i = beats-1 then
-                        check_equal(AxiMs.WLast, '1', "expect_w: WLast not asserteded");
-                    else
-                        check_equal(AxiMs.WLast, '0', "expect_w: WLast not de-asserted");
-                    end if;
-                    data := data + increment;
+                    check_equal(AxiMs.WLast, last, "expect_w: WLast not as expected");
+                    -- Add delay
                     if beatDelay > 0 ns then
                         AxiSm.WReady   <= '0';
                         wait for beatDelay;
                         wait until rising_edge(Clk);
                         AxiSm.WReady   <= '1';
+                    end if;
+                    -- Abort loop after last word
+                    if last = '1' then
+                        exit;
                     end if;
                 end loop;
                 AxiSm.WReady    <= '0';
@@ -763,13 +870,11 @@ begin
     r_process : process
         variable msg : msg_t;
         variable msg_type : msg_type_t;
-        variable startValue : unsigned(instance.DataWidth-1 downto 0);
-        variable increment : natural;
-        variable beats : natural;
         variable resp : Resp_t;
         variable id : std_logic_vector(instance.IdWidth-1 downto 0);
         variable delay : time;
         variable data : unsigned(instance.DataWidth-1 downto 0);
+        variable last : std_logic;
         variable beatDelay : time;
     begin
         -- Initalize
@@ -795,10 +900,7 @@ begin
             msg_type := message_type(msg);
             -- process message
             if msg_type = AxiRMsg then
-                -- Pop Information
-                startValue := pop(msg);
-                increment := pop(msg);
-                beats := pop(msg);
+                -- Pop per transfer information
                 resp := pop(msg);
                 id := pop(msg);
                 delay := pop(msg);
@@ -808,16 +910,14 @@ begin
                     wait for delay;
                     wait until rising_edge(Clk);
                 end if;
-                data := startValue;
-                for i in 0 to beats-1 loop
+                loop
+                    -- Pop Information
+                    data := pop(msg);
+                    last := pop(msg);
                     -- Data
                     AxiSm.RData <= std_logic_vector(data);
                     -- Last
-                    if i = beats-1 then
-                        AxiSm.RLast <= '1';
-                    else
-                        AxiSm.RLast <= '0';
-                    end if;
+                    AxiSm.RLast <= last;
                     -- Resp
                     AxiSm.RResp <= resp;
                     -- Id
@@ -826,10 +926,13 @@ begin
                     AxiSm.RValid   <= '1';
                     wait until rising_edge(Clk) and AxiMs.RReady = '1';
                     AxiSm.RValid    <= '0';
-                    data := data + increment;
                     if beatDelay > 0 ns then
                         wait for beatDelay;
                         wait until rising_edge(Clk);
+                    end if;
+                    -- Abort loop after last word
+                    if last = '1' then
+                        exit;
                     end if;
                 end loop;
                 AxiSm.RData <= toUslv(0, instance.DataWidth);

@@ -110,11 +110,15 @@ for tb_name in fifo_tbs:
                                                 "AlmFullOn_g": AlmFull, "AlmEmptyOn_g": AlmEmpty})
 
 #Width Converter TBs
-wconv_tbs = ['olo_base_wconv_xn2n_tb', 'olo_base_wconv_n2xn_tb']
-for tb_name in wconv_tbs:
-    tb = olo_tb.test_bench(tb_name)
-    for Ratio in [2, 3]:
-        tb.add_config(name=f'R={Ratio}', generics={'WidthRatio_g': Ratio})
+wconv_xn2n_tb = 'olo_base_wconv_xn2n_tb'
+tb = olo_tb.test_bench(wconv_xn2n_tb)
+for Ratio in [2, 3]:
+    tb.add_config(name=f'R={Ratio}', generics={'WidthRatio_g': Ratio})
+
+wconv_n2xn_tb = 'olo_base_wconv_n2xn_tb'
+tb = olo_tb.test_bench(wconv_n2xn_tb)
+for Ratio in [1, 2, 3]:
+    tb.add_config(name=f'R={Ratio}', generics={'WidthRatio_g': Ratio})
 
 #Pipeline TB
 pl_tb = 'olo_base_pl_stage_tb'
@@ -234,6 +238,22 @@ for ImplRead in [True, False]:
         for DataWidth in [16, 32, 64]:
             tb.add_config(name=f'R={ImplRead}-W={ImplWrite}-D={DataWidth}',
                         generics={'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiDataWidth_g': DataWidth})
+
+axi_master_full_tb = 'olo_axi_master_full_tb'
+tb = olo_tb.test_bench(axi_master_full_tb)
+for ImplRead in [True, False]:
+    for ImplWrite in [True, False]:
+        #Skip illegal case where no functionality is implemented
+        if (not ImplRead) and (not ImplWrite): continue
+        for AddrWidth in [16, 20, 32]:
+            tb.add_config(name=f'R={ImplRead}-W={ImplWrite}-A={AddrWidth}',
+                        generics={'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiAddrWidth_g': AddrWidth})
+        for DataWidth in [16, 32, 64]:
+            for UserWidth in [16, 32, 64]:
+                if UserWidth > DataWidth: continue
+                tb.add_config(name=f'R={ImplRead}-W={ImplWrite}-D={DataWidth}-U={UserWidth}',
+                            generics={'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite,
+                                      'AxiDataWidth_g': DataWidth, 'UserDataWidth_g' : UserWidth})
 
 axi_pl_stage_tb = 'olo_axi_pl_stage_tb'
 tb = olo_tb.test_bench(axi_pl_stage_tb)

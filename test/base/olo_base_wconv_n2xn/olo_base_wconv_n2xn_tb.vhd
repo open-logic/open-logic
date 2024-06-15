@@ -28,7 +28,7 @@ library olo;
 entity olo_base_wconv_n2xn_tb is
     generic (
         runner_cfg      : string;
-        WidthRatio_g    : positive range 2 to 3 := 2
+        WidthRatio_g    : positive range 1 to 3 := 2
     );
 end entity olo_base_wconv_n2xn_tb;
 

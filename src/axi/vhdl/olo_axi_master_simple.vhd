@@ -37,7 +37,7 @@ entity olo_axi_master_simple is
         AxiMaxBeats_g               : positive range 1 to 256  := 256;  
         AxiMaxOpenTransactions_g    : positive range 1 to 8    := 8;    
         -- User Configuration
-        UserTransactionSizeBits_g   : positive                 := 32;   
+        UserTransactionSizeBits_g   : positive                 := 24;   
         DataFifoDepth_g             : positive                 := 1024; 
         ImplRead_g                  : boolean                  := true; 
         ImplWrite_g                 : boolean                  := true; 
@@ -65,7 +65,8 @@ entity olo_axi_master_simple is
         Wr_Valid        : in  std_logic                                                    := '0';            
         Wr_Ready        : out std_logic;                                                                      
         -- Read Data
-        Rd_Data         : out std_logic_vector(AxiDataWidth_g - 1 downto 0);                                 
+        Rd_Data         : out std_logic_vector(AxiDataWidth_g - 1 downto 0);                         
+        Rd_Last         : out std_logic;        
         Rd_Valid        : out std_logic;                                                                     
         Rd_Ready        : in  std_logic                                                    := '1';            
         -- Response
@@ -236,6 +237,7 @@ begin
 
     -- *** Assertions ***
     assert AxiDataWidth_g mod 8 = 0 report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be a multiple of 8" severity failure;
+    assert UserTransactionSizeBits_g < AxiAddrWidth_g-log2(AxiDataWidth_g/8) report "###ERROR###: olo_axi_master_simple UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-log2(AxiDataWidth_g/8), see documentation" severity failure;
 
     -- *** Combinatorial Process ***
     p_comb : process(r, M_Axi_AwReady, M_Axi_BValid, M_Axi_BResp, WrDataFifoORdy, WrDataFifoOVld, WrTransFifoOutVld, WrTransFifoBeats, WrRespIsLast, WrRespFifoVld, CmdWr_Addr, CmdWr_Size, CmdWr_LowLat, CmdWr_Valid, Wr_Valid, WrData_Rdy_I, M_Axi_ArReady, RdRespIsLast, RdRespFifoVld, RdRespLast, CmdRd_Addr, CmdRd_Size, CmdRd_LowLat, CmdRd_Valid, Rd_Ready, RdDat_Vld_I)
@@ -713,24 +715,34 @@ begin
 
         -- Read Data FIFO
         b_fifo_rd_data : block
+            signal InData, OutData : std_logic_vector(Rd_Data'length downto 0);
         begin
-            i_fifo_wr_data : entity work.olo_base_fifo_sync
+            -- Assemble Input data
+            InData(M_Axi_RData'high downto 0)   <= M_Axi_RData;
+            -- Only forward last flag for the last burst of a user transfer (RdRespIsLast) 
+            InData(M_Axi_RData'high + 1)        <= M_Axi_RLast and RdRespIsLast; 
+
+            -- FIFO
+            i_fifo_rd_data : entity work.olo_base_fifo_sync
                 generic map (
-                    Width_g        => Rd_Data'length,
+                    Width_g        => Rd_Data'length+1,
                     Depth_g        => DataFifoDepth_g,
                     RamBehavior_g  => RamBehavior_g
                 )
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Data     => M_Axi_RData,
+                    In_Data     => InData,
                     In_Valid    => M_Axi_RValid,
                     In_Ready    => M_Axi_RReady_I,
-                    Out_Data    => Rd_Data,
+                    Out_Data    => OutData,
                     Out_Valid   => RdDat_Vld_I,
                     Out_Ready   => Rd_Ready
                 );
-            
+
+            -- Disassemble Output data
+            Rd_Data      <= OutData(Rd_Data'high downto 0);            
+            Rd_Last      <= OutData(Rd_Data'high+1);
             Rd_Valid     <= RdDat_Vld_I;
             M_Axi_RReady <= M_Axi_RReady_I;
         end block;
