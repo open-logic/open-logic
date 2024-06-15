@@ -101,7 +101,9 @@ architecture rtl of olo_axi_lite_slave is
 begin
 
     -- *** Assertions ***
-    assert isPower2(AxiDataWidth_g) report "olo_axi_lite_slave - AxiDataWidth_g must be a power of two" severity failure;
+    assert AxiDataWidth_g mod 8 = 0 report "###ERROR###: olo_axi_lite_slave AxiDataWidth_g must be a multiple of 8" severity failure;
+    assert isPower2(AxiDataWidth_g/8) report "###ERROR###: olo_axi_lite_slave AxiDataWidth_g must be 2^X bytes" severity failure;
+
 
     -- *** Combinatorial Process ***
     p_comb : process (r, S_AxiLite_ArAddr, S_AxiLite_ArValid, S_AxiLite_AwAddr, S_AxiLite_AwValid,

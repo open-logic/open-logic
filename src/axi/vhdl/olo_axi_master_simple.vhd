@@ -237,6 +237,7 @@ begin
 
     -- *** Assertions ***
     assert AxiDataWidth_g mod 8 = 0 report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be a multiple of 8" severity failure;
+    assert isPower2(AxiDataWidth_g/8) report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be 2^X bytes" severity failure;
     assert UserTransactionSizeBits_g < AxiAddrWidth_g-log2(AxiDataWidth_g/8) report "###ERROR###: olo_axi_master_simple UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-log2(AxiDataWidth_g/8), see documentation" severity failure;
 
     -- *** Combinatorial Process ***
