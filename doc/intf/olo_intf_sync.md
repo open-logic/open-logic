@@ -1,6 +1,6 @@
 <img src="../Logo.png" alt="Logo" width="400">
 
-# olo_base_cc_bits
+# olo_intf_sync
 
 [Back to **Entity List**](../EntityList.md)
 
@@ -17,7 +17,7 @@ Note that this synchronizer does not guarantee that all bits arrive in the same 
 
 It is suggested to use this entity only for synchronizing external signals. For synchronizing FPGA internal signals between clocks, the clock crossings in *base* shall be used (*olo_base_cc_...*).
 
-For *AMD* tools (*Vivado*) an automatic constraint file exists, which automatically identifies all *Open Logic* synchronizer and constrains them correctly. To use the automatic constraints file, follow the steps described in [clock crossing principles](../base/clock_crossing_principles.md) but use the constraints in `source <path-to-open-logic>/src/intf/tcl/constraints_amd.tcl`
+For *AMD* tools (*Vivado*) an automatic constraint file exists, which automatically identifies all *olo_intf_sync* instances and constrains them correctly. To use the automatic constraints file, follow the steps described in [clock crossing principles](../base/clock_crossing_principles.md) but use the constraints file `source <path-to-open-logic>/src/intf/tcl/constraints_amd.tcl`
 
 ## Generics
 
