@@ -20,7 +20,7 @@ Packages with type declarations and functions used in *Open Logic* internally or
 
 ### Clock Crossings (*olo_base_cc_\<...\>*)
 
-Clock crossings are a key topic and they all follow the same [clock crossing principles](./base/clock_crossing_principles.md)
+Clock crossings are a key topic and they all follow the same [clock crossing principles](./base/clock_crossing_principles.md). 
 
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |

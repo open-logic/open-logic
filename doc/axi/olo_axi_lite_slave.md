@@ -63,8 +63,64 @@ The *olo_axi_lite_slave* does not aim for maximum performance. It requires 4 clo
 | Rb_RdData  | in     | *AxiDataWidth_g*   | -       | Read data, valid when *Rb_RdValid*='1'                       |
 | Rb_RdValid | in     | 1                  | -       | Read valid handshaking signal.<br />Every *Rb_Rd* pulse must be acknowledged by a *Rb_RdValid* pulse together with the valid read data. |
 
-### 
-
 ## Architecture
 
+### Internal Architecture
+
 The *olo_axi_lite_slave* is implemented as a single FSM that fetches one *AR* or *AW* command at a time, executes it and sends the response before fetching the next command. The decision for using a single FSM for read and write side was taken to avoid read and write accesses happening in the the same clock cycle and interfering with each other in an unpredictable way.
+
+### Register Bank Example
+
+Below code snippet shows an example for the code of a register bank attached to the *olo_axi_lite_slave*:
+
+```
+p_rb : process(Clk)
+begin
+    if rising_edge(Clk) then
+    
+        -- *** Write ***
+        if Rb_Wr = '1' then
+            case Rb_Addr is
+                when X"00" => 
+                    -- Register with byte enables
+                    for i in 0 to 3 loop
+                        SomeReg(8*(i+1)-1 downto 8*i) <= Rb_WrData(8*i-1 downto 8*i);
+                    end loop;$
+                when X"04" =>
+                    -- Register without byte enables
+                    OtherReg <= Rb_WrData;
+                when X"08" => 
+                    -- Register with clear-by-write-one bits
+                    VectorReg <= VectorReg and not Rb_WrData;
+                when others => null;
+            end case;
+        end if;
+        
+        -- *** Read ***
+        Rb_RdValid <= '0'; -- Defuault value   
+        if Rb_Rd = '1' then
+            case Rb_Addr is
+                when X"00" => 
+                    Rb_RdData <= SomeReg;
+                    Rb_RdValid <= '1';
+                when X"04" =>
+                    -- Register with clear-on-write
+                    Rb_RdData <= OtherReg;
+                    OtherReg <= (others => '0');
+                    Rb_RdValid <= '1';
+                when X"08" => 
+                    Rb_RdData <= VectorReg;
+                    Rb_RdValid <= '1';
+                when others => null; -- Fail by timeout for illegal addreses
+            end case;
+        end if;
+
+        -- Reset and other logic omitted
+    end if;
+end process;
+```
+
+
+
+
+
