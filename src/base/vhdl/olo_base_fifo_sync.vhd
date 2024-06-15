@@ -29,7 +29,7 @@ entity olo_base_fifo_sync is
         Width_g         : positive;                   
         Depth_g         : positive;                  
         AlmFullOn_g     : boolean   := false;        
-        AlmFullLevel_g  : natural   := Depth_g;                   
+        AlmFullLevel_g  : natural   := 0;                   
         AlmEmptyOn_g    : boolean   := false;        
         AlmEmptyLevel_g : natural   := 0;                   
         RamStyle_g      : string    := "auto";       

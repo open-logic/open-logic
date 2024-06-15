@@ -53,18 +53,20 @@ Read and write logic are fully independent. Reads and writes can happen at the s
 
 There is no required timing relationship between command and data signals. So for writes the user can provide write data before, after or together with the command.
 
+Note that this entity does require a minimum of four clock cycles for every write transaction. **It is not optimal for producing access patterns with many single-beat transactions.**
+
 
 
 ## Generics
 
 | Name                      | Type     | Default | Description                                                  |
 | :------------------------ | :------- | ------- | :----------------------------------------------------------- |
-| AxiAddrWidth_g            | positive | 32      | AXI4 address width (width of *AwAddr* and *ArAddr* signals)  |
-| AxiDataWidth_g            | positive | 32      | AXI data width (must be a power of 2)                        |
-| AxiMaxBeats_g             | positive | 256     | Maximum number of beats in one AXI transaction. <br />Values given by the AXI specification are 16 for AXI-3 and 256 for AXI-4. However, the user may choose any other number for scheduling reasons. |
-| AxiMaxOpenTransactions_g  | positive | 8       | Maximum number of AXI commands (AW/AR-channel) to send before the first command is completed (outstanding transactions). |
-| UserTransactionSizeBits_g | positive | 32      | Number of bits used to specify the number of beats to transfer on the user command interface. This is the only limiting factor for the transfer size requested. |
-| DataFifoDepth_g           | positive | 1024    | Number of entries in the read/write data FIFOs (in words, not bytes) |
+| AxiAddrWidth_g            | positive | 32      | AXI4 address width (width of *AwAddr* and *ArAddr* signals)<br />Range: 12 ... 64 |
+| AxiDataWidth_g            | positive | 32      | AXI data width (must be a power of 2 of bytes)<br />Range: 8 ... 1024 |
+| AxiMaxBeats_g             | positive | 256     | Maximum number of beats in one AXI transaction. <br />Values given by the AXI specification are 16 for AXI-3 and 256 for AXI-4. However, the user may choose any other number for scheduling reasons.<br />Range: 1 ... 256 |
+| AxiMaxOpenTransactions_g  | positive | 8       | Maximum number of AXI commands (AW/AR-channel) to send before the first command is completed (outstanding transactions).<br />Range: 1 ... 8 |
+| UserTransactionSizeBits_g | positive | 24      | Number of bits used to specify the number of beats to transfer on the user command interface. This is the only limiting factor for the transfer size requested.<br />This value must be chosen in a way that a signle user transaction cannot exceed the AXI address range:  *UserTransactionSizeBits_g <= AxiAddrWidth_g-log2(AxiDataWidth_g/8)* |
+| DataFifoDepth_g           | positive | 1024    | Number of entries in the read/write data FIFOs (in words, not bytes).<br />Suggested value is at least *2 x AxiMaxBeats_g*. <br />Values smaller than *AxiMaxBeats_g* can block the entity completely if non-low-latency transfers are requested (because the FIFO never can hold all data of one maximum size burst). The suggestion is *2 x AxiMaxBeats_g* to allow continuous read data-transfer in non-low-latency transfers - with values the next read transaction could only be started after the last transaction is fully read from the FIFO (see [Read FIFO full with High Latency (Default)](#Read-FIFO-full-with-High-Latency-(Default))), which would limit bandwidth. |
 | ImplRead_g                | boolean  | true    | Implement read functionality (can be disabled to save resources) |
 | ImplWrite_g               | boolean  | true    | Implement write functionality (can be disabled to save resources) |
 | RamBehavior_g             | string   | "RBW"   | Block-RAM style (must match FPGA architecture) **"RBW"** Read before write, **"WBR"** Write before read |
@@ -117,11 +119,12 @@ Transaction requests are forwarded from the slave interface to the master interf
 
 ### User Read Data Interface
 
-| Name     | In/Out | Length           | Default | Description                       |
-| :------- | :----- | :--------------- | ------- | :-------------------------------- |
-| Rd_Data  | out    | *AxiDataWidth_g* | -       | Read data                         |
-| Rd_Valid | out    | 1                | -       | AXI-S handshaking signal for *Rd* |
-| Rd_Ready | in     | 1                | '0'     | AXI-S handshaking signal for *Rd* |
+| Name     | In/Out | Length           | Default | Description                                                  |
+| :------- | :----- | :--------------- | ------- | :----------------------------------------------------------- |
+| Rd_Data  | out    | *AxiDataWidth_g* | -       | Read data                                                    |
+| Rd_Last  | out    | 1                | -       | Indicates last word of data related to a *CmdRd* command. <br />The bit is related to the user command (*CmdRd*) and only set for the last AXI burst related to one user-command. |
+| Rd_Valid | out    | 1                | -       | AXI-S handshaking signal for *Rd*                            |
+| Rd_Ready | in     | 1                | '0'     | AXI-S handshaking signal for *Rd*                            |
 
 ### User Response Interface
 

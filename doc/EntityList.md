@@ -20,7 +20,7 @@ Packages with type declarations and functions used in *Open Logic* internally or
 
 ### Clock Crossings (*olo_base_cc_\<...\>*)
 
-Clock crossings are a key topic and they all follow the same [clock crossing principles](./base/clock_crossing_principles.md)
+Clock crossings are a key topic and they all follow the same [clock crossing principles](./base/clock_crossing_principles.md). 
 
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
@@ -86,17 +86,17 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 
 ## axi
 
-### Miscellaneous
-
 | Entity                                                  | Description                                                  |
 | ------------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_axi_pl_stage](./axi/olo_axi_pl_stage.md)           | Implements a AXI4 pipeline stage, registering all signals of an AXI4 interface.<br />Can be used for AXI4-Lite as well. |
 | [olo_axi_lite_slave](./axi/olo_axi_lite_slave.md)       | Interface to attach user register banks and memories to the AXI4-Lite bus. |
-| [olo_axi_master_simple](./axi/olo_axi_master_simple.md) | AXI4 master - does execute arbitrarily sized transfer over AXI4. The *_simple* version of the master does only allow access to word-aligned addresses. |
+| [olo_axi_master_simple](./axi/olo_axi_master_simple.md) | AXI4 master - does execute arbitrarily sized transfer over AXI4. The *_simple* version of the master does only allow access to word-aligned addresses and sizes. |
+| [olo_axi_master_full](./axi/olo_axi_master_full.md)     | AXI4 master - Same as [olo_axi_master_simple](./axi/olo_axi_master_simple.md) but does allow access that are not word-aligned (in terms of start address, size or both). |
 
+## intf
 
-
-## interface
-
-No content yet.
+| Entity                                               | Description                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_intf_sync](./intf/olo_intf_sync.md)             | Double stage synchronizer for external signals.              |
+| [olo_intf_i2c_master](./intf/olo_intf_i2c_master.md) | I2C Master - Supports the full standard including arbitration (multi-master I2C) and clock stretching. |
 

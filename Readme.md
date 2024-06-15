@@ -6,7 +6,7 @@
 
 # Open Logic - A VHDL Standard Library
 
-*Open Logic* aims to be what *stdlib* is for C/C++ projects. 
+*Open Logic* aims to be for HDL projects what what *stdlib* is for C/C++ projects. 
 
 *Open Logic* implements commonly used components in a reusable way and provide them under a permissive open source license (LGPL modified for FPGA usage, see [License.txt](./License.txt)), so the code can be used in commercial projects. 
 
@@ -21,7 +21,7 @@ Maintainer: [obruendl](oliver.bruendler@gmx.ch)
 * [base](./doc/EntityList.md#base) - basic logic to be used for device internal logic
 * [axi](./doc/EntityList.md#axi)  - any components related to AXI4/AXI4-Lite/AXI4-Stream interfaces
   * requires: *base*
-* [interface](./doc/EntityList.md#interface)  - any logic related to device external interfaces 
+* [intf](./doc/EntityList.md#intf)  - any logic related to device external interfaces 
   * requires: *base*
 
 It's suggested that you compile ALL files of the areas you need (plus their dependencies) into one VHDL library. You are free to choose any library name and you are also free to use the same single library for *Open Logic* files and user-code.
@@ -58,9 +58,8 @@ Note that a non-zero number of issues not necessarily is a bad sign - issues inc
 This goal is self explaining. It is implemented as follows:
 
 * Ease of use instead of feature-creep. Only the logic with a high probability for being used in many places shall go into the library. Each block shall only solve one core topic - whatever can be realized externally is not included to avoid needless complexity and crowded configuration options. 
-
 * Users do not have to care about generics or ports you do not use. Any optional configuration options or ports come with a default value - if you do not have a specific need, you can just omit those and a common default value is used.
-
+* One entity for one thing. Many open source HDL libraries provide multiple entities for the same thing with different implementations. For users it often is difficult to sort out which one to use. *Open Logic* instead provides only one entity with optional generics to achieve the same thing - unless users do want to optimize details, they don't have to care about those details.
 * All blocks come with proper markdown documentation. You can easily look up if there is a component that fits your needs, how it is implemented and how you can use it.
 
 ### Pure VHDL

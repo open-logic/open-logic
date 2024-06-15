@@ -24,17 +24,17 @@ An asynchronous FIFO is a clock-crossing and hence this block follows the genera
 
 ## Generics
 
-| Name            | Type      | Default   | Description                                                  |
-| :-------------- | :-------- | --------- | :----------------------------------------------------------- |
-| Widht_g         | positive  | -         | Number of bits per FIFO entry (word-width)                   |
-| Depth_g         | positive  | .         | Number of FIFO entries                                       |
-| AlmFullOn_g     | boolean   | false     | If set to true, the *AlmFull* (almost full) status flag is generated (otherwise it is omitted) |
-| AlmFullLevel_g  | natural   | *Depth_g* | Level to generate *AlmFull* flag at. <br>Has no effect if *AlmFullOn_g* = false |
-| AlmEmptyOn_g    | boolean   | false     | If set to true, the *AlmEmpty* (almost empty) status flag is generated (otherwise it is omitted) |
-| AlmEmptyLevel_g | natural   | 0         | Level to generate *AlmEmpty* flag at. <br>Has no effect if *AlmEmptyOn_g* = false |
-| RamStyle_g      | string    | "auto"    | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes *ram_style* and *ramstyle* which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
-| RamBehavior_g   | string    | "RBW"     | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
-| ReadyRstState_g | std_logic | '1'       | Controls the status of the *In_Ready* signal in during reset.<br> Choose '1' for minimal logic on the (often timing-critical) *In_Ready* path. <br |
+| Name            | Type      | Default | Description                                                  |
+| :-------------- | :-------- | ------- | :----------------------------------------------------------- |
+| Widht_g         | positive  | -       | Number of bits per FIFO entry (word-width)                   |
+| Depth_g         | positive  | -       | Number of FIFO entries. <br />This **must** be a power of two. See [Architecture](#Architecture) for more details. |
+| AlmFullOn_g     | boolean   | false   | If set to true, the *AlmFull* (almost full) status flag is generated (otherwise it is omitted) |
+| AlmFullLevel_g  | natural   | 0       | Level to generate *AlmFull* flag at. <br>Has no effect if *AlmFullOn_g* = false |
+| AlmEmptyOn_g    | boolean   | false   | If set to true, the *AlmEmpty* (almost empty) status flag is generated (otherwise it is omitted) |
+| AlmEmptyLevel_g | natural   | 0       | Level to generate *AlmEmpty* flag at. <br>Has no effect if *AlmEmptyOn_g* = false |
+| RamStyle_g      | string    | "auto"  | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes *ram_style* and *ramstyle* which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
+| RamBehavior_g   | string    | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
+| ReadyRstState_g | std_logic | '1'     | Controls the status of the *In_Ready* signal in during reset.<br> Choose '1' for minimal logic on the (often timing-critical) *In_Ready* path. <br |
 
 ## Interfaces
 
@@ -86,6 +86,8 @@ The rough architecture of the FIFO is shown in the figure below. Note that the f
 ![Architecture](./fifo/olo_base_fifo_async.png)
 
 Read and write address counters are handled in their corresponding clock domain. The current address counter value is then transferred to the other clock-domain by converting it to gray code, synchronizing it using a double-stage synchronizer (using [olo_base_cc_bits](./olo_base_cc_bits.md)) and convert it back to a two's complement number. This approach ensures that a correct value is received, even if the clock edges are aligned in a way that causes metastability on the first flip-flop. Because the data is transferred in gray code, in this case either the correct value before an increment of the counter or the correct value after the increment is received, so the result is always correct.
+
+The gray-encoding approach only works for power of two FIFO depths. For any other FIFO depths, the gray encoded counter value would toggle more than one bit during the overflow and hence the clock domain crossing would not work safely. 
 
 All status information is calculated separately in both clock domains to make it available synchronously to both clocks.
 
