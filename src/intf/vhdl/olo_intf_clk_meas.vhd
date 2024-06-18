@@ -36,7 +36,7 @@ entity olo_intf_clk_meas is
         -- Test Results
         ClkTest       : in  std_logic; 
         Freq_Hz       : out std_logic_vector(31 downto 0);
-        Freq_Vld      : out std_logic
+        Freq_Valid    : out std_logic
     );
 end;
 
@@ -77,7 +77,7 @@ begin
             -- *** Normal Operation ***
 
             -- Default Value
-            Freq_Vld <= '0';
+            Freq_Valid <= '0';
             
             -- Request new result
             if SecPulse_M = '1' then
@@ -85,7 +85,7 @@ begin
                 -- If no new value was detected, the clock is stopped (0 Hz)
                 if AwaitResult_M = '1' then
                     Freq_Hz  <= (others => '0');
-                    Freq_Vld <= '1';
+                    Freq_Valid <= '1';
                 end if;
             end if;
                 
@@ -93,14 +93,14 @@ begin
             if ResultValid_M = '1' then
                 Freq_Hz   <= std_logic_vector(resize(unsigned(Result_M), Freq_Hz'length));
                 AwaitResult_M <= '0';
-                Freq_Vld  <= '1';
+                Freq_Valid  <= '1';
             end if;
 
             -- *** Reset ***
             if Rst = '1' then
                 AwaitResult_M   <= '0';
                 Freq_Hz         <= (others => '0');
-                Freq_Vld       <= '0';
+                Freq_Valid       <= '0';
             end if;
         
         end if;

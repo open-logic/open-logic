@@ -55,7 +55,7 @@ architecture sim of olo_intf_clk_meas_tb is
     signal Rst          : std_logic                         := '1';
     signal ClkTest      : std_logic                         := '0'; 
     signal Freq_Hz      : std_logic_vector(31 downto 0);
-    signal Freq_Vld     : std_logic;
+    signal Freq_Valid   : std_logic;
 
     -------------------------------------------------------------------------
     -- Procedures
@@ -66,8 +66,8 @@ architecture sim of olo_intf_clk_meas_tb is
         variable IntMaxTestFreq_v : integer;
     begin
         TestFrequencyReal <= Frquency;
-        wait until rising_edge(Clk) and Freq_Vld = '1'; -- First result might be affected by frequency change
-        wait until rising_edge(Clk) and Freq_Vld = '1';
+        wait until rising_edge(Clk) and Freq_Valid = '1'; -- First result might be affected by frequency change
+        wait until rising_edge(Clk) and Freq_Valid = '1';
         IntFreq_v := fromUslv(Freq_Hz);
         if Frquency <= MaxClkTestFrequencyReal_c then
             check(abs(IntFreq_v-integer(Frquency)) <= 1, "Freq_Hz not correct, got " & integer'image(IntFreq_v)); -- +/-1 allowed due to clock shift
@@ -92,7 +92,7 @@ begin
             Rst       => Rst,
             ClkTest   => ClkTest,
             Freq_Hz   => Freq_Hz,
-            Freq_Vld  => Freq_Vld
+            Freq_Valid  => Freq_Valid
         );
 
     -------------------------------------------------------------------------
@@ -119,10 +119,10 @@ begin
             wait until rising_edge(Clk);
             Rst <= '0';
             wait until rising_edge(Clk);
-            check_equal(Freq_Vld, '0', "Freq_Vld not low after reset");
+            check_equal(Freq_Valid, '0', "Freq_Valid not low after reset");
 
             -- Omit first measurement after reset (might be affected by reset)
-            wait until rising_edge(Clk) and Freq_Vld = '1';
+            wait until rising_edge(Clk) and Freq_Valid = '1';
         
             if run("Lower") then
                 -- After reset the first measured frequency is correct
@@ -158,14 +158,14 @@ begin
             if run("Zero") then
                 -- Clock stopped
                 TestFrequencyReal <= 0.2;
-                wait until rising_edge(Clk) and Freq_Vld = '1';
-                wait until rising_edge(Clk) and Freq_Vld = '1';
+                wait until rising_edge(Clk) and Freq_Valid = '1';
+                wait until rising_edge(Clk) and Freq_Valid = '1';
                 check_equal(Freq_Hz, integer(0), "Zero Herz not detected");
                 -- Test correct measurement after
                 TestFreq_v := (LowerFreqReal_c + UpperFreqReal_c) / 2.0;
                 TestFrequencyReal <= 1.0e3;
                 wait until rising_edge(ClkTest); -- Wait until the new clock frequency is applied
-                wait until rising_edge(Clk) and Freq_Vld = '1'; -- First one might be incorrect because clock can start in the middle of a measurement second
+                wait until rising_edge(Clk) and Freq_Valid = '1'; -- First one might be incorrect because clock can start in the middle of a measurement second
                 CheckFrequency(TestFreq_v, TestFrequencyReal); 
             end if;
 
