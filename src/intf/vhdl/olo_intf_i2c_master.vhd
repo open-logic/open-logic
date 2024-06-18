@@ -48,10 +48,10 @@ library work;
 ------------------------------------------------------------------------------
 entity olo_intf_i2c_master is
     generic (
-        ClkFrequency_g      : real    := 125.0e6; 
+        ClkFrequency_g      : real; 
         I2cFrequency_g      : real    := 100.0e3;	
         BusBusyTimeout_g    : real    := 1.0e-3;
-        CmdTimeout_g        : real    := 100.0e-6;         
+        CmdTimeout_g        : real    := 1.0e-3;         
         InternalTriState_g  : boolean := true;
         DisableAsserts_g    : boolean := false
     );
