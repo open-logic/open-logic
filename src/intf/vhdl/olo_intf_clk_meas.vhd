@@ -15,8 +15,11 @@
 -- Libraries
 -------------------------------------------------------------------------------
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+
+library work;
+    use work.olo_base_pkg_math.all;
 
 -------------------------------------------------------------------------------
 -- Entity
@@ -43,16 +46,17 @@ end;
 architecture rtl of olo_intf_clk_meas is
 
     -- Constants
-    constant ResultWidth_c      : integer := log2ceil(MaxClkTestFrequency_g);
+    constant MaxClkTestFrequencyInt_c : integer := integer(MaxClkTestFrequency_g);
+    constant ResultWidth_c            : integer := log2ceil(integer(MaxClkTestFrequencyInt_c)+1);
 
     -- Signals Master Clock
     signal AwaitResult_M    : std_logic;
     signal SecPulse_M       : std_logic;
     signal ResultValid_M    : std_logic;
-    signal Result_M         : std_logic_vector(31 downto 0);
+    signal Result_M         : std_logic_vector(ResultWidth_c-1 downto 0);
 
     -- Signals Test Clock
-    signal CntrTest_T       : integer range 0 to MaxClkTestFrequency_g;
+    signal CntrTest_T       : integer range 0 to MaxClkTestFrequencyInt_c;
     signal Rst_T            : std_logic;
     signal SecPulse_T       : std_logic;
     signal Result_T         : std_logic_vector(ResultWidth_c-1 downto 0);   
@@ -61,8 +65,8 @@ architecture rtl of olo_intf_clk_meas is
 begin
 
     -- *** Assertions ***
-    assert ClkFrequency_g > 100.0 report "olo_intfclk_meas: ClkFrequency_g must be greater than 100 Hz" severity failure;
-    assert MaxClkTestFrequency_g >= 10.0 report "olo_intfclk_meas: MaxClkTestFrequency_g must be greater than 10 Hz" severity failure;
+    assert ClkFrequency_g >= 100.0 report "olo_intfclk_meas: ClkFrequency_g must >= 100 Hz" severity failure;
+    assert MaxClkTestFrequency_g >= 100.0 report "olo_intfclk_meas: MaxClkTestFrequency_g must be >= 100 Hz" severity failure;
 
     --------------------------------------------------------------------------
     -- Master Clock Process
@@ -87,7 +91,7 @@ begin
                 
             -- Latch new result (omit first result, as it is invalid due to the reset)
             if ResultValid_M = '1' and AwaitResult_M = '1' then
-                Freq_Hz   <= Result_M;
+                Freq_Hz   <= std_logic_vector(resize(unsigned(Result_M), Freq_Hz'length));
                 AwaitResult_M <= '0';
                 Freq_Vld  <= '1';
             end if;
@@ -119,7 +123,7 @@ begin
                 CntrTest_T    <= 1;          --the first edge implicitly arrived
                 ResultValid_T     <= '1';
             -- Otherwise count (prevent overflows!)
-            elsif CntrTest_T /= integer(floor(MaxClkTestFrequency_g)) then
+            elsif CntrTest_T /= MaxClkTestFrequencyInt_c then
                 CntrTest_T <= CntrTest_T + 1;
             end if;
           
@@ -135,7 +139,7 @@ begin
     -- Component Instantiations
     --------------------------------------------------------------------------
     -- Second pulse generation
-    i_sec_pulse : entity.olo_base_strobe_gen is
+    i_sec_pulse : entity work.olo_base_strobe_gen
         generic map (
             FreqClkHz_g    => ClkFrequency_g,
             FreqStrobeHz_g => 1.0
@@ -151,10 +155,10 @@ begin
         port map (   
             In_Clk        => Clk,
             In_RstIn      => Rst,                                                                    
-            In_Pulse      => SecPulse_M,
+            In_Pulse(0)   => SecPulse_M,
             Out_Clk       => ClkTest,                                                                 
             Out_RstOut    => Rst_T,                                   
-            Out_Pulse     => SecPulse_T
+            Out_Pulse(0)  => SecPulse_T
     ); 
 
     -- Result CC
