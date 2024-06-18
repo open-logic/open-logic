@@ -63,15 +63,17 @@ architecture sim of olo_intf_clk_meas_tb is
     procedure CheckFrequency(   Frquency                 : real; 
                                 signal TestFrequencyReal : out real) is
         variable IntFreq_v : integer;
+        variable IntMaxTestFreq_v : integer;
     begin
         TestFrequencyReal <= Frquency;
         wait until rising_edge(Clk) and Freq_Vld = '1'; -- First result might be affected by frequency change
         wait until rising_edge(Clk) and Freq_Vld = '1';
         IntFreq_v := fromUslv(Freq_Hz);
-        if Frquency < MaxClkTestFrequencyReal_c then
+        if Frquency <= MaxClkTestFrequencyReal_c then
             check(abs(IntFreq_v-integer(Frquency)) <= 1, "Freq_Hz not correct, got " & integer'image(IntFreq_v)); -- +/-1 allowed due to clock shift
         else
-            check_equal(Freq_Hz, integer(MaxClkTestFrequencyReal_c), "Freq_Hz not correct (above max)");
+            IntMaxTestFreq_v := integer(MaxClkTestFrequencyReal_c); -- Variable required, doing conversion inside check_equal call fails in modelsim due to a bug
+            check_equal(Freq_Hz, IntMaxTestFreq_v, "Freq_Hz not correct (above max)");
         end if;
     end procedure;
 
