@@ -278,6 +278,19 @@ for BusFreq in [int(100e3), int(400e3), int(1e6)]:
 for IntTri in [True, False]:
     tb.add_config(name=f'IntTri={IntTri}',generics={'InternalTriState_g': IntTri})
 
+# olo_intf_sync - no generics to iterate
+
+clk_meas_tb = 'olo_intf_clk_meas_tb'
+tb = olo_tb.test_bench(clk_meas_tb)
+freqs = [(100, 100), (123, 7837), (7837, 123)]
+for FreqClk, FreqTest in freqs:
+    tb.add_config(name=f'C={FreqClk}-T={FreqTest}',
+                  generics={'ClkFrequency_g': FreqClk, 'MaxClkTestFrequency_g': FreqTest})
+
+
+########################################################################################################################
+# Execution
+########################################################################################################################
 if USE_GHDL:
     olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 

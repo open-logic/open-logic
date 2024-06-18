@@ -89,8 +89,8 @@ begin
                 end if;
             end if;
                 
-            -- Latch new result (omit first result, as it is invalid due to the reset)
-            if ResultValid_M = '1' and AwaitResult_M = '1' then
+            -- Latch new result
+            if ResultValid_M = '1' then
                 Freq_Hz   <= std_logic_vector(resize(unsigned(Result_M), Freq_Hz'length));
                 AwaitResult_M <= '0';
                 Freq_Vld  <= '1';

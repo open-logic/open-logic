@@ -62,12 +62,14 @@ architecture sim of olo_intf_clk_meas_tb is
     -------------------------------------------------------------------------
     procedure CheckFrequency(   Frquency                 : real; 
                                 signal TestFrequencyReal : out real) is
+        variable IntFreq_v : integer;
     begin
         TestFrequencyReal <= Frquency;
         wait until rising_edge(Clk) and Freq_Vld = '1'; -- First result might be affected by frequency change
         wait until rising_edge(Clk) and Freq_Vld = '1';
+        IntFreq_v := fromUslv(Freq_Hz);
         if Frquency < MaxClkTestFrequencyReal_c then
-            check_equal(Freq_Hz, integer(Frquency), "Freq_Hz not correct");
+            check(abs(IntFreq_v-integer(Frquency)) <= 1, "Freq_Hz not correct, got " & integer'image(IntFreq_v)); -- +/-1 allowed due to clock shift
         else
             check_equal(Freq_Hz, integer(MaxClkTestFrequencyReal_c), "Freq_Hz not correct (above max)");
         end if;
@@ -100,7 +102,7 @@ begin
     -------------------------------------------------------------------------
     -- TB Control
     -------------------------------------------------------------------------
-    test_runner_watchdog(runner, 20 sec);
+    test_runner_watchdog(runner, 30 sec);
     p_control : process
         variable TestFreq_v : real;
     begin
@@ -115,17 +117,15 @@ begin
             wait until rising_edge(Clk);
             Rst <= '0';
             wait until rising_edge(Clk);
-        
-            if run("ResetState") then
-                -- Check Reset State            
-                check_equal(Freq_Vld, '0', "Freq_Vld not low after reset");
-            end if;
+            check_equal(Freq_Vld, '0', "Freq_Vld not low after reset");
 
-            if run("FirstValid-Lower") then
+            -- Omit first measurement after reset (might be affected by reset)
+            wait until rising_edge(Clk) and Freq_Vld = '1';
+        
+            if run("Lower") then
                 -- After reset the first measured frequency is correct
-                TestFrequencyReal <= LowerFreqReal_c;
-                wait until rising_edge(Clk) and Freq_Vld = '1';
-                check_equal(Freq_Hz, integer(LowerFreqReal_c), "Freq_Hz not correct");
+                TestFreq_v := LowerFreqReal_c;
+                CheckFrequency(TestFreq_v, TestFrequencyReal); 
             end if;   
 
             if run("Between0AndLower") then
@@ -163,6 +163,7 @@ begin
                 TestFreq_v := (LowerFreqReal_c + UpperFreqReal_c) / 2.0;
                 TestFrequencyReal <= 1.0e3;
                 wait until rising_edge(ClkTest); -- Wait until the new clock frequency is applied
+                wait until rising_edge(Clk) and Freq_Vld = '1'; -- First one might be incorrect because clock can start in the middle of a measurement second
                 CheckFrequency(TestFreq_v, TestFrequencyReal); 
             end if;
 
