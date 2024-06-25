@@ -271,6 +271,16 @@ for Stages in [1, 4, 12]:
 ########################################################################################################################
 # olo_intf TBs
 ########################################################################################################################
+debounce_tb = 'olo_intf_debounce_tb'
+tb = olo_tb.test_bench(debounce_tb)
+for IdleLevel in [0, 1]:
+    for Mode in ["LOW_LATENCY", "GLITCH_FILTER"]:
+        tb.add_config(name=f'I={IdleLevel}-M={Mode}',generics={'IdleLevel_g': IdleLevel, 'Mode_g' : Mode})
+for Mode in ["LOW_LATENCY", "GLITCH_FILTER"]:
+    #Cover ranges around 31/32 and 63/64 in detail (clock divider edge cases)
+    for Cycles in [10, 30, 31, 32, 50, 60, 61, 62, 63, 64, 65, 100, 200, 735]:
+        tb.add_config(name=f'C={Cycles}-M={Mode}', generics={'DebounceCycles_g': Cycles, 'Mode_g': Mode})
+
 i2c_master_tb = 'olo_intf_i2c_master_tb'
 tb = olo_tb.test_bench(i2c_master_tb)
 for BusFreq in [int(100e3), int(400e3), int(1e6)]:

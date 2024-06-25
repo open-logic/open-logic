@@ -40,7 +40,7 @@ end entity;
 -- Architecture Declaration
 ------------------------------------------------------------------------------
 architecture rtl of olo_base_strobe_gen is
-    constant Ratio_c : integer                      := integer(ceil(FreqClkHz_g / FreqStrobeHz_g));
+    constant Ratio_c : integer                      := integer(round(FreqClkHz_g / FreqStrobeHz_g));
     signal Count     : integer range 0 to Ratio_c-1 := 0;
     signal SyncLast  : std_logic                    := '0';
 begin

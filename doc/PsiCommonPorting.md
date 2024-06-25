@@ -23,8 +23,10 @@ Note that naming conventions in *Open Logic* are different. Although some entiti
 | psi_common_axilite_slave_ipif          | [olo_axi_lite_slave](./axi/olo_ax_lite_slave.md)             | User code interface is significantly changed.                |
 | psi_common_axi_slave_ipif64            | Not ported yet                                               | Use the AXI4-Lite version ([olo_axi_lite_slave](./axi/olo_ax_lite_slave.md)) until a full AXI4 slave is implemented. |
 | psi_common_bit_cc                      | [olo_base_cc_bits](./base/olo_base_cc_bits.md)<br />[olo_intf_sync](./intf/olo_intf_sync.md) | Use [olo_base_cc_bits](./base/olo_base_cc_bits.md) internally (all signals inside the FPGA) and [olo_intf_sync](./base/olo_intf_sync.md) to synchronize external signals. |
+| psi_common_clk_meas                    | Not ported yet                                               | -                                                            |
+| psi_common_debouncer                   | [olo_intf_debounce](./base/olo_intf_debounce.md)             | -                                                            |
 | psi_common_clk_meas                    | [olo_intf_clk_meas](./intf/olo_intf_clk_meas.md)             | -                                                            |
-| psi_common_debouncer                   | Not ported yet                                               | -                                                            |
+| psi_common_debouncer                   | [olo_intf_debounce](./base/olo_intf_debounce.md)             | -                                                            |
 | pis_common_delay                       | [olo_base_delay](./base/olo_base_delay.md)                   | -                                                            |
 | psi_common_delay_cfg                   | [olo_base_delay_cfg](./base/olo_base_delay_cfg.md)           | *Hold_g* behavior is not ported (considered as not generic enough for a library component). |
 | psi_common_dyn_sft                     | [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)               | -                                                            |
