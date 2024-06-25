@@ -46,7 +46,15 @@ Below figure provides an example waveform for both modes of operation.
 
 ## Architecture
 
-![Figure Sync + Debounce Logic + Tick Generator]
+Below figure shows the architecture of the entity for a *Width_g=2* setup.
+
+![Architecture](./misc/olo_intf_debounce_arch.svg)
+
+The *olo_base_strobe_gen* serves as prescaler. It produces a *Tick* signal with a target period of 1/31 of *DebounceTime_g*. Due to rounding the actual period may vary (especially for very short *DebounceTime_g* values of only a few clock cycles). The prescaler is shared for all signals to reduce the resource consumption for the normal case where *DebounceTime_g* is very long compared to *ClkFrequency_g*.
+
+The inputs are synchronized using *olo_intf_sync* and one *Debounce Timer* per signal counts how many ticks the signal was stable and does the debouncing based on this counter. The number of *Ticks* the signal must stay stable (equal to *DebounceTime_g*) depends on the exact rounding of the *Tick* frequency - the compensation for the rounding is handled internally by *olo_intf_debounce*.
+
+
 
 
 
