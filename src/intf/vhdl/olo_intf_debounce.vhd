@@ -54,7 +54,7 @@ architecture struct of olo_intf_debounce is
     constant TargetTickFrequency_c  : real := 1.0/(DebounceTime_g/31.0);
     constant TickCycles_c           : real := ceil(ClkFrequency_g/TargetTickFrequency_c);
     constant ActualTickFrequency_c  : real := ClkFrequency_g/TickCycles_c;
-    constant DebouncTicks_c         : integer := integer(ceil(DebounceTime_g*ActualTickFrequency_c));
+    constant DebounceTicks_c        : integer := integer(ceil(DebounceTime_g*ActualTickFrequency_c));
     constant UseStrobeDiv_c         : boolean := integer(TickCycles_c) >= 2;
 
     -- Other Constants
@@ -65,7 +65,7 @@ architecture struct of olo_intf_debounce is
     signal Tick         : std_logic;
 
     -- Two Process Signals
-    subtype Cnt_t is integer range 0 to DebouncTicks_c;
+    subtype Cnt_t is integer range 0 to DebounceTicks_c;
     type Cnt_a is array (0 to Bits_c-1) of Cnt_t;
     type two_process_r is record
         StableCnt   : Cnt_a;
@@ -82,7 +82,7 @@ begin
         report "olo_intf_debounce: Illegal Mode_g - " & Mode_g
         severity failure;
 
-    assert DebouncTicks_c >= 10
+    assert DebounceTicks_c >= 10
         report "olo_intf_debounce: DebounceTime too short (must be >= 10 clock cycles) - " & 
         "DebounceTime_g=" & real'image(DebounceTime_g) & " ClkFrequency_g=" & real'image(ClkFrequency_g)
         severity failure;
@@ -96,10 +96,9 @@ begin
 
         for i in 0 to DataAsync'length-1 loop
 
-
             -- Counter Update & Stablity Detection
             if Tick = '1' then
-                if r.StableCnt(i) = DebouncTicks_c then
+                if r.StableCnt(i) = DebounceTicks_c then
                     v.IsStable(i) := '1';
                 else
                     v.StableCnt(i) := r.Stablecnt(i) + 1;
@@ -145,7 +144,7 @@ begin
             r <= r_next;
             -- reset
             if Rst = '1' then
-                r.StableCnt <= (others => DebouncTicks_c);
+                r.StableCnt <= (others => DebounceTicks_c);
                 r.LastState <= (others => IdleLevel_g);
                 r.IsStable  <= (others => '1');
                 r.DataOut   <= (others => IdleLevel_g);
