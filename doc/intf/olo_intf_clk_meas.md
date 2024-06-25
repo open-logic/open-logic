@@ -8,7 +8,7 @@
 
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_intf_clk_meas.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_intf_clk_meas.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_intf_clk_meas.json?cacheSeconds=0)
 
-VHDL Source: [olo_intf_sync](../../src/base/vhdl/olo_intf_sync.vhd)
+VHDL Source: [olo_intf_sync](../../src/intf/vhdl/olo_intf_clk_meas.vhd)
 
 ## Description
 
