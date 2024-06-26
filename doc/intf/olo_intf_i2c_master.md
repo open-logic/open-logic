@@ -50,6 +50,8 @@ The user has three main interfaces:
 
 For constants containing the command codes, a package *olo_intf_i2c_master_pkg* is defined in the same VHDL file. 
 
+**Note:** The I2C ports must be constrained manually. No solution was found for scoped timing constraints for inferred tristate buffers.
+
 ## Generics
 
 | Name               | Type    | Default | Description                                                  |
