@@ -5,5 +5,6 @@ namespace eval olo_intf_constraints_amd {
 	puts "OLO LOAD read_xdc for intf"
 
 	read_xdc -quiet -ref olo_intf_sync $fileLoc/olo_intf_sync.tcl
+	read_xdc -quiet -ref olo_intf_i2c_master $fileLoc/olo_intf_i2c_master.tcl
 }
 
