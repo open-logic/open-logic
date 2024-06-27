@@ -2,7 +2,38 @@
 
 # Changelog
 
+## 1.2.0 
 
+27-Jun-2024
+
+### Added Features
+
+* AMD Vivado integration
+  * Script to automatically import all *Open Logic* features into a Vivado project
+  * Vivado tutorial
+* *olo_intf_clk_meas*
+  * Measure the frequency of a clock signal (based on a clock with a known frequency)
+* *olo_intf_debounce*
+  * Debouncing for external signals (e.g. inputs from switches or buttons)
+
+### Backward Compatible Changes
+
+* Various documentation improvements
+* Execute scoped constraint scripts in separate namespaces
+  * This avoids unwanted interactions between the script through global variables
+
+
+### Non Backward Compatible Changes
+
+* None
+
+### Bugfixes (Backward Compatible)
+
+* Fix scoped constraints for *olo_intf_sync*
+  * Incomplete input delays were reported before the fix  
+* Fix inconsistencies of *olo_intf_i2c_master* generic default values compared to documentation
+  * There was a mismatch for *CmdTimeout_g*
+  * *ClkFrequency_g* had a default value in the implementation before the change (which is wrong because the clock is specific to the design)
 
 ## 1.1.0 
 
