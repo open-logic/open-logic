@@ -20,7 +20,7 @@ This block can also be used for *Parallel to TDM* conversion (see [Conventions](
 
 The entity does little-endian data alignment as shown in the figure below.
 
-![Data alignment](./wconv/olo_base_wconv_xn2n_align.svg)
+![Data alignment](./wconv/olo_base_wconv_xn2n_align.png)
 
 
 
@@ -28,7 +28,7 @@ The with conversion does also handle the last-flag according to AXI specificatio
 
 Note that with the assertion of *In_Last* at least one byte of the data must be valid (*In_WordEna* high). Otherwise it would be unclear when *Out_Last* shall be assigned.
 
-![Wave](./wconv/olo_base_wconv_xn2n.svg)
+![Wave](./wconv/olo_base_wconv_xn2n.png)
 
 This entity does only do a width conversion but not clock crossing. If a double-clock-half-width conversion is required, [olo_base_cc_n2xn](./olo_base_cc_n2xn)  component can be used in front of the width conversion.
 

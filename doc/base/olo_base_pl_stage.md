@@ -72,5 +72,5 @@ The figure below shows an example for 1 stage. The logic is then replicated per 
 
 The requirement for a shadow register is depicted by below waveform.
 
-![Wave](./misc/olo_base_pl_stage.svg)
+![Wave](./misc/olo_base_pl_stage.png)
 

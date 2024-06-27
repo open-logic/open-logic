@@ -23,7 +23,7 @@ The entity has two modes of operation.
 
 Below figure provides an example waveform for both modes of operation.
 
-![wave](./misc/olo_intf_debounce.svg)
+![wave](./misc/olo_intf_debounce.png)
 
 ## Generics
 

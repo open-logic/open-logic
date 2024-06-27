@@ -109,7 +109,7 @@ Rules:
 
 -	If multiple signals are transferred TDM (time-division-multiplexed) over the same interface and all signals have the same sample rate, no additional channel indicator is implemented and looping through the channels is implicit (e.g. for a three channel link, samples are transferred in the channel order 0-1-2-0-1-2-…).
 
-![TDM](./general/tdm.svg)
+![TDM](./general/tdm.png)
 
 The entities blocks can be used to convert between parallel channel handling and TDM:
 
@@ -118,11 +118,11 @@ The entities blocks can be used to convert between parallel channel handling and
 
 TDM signals can be difficult to debug because the channel mapping is hard to identify at runtime. It usually is a good idea to mark the last channel for each sample by *Last* as shown in the figure below. This way, it is easily known which data-beat belongs to which channel.
 
-![TDM-Last](./general/tdm_last.svg)
+![TDM-Last](./general/tdm_last.png)
 
 For packetized data, the last channel of the last sample of a packet is marked by *Last*. As a result, the channel mapping can be reconstructed easily at packet boundaries.
 
-![TDM-Packet](./general/tdm_packet.svg)
+![TDM-Packet](./general/tdm_packet.png)
 
 ## Testbenching
 

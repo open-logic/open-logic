@@ -16,17 +16,17 @@ This component allows selecting one unique channel over a bunch of "N" time divi
 
 The select signal *In_ChSel* is sampled when the data of the first channel of a TDM burst arrives. The output *Out_Data*/*Out_Valid* is asserted after the last channel of a TDM burst was received.
 
-![General Operation](./tdm/olo_base_tdm_mux_general.svg)
+![General Operation](./tdm/olo_base_tdm_mux_general.png)
 
 The state of the *In_ChSel* signal in between the *CH0* inputs (where it is sampled) does not have any effect as depicted by the figure below.
 
-![General Operation](./tdm/olo_base_tdm_mux_selsample.svg)
+![General Operation](./tdm/olo_base_tdm_mux_selsample.png)
 
 The entity does automatically synchronize the channel counter to *In_Last*. However, it can also be used in absence of *In_Last*. In this case the first sample after reset is interpreted as channel 0 and the channel-counter is freerunning.
 
 If *In_Last* is asserted on the last channel in a TDM burst, the corresponding output hast *Out_Last* asserted (independently of which channel was selected). This behavior allows to signal packet-boundaries throughout the *olo_base_tdm_mux*.
 
-![Tlast](./tdm/olo_base_tdm_mux_tlast.svg)
+![Tlast](./tdm/olo_base_tdm_mux_tlast.png)
 
 
 

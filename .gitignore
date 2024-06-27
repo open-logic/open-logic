@@ -10,6 +10,7 @@ sim/transcript
 
 #drawio files
 *.bkp
+*.dtmp
 
 #Modelsim files
 *.opt

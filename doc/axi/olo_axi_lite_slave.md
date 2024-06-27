@@ -16,11 +16,11 @@ This component implements a very simple AXI4-Lite slave. It converts AXI4-Lite a
 
 Below figures shows how write transactions are signaled to user-code. Write transactions do not require an acknowledge. The user code **must** expect them in the speed they arrive.
 
-![Write Transactions](./slave/SlaveWrite.svg)
+![Write Transactions](./slave/SlaveWrite.png)
 
 Below figures shows how read transactions are signaled to user-code. The validity of read-data must be acknowledged by *Rb_RdValid*. If this does not happen within *ReadTimeoutClks_g* an error is signaled to the master who requested the read. Note that the read latency (from *Rb_Rd* to *Rb_Valid*) does not have to be constant.
 
-![Read Transaction](./slave/SlaveRead.svg)
+![Read Transaction](./slave/SlaveRead.png)
 
 The *olo_axi_lite_slave* implements a read-timeout. In case the read data is not returned (*Rb_RdValid*) within the timeout specified, an error is signaled on the AXI bus. This mechanism prevents masters from becoming locked for infinite time if a read fails due to user code connected to the *olo_axi_lite_slave*.
 

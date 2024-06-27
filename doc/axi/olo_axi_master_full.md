@@ -128,7 +128,7 @@ In cases where the amount of data to write - and hence the write command *WrCmd_
 
 The entity implements read and write side completely independent. It is possible to implement only one or the other direction of transfers.
 
-![Architecture](./master/olo_axi_master_full.png)
+![Architecture](./master/olo_axi_master_full.svg)
 
 ### Transaction Types
 
@@ -148,7 +148,7 @@ Note that the transaction examples focus on data-alignment. For anything else, r
 
 The example below shows a read transaction.
 
-![Read Transaction](./master/full_read.svg)
+![Read Transaction](./master/full_read.png)
 
 <p align=center> <i>Read transaction </i></\p>
 
@@ -165,7 +165,7 @@ The example below shows a read transaction.
 
 Note that a high-latency write (AXI commands only sent after data is in buffer) is shown in this figure.
 
-![Write Transaction](./master/full_write.svg)
+![Write Transaction](./master/full_write.png)
 
 <p align=center> <i> Write transaction </i></\p>
 

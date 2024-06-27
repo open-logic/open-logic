@@ -51,7 +51,7 @@ The VHDL code contains all synthesis attributes required to ensure correct behav
 
 Since each pulse is handled separately, the pulse alignment may change because of the clock crossing. This is shown in the figure below.
 
-![waveform](./clock_crossings/olo_base_cc_pulse_wave.svg)
+![waveform](./clock_crossings/olo_base_cc_pulse_wave.png)
 
 Regarding timing constraints, refer to [clock-crossing principles](clock_crossing_principles.md).
 
