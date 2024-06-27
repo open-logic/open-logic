@@ -17,7 +17,9 @@ set_max_delay -from [get_clocks <dst-clock>] to [get_clocks <src-clock>] -datapa
 
 ### Automatic Constraining
 
-For *AMD* tools (*Vivado*) an automatic constraint file exists, which automatically identifies all *Open Logic* clock-crossings and constrains them correctly. To use the automatic constraints file, follow the steps below.
+For *AMD* tools (*Vivado*) scoped constraints files exist, which automatically identify all *Open Logic* clock-crossings and constrain them correctly. When using the `import_sources.tcl` script to add *Open Logic* to your project (see [How To ...](../HowTo.md) section), the constraints are applied automatically.
+
+To alternatively configure usage of the scoped constraints manually , follow the steps below.
 
 1. Create an empty TCL file and add it to the Vivado project as constraint.
 2. Enable the TCL file **for implementation only** (see screenshot below)

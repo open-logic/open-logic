@@ -6,9 +6,9 @@
 
 The aim of this tutorial is give users a kick-start on creating AMD Vivado projects using *Open Logic*.
 
-The tutorial covers project setup and implementation up to the production of a running bitstream for a small design. The design is rather hardware independent but all examples and pinout constraints are given for a [Zybo Z7-10](https://digilent.com/shop/zybo-z7-zynq-7000-arm-fpga-soc-development-board/).
+The tutorial covers project setup and implementation up to the production of a running bitstream for a small design. The design is rather hardware independent but all examples and pinout constraints are given for a [Zybo Z7-10](https://digilent.com/shop/zybo-z7-zynq-7000-arm-fpga-soc-development-board/). If want to use it on some other hardware, just change pinout and the target device accordingly.
 
-The steps should be very much independent of the Vivado version but all screenshots refer to version 2023.1.
+The steps should be very much independent of the Vivado version but all screenshots are taken with version 2023.1.
 
 ## Step 1: Project setup
 
@@ -30,7 +30,7 @@ As part, choose the FPGA on the Z7-10: **xc7z010clg400-1**
 
 ## Step 2: Integrate Open Logic
 
-We follow the steps described also in the [HowTo...](../HowTo.md) document.
+We follow the steps described also in the [HowTo...](../HowTo.md) document. They are repeated here, so you do not have to open the *HowTo* document separately.
 
 Open the Vivado TCL console and execute the command below:
 
@@ -46,7 +46,7 @@ You should now see one constraints file and many source files in the library *ol
 
 ![Screenshot](./VivadoTutorial/Pictures/integrate_olo_02.png)
 
-That's it, open logic is now ready to be used.
+That's it,  *Open Logic* is now ready to be used.
 
 ## Step 3: Build FPGA Design
 
@@ -58,11 +58,11 @@ In this tutorial we will build the following design:
 
 All *Open Logic* blocks are shown in grey. Custom logic is shown in blue.
 
-The design does debounce two buttons and four switches. Every time the user presses button 0, the state of the switches is written into a FIFO (4 bits wide, 4096 entries deep). Every time the user presses button 1, one FIFO entry is read and applied to the LEDs. Note that clock and reset are not shown in the figure for simplicity reasons.
+The design does de-bounce two buttons and four switches. Every time the user presses button 0, the state of the switches is written into a FIFO (4 bits wide, 4096 entries deep). Every time the user presses button 1, one FIFO entry is read and applied to the LEDs. Note that clock and reset are not shown in the figure for simplicity reasons.
 
-The debouncing is required to ensure that a button press really only produces one edge. For the switches, debouncing is not hardly required but good style.
+The de-bouncing is required to ensure that a button press really only produces one edge (and hence one read/write transaction to the FIFO). For the switches, de-bouncing is not strictly required but good style.
 
-The design is super simple - it is not meant for demonstrating the coolest features of *Open Logic* but for being the simples possible example of a design making use of *Open Logic*.
+The design is super simple - it is not meant for demonstrating the coolest features of *Open Logic* but for being the simplest possible example of a design making use of *Open Logic*.
 
 ### Add Source Code
 
@@ -98,7 +98,7 @@ A basic constraints set (pinout + clock) is provided in the file [<open-logic-ro
 
 ### Build Design
 
-Build the design and generate a bitstream:
+Build the design and generate a bitstream. You can just press the *Generate Bitstream* button - Vivado will detect automatically that the design must be built before the bitstream can be generated.
 
 ![Design](./VivadoTutorial/Pictures/build_01.png)
 
@@ -106,7 +106,9 @@ Open the implemented design when the build is done and Vivado asks you if you wa
 
 ### Analyze Resource Utilization
 
-From the resource utilization it is obvious that the FIFO was correctly mapped to Block-RAM:
+From the resource utilization it is obvious that the FIFO was correctly mapped to Block-RAM.
+
+The LUT usage also demonstrates the efficiency of *Open Logic*: If the de-bouncing would be implemented in the most simple form (one counter per signal running on the system clock directly), the de-bouncing alone would use 132 LUTs (6 signals x 25ms x 125 MHz --> 132 counter bits). The overall LUT count of the design is only 120 - and this includes the FIFO.
 
 ![Design](./VivadoTutorial/Pictures/resource_01.png)
 
@@ -137,7 +139,7 @@ Program the device:
 
 ![Design](./VivadoTutorial/Pictures/run_03.png)
 
-You can now dial in values using the *Switches* and write them into the FIFO by pressing *Button 0* (on the very right). After that they can be read from the FIFO and displayed one by one by pressing *Button 1*.
+You can now dial in values using the *Switches* and write them into the FIFO by pressing *Button 0* (on the very right). After that they can be read from the FIFO and displayed one by one by pressing *Button 1* (second from the right).
 
 ## Step 5: Discussion of the VHDL Source Code
 
@@ -223,3 +225,20 @@ entity olo_base_fifo_sync is
 
 
 
+## Notes
+
+If you should want to build the tutorial project without many manual mouse clicks, you can do so by following the steps below:
+
+* Open Vivado
+
+* In the TCL console, navigate to the directory <open-logic-root>/doc/tutorials/VivadoTutorial/Files
+  ```
+  cd <open-logic-root>/doc/tutorials/VivadoTutorial/Files
+  ```
+
+* Run the script [scripted_build.tcl](./VivadoTutorial/Files/scripted_build.tcl), which creates and builds the tutorial project: 
+  ```
+  source scripted_build.tcl
+  ```
+
+Note: replace <open-logic-root> with the root folder of your *Open Logic* working copy.
