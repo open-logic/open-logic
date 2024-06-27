@@ -1,0 +1,11 @@
+{signal: [
+  {name: 'DataAsync',              wave: '0.....1.....0.....1.0.....10101.....01010.....', 
+                                   node: '............B.....C.......D...E.....F...G.....', period:1},
+  {name: 'DataOut[LOW_LATENCY]',   wave: '0.....1.....0.....1...0...1.........0.........', 
+                                   node: '..................H...I.......................', period:1},
+  {name: 'DataOut[GLITCH_FILTER]', wave: '0.........1.....0.................1.........0.',
+                                   node: '................K.................L.........M..', period:1},
+  {                                node: '      A   J K   L M   N       O   P     Q   R'}
+],
+   edge: [ 'A+J DebounceTime_g', 'K+L DebounceTime_g', 'O+P DebounceTime_g', 'M+N DebounceTime_g', 'Q+R DebounceTime_g'
+  ]}

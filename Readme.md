@@ -28,9 +28,20 @@ It's suggested that you compile ALL files of the areas you need (plus their depe
 
 ## Detailed Documentation
 
-* [Entity List](./doc/EntityList.md)
+* [Entity List](./doc/EntityList.md) 
+  * Detailed list of all entities available
+  * Includes links to the documentation of each entity
+
 * [Coding Conventions](./doc/Conventions.md)
+  * Interesting for the ones to contribute
+
 * [How To...](./doc/HowTo.md)
+  * FAQ for all users
+  * **It's strongly suggested that every user quickly reads through this**
+
+* Tutorials
+  * [Vivado Tutorial](./doc/tutorials/VivadoTutorial.md)
+
 
 ## Project Philosophy
 

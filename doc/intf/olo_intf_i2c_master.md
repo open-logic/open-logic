@@ -1,6 +1,6 @@
 <img src="../Logo.png" alt="Logo" width="400">
 
-# olo_axi_master_simple
+# olo_intf_i2c_master
 
 [Back to **Entity List**](../EntityList.md)
 
@@ -8,7 +8,7 @@
 
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_intf_i2c_master.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_intf_i2c_master.json?cacheSeconds=0) ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_intf_i2c_master.json?cacheSeconds=0)
 
-VHDL Source: [olo_intf_i2c_master](../../src/axi/vhdl/olo_intf_i2c_master.vhd)
+VHDL Source: [olo_intf_i2c_master](../../src/intf/vhdl/olo_intf_i2c_master.vhd)
 
 ## Description
 
@@ -49,6 +49,8 @@ The user has three main interfaces:
     provide the next command within time, and hence the bus was released).
 
 For constants containing the command codes, a package *olo_intf_i2c_master_pkg* is defined in the same VHDL file. 
+
+**Note:** The I2C ports must be constrained manually. No solution was found for scoped timing constraints for inferred tristate buffers.
 
 ## Generics
 

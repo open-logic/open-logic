@@ -4,6 +4,22 @@
 
 # Open Logic - How To ...
 
+## ... Use Open Logic in a AMD Vivado Project
+
+There is a script to import all *Open Logic* sources into a Vivado project and apply all automatic constraints. To run the script, follow the steps below:
+
+1. Open Vivado and create a project (if not existing yet)
+2. Open the TCL shell in Vivado
+3. Execute the command `source <open-logic-root>/tools/vivado/import_sources.tcl`
+   Replace `<open-logic-root>` by the path of your *Open Logic* working copy.
+
+That's it. Nothing more.
+
+* All *Open Logic* sources are configured to be compiled into the library *olo*
+  ![Sources](./general/vivado/import_sources_sources.png)
+* A new constraints file for importing all scoped constraints is added to the Vivado project by the script.
+  ![Constraints](./general/vivado/import_sources_constraints.png)
+
 ## ... Run Simulations
 
 If you want to run simulations on your PC, you need the following prerequisites:
