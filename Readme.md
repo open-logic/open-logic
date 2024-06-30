@@ -10,6 +10,8 @@
 
 *Open Logic* implements commonly used components in a reusable way and provide them under a permissive open source license (LGPL modified for FPGA usage, see [License.txt](./License.txt)), so the code can be used in commercial projects. 
 
+*Open Logic* is written in VHDL but can also be used from System Verilog easily. 
+
 Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 
 Maintainer: [obruendl](oliver.bruendler@gmx.ch)
@@ -40,7 +42,7 @@ It's suggested that you compile ALL files of the areas you need (plus their depe
   * **It's strongly suggested that every user quickly reads through this**
 
 * Tutorials
-  * [Vivado Tutorial](./doc/tutorials/VivadoTutorial.md)
+  * [Vivado Tutorial](./doc/tutorials/VivadoTutorial.md) - for VHDL and System Verilog
 
 
 ## Project Philosophy
