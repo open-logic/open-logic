@@ -41,7 +41,7 @@ It's suggested that you compile ALL files of the areas you need (plus their depe
 
 * Tutorials
   * [Vivado Tutorial](./doc/tutorials/VivadoTutorial.md)
-  * [Quartus Tutorial](./doc/tutorials/QuartusTutorial.md)
+  * [Quartus Tutorial](./doc/tutorials/QuartusTutorial.md) - for VHDL and System Verilog
 
 
 ## Project Philosophy
