@@ -16,7 +16,7 @@ This entity implements a priority arbiter. The left-most bit (highest bit) of th
 
 The arbiter can be implemented with or without an output registers. The waveform below shows its implementation with andwithout output register (*Latency\_g = 0* resp. 1).
 
-![Waveform](./arb/olo_base_arb_prio_example.svg)
+![Waveform](./arb/olo_base_arb_prio_example.png)
 
 ## Generics
 

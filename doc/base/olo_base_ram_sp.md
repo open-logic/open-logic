@@ -42,7 +42,7 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 
 Below figure explains the *RdLatency_g* generic in detail:
 
-![RdLatency](./ram/RdLatency_SP.svg)
+![RdLatency](./ram/RdLatency_SP.png)
 
 
 
