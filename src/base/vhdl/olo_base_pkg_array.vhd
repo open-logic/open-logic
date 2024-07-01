@@ -54,7 +54,6 @@ package olo_base_pkg_array is
     type t_aslv64   is array (natural range <>) of std_logic_vector(63 downto 0);
     type t_aslv512  is array (natural range <>) of std_logic_vector(511 downto 0);
     
-    type t_aslv is array (natural range <>) of std_logic_vector;
     type t_ainteger is array (natural range <>) of integer;
     type t_areal is array (natural range <>) of real;
     type t_abool is array (natural range <>) of boolean;
