@@ -8,7 +8,7 @@
 
 *Open Logic* aims to be for HDL projects what what *stdlib* is for C/C++ projects. 
 
-*Open Logic* implements commonly used components in a reusable way and provide them under a permissive open source license (LGPL modified for FPGA usage, see [License.txt](./License.txt)), so the code can be used in commercial projects. 
+*Open Logic* implements commonly used components in a reusable and vendor/tool-independent way and provide them under a permissive open source license (LGPL modified for FPGA usage, see [License.txt](./License.txt)), so the code can be used in commercial projects. 
 
 Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 
@@ -41,6 +41,7 @@ It's suggested that you compile ALL files of the areas you need (plus their depe
 
 * Tutorials
   * [Vivado Tutorial](./doc/tutorials/VivadoTutorial.md)
+  * [Quartus Tutorial](./doc/tutorials/QuartusTutorial.md)
 
 
 ## Project Philosophy
