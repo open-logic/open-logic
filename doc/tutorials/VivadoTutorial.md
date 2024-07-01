@@ -124,6 +124,8 @@ The timing report shows two things:
 
 * Output delays are missing. This makes sense because we let a FIFO drive outputs directly and no output delay was constrained. For LEDs this is tolerable but in a productive design of course you would want to add those constraints manually.
 * **No** missing input delays are reported. The *olo_intf_sync* input synchronizer comes with scoped constraints and adds these constraints automatically. This demonstrates the usefulness of scoped constraints *Open Logic* provides wherever possible.
+  * For Verilog **there are** missing input delays, because scoped constraints only work for VHDL at the moment.
+
 
 ![Design](./VivadoTutorial/Pictures/timing_01.png)
 

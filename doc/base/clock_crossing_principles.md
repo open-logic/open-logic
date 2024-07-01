@@ -15,7 +15,10 @@ set_max_delay -from [get_clocks <src-clock>] to [get_clocks <dst-clock>] -datapa
 set_max_delay -from [get_clocks <dst-clock>] to [get_clocks <src-clock>] -datapath_only <period-of-faster-clock>
 ```
 
-**Note: ** For using *Open Logic* from Verilog, manual constraints are required. Automatic constraining currently only works for VHDL.
+
+**Note:** For Intel Quartus, manual constraints are required because automatic constraining (scoped constraints) is not supported by Quartus.
+
+**Note:** For using *Open Logic* from Verilog, manual constraints are required. Automatic constraining currently only works for VHDL.
 
 ### Automatic Constraining
 
