@@ -15,6 +15,8 @@ set_max_delay -from [get_clocks <src-clock>] to [get_clocks <dst-clock>] -datapa
 set_max_delay -from [get_clocks <dst-clock>] to [get_clocks <src-clock>] -datapath_only <period-of-faster-clock>
 ```
 
+**Note: ** For using *Open Logic* from Verilog, manual constraints are required. Automatic constraining currently only works for VHDL.
+
 ### Automatic Constraining
 
 For *AMD* tools (*Vivado*) scoped constraints files exist, which automatically identify all *Open Logic* clock-crossings and constrain them correctly. When using the `import_sources.tcl` script to add *Open Logic* to your project (see [How To ...](../HowTo.md) section), the constraints are applied automatically.

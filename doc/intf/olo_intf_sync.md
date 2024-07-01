@@ -19,6 +19,8 @@ It is suggested to use this entity only for synchronizing external signals. For 
 
 For *AMD* tools (*Vivado*) an automatic constraint file exists, which automatically identifies all *olo_intf_sync* instances and constrains them correctly. To use the automatic constraints file, follow the steps described in [clock crossing principles](../base/clock_crossing_principles.md) but use the constraints file `source <path-to-open-logic>/src/intf/tcl/constraints_amd.tcl`
 
+**Note:** Automatic constraining currently only works for *AMD* tools (*Vivado*) and the usage in VHDL. Manual constraints are required for Verilog or other tools.
+
 ## Generics
 
 | Name       | Type      | Default | Description                                                  |
