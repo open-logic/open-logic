@@ -22,7 +22,7 @@ Note that insteady of byte-enables, a word enable (*Out_WordEna*)  is implemente
 
 The entity does little-endian data alignment as shown in the figure below. The figure depicts operation of the block without backpressure (*Out_Ready* continuously high) and for a width-conversion from 4 to 8 bits.
 
-![Waveform](./wconv/olo_base_wconv_n2xn.svg)
+![Waveform](./wconv/olo_base_wconv_n2xn.png)
 
 This entity does only do a width conversion but not clock crossing. If a half-clock-double-width conversion is used,  [olo_base_cc_xn2n](./olo_base_cc_xn2n.md) component can be used after the width conversion.
 

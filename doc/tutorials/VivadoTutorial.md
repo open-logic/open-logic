@@ -22,7 +22,11 @@ On the third page, it is important to create an **RTL Project**
 
 ![Screenshot](./VivadoTutorial/Pictures/create_project_02.png)
 
-Forward through the next two pages without adding any source or constraints files.
+You do not have to add any sources at this point but it is important that you set the language you target (VHDL or Verilog). The tutorial works for both languages.
+
+![Screenshot](./VivadoTutorial/Pictures/create_project_04.png)
+
+Forward through the next page without adding any constraints files.
 
 As part, choose the FPGA on the Z7-10: **xc7z010clg400-1**
 
@@ -66,7 +70,9 @@ The design is super simple - it is not meant for demonstrating the coolest featu
 
 ### Add Source Code
 
-The code is provided in the file [<open-logic-root>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd). 
+The VHDL code is provided in the file [<open-logic-root>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd). 
+
+If you are using Verilog, use the system verilog source file: [<open-logic-root>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.sv](./VivadoTutorial/Files/vivado_tutorial.sv). 
 
 Add this file to the project as follows:
 
@@ -118,6 +124,8 @@ The timing report shows two things:
 
 * Output delays are missing. This makes sense because we let a FIFO drive outputs directly and no output delay was constrained. For LEDs this is tolerable but in a productive design of course you would want to add those constraints manually.
 * **No** missing input delays are reported. The *olo_intf_sync* input synchronizer comes with scoped constraints and adds these constraints automatically. This demonstrates the usefulness of scoped constraints *Open Logic* provides wherever possible.
+  * For Verilog **there are** missing input delays, because scoped constraints only work for VHDL at the moment.
+
 
 ![Design](./VivadoTutorial/Pictures/timing_01.png)
 
@@ -146,6 +154,8 @@ You can now dial in values using the *Switches* and write them into the FIFO by 
 The source code can be found in the file [<open-logic-root>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd). 
 
 Not every line of the source code is discussed. It is simple and implements the design described earlier. Only a few details worth mentioning are discussed.
+
+The source code samples given are VHDL - however, for the verilog example file the code looks very much the same and the comments apply as well.
 
 ### Omitting Unused Generics
 
@@ -237,8 +247,16 @@ If you should want to build the tutorial project without many manual mouse click
   ```
 
 * Run the script [scripted_build.tcl](./VivadoTutorial/Files/scripted_build.tcl), which creates and builds the tutorial project: 
+  For VHDL:
+  
   ```
   source scripted_build.tcl
+  ```
+  
+  For Verilog:
+  
+  ```
+  source scripted_build_sv.tcl
   ```
 
 Note: replace <open-logic-root> with the root folder of your *Open Logic* working copy.

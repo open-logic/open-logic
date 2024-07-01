@@ -22,13 +22,13 @@ If the delay is implemented using a RAM, the behavior of the RAM (read-before-wr
 
 Note that output data is valid together with Input data (when *In_Valid* is high). Below figure shows the behavior for *Delay_g*=3 with both possible settings for *RstState_g*:
 
-![DataValidity](./misc/olo_base_delay.svg)
+![DataValidity](./misc/olo_base_delay.png)
 
 In cases a delayed version of an AXI4-Stream with back-pressure (*Ready* signal) is required, the ANDed *Ready* and *Valid* signals shall be connected to the *In_Valid* input of *olo_base_delay*.
 
-![BackpressureCase](./misc/olo_base_delay.png)
+![BackpressureCase](./misc/olo_base_delay_arch.svg)
 
-![WaveBackpressuree](./misc/olo_base_delay_backpressure.svg)
+![WaveBackpressuree](./misc/olo_base_delay_backpressure.png)
 
 ## Generics
 

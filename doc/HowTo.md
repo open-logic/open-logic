@@ -18,6 +18,8 @@ That's it. Nothing more.
 * All *Open Logic* sources are configured to be compiled into the library *olo*
   ![Sources](./general/vivado/import_sources_sources.png)
 * A new constraints file for importing all scoped constraints is added to the Vivado project by the script.
+  
+  **Note:** Scoped constraints are always imported but only work for usage from VHDL. For Verilog usage, manual constraints are required. Refer to the documentation of entities that require constraints (clock-crossings, interfaces, etc.)
   ![Constraints](./general/vivado/import_sources_constraints.png)
 
 ## ... Use Open Logic in a Intel Quartus Project

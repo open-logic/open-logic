@@ -37,7 +37,7 @@ This block contains *Open Logic* clock crossings, refer to [clock crossing princ
 
 Below figure shows the architecture of the entity.
 
-![architecture](./misc/olo_intf_clk_meas.png)
+![architecture](./misc/olo_intf_clk_meas.svg)
 
 One pulse every second is generated using a *olo_base_strobe_gen* on the main clock. The frequency of the main clock is known and hence the generation of a 1 Hz pulse is trivial.
 

@@ -143,7 +143,7 @@ Transaction requests are forwarded from the slave interface to the master interf
 
 The entity implements read and write side completely independent. It is possible to implement only one or the other direction of transfers.
 
-![Architecture](./master/olo_axi_master_simple.png)
+![Architecture](./master/olo_axi_master_simple.svg)
 
 ### Transaction Types
 
@@ -157,7 +157,7 @@ Also note that latencies and delays may be drawn shorter than they actually are 
 
 The example below shows a high latency burst read transaction.
 
-![High-Latency Write](./master/simple_write_hilatency.svg)
+![High-Latency Write](./master/simple_write_hilatency.png)
 
 <p align=center> <i>High latency write </i></\p>
 
@@ -171,7 +171,7 @@ The waveform also shows that a user command is split into two AXI transactions a
 
 Since the waveform above only shows that the first transaction is delayed according to high-latency operation, a second figure is shown below that shows this behavior also for the second transaction.
 
-![High-Latency Write - 2](./master/simple_write_hilatency_2.svg)
+![High-Latency Write - 2](./master/simple_write_hilatency_2.png)
 
 <p align=center> <i>High latency write with delay for second transaction </i></\p>
 
@@ -179,7 +179,7 @@ Since the waveform above only shows that the first transaction is delayed accord
 
 The example below shows a low latency burst read transaction.
 
-![High-Latency Write - 2](./master/simple_write_lolatency.svg)
+![High-Latency Write - 2](./master/simple_write_lolatency.png)
 
 <p align=center> <i> Low latency write </i></\p>
 
@@ -191,7 +191,7 @@ To avoid stalling the AXI bus, it is possible to prefill the write data FIFO. To
 
 
 
-![Low-Latency Write - 2](./master/simple_write_lolatency_prefill.svg)
+![Low-Latency Write - 2](./master/simple_write_lolatency_prefill.png)
 
 <p align=center> <i> Low latency write with FIFO prefill</i></\p>
 
@@ -199,7 +199,7 @@ To avoid stalling the AXI bus, it is possible to prefill the write data FIFO. To
 
 The example below shows a burst read transaction.
 
-![Simple Read](./master/simple_read.svg)
+![Simple Read](./master/simple_read.png)
 
 <p align=center> <i> Read transaction </i></\p>
 
@@ -211,7 +211,7 @@ If the slave is not able to continuously burst data, this is reflected on the re
 
 The example below shows a burst read transaction in low latency mode. In contrast to the example above, the read FIFO is assumed to be full when the user command is issued.
 
-![Simple Read - FIFO full](./master/simple_read_fifo_full.svg)
+![Simple Read - FIFO full](./master/simple_read_fifo_full.png)
 
 <p align=center> <i> Low latency read transaction with FIFO full </i></\p>
 
@@ -221,7 +221,7 @@ Because the command is issued in low-latency mode, the AXI read command is issue
 
 The example below shows a burst read transaction in high latency mode.
 
-![Simple Read - FIFO full](./master/simple_read_fifo_full_hilatency.svg)
+![Simple Read - FIFO full](./master/simple_read_fifo_full_hilatency.png)
 
 <p align=center> <i> Low latency read transaction with FIFO full, high-latency mode </i></\p>
 

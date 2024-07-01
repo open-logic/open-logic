@@ -20,11 +20,11 @@ The latency can be selected to be 0 (combinatorial output) or 1 (registered outp
 
 Below figure shows an example for a ratio of 3.
 
-![normal-operation](./misc/olo_base_strobe_divider.svg)
+![normal-operation](./misc/olo_base_strobe_divider.png)
 
 The entity can also be used to convert single cycle pulses into pulses that stay active until acknowledged by *Out_Ready*='1'. For this usage, simply use *MaxRatio_g=1* and leave *In_Ratio* unconnected.
 
-![ready-conversion](./misc/olo_base_strobe_divider_readyconv.svg)
+![ready-conversion](./misc/olo_base_strobe_divider_readyconv.png)
 
 Note that for runtime configurable ratio, *In_Ratio* must be set to the **desired ratio minus one**. E.g. to forward every third pulse to the output, *In_Ratio* must be set to 2.
 
