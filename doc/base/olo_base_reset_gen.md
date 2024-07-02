@@ -16,6 +16,12 @@ This component generates reset pulses of a specified minimum duration after FPGA
 
 The component dues guarantee synchronous de-assertion of the reset. It might assert the reset asynchronously.
 
+**Note:** Because the reset input is detected asynchronously, it is important that this input is glitch-free.
+
+The block comes with automatic constraints. For manual constraining, a `set_max_delay -datapath_only` or a `set_false_path` constraint is required for the *RstIn* input (if it is used).
+
+**Note:** Automatic constraining currently only works for *AMD* tools (*Vivado*) and the usage in VHDL. Manual constraints are required for Verilog or other tools.
+
 ## Generics
 
 | Name               | Type      | Default | Description                                                  |
