@@ -23,18 +23,15 @@ architecture rtl of quartus_tutorial is
     signal RisingEdges      : std_logic_vector(1 downto 0);
     signal Buttons_Last     : std_logic_vector(1 downto 0);
     signal Rst              : std_logic := '1';
-    signal RstPipe          : std_logic_vector(1 downto 0) := (others => '1');
     signal LedSig           : std_logic_vector(3 downto 0);     
 begin
 
     -- Assert reset after power up
-    p_reset : process(Clk)
-    begin
-        if rising_edge(Clk) then
-            Rst <= RstPipe(1);
-            RstPipe <= RstPipe(0) & '0';
-        end if;
-    end process;
+    i_reset: entity olo.olo_base_reset_gen                   
+    port map ( 
+        Clk         => Clk,
+        RstOut      => Rst
+    );  
 
     -- Debounce Buttons
     i_buttons : entity olo.olo_intf_debounce
