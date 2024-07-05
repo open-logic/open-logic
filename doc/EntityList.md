@@ -83,6 +83,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_prbs](./base/olo_base_brbs.md)             | PRBS (pseudo random binary sequence) generator based on linear feedback shift register (LFSR) implementation. |
 | [olo_base_strobe_gen](./base/olo_base_strobe_gen.md) | Strobe generator. Generate pulses at a fixed frequency       |
 | [olo_base_strobe_div](./base/olo_base_strobe_div.md) | Strobe divider. Only forward every N'th pulse (divide event frequency). <br />Can also be used to convert single-cycle pulses to acknowledged events (pulse stays active until acknowledged). |
+| [olo_base_reset_gen](./base/olo_base_reset_gen.md)   | Reset generator - Generates reset pulses of specified duration after configuration and upon request |
 
 ## axi
 

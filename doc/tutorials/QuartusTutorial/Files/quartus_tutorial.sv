@@ -7,18 +7,17 @@ module quartus_tutorial (
 );
 
     // Signal Declarations
-    reg [1:0] Buttons_Sync;
-    reg [3:0] Switches_Sync;
+    wire [1:0] Buttons_Sync;
+    wire [3:0] Switches_Sync;
     reg [1:0] RisingEdges;
     reg [1:0] Buttons_Last;
-    reg Rst = 1'b1;
-    reg [1:0] RstPipe = 2'b11;
+    wire Rst;
 
     // Assert reset after power up
-    always @(posedge Clk) begin
-        Rst <= RstPipe[1];
-        RstPipe <= {RstPipe[0], 1'b0};
-    end
+    olo_base_reset_gen i_reset (                  
+        .Clk(Clk),
+        .RstOut(Rst)
+    );  
 
     // Debounce Buttons
     olo_intf_debounce #(

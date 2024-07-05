@@ -215,6 +215,17 @@ for tb_name in prbs_tbs:
     for BitsPerSymbol in [1, 2, 3, 4]:
         tb.add_config(name=f'BPS={BitsPerSymbol}', generics={'BitsPerSymbol_g': BitsPerSymbol})
 
+#reset_gen
+reset_gen_tb = 'olo_base_reset_gen_tb'
+tb = olo_tb.test_bench(reset_gen_tb)
+for Cycles in [3, 5, 50, 64]:
+    tb.add_config(name=f'C={Cycles}', generics={'RstPulseCycles_g': Cycles})
+for Cycles in [3, 5]:
+    for Polarity in [0, 1]:
+        for AsyncOutput in [True, False]:
+            tb.add_config(name=f'C={Cycles}-P={Polarity}-A={AsyncOutput}',
+                          generics={'RstPulseCycles_g': Cycles, 'RstInPolarity_g': Polarity, 'AsyncResetOutput_g': AsyncOutput})
+
 ########################################################################################################################
 # olo_axi TBs
 ########################################################################################################################
