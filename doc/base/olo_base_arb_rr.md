@@ -16,7 +16,7 @@ This entity implements a round-robin arbiter. If multiple bits are asserted in t
 
 Note that the round-robin arbiter is implemented without an output register. Therefore combinatorial paths between input and output exist and it is recommended to add a register-stage to the output as early as possible.
 
-![Waveform](./arb/olo_base_arb_rr_example.svg)
+![Waveform](./arb/olo_base_arb_rr_example.png)
 
 Especially interesting is the part in orange. At this point the arbiter does not grant access to bit 3 because it already granted this request in the clock cycle before. However, it continues to grant access to the highest-priority (i.e. left-most) bit of the request vector that is still left of the bit set in the last *Out_Grant* output. If the *In_Req* vector asserts a higher priority this change is directly forwarded to the output. This is shown in the orange section of the waveform.
 

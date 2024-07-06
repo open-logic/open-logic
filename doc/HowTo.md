@@ -18,7 +18,30 @@ That's it. Nothing more.
 * All *Open Logic* sources are configured to be compiled into the library *olo*
   ![Sources](./general/vivado/import_sources_sources.png)
 * A new constraints file for importing all scoped constraints is added to the Vivado project by the script.
+  
+  **Note:** Scoped constraints are always imported but only work for usage from VHDL. For Verilog usage, manual constraints are required. Refer to the documentation of entities that require constraints (clock-crossings, interfaces, etc.)
   ![Constraints](./general/vivado/import_sources_constraints.png)
+
+## ... Use Open Logic in a Intel Quartus Project
+
+There is a script to import all *Open Logic* sources into a Quartus project.
+
+**Note:** The script does not setup automatic constraints because Quartus does not support scoped constraints (in contrast to the AMD Vivado tools). For Quartus all constraints must be added manually.
+
+To run the script, follow the steps below:
+
+1. Open Quartus and create a project (if not existing yet)
+2. Open the TCL shell in Quartus
+   ![Sources](./general/quartus/launch_tcl_shell.png)
+3. Execute the command `source <open-logic-root>/tools/quartus/import_sources.tcl`
+   Replace `<open-logic-root>` by the path of your *Open Logic* working copy.
+
+That's it. Nothing more.
+
+* All *Open Logic* sources are configured to be compiled into the library *olo*
+  ![Sources](./general/quartus/import_sources.png)
+
+Because Quartus does not support scoped constraints, **NO** constraints are important. They have to be created manually - more information can be found in the documentation of individual *Open Logic* entities which require constraints.
 
 ## ... Run Simulations
 

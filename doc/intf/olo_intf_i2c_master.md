@@ -196,6 +196,6 @@ For constants containing the command codes, a package *olo_intf_i2c_master_pkg* 
 
 The waveform below shows the very simplest transaction possible: Transmitting an address only to probe if the slave is available. This simple transaction was chosen to keep the waveform as short as possible.  The main focus is on the sequence of events, not on the I2C transaction.
 
- <p align="center"><img src="./i2c/olo_intf_i2c_master.svg"></p>
+ <p align="center"><img src="./i2c/olo_intf_i2c_master.png"></p>
  <p align="center"> Address only transaction </p>
 

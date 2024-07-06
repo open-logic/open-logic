@@ -18,7 +18,7 @@ For general usage of the *olo_base_delay_cfg* entity, the same considerations as
 
 Note that any changes of the delay are reflected at the output (*Out_Data*) within less than 5 samples / data-beats. During those 5 samples, the content of (*Out_Data*) is undefined. This is illustrated in the figure below.
 
-![DelayChange](./misc/olo_base_delay_cfg.svg)
+![DelayChange](./misc/olo_base_delay_cfg.png)
 
 
 

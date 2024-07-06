@@ -2,6 +2,39 @@
 
 # Changelog
 
+## 2.0.0 
+
+06-Jul-2024
+
+### Added Features
+
+* Altera Quartus integration
+  * Script to automatically import all *Open Logic* features into a Quartus project
+* Added tutorials
+  * Vivado Verilog tutorial
+  * Quartus VHDL tutorial
+  * Quartus Verilog tutorial
+
+* *olo_base_reset_gen*
+  * Reset generator (and synchronizer)
+* *olo_base_flowctrl_handler*
+  * Allows to add flow-control (ready) around entities without flow-control (valid only)
+
+### Backward Compatible Changes
+
+* Various documentation improvements
+
+
+### Non Backward Compatible Changes
+
+* Removed *t_aslv* (array of unconstrained std_logic_vector) from *olo_base_pkg_array* 
+  * Arrays of unconstrained types are not accepted by Quartus
+
+
+### Bugfixes (Backward Compatible)
+
+* None
+
 ## 1.2.0 
 
 27-Jun-2024

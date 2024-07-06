@@ -28,10 +28,6 @@ Example:
 variable x : t_aslv4(0 to 9);  -- An array containint 10 std_logic_vector(3 downto 0);
 ```
 
-### t_aslv
-
-Same as *t_aslv\<N\>* but for unconstrained *std_logic_vector*.
-
 ### t_a\<T\>
 
 Arrays of different types .
