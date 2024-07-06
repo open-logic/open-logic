@@ -30,7 +30,8 @@ For processing entities that do not even provide the handling of the *Valid* fla
 
 | Name              | Type     | Default | Description                                                  |
 | :---------------- | :------- | ------- | :----------------------------------------------------------- |
-| Width_g           | positive | -       | Data width                                                   |
+| InWidth_g         | positive | -       | Data width on the input side (input to processing)           |
+| OutWidth_g        | positive | -       | Data width on the output side (output from processing)       |
 | SamplesToAbsorb_g | positive | -       | Maximum number of samples that the processing may produce after *ToProc_Valid* was de-asserted.<br />For processing without rate changes (simple processing pipelines) this is the number of pipeline stages in processing. <br />For processing with rate changes the value depends on the exact implementation and behavior of the processing.<br />**Note:** A too high value is never a problem (except for resource usage). When in doubt, round the number up to a value that is for sure large enough. |
 | RamStyle_g        | boolean  | true    | Through this generic, the exact resource to use for implementation can be controlled. <br />For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 | RamBehavior_g     | string   | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |

@@ -36,7 +36,8 @@ architecture sim of olo_base_flowctrl_handler_tb is
     -------------------------------------------------------------------------
     -- Constants
     -------------------------------------------------------------------------	
-    constant Width_c        : integer := 16;
+    constant OutWidth_c     : integer := 16;
+    constant InWidth_c      : integer := 18;
     constant Delay_c        : integer := 7;
 
     -------------------------------------------------------------------------
@@ -50,15 +51,15 @@ architecture sim of olo_base_flowctrl_handler_tb is
     -------------------------------------------------------------------------
     signal Clk           : std_logic                                    := '0';
     signal Rst           : std_logic                                    := '1';
-    signal In_Data       : std_logic_vector(Width_c - 1 downto 0);
+    signal In_Data       : std_logic_vector(InWidth_c - 1 downto 0);
     signal In_Valid      : std_logic := '0';
     signal In_Ready      : std_logic;
-    signal Out_Data      : std_logic_vector(Width_c - 1 downto 0);
+    signal Out_Data      : std_logic_vector(OutWidth_c - 1 downto 0);
     signal Out_Valid     : std_logic;
     signal Out_Ready     : std_logic := '0';
-    signal ToProc_Data   : std_logic_vector(Width_c - 1 downto 0);
+    signal ToProc_Data   : std_logic_vector(InWidth_c - 1 downto 0);
     signal ToProc_Valid  : std_logic;
-    signal FromProc_Data : std_logic_vector(Width_c - 1 downto 0);
+    signal FromProc_Data : std_logic_vector(OutWidth_c - 1 downto 0);
     signal FromProc_Valid: std_logic;
 
     -------------------------------------------------------------------------
@@ -77,7 +78,7 @@ architecture sim of olo_base_flowctrl_handler_tb is
         for i in 0 to OutputSize-1 loop
             Out_Ready <= '1';
             wait until rising_edge(Clk) and Out_Valid = '1';
-            check_equal(Out_Data, toUslv(i, Width_c), "Output data mismatch");
+            check_equal(Out_Data, toUslv(i, OutWidth_c), "Output data mismatch");
             if(OutPauses > 0) and (i mod OutPausesBurst) = 0 then
                 Out_Ready <= '0';
                 for i in 0 to OutPauses-1 loop
@@ -190,7 +191,8 @@ begin
     -- Instantiate the olo_base_flowctrl_handler entity
     i_dut : entity olo.olo_base_flowctrl_handler
         generic map (
-            Width_g             => Width_c,
+            InWidth_g           => InWidth_c,
+            OutWidth_g          => OutWidth_c,
             SamplesToAbsorb_g   => Delay_c
         )
         port map (
@@ -213,7 +215,7 @@ begin
     -------------------------------------------------------------------------
     i_proc : entity olo.olo_base_delay
         generic map (
-            Width_g         => Width_c+1,
+            Width_g         => OutWidth_c+1,
             Delay_g         => Delay_c,
             RstState_g      => True
         )
@@ -221,10 +223,10 @@ begin
             Clk                             => Clk,     
             Rst                             => Rst,    
             In_Valid                        => '1',  
-            In_Data(Width_c-1 downto 0)     => ToProc_Data,
-            In_Data(Width_c)                => ToProc_Valid,                                            
-            Out_Data(Width_c-1 downto 0)    => FromProc_Data,
-            Out_Data(Width_c)               => FromProc_Valid
+            In_Data(OutWidth_c-1 downto 0)  => ToProc_Data(OutWidth_c-1 downto 0),
+            In_Data(OutWidth_c)             => ToProc_Valid,                                            
+            Out_Data(OutWidth_c-1 downto 0) => FromProc_Data,
+            Out_Data(OutWidth_c)            => FromProc_Valid
         ); 
 
  	------------------------------------------------------------
@@ -234,7 +236,7 @@ begin
     begin
         wait until InputStart = '1' and rising_edge(Clk);
         for i in 0 to InputSize-1 loop
-            In_Data <= toUslv(i, Width_c);
+            In_Data <= toUslv(i, InWidth_c);
             In_Valid <= '1';
             wait until rising_edge(Clk) and In_Ready = '1';
             if InPauses > 0 and (i mod InPausesBurst = 0)then

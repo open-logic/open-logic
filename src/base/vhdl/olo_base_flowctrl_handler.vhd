@@ -22,7 +22,8 @@ library ieee;
 ------------------------------------------------------------------------------
 entity olo_base_flowctrl_handler is
     generic ( 
-        Width_g             : positive;
+        InWidth_g           : positive;
+        OutWidth_g          : positive;
         SamplesToAbsorb_g   : positive;                                                   
         RamStyle_g          : string    := "auto";       
         RamBehavior_g       : string    := "RBW"
@@ -32,18 +33,18 @@ entity olo_base_flowctrl_handler is
         Clk           : in  std_logic;
         Rst           : in  std_logic;
         -- Input Data
-        In_Data       : in  std_logic_vector(Width_g - 1 downto 0);
+        In_Data       : in  std_logic_vector(InWidth_g - 1 downto 0);
         In_Valid      : in  std_logic                                             := '1';
         In_Ready      : out std_logic;
         -- Output Data
-        Out_Data      : out std_logic_vector(Width_g - 1 downto 0);
+        Out_Data      : out std_logic_vector(OutWidth_g - 1 downto 0);
         Out_Valid     : out std_logic;
         Out_Ready     : in  std_logic                                             := '1';
         -- Data to Processing
-        ToProc_Data   : out std_logic_vector(Width_g - 1 downto 0);
+        ToProc_Data   : out std_logic_vector(InWidth_g - 1 downto 0);
         ToProc_Valid  : out std_logic;
         -- Data from Processing
-        FromProc_Data : in  std_logic_vector(Width_g - 1 downto 0);
+        FromProc_Data : in  std_logic_vector(OutWidth_g - 1 downto 0);
         FromProc_Valid: in  std_logic
     );
 end entity;
@@ -68,7 +69,7 @@ begin
     -- *** FIFO Instantiation ***
     i_fifo : entity work.olo_base_fifo_sync
         generic map ( 
-            Width_g         => Width_g,                
+            Width_g         => OutWidth_g,                
             Depth_g         => FifoDepth_c,                                 
             AlmEmptyOn_g    => true,      
             AlmEmptyLevel_g => FifoDepth_c/2,                 
