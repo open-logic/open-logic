@@ -166,7 +166,7 @@ architecture rtl of olo_axi_master_simple is
         AwFsmRdy        : std_logic;
         AwCmdSent       : std_logic;
         AwCmdSize       : unsigned(BeatsBits_c - 1 downto 0);
-        AwCmdSizeMin1   : unsigned(BeatsBits_c - 1 downto 0); -- 	AwCmdSize-1 for timing optimization reasons
+        AwCmdSizeMin1   : unsigned(BeatsBits_c - 1 downto 0); -- AwCmdSize-1 for timing optimization reasons
         WDataFifoWrite  : std_logic;
         -- Execute W Data
         WFsm            : WFsm_s;
@@ -203,7 +203,7 @@ architecture rtl of olo_axi_master_simple is
         ArFsmRdy        : std_logic;
         ArCmdSent       : std_logic;
         ArCmdSize       : unsigned(BeatsBits_c - 1 downto 0);
-        ArCmdSizeMin1   : unsigned(BeatsBits_c - 1 downto 0); -- 	ArCmdSize-1 for timing optimization reasons
+        ArCmdSizeMin1   : unsigned(BeatsBits_c - 1 downto 0); -- ArCmdSize-1 for timing optimization reasons
         RDataFifoRead   : std_logic;
         -- Write Response
         RdRespError     : std_logic;

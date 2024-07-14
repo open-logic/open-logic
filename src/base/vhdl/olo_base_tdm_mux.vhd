@@ -29,14 +29,14 @@ entity olo_base_tdm_mux is
         Width_g     : natural
     ); 
     port(   
-        Clk     	: in  std_logic;                                     
-        Rst     	: in  std_logic;                                        
-        In_ChSel  	: in  std_logic_vector(log2ceil(Channels_g)-1 downto 0); 
-        In_Valid 	: in  std_logic                                             := '1';              
-        In_Data 	: in  std_logic_vector(Width_g-1 downto 0); 
+        Clk         : in  std_logic;                                     
+        Rst         : in  std_logic;                                        
+        In_ChSel    : in  std_logic_vector(log2ceil(Channels_g)-1 downto 0); 
+        In_Valid    : in  std_logic                                             := '1';              
+        In_Data     : in  std_logic_vector(Width_g-1 downto 0); 
         In_Last     : in  std_logic                                             := '0';
-        Out_Valid 	: out std_logic;          
-        Out_Data 	: out std_logic_vector(Width_g-1 downto 0);
+        Out_Valid   : out std_logic;          
+        Out_Data    : out std_logic_vector(Width_g-1 downto 0);
         Out_Last    : out std_logic
     );
 end entity;

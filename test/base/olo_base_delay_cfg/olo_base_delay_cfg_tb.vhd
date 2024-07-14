@@ -13,9 +13,9 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
     context vunit_lib.com_context;
-	context vunit_lib.vc_context;
+    context vunit_lib.vc_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;
@@ -38,7 +38,7 @@ architecture sim of olo_base_delay_cfg_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant DataWidth_c   : integer := 16;
     constant MaxDelay_c    : integer := 20;
 
@@ -66,10 +66,10 @@ architecture sim of olo_base_delay_cfg_tb is
     shared variable StartChecking   : integer;
 
     -- *** Verification Compnents ***
-	constant axisMaster : axi_stream_master_t := new_axi_stream_master (
-		data_length => DataWidth_c,
-		stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
-	);
+    constant axisMaster : axi_stream_master_t := new_axi_stream_master (
+        data_length => DataWidth_c,
+        stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
+    );
 
     -- *** Procedures ***
     procedure PushN(signal net : inout network_t;
@@ -193,23 +193,23 @@ begin
             Out_Data    => Out_Data
         ); 
 
-	------------------------------------------------------------
-	-- Verification Components
-	------------------------------------------------------------
-	vc_stimuli : entity vunit_lib.axi_stream_master
-	generic map (
-	    master => axisMaster
-	)
-	port map (
-	    aclk   => Clk,
-	    tvalid => In_Valid,
+    ------------------------------------------------------------
+    -- Verification Components
+    ------------------------------------------------------------
+    vc_stimuli : entity vunit_lib.axi_stream_master
+    generic map (
+        master => axisMaster
+    )
+    port map (
+        aclk   => Clk,
+        tvalid => In_Valid,
         tready => '1',
-	    tdata  => In_Data
-	);
+        tdata  => In_Data
+    );
 
- 	------------------------------------------------------------
-	-- Custom Processes
-	------------------------------------------------------------   
+    ------------------------------------------------------------
+    -- Custom Processes
+    ------------------------------------------------------------
     p_checkout : process(Clk)
     begin
         if rising_edge(Clk) then

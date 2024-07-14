@@ -13,7 +13,7 @@ library ieee;
     use ieee.numeric_std.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;
@@ -36,7 +36,7 @@ end entity;
 architecture sim of olo_base_arb_prio_tb is
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant Width_c           : natural := 5;
 
     -------------------------------------------------------------------------
@@ -161,8 +161,8 @@ begin
     end process;
 
     ------------------------------------------------------------
-	-- Custom Processes
-	------------------------------------------------------------   
+    -- Custom Processes
+    ------------------------------------------------------------
     -- Check Grant after the expected latency
     CheckGrantDel <= transport CheckGrant after Latency_g*Clk_Period_c;
     ExpectedGrantDel <= transport ExpectedGrant after Latency_g*Clk_Period_c;

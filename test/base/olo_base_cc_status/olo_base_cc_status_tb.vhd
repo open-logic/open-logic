@@ -14,7 +14,7 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
 
 library work;
     use work.olo_test_activity_pkg.all;
@@ -37,7 +37,7 @@ architecture sim of olo_base_cc_status_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant ClockRatio_c : real    := real(ClockRatio_N_g) / real(ClockRatio_D_g);
     constant DataWidth_c  : integer := 8;
 

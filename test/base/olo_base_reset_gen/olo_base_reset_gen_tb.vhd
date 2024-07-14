@@ -13,7 +13,7 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
 
 library work;
     use work.olo_test_activity_pkg.all;
@@ -52,7 +52,7 @@ architecture sim of olo_base_reset_gen_tb is
 
     -------------------------------------------------------------------------
     -- TB Signals
-    -------------------------------------------------------------------------   
+    -------------------------------------------------------------------------
     signal LastRstA : time := 0 ns;
     signal LastRstB : time := 0 ns;
 
@@ -129,7 +129,7 @@ begin
                 for i in 0 to RstPulseCycles_g-1 loop
                     check_equal(RstOut, '1', "reset removed early");
                     wait until rising_edge(Clk);
-                end loop;				
+                end loop;               
                 wait for 0.1*Clk_Period_c;
                 check_equal(RstOut, '0', "reset removed late");
             end if;

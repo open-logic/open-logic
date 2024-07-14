@@ -13,9 +13,9 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
     context vunit_lib.com_context;
-	context vunit_lib.vc_context;
+    context vunit_lib.vc_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;
@@ -35,7 +35,7 @@ architecture sim of olo_base_strobe_div_fixratio_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant FreqClkHz_c    : real      := 100.0e6;
 
     -------------------------------------------------------------------------

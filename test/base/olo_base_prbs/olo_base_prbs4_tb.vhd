@@ -13,9 +13,9 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
     context vunit_lib.com_context;
-	context vunit_lib.vc_context;
+    context vunit_lib.vc_context;
 
 library olo;
     use olo.olo_base_pkg_array.all;
@@ -37,7 +37,7 @@ architecture sim of olo_base_prbs4_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant PrbsSequence_c     : std_logic_vector(14 downto 0) := "010110010001111";
     constant PrbsSequenceRep_c  : std_logic_vector(2*PrbsSequence_c'length-1 downto 0) := PrbsSequence_c & PrbsSequence_c;
     constant States_c : t_aslv4 (0 to PrbsSequence_c'high) := ( "1111", "1110", "1100", "1000", 
@@ -57,15 +57,15 @@ architecture sim of olo_base_prbs4_tb is
 
 
     -- *** Verification Compnents ***
-	constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
-		data_length => BitsPerSymbol_g,
-		stall_config => new_stall_config(0.5, 0, 10)
-	);
+    constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
+        data_length => BitsPerSymbol_g,
+        stall_config => new_stall_config(0.5, 0, 10)
+    );
 
     constant stateSlave : axi_stream_slave_t := new_axi_stream_slave (
-		data_length => 4,
-		stall_config => new_stall_config(0.0, 0, 0)
-	);
+        data_length => 4,
+        stall_config => new_stall_config(0.0, 0, 0)
+    );
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
@@ -170,28 +170,28 @@ begin
             State_Set       => State_Set
         ); 
 
-	------------------------------------------------------------
-	-- Verification Components
-	------------------------------------------------------------
-	vc_data : entity vunit_lib.axi_stream_slave
-	generic map (
-	    slave => axisSlave
-	)
-	port map (
-	    aclk   => Clk,
-	    tvalid => Out_Valid,
+    ------------------------------------------------------------
+    -- Verification Components
+    ------------------------------------------------------------
+    vc_data : entity vunit_lib.axi_stream_slave
+    generic map (
+        slave => axisSlave
+    )
+    port map (
+        aclk   => Clk,
+        tvalid => Out_Valid,
         tready => Out_Ready,
-	    tdata  => Out_Data
-	);
+        tdata  => Out_Data
+    );
 
-	vc_state : entity vunit_lib.axi_stream_slave
-	generic map (
-	    slave => stateSlave
-	)
-	port map (
-	    aclk   => Clk,
-	    tvalid => Out_Ready,
-	    tdata  => State_Current
-	);
+    vc_state : entity vunit_lib.axi_stream_slave
+    generic map (
+        slave => stateSlave
+    )
+    port map (
+        aclk   => Clk,
+        tvalid => Out_Ready,
+        tdata  => State_Current
+    );
 
 end sim;

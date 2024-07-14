@@ -44,11 +44,11 @@ package olo_base_pkg_logic is
     function grayToBinary(gray : in std_logic_vector) return std_logic_vector;
 
     -- Parallel Prefix Computation of the OR function
-    -- Input 	--> Output
-    -- 0100		--> 0111
-    -- 0101		--> 0111
-    -- 0011		--> 0011
-    -- 0010		--> 0011
+    -- Input --> Output
+    -- 0100  --> 0111
+    -- 0101  --> 0111
+    -- 0011  --> 0011
+    -- 0010  --> 0011
     function ppcOr(inp : in std_logic_vector) return std_logic_vector;
 
     function reduceOr(vec : in std_logic_vector) return std_logic;

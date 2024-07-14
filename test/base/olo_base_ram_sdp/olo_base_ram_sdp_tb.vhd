@@ -13,7 +13,7 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;
@@ -37,7 +37,7 @@ architecture sim of olo_base_ram_sdp_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant BeWidth_c      : integer := Width_g/8;
     constant BeSigWidth_c   : integer := maximum(BeWidth_c, 2); -- Must be at least 2 bits to avoid compile errors with GHDL.
                                                                 -- .. GHDL checks ranges also on code in a not executed if-clause.

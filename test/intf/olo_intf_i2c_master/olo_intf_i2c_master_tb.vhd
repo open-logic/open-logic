@@ -43,7 +43,7 @@ end entity olo_intf_i2c_master_tb;
 architecture sim of olo_intf_i2c_master_tb is
     -------------------------------------------------------------------------
     -- Fixed Generics
-    ------------------------------------------------------------------------- 
+    -------------------------------------------------------------------------
     constant Scl_Period_c     : time    := (1 sec) / real(BusFrequency_g); 
     constant BusBusyTimeout_c : real    := 200.0/ real(BusFrequency_g); 
     constant CmdTimeout_c     : real    := 50.0/ real(BusFrequency_g); 

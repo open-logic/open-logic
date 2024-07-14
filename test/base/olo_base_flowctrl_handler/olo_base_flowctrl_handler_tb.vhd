@@ -13,9 +13,9 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
     context vunit_lib.com_context;
-	context vunit_lib.vc_context;
+    context vunit_lib.vc_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;
@@ -35,7 +35,7 @@ architecture sim of olo_base_flowctrl_handler_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant OutWidth_c     : integer := 16;
     constant InWidth_c      : integer := 18;
     constant Delay_c        : integer := 7;
@@ -229,9 +229,9 @@ begin
             Out_Data(OutWidth_c)            => FromProc_Valid
         ); 
 
- 	------------------------------------------------------------
-	-- Custom Processes
-	------------------------------------------------------------   
+    ------------------------------------------------------------
+    -- Custom Processes
+    ------------------------------------------------------------
     p_send_counter : process
     begin
         wait until InputStart = '1' and rising_edge(Clk);

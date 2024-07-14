@@ -13,7 +13,7 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;

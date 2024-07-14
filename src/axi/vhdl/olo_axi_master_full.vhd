@@ -84,7 +84,7 @@ entity olo_axi_master_full is
         M_Axi_AwProt    : out std_logic_vector(2 downto 0); 
         M_Axi_AwValid   : out std_logic;
         M_Axi_AwReady   : in  std_logic                                                     := '0'; 
-        -- AXI Write Data Channel                                                           				
+        -- AXI Write Data Channel                                                           
         M_Axi_WData     : out std_logic_vector(AxiDataWidth_g - 1 downto 0);
         M_Axi_WStrb     : out std_logic_vector(AxiDataWidth_g / 8 - 1 downto 0);
         M_Axi_WLast     : out std_logic;

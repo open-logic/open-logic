@@ -13,7 +13,7 @@ library ieee;
     use ieee.numeric_std.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;
@@ -34,7 +34,7 @@ end entity;
 architecture sim of olo_base_arb_rr_tb is
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
 
     constant Width_c : natural := 5;
 

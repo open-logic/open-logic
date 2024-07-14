@@ -13,7 +13,7 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
 
 library work;
     use work.olo_test_activity_pkg.all;
@@ -36,7 +36,7 @@ architecture sim of olo_base_cc_reset_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant ClockRatio_c : real    := real(ClockRatio_N_g) / real(ClockRatio_D_g);
     constant DataWidth_c  : integer := 8;
 
@@ -63,7 +63,7 @@ architecture sim of olo_base_cc_reset_tb is
 
     -------------------------------------------------------------------------
     -- TB Signals
-    -------------------------------------------------------------------------   
+    -------------------------------------------------------------------------
     signal LastRstA : time := 0 ns;
     signal LastRstB : time := 0 ns;
 

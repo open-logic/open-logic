@@ -13,7 +13,7 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
 
 library work;
     use work.olo_test_activity_pkg.all;
@@ -38,7 +38,7 @@ architecture sim of olo_intf_debounce_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant DataWidth_c  : integer := 2;
 
     -------------------------------------------------------------------------

@@ -13,9 +13,9 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
     context vunit_lib.com_context;
-	context vunit_lib.vc_context;
+    context vunit_lib.vc_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;
@@ -38,7 +38,7 @@ architecture sim of olo_base_pl_stage_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant DataWidth_c  : integer := 16;
 
     -------------------------------------------------------------------------
@@ -54,14 +54,14 @@ architecture sim of olo_base_pl_stage_tb is
 
 
     -- *** Verification Compnents ***
-	constant axisMaster : axi_stream_master_t := new_axi_stream_master (
-		data_length => DataWidth_c,
-		stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
-	);
-	constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
-		data_length => DataWidth_c,
-		stall_config => new_stall_config(choose(RandomStall_g and UseReady_g, 0.5, 0.0), 0, 10)
-	);
+    constant axisMaster : axi_stream_master_t := new_axi_stream_master (
+        data_length => DataWidth_c,
+        stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
+    );
+    constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
+        data_length => DataWidth_c,
+        stall_config => new_stall_config(choose(RandomStall_g and UseReady_g, 0.5, 0.0), 0, 10)
+    );
 
     -- *** Procedures ***
     procedure Push100 (signal net : inout network_t) is
@@ -182,29 +182,29 @@ begin
             Out_Data    => Out_Data
         ); 
 
-	------------------------------------------------------------
-	-- Verification Components
-	------------------------------------------------------------
-	vc_stimuli : entity vunit_lib.axi_stream_master
-	generic map (
-	    master => axisMaster
-	)
-	port map (
-	    aclk   => Clk,
-	    tvalid => In_Valid,
+    ------------------------------------------------------------
+    -- Verification Components
+    ------------------------------------------------------------
+    vc_stimuli : entity vunit_lib.axi_stream_master
+    generic map (
+        master => axisMaster
+    )
+    port map (
+        aclk   => Clk,
+        tvalid => In_Valid,
         tready => In_Ready,
-	    tdata  => In_Data
-	);
+        tdata  => In_Data
+    );
   
-	vc_response : entity vunit_lib.axi_stream_slave
-	generic map (
-	    slave => axisSlave
-	)
-	port map (
-	    aclk   => Clk,
-	    tvalid => Out_Valid,
+    vc_response : entity vunit_lib.axi_stream_slave
+    generic map (
+        slave => axisSlave
+    )
+    port map (
+        aclk   => Clk,
+        tvalid => Out_Valid,
         tready => Out_Ready,
-	    tdata  => Out_Data   
-	);
+        tdata  => Out_Data   
+    );
 
 end sim;

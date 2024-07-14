@@ -13,7 +13,7 @@ library ieee;
     use ieee.numeric_std.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
     context vunit_lib.com_context;
     context vunit_lib.vc_context;
 
@@ -38,7 +38,7 @@ architecture sim of olo_base_cc_simple_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant ClockRatio_c : real    := real(ClockRatio_N_g) / real(ClockRatio_D_g);
     constant DataWidth_c  : integer := 8;
 
@@ -67,7 +67,7 @@ architecture sim of olo_base_cc_simple_tb is
 
     -------------------------------------------------------------------------
     -- Verification Components
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant slave_axi_stream : axi_stream_slave_t := new_axi_stream_slave (
         data_length => DataWidth_c,
         stall_config => new_stall_config(0.0, 0, 0)
@@ -98,14 +98,14 @@ begin
         );
 
     vc_response : entity vunit_lib.axi_stream_slave
-	    generic map (
-	        slave => slave_axi_stream
-	    )
-	    port map (
-	        aclk   => Out_Clk,
-	        tvalid => Out_Valid,
-	        tdata  => Out_Data
-	    );
+        generic map (
+            slave => slave_axi_stream
+        )
+        port map (
+            aclk   => Out_Clk,
+            tvalid => Out_Valid,
+            tdata  => Out_Data
+        );
   
 
     -------------------------------------------------------------------------

@@ -13,9 +13,9 @@ library ieee;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
     context vunit_lib.com_context;
-	context vunit_lib.vc_context;
+    context vunit_lib.vc_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;
@@ -36,7 +36,7 @@ architecture sim of olo_base_wconv_xn2n_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
+    -------------------------------------------------------------------------
     constant OutWidth_c     : natural   := 4;
     constant InWidth_c      : natural   := OutWidth_c*WidthRatio_g;    
     constant ClkPeriod_c    : time      := 10 ns;
@@ -47,15 +47,15 @@ architecture sim of olo_base_wconv_xn2n_tb is
     shared variable WordDelay : time := 0 ns;
 
     -- *** Verification Compnents ***
-	constant axisMaster : axi_stream_master_t := new_axi_stream_master (
-		data_length => InWidth_c,
+    constant axisMaster : axi_stream_master_t := new_axi_stream_master (
+        data_length => InWidth_c,
         user_length => WidthRatio_g,
-		stall_config => new_stall_config(0.0, 0, 0)
-	);
-	constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
-		data_length => OutWidth_c,
-		stall_config => new_stall_config(0.0, 0, 0)
-	);
+        stall_config => new_stall_config(0.0, 0, 0)
+    );
+    constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
+        data_length => OutWidth_c,
+        stall_config => new_stall_config(0.0, 0, 0)
+    );
 
     function CounterValue(start : integer) return std_logic_vector is
         variable x : std_logic_vector(InWidth_c-1 downto 0);
@@ -216,32 +216,32 @@ begin
             Out_Last    => Out_Last  
         ); 
 
-	------------------------------------------------------------
-	-- Verification Components
-	------------------------------------------------------------
-	vc_stimuli : entity vunit_lib.axi_stream_master
-	generic map (
-	    master => axisMaster
-	)
-	port map (
-	    aclk   => Clk,
-	    tvalid => In_Valid,
+    ------------------------------------------------------------
+    -- Verification Components
+    ------------------------------------------------------------
+    vc_stimuli : entity vunit_lib.axi_stream_master
+    generic map (
+        master => axisMaster
+    )
+    port map (
+        aclk   => Clk,
+        tvalid => In_Valid,
         tready => In_Ready,
-	    tdata  => In_Data,
+        tdata  => In_Data,
         tlast  => In_Last,
         tuser  => In_WordEna
-	);
+    );
   
-	vc_response : entity vunit_lib.axi_stream_slave
-	generic map (
-	    slave => axisSlave
-	)
-	port map (
-	    aclk   => Clk,
-	    tvalid => Out_Valid,
+    vc_response : entity vunit_lib.axi_stream_slave
+    generic map (
+        slave => axisSlave
+    )
+    port map (
+        aclk   => Clk,
+        tvalid => Out_Valid,
         tready => Out_Ready,
-	    tdata  => Out_Data,
+        tdata  => Out_Data,
         tlast  => Out_LAst 
-	);
+    );
 
 end sim;

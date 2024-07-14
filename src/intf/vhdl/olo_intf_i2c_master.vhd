@@ -1,7 +1,7 @@
 ------------------------------------------------------------------------------
---	Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
+--  Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
 --  Copyright (c) 2024 by Oliver Bründler
---	All rights reserved.
+--  All rights reserved.
 --  Authors: Oliver Bruendler
 ------------------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ library work;
 entity olo_intf_i2c_master is
     generic (
         ClkFrequency_g      : real; 
-        I2cFrequency_g      : real    := 100.0e3;	
+        I2cFrequency_g      : real    := 100.0e3;   
         BusBusyTimeout_g    : real    := 1.0e-3;
         CmdTimeout_g        : real    := 1.0e-3;         
         InternalTriState_g  : boolean := true;
@@ -266,7 +266,7 @@ begin
 
             -- Start Condition
             --------------------------------------------------------------------------------
-            -- State	BusBusy_s   Start1_s   Start2_s   WaitCmd_s
+            -- State    BusBusy_s   Start1_s   Start2_s   WaitCmd_s
             --        __________________________________
             -- Scl ...                                  |___________ ...
             --        _______________________
@@ -352,7 +352,7 @@ begin
 
             -- Repeated Start Condition
             --------------------------------------------------------------------------------
-            -- State	   RepStart1_s   Start1_s   Start2_s   WaitCmd_s
+            -- State       RepStart1_s   Start1_s   Start2_s   WaitCmd_s
             --                          _____________________
             -- Scl ..._________________|                     |___________ ...
             --           __________________________

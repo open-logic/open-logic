@@ -45,7 +45,7 @@ end entity olo_axi_master_full_tb;
 architecture sim of olo_axi_master_full_tb is
     -------------------------------------------------------------------------
     -- Fixed Generics
-    -------------------------------------------------------------------------   
+    -------------------------------------------------------------------------
     constant UserTransactionSizeBits_c   : natural      := 10; 
     constant AxiMaxBeats_c               : natural      := 32;
     constant DataFifoDepth_c             : natural      := 16;
@@ -74,7 +74,7 @@ architecture sim of olo_axi_master_full_tb is
 
     -------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------   
+    -------------------------------------------------------------------------
     subtype CmdAddrRange_r is natural range AxiAddrWidth_g-1 downto 0;
     subtype CmdSizeRange_r is natural range UserTransactionSizeBits_c+CmdAddrRange_r'high downto CmdAddrRange_r'high+1;
     constant CmdLowLat_r : natural := CmdSizeRange_r'high+1;
@@ -135,22 +135,22 @@ architecture sim of olo_axi_master_full_tb is
         addrWidth => AxiAddrWidth_g,
         idWidth => 0
     );
-	constant rdDataSlave : axi_stream_slave_t := new_axi_stream_slave (
-		data_length => UserDataWidth_g,
-		stall_config => new_stall_config(0.0, 0, 0)
-	);
+    constant rdDataSlave : axi_stream_slave_t := new_axi_stream_slave (
+        data_length => UserDataWidth_g,
+        stall_config => new_stall_config(0.0, 0, 0)
+    );
     constant wrCmdMaster : axi_stream_master_t := new_axi_stream_master (
-		data_length => AxiAddrWidth_g+UserTransactionSizeBits_c+1,
-		stall_config => new_stall_config(0.0, 0, 0)
-	);
+        data_length => AxiAddrWidth_g+UserTransactionSizeBits_c+1,
+        stall_config => new_stall_config(0.0, 0, 0)
+    );
     constant rdCmdMaster : axi_stream_master_t := new_axi_stream_master (
-		data_length => AxiAddrWidth_g+UserTransactionSizeBits_c+1,
-		stall_config => new_stall_config(0.0, 0, 0)
-	);
+        data_length => AxiAddrWidth_g+UserTransactionSizeBits_c+1,
+        stall_config => new_stall_config(0.0, 0, 0)
+    );
     constant wrDataMaster : axi_stream_master_t := new_axi_stream_master (
-		data_length => UserDataWidth_g,
-		stall_config => new_stall_config(0.0, 0, 0)
-	);
+        data_length => UserDataWidth_g,
+        stall_config => new_stall_config(0.0, 0, 0)
+    );
 
     -- Apply a Command
     procedure PushCommand(  signal net  : inout network_t;
@@ -581,16 +581,16 @@ begin
         );
 
     vc_rd_data : entity vunit_lib.axi_stream_slave
-	    generic map (
-	        slave => rdDataSlave
-	    )
-	    port map (
-	        aclk   => Clk,
-	        tvalid => Rd_Valid,
+        generic map (
+            slave => rdDataSlave
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => Rd_Valid,
             tready => Rd_Ready,
-	        tdata  => Rd_Data,
+            tdata  => Rd_Data,
             tlast  => Rd_Last   
-	    );
+        );
 
     b_wr_cmd : block
         signal TData : std_logic_vector(CmdLowLat_r downto 0);
