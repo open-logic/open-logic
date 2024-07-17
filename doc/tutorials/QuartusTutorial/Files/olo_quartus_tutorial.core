@@ -34,5 +34,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : v1.1
+  version : fusesoc-test
 
