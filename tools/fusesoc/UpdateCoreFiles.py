@@ -25,6 +25,11 @@ DESCRIPTIONS = {
     "axi" : "AXI related modules",
     "intf" : "Interfaces (e.g. I2C, synchronizer, SPI, ...)"
 }
+DEPENDENCIES = {
+    "base" : [],
+    "axi" : ["base"],
+    "intf" : ["base"]
+}
 
 #Jinja setup
 print(curdir)
@@ -52,7 +57,8 @@ for area in areas:
         "area" : area,
         "vhdlFiles" : vhdlFiles,
         "version" : VERSION,
-        "description" : DESCRIPTIONS[area]
+        "description" : DESCRIPTIONS[area],
+        "dependencies" : DEPENDENCIES[area]
     }
     rendered_template = template.render(data)
     with open(f"olo_{area}.core", "w+") as f:

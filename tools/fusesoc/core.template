@@ -10,6 +10,12 @@ filesets:
       - vhdl/{{file}}
     {%- endfor %}
     file_type : vhdlSource
+    {%- if dependencies %}
+    depend :
+    {%- for dep in dependencies %}
+      - "^open-logic:open-logic:{{dep}}:{{version}}"
+    {%- endfor %}
+    {%- endif %}
 
 
 targets:

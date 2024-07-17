@@ -11,6 +11,8 @@ filesets:
       - vhdl/olo_intf_clk_meas.vhd
       - vhdl/olo_intf_sync.vhd
     file_type : vhdlSource
+    depend :
+      - "^open-logic:open-logic:base:fusesoc-test"
 
 
 targets:
