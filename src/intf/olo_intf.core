@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : open-logic:open-logic:intf:fusesoc-test
+name : open-logic:open-logic:intf:2.0
 description : Interfaces (e.g. I2C, synchronizer, SPI, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#intf
 
 filesets:
@@ -12,7 +12,7 @@ filesets:
       - vhdl/olo_intf_sync.vhd
     file_type : vhdlSource
     depend :
-      - "^open-logic:open-logic:base:fusesoc-test"
+      - "^open-logic:open-logic:base:2.0"
 
 
 targets:

@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : open-logic:open-logic:axi:fusesoc-test
+name : open-logic:open-logic:axi:2.0
 description : AXI related modules see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#axi
 
 filesets:
@@ -13,7 +13,7 @@ filesets:
       - vhdl/olo_axi_pkg_protocol.vhd
     file_type : vhdlSource
     depend :
-      - "^open-logic:open-logic:base:fusesoc-test"
+      - "^open-logic:open-logic:base:2.0"
 
 
 targets:

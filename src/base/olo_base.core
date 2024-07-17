@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : open-logic:open-logic:base:fusesoc-test
+name : open-logic:open-logic:base:2.0
 description : Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base
 
 filesets:
