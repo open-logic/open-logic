@@ -1,0 +1,27 @@
+CAPI=2:
+
+name : open-logic:open-logic:axi:fusesoc-test
+description : AXI related modules see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#axi
+
+filesets:
+  rtl:
+    files:
+      - vhdl/olo_axi_master_simple.vhd
+      - vhdl/olo_axi_pl_stage.vhd
+      - vhdl/olo_axi_master_full.vhd
+      - vhdl/olo_axi_lite_slave.vhd
+      - vhdl/olo_axi_pkg_protocol.vhd
+    file_type : vhdlSource
+
+
+targets:
+  default:
+    filesets :
+      - rtl
+      
+provider:
+  name    : github
+  user    : open-logic
+  repo    : open-logic
+  version : fusesoc-test
+  
