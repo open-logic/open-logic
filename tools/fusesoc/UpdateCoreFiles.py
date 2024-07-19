@@ -68,6 +68,24 @@ for area in areas:
     # Navigate to src
     os.chdir("..")
 
+#Tutorials
+os.chdir("../doc/tutorials")
+data = {
+    "version": VERSION
+}
+# Vivado Tutorial
+os.chdir("VivadoTutorial/Files")
+template = env.get_template("olo_vivado_tutorial.template")
+rendered_template = template.render(data)
+with open(f"olo_vivado_tutorial.core", "w+") as f:
+    f.write(rendered_template)
+os.chdir("../..")
+#Quartus Tutorial
+os.chdir("QuartusTutorial/Files")
+template = env.get_template("olo_quartus_tutorial.template")
+rendered_template = template.render(data)
+with open(f"olo_quartus_tutorial.core", "w+") as f:
+    f.write(rendered_template)
 # Navigate back to tools
 os.chdir(curdir)
 
