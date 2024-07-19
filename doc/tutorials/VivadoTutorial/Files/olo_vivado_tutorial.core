@@ -6,11 +6,11 @@ filesets:
 
   zybo_z7:
     files:
-      - vivado_tutorial_fusesoc.vhd : {file_type : vhdlSource}
+      - vivado_tutorial.vhd : {file_type : vhdlSource}
       - pinout.xdc : {file_type : xdc}
       
   rtl:
-    files: [vivado_tutorial_fusesoc.vhd : {file_type : vhdlSource}]
+    files: [vivado_tutorial.vhd : {file_type : vhdlSource}]
     depend :
       - "open-logic:open-logic:base"
       - "open-logic:open-logic:intf"

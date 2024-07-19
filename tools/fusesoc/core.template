@@ -10,6 +10,7 @@ filesets:
       - vhdl/{{file}}
     {%- endfor %}
     file_type : vhdlSource
+    logical_name : olo
     {%- if dependencies %}
     depend :
     {%- for dep in dependencies %}

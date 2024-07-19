@@ -36,6 +36,7 @@ filesets:
       - vhdl/olo_base_cc_bits.vhd
       - vhdl/olo_base_cc_xn2n.vhd
     file_type : vhdlSource
+    logical_name : olo
 
 
 targets:

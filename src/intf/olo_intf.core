@@ -11,6 +11,7 @@ filesets:
       - vhdl/olo_intf_clk_meas.vhd
       - vhdl/olo_intf_sync.vhd
     file_type : vhdlSource
+    logical_name : olo
     depend :
       - "^open-logic:open-logic:base:2.0"
 

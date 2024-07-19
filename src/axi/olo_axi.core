@@ -12,6 +12,7 @@ filesets:
       - vhdl/olo_axi_lite_slave.vhd
       - vhdl/olo_axi_pkg_protocol.vhd
     file_type : vhdlSource
+    logical_name : olo
     depend :
       - "^open-logic:open-logic:base:2.0"
 
