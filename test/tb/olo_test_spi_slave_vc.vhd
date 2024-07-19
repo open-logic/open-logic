@@ -31,6 +31,8 @@ package olo_test_spi_slave_pkg is
         LsbFirst        : boolean;
         MaxTransWidth   : positive;
         BusFrequency    : real;
+        CPHA            : integer range 0 to 1;
+        CPOL            : integer range 0 to 1;
     end record;
 
     -- *** Master Operations ***
@@ -38,12 +40,12 @@ package olo_test_spi_slave_pkg is
     -- Transaction
     procedure spi_slave_push_transaction (
         signal net          : inout network_t;
-        spi                 : olo_test_spi_t;
+        spi                 : olo_test_spi_slave_t;
         transaction_bits    : positive;
         data_mosi           : std_logic_vector  := "X";
         data_miso           : std_logic_vector  := "X";
         timeout             : time              := 1 ms;
-        msg             : string                := ""
+        msg                 : string                := ""
     );
 
     -- *** VUnit Operations ***
@@ -54,7 +56,9 @@ package olo_test_spi_slave_pkg is
     impure function new_olo_test_spi_slave( 
         busFrequency    : real    := 1.0e6;
         lsbFirst        : boolean := false;
-        maxTransWidth   : natural := 32) return olo_test_spi_slave_t;
+        maxTransWidth   : natural := 32;
+        cpha            : integer range 0 to 1 := 0;
+        cpol            : integer range 0 to 1 := 0) return olo_test_spi_slave_t;
         
     -- Casts
     impure function as_sync(instance : olo_test_spi_slave_t) return sync_handle_t;
@@ -68,7 +72,7 @@ package body olo_test_spi_slave_pkg is
     -- Transaction
     procedure spi_slave_push_transaction (
         signal net          : inout network_t;
-        spi                 : olo_test_spi_t;
+        spi                 : olo_test_spi_slave_t;
         transaction_bits    : positive;
         data_mosi           : std_logic_vector  := "X";
         data_miso           : std_logic_vector  := "X";
@@ -97,19 +101,23 @@ package body olo_test_spi_slave_pkg is
         push_string(request_msg, msg);
         
         -- Send message
-        send(net, spi.p_actor, SpiSlavePushTransactionMsg, request_msg);
+        send(net, spi.p_actor, request_msg);
     end;
 
     -- Constructor
     impure function new_olo_test_spi_slave( 
         busFrequency    : real    := 1.0e6;
         lsbFirst        : boolean := false;
-        maxTransWidth   : natural := 32) return olo_test_spi_slave_t is
+        maxTransWidth   : natural := 32;
+        cpha            : integer range 0 to 1 := 0;
+        cpol            : integer range 0 to 1 := 0) return olo_test_spi_slave_t is
     begin
         return (p_actor => new_actor, 
                 LsbFirst => lsbFirst,
                 MaxTransWidth => maxTransWidth,
-                BusFrequency => busFrequency);
+                BusFrequency => busFrequency,
+                CPHA => cpha,
+                CPOL => cpol);
     end;
         
     -- Casts
@@ -168,6 +176,10 @@ begin
         variable timeout            : time;
         variable msg_p              : string_ptr_t;
 
+        -- Shift Registers
+        variable ShiftRegRx_v : std_logic_vector(instance.MaxTransWidth-1 downto 0);
+        variable ShiftRegTx_v : std_logic_vector(instance.MaxTransWidth-1 downto 0);
+
     begin
         -- Initialization
         Miso <= 'Z';
@@ -187,10 +199,61 @@ begin
                 timeout := pop(request_msg);
                 msg_p := new_string_ptr(pop_string(request_msg));
 
-                -- Implement transaction
+                -- Wait for CSn
+                WaitForValueStdl(Cs_n, '0', timeout, to_string(msg_p));
+                ShiftRegTx_v := data_miso;
+                ShiftRegRx_v := (others => 'U');              
 
-              
-	
+                -- loop over bits
+                for i in 0 to transaction_bits - 1 loop
+
+                    -- Wait for apply edge 
+                    if (instance.CPHA = 1) and (i /= transaction_bits - 1) then
+                        if instance.CPOL = 0 then
+                            wait until rising_edge(Sclk);
+                        else
+                            wait until falling_edge(Sclk);
+                        end if;
+                    elsif (instance.CPHA = 0) and (i /= 0) then
+                        if instance.CPOL = 0 then
+                            wait until falling_edge(Sclk);
+                        else
+                            wait until rising_edge(Sclk);
+                        end if;
+                    end if;
+
+                    -- shift TX
+                    if instance.LsbFirst then
+                        Miso <= ShiftRegTx_v(0);
+                        ShiftRegTx_v := 'U' & ShiftRegTx_v(instance.MaxTransWidth - 1 downto 1);
+                    else
+                        Miso <= ShiftRegTx_v(transaction_bits - 1);
+                        ShiftRegTx_v := ShiftRegTx_v(instance.MaxTransWidth - 2 downto 0) & 'U';
+                    end if;
+
+                    -- Wait for transfer edge
+                    if ((instance.CPOL = 0) and (instance.CPHA = 0)) or ((instance.CPOL = 1) and (instance.CPHA = 1)) then
+                        wait until rising_edge(Sclk);
+                    else
+                        wait until falling_edge(Sclk);
+                    end if;
+
+                    -- Shift RX
+                    if instance.LsbFirst then
+                        ShiftRegRx_v := 'U' & ShiftRegRx_v(instance.MaxTransWidth - 1 downto 1);
+                        ShiftRegRx_v(transaction_bits - 1) := Mosi;
+                    else
+                        ShiftRegRx_v := ShiftRegRx_v(instance.MaxTransWidth - 2 downto 0) & Mosi;
+                    end if;
+
+                end loop;
+
+                -- wait fir CS going high
+                WaitForValueStdl(Cs_n, '1', timeout, to_string(msg_p));
+                Miso <= 'Z';
+
+                -- checks
+                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_mosi, "SPI slave received wrong data");	
 
             elsif msg_type = wait_until_idle_msg then
                 handle_wait_until_idle(net, msg_type, request_msg);

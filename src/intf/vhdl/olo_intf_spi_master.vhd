@@ -67,7 +67,7 @@ architecture rtl of olo_intf_spi_master is
 
     -- *** Constants ***
     constant ClkDiv_c         : natural := integer(round(ClkFreq_g/SclkFreq_g));
-    constant ClkDivThres_c    : natural := ClockDiv_c / 2 - 1;
+    constant ClkDivThres_c    : natural := ClkDiv_c / 2 - 1;
     constant CsHighCycles_c   : natural := integer(ceil(ClkFreq_g*CsHighTime_g));
     constant SclkFreqResult_c : real    := ClkFreq_g/(2.0*real(ClkDivThres_c+1));
 
