@@ -68,6 +68,8 @@ open-logic:tutorials:vivado_tutorial:1.0  :      empty : vivado tutorial for ope
 
 ```
 
+**Note:** Like for all other tool integrations, Open Logic entities are compiled into the library *olo* and can be instantiated using e.g. `i_fifo : entity olo.olo_base_fifo_sync`.
+
 ## ... Run Simulations
 
 If you want to run simulations on your PC, you need the following prerequisites:
