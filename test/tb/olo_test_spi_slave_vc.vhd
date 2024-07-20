@@ -79,7 +79,7 @@ package body olo_test_spi_slave_pkg is
         timeout             : time              := 1 ms;
         msg                 : string            := ""
     ) is
-        variable request_msg    : msg_t;
+        variable Msg_v : msg_t := new_msg(SpiSlavePushTransactionMsg);
         variable mosi_v : std_logic_vector(spi.MaxTransWidth-1 downto 0) := (others => '0');
         variable miso_v : std_logic_vector(spi.MaxTransWidth-1 downto 0) := (others => 'X');
     begin
@@ -94,14 +94,14 @@ package body olo_test_spi_slave_pkg is
         end if;
 
         -- Create message
-        push(request_msg, transaction_bits);
-        push(request_msg, mosi_v);
-        push(request_msg, miso_v);
-        push(request_msg, timeout);
-        push_string(request_msg, msg);
+        push(Msg_v, transaction_bits);
+        push(Msg_v, mosi_v);
+        push(Msg_v, miso_v);
+        push(Msg_v, timeout);
+        push_string(Msg_v, msg);
         
         -- Send message
-        send(net, spi.p_actor, request_msg);
+        send(net, spi.p_actor, Msg_v);
     end;
 
     -- Constructor
@@ -180,6 +180,9 @@ begin
         variable ShiftRegRx_v : std_logic_vector(instance.MaxTransWidth-1 downto 0);
         variable ShiftRegTx_v : std_logic_vector(instance.MaxTransWidth-1 downto 0);
 
+        -- Others
+        variable LastEdge_v   : time;
+
     begin
         -- Initialization
         Miso <= 'Z';
@@ -237,6 +240,11 @@ begin
                     else
                         wait until falling_edge(Sclk);
                     end if;
+                    -- Check sclk timing
+                    if i /= 0 then
+                        check_equal(real((now-LastEdge_v)/(1.0 ps))/1.0e12, 1.0/instance.BusFrequency, max_diff => 0.1/instance.BusFrequency, msg => "Sclk timing");
+                    end if;
+                    LastEdge_v := now;
 
                     -- Shift RX
                     if instance.LsbFirst then
@@ -253,7 +261,7 @@ begin
                 Miso <= 'Z';
 
                 -- checks
-                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_mosi, "SPI slave received wrong data");	
+                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_mosi(transaction_bits - 1 downto 0), "SPI slave received wrong data");	
 
             elsif msg_type = wait_until_idle_msg then
                 handle_wait_until_idle(net, msg_type, request_msg);

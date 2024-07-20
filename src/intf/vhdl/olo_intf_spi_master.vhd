@@ -39,20 +39,21 @@ entity olo_intf_spi_master is
     );
     port (
         -- Control Signals
-        Clk        : in  std_logic; 
-        Rst        : in  std_logic;
-        -- Parallel Interface
-        Start      : in  std_logic;
-        Slave      : in  std_logic_vector(log2ceil(SlaveCnt_g) - 1 downto 0)        := (others => '0');
-        Busy       : out std_logic;
-        Done       : out std_logic;
-        WrData     : in  std_logic_vector(MaxTransWidth_g - 1 downto 0)             := (others => '0');
-        RdData     : out std_logic_vector(MaxTransWidth_g - 1 downto 0);
-        TransWidth : in  std_logic_vector(log2ceil(MaxTransWidth_g+1)-1 downto 0)   := toUslv(MaxTransWidth_g, log2ceil(MaxTransWidth_g+1));
+        Clk             : in  std_logic; 
+        Rst             : in  std_logic;
+        -- Command Interface
+        Cmd_Valid       : in  std_logic;
+        Cmd_Ready       : out std_logic;
+        Cmd_Slave       : in  std_logic_vector(log2ceil(SlaveCnt_g) - 1 downto 0)        := (others => '0');
+        Cmd_WrData      : in  std_logic_vector(MaxTransWidth_g - 1 downto 0)             := (others => '0');
+        Cmd_TransWidth  : in  std_logic_vector(log2ceil(MaxTransWidth_g+1)-1 downto 0)   := toUslv(MaxTransWidth_g, log2ceil(MaxTransWidth_g+1));
+        -- Response Interface
+        Resp_Valid      : out std_logic;
+        Resp_RdData     : out std_logic_vector(MaxTransWidth_g - 1 downto 0);
         -- SPI 
         SpiSclk    : out std_logic;
         SpiMosi    : out std_logic;
-        SpiMiso    : in  std_logic                                                   := '0';
+        SpiMiso    : in  std_logic                                                        := '0';
         SpiCs_n    : out std_logic_vector(SlaveCnt_g - 1 downto 0)
     );
 end entity;
@@ -86,7 +87,7 @@ architecture rtl of olo_intf_spi_master is
         Busy      : std_logic;
         Done      : std_logic;
         MosiNext  : std_logic;
-        TransWidth: std_logic_vector(log2ceil(MaxTransWidth_g) downto 0);
+        TransWidth: integer range 0 to MaxTransWidth_g;
     end record;
     signal r, r_next : two_process_r;
 
@@ -111,13 +112,15 @@ architecture rtl of olo_intf_spi_master is
     procedure ShiftReg(signal BeforeShift  : in std_logic_vector(MaxTransWidth_g-1 downto 0);
                        variable AfterShift : out std_logic_vector(MaxTransWidth_g-1 downto 0);
                        signal InputBit     : in std_logic;
-                       variable OutputBit  : out std_logic) is
+                       variable OutputBit  : out std_logic;
+                                TransWidth : in integer range 0 to MaxTransWidth_g) is
     begin
         if LsbFirst_g then
             OutputBit  := BeforeShift(0);
-            AfterShift := InputBit & BeforeShift(BeforeShift'high downto 1);
+            AfterShift := '0' & BeforeShift(BeforeShift'high downto 1);
+            AfterShift(TransWidth-1) := InputBit;
         else
-            OutputBit  := BeforeShift(BeforeShift'high);
+            OutputBit  := BeforeShift(TransWidth-1);
             AfterShift := BeforeShift(BeforeShift'high - 1 downto 0) & InputBit;
         end if;
     end procedure;
@@ -131,7 +134,7 @@ begin
     --------------------------------------------------------------------------
     -- Combinatorial Proccess
     --------------------------------------------------------------------------
-    p_comb : process(r, Start, WrData, SpiMiso, Slave, TransWidth)
+    p_comb : process(r, Cmd_Valid, Cmd_WrData, SpiMiso, Cmd_Slave, Cmd_TransWidth)
         variable v : two_process_r;
     begin
         -- *** hold variables stable ***
@@ -144,12 +147,12 @@ begin
         case r.State is
             when Idle_s =>
                 -- Start of Transfer
-                if Start = '1' then
-                    v.ShiftReg                             := WrData;
-                    v.SpiCs_n(to_integer(unsigned(Slave))) := '0';
-                    v.State                                := SftComp_s;
-                    v.Busy                                 := '1';
-                    v.TransWidth                           := TransWidth;
+                if Cmd_Valid = '1' then
+                    v.ShiftReg                                  := Cmd_WrData;
+                    v.SpiCs_n(to_integer(unsigned(Cmd_Slave)))  := '0';
+                    v.State                                     := SftComp_s;
+                    v.Busy                                      := '1';
+                    v.TransWidth                                := fromUslv(Cmd_TransWidth);
                 end if;
                 v.CsHighCnt := 0;
                 v.ClkDivCnt := 0;
@@ -159,7 +162,7 @@ begin
                 v.State := ClkInact_s;
                 -- Compensate shift for CPHA 0
                 if SpiCPHA_g = 0 then
-                    ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso, v.MosiNext);
+                    ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso, v.MosiNext, r.TransWidth);
                 end if;
 
             when ClkInact_s =>
@@ -169,13 +172,13 @@ begin
                     if SpiCPHA_g = 0 then
                         v.SpiMosi := r.MosiNext;
                     else
-                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso, v.MosiNext);
+                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso, v.MosiNext, r.TransWidth);
                     end if;
                 end if;
                 -- Clock period handling
                 if r.ClkDivCnt = ClkDivThres_c then
                     -- All bits done
-                    if r.BitCnt = to_integer(unsigned(r.TransWidth)) then
+                    if r.BitCnt = r.TransWidth then
                         v.SpiMosi := MosiIdleState_g;
                         v.State   := CsHigh_s;
                     -- Otherwise contintue
@@ -194,7 +197,7 @@ begin
                     if SpiCPHA_g = 1 then
                         v.SpiMosi := r.MosiNext;
                     else
-                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso, v.MosiNext);
+                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso, v.MosiNext, r.TransWidth);
                     end if;
                 end if;
                 -- Clock period handling
@@ -229,12 +232,12 @@ begin
     --------------------------------------------------------------------------
     -- Outputs
     --------------------------------------------------------------------------
-    Busy    <= r.Busy;
-    Done    <= r.Done;
-    RdData  <= r.RdData;
-    SpiSclk  <= r.SpiSclk;
-    SpiCs_n <= r.SpiCs_n;
-    SpiMosi <= r.SpiMosi;
+    Cmd_Ready     <= not r.Busy;
+    Resp_Valid    <= r.Done;
+    Resp_RdData   <= r.RdData;
+    SpiSclk       <= r.SpiSclk;
+    SpiCs_n       <= r.SpiCs_n;
+    SpiMosi       <= r.SpiMosi;
 
     --------------------------------------------------------------------------
     -- Sequential Proccess

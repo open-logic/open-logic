@@ -31,7 +31,7 @@ library work;
 -- Entity
 ------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_intf_spi_master_tb is
+entity olo_intf_spi_master_fixsize_tb is
     generic (
         BusFrequency_g              : integer := 10_000_000;
         LsbFirst_g                  : boolean := false;
@@ -39,17 +39,17 @@ entity olo_intf_spi_master_tb is
         SpiCpol_g                   : integer range 0 to 1 := 0;
         runner_cfg                  : string  
     );
-end entity olo_intf_spi_master_tb;
+end entity olo_intf_spi_master_fixsize_tb;
 
-architecture sim of olo_intf_spi_master_tb is
+architecture sim of olo_intf_spi_master_fixsize_tb is
     -------------------------------------------------------------------------
     -- Fixed Generics
     ------------------------------------------------------------------------- 
     constant SclkFreq_c      : real                      := real(BusFrequency_g);
-    constant MaxTransWidth_c : positive                  := 32;
+    constant MaxTransWidth_c : positive                  := 8;
     constant CsHighTime_c    : real                      := 100.0e-9;
-    constant SlaveCnt_c      : positive                  := 2;
     constant MosiIdleState_c : std_logic                 := '0';
+    constant SlaveCnt_c      : integer                   := 1;
 
     -------------------------------------------------------------------------
     -- TB Defnitions
@@ -65,9 +65,7 @@ architecture sim of olo_intf_spi_master_tb is
     signal Rst             : std_logic                                                  := '0';
     signal Cmd_Valid       : std_logic                                                  := '0';
     signal Cmd_Ready       : std_logic;
-    signal Cmd_Slave       : std_logic_vector(log2ceil(SlaveCnt_c) - 1 downto 0)        := (others => '0');
     signal Cmd_WrData      : std_logic_vector(MaxTransWidth_c - 1 downto 0)             := (others => '0');
-    signal Cmd_TransWidth  : std_logic_vector(log2ceil(MaxTransWidth_c+1)-1 downto 0)   := (others => '0');
     signal Resp_Valid      : std_logic;    
     signal Resp_RdData     : std_logic_vector(MaxTransWidth_c - 1 downto 0);    
     signal SpiSclk         : std_logic;
@@ -88,29 +86,17 @@ architecture sim of olo_intf_spi_master_tb is
         cpol            => SpiCpol_g
     );
 
-    constant slave1 : olo_test_spi_slave_t := new_olo_test_spi_slave( 
-        busFrequency    => SclkFreq_c,
-        lsbFirst        => LsbFirst_g,
-        maxTransWidth   => MaxTransWidth_c,
-        cpha            => SpiCpha_g,
-        cpol            => SpiCpol_g
-    );
-
     procedure SendCommand(
         SlaveIdx        : integer;
         TxData          : std_logic_vector;
-        signal Cmd_Slave    : out std_logic_vector;
         signal Cmd_Valid    : out std_logic;
-        signal Cmd_WrData   : out std_logic_vector;
-        signal Cmd_TransWidth : out std_logic_vector
+        signal Cmd_WrData   : out std_logic_vector
     ) is
     begin
         wait until rising_edge(Clk);
         check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
-        Cmd_Slave <= toUslv(SlaveIdx, Cmd_Slave'length);
         Cmd_Valid <= '1';
         Cmd_WrData(TxData'high downto 0) <= TxData;
-        Cmd_TransWidth <= toUslv(TxData'length, Cmd_TransWidth'length);
         wait until rising_edge(Clk);
         Cmd_Valid <= '0';
         wait until falling_edge(Clk);
@@ -134,8 +120,7 @@ begin
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 50 ms);
     p_control : process
-        variable Tx32_v, Rx32_v : std_logic_vector(31 downto 0);
-        variable Tx16_v, Rx16_v : std_logic_vector(15 downto 0);
+        variable Tx8_v, Rx8_v : std_logic_vector(7 downto 0);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -162,65 +147,18 @@ begin
             -- *** Transfers ***
             if run("FullWidthTransfer") then
                 -- Cmd_Slave Expectation
-                Tx32_v := X"12345678";
-                Rx32_v := X"DEADBEEF";
-                spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => Tx32_v, data_miso => Rx32_v);
+                Tx8_v := X"12";
+                Rx8_v := X"AB";
+                spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => Tx8_v, data_miso => Rx8_v);
 
                 -- Send command
-                SendCommand(0, Tx32_v, Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
-                CheckResponse(Rx32_v);
-            end if;
-
-            if run("ReducedWidthTransfer") then
-                -- Cmd_Slave Expectation
-                Tx16_v := X"11AA";
-                Rx16_v := X"EE33";
-                spi_slave_push_transaction (net, slave0, 16, data_mosi => Tx16_v, data_miso => Rx16_v);
-
-                -- Send command
-                SendCommand(0, Tx16_v, Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
-                CheckResponse(Rx16_v);
-            end if;
-
-            -- *** Cmd_Slave Selection ***
-            if run("SlaveSelection") then
-                -- Cmd_Slave Expectation
-                spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => X"11111111", data_miso => X"22222222");
-                spi_slave_push_transaction (net, slave1, MaxTransWidth_c, data_mosi => X"33333333", data_miso => X"44444444");
-
-                -- Cmd_Slave 1 Transfer
-                SendCommand(1, X"33333333", Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
-                CheckResponse(X"44444444");
-
-                -- Cmd_Slave 0 Transfer
-                SendCommand(0, X"11111111", Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
-                CheckResponse(X"22222222");               
-            end if;       
-
-            -- *** Edge Cases ***
-            if run("Cmd_ValidWhileBusy") then
-                -- Cmd_Slave Expectation
-                spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => X"AAAAAAAA", data_miso => X"BBBBBBBB");
-                spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => X"CCCCCCCC", data_miso => X"DDDDDDDD");
-
-                -- Send command 1 (and start during busy)
-                SendCommand(0, X"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
-                check_equal(Cmd_Ready, '0', "Cmd_Ready not de-asserted");
-                wait until rising_edge(Clk);
-                Cmd_Valid <= '1';
-                wait until rising_edge(Clk);
-                Cmd_Valid <= '0';
-                CheckResponse(X"BBBBBBBB");
-
-                -- Send Command 2
-                SendCommand(0, X"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
-                CheckResponse(X"DDDDDDDD");
+                SendCommand(0, Tx8_v, Cmd_Valid, Cmd_WrData);
+                CheckResponse(Rx8_v);
             end if;
 
 
             -- *** Wait until done ***
             wait_until_idle(net, as_sync(slave0));
-            wait_until_idle(net, as_sync(slave1));
             wait for 10 us;
 
         end loop;
@@ -254,9 +192,7 @@ begin
             Rst        => Rst,   
             -- Command Interface
             Cmd_Valid      => Cmd_Valid,
-            Cmd_Slave      => Cmd_Slave,
             Cmd_Ready      => Cmd_Ready,
-            Cmd_TransWidth => Cmd_TransWidth,
             Cmd_WrData     => Cmd_WrData,
             -- Response interface
             Resp_Valid     => Resp_Valid,
@@ -278,17 +214,6 @@ begin
         port map (
             Sclk     => SpiSclk,
             CS_n     => SpiCs_n(0),
-            Mosi     => SpiMosi,
-            Miso     => SpiMiso
-        );
-
-    vc_slave1 : entity work.olo_test_spi_slave_vc
-        generic map (
-            instance => slave1
-        )
-        port map (
-            Sclk     => SpiSclk,
-            CS_n     => SpiCs_n(1),
             Mosi     => SpiMosi,
             Miso     => SpiMiso
         );
