@@ -71,6 +71,7 @@ namespace eval olo_import_sources {
 	add_files -fileset constrs_1 -norecurse $oloDir/olo_scoped_constraints.tcl
 	set_property used_in_synthesis false [get_files $oloDir/olo_scoped_constraints.tcl]
 	set_property used_in_simulation false [get_files $oloDir/olo_scoped_constraints.tcl]
+	set_property PROCESSING_ORDER LATE [get_files $oloDir/olo_scoped_constraints.tcl]
 }
 
 
