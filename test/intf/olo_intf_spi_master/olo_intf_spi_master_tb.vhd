@@ -141,8 +141,6 @@ begin
 
         while test_suite loop
 
-            -- TODO: Check RLast
-
             -- Reset
             wait until rising_edge(Clk);
             Rst <= '1';

@@ -91,6 +91,19 @@ architecture rtl of olo_intf_spi_master is
     end record;
     signal r, r_next : two_process_r;
 
+    -- Signal required for automatic constraining
+    signal SpiMiso_i : std_logic;
+    -- Synthesis attributes Intel
+    attribute dont_merge : boolean;
+    attribute dont_merge of SpiMiso_i : signal is true;
+    attribute preserve : boolean;
+    attribute preserve of SpiMiso_i : signal is true;
+    -- Synthesis attributes for AMD
+    attribute keep : string;
+    attribute keep of SpiMiso_i : signal is "TRUE";
+    attribute dont_touch : string;
+    attribute dont_touch of SpiMiso_i : signal is "TRUE";
+
     -- *** Functions and procedures ***
     function GetClockLevel(ClkActive : boolean) return std_logic is
     begin
@@ -134,7 +147,8 @@ begin
     --------------------------------------------------------------------------
     -- Combinatorial Proccess
     --------------------------------------------------------------------------
-    p_comb : process(r, Cmd_Valid, Cmd_WrData, SpiMiso, Cmd_Slave, Cmd_TransWidth)
+    SpiMiso_i <= SpiMiso;
+    p_comb : process(r, Cmd_Valid, Cmd_WrData, SpiMiso_i, Cmd_Slave, Cmd_TransWidth)
         variable v : two_process_r;
     begin
         -- *** hold variables stable ***
@@ -162,7 +176,7 @@ begin
                 v.State := ClkInact_s;
                 -- Compensate shift for CPHA 0
                 if SpiCPHA_g = 0 then
-                    ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso, v.MosiNext, r.TransWidth);
+                    ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                 end if;
 
             when ClkInact_s =>
@@ -172,7 +186,7 @@ begin
                     if SpiCPHA_g = 0 then
                         v.SpiMosi := r.MosiNext;
                     else
-                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso, v.MosiNext, r.TransWidth);
+                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                     end if;
                 end if;
                 -- Clock period handling
@@ -197,7 +211,7 @@ begin
                     if SpiCPHA_g = 1 then
                         v.SpiMosi := r.MosiNext;
                     else
-                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso, v.MosiNext, r.TransWidth);
+                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                     end if;
                 end if;
                 -- Clock period handling
