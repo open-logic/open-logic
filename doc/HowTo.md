@@ -43,6 +43,33 @@ That's it. Nothing more.
 
 Because Quartus does not support scoped constraints, **NO** constraints are important. They have to be created manually - more information can be found in the documentation of individual *Open Logic* entities which require constraints.
 
+## ... Use Open Logic through FuseSoC
+
+[FuseSoC](https://github.com/olofk/fusesoc) is a package manager and build system for HDL projects. Open Logic supports fuse-soc. To use Open Logic through fusesoc, just add open logic as a library:
+
+```
+fusesoc library add https://github.com/open-logic/open-logic
+```
+
+You should now get one package listed for every area in Open Logic. You can us them independently (dependencies are modelled in FuseSoC correctly and resolved automatically). You also see the tutorials being available and buildable through FuseSoC.
+
+```
+user$ fusesoc core list
+
+Available cores:
+
+Core                                       Cache status  Description
+================================================================================
+open-logic:open-logic:axi:2.0             :      empty : AXI related modules 
+open-logic:open-logic:base:2.0            : downloaded : Basic Circuitry (e.g. FIFOs, CDCs, ...) 
+open-logic:open-logic:intf:2.0            : downloaded : Interfaces (e.g. I2C, synchronizer, SPI, ...) 
+open-logic:tutorials:quartus_tutorial:1.0 :      empty : quartus tutorial for open-logic, targetting DE0-CV board
+open-logic:tutorials:vivado_tutorial:1.0  :      empty : vivado tutorial for open-logic, targetting Zybo Z7-10 board
+
+```
+
+**Note:** Like for all other tool integrations, Open Logic entities are compiled into the library *olo* and can be instantiated using e.g. `i_fifo : entity olo.olo_base_fifo_sync`.
+
 ## ... Run Simulations
 
 If you want to run simulations on your PC, you need the following prerequisites:
