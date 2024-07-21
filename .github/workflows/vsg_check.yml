@@ -1,0 +1,26 @@
+name: simulation
+run-name: ${{ github.actor }} is VSG Linter (Check)
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1'
+  
+  
+jobs:
+  vsg-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup node
+        uses: actions/setup-node@v4
+      - name: Run VSG Linter (Check)
+        run: |
+         source ./.github/workflows/install_python.sh
+         source ./.github/workflows/run_vsg_check.sh
+         echo "VSG Linter Check Done"
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vsg-report
+          path: ./lint/report/
