@@ -44,7 +44,7 @@ end entity olo_intf_spi_master_fixsize_tb;
 architecture sim of olo_intf_spi_master_fixsize_tb is
     -------------------------------------------------------------------------
     -- Fixed Generics
-    ------------------------------------------------------------------------- 
+    -------------------------------------------------------------------------
     constant SclkFreq_c      : real                      := real(BusFrequency_g);
     constant MaxTransWidth_c : positive                  := 8;
     constant CsHighTime_c    : real                      := 100.0e-9;
