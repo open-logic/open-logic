@@ -45,16 +45,16 @@ entity olo_intf_spi_master is
         Cmd_Valid       : in  std_logic;
         Cmd_Ready       : out std_logic;
         Cmd_Slave       : in  std_logic_vector(log2ceil(SlaveCnt_g) - 1 downto 0)        := (others => '0');
-        Cmd_WrData      : in  std_logic_vector(MaxTransWidth_g - 1 downto 0)             := (others => '0');
+        Cmd_Data        : in  std_logic_vector(MaxTransWidth_g - 1 downto 0)             := (others => '0');
         Cmd_TransWidth  : in  std_logic_vector(log2ceil(MaxTransWidth_g+1)-1 downto 0)   := toUslv(MaxTransWidth_g, log2ceil(MaxTransWidth_g+1));
         -- Response Interface
         Resp_Valid      : out std_logic;
-        Resp_RdData     : out std_logic_vector(MaxTransWidth_g - 1 downto 0);
+        Resp_Data       : out std_logic_vector(MaxTransWidth_g - 1 downto 0);
         -- SPI 
-        SpiSclk    : out std_logic;
-        SpiMosi    : out std_logic;
-        SpiMiso    : in  std_logic                                                        := '0';
-        SpiCs_n    : out std_logic_vector(SlaveCnt_g - 1 downto 0)
+        Spi_Sclk        : out std_logic;
+        Spi_Mosi        : out std_logic;
+        Spi_Miso        : in  std_logic                                                        := '0';
+        Spi_Cs_n        : out std_logic_vector(SlaveCnt_g - 1 downto 0)
     );
 end entity;
 
@@ -78,9 +78,9 @@ architecture rtl of olo_intf_spi_master is
         StateLast : State_t;
         ShiftReg  : std_logic_vector(MaxTransWidth_g - 1 downto 0);
         RdData    : std_logic_vector(MaxTransWidth_g - 1 downto 0);
-        SpiCs_n   : std_logic_vector(SlaveCnt_g - 1 downto 0);
-        SpiSclk    : std_logic;
-        SpiMosi   : std_logic;
+        Spi_Cs_n   : std_logic_vector(SlaveCnt_g - 1 downto 0);
+        Spi_Sclk    : std_logic;
+        Spi_Mosi   : std_logic;
         ClkDivCnt : integer range 0 to ClkDivThres_c;
         BitCnt    : integer range 0 to MaxTransWidth_g;
         CsHighCnt : integer range 0 to CsHighCycles_c - 1;
@@ -147,8 +147,8 @@ begin
     --------------------------------------------------------------------------
     -- Combinatorial Proccess
     --------------------------------------------------------------------------
-    SpiMiso_i <= SpiMiso;
-    p_comb : process(r, Cmd_Valid, Cmd_WrData, SpiMiso_i, Cmd_Slave, Cmd_TransWidth)
+    SpiMiso_i <= Spi_Miso;
+    p_comb : process(r, Cmd_Valid, Cmd_Data, SpiMiso_i, Cmd_Slave, Cmd_TransWidth)
         variable v : two_process_r;
     begin
         -- *** hold variables stable ***
@@ -162,8 +162,8 @@ begin
             when Idle_s =>
                 -- Start of Transfer
                 if Cmd_Valid = '1' then
-                    v.ShiftReg                                  := Cmd_WrData;
-                    v.SpiCs_n(to_integer(unsigned(Cmd_Slave)))  := '0';
+                    v.ShiftReg                                  := Cmd_Data;
+                    v.Spi_Cs_n(to_integer(unsigned(Cmd_Slave)))  := '0';
                     v.State                                     := SftComp_s;
                     v.Busy                                      := '1';
                     v.TransWidth                                := fromUslv(Cmd_TransWidth);
@@ -180,11 +180,11 @@ begin
                 end if;
 
             when ClkInact_s =>
-                v.SpiSclk := GetClockLevel(false);
+                v.Spi_Sclk := GetClockLevel(false);
                 -- Apply/Latch data if required
                 if r.ClkDivCnt = 0 then
                     if SpiCPHA_g = 0 then
-                        v.SpiMosi := r.MosiNext;
+                        v.Spi_Mosi := r.MosiNext;
                     else
                         ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                     end if;
@@ -193,7 +193,7 @@ begin
                 if r.ClkDivCnt = ClkDivThres_c then
                     -- All bits done
                     if r.BitCnt = r.TransWidth then
-                        v.SpiMosi := MosiIdleState_g;
+                        v.Spi_Mosi := MosiIdleState_g;
                         v.State   := CsHigh_s;
                     -- Otherwise contintue
                     else
@@ -205,11 +205,11 @@ begin
                 end if;
 
             when ClkAct_s =>
-                v.SpiSclk := GetClockLevel(true);
+                v.Spi_Sclk := GetClockLevel(true);
                 -- Apply data if required
                 if r.ClkDivCnt = 0 then
                     if SpiCPHA_g = 1 then
-                        v.SpiMosi := r.MosiNext;
+                        v.Spi_Mosi := r.MosiNext;
                     else
                         ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                     end if;
@@ -224,7 +224,7 @@ begin
                 end if;
 
             when CsHigh_s =>
-                v.SpiCs_n := (others => '1');
+                v.Spi_Cs_n := (others => '1');
                 if r.CsHighCnt = CsHighCycles_c - 1 then
                     v.State  := Idle_s;
                     v.Busy   := '0';
@@ -246,12 +246,12 @@ begin
     --------------------------------------------------------------------------
     -- Outputs
     --------------------------------------------------------------------------
-    Cmd_Ready     <= not r.Busy;
-    Resp_Valid    <= r.Done;
-    Resp_RdData   <= r.RdData;
-    SpiSclk       <= r.SpiSclk;
-    SpiCs_n       <= r.SpiCs_n;
-    SpiMosi       <= r.SpiMosi;
+    Cmd_Ready   <= not r.Busy;
+    Resp_Valid  <= r.Done;
+    Resp_Data   <= r.RdData;
+    Spi_Sclk    <= r.Spi_Sclk;
+    Spi_Cs_n    <= r.Spi_Cs_n;
+    Spi_Mosi    <= r.Spi_Mosi;
 
     --------------------------------------------------------------------------
     -- Sequential Proccess
@@ -261,12 +261,12 @@ begin
         if rising_edge(Clk) then
             r <= r_next;
             if Rst = '1' then
-                r.State   <= Idle_s;
-                r.SpiCs_n <= (others => '1');
-                r.SpiSclk  <= GetClockLevel(false);
-                r.Busy    <= '0';
-                r.Done    <= '0';
-                r.SpiMosi <= MosiIdleState_g;
+                r.State     <= Idle_s;
+                r.Spi_Cs_n  <= (others => '1');
+                r.Spi_Sclk  <= GetClockLevel(false);
+                r.Busy      <= '0';
+                r.Done      <= '0';
+                r.Spi_Mosi  <= MosiIdleState_g;
             end if;
         end if;
     end process;

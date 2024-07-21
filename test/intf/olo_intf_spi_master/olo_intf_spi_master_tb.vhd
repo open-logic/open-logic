@@ -66,14 +66,14 @@ architecture sim of olo_intf_spi_master_tb is
     signal Cmd_Valid       : std_logic                                                  := '0';
     signal Cmd_Ready       : std_logic;
     signal Cmd_Slave       : std_logic_vector(log2ceil(SlaveCnt_c) - 1 downto 0)        := (others => '0');
-    signal Cmd_WrData      : std_logic_vector(MaxTransWidth_c - 1 downto 0)             := (others => '0');
+    signal Cmd_Data        : std_logic_vector(MaxTransWidth_c - 1 downto 0)             := (others => '0');
     signal Cmd_TransWidth  : std_logic_vector(log2ceil(MaxTransWidth_c+1)-1 downto 0)   := (others => '0');
     signal Resp_Valid      : std_logic;    
-    signal Resp_RdData     : std_logic_vector(MaxTransWidth_c - 1 downto 0);    
-    signal SpiSclk         : std_logic;
-    signal SpiMosi         : std_logic;
-    signal SpiMiso         : std_logic                                                   := '0';
-    signal SpiCs_n         : std_logic_vector(SlaveCnt_c - 1 downto 0)                   := (others => '1');
+    signal Resp_Data       : std_logic_vector(MaxTransWidth_c - 1 downto 0);    
+    signal Spi_Sclk        : std_logic;
+    signal Spi_Mosi        : std_logic;
+    signal Spi_Miso        : std_logic                                                   := '0';
+    signal Spi_Cs_n        : std_logic_vector(SlaveCnt_c - 1 downto 0)                   := (others => '1');
     
     -------------------------------------------------------------------------
     -- TB Defnitions
@@ -101,7 +101,7 @@ architecture sim of olo_intf_spi_master_tb is
         TxData          : std_logic_vector;
         signal Cmd_Slave    : out std_logic_vector;
         signal Cmd_Valid    : out std_logic;
-        signal Cmd_WrData   : out std_logic_vector;
+        signal Cmd_Data   : out std_logic_vector;
         signal Cmd_TransWidth : out std_logic_vector
     ) is
     begin
@@ -109,7 +109,7 @@ architecture sim of olo_intf_spi_master_tb is
         check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
         Cmd_Slave <= toUslv(SlaveIdx, Cmd_Slave'length);
         Cmd_Valid <= '1';
-        Cmd_WrData(TxData'high downto 0) <= TxData;
+        Cmd_Data(TxData'high downto 0) <= TxData;
         Cmd_TransWidth <= toUslv(TxData'length, Cmd_TransWidth'length);
         wait until rising_edge(Clk);
         Cmd_Valid <= '0';
@@ -123,7 +123,7 @@ architecture sim of olo_intf_spi_master_tb is
     begin
         wait until rising_edge(Clk) and Resp_Valid = '1';
         check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
-        check_equal(Resp_RdData(RxData'high downto 0), RxData, "Unexpected RxData");
+        check_equal(Resp_Data(RxData'high downto 0), RxData, "Unexpected RxData");
     end procedure;
 
 begin
@@ -154,7 +154,7 @@ begin
                 wait for 1 us;
                 check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
                 check_equal(Resp_Valid, '0', "Resp_Valid");
-                check_equal(SpiCs_n, onesVector(SlaveCnt_c), "SpiCs_n");
+                check_equal(Spi_Cs_n, onesVector(SlaveCnt_c), "Spi_Cs_n");
             end if;
 
             -- *** Transfers ***
@@ -165,7 +165,7 @@ begin
                 spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => Tx32_v, data_miso => Rx32_v);
 
                 -- Send command
-                SendCommand(0, Tx32_v, Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
+                SendCommand(0, Tx32_v, Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
                 CheckResponse(Rx32_v);
             end if;
 
@@ -176,7 +176,7 @@ begin
                 spi_slave_push_transaction (net, slave0, 16, data_mosi => Tx16_v, data_miso => Rx16_v);
 
                 -- Send command
-                SendCommand(0, Tx16_v, Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
+                SendCommand(0, Tx16_v, Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
                 CheckResponse(Rx16_v);
             end if;
 
@@ -187,11 +187,11 @@ begin
                 spi_slave_push_transaction (net, slave1, MaxTransWidth_c, data_mosi => X"33333333", data_miso => X"44444444");
 
                 -- Cmd_Slave 1 Transfer
-                SendCommand(1, X"33333333", Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
+                SendCommand(1, X"33333333", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
                 CheckResponse(X"44444444");
 
                 -- Cmd_Slave 0 Transfer
-                SendCommand(0, X"11111111", Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
+                SendCommand(0, X"11111111", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
                 CheckResponse(X"22222222");               
             end if;       
 
@@ -202,7 +202,7 @@ begin
                 spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => X"CCCCCCCC", data_miso => X"DDDDDDDD");
 
                 -- Send command 1 (and start during busy)
-                SendCommand(0, X"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
+                SendCommand(0, X"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
                 check_equal(Cmd_Ready, '0', "Cmd_Ready not de-asserted");
                 wait until rising_edge(Clk);
                 Cmd_Valid <= '1';
@@ -211,7 +211,7 @@ begin
                 CheckResponse(X"BBBBBBBB");
 
                 -- Send Command 2
-                SendCommand(0, X"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_WrData, Cmd_TransWidth);
+                SendCommand(0, X"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
                 CheckResponse(X"DDDDDDDD");
             end if;
 
@@ -248,22 +248,22 @@ begin
         )
         port map (
             -- Control Signals
-            Clk        => Clk,     
-            Rst        => Rst,   
+            Clk             => Clk,     
+            Rst             => Rst,   
             -- Command Interface
-            Cmd_Valid      => Cmd_Valid,
-            Cmd_Slave      => Cmd_Slave,
-            Cmd_Ready      => Cmd_Ready,
-            Cmd_TransWidth => Cmd_TransWidth,
-            Cmd_WrData     => Cmd_WrData,
+            Cmd_Valid       => Cmd_Valid,
+            Cmd_Slave       => Cmd_Slave,
+            Cmd_Ready       => Cmd_Ready,
+            Cmd_TransWidth  => Cmd_TransWidth,
+            Cmd_Data        => Cmd_Data,
             -- Response interface
-            Resp_Valid     => Resp_Valid,
-            Resp_RdData    => Resp_RdData,            
+            Resp_Valid      => Resp_Valid,
+            Resp_Data       => Resp_Data,            
             -- SPI 
-            SpiSclk    => SpiSclk,
-            SpiMosi    => SpiMosi,
-            SpiMiso    => SpiMiso,
-            SpiCs_n    => SpiCs_n
+            Spi_Sclk        => Spi_Sclk,
+            Spi_Mosi        => Spi_Mosi,
+            Spi_Miso        => Spi_Miso,
+            Spi_Cs_n        => Spi_Cs_n
         );
 
     ------------------------------------------------------------
@@ -274,10 +274,10 @@ begin
             instance => slave0
         )
         port map (
-            Sclk     => SpiSclk,
-            CS_n     => SpiCs_n(0),
-            Mosi     => SpiMosi,
-            Miso     => SpiMiso
+            Sclk     => Spi_Sclk,
+            CS_n     => Spi_Cs_n(0),
+            Mosi     => Spi_Mosi,
+            Miso     => Spi_Miso
         );
 
     vc_slave1 : entity work.olo_test_spi_slave_vc
@@ -285,10 +285,10 @@ begin
             instance => slave1
         )
         port map (
-            Sclk     => SpiSclk,
-            CS_n     => SpiCs_n(1),
-            Mosi     => SpiMosi,
-            Miso     => SpiMiso
+            Sclk     => Spi_Sclk,
+            CS_n     => Spi_Cs_n(1),
+            Mosi     => Spi_Mosi,
+            Miso     => Spi_Miso
         );
 
 end sim;

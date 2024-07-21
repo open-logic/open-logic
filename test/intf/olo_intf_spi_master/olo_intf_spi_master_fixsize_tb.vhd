@@ -61,17 +61,17 @@ architecture sim of olo_intf_spi_master_fixsize_tb is
     -- Interface Signals
     -------------------------------------------------------------------------
     -- Contral Sginal
-    signal Clk             : std_logic                                                  := '0';
-    signal Rst             : std_logic                                                  := '0';
-    signal Cmd_Valid       : std_logic                                                  := '0';
-    signal Cmd_Ready       : std_logic;
-    signal Cmd_WrData      : std_logic_vector(MaxTransWidth_c - 1 downto 0)             := (others => '0');
-    signal Resp_Valid      : std_logic;    
-    signal Resp_RdData     : std_logic_vector(MaxTransWidth_c - 1 downto 0);    
-    signal SpiSclk         : std_logic;
-    signal SpiMosi         : std_logic;
-    signal SpiMiso         : std_logic                                                   := '0';
-    signal SpiCs_n         : std_logic_vector(SlaveCnt_c - 1 downto 0)                   := (others => '1');
+    signal Clk          : std_logic                                                  := '0';
+    signal Rst          : std_logic                                                  := '0';
+    signal Cmd_Valid    : std_logic                                                  := '0';
+    signal Cmd_Ready    : std_logic;
+    signal Cmd_Data     : std_logic_vector(MaxTransWidth_c - 1 downto 0)             := (others => '0');
+    signal Resp_Valid   : std_logic;    
+    signal Resp_Data    : std_logic_vector(MaxTransWidth_c - 1 downto 0);    
+    signal Spi_Sclk     : std_logic;
+    signal Spi_Mosi     : std_logic;
+    signal Spi_Miso     : std_logic                                                   := '0';
+    signal Spi_Cs_n     : std_logic_vector(SlaveCnt_c - 1 downto 0)                   := (others => '1');
     
     -------------------------------------------------------------------------
     -- TB Defnitions
@@ -90,13 +90,13 @@ architecture sim of olo_intf_spi_master_fixsize_tb is
         SlaveIdx        : integer;
         TxData          : std_logic_vector;
         signal Cmd_Valid    : out std_logic;
-        signal Cmd_WrData   : out std_logic_vector
+        signal Cmd_Data   : out std_logic_vector
     ) is
     begin
         wait until rising_edge(Clk);
         check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
         Cmd_Valid <= '1';
-        Cmd_WrData(TxData'high downto 0) <= TxData;
+        Cmd_Data(TxData'high downto 0) <= TxData;
         wait until rising_edge(Clk);
         Cmd_Valid <= '0';
         wait until falling_edge(Clk);
@@ -109,7 +109,7 @@ architecture sim of olo_intf_spi_master_fixsize_tb is
     begin
         wait until rising_edge(Clk) and Resp_Valid = '1';
         check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
-        check_equal(Resp_RdData(RxData'high downto 0), RxData, "Unexpected RxData");
+        check_equal(Resp_Data(RxData'high downto 0), RxData, "Unexpected RxData");
     end procedure;
 
 begin
@@ -141,7 +141,7 @@ begin
                 wait for 1 us;
                 check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
                 check_equal(Resp_Valid, '0', "Resp_Valid");
-                check_equal(SpiCs_n, onesVector(SlaveCnt_c), "SpiCs_n");
+                check_equal(Spi_Cs_n, onesVector(SlaveCnt_c), "Spi_Cs_n");
             end if;
 
             -- *** Transfers ***
@@ -152,7 +152,7 @@ begin
                 spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => Tx8_v, data_miso => Rx8_v);
 
                 -- Send command
-                SendCommand(0, Tx8_v, Cmd_Valid, Cmd_WrData);
+                SendCommand(0, Tx8_v, Cmd_Valid, Cmd_Data);
                 CheckResponse(Rx8_v);
             end if;
 
@@ -191,17 +191,17 @@ begin
             Clk        => Clk,     
             Rst        => Rst,   
             -- Command Interface
-            Cmd_Valid      => Cmd_Valid,
-            Cmd_Ready      => Cmd_Ready,
-            Cmd_WrData     => Cmd_WrData,
+            Cmd_Valid  => Cmd_Valid,
+            Cmd_Ready  => Cmd_Ready,
+            Cmd_Data   => Cmd_Data,
             -- Response interface
-            Resp_Valid     => Resp_Valid,
-            Resp_RdData    => Resp_RdData,            
+            Resp_Valid => Resp_Valid,
+            Resp_Data  => Resp_Data,            
             -- SPI 
-            SpiSclk    => SpiSclk,
-            SpiMosi    => SpiMosi,
-            SpiMiso    => SpiMiso,
-            SpiCs_n    => SpiCs_n
+            Spi_Sclk   => Spi_Sclk,
+            Spi_Mosi   => Spi_Mosi,
+            Spi_Miso   => Spi_Miso,
+            Spi_Cs_n   => Spi_Cs_n
         );
 
     ------------------------------------------------------------
@@ -212,10 +212,10 @@ begin
             instance => slave0
         )
         port map (
-            Sclk     => SpiSclk,
-            CS_n     => SpiCs_n(0),
-            Mosi     => SpiMosi,
-            Miso     => SpiMiso
+            Sclk     => Spi_Sclk,
+            CS_n     => Spi_Cs_n(0),
+            Mosi     => Spi_Mosi,
+            Miso     => Spi_Miso
         );
 
 end sim;
