@@ -1,0 +1,32 @@
+CAPI=2:
+
+name : open-logic:open-logic:{{area}}:{{version}}
+description : {{description}} see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#{{area}}
+
+filesets:
+  rtl:
+    files:
+    {%- for file in vhdlFiles %}
+      - vhdl/{{file}}
+    {%- endfor %}
+    file_type : vhdlSource
+    logical_name : olo
+    {%- if dependencies %}
+    depend :
+    {%- for dep in dependencies %}
+      - "^open-logic:open-logic:{{dep}}:{{version}}"
+    {%- endfor %}
+    {%- endif %}
+
+
+targets:
+  default:
+    filesets :
+      - rtl
+      
+provider:
+  name    : github
+  user    : open-logic
+  repo    : open-logic
+  version : {{version}}
+  
