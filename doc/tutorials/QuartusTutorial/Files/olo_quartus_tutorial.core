@@ -1,0 +1,37 @@
+CAPI=2:
+name : open-logic:tutorials:quartus_tutorial:2.0
+description : quartus tutorial for open-logic, targetting DE0-CV board
+
+filesets:
+
+  de0_cv:
+    files:
+      - timing.sdc  : {file_type : SDC}
+      - pinout.tcl  : {file_type : tclSource}
+      
+  rtl:
+    files: [quartus_tutorial.vhd : {file_type : vhdlSource}]
+    depend :
+      - "open-logic:open-logic:base"
+      - "open-logic:open-logic:intf"
+
+targets:
+  default: &default
+    filesets : [rtl]
+    toplevel: ["is_toplevel? (quartus_tutorial)"]
+
+  de0_cv:
+    default_tool : quartus
+    filesets : [rtl, de0_cv]
+    tools:
+      quartus:
+        family : Cyclone V
+        device : 5CEBA4F23C7
+        board_device_index : 2
+    toplevel: quartus_tutorial
+
+provider:
+  name    : github
+  user    : open-logic
+  repo    : open-logic
+  version : fusesoc-test

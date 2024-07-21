@@ -1,0 +1,29 @@
+CAPI=2:
+
+name : open-logic:open-logic:intf:2.0
+description : Interfaces (e.g. I2C, synchronizer, SPI, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#intf
+
+filesets:
+  rtl:
+    files:
+      - vhdl/olo_intf_i2c_master.vhd
+      - vhdl/olo_intf_debounce.vhd
+      - vhdl/olo_intf_clk_meas.vhd
+      - vhdl/olo_intf_sync.vhd
+    file_type : vhdlSource
+    logical_name : olo
+    depend :
+      - "^open-logic:open-logic:base:2.0"
+
+
+targets:
+  default:
+    filesets :
+      - rtl
+      
+provider:
+  name    : github
+  user    : open-logic
+  repo    : open-logic
+  version : fusesoc-test
+  

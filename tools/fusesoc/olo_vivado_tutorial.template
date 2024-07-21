@@ -1,0 +1,37 @@
+CAPI=2:
+name : open-logic:tutorials:vivado_tutorial:{{version}}
+description : vivado tutorial for open-logic, targetting Zybo Z7-10 board
+
+filesets:
+
+  zybo_z7:
+    files:
+      - vivado_tutorial.vhd : {file_type : vhdlSource}
+      - pinout.xdc : {file_type : xdc}
+      
+  rtl:
+    files: [vivado_tutorial.vhd : {file_type : vhdlSource}]
+    depend :
+      - "open-logic:open-logic:base"
+      - "open-logic:open-logic:intf"
+
+targets:
+  default: &default
+    filesets : [rtl]
+    toplevel: ["is_toplevel? (vivado_tutorial)"]
+    
+  zybo_z7: 
+    default_tool: vivado
+    description : Digilent Zybo Z7-10 SoC Kit
+    filesets : [rtl, zybo_z7]
+    tools:
+      vivado:
+        part : xc7z010clg400-1
+    toplevel : vivado_tutorial
+
+provider:
+  name    : github
+  user    : open-logic
+  repo    : open-logic
+  version : {{version}}
+

@@ -1,6 +1,8 @@
 #Pycharm files
 **/*/.idea/
 **/*/__pycache__/
+.idea/
+__pycache__/
 
 #Vunit files
 sim/vunit_out/
