@@ -1,0 +1,10 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p...|...'},
+  {name: 'Cmd_Valid',    wave: '010.|...'},
+  {name: 'Cmd_Ready',    wave: '1.0.|...'},
+  {name: 'Cmd_Data',     wave: 'x3x.|...'},
+  {name: 'Resp_Valid',   wave: '0...|.10'},
+  {name: 'Resp_Data',    wave: 'x...|x3x'},
+  {name: 'Spi_Cs_n',     wave: '1.0.|1..'}
+  ]
+ }
