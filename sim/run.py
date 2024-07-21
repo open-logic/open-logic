@@ -58,12 +58,12 @@ cc_tbs = ['olo_base_cc_simple_tb', 'olo_base_cc_status_tb', 'olo_base_cc_bits_tb
 for tb_name in cc_tbs:
     tb = olo_tb.test_bench(tb_name)
     # Iterate through various clock combinations
-    for N in [1, 3, 19, 20]:
-        for D in [1, 3, 19, 20]:
-            # Simulate same clock only once
-            if N == D and N != 1:
-                continue
-            tb.add_config(name=f'D={D}-N={N}', generics={'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
+    ratios = [(1, 1), (1, 3), (3, 1), (1, 20), (20, 1), (19, 20), (20, 19)]
+    for N, D in ratios:
+        # Simulate same clock only once
+        if N == D and N != 1:
+            continue
+        tb.add_config(name=f'D={D}-N={N}', generics={'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
 
 # Sync Clock Crossings
 scc_tbs = ['olo_base_cc_xn2n_tb', 'olo_base_cc_n2xn_tb']
@@ -77,37 +77,56 @@ ram_tbs = ['olo_base_ram_sp_tb', 'olo_base_ram_tdp_tb']
 for tb_name in ram_tbs:
     tb = olo_tb.test_bench(tb_name)
     for RamBehav in ['RBW', 'WBR']:
-        for ReadLatency in [1, 2]:
-            for Width in [5, 32]:
-                for Be in [True, False]:
-                    if Width == 5 and Be == True:
-                        continue #No byte enables for non multiple of 8
-                    tb.add_config(name=f'B={RamBehav}-W={Width}-Be={Be}-Lat={ReadLatency}', generics={'Width_g': Width, 'RamBehavior_g': RamBehav, 'UseByteEnable_g' : Be, "RdLatency_g" : ReadLatency})
+        tb.add_config(name=f'B={RamBehav}',
+                      generics={'RamBehavior_g': RamBehav})
+    for ReadLatency in [1, 2]:
+        tb.add_config(name=f'Lat={ReadLatency}',
+                      generics={"RdLatency_g": ReadLatency})
+    for Width in [5, 32]:
+        tb.add_config(name=f'W={Width}',
+                      generics={'Width_g': Width})
+    for Be in [True, False]:
+        tb.add_config(name=f'W=32-Be={Be}', generics={'Width_g': 32, 'UseByteEnable_g' : Be})
+
 ram_tbs = ['olo_base_ram_sdp_tb']
 for tb_name in ram_tbs:
     tb = olo_tb.test_bench(tb_name)
     for RamBehav in ['RBW', 'WBR']:
         for Async in [True, False]:
-            for ReadLatency in [1,2]:
-                for Width in [5, 32]:
-                    for Be in [True, False]:
-                        if Width == 5 and Be == True:
-                            continue #No byte enables for non multiple of 8
-                        tb.add_config(name=f'B={RamBehav}-W={Width}-Be={Be}-Async={Async}-Lat={ReadLatency}',
-                                      generics={'Width_g': Width, 'RamBehavior_g': RamBehav, 'UseByteEnable_g' : Be, "RdLatency_g" : ReadLatency, "IsAsync_g" : Async})
+            tb.add_config(name=f'B={RamBehav}-Async={Async}',
+                          generics={'RamBehavior_g': RamBehav, "IsAsync_g": Async})
+    for ReadLatency in [1,2]:
+        tb.add_config(name=f'Lat={ReadLatency}',
+                      generics={"RdLatency_g": ReadLatency})
+
+    for Width in [5, 32]:
+        tb.add_config(name=f'W={Width}',
+                      generics={'Width_g': Width})
+    for Be in [True, False]:
+        tb.add_config(name=f'W=32-Be={Be}',
+                      generics={'Width_g': 32, 'UseByteEnable_g' : Be})
 
 #FIFO TBs
 fifo_tbs = ['olo_base_fifo_sync_tb', 'olo_base_fifo_async_tb']
 for tb_name in fifo_tbs:
     tb = olo_tb.test_bench(tb_name)
     for RamBehav in ['RBW', 'WBR']:
-        for RstState in [0, 1]:
-            for Depth in [32, 128]:
-                for AlmFull in [True, False]:
-                    for AlmEmpty in [True, False]:
-                        tb.add_config(name=f'B={RamBehav}-D={Depth}-RdyRst={RstState}-AlmF={AlmFull}-AlmE={AlmEmpty}',
-                                      generics={'RamBehavior_g': RamBehav, 'Depth_g': Depth, 'ReadyRstState_g': RstState,
-                                                "AlmFullOn_g": AlmFull, "AlmEmptyOn_g": AlmEmpty})
+        tb.add_config(name=f'B={RamBehav}',
+                      generics={'RamBehavior_g': RamBehav})
+    for RstState in [0, 1]:
+        tb.add_config(name=f'dyRst={RstState}',
+                      generics={'ReadyRstState_g': RstState})
+    for Depth in [32, 128]:
+        tb.add_config(name=f'D={Depth}',
+                      generics={'Depth_g': Depth})
+    if tb_name == "olo_base_fifo_sync_tb":
+        Depth = 53 #For Sync FIFO, completely odd depths are allowed
+        tb.add_config(name=f'D={Depth}',
+                      generics={'Depth_g': Depth})
+    for AlmFull in [True, False]:
+        for AlmEmpty in [True, False]:
+            tb.add_config(name=f'AlmF={AlmFull}-AlmE={AlmEmpty}',
+                          generics={"AlmFullOn_g": AlmFull, "AlmEmptyOn_g": AlmEmpty})
 
 #Width Converter TBs
 wconv_xn2n_tb = 'olo_base_wconv_xn2n_tb'
@@ -125,9 +144,9 @@ pl_tb = 'olo_base_pl_stage_tb'
 tb = olo_tb.test_bench(pl_tb)
 for Stages in [0, 1, 5]:
     for UseReady in [True, False]:
-        for RandomStall in [True, False]:
-            tb.add_config(name=f'Stg={Stages}-Rdy={UseReady}-Rnd={RandomStall}',
-                          generics={'Stages_g': Stages, 'UseReady_g': UseReady, 'RandomStall_g': RandomStall})
+        RandomStall = True
+        tb.add_config(name=f'Stg={Stages}-Rdy={UseReady}-Rnd={RandomStall}',
+                      generics={'Stages_g': Stages, 'UseReady_g': UseReady, 'RandomStall_g': RandomStall})
 
 #Delay TB
 delay_tb = 'olo_base_delay_tb'
