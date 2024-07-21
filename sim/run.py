@@ -309,6 +309,26 @@ for FreqClk, FreqTest in freqs:
                   generics={'ClkFrequency_g': FreqClk, 'MaxClkTestFrequency_g': FreqTest})
 
 
+spi_master_tb = 'olo_intf_spi_master_tb'
+tb = olo_tb.test_bench(spi_master_tb)
+for FreqBus in [int(1e6), int(10e6)]:
+    tb.add_config(name=f'F={FreqBus}',
+                  generics={'BusFrequency_g': FreqBus})
+for LsbFirst in [False, True]:
+    tb.add_config(name=f'LF={LsbFirst}',
+                  generics={'LsbFirst_g': LsbFirst})
+for CPHA in [0, 1]:
+    for CPOL in [0, 1]:
+        tb.add_config(name=f'CPHA={CPHA}-CPOL={CPOL}',
+                      generics={'SpiCpha_g': CPHA, 'SpiCpol_g': CPOL})
+
+spi_master_fixsize_tb = 'olo_intf_spi_master_fixsize_tb'
+tb = olo_tb.test_bench(spi_master_fixsize_tb)
+for LsbFirst in [False, True]:
+    tb.add_config(name=f'LF={LsbFirst}',
+                  generics={'LsbFirst_g': LsbFirst})
+
+
 ########################################################################################################################
 # Execution
 ########################################################################################################################
