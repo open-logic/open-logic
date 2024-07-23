@@ -50,6 +50,13 @@ if USE_GHDL:
     vu.add_compile_option('ghdl.a_flags', ['-frelaxed-rules', '-Wno-hide', '-Wno-shared'])
 
 ########################################################################################################################
+# Shared Functions
+########################################################################################################################
+def named_config(tb, map : dict):
+    cfg_name = "-".join([f"{k}={v}" for k, v in map.items()])
+    tb.add_config(name=cfg_name, generics = map)
+
+########################################################################################################################
 # olo_base TBs
 ########################################################################################################################
 
@@ -58,102 +65,111 @@ cc_tbs = ['olo_base_cc_simple_tb', 'olo_base_cc_status_tb', 'olo_base_cc_bits_tb
 for tb_name in cc_tbs:
     tb = olo_tb.test_bench(tb_name)
     # Iterate through various clock combinations
-    for N in [1, 3, 19, 20]:
-        for D in [1, 3, 19, 20]:
-            # Simulate same clock only once
-            if N == D and N != 1:
-                continue
-            tb.add_config(name=f'D={D}-N={N}', generics={'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
+    ratios = [(1, 1), (1, 3), (3, 1), (1, 20), (20, 1), (19, 20), (20, 19)]
+    for N, D in ratios:
+        # Simulate same clock only once
+        if N == D and N != 1:
+            continue
+        named_config(tb, {'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
 
 # Sync Clock Crossings
 scc_tbs = ['olo_base_cc_xn2n_tb', 'olo_base_cc_n2xn_tb']
 for tb_name in scc_tbs:
     tb = olo_tb.test_bench(tb_name)
     for R in [2, 3, 19]:
-        tb.add_config(name=f'R={R}', generics={'ClockRatio_g': R})
+        named_config(tb, {'ClockRatio_g': R})
 
 # RAM TBs
 ram_tbs = ['olo_base_ram_sp_tb', 'olo_base_ram_tdp_tb']
 for tb_name in ram_tbs:
     tb = olo_tb.test_bench(tb_name)
     for RamBehav in ['RBW', 'WBR']:
-        for ReadLatency in [1, 2]:
-            for Width in [5, 32]:
-                for Be in [True, False]:
-                    if Width == 5 and Be == True:
-                        continue #No byte enables for non multiple of 8
-                    tb.add_config(name=f'B={RamBehav}-W={Width}-Be={Be}-Lat={ReadLatency}', generics={'Width_g': Width, 'RamBehavior_g': RamBehav, 'UseByteEnable_g' : Be, "RdLatency_g" : ReadLatency})
+        named_config(tb, {'RamBehavior_g': RamBehav})
+    for ReadLatency in [1, 2]:
+        named_config(tb, {"RdLatency_g": ReadLatency})
+    for Width in [5, 32]:
+        named_config(tb, {'Width_g': Width})
+    for Be in [True, False]:
+        named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
+
 ram_tbs = ['olo_base_ram_sdp_tb']
 for tb_name in ram_tbs:
     tb = olo_tb.test_bench(tb_name)
     for RamBehav in ['RBW', 'WBR']:
         for Async in [True, False]:
-            for ReadLatency in [1,2]:
-                for Width in [5, 32]:
-                    for Be in [True, False]:
-                        if Width == 5 and Be == True:
-                            continue #No byte enables for non multiple of 8
-                        tb.add_config(name=f'B={RamBehav}-W={Width}-Be={Be}-Async={Async}-Lat={ReadLatency}',
-                                      generics={'Width_g': Width, 'RamBehavior_g': RamBehav, 'UseByteEnable_g' : Be, "RdLatency_g" : ReadLatency, "IsAsync_g" : Async})
+            named_config(tb, {'RamBehavior_g': RamBehav, "IsAsync_g": Async})
+
+    for ReadLatency in [1,2]:
+        named_config(tb, {"RdLatency_g": ReadLatency})
+
+    for Width in [5, 32]:
+        named_config(tb, {'Width_g': Width})
+    for Be in [True, False]:
+        named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
 
 #FIFO TBs
 fifo_tbs = ['olo_base_fifo_sync_tb', 'olo_base_fifo_async_tb']
 for tb_name in fifo_tbs:
     tb = olo_tb.test_bench(tb_name)
     for RamBehav in ['RBW', 'WBR']:
-        for RstState in [0, 1]:
-            for Depth in [32, 128]:
-                for AlmFull in [True, False]:
-                    for AlmEmpty in [True, False]:
-                        tb.add_config(name=f'B={RamBehav}-D={Depth}-RdyRst={RstState}-AlmF={AlmFull}-AlmE={AlmEmpty}',
-                                      generics={'RamBehavior_g': RamBehav, 'Depth_g': Depth, 'ReadyRstState_g': RstState,
-                                                "AlmFullOn_g": AlmFull, "AlmEmptyOn_g": AlmEmpty})
+        named_config(tb, {'RamBehavior_g': RamBehav})
+    for RstState in [0, 1]:
+        named_config(tb, {'ReadyRstState_g': RstState})
+    for Depth in [32, 128]:
+        named_config(tb, {'Depth_g': Depth})
+    if tb_name == "olo_base_fifo_sync_tb":
+        Depth = 53 #For Sync FIFO, completely odd depths are allowed
+        named_config(tb, {'Depth_g': Depth})
+    for AlmFull in [True, False]:
+        for AlmEmpty in [True, False]:
+            named_config(tb, {"AlmFullOn_g": AlmFull, "AlmEmptyOn_g": AlmEmpty})
 
 #Width Converter TBs
 wconv_xn2n_tb = 'olo_base_wconv_xn2n_tb'
 tb = olo_tb.test_bench(wconv_xn2n_tb)
 for Ratio in [2, 3]:
-    tb.add_config(name=f'R={Ratio}', generics={'WidthRatio_g': Ratio})
+    named_config(tb, {'WidthRatio_g': Ratio})
 
 wconv_n2xn_tb = 'olo_base_wconv_n2xn_tb'
 tb = olo_tb.test_bench(wconv_n2xn_tb)
 for Ratio in [1, 2, 3]:
-    tb.add_config(name=f'R={Ratio}', generics={'WidthRatio_g': Ratio})
+    named_config(tb, {'WidthRatio_g': Ratio})
 
 #Pipeline TB
 pl_tb = 'olo_base_pl_stage_tb'
 tb = olo_tb.test_bench(pl_tb)
 for Stages in [0, 1, 5]:
     for UseReady in [True, False]:
-        for RandomStall in [True, False]:
-            tb.add_config(name=f'Stg={Stages}-Rdy={UseReady}-Rnd={RandomStall}',
-                          generics={'Stages_g': Stages, 'UseReady_g': UseReady, 'RandomStall_g': RandomStall})
+        RandomStall = True
+        named_config(tb, {'Stages_g': Stages, 'UseReady_g': UseReady, 'RandomStall_g': RandomStall})
 
 #Delay TB
 delay_tb = 'olo_base_delay_tb'
 tb = olo_tb.test_bench(delay_tb)
-#No BRAM cases
 BramThreshold = 16
+# Test AUTO
+Resource = "AUTO"
+RandomStall = True
 for Delay in [0, 1, 2, 3, 8, 30, 32]:
-    for Resource in ["BRAM", "SRL", "AUTO"]:
-        for RstState in [True, False]:
-            #Random-Stall is sufficient (non-random is only used for debugging purposes)
-            RandomStall = True
-            #Skip illegal configurations
-            if (Resource == "BRAM" and Delay < 3):
-                continue
-            #Create test configurations
-            RamBehav = "RBW"
-            tb.add_config(name=f'D={Delay}-R={Resource}-RS={RstState}-Rnd={RandomStall}-B={RamBehav}',
-                      generics={'Delay_g': Delay, 'Resource_g': Resource, 'RstState_g': RstState,
-                                'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
-            #Skip Ram behavior for non-ram cases
-            if (Resource != "BRAM") and (Resource != "AUTO" or Delay < BramThreshold):
-                continue
-            RamBehav = "WBR"
-            tb.add_config(name=f'D={Delay}-R={Resource}-RS={RstState}-Rnd={RandomStall}-B={RamBehav}',
-                      generics={'Delay_g': Delay, 'Resource_g': Resource, 'RstState_g': RstState,
-                                'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
+    named_config(tb, {'Delay_g': Delay, 'Resource_g': Resource, 'RandomStall_g': RandomStall})
+# Test BRAM
+Resource = "BRAM"
+for Delay in [3, 30, 32]:
+    for RamBehav in ["RBW", "WBR"]:
+        named_config(tb, {'Delay_g': Delay, 'Resource_g': Resource, 'RandomStall_g': RandomStall,
+                               'RamBehavior_g': RamBehav})
+# Test SRL
+Resource = "SRL"
+for Delay in [1, 2, 3, 30, 32]:
+    named_config(tb, {'Delay_g': Delay, 'Resource_g': Resource, 'RandomStall_g': RandomStall})
+
+# Test State Reset
+RstState = True
+for Resource in ["BRAM", "SRL"]:
+    for RstState in [True, False]:
+        for Delay in [3, 32]:
+            named_config(tb, {'Delay_g': Delay, 'Resource_g': Resource, 'RandomStall_g': RandomStall,
+                                   'RstState_g': RstState})
 
 #DelayCfg TB
 delay_cfg_tb = 'olo_base_delay_cfg_tb'
@@ -162,8 +178,7 @@ for SupportZero in [True, False]:
     for RamBehav in ["RBW", "WBR"]:
         # Random-Stall is sufficient (non-random is only used for debugging purposes)
         RandomStall = True
-        tb.add_config(name=f'SZ={SupportZero}-Rnd={RandomStall}-B={RamBehav}',
-              generics={'SupportZero_g': SupportZero, 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
+        named_config(tb, {'SupportZero_g': SupportZero, 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
 
 
 #Dynamic Shift TB
@@ -177,15 +192,14 @@ for Direction in ["LEFT", "RIGHT"]:
                 if Direction == "LEFT" and SignExt:
                     continue
                 #Add case
-                tb.add_config(name=f'D={Direction}-BPS={BitsPerStage}-MS={MaxShift}-SE{SignExt}',
-                              generics={'Direction_g': Direction, 'SelBitsPerStage_g': BitsPerStage,
-                                        'MaxShift_g': MaxShift, 'SignExtend_g': SignExt})
+                named_config(tb, {'Direction_g': Direction, 'SelBitsPerStage_g': BitsPerStage,
+                                       'MaxShift_g': MaxShift, 'SignExtend_g': SignExt})
 
 #Arbiters
 arb_prio_tb = 'olo_base_arb_prio_tb'
 tb = olo_tb.test_bench(arb_prio_tb)
 for Latency in [0, 1, 3]:
-    tb.add_config(name=f'L={Latency}', generics={'Latency_g': Latency})
+    named_config(tb, {'Latency_g': Latency})
 arb_rr_tb = 'olo_base_arb_rr_tb'
 #Only one config required, hence no "add_config" looping
 
@@ -193,19 +207,19 @@ arb_rr_tb = 'olo_base_arb_rr_tb'
 strobe_gen_tb = 'olo_base_strobe_gen_tb'
 tb = olo_tb.test_bench(strobe_gen_tb)
 for Freq in ["10.0e6", "13.2e6"]:
-    tb.add_config(name=f'F={Freq}', generics={'FreqStrobeHz_g': Freq})
+    named_config(tb, {'FreqStrobeHz_g': Freq})
 
 #strobe divider
 strobe_div_tbs = ['olo_base_strobe_div_tb', 'olo_base_strobe_div_backpressonly_tb']
 for tb_name in strobe_div_tbs:
     tb = olo_tb.test_bench(tb_name)
     for Latency in [0, 1]:
-        tb.add_config(name=f'L={Latency}', generics={'Latency_g': Latency})
+        named_config(tb, {'Latency_g': Latency})
 strobe_div_fixratio_tb ='olo_base_strobe_div_fixratio_tb'
-fixratio_tb = olo_tb.test_bench(strobe_div_fixratio_tb)
+tb = olo_tb.test_bench(strobe_div_fixratio_tb)
 for Latency in [0, 1]:
     for Ratio in [3, 4, 5, 6]:
-        fixratio_tb.add_config(name=f'L={Latency}-R={Ratio}', generics={'Latency_g': Latency, 'Ratio_g' : Ratio})
+        named_config(tb, {'Latency_g': Latency, 'Ratio_g' : Ratio})
 
 
 #prbs
@@ -213,7 +227,7 @@ prbs_tbs = ['olo_base_prbs4_tb']
 for tb_name in prbs_tbs:
     tb = olo_tb.test_bench(tb_name)
     for BitsPerSymbol in [1, 2, 3, 4]:
-        tb.add_config(name=f'BPS={BitsPerSymbol}', generics={'BitsPerSymbol_g': BitsPerSymbol})
+        named_config(tb, {'BitsPerSymbol_g': BitsPerSymbol})
 
 #reset_gen
 reset_gen_tb = 'olo_base_reset_gen_tb'
@@ -223,8 +237,7 @@ for Cycles in [3, 5, 50, 64]:
 for Cycles in [3, 5]:
     for Polarity in [0, 1]:
         for AsyncOutput in [True, False]:
-            tb.add_config(name=f'C={Cycles}-P={Polarity}-A={AsyncOutput}',
-                          generics={'RstPulseCycles_g': Cycles, 'RstInPolarity_g': Polarity, 'AsyncResetOutput_g': AsyncOutput})
+            named_config(tb, {'RstPulseCycles_g': Cycles, 'RstInPolarity_g': Polarity, 'AsyncResetOutput_g': AsyncOutput})
 
 ########################################################################################################################
 # olo_axi TBs
@@ -234,8 +247,7 @@ axi_lite_slave_tb = 'olo_axi_lite_slave_tb'
 tb = olo_tb.test_bench(axi_lite_slave_tb)
 for AxiAddrWidth in [8, 12, 16, 32]:
     for AxiDataWidth in [8, 16, 32, 128]:
-        tb.add_config(name=f'A={AxiAddrWidth}-D={AxiDataWidth}',
-                      generics={'AxiAddrWidth_g': AxiAddrWidth, 'AxiDataWidth_g': AxiDataWidth})
+        named_config(tb, {'AxiAddrWidth_g': AxiAddrWidth, 'AxiDataWidth_g': AxiDataWidth})
 
 axi_master_simple_tb = 'olo_axi_master_simple_tb'
 tb = olo_tb.test_bench(axi_master_simple_tb)
@@ -244,40 +256,41 @@ for ImplRead in [True, False]:
         #Skip illegal case where no functionality is implemented
         if (not ImplRead) and (not ImplWrite): continue
         for AddrWidth in [16, 20, 32]:
-            tb.add_config(name=f'R={ImplRead}-W={ImplWrite}-A={AddrWidth}',
-                        generics={'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiAddrWidth_g': AddrWidth})
+            named_config(tb, {'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiAddrWidth_g': AddrWidth})
         for DataWidth in [16, 32, 64]:
-            tb.add_config(name=f'R={ImplRead}-W={ImplWrite}-D={DataWidth}',
-                        generics={'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiDataWidth_g': DataWidth})
+            named_config(tb, {'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiDataWidth_g': DataWidth})
 
 axi_master_full_tb = 'olo_axi_master_full_tb'
 tb = olo_tb.test_bench(axi_master_full_tb)
+#Check Widths
+for AddrWidth in [16, 20, 32]:
+    named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiAddrWidth_g': AddrWidth})
+for DataWidth in [16, 32, 64]:
+    for UserWidth in [16, 32, 64]:
+        if UserWidth > DataWidth: continue #Skip illegal configurations
+        named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True,
+                               'AxiDataWidth_g': DataWidth, 'UserDataWidth_g': UserWidth})
+#Check Partial Implementations
 for ImplRead in [True, False]:
     for ImplWrite in [True, False]:
+        named_config(tb, {'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite})
+
         #Skip illegal case where no functionality is implemented
         if (not ImplRead) and (not ImplWrite): continue
-        for AddrWidth in [16, 20, 32]:
-            tb.add_config(name=f'R={ImplRead}-W={ImplWrite}-A={AddrWidth}',
-                        generics={'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiAddrWidth_g': AddrWidth})
-        for DataWidth in [16, 32, 64]:
-            for UserWidth in [16, 32, 64]:
-                if UserWidth > DataWidth: continue
-                tb.add_config(name=f'R={ImplRead}-W={ImplWrite}-D={DataWidth}-U={UserWidth}',
-                            generics={'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite,
-                                      'AxiDataWidth_g': DataWidth, 'UserDataWidth_g' : UserWidth})
+
 
 axi_pl_stage_tb = 'olo_axi_pl_stage_tb'
 tb = olo_tb.test_bench(axi_pl_stage_tb)
 for AddrWidth in [32, 64]:
-    tb.add_config(name=f'A={AddrWidth}',generics={'AddrWidth_g': AddrWidth})
+    named_config(tb, {'AddrWidth_g': AddrWidth})
 for DataWidth in [16, 64]:
-    tb.add_config(name=f'D={DataWidth}',generics={'DataWidth_g': DataWidth})
+    named_config(tb, {'DataWidth_g': DataWidth})
 for IdWidth in [0, 4]:
-    tb.add_config(name=f'I={IdWidth}', generics={'IdWidth_g': IdWidth})
+    named_config(tb, {'IdWidth_g': IdWidth})
 for UserWidth in [0, 4, 16]:
-    tb.add_config(name=f'U={UserWidth}', generics={'UserWidth_g': UserWidth})
+    named_config(tb, {'UserWidth_g': UserWidth})
 for Stages in [1, 4, 12]:
-    tb.add_config(name=f'S={Stages}', generics={'Stages_g': Stages})
+    named_config(tb, {'Stages_g': Stages})
 
 ########################################################################################################################
 # olo_intf TBs
@@ -286,47 +299,41 @@ debounce_tb = 'olo_intf_debounce_tb'
 tb = olo_tb.test_bench(debounce_tb)
 for IdleLevel in [0, 1]:
     for Mode in ["LOW_LATENCY", "GLITCH_FILTER"]:
-        tb.add_config(name=f'I={IdleLevel}-M={Mode}',generics={'IdleLevel_g': IdleLevel, 'Mode_g' : Mode})
+        named_config(tb, {'IdleLevel_g': IdleLevel, 'Mode_g' : Mode})
 for Mode in ["LOW_LATENCY", "GLITCH_FILTER"]:
     #Cover ranges around 31/32 and 63/64 in detail (clock divider edge cases)
     for Cycles in [10, 30, 31, 32, 50, 60, 61, 62, 63, 64, 65, 100, 200, 735]:
-        tb.add_config(name=f'C={Cycles}-M={Mode}', generics={'DebounceCycles_g': Cycles, 'Mode_g': Mode})
+        named_config(tb, {'DebounceCycles_g': Cycles, 'Mode_g': Mode})
 
 i2c_master_tb = 'olo_intf_i2c_master_tb'
 tb = olo_tb.test_bench(i2c_master_tb)
 for BusFreq in [int(100e3), int(400e3), int(1e6)]:
-    tb.add_config(name=f'F={BusFreq}',generics={'BusFrequency_g': BusFreq})
+    named_config(tb, {'BusFrequency_g': BusFreq})
 for IntTri in [True, False]:
-    tb.add_config(name=f'IntTri={IntTri}',generics={'InternalTriState_g': IntTri})
+    named_config(tb, {'InternalTriState_g': IntTri})
 
 # olo_intf_sync - no generics to iterate
-
 clk_meas_tb = 'olo_intf_clk_meas_tb'
 tb = olo_tb.test_bench(clk_meas_tb)
 freqs = [(100, 100), (123, 7837), (7837, 123)]
 for FreqClk, FreqTest in freqs:
-    tb.add_config(name=f'C={FreqClk}-T={FreqTest}',
-                  generics={'ClkFrequency_g': FreqClk, 'MaxClkTestFrequency_g': FreqTest})
+    named_config(tb, {'ClkFrequency_g': FreqClk, 'MaxClkTestFrequency_g': FreqTest})
 
 
 spi_master_tb = 'olo_intf_spi_master_tb'
 tb = olo_tb.test_bench(spi_master_tb)
 for FreqBus in [int(1e6), int(10e6)]:
-    tb.add_config(name=f'F={FreqBus}',
-                  generics={'BusFrequency_g': FreqBus})
+    named_config(tb, {'BusFrequency_g': FreqBus})
 for LsbFirst in [False, True]:
-    tb.add_config(name=f'LF={LsbFirst}',
-                  generics={'LsbFirst_g': LsbFirst})
+    named_config(tb, {'LsbFirst_g': LsbFirst})
 for CPHA in [0, 1]:
     for CPOL in [0, 1]:
-        tb.add_config(name=f'CPHA={CPHA}-CPOL={CPOL}',
-                      generics={'SpiCpha_g': CPHA, 'SpiCpol_g': CPOL})
+        named_config(tb, {'SpiCpha_g': CPHA, 'SpiCpol_g': CPOL})
 
 spi_master_fixsize_tb = 'olo_intf_spi_master_fixsize_tb'
 tb = olo_tb.test_bench(spi_master_fixsize_tb)
 for LsbFirst in [False, True]:
-    tb.add_config(name=f'LF={LsbFirst}',
-                  generics={'LsbFirst_g': LsbFirst})
+    named_config(tb, {'LsbFirst_g': LsbFirst})
 
 
 ########################################################################################################################
