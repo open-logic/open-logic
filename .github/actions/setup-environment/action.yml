@@ -20,7 +20,6 @@ runs:
       run: pip install -r ./.github/workflows/requirements.txt
     #Setup APT Get packages
     - name: Setup APT packages cache directory
-      shell: bash
       uses: actions/cache@v3
       with:
         path: |
@@ -29,6 +28,7 @@ runs:
         restore-keys: |
           ${{ runner.os }}-apt-cache-
     - name: Install APT packages
+      shell: bash
       run: |
         mkdir -p ${{ github.workspace }}/apt-cache
         sudo cp ${{ github.workspace }}/apt-cache/* /var/cache/apt/archives/ || true
