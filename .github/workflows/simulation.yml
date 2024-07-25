@@ -46,8 +46,8 @@ jobs:
         if: steps.cache-ghdl.outputs.cache-hit != 'true'
         run: |
           mkdir -p ~/ghdl
-          curl -L -o ghdl-gha-ubuntu-20.04-mcode.tgz https://example.com/path/to/ghdl-gha-ubuntu-20.04-mcode.tgz
-          tar zxvf ghdl-gha-ubuntu-20.04-mcode.tgz -C ~/ghdl
+          wget https://github.com/ghdl/ghdl/releases/download/v3.0.0/ghdl-gha-ubuntu-20.04-mcode.tgz
+          tar zxvf ghdl-gha-ubuntu-20.04-mcode.tgz ~/ghdl
       - name: Add GHDL to PATH
         run: echo "$HOME/ghdl/bin" >> $GITHUB_PATH
       #Run Simulation
