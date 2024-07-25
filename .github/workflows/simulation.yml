@@ -27,10 +27,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
       #Setup environment
-      - name: List
-        run: ls -l ./.github/workflows
-      - name: Setup environment
-        uses: ./.github/workflows/setup-environment.yml
+      - name: Use My Composite Action
+        uses: ./.github/actions/setup-environment@${{ github.ref_name }}
       #Run Simulation
       - name: Run Simulation
         run: |
