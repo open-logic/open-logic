@@ -24,9 +24,6 @@ runs:
       run: |
         sudo apt-get update
         xargs -a .github/workflows/apt-dependencies.txt sudo apt-get install -y
-    - name: Change permissions on custom apt cache directory
-      shell: bash
-      run: sudo chmod -R 777 ${{ github.workspace }}/apt-cache
     #Setup GHDL (Uncached - no benefit in time)
     - name: Download and extract GHDL
       shell: bash
