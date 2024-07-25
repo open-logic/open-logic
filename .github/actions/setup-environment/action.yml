@@ -29,6 +29,7 @@ runs:
         restore-keys: |
           ${{ runner.os }}-apt-cache-
     - name: Install APT packages
+      shell: bash
       run: |
         sudo apt-get update
         sudo apt-get install -y gnat libgnat-9
@@ -43,9 +44,11 @@ runs:
           ${{ runner.os }}-ghdl-
     - name: Download and extract GHDL if not cached
       if: steps.cache-ghdl.outputs.cache-hit != 'true'
+      shell: bash
       run: |
         mkdir -p ~/ghdl
         wget https://github.com/ghdl/ghdl/releases/download/v3.0.0/ghdl-gha-ubuntu-20.04-mcode.tgz
         tar zxvf ghdl-gha-ubuntu-20.04-mcode.tgz -C ~/ghdl
     - name: Add GHDL to PATH
+      shell: bash
       run: echo "$HOME/ghdl/bin" >> $GITHUB_PATH
