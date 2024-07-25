@@ -35,16 +35,7 @@ runs:
         sudo apt-get update
         xargs -a .github/workflows/apt-dependencies.txt sudo apt-get install -y
     #Setup GHDL
-    - name: Set up GHDL cache
-      id: cache-ghdl
-      uses: actions/cache@v3
-      with:
-        path: ~/ghdl
-        key: ${{ runner.os }}-ghdl-${{ hashFiles('~/ghdl-gha-ubuntu-20.04-mcode.tgz') }}
-        restore-keys: |
-          ${{ runner.os }}-ghdl-
     - name: Download and extract GHDL if not cached
-      if: steps.cache-ghdl.outputs.cache-hit != 'true'
       shell: bash
       run: |
         mkdir -p ~/ghdl
