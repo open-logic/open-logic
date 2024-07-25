@@ -21,19 +21,19 @@ jobs:
   simulation:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      #General Setup
       - name: Setup node
         uses: actions/setup-node@v4
-      - name: Setup python
-        uses: actions/setup-python@v5
-        with: 
-          python-version: '3.10'
-          cache: 'pip'
-      - run: pip install -r ./.github/workflows/requirements.txt
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      #Setup environment
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          os: ${{ runner.os }}
+      #Run Simulation
       - name: Run Simulation
         run: |
-         source ./.github/workflows/install_ghdl.sh
          source ./.github/workflows/run_simulation.sh
          echo "Simulation Done"
       - name: Upload sim results
