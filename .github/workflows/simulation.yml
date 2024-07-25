@@ -21,19 +21,38 @@ jobs:
   simulation:
     runs-on: ubuntu-latest
     steps:
+      #General Setup
       - name: Checkout repo
         uses: actions/checkout@v4
       - name: Setup node
         uses: actions/setup-node@v4
+      #Python Setup
       - name: Setup python
         uses: actions/setup-python@v5
         with: 
           python-version: '3.10'
           cache: 'pip'
       - run: pip install -r ./.github/workflows/requirements.txt
+      #Setup GHDL
+      - name: Set up GHDL cache
+        id: cache-ghdl
+        uses: actions/cache@v3
+        with:
+          path: ~/ghdl
+          key: ${{ runner.os }}-ghdl-${{ hashFiles('~/ghdl-gha-ubuntu-20.04-mcode.tgz') }}
+        restore-keys: |
+          ${{ runner.os }}-ghdl-
+    - name: Download and extract GHDL if not cached
+      if: steps.cache-ghdl.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p ~/ghdl
+        curl -L -o ghdl-gha-ubuntu-20.04-mcode.tgz https://example.com/path/to/ghdl-gha-ubuntu-20.04-mcode.tgz
+        tar zxvf ghdl-gha-ubuntu-20.04-mcode.tgz -C ~/ghdl
+    - name: Add GHDL to PATH
+      run: echo "$HOME/ghdl/bin" >> $GITHUB_PATH
+      #Run Simulation
       - name: Run Simulation
         run: |
-         source ./.github/workflows/install_ghdl.sh
          source ./.github/workflows/run_simulation.sh
          echo "Simulation Done"
       - name: Upload sim results
