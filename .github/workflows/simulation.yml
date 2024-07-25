@@ -24,8 +24,15 @@ jobs:
          source ./.github/workflows/install_python.sh
          source ./.github/workflows/run_simulation.sh
          echo "Simulation Done"
-      - name: Archive production artifacts
+      - name: Upload sim results
         uses: actions/upload-artifact@v4
         with:
           name: VUnit Tests
           path: sim/sim_report.xml
+      - name: Publish sim results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: VUnit Tests
+          path: sim/sim_report.xml
+          reporter: junit
