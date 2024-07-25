@@ -20,6 +20,7 @@ runs:
       run: pip install -r ./.github/workflows/requirements.txt
     #Setup APT Get packages
     - name: Setup APT packages cache directory
+      shell: bash
       uses: actions/cache@v3
       with:
         path: |
@@ -35,6 +36,7 @@ runs:
         xargs -a .github/workflows/apt-dependencies.txt sudo apt-get install -y
         sudo cp /var/cache/apt/archives/* ${{ github.workspace }}/apt-cache/ || true
     - name: Change permissions on custom apt cache directory
+      shell: bash
       run: sudo chmod -R 777 ${{ github.workspace }}/apt-cache
     #Setup GHDL
     - name: Download and extract GHDL
