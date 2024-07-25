@@ -25,10 +25,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup node
         uses: actions/setup-node@v4
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with: python-version: '3.10'
+        cache: 'pip'
+      - run: pip install -r ./.github/workflows/python_requirements.txt
       - name: Run Simulation
         run: |
          source ./.github/workflows/install_ghdl.sh
-         source ./.github/workflows/install_python.sh
          source ./.github/workflows/run_simulation.sh
          echo "Simulation Done"
       - name: Upload sim results
