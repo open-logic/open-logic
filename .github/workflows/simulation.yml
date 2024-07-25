@@ -22,11 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       #General Setup
-      - name: Checkout repo
-        uses: actions/checkout@v4
       - name: Setup node
         uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
       #Setup environment
+      - name: List
+        run: ls -l ./.github/workflows
       - name: Setup environment
         uses: ./.github/workflows/setup-environment.yml
       #Run Simulation
