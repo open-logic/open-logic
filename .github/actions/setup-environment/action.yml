@@ -25,14 +25,14 @@ runs:
         path: |
           /var/cache/apt
           /var/lib/apt/lists
-        key: ${{ runner.os }}-apt-cache-${{ hashFiles('path/to/dependency-list.txt') }}
+        key: ${{ runner.os }}-apt-cache-${{ hashFiles('.github/workflows/apt-dependencies.txt') }}
         restore-keys: |
           ${{ runner.os }}-apt-cache-
     - name: Install APT packages
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install -y gnat libgnat-9
+        xargs -a .github/workflows/apt-dependencies.txt sudo apt-get install -y
     #Setup GHDL
     - name: Set up GHDL cache
       id: cache-ghdl
