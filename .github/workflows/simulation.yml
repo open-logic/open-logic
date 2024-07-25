@@ -45,9 +45,9 @@ jobs:
       - name: Download and extract GHDL if not cached
         if: steps.cache-ghdl.outputs.cache-hit != 'true'
         run: |
-        mkdir -p ~/ghdl
-        curl -L -o ghdl-gha-ubuntu-20.04-mcode.tgz https://example.com/path/to/ghdl-gha-ubuntu-20.04-mcode.tgz
-        tar zxvf ghdl-gha-ubuntu-20.04-mcode.tgz -C ~/ghdl
+          mkdir -p ~/ghdl
+          curl -L -o ghdl-gha-ubuntu-20.04-mcode.tgz https://example.com/path/to/ghdl-gha-ubuntu-20.04-mcode.tgz
+          tar zxvf ghdl-gha-ubuntu-20.04-mcode.tgz -C ~/ghdl
       - name: Add GHDL to PATH
         run: echo "$HOME/ghdl/bin" >> $GITHUB_PATH
       #Run Simulation
