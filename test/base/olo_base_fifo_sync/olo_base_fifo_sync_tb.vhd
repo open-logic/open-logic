@@ -136,7 +136,7 @@ begin
                 check_equal(Out_Valid, '0', "Out_Valid reset state not '0'");
                 check_equal(Full, '0', "Full reset state not '0'");
                 check_equal(Empty, '1', "Empty reset state not '1'");
-                check_equal(In_Level, 1, "In_Level reset state not 0");
+                check_equal(In_Level, 0, "In_Level reset state not 0");
                 check_equal(Out_Level, 0, "In_Level reset state not 0");
                 if AlmFullOn_g then
                     check_equal(AlmFull, '0', "AlmFull reset state not '0'");
