@@ -19,6 +19,9 @@ runs:
       shell: bash
       run: pip install -r ./.github/workflows/requirements.txt
     #Setup APT Get packages
+    #The the /var/cache/apt/archive folder cannot be cached directly due to 
+    #.. permission restrictions. Therefore it is copied to a custom directlry
+    #.. for caching and back for using.
     - name: Setup APT packages cache directory
       uses: actions/cache@v3
       with:
