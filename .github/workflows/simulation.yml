@@ -29,6 +29,8 @@ jobs:
       #Setup environment
       - name: Setup environment
         uses: ./.github/actions/setup-environment
+        with:
+          os: ${{ runner.os }}
       #Run Simulation
       - name: Run Simulation
         run: |
