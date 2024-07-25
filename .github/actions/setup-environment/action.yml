@@ -19,6 +19,11 @@ runs:
       shell: bash
       run: pip install -r ./.github/workflows/requirements.txt
     #Setup APT Get packages
+    - name: Change permissionsons on apt cache
+      shell: bash
+      run: | 
+        sudo chmod -R 777 /var/cache/apt
+        sudo chmod -R 777 /var/lib/apt/lists
     - name: Setup apt packages
       id: cache-apt
       uses: actions/cache@v3
@@ -36,6 +41,7 @@ runs:
         xargs -a .github/workflows/apt-dependencies.txt sudo apt-get install -y
     #Setup GHDL
     - name: Download and extract GHDL if not cached
+      if: steps.cache-ghdl.outputs.cache-hit != 'true'
       shell: bash
       run: |
         mkdir -p ~/ghdl
