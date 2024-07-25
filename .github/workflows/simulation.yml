@@ -27,8 +27,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
       #Setup environment
-      - name: Use My Composite Action
-        uses: ./.github/actions/setup-environment@${{ github.ref_name }}
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
       #Run Simulation
       - name: Run Simulation
         run: |
