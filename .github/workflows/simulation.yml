@@ -30,7 +30,7 @@ jobs:
         with: 
           python-version: '3.10'
           cache: 'pip'
-      - run: pip install -r requirements.txt
+      - run: pip install -r ./.github/workflows/requirements.txt
       - name: Run Simulation
         run: |
          source ./.github/workflows/install_ghdl.sh
