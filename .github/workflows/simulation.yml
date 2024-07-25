@@ -30,9 +30,7 @@ jobs:
           name: VUnit Tests
           path: sim/sim_report.xml
       - name: Publish sim results
-        uses: dorny/test-reporter@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
-          name: VUnit Tests
-          path: sim/sim_report.xml
-          reporter: junit
+          files: sim/sim_report.xml
