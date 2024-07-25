@@ -1,5 +1,12 @@
 name: simulation
-run-name: ${{ github.actor }} is HDL Simlations
+run-name: ${{ github.actor }} triggered HDL Simlations
+
+# Set the permissions for the workflow
+permissions:
+  checks: write
+  pull-requests: write
+
+#Set Triggers
 on:
   push:
     branches:
@@ -9,7 +16,7 @@ on:
   schedule:
     - cron: '0 3 * * 1'
   
-  
+#Jobs  
 jobs:
   simulation:
     runs-on: ubuntu-latest
