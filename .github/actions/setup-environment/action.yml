@@ -9,7 +9,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    #Python Setup
+    #Python Setup (Cached)
     - name: Setup python
       uses: actions/setup-python@v5
       with: 
@@ -18,30 +18,16 @@ runs:
     - name: Install Python Requiremetns
       shell: bash
       run: pip install -r ./.github/workflows/requirements.txt
-    #Setup APT Get packages
-    #The the /var/cache/apt/archive folder cannot be cached directly due to 
-    #.. permission restrictions. Therefore it is copied to a custom directlry
-    #.. for caching and back for using.
-    - name: Setup APT packages cache directory
-      uses: actions/cache@v3
-      with:
-        path: |
-          ${{ github.workspace }}/apt-cache
-        key: ${{ runner.os }}-apt-cache-${{ hashFiles('.github/workflows/apt-dependencies.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-apt-cache-
+    #Setup APT Get packages (Uncached - complex and little benefit in time)
     - name: Install APT packages
       shell: bash
       run: |
-        mkdir -p ${{ github.workspace }}/apt-cache
-        sudo cp ${{ github.workspace }}/apt-cache/* /var/cache/apt/archives/ || true
         sudo apt-get update
         xargs -a .github/workflows/apt-dependencies.txt sudo apt-get install -y
-        sudo cp /var/cache/apt/archives/* ${{ github.workspace }}/apt-cache/ || true
     - name: Change permissions on custom apt cache directory
       shell: bash
       run: sudo chmod -R 777 ${{ github.workspace }}/apt-cache
-    #Setup GHDL
+    #Setup GHDL (Uncached - no benefit in time)
     - name: Download and extract GHDL
       shell: bash
       run: |
