@@ -47,7 +47,7 @@ jobs:
         run: |
           mkdir -p ~/ghdl
           wget https://github.com/ghdl/ghdl/releases/download/v3.0.0/ghdl-gha-ubuntu-20.04-mcode.tgz
-          tar zxvf ghdl-gha-ubuntu-20.04-mcode.tgz ~/ghdl
+          tar zxvf ghdl-gha-ubuntu-20.04-mcode.tgz -C ~/ghdl
       - name: Add GHDL to PATH
         run: echo "$HOME/ghdl/bin" >> $GITHUB_PATH
       #Run Simulation
