@@ -7,6 +7,7 @@
 from os import path
 import glob
 import argparse
+import shutil
 
 
 #Parse Arguments
@@ -30,6 +31,9 @@ files_rel = glob.glob(path.join(SRC_DIR, "**/vhdl/*.vhd"), recursive=True)
 # Get project directory
 prj_file = path.abspath(args.project)
 prj_dir = path.dirname(prj_file)
+
+#Store backup of project file
+shutil.copy(prj_file, prj_file + ".backup")
 
 # Get VHDL library to compile into
 lib = args.library
