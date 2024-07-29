@@ -6,27 +6,37 @@
 
 from os import path
 import glob
+import argparse
 
+
+#Parse Arguments
+# Parse command line arguments
+HELP_LIBRARY = \
+"""
+VHDL library to compile into".
+For using from VHDL, files are usually compiled into the library 'olo'.
+For using from Verilog, files are usually compiled into the library 'default'.
+For details and reasoning, see markdown documentation.
+"""
+parser = argparse.ArgumentParser(description="Import Open Logic sources into Efinity project file")
+parser.add_argument("--project", type=str, help="Path to the project file (<name>.xml)", required=True)
+parser.add_argument("--library", type=str, help=HELP_LIBRARY, required=True)
+args = parser.parse_args()
+
+# Find all *.vhd files in SRC_DIR/.../vhdl
 SRC_DIR = "../../src"
+files_rel = glob.glob(path.join(SRC_DIR, "**/vhdl/*.vhd"), recursive=True)
+
+# Get project directory
+prj_file = path.abspath(args.project)
+prj_dir = path.dirname(prj_file)
+
+# Get VHDL library to compile into
+lib = args.library
 
 #Find all *.vhd files in SRC_DIR/.../vhdl
 files_rel = glob.glob(path.join(SRC_DIR, "**/vhdl/*.vhd"), recursive=True)
 
-#Get project directory
-print()
-prj_file = input("Enter the path to the project file (<name>.xml): ")
-if prj_file == "":
-    raise "Project file-name must be specified"
-prj_dir = path.dirname(prj_file)
-
-#Get VHDL library to compile into")
-print()
-print("For using from VHDL, files are usually compiled into the library 'olo'.")
-print("For using from Verilog, files are usually compiled into the library 'default'.")
-print("For details and reasoning, see markdown documentation.")
-lib = input("Enter the VHDL library to compile into: ")
-if lib == "":
-    raise "Library name can't be empty"
 
 # Create file paths relative to project directory
 files_rel_prj = [path.relpath(path.abspath(f), path.abspath(prj_dir)) for f in files_rel]
@@ -40,8 +50,8 @@ with open(prj_file, "r") as f:
 
 #Find index of the first project file
 for i, l in enumerate(prj_lines):
-    if l.strip().startswith("<efx:design_file"):
-        target_idx = i
+    if l.strip().startswith("<efx:top_module"):
+        target_idx = i + 1
         break
 else:
     raise "No line starting with '<efx:design_file' found in project file"
