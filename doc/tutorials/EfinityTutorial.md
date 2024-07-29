@@ -177,7 +177,7 @@ Timing is easily met - as one would expect for such a simple design.
 
 ## Step 4: Try it on Hardware
 
-Now connect your [Trion T20 BGA256 Development Kit](https://www.efinixinc.com/products-devkits-triont20.html)hardware to your PC using the USB cable.
+Now connect your [Trion T20 BGA256 Development Kit](https://www.efinixinc.com/products-devkits-triont20.html) hardware to your PC using the USB cable.
 
 Open the Programmer:
 
