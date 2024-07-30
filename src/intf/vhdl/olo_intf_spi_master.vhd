@@ -93,17 +93,23 @@ architecture rtl of olo_intf_spi_master is
 
     -- Signal required for automatic constraining
     signal SpiMiso_i : std_logic;
-    -- Synthesis attributes Intel
+
+    -- Synthesis attributes Altera (Quartus)
     attribute dont_merge : boolean;
     attribute dont_merge of SpiMiso_i : signal is true;
     attribute preserve : boolean;
     attribute preserve of SpiMiso_i : signal is true;
-    -- Synthesis attributes for AMD
+
+    -- Synthesis attributes for AMD (Vivado)
     attribute keep : string;
     attribute keep of SpiMiso_i : signal is "TRUE";
     attribute dont_touch : string;
     attribute dont_touch of SpiMiso_i : signal is "TRUE";
 
+    -- Synthesis attributes for Efnix (Efinity)
+    attribute syn_keep : boolean;
+    attribute syn_keep of SpiMiso_i : signal is true;
+    
     -- *** Functions and procedures ***
     function GetClockLevel(ClkActive : boolean) return std_logic is
     begin

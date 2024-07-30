@@ -54,7 +54,7 @@ architecture struct of olo_base_cc_simple is
 
     signal Out_Data_Sig : std_logic_vector(Width_g - 1 downto 0);
 
-        -- Synthesis attributes Xilinx
+    -- Synthesis attributes AMD (Vivado)
     attribute dont_touch             : boolean;
     attribute keep                   : string;
     attribute dont_touch of Out_Data_Sig       : signal is true;
