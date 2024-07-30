@@ -30,7 +30,7 @@ entity olo_base_ram_sdp is
         Width_g         : positive; 
         IsAsync_g       : boolean  := false;
         RdLatency_g     : positive := 1;  
-        RamStyle_g      : string   := "auto";   -- intel "M4K", "M9K", "M20K", "M144K", or "MLAB" - amd block, distributed, ultra, auto
+        RamStyle_g      : string   := "auto"; 
         RamBehavior_g   : string   := "RBW";
         UseByteEnable_g : boolean  := false
     );
@@ -68,9 +68,13 @@ architecture rtl of olo_base_ram_sdp is
     attribute shreg_extract : string;
     attribute shreg_extract of rd_pipe : signal is "no";
 
-    -- Intel RAM implementation attributes
+    -- Altera RAM implementation attributes
     attribute ramstyle : string;
     attribute ramstyle of mem : variable is RamStyle_g;
+
+    -- Efinix RAM implementation attributes
+    attribute syn_ramstyle : string;
+    attribute syn_ramstyle of mem : variable is RamStyle_g;
 
 begin
 
