@@ -62,7 +62,7 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | [olo_base_arb_prio](./base/olo_base_arb_prio.md) | Priority arbiter - Always selects the highest priority requester with a pending request. |
 | [olo_base_arb_rr](./base/olo_base_arb_rr.md)     | Round robin arbiter - iterate through all requesters with a pending request. |
 
-### TDM (olo_base_tdm_<...>)
+### TDM (olo_base_tdm_\<...\>)
 
 See [Conventions](./Conventions.md) for a description about TDM (time-division-multiplexing).
 
