@@ -226,16 +226,22 @@ begin
         signal VldReg   : std_logic;
         signal DataReg  : std_logic_vector(Width_g-1 downto 0);
 
-        -- Synthesis attributes AMD
-        attribute syn_srlstyle : string;
-        attribute syn_srlstyle of VldReg : signal is "registers";
-        attribute syn_srlstyle of DataReg : signal is "registers";
-
+        -- Synthesis attributes AMD (Vivado)
         attribute shreg_extract : string;
         attribute shreg_extract of VldReg : signal is "no";
         attribute shreg_extract of DataReg : signal is "no";
 
-        -- Synthesis attributes Intel
+        -- Synthesis attributes AMD (Vivado) and Efinix (Efinity)
+        attribute syn_srlstyle : string;
+        attribute syn_srlstyle of VldReg : signal is "registers";
+        attribute syn_srlstyle of DataReg : signal is "registers";
+
+        -- Synthesis attributes Efinix (Efinity)
+        attribute syn_preserve : boolean;
+        attribute syn_preserve of VldReg : signal is true;
+        attribute syn_preserve of DataReg : signal is true; 
+
+        -- Synthesis attributes Altera (Quartus)
         attribute dont_merge : boolean;
         attribute dont_merge of VldReg : signal is true;
         attribute dont_merge of DataReg : signal is true;   

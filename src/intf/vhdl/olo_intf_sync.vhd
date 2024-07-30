@@ -47,20 +47,21 @@ architecture struct of olo_intf_sync is
     signal Reg0     : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
     signal Reg1     : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
 
-    -- Synthesis attributes Xilinx
-    attribute syn_srlstyle : string;
-    attribute syn_srlstyle of Reg0 : signal is "registers";
-    attribute syn_srlstyle of Reg1 : signal is "registers";
-
+    -- Synthesis attributes AMD (Vivado)
     attribute shreg_extract : string;
     attribute shreg_extract of Reg0 : signal is "no";
     attribute shreg_extract of Reg1 : signal is "no";
 
-    attribute ASYNC_REG : string;
-    attribute ASYNC_REG of Reg0 : signal is "TRUE";
-    attribute ASYNC_REG of Reg1 : signal is "TRUE";
+    -- Synthesis attributes for AMD (Vivado) and Efinitx (Efinity)
+    attribute async_reg : boolean;
+    attribute async_reg of Reg0 : signal is true;
+    attribute async_reg of Reg1 : signal is true;
 
-    -- Synthesis attributes Intel
+    attribute syn_srlstyle : string;
+    attribute syn_srlstyle of Reg0 : signal is "registers";
+    attribute syn_srlstyle of Reg1 : signal is "registers";
+
+    -- Synthesis attributes Altera (Quartus)
     attribute dont_merge : boolean;
     attribute dont_merge of Reg0 : signal is true;
     attribute dont_merge of Reg1 : signal is true;   

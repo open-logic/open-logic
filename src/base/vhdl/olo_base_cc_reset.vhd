@@ -50,26 +50,27 @@ architecture struct of olo_base_cc_reset is
     signal RstRqstA2B  : std_logic_vector(2 downto 0) := (others => '0');
     signal RstAckA2B   : std_logic; --std_logic_vector(2 downto 0) := (others => '0');
 
-   -- Synthesis attributes Xilinx
-   attribute syn_srlstyle : string;
-   attribute syn_srlstyle of RstRqstB2A : signal is "registers";
-   attribute syn_srlstyle of RstAckB2A : signal is "registers";
-   attribute syn_srlstyle of RstRqstA2B : signal is "registers";
-   attribute syn_srlstyle of RstAckA2B : signal is "registers";
-
+   -- Synthesis attributes AMD (Vivado)
    attribute shreg_extract : string;
    attribute shreg_extract of RstRqstB2A : signal is "no";
    attribute shreg_extract of RstAckB2A : signal is "no";
    attribute shreg_extract of RstRqstA2B : signal is "no";
    attribute shreg_extract of RstAckA2B : signal is "no";
 
-   attribute ASYNC_REG : string;
-   attribute ASYNC_REG of RstRqstB2A : signal is "TRUE";
-   attribute ASYNC_REG of RstAckB2A : signal is "TRUE";
-   attribute ASYNC_REG of RstRqstA2B : signal is "TRUE";
-   attribute ASYNC_REG of RstAckA2B : signal is "TRUE";
+   -- Synthesis attributes AMD (Vivado) and Efinix (Efinity)
+   attribute syn_srlstyle : string;
+   attribute syn_srlstyle of RstRqstB2A : signal is "registers";
+   attribute syn_srlstyle of RstAckB2A : signal is "registers";
+   attribute syn_srlstyle of RstRqstA2B : signal is "registers";
+   attribute syn_srlstyle of RstAckA2B : signal is "registers";
 
-   -- Synthesis attributes Intel
+   attribute async_reg : boolean;
+   attribute async_reg of RstRqstB2A : signal is true;
+   attribute async_reg of RstAckB2A : signal is true;
+   attribute async_reg of RstRqstA2B : signal is true;
+   attribute async_reg of RstAckA2B : signal is true;
+
+   -- Synthesis attributes Altera (Quartus)
    attribute dont_merge : boolean;
    attribute dont_merge of RstRqstB2A : signal is true;
    attribute dont_merge of RstAckB2A : signal is true;   
