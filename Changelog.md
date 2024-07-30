@@ -2,6 +2,49 @@
 
 # Changelog
 
+## 2.1.0 
+
+30-Jul-2024
+
+### Added Features
+
+* Efinix Efinity integration
+  * Script to automatically import all *Open Logic* features into an *Efinity* project
+  * Addition of synthesis attributes for *Efinity*
+  * *Efinity* tutorial
+* Added *FuseSoC* package manager support
+* *olo_intf_spi_master*
+  * SPI master
+
+### Backward Compatible Changes
+
+* Various documentation improvements
+* Various optimizations on the CI/CD infrastructure
+
+
+### Non Backward Compatible Changes
+
+* None
+
+
+### Bugfixes (Backward Compatible)
+
+* Fixed sensitivity list in *olo_axi_master_simple* (#41)
+  * *M_Axi_RResp* was missing
+  * Credits to [kuriousd](https://github.com/kuriousd) for reporting
+* Process scoped constraints *late* for AMD Vivado
+  * User constraints must be processed before scoped constraints, otherwise clocks are not known to scoped constraints
+
+## Credits
+
+### Reporters
+
+* [kuriousd](https://github.com/kuriousd) 
+
+### Contributors
+
+* None
+
 ## 2.0.0 
 
 06-Jul-2024
