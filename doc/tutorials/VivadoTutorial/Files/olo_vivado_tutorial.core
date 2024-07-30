@@ -1,5 +1,5 @@
 CAPI=2:
-name : open-logic:tutorials:vivado_tutorial:2.0
+name : open-logic:tutorials:vivado_tutorial:2.1.0
 description : vivado tutorial for open-logic, targetting Zybo Z7-10 board
 
 filesets:
@@ -33,4 +33,4 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : fusesoc-test
+  version : 2.1.0
