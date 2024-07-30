@@ -30,7 +30,7 @@ Close the Efinity project. This is required because the script to add *Open Logi
 
 ![Screenshot](./EfinityTutorial/Pictures/integrate_olo_01.png)
 
-Open a terminal window and navigate to *<open-logic-root>/tools/efinity*. The execute the import scripts. There are a few notes for this step:
+Open a terminal window and navigate to *<open-logic-root>/tools/efinity*. The execute the import script. There are a few notes for this step:
 
 * Python3 must be installed on your PC
 * Use forward slashes (/) as path-separator, also if your PC is a windows PC.
@@ -106,7 +106,7 @@ First timing constraints are added through the right-click menu of the *Constrai
 
 ![Design](./EfinityTutorial/Pictures/add_constraints_01.png)
 
-A basic timing constraint file specifying the clock frequency is provided in the file [<open-logic-root>/doc/tutorials/EfinityTutorial/Files/timing.sdc](./EfiintyTutorial/Files/timing.sdc). The constraint file only defines the clock frequency in this case - not what is state of the art for a real design but sufficient for the tutorial.
+A basic timing constraint file specifying the clock frequency is provided in the file [<open-logic-root>/doc/tutorials/EfinityTutorial/Files/timing.sdc](./EfinityTutorial/Files/timing.sdc). The constraint file only defines the clock frequency in this case - not what is state of the art for a real design but sufficient for the tutorial.
 
 ![Design](./EfinityTutorial/Pictures/add_constraints_02.png)
 
@@ -130,7 +130,7 @@ Open the file selection dialog.
 
 ![Design](./EfinityTutorial/Pictures/add_interface_04.png)
 
-Select the file [<open-logic-root>/doc/tutorials/EfinityTutorial/Files/pinout.isf](./EfiintyTutorial/Files/pinout.isf).
+Select the file [<open-logic-root>/doc/tutorials/EfinityTutorial/Files/pinout.isf](./EfinityTutorial/Files/pinout.isf).
 
 ![Design](./EfinityTutorial/Pictures/add_interface_05.png)
 
