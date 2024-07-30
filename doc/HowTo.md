@@ -48,7 +48,7 @@ Because Quartus does not support scoped constraints, **NO** constraints are impo
 [FuseSoC](https://github.com/olofk/fusesoc) is a package manager and build system for HDL projects. Open Logic supports fuse-soc. To use Open Logic through fusesoc, just add open logic as a library:
 
 ```
-fusesoc library add https://github.com/open-logic/open-logic
+fusesoc library add open-logic https://github.com/open-logic/open-logic
 ```
 
 You should now get one package listed for every area in Open Logic. You can us them independently (dependencies are modelled in FuseSoC correctly and resolved automatically). You also see the tutorials being available and buildable through FuseSoC.
