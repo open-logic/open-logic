@@ -14,7 +14,7 @@ To run the script, follow the steps below:
 
 1. Create a project in Efinity (if it does not yet exist)
 2. Close the project in Efinity. Remember where it is stored on the file-system.
-3. Open a terminal window and navigate to *<open-logic-root>/tools/efinity*
+3. Open a terminal window and navigate to *\<open-logic-root\>/tools/efinity*
 4. Run the command `python3 ./import_sources.py --project <path-to-project-xml> --library <library-name>`
    Replace `<path-to-project-xml>` by the path to the project file (to the *project.xml* file, NOT the *project.peri.xml* )
    Replace `<library-name>` by the library to compile open-logic sources into (*olo* for VHDL, *default* for Verilog)
@@ -25,7 +25,7 @@ Two more notes:
 
 * For the usage of *Open Logic* from Verilog, the *default* library has to be chosen because Efinity does require the top-entity to be in the *default* library and for Verilog Efinity does only allow using VHDL entities in the same library as the module instantiating them. That's why using VHDL entities in any other library (e.g. named *olo* ) is not possible.
 * You can get help regarding the *import_sources.py* script by calling `python3 ./import_sources.py -h`
-* The *import_sources.py* script does create a backup of the project file, so you can restore it if something goes wrong. The backup file is stored under *<name>.xml.backup*.
+* The *import_sources.py* script does create a backup of the project file, so you can restore it if something goes wrong. The backup file is stored under *\<name\>.xml.backup*.
 
 ## ... Use Open Logic in a AMD Vivado Project
 

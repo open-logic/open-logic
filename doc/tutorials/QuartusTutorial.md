@@ -38,7 +38,7 @@ Open the Quartus TCL console:
 
 ![Screenshot](./QuartusTutorial/Pictures/integrate_olo_01.png)
 
-For following the screenshots most closely, it is best if you navigate to the directory <open-logic-root>/doc/tutorials/QuartusTutorial/Files. This step is optional, if you don't you just have to alter paths for TCL commands accordingly.
+For following the screenshots most closely, it is best if you navigate to the directory \<open-logic-root\>/doc/tutorials/QuartusTutorial/Files. This step is optional, if you don't you just have to alter paths for TCL commands accordingly.
 
 ```source <open-logic-root>/tools/quartus/import_sources.tcl
 cd <open-logic-root>/doc/tutorials/QuartusTutorial/Files
@@ -78,17 +78,17 @@ The design is super simple - it is not meant for demonstrating the coolest featu
 
 ### Add Source Code
 
-The code is provided in the file [<open-logic-root>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.vhd](./QuartusTutorial/Files/quartus_tutorial.vhd). 
+The code is provided in the file [\<open-logic-root\>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.vhd](./QuartusTutorial/Files/quartus_tutorial.vhd). 
 
-If you are using Verilog, use the system verilog source file: [<open-logic-root>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.sv](./QuartusTutorial/Files/quartus_tutorial.sv). 
+If you are using Verilog, use the system verilog source file: [\<open-logic-root\>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.sv](./QuartusTutorial/Files/quartus_tutorial.sv). 
 
 Add this file to the project as follows:
 
 ![Design](./QuartusTutorial/Pictures/add_sources_01.png)
 
-Navigate to the file [<open-logic-root>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.vhd](./QuartusTutorial/Files/quartus_tutorial.vhd) and add it.
+Navigate to the file [\<open-logic-root\>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.vhd](./QuartusTutorial/Files/quartus_tutorial.vhd) and add it.
 
-If you are using Verilog, use the system verilog source file: [<open-logic-root>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.sv](./QuartusTutorial/Files/quartus_tutorial.sv). 
+If you are using Verilog, use the system verilog source file: [\<open-logic-root\>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.sv](./QuartusTutorial/Files/quartus_tutorial.sv). 
 
 ![Design](./QuartusTutorial/Pictures/add_sources_02.png)
 
@@ -102,13 +102,13 @@ And finally select this file as top-module for the project through the right-cli
 
 ### Add Constraints
 
-The required pinout for the DE0-CV board is provided int the TCL script  [<open-logic-root>/doc/tutorials/QuartusTutorial/Files/pinout.xdc](./QuartusTutorial/Files/pinout.tcl). You can simply source it from the TCL console to apply the pinout. You may user absolute or relative paths to refer to the file - of course the path is different on your system than on the screenshot.
+The required pinout for the DE0-CV board is provided int the TCL script  [\<open-logic-root\>/doc/tutorials/QuartusTutorial/Files/pinout.xdc](./QuartusTutorial/Files/pinout.tcl). You can simply source it from the TCL console to apply the pinout. You may user absolute or relative paths to refer to the file - of course the path is different on your system than on the screenshot.
 
 ```
 source ./pinout.tcl 
 ```
 
-Above command assumes you navigated to the  <open-logic-root>/doc/tutorials/QuartusTutorial/Files directory before (see further up in the tutorial).
+Above command assumes you navigated to the \<open-logic-root\>/doc/tutorials/QuartusTutorial/Files directory before (see further up in the tutorial).
 
 You can check if the pinout was applied correctly in the Pin Planner:
 
@@ -122,7 +122,7 @@ If you have any problems with sourcing the TCL script, you can also enter the pi
 
 Next a minimal set of timing constraints is added. The constraint file only defines the clock frequency in this case - not what is state of the art for a real design but sufficient for the tutorial.
 
-This is done by adding the file [<open-logic-root>/doc/tutorials/QuartusTutorial/Files/timing.sdc](./QuartusTutorial/Files/timing.sdc) through the *Add Files* dialog (see [Add Source Code](#Add-Source-Code)). Note that you must change the file-filter to *All Files* in the dialog - by default only RTL files are visible.
+This is done by adding the file [\<open-logic-root\>/doc/tutorials/QuartusTutorial/Files/timing.sdc](./QuartusTutorial/Files/timing.sdc) through the *Add Files* dialog (see [Add Source Code](#Add-Source-Code)). Note that you must change the file-filter to *All Files* in the dialog - by default only RTL files are visible.
 
 ### Build Design
 
@@ -166,7 +166,7 @@ You can now dial in values using the *Switches* and write them into the FIFO by 
 
 ## Step 5: Discussion of the VHDL Source Code
 
-The source code can be found in the file [<open-logic-root>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.vhd](./QuartusTutorial/Files/quartus_tutorial.vhd). 
+The source code can be found in the file [\<open-logic-root\>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.vhd](./QuartusTutorial/Files/quartus_tutorial.vhd). 
 
 Not every line of the source code is discussed. It is simple and implements the design described earlier. Only a few details worth mentioning are discussed.
 
@@ -258,7 +258,7 @@ If you should want to build the tutorial project without many manual mouse click
 
 * Open the TCL console - as described in the tutorial
 
-* In the TCL console, navigate to the directory <open-logic-root>/doc/tutorials/QuartusTutorial/Files
+* In the TCL console, navigate to the directory \<open-logic-root\>/doc/tutorials/QuartusTutorial/Files
   ```
   cd <open-logic-root>/doc/tutorials/QuartusTutorial/Files
   ```
@@ -275,4 +275,4 @@ If you should want to build the tutorial project without many manual mouse click
   source scripted_build_sv.tcl
   ```
 
-Note: replace <open-logic-root> with the root folder of your *Open Logic* working copy.
+Note: replace \<open-logic-root\> with the root folder of your *Open Logic* working copy.

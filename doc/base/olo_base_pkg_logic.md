@@ -16,7 +16,7 @@ This package contains different logic functions not defined in IEEE packages but
 
 ## Definitions
 
-### Polynomial_Prbs<N>_c
+### Polynomial_Prbs\<N\>_c
 
 Common LFSR polynomials. X^N positions are marked by a one:
 
