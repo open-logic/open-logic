@@ -108,6 +108,7 @@ To run the simulations, navigate to *\<root\>/sim* and execute the following com
 ```
 python3 run.py            # For GHDL
 python3 run.py --modelsim # For Modelsim/QuestaSim
+python3 run.py --nvc      # For NVC
 ```
 
 Tipp: For faster runtimes, you may want to use multiple threads to execute simulations. This can be achieved by adding the argument `-p 16` (16 is the number of threads, you may use any other number fitting your CPU).

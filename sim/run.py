@@ -3,25 +3,40 @@ from vunit import VUnit
 from glob import glob
 import os
 import sys
+from enum import Enum
+
+class Simulator(Enum):
+    GHDL = 1
+    MODELSIM = 2
+    NVC = 3
 
 #Argument handling
 argv = sys.argv[1:]
-USE_GHDL = True
+SIMULATOR = Simulator.GHDL
 USE_COVERAGE = False
+
+#Simulator Selection
+#.. The environment variable VUNIT_SIMULATOR has precedence over the commandline options.
 if "--modelsim" in sys.argv:
-    USE_GHDL = False
+    SIMULATOR = Simulator.MODELSIM
     argv.remove("--modelsim")
+if "--nvc" in sys.argv:
+    SIMULATOR = Simulator.NVC
+    argv.remove("--nvc")
 if "--coverage" in sys.argv:
     USE_COVERAGE = True
     argv.remove("--coverage")
-    if USE_GHDL:
-        "Coverage is only allowed with --modelsim"
+    if SIMULATOR != Simulator.MODELSIM:
+        raise "Coverage is only allowed with --modelsim"
 
 # Obviously the simulator must be chosen before sources are added
-if USE_GHDL:
-    os.environ['VUNIT_SIMULATOR'] = 'ghdl'
-else:
-    os.environ['VUNIT_SIMULATOR'] = 'modelsim'
+if 'VUNIT_SIMULATOR' not in os.environ:
+    if SIMULATOR == Simulator.GHDL:
+        os.environ['VUNIT_SIMULATOR'] = 'ghdl'
+    elif SIMULATOR == Simulator.NVC:
+        os.environ['VUNIT_SIMULATOR'] = 'nvc'
+    else:
+        os.environ['VUNIT_SIMULATOR'] = 'modelsim'
 
 # Parse VUnit Arguments
 vu = VUnit.from_argv(compile_builtins=False, argv=argv)
@@ -46,8 +61,8 @@ files = glob('../test/**/*.vhd', recursive=True)
 olo_tb.add_source_files(files)
 
 # Obviously flags must be set after files are imported
-if USE_GHDL:
-    vu.add_compile_option('ghdl.a_flags', ['-frelaxed-rules', '-Wno-hide', '-Wno-shared'])
+vu.add_compile_option('ghdl.a_flags', ['-frelaxed-rules', '-Wno-hide', '-Wno-shared'])
+vu.add_compile_option('nvc.a_flags', ['--relaxed'])
 
 ########################################################################################################################
 # Shared Functions
@@ -339,8 +354,8 @@ for LsbFirst in [False, True]:
 ########################################################################################################################
 # Execution
 ########################################################################################################################
-if USE_GHDL:
-    olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
+
+olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 
 if USE_COVERAGE:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
