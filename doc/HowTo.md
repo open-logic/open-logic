@@ -4,6 +4,20 @@
 
 # Open Logic - How To ...
 
+## ... Use Open Logic in a Questasim Simulation
+
+There is a script to compile all *Open Logic* sources into a library *olo*. To run the script, follow the steps below:
+
+1. Open Questasim
+2. In the Questasim TCL shell, execute the command `source <open-logic-root>/tools/questa/vcom_sources.tcl`
+
+That's it. Nothing more.
+
+* All *Open Logic* sources are configured to be compiled into the library *olo*
+  ![Sources](./general/questa/vcom_sources.png)
+
+
+
 ## ... Use Open Logic in a Efinix Efinity Project
 
 There is a script to import all *Open Logic* sources into a Efinity project.
