@@ -121,7 +121,7 @@ You should now see an output indicating that all tests pass.
 
 For debugging purposes, you may want to visualize a test-case in the GUI. 
 
-For GHDL simulations, the GTKWave tool must be installed (it's the GUI to GHDL). For Questasim a GUI is included.
+For GHDL and NVC simulations, the GTKWave tool must be installed (it's the GUI to GHDL/NVC). For Questasim a GUI is included.
 
 To show simulation results in the GUI, navigate to *\<root\>/sim* and execute the following command:
 
@@ -135,7 +135,7 @@ Where test-case is the exact test-case to display, e.g. "olo_tb.olo_base_cc_bits
 python3 run.py olo_tb.olo_base_cc_bits_tb.D=19-N=20.SimpleTransfer --gui
 ```
 
-The simulator GUI will show up (the example is showing GTKWave - the GHDL GUI):
+The simulator GUI will show up (the example is showing GTKWave - the GHDL/NVC GUI):
 
 ![SimGui](./general/GtkwaveGui.png)
 
