@@ -5,6 +5,7 @@ version = "2.1.0"
 description = "Open Logic HDL Standard Library"
 public = ["/src"]
 source = "https://github.com/open-logic/open-logic/archive/{{orbit.ip.version}}.zip"
+exclude = ["/doc"]
 
 # See more keys and their definitions at https://chaseruskin.github.io/orbit/reference/manifest.html
 
