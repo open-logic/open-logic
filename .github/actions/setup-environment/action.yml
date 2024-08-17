@@ -34,3 +34,25 @@ runs:
     - name: Add GHDL to PATH
       shell: bash
       run: echo "$HOME/ghdl/bin" >> $GITHUB_PATH
+    #Setup NVC (Cached - build requires time)
+    - name: mkdir
+      shell: bash
+      run: mkdir -p ~/nvc
+    - name: cache-nvc
+      id: cache-nvc
+      uses: actions/cache@v3
+      with:
+        path: ~/nvc
+        key: ${{ runner.os }}-nvc-r1.13.2
+    - name: Install NVC if not cached
+      if: steps.cache-nvc.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        wget -q https://github.com/nickg/nvc/releases/download/r1.13.2/nvc-1.13.2.tar.gz
+        tar zxvf nvc-1.13.2.tar.gz -C ~/nvc > /dev/null 2>&1
+        cd ~/nvc
+        ./autogen.sh
+        mkdir build && cd build
+        ../configure
+        make
+        sudo make install
