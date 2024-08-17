@@ -95,6 +95,14 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_axi_master_simple](./axi/olo_axi_master_simple.md) | AXI4 master - does execute arbitrarily sized transfer over AXI4. The *_simple* version of the master does only allow access to word-aligned addresses and sizes. |
 | [olo_axi_master_full](./axi/olo_axi_master_full.md)     | AXI4 master - Same as [olo_axi_master_simple](./axi/olo_axi_master_simple.md) but does allow access that are not word-aligned (in terms of start address, size or both). |
 
+**Note:** *Open Logic* focuses on providing utilities for development of AXI endpoints (masters and slaves). *Open Logic* does not aim to provide AXI interconnect infrastructure (e.g. crossbars, interconnects, ...). Often the vendor IPs are used (for tool integration reasons) for these aspects. If you are looking for a pure VHDL implementation of AXI interconnects, it's suggested that you use one of the following libraries:
+
+* [hdl-modules](https://github.com/hdl-modules)
+  * hdl-modules utilizes VHDL-2008 which has limited support in some tools (namely the Standard and Lite versions of Quartus Prime)
+  * hdl-modules currently does only contain synthesis attributes for AMD (Vivado)
+* [SURF](https://github.com/slaclab/surf)
+  * SURF currently does only target AMD (Vivado) and Altera (Quartus Prime)
+
 ## intf
 
 | Entity                                               | Description                                                  |
