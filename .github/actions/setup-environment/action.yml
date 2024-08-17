@@ -40,7 +40,7 @@ runs:
       run: mkdir -p ~/nvc
     - name: cache-nvc
       id: cache-nvc
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/nvc
         key: ${{ runner.os }}-nvc-r1.13.2
