@@ -21,6 +21,16 @@ jobs:
   simulation-ghdl:
     runs-on: ubuntu-latest
     steps:
+      #General Setup
+      - name: Setup node
+        uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      #Setup environment
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          os: ${{ runner.os }}
       #Run Simulation
       - name: Run Simulation
         uses: ./.github/actions/simulation
@@ -31,6 +41,16 @@ jobs:
   simulation-nvc:
     runs-on: ubuntu-latest
     steps:
+      #General Setup
+      - name: Setup node
+        uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      #Setup environment
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          os: ${{ runner.os }}
       #Run Simulation
       - name: Run Simulation
         uses: ./.github/actions/simulation
