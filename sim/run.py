@@ -23,6 +23,9 @@ if "--modelsim" in sys.argv:
 if "--nvc" in sys.argv:
     SIMULATOR = Simulator.NVC
     argv.remove("--nvc")
+if "--ghdl" in sys.argv:
+    SIMULATOR = Simulator.GHDL
+    argv.remove("--ghdl")
 if "--coverage" in sys.argv:
     USE_COVERAGE = True
     argv.remove("--coverage")
