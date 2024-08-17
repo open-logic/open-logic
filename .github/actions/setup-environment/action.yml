@@ -55,8 +55,6 @@ runs:
         mkdir build && cd build
         ../configure
         make
-    - name: Install NVC   
+    - name: Add NVC to PATH
       shell: bash
-      run: |
-        cd ~/nvc
-        sudo make install
+      run: echo "$HOME/nvc/build/bin" >> $GITHUB_PATH
