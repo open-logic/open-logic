@@ -4,6 +4,43 @@
 
 # Open Logic - How To ...
 
+## ... Use Open Logic in a Questasim Simulation
+
+There is a script to compile all *Open Logic* sources into a library *olo*. To run the script, follow the steps below:
+
+1. Open Questasim
+2. In the Questasim TCL shell, execute the command `source <open-logic-root>/tools/questa/vcom_sources.tcl`
+
+That's it. Nothing more.
+
+* All *Open Logic* sources are configured to be compiled into the library *olo*
+  ![Sources](./general/questa/vcom_sources.png)
+
+
+
+## ... Use Open Logic in a Efinix Efinity Project
+
+There is a script to import all *Open Logic* sources into a Efinity project.
+
+**Note:** The script does not setup automatic constraints because Efinity does not support scoped constraints (in contrast to the AMD Vivado tools). For Efinity all constraints must be added manually.
+
+To run the script, follow the steps below:
+
+1. Create a project in Efinity (if it does not yet exist)
+2. Close the project in Efinity. Remember where it is stored on the file-system.
+3. Open a terminal window and navigate to *\<open-logic-root\>/tools/efinity*
+4. Run the command `python3 ./import_sources.py --project <path-to-project-xml> --library <library-name>`
+   Replace `<path-to-project-xml>` by the path to the project file (to the *project.xml* file, NOT the *project.peri.xml* )
+   Replace `<library-name>` by the library to compile open-logic sources into (*olo* for VHDL, *default* for Verilog)
+5. Open the project in Efinity again. You should now see all *Open Logic* sources being added
+   ![Sources](./general/efinity/import_sources.png)
+
+Two more notes:
+
+* For the usage of *Open Logic* from Verilog, the *default* library has to be chosen because Efinity does require the top-entity to be in the *default* library and for Verilog Efinity does only allow using VHDL entities in the same library as the module instantiating them. That's why using VHDL entities in any other library (e.g. named *olo* ) is not possible.
+* You can get help regarding the *import_sources.py* script by calling `python3 ./import_sources.py -h`
+* The *import_sources.py* script does create a backup of the project file, so you can restore it if something goes wrong. The backup file is stored under *\<name\>.xml.backup*.
+
 ## ... Use Open Logic in a AMD Vivado Project
 
 There is a script to import all *Open Logic* sources into a Vivado project and apply all automatic constraints. To run the script, follow the steps below:
@@ -48,7 +85,7 @@ Because Quartus does not support scoped constraints, **NO** constraints are impo
 [FuseSoC](https://github.com/olofk/fusesoc) is a package manager and build system for HDL projects. Open Logic supports fuse-soc. To use Open Logic through fusesoc, just add open logic as a library:
 
 ```
-fusesoc library add https://github.com/open-logic/open-logic
+fusesoc library add open-logic https://github.com/open-logic/open-logic
 ```
 
 You should now get one package listed for every area in Open Logic. You can us them independently (dependencies are modelled in FuseSoC correctly and resolved automatically). You also see the tutorials being available and buildable through FuseSoC.
@@ -85,6 +122,7 @@ To run the simulations, navigate to *\<root\>/sim* and execute the following com
 ```
 python3 run.py            # For GHDL
 python3 run.py --modelsim # For Modelsim/QuestaSim
+python3 run.py --nvc      # For NVC
 ```
 
 Tipp: For faster runtimes, you may want to use multiple threads to execute simulations. This can be achieved by adding the argument `-p 16` (16 is the number of threads, you may use any other number fitting your CPU).
@@ -97,7 +135,7 @@ You should now see an output indicating that all tests pass.
 
 For debugging purposes, you may want to visualize a test-case in the GUI. 
 
-For GHDL simulations, the GTKWave tool must be installed (it's the GUI to GHDL). For Questasim a GUI is included.
+For GHDL and NVC simulations, the GTKWave tool must be installed (it's the GUI to GHDL/NVC). For Questasim a GUI is included.
 
 To show simulation results in the GUI, navigate to *\<root\>/sim* and execute the following command:
 
@@ -111,7 +149,7 @@ Where test-case is the exact test-case to display, e.g. "olo_tb.olo_base_cc_bits
 python3 run.py olo_tb.olo_base_cc_bits_tb.D=19-N=20.SimpleTransfer --gui
 ```
 
-The simulator GUI will show up (the example is showing GTKWave - the GHDL GUI):
+The simulator GUI will show up (the example is showing GTKWave - the GHDL/NVC GUI):
 
 ![SimGui](./general/GtkwaveGui.png)
 

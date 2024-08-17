@@ -30,7 +30,7 @@ entity olo_base_ram_tdp is
         Depth_g         : positive;   
         Width_g         : positive;    
         RdLatency_g     : positive  := 1;   
-        RamStyle_g      : string    := "auto";   -- intel "M4K", "M9K", "M20K", "M144K", or "MLAB" - amd block, distributed, ultra, auto                 
+        RamStyle_g      : string    := "auto";   
         RamBehavior_g   : string    := "RBW";
         UseByteEnable_g : boolean   := false
     );                                                      -- "RBW" = read-before-write, "WBR" = write-before-read
@@ -68,9 +68,13 @@ architecture rtl of olo_base_ram_tdp is
     attribute ram_style : string;
     attribute ram_style of mem : variable is RamStyle_g;
 
-    -- Intel RAM implementation attribute
+    -- Altera RAM implementation attribute
     attribute ramstyle : string;
     attribute ramstyle of mem : variable is RamStyle_g;
+
+    -- Efinix RAM implementation attributes
+    attribute syn_ramstyle : string;
+    attribute syn_ramstyle of mem : variable is RamStyle_g;
 
 begin
 

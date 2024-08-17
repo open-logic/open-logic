@@ -130,7 +130,7 @@ For packetized data, the last channel of the last sample of a packet is marked b
 
 The [VUnit](https://vunit.github.io/) verification framework is used to verify *Open Logic*. All testbenches shall be VUnit testbenches and different test-cases shall be properly separated.
 
-VUnit was chosen because it allows to easily use both, commercial tools like *Questasim* and the open source *GHDL* simulator. Additionally VUnit allows to write well structures test-benches and simplifies regression testing a lot.
+VUnit was chosen because it allows to easily use both, commercial tools like *Questasim* and the open source simulators *GHDL* and *NVC*. Additionally VUnit allows to write well structures test-benches and simplifies regression testing a lot.
 
 ### Coverage
 

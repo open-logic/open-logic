@@ -1,5 +1,12 @@
 name: simulation
-run-name: ${{ github.actor }} is HDL Simlations
+run-name: ${{ github.actor }} triggered HDL Simlations
+
+# Set the permissions for the workflow
+permissions:
+  checks: write
+  pull-requests: write
+
+#Set Triggers
 on:
   push:
     branches:
@@ -9,23 +16,33 @@ on:
   schedule:
     - cron: '0 3 * * 1'
   
-  
+#Jobs  
 jobs:
   simulation:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      #General Setup
       - name: Setup node
         uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      #Setup environment
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          os: ${{ runner.os }}
+      #Run Simulation
       - name: Run Simulation
         run: |
-         source ./.github/workflows/install_ghdl.sh
-         source ./.github/workflows/install_python.sh
          source ./.github/workflows/run_simulation.sh
          echo "Simulation Done"
-      - name: Archive production artifacts
+      - name: Upload sim results
         uses: actions/upload-artifact@v4
         with:
-          name: repo
-          path: .
+          name: VUnit Tests
+          path: sim/sim_report.xml
+      - name: Publish sim results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: sim/sim_report.xml

@@ -1,0 +1,46 @@
+# Efinity Interface Configuration
+# Version: 2024.1.163.1.8
+# Date: 2024-07-28 22:49
+#
+# Copyright (C) 2013 - 2024 Efinix Inc. All rights reserved.
+#
+# Device: T20F256
+# Package: 256-ball FBGA (final)
+# Project: efinity_test
+# Configuration mode: active (x1)
+# Timing Model: C4 (final)
+
+
+# Device setting
+design.set_device_property("1A","VOLTAGE","3.3","IOBANK")
+design.set_device_property("1B_1C","VOLTAGE","3.3","IOBANK")
+design.set_device_property("1D_1E","VOLTAGE","3.3","IOBANK")
+design.set_device_property("3A_3B_3C","VOLTAGE","3.3","IOBANK")
+design.set_device_property("3D_3E","VOLTAGE","3.3","IOBANK")
+design.set_device_property("4A","VOLTAGE","3.3","IOBANK")
+design.set_device_property("4B","VOLTAGE","3.3","IOBANK")
+design.set_device_property("BR","VOLTAGE","1.2","IOBANK")
+design.set_device_property("TL","VOLTAGE","1.2","IOBANK")
+design.set_device_property("TR","VOLTAGE","1.2","IOBANK")
+design.set_device_property("cfg","RECONFIG_EN","0","RU")
+
+# Create instance
+design.create_input_gpio("Buttons",1,0)
+design.create_output_gpio("Led",3,0)
+design.create_input_gpio("Switches",3,0)
+design.create_input_gpio("Clk")
+
+# Set property, non-defaults
+
+# Set resource assignment
+design.assign_pkg_pin("Buttons[0]","N3")
+design.assign_pkg_pin("Buttons[1]","L4")
+design.assign_pkg_pin("Led[0]","D14")
+design.assign_pkg_pin("Led[1]","E13")
+design.assign_pkg_pin("Led[2]","G13")
+design.assign_pkg_pin("Led[3]","F14")
+design.assign_pkg_pin("Switches[0]","H14")
+design.assign_pkg_pin("Switches[1]","H15")
+design.assign_pkg_pin("Switches[2]","H16")
+design.assign_pkg_pin("Switches[3]","P2")
+design.assign_pkg_pin("Clk","H13")

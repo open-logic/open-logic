@@ -1,0 +1,36 @@
+name: Setup Environment Action
+description: 'Setup the environment for any Open Logic jobs'
+
+inputs:
+  os:
+    description: 'The runner OS'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    #Python Setup (Cached)
+    - name: Setup python
+      uses: actions/setup-python@v5
+      with: 
+        python-version: '3.10'
+        cache: 'pip'
+    - name: Install Python Requiremetns
+      shell: bash
+      run: pip install -r ./.github/workflows/requirements.txt
+    #Setup APT Get packages (Uncached - complex and little benefit in time)
+    - name: Install APT packages
+      shell: bash
+      run: |
+        sudo apt-get update
+        xargs -a .github/workflows/apt-dependencies.txt sudo apt-get install -y
+    #Setup GHDL (Uncached - no benefit in time)
+    - name: Download and extract GHDL
+      shell: bash
+      run: |
+        mkdir -p ~/ghdl
+        wget https://github.com/ghdl/ghdl/releases/download/v3.0.0/ghdl-gha-ubuntu-20.04-mcode.tgz
+        tar zxvf ghdl-gha-ubuntu-20.04-mcode.tgz -C ~/ghdl
+    - name: Add GHDL to PATH
+      shell: bash
+      run: echo "$HOME/ghdl/bin" >> $GITHUB_PATH

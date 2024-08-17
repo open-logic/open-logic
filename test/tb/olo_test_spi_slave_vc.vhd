@@ -261,7 +261,7 @@ begin
                 Miso <= 'Z';
 
                 -- checks
-                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_mosi(transaction_bits - 1 downto 0), "SPI slave received wrong data");
+                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_mosi(transaction_bits - 1 downto 0), "SPI slave received wrong data");	
 
             elsif msg_type = wait_until_idle_msg then
                 handle_wait_until_idle(net, msg_type, request_msg);

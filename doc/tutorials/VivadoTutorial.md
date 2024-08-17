@@ -70,9 +70,9 @@ The design is super simple - it is not meant for demonstrating the coolest featu
 
 ### Add Source Code
 
-The VHDL code is provided in the file [<open-logic-root>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd). 
+The VHDL code is provided in the file [\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd). 
 
-If you are using Verilog, use the system verilog source file: [<open-logic-root>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.sv](./VivadoTutorial/Files/vivado_tutorial.sv). 
+If you are using Verilog, use the system verilog source file: [\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.sv](./VivadoTutorial/Files/vivado_tutorial.sv). 
 
 Add this file to the project as follows:
 
@@ -86,7 +86,7 @@ Add this file to the project as follows:
 
 ![Design](./VivadoTutorial/Pictures/add_source_03.png)
 
-Navigate to the file [<open-logic-root>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd) and add it.
+Navigate to the file [\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd) and add it.
 
 ![Design](./VivadoTutorial/Pictures/add_source_04.png)
 
@@ -98,7 +98,7 @@ And finally select this file as top-module for the project through the right-cli
 
 ### Add Constraints
 
-A basic constraints set (pinout + clock) is provided in the file [<open-logic-root>/doc/tutorials/VivadoTutorial/Files/pinout.xdc](./VivadoTutorial/Files/pinout.xdc). Add this file through the same steps as described in [Add Source Code](#Add-Source-Code) but as constraints file:
+A basic constraints set (pinout + clock) is provided in the file [\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/pinout.xdc](./VivadoTutorial/Files/pinout.xdc). Add this file through the same steps as described in [Add Source Code](#Add-Source-Code) but as constraints file:
 
 ![Design](./VivadoTutorial/Pictures/add_constraints_01.png)
 
@@ -151,7 +151,7 @@ You can now dial in values using the *Switches* and write them into the FIFO by 
 
 ## Step 5: Discussion of the VHDL Source Code
 
-The source code can be found in the file [<open-logic-root>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd). 
+The source code can be found in the file [\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd). 
 
 Not every line of the source code is discussed. It is simple and implements the design described earlier. Only a few details worth mentioning are discussed.
 
@@ -241,7 +241,7 @@ If you should want to build the tutorial project without many manual mouse click
 
 * Open Vivado
 
-* In the TCL console, navigate to the directory <open-logic-root>/doc/tutorials/VivadoTutorial/Files
+* In the TCL console, navigate to the directory \<open-logic-root\>/doc/tutorials/VivadoTutorial/Files
   ```
   cd <open-logic-root>/doc/tutorials/VivadoTutorial/Files
   ```
@@ -259,4 +259,4 @@ If you should want to build the tutorial project without many manual mouse click
   source scripted_build_sv.tcl
   ```
 
-Note: replace <open-logic-root> with the root folder of your *Open Logic* working copy.
+Note: replace \<open-logic-root\> with the root folder of your *Open Logic* working copy.
