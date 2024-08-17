@@ -50,6 +50,7 @@ runs:
       run: |
         wget -q https://github.com/nickg/nvc/releases/download/r1.13.2/nvc-1.13.2.tar.gz
         tar zxvf nvc-1.13.2.tar.gz -C ~/nvc > /dev/null 2>&1
+        ls
         cd ~/nvc
         ./autogen.sh
         mkdir build && cd build
