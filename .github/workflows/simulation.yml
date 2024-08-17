@@ -63,6 +63,7 @@ jobs:
       - name: Run Simulation
         run: |
          cd ./sim
+         nvc --version
          python3 run.py --nvc --xunit-xml sim_report.xml -p 16
       - name: Upload sim results
         uses: actions/upload-artifact@v4
