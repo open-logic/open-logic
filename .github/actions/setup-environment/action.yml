@@ -44,7 +44,7 @@ runs:
       with:
         path: ~/nvc
         key: ${{ runner.os }}-nvc-r1.13.2
-    - name: Install NVC if not cached
+    - name: Build NVC if not cached
       if: steps.cache-nvc.outputs.cache-hit != 'true'
       shell: bash
       run: |
@@ -55,4 +55,8 @@ runs:
         mkdir build && cd build
         ../configure
         make
+     - name: Install NVC   
+       shell: bash
+       run: |
+        cd ~/nvc
         sudo make install
