@@ -1,0 +1,31 @@
+name: Simulation Action
+description: 'Run Simulations for Open-Logic'
+
+inputs:
+  os:
+    description: 'The runner OS'
+    required: true
+  simulator:
+    description: 'ghdl, nvc'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    #Run Simulation
+    - name: Run Simulation
+      shell: bash
+      run: |
+        cd ./sim
+        python3 run.py --${{ inputs.simulator }} --xunit-xml sim_report.xml -p 16
+    - name: Upload sim results
+      uses: actions/upload-artifact@v4
+      with:
+        name: VUnit Tests --${{ inputs.simulator }}
+        path: sim/sim_report.xml
+    - name: Publish sim results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: sim/sim_report.xml  
+

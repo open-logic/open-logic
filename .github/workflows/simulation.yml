@@ -33,19 +33,11 @@ jobs:
           os: ${{ runner.os }}
       #Run Simulation
       - name: Run Simulation
-        run: |
-         cd ./sim
-         python3 run.py --xunit-xml sim_report.xml -p 16
-      - name: Upload sim results
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/simulation
         with:
-          name: VUnit Tests GHDL
-          path: sim/sim_report.xml
-      - name: Publish sim results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: sim/sim_report.xml
+          os: ${{ runner.os }}
+          simulator: ghdl
+
   simulation-nvc:
     runs-on: ubuntu-latest
     steps:
@@ -61,17 +53,7 @@ jobs:
           os: ${{ runner.os }}
       #Run Simulation
       - name: Run Simulation
-        run: |
-         cd ./sim
-         nvc --version
-         python3 run.py --nvc --xunit-xml sim_report.xml -p 16
-      - name: Upload sim results
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/simulation
         with:
-          name: VUnit Tests NVC
-          path: sim/sim_report.xml
-      - name: Publish sim results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: sim/sim_report.xml
+          os: ${{ runner.os }}
+          simulator: nvc
