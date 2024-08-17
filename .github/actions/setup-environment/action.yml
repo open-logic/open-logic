@@ -55,8 +55,8 @@ runs:
         mkdir build && cd build
         ../configure
         make
-     - name: Install NVC   
-       shell: bash
-       run: |
+    - name: Install NVC   
+      shell: bash
+      run: |
         cd ~/nvc
         sudo make install
