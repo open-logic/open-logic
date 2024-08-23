@@ -61,6 +61,10 @@ package olo_base_pkg_logic is
 
     function to01X(inp : in std_logic_vector) return std_logic_vector;
 
+    function to01(inp : in std_logic) return std_logic;
+
+    function to01(inp : in std_logic_vector) return std_logic_vector;
+
     function invertBitOrder(inp : in std_logic_vector) return std_logic_vector;
 
     -- LFSR / CRC / PRBS Polynomials
@@ -239,6 +243,24 @@ package body olo_base_pkg_logic is
     begin
         for i in inp'low to inp'high loop
             tmp(i) := to01X(inp(i));
+        end loop;
+        return tmp;
+    end function;
+
+    function to01(inp : in std_logic) return std_logic is
+    begin
+        case inp is
+            when '0' | 'L' => return '0';
+            when '1' | 'H' => return '1';
+            when others    => return '0';
+        end case;
+    end function;
+
+    function to01(inp : in std_logic_vector) return std_logic_vector is
+        variable tmp : std_logic_vector(inp'range);
+    begin
+        for i in inp'low to inp'high loop
+            tmp(i) := to01(inp(i));
         end loop;
         return tmp;
     end function;
