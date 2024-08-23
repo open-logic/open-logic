@@ -61,10 +61,16 @@ entity olo_intf_spi_slave is
 end entity;
 
 -- Test
--- All CPHA/CPOL (check TX_REady pulse/long)
--- Support for single/consecutive transactions
--- LSB/MSB first
+-- consecutive transactions
 -- Report errors (temporary - not kept)
+-- sclk first / csn first
+-- csn going high in the middle of a transaction
+-- TB master vs. slave
+
+-- run.py
+-- CPHA/CPOL
+-- LSB/MSB first
+-- Internal/External Tristate
 
 ------------------------------------------------------------------------------
 -- Architecture Declaration
@@ -129,12 +135,12 @@ begin
         v.Resp_Valid := '0';
 
         -- *** Edge Detections ***
-        if SpiCsn_i /= r.SpiCsnLast then
+        if SpiCsn_i /= to01(r.SpiCsnLast) then
             CsnRe_v := SpiCsn_i;
             CsnFe_v := not SpiCsn_i;
         end if;
         v.SpiCsnLast := SpiCsn_i;
-        if SpiSclk_i /= r.SpiSclkLast then
+        if SpiSclk_i /= to01(r.SpiSclkLast) then
             SclkRe_v := SpiSclk_i;
             SclkFe_v := not SpiSclk_i;
         end if;
@@ -144,8 +150,8 @@ begin
             SampleEdge_v := SclkRe_v;
             TrasmitEdge_v := SclkFe_v;
         else
-            SampleEdge_v := SclkRe_v;
-            TrasmitEdge_v := SclkFe_v;
+            SampleEdge_v := SclkFe_v;
+            TrasmitEdge_v := SclkRe_v;
         end if;
 
         -- *** State Machine ***
@@ -196,16 +202,16 @@ begin
 
             when WaitSampleEdge_s =>
                 if SampleEdge_v = '1' then
-                    if LsbFirst_g then
+                    if LsbFirst_g = false then
                         v.ShiftReg := r.ShiftReg(r.ShiftReg'high - 1 downto 0) & SpiMosi_i;
                     else
-                        v.ShiftReg := SpiMosi_i & r.ShiftReg(r.ShiftReg'high - 1 downto 0);
+                        v.ShiftReg := SpiMosi_i & r.ShiftReg(r.ShiftReg'high downto 1);
                     end if;
                     -- Last bit
                     if r.BitCnt = TransWidth_g - 1 then
                         -- Output Rx Data
                         v.Rx_Valid := '1';
-                        v.Rx_RxData := r.ShiftReg;
+                        v.Rx_RxData := v.ShiftReg;
                         -- Transaction completed successfully
                         v.Resp_Valid := '1';
                         v.Resp_Sent := '1';
@@ -244,7 +250,7 @@ begin
             v.State := Idle_s;
             v.SpiMisoTristate := '1';
             -- If Cs high is not expected, transaction was aborted
-            if r.State /= WaitCsHigh_s then
+            if r.State /= WaitCsHigh_s and r.State /= Idle_s then
                 v.Resp_Valid := '1';
                 v.Resp_Aborted := '1';
             end if;
