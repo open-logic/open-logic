@@ -39,9 +39,10 @@ entity olo_intf_spi_slave_tb is
         LsbFirst_g                  : boolean := true;
         SpiCpha_g                   : integer range 0 to 1 := 0;
         SpiCpol_g                   : integer range 0 to 1 := 0;
-        ConsecutiveTransactions_g   : boolean := false;
+        ConsecutiveTransactions_g   : boolean := true;
         InternalTriState_g          : boolean := true;
-        runner_cfg                  : string  
+        TxOnSampleEdge_g            : boolean := False;
+        runner_cfg                  : string
     );
 end entity olo_intf_spi_slave_tb;
 
@@ -67,6 +68,7 @@ architecture sim of olo_intf_spi_slave_tb is
     signal Resp_Valid      : std_logic;
     signal Resp_Sent       : std_logic;
     signal Resp_Aborted    : std_logic;
+    signal Resp_CleanEnd   : std_logic;
     signal Spi_Sclk        : std_logic := choose(SpiCpol_g = 0, '0', '1');
     signal Spi_Mosi        : std_logic := '0';  
     signal Spi_Cs_n        : std_logic := '1'; 
@@ -85,23 +87,26 @@ architecture sim of olo_intf_spi_slave_tb is
     constant master : olo_test_spi_master_t := new_olo_test_spi_master( 
         busFrequency    => SclkFreq_c,
         lsbFirst        => LsbFirst_g,
-        maxTransWidth   => TransWidth_g,
+        maxTransWidth   => TransWidth_g*3,
         cpha            => SpiCpha_g,
         cpol            => SpiCpol_g
     );
 
     -- *** Internal Messaging ***
+    -- Rx Handling
     constant RxQueue : queue_t := new_queue;
     constant RxMsg : msg_type_t := new_msg_type("Rx Message");
     signal RxCheckOngoing : boolean := false;
 
     procedure ExpectRx (
-        Data    : std_logic_vector(TransWidth_g - 1 downto 0)
+        Data    : std_logic_vector(TransWidth_g - 1 downto 0);
+        msg     : string := ""
     ) is
-        variable msg : msg_t := new_msg(RxMsg);
+        variable msg_v : msg_t := new_msg(RxMsg);
     begin
-        push(msg, Data);
-        push(RxQueue, msg);
+        push(msg_v, Data);
+        push_string(msg_v, msg);
+        push(RxQueue, msg_v);
     end procedure;
 
     procedure WaitUntilRxDone is
@@ -111,19 +116,55 @@ architecture sim of olo_intf_spi_slave_tb is
         end if;
     end procedure;
 
-    procedure AwaitResp(
-        Sent    : std_logic := '0';
-        Aborted : std_logic := '0'
-    ) is
-    begin
-        WaitForValueStdl(Resp_Valid, '1', 1 ms, "Resp_Valid not asserted");
-        check_equal(Resp_Sent, Sent, "Resp_Sent wrong");
-        check_equal(Resp_Aborted, Aborted, "Resp_Aborted wrong");
-        wait until rising_edge(Clk);
-        wait until falling_edge(Clk);
-        check_equal(Resp_Valid, '0', "Resp_Valid not deasserted");
-    end procedure;    
+    -- Resp Handling
+    constant RespQueue : queue_t := new_queue;
+    constant RespMsg : msg_type_t := new_msg_type("Resp Message");
+    signal RespCheckOngoing : boolean := false;
 
+    procedure ExpectResp (
+        Sent    : std_logic := '0';
+        Aborted : std_logic := '0';
+        CleanEnd : std_logic := '0'
+    ) is
+        variable msg : msg_t := new_msg(RespMsg);
+    begin
+        push(msg, Sent);
+        push(msg, Aborted);
+        push(msg, CleanEnd);
+        push(RespQueue, msg);
+    end procedure;
+
+    procedure WaitUntilRespDone is
+    begin
+        if (not is_empty(RespQueue)) or RespCheckOngoing then
+            wait until is_empty(RespQueue) and (not RespCheckOngoing) and rising_edge(Clk);
+        end if;
+    end procedure;   
+
+    -- Tx Handling
+    constant TxQueue : queue_t := new_queue;
+    constant TxMsg : msg_type_t := new_msg_type("Tx Message");
+    signal TxCheckOngoing : boolean := false;
+
+    procedure ApplyTx (
+        Data    : std_logic_vector(TransWidth_g - 1 downto 0);
+        DelayCycles : integer := 0;
+        msg     : string := ""
+    ) is
+        variable msg_v : msg_t := new_msg(TxMsg);
+    begin
+        push(msg_v, Data);
+        push(msg_v, DelayCycles);
+        push_string(msg_v, msg);
+        push(TxQueue, msg_v);
+    end procedure;
+
+    procedure WaitUntilTxDone is
+    begin
+        if (not is_empty(TxQueue)) or TxCheckOngoing then
+            wait until is_empty(TxQueue) and (not TxCheckOngoing) and rising_edge(Clk);
+        end if;
+    end procedure;
 
 begin
 
@@ -134,6 +175,7 @@ begin
     test_runner_watchdog(runner, 50 ms);
     p_control : process
         variable Mosi16_v, Miso16_v : std_logic_vector(15 downto 0);
+        variable Mosi48_v, Miso48_v : std_logic_vector(47 downto 0);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -168,16 +210,17 @@ begin
                     -- Expect RX Data
                     ExpectRx(Mosi16_v(D'Range));
 
+                    -- Expect Responses
+                    ExpectResp(Sent => '1');
+                    ExpectResp(CleanEnd => '1');
+
                     -- Wait for data latch
-                    Tx_Valid <= '1';
-                    Tx_TxData <= Miso16_v(D'Range);
-                    WaitForValueStdl(Tx_Ready, '1', 1 ms, "Tx_Ready not asserted");
-                    wait until rising_edge(Clk);
-                    Tx_Valid <= '0';
+                    ApplyTx(Miso16_v(D'Range), 0);
 
                     -- Wait for Response
-                    AwaitResp(Sent => '1');
+                    WaitUntilRespDone;
                     WaitUntilRxDone;
+                    WaitUntilTxDone;
                 end loop;
             end if;
 
@@ -193,22 +236,70 @@ begin
                     -- Expect RX Data
                     ExpectRx(Mosi16_v(D'Range));
 
-                    -- Wait for data latch
-                    WaitForValueStdl(Tx_Ready, '1', 1 ms, "Tx_Ready not asserted");
-                    wait until rising_edge(Clk);
-                    wait until rising_edge(Clk);
-                    Tx_Valid <= '1';
-                    Tx_TxData <= Miso16_v(D'Range);
-                    wait until rising_edge(Clk);
-                    Tx_Valid <= '0';
+                    -- Expect Responses
+                    ExpectResp(Sent => '1');
+                    ExpectResp(CleanEnd => '1');
 
-                    -- Wait for Response
-                    AwaitResp(Sent => '1');
+                    -- Wait for data latch
+                    ApplyTx(Miso16_v(D'Range), 1);
+
                 end if;
             end if;
 
+            -- *** Consecutive Transactions ***
+            if run("3ConsecutiveTransactions") then
+                -- Only execute when enabled
+                if ConsecutiveTransactions_g then
+                    -- Define Data
+                    Mosi48_v := X"1A2B3C4D5E6F";
+                    Miso48_v := X"112233445566";
+
+                    -- Start Transaction
+                    spi_master_push_transaction (net, master, TransWidth_g*3, 
+                        Mosi48_v(TransWidth_g*3-1 downto 0), Miso48_v(TransWidth_g*3-1 downto 0), 
+                        msg => "3 Consecutive Transactions");
+
+                    -- Expect RX Data                    
+                    if LsbFirst_g then
+                        for i in 0 to 2 loop
+                            ExpectRx(Mosi48_v(TransWidth_g*(i+1)-1 downto TransWidth_g*i), "Word " & to_string(i));
+                        end loop;
+                    else
+                        for i in 2 downto 0 loop
+                            ExpectRx(Mosi48_v(TransWidth_g*(i+1)-1 downto TransWidth_g*i), "Word " & to_string(i));
+                        end loop;      
+                    end if;
+                    
+                    -- Expect Responses
+                    for i in 0 to 2 loop
+                        ExpectResp(Sent => '1');
+                    end loop;
+                    ExpectResp(CleanEnd => '1');
+
+                    -- First word applied immediately
+                    if LsbFirst_g then
+                        ApplyTx(Miso48_v(TransWidth_g-1 downto 0), 0, "Word 0");
+                    else
+                        ApplyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 0, "Word 0");
+                    end if;
+                    -- Other TX Data applied with delay (there should be at least one clock cycle of time)
+                    for i in 1 to 2 loop
+                        if LsbFirst_g then
+                            ApplyTx(Miso48_v(TransWidth_g*(i+1)-1 downto TransWidth_g*i), 1, "Word " & to_string(i));
+                        else
+                            ApplyTx(Miso48_v(TransWidth_g*(4-i)-1 downto TransWidth_g*(3-i)), 1, "Word " & to_string(i));
+                        end if;
+                    end loop;
+
+                end if;
+                
+            end if;
+
+
             -- *** Wait until done ***
             WaitUntilRxDone;
+            WaitUntilRespDone;
+            WaitUntilTxDone;
             wait_until_idle(net, as_sync(master));
             wait for 1 us;
 
@@ -233,7 +324,8 @@ begin
             LsbFirst_g                  => LsbFirst_g,
             ConsecutiveTransactions_g   => ConsecutiveTransactions_g,
             DisableAsserts_g            => true,
-            InternalTriState_g          => InternalTriState_g
+            InternalTriState_g          => InternalTriState_g,
+            TxOnSampleEdge_g            => TxOnSampleEdge_g
         )
         port map (
             -- Control Signals
@@ -250,6 +342,7 @@ begin
             Resp_Valid      => Resp_Valid,
             Resp_Sent       => Resp_Sent,
             Resp_Aborted    => Resp_Aborted,
+            Resp_CleanEnd   => Resp_CleanEnd,
             -- SPI 
             Spi_Sclk        => Spi_Sclk,
             Spi_Mosi        => Spi_Mosi,  
@@ -278,10 +371,12 @@ begin
             Miso     => Spi_Miso
         );
 
+    -- RX Data Checker
     vc_rx : process
         variable msg : msg_t;
         variable msg_type : msg_type_t;
         variable Data : std_logic_vector(TransWidth_g - 1 downto 0);
+        variable msg_p              : string_ptr_t;
     begin
         -- loop messages
         loop
@@ -297,16 +392,104 @@ begin
             if msg_type = RxMsg then
                 -- pop information
                 Data := pop(msg);
+                msg_p := new_string_ptr(pop_string(msg));
 
                 -- Wait for RX data
-                WaitForValueStdl(Rx_Valid, '1', 1 ms, "Rx_Valid not asserted");
+                WaitForValueStdl(Rx_Valid, '1', 1 ms, "Rx_Valid not asserted: " & to_string(msg_p));
                 wait until rising_edge(Clk);
-                check_equal(Rx_RxData, Data(D'Range), "Rx_RxData wrong");
+                check_equal(Rx_RxData, Data(D'Range), "Rx_RxData wrong: " & to_string(msg_p));
+                wait until falling_edge(Clk);
+                check_equal(Rx_Valid, '0', "Rx_Valid not deasserted: " & to_string(msg_p));
             else
                 error("Unexpected message type in vc_rx");
             end if;
             RxCheckOngoing <= false;
         end loop;
     end process;
+
+    -- Resp Checker
+    vc_resp : process
+        variable msg : msg_t;
+        variable msg_type : msg_type_t;
+        variable Aborted : std_logic;
+        variable Sent : std_logic;
+        variable CleanEnd : std_logic;
+    begin
+        -- loop messages
+        loop
+            -- wait until message available
+            if is_empty(RespQueue) then
+                wait until not is_empty(RespQueue) and rising_edge(Clk);
+            end if;
+            RespCheckOngoing <= true;
+            -- get message
+            msg := pop(RespQueue);
+            msg_type := message_type(msg);
+            -- process message
+            if msg_type = RespMsg then
+                -- pop information
+                Sent := pop(msg);
+                Aborted := pop(msg);
+                CleanEnd := pop(msg);
+
+                -- Check Resp
+                WaitForValueStdl(Resp_Valid, '1', 1 ms, "Resp_Valid not asserted");
+                check_equal(Resp_Sent, Sent, "Resp_Sent wrong");
+                check_equal(Resp_Aborted, Aborted, "Resp_Aborted wrong");
+                check_equal(Resp_CleanEnd, CleanEnd, "Resp_CleanEnd not deasserted");
+                wait until rising_edge(Clk);
+                wait until falling_edge(Clk);
+                check_equal(Resp_Valid, '0', "Resp_Valid not deasserted");
+            else
+                error("Unexpected message type in vc_resp");
+            end if;
+            RespCheckOngoing <= false;
+        end loop;
+    end process;
+
+    -- Tx Data
+    vc_tx : process
+        variable msg : msg_t;
+        variable msg_type : msg_type_t;
+        variable Data : std_logic_vector(TransWidth_g - 1 downto 0);
+        variable DelayCycles : integer;
+        variable msg_p              : string_ptr_t;
+    begin
+        -- loop messages
+        loop
+            -- wait until message available
+            if is_empty(TxQueue) then
+                wait until not is_empty(TxQueue) and rising_edge(Clk);
+            end if;
+            TxCheckOngoing <= true;
+            -- get message
+            msg := pop(TxQueue);
+            msg_type := message_type(msg);
+            -- process message
+            if msg_type = TxMsg then
+                -- pop information
+                Data := pop(msg);
+                DelayCycles := pop(msg);
+                msg_p := new_string_ptr(pop_string(msg));
+
+                -- Apply Data
+                WaitForValueStdl(Tx_Ready, '1', 1 ms, "Tx_Ready not asserted: " & to_string(msg_p));
+                for i in 1 to DelayCycles loop
+                    wait until rising_edge(Clk);
+                end loop;
+                Tx_Valid <= '1';
+                Tx_TxData <= Data;
+                wait until rising_edge(Clk);
+                Tx_Valid <= '0';
+                wait until falling_edge(Clk);
+                check_equal(Tx_Ready, '0', "Tx_Ready not de-asserted: " & to_string(msg_p));
+            else
+                error("Unexpected message type in vc_tx");
+            end if;
+            TxCheckOngoing <= false;
+        end loop;
+    end process;
+
+
 
 end sim;

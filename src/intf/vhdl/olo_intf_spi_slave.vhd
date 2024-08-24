@@ -31,7 +31,8 @@ entity olo_intf_spi_slave is
         LsbFirst_g                  : boolean                   := false;
         ConsecutiveTransactions_g   : boolean                   := false;
         DisableAsserts_g            : boolean                   := false;
-        InternalTriState_g          : boolean                   := true
+        InternalTriState_g          : boolean                   := true;
+        TxOnSampleEdge_g            : boolean                   := true
     );
     port (
         -- Control Signals
@@ -48,6 +49,7 @@ entity olo_intf_spi_slave is
         Resp_Valid      : out   std_logic;
         Resp_Sent       : out   std_logic;
         Resp_Aborted    : out   std_logic;
+        Resp_CleanEnd   : out   std_logic;
         -- SPI 
         Spi_Sclk        : in    std_logic;
         Spi_Mosi        : in    std_logic                                      := '0';  
@@ -72,12 +74,15 @@ end entity;
 -- CPHA/CPOL
 -- LSB/MSB first
 -- Internal/External Tristate
+-- Max sclk freq (clk/4)? clk/6?
 
 -- Doc: 
 -- CPHA=0 -> Tx_Ready is only a pulse!
 -- If data is not provided, Tx_Ready is de-asserted and 0 is transmitted
 -- Example of "8 bit address, 8bit read-data" (consecutive 8 bit transaction)
 -- In consecutive transactions, it always ends with an "Aborted"
+-- Dox "Max clk freq" (for TxOnSampleEdge and NotTxOnSampleEdge)
+-- Doc "Clean End" = CS high when no data latched (no problem is there are additional edges)
 
 
 ------------------------------------------------------------------------------
@@ -104,7 +109,9 @@ architecture rtl of olo_intf_spi_slave is
         Resp_Sent       : std_logic;
         Resp_Aborted    : std_logic;
         Resp_Valid      : std_logic;
+        Resp_CleanEnd   : std_logic;
         RxOutput        : std_logic;
+        DataLatched    : std_logic;
     end record;
     signal r, r_next : two_process_r;
 
@@ -142,6 +149,7 @@ begin
         v.Resp_Aborted := '0';
         v.Resp_Valid := '0';
         v.RxOutput := '0';
+        v.Resp_CleanEnd := '0';
 
         -- *** Edge Detections ***
         if SpiCsn_i /= to01(r.SpiCsnLast) then
@@ -178,10 +186,12 @@ begin
 
             when LatchTx_s =>
                 v.BitCnt := 0;
+                v.DataLatched := '0';
                 -- Latch data
                 if Tx_Valid = '1' then
                     v.ShiftReg := Tx_TxData;
                     v.Tx_Ready := '0';
+                    v.DataLatched := '1';
                 end if;
                 -- For CPHA=0, data bust be valid on falling edge of CS immediately
                 if SpiCPHA_g = 0 and not r.IsConsecutive then
@@ -240,13 +250,18 @@ begin
                 v.IsConsecutive := true;
 
             when WaitTransmitEdge_s =>
+                -- Transmit on Transmit Edge
                 if TrasmitEdge_v = '1' then
                     v.SpiMisoData := r.ShiftReg(TxIdx_c);
                     v.State := WaitSampleEdge_s;
                     v.BitCnt := r.BitCnt + 1;
                 end if;
+                -- For TxOnSampleEdge_g transmit immediately when the data is ready
+                if TxOnSampleEdge_g then
+                    v.SpiMisoData := r.ShiftReg(TxIdx_c);
+                end if;
 
-            when WaitCsHigh_s => null;  -- Return to idle is handled after FSM                    
+            when WaitCsHigh_s => null;  -- Return to idle is handled after FSM          
 
             -- coverage off
             when others => null; -- unreachable code
@@ -264,9 +279,13 @@ begin
             v.State := Idle_s;
             v.SpiMisoTristate := '1';
             -- If Cs high is not expected, transaction was aborted
-            if r.State /= WaitCsHigh_s and r.State /= Idle_s then
+            if r.State /= WaitCsHigh_s and r.State /= Idle_s and r.DataLatched = '1' then
                 v.Resp_Valid := '1';
                 v.Resp_Aborted := '1';
+            -- Otherwise it is a clean-end
+            elsif r.State /= Idle_s then
+                v.Resp_Valid := '1';
+                v.Resp_CleanEnd := '1';
             end if;
         end if;
 
@@ -283,6 +302,7 @@ begin
     Resp_Valid <= r.Resp_Valid;
     Resp_Sent <= r.Resp_Sent;
     Resp_Aborted <= r.Resp_Aborted;
+    Resp_CleanEnd <= r.Resp_CleanEnd;
     g_intTristate : if InternalTriState_g generate
         Spi_Miso <= r.SpiMisoData when r.SpiMisoTristate = '0' else 'Z';
     end generate;

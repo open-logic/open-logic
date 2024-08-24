@@ -240,11 +240,11 @@ begin
                     Sclk <= not Sclk;
                     if instance.CPHA = 0 then
                         if instance.LsbFirst = False then
-                            ShiftRegRx_v := ShiftRegRx_v(transaction_bits - 2 downto 0) & Miso;
-                            ShiftRegTx_v := ShiftRegTx_v(transaction_bits - 2 downto 0) & 'U';
+                            ShiftRegRx_v(transaction_bits-1 downto 0) := ShiftRegRx_v(transaction_bits - 2 downto 0) & Miso;
+                            ShiftRegTx_v(transaction_bits-1 downto 0) := ShiftRegTx_v(transaction_bits - 2 downto 0) & 'U';
                         else
-                            ShiftRegRx_v := Miso & ShiftRegRx_v(transaction_bits- 1 downto 1);
-                            ShiftRegTx_v := 'U' & ShiftRegTx_v(transaction_bits - 1 downto 1);
+                            ShiftRegRx_v(transaction_bits-1 downto 0) := Miso & ShiftRegRx_v(transaction_bits - 1 downto 1);
+                            ShiftRegTx_v(transaction_bits-1 downto 0) := 'U' & ShiftRegTx_v(transaction_bits - 1 downto 1);
                         end if;
                     else
                         Mosi <= ShiftRegTx_v(TxIdx_v);
@@ -255,11 +255,11 @@ begin
                     Sclk <= not Sclk;
                     if instance.CPHA = 1 then
                         if instance.LsbFirst = False then
-                            ShiftRegRx_v := ShiftRegRx_v(transaction_bits - 2 downto 0) & Miso;
-                            ShiftRegTx_v := ShiftRegTx_v(transaction_bits - 2 downto 0) & 'U';
+                            ShiftRegRx_v(transaction_bits-1 downto 0) := ShiftRegRx_v(transaction_bits - 2 downto 0) & Miso;
+                            ShiftRegTx_v(transaction_bits-1 downto 0) := ShiftRegTx_v(transaction_bits - 2 downto 0) & 'U';
                         else
-                            ShiftRegRx_v := Miso & ShiftRegRx_v(transaction_bits - 1 downto 1);
-                            ShiftRegTx_v := 'U' & ShiftRegTx_v(transaction_bits - 1 downto 1);
+                            ShiftRegRx_v(transaction_bits-1 downto 0) := Miso & ShiftRegRx_v(transaction_bits - 1 downto 1);
+                            ShiftRegTx_v(transaction_bits-1 downto 0) := 'U' & ShiftRegTx_v(transaction_bits - 1 downto 1);
                         end if;
                     else
                         Mosi <= ShiftRegTx_v(TxIdx_v);
@@ -274,17 +274,17 @@ begin
                     wait for 0.5*instance.ClkPeriod;
                     Sclk <= choose(instance.Cpol = 0, '1', '0');
                 else
-                    Sclk <= choose(instance.Cpol = 0, '0', '1');
+                    Sclk <= choose(instance.Cpol = 0, '1', '0');
                     wait for 0.5*instance.ClkPeriod;
                     CS_n <= '1';
                 end if;
 
                 -- checks
-                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_miso(transaction_bits - 1 downto 0), "SPI master received wrong data");	
+                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_miso(transaction_bits - 1 downto 0), "SPI master received wrong data: " & to_string(msg_p));	
 
                 -- Wait for minimum CSn high time
                 wait for 0.5*instance.ClkPeriod;
-                check_equal(Miso, 'Z', "Miso must be tri-stated after transaction");
+                check_equal(Miso, 'Z', "Miso must be tri-stated after transaction: " & to_string(msg_p));
 
             elsif msg_type = wait_until_idle_msg then
                 handle_wait_until_idle(net, msg_type, request_msg);
