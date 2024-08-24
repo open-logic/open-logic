@@ -4,6 +4,7 @@ version = 1
 
 [[ip]]
 name = "olo-base"
-version = "0.1.0"
+version = "2.1.0"
 uuid = "d00odbrxjv7u0utenigoplox6"
+url = "https://github.com/chaseruskin/open-logic/archive/{{orbit.ip.version}}.zip"
 dependencies = []
