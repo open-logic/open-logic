@@ -36,7 +36,7 @@ entity olo_intf_spi_slave_tb is
         ClkFrequency_g              : integer := 100_000_000;
         BusFrequency_g              : integer := 10_000_000;
         TransWidth_g                : integer range 8 to 16 := 8;
-        LsbFirst_g                  : boolean := true;
+        LsbFirst_g                  : boolean := false;
         SpiCpha_g                   : integer range 0 to 1 := 0;
         SpiCpol_g                   : integer range 0 to 1 := 0;
         ConsecutiveTransactions_g   : boolean := true;
@@ -214,7 +214,7 @@ begin
                     ExpectResp(Sent => '1');
                     ExpectResp(CleanEnd => '1');
 
-                    -- Wait for data latch
+                    -- Apply TX Data
                     ApplyTx(Miso16_v(D'Range), 0);
 
                     -- Wait for Response
@@ -240,7 +240,7 @@ begin
                     ExpectResp(Sent => '1');
                     ExpectResp(CleanEnd => '1');
 
-                    -- Wait for data latch
+                    -- Apply TxData
                     ApplyTx(Miso16_v(D'Range), 1);
 
                 end if;
@@ -287,14 +287,92 @@ begin
                         if LsbFirst_g then
                             ApplyTx(Miso48_v(TransWidth_g*(i+1)-1 downto TransWidth_g*i), 1, "Word " & to_string(i));
                         else
-                            ApplyTx(Miso48_v(TransWidth_g*(4-i)-1 downto TransWidth_g*(3-i)), 1, "Word " & to_string(i));
+                            ApplyTx(Miso48_v(TransWidth_g*(3-i)-1 downto TransWidth_g*(2-i)), 1, "Word " & to_string(i));
                         end if;
                     end loop;
-
-                end if;
-                
+                end if;                
             end if;
 
+            -- *** TX Data Timeout ***
+            if run("DataTimeout") then
+                if SpiCpha_g = 1 then
+                    -- Define Data
+                    Mosi16_v := X"1357";
+                     
+                    -- Start Transaction (exect zero response due to no data)
+                    spi_master_push_transaction (net, master, TransWidth_g, Mosi16_v(D'Range), zerosVector(TransWidth_g));
+
+                    -- Expect RX Data
+                    ExpectRx(Mosi16_v(D'Range));
+
+                    -- Expect Responses
+                    ExpectResp(Sent => '1');
+                    ExpectResp(CleanEnd => '1');
+                end if;
+            end if;
+
+            -- *** CSn operated before Sclk at start/end of transaction ***
+            if run("CSnFirst") then
+                -- Define Data
+                Mosi16_v := toUslv(16#1234#, 16);
+                Miso16_v := toUslv(16#5678#, 16);
+                
+                -- Start Transaction
+                spi_master_push_transaction (net, master, TransWidth_g, Mosi16_v(D'Range), Miso16_v(D'Range), csn_first => true);
+
+                -- Expect RX Data
+                ExpectRx(Mosi16_v(D'Range));
+
+                -- Expect Responses
+                ExpectResp(Sent => '1');
+                ExpectResp(CleanEnd => '1');
+
+                -- Apply TX Data
+                ApplyTx(Miso16_v(D'Range), 0);
+            end if;
+
+            -- *** CSn going high in the middle of a transaction ***
+            if run("CSnHighDuringTransaction") then
+                -- Failing Transaction
+
+                -- Define Data
+                Mosi16_v := toUslv(16#1234#, 16);
+                Miso16_v := toUslv(16#5678#, 16);
+                
+                -- Start Transaction
+                if LsbFirst_g then
+                    spi_master_push_transaction (net, master, TransWidth_g-2, 
+                        Mosi16_v(TransWidth_g-3 downto 0), Miso16_v(TransWidth_g-3 downto 0), msg => "Failing Transaction");
+                else
+                    spi_master_push_transaction (net, master, TransWidth_g-2, 
+                        Mosi16_v(TransWidth_g-1 downto 2), Miso16_v(TransWidth_g-1 downto 2), msg => "Failing Transaction");
+                end if;                   
+
+                -- Expect Response (Aborted)
+                ExpectResp(Aborted => '1');
+
+                -- Apply TX Data
+                ApplyTx(Miso16_v(D'Range), 0);
+
+                -- Successful Transaction
+                -- Define Data
+                Mosi16_v := toUslv(16#1A1B#, 16);
+                Miso16_v := toUslv(16#3E3F#, 16);
+                
+                -- Start Transaction
+                spi_master_push_transaction (net, master, TransWidth_g, 
+                    Mosi16_v(D'range), Miso16_v(D'range), msg => "Successful Transaction");
+
+                -- Expect RX Data
+                ExpectRx(Mosi16_v(D'Range));
+
+                -- Expect Responses
+                ExpectResp(Sent => '1');
+                ExpectResp(CleanEnd => '1');
+
+                -- Apply TX Data
+                ApplyTx(Miso16_v(D'Range), 0);
+            end if;
 
             -- *** Wait until done ***
             WaitUntilRxDone;
@@ -323,7 +401,6 @@ begin
             SpiCPHA_g                   => SpiCpha_g,
             LsbFirst_g                  => LsbFirst_g,
             ConsecutiveTransactions_g   => ConsecutiveTransactions_g,
-            DisableAsserts_g            => true,
             InternalTriState_g          => InternalTriState_g,
             TxOnSampleEdge_g            => TxOnSampleEdge_g
         )

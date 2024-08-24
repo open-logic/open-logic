@@ -30,7 +30,6 @@ entity olo_intf_spi_slave is
         SpiCPHA_g                   : natural range 0 to 1      := 1;
         LsbFirst_g                  : boolean                   := false;
         ConsecutiveTransactions_g   : boolean                   := false;
-        DisableAsserts_g            : boolean                   := false;
         InternalTriState_g          : boolean                   := true;
         TxOnSampleEdge_g            : boolean                   := true
     );
@@ -63,12 +62,8 @@ entity olo_intf_spi_slave is
 end entity;
 
 -- Test
--- consecutive transactions
--- Report errors (temporary - not kept)
--- sclk first / csn first
--- csn going high in the middle of a transaction
 -- TB master vs. slave
--- Data timeout (transmit 0)
+
 
 -- run.py
 -- CPHA/CPOL
@@ -178,15 +173,15 @@ begin
                 v.SpiMisoTristate := '1';
                 -- Acquire Tx data on falling edge of CS (transaction start)
                 if CsnFe_v = '1' then
-                    v.State     := LatchTx_s;
-                    v.Tx_Ready  := '1';
+                    v.State         := LatchTx_s;
+                    v.DataLatched   := '0';
+                    v.Tx_Ready      := '1';
                 end if;
                 -- First Transaction is not Consecutive
                 v.IsConsecutive := false;
 
             when LatchTx_s =>
                 v.BitCnt := 0;
-                v.DataLatched := '0';
                 -- Latch data
                 if Tx_Valid = '1' then
                     v.ShiftReg := Tx_TxData;
@@ -205,15 +200,12 @@ begin
                 end if;
                 -- Leaving the state
                 if LeaveState_v then
-                    v.State := WaitSampleEdge_s;
-                    v.Tx_Ready := '0';
+                    v.State := WaitSampleEdge_s;  
                     -- Data was not present in time
-                    if r.Tx_Ready = '1' and Tx_Valid = '0' then
-                        assert DisableAsserts_g = True
-                            report "olo_intf_spi_slave - TX data not valid in-time" 
-                            severity warning;
+                    if r.DataLatched = '0' and Tx_Valid = '0' then
                         v.ShiftReg := (others => '0');
                     end if;
+                    v.Tx_Ready := '0';
                     -- Apply first data bit
                     v.SpiMisoData := v.ShiftReg(TxIdx_c);
                     v.SpiMisoTristate := '0';
@@ -236,6 +228,7 @@ begin
                         -- If consecutive transactions are enabled, latch next Tx data
                         if ConsecutiveTransactions_g then
                             v.State := LatchTx_s;
+                            v.DataLatched := '0';
                             v.Tx_Ready := '1';
                         -- Otherwise, wait for CS to go high
                         else
@@ -309,6 +302,7 @@ begin
     g_extTristate : if not InternalTriState_g generate
         Spi_Miso_o <= r.SpiMisoData;
         Spi_Miso_t <= r.SpiMisoTristate;
+        Spi_Miso <= 'Z'; -- workaround for simulations (U overrides Z)
     end generate;
 
     --------------------------------------------------------------------------

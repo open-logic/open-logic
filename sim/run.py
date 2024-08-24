@@ -353,6 +353,28 @@ tb = olo_tb.test_bench(spi_master_fixsize_tb)
 for LsbFirst in [False, True]:
     named_config(tb, {'LsbFirst_g': LsbFirst})
 
+spi_slave_tb = 'olo_intf_spi_slave_tb'
+tb = olo_tb.test_bench(spi_slave_tb)
+#Test different configs for transactions (all combinations)
+for CPHA in [0, 1]:
+    for CPOL in [0, 1]:
+        for Consecutive in [False, True]:
+            #Try TxOnSampleEdge
+            named_config(tb, {'SpiCpha_g': CPHA, 'SpiCpol_g': CPOL, 'ConsecutiveTransactions_g' : Consecutive})
+#Test Lsb/Msb first
+for LsbFirst in [True, False]:
+    named_config(tb, {'LsbFirst_g': LsbFirst})
+#Test different transaction widths
+for TransWidth in [8, 16]:
+    named_config(tb, {'TransWidth_g': TransWidth})
+#Test external tristate
+for InternalTriState in [True, False]:
+    named_config(tb, {'InternalTriState_g': InternalTriState})
+#Test maximum clock frequency
+clkFreq = int(100e6)
+named_config(tb, {'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/10), 'TxOnSampleEdge_g' : True})
+named_config(tb, {'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/10), 'TxOnSampleEdge_g' : False})
+
 
 ########################################################################################################################
 # Execution
