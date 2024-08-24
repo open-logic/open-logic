@@ -66,11 +66,19 @@ end entity;
 -- sclk first / csn first
 -- csn going high in the middle of a transaction
 -- TB master vs. slave
+-- Data timeout (transmit 0)
 
 -- run.py
 -- CPHA/CPOL
 -- LSB/MSB first
 -- Internal/External Tristate
+
+-- Doc: 
+-- CPHA=0 -> Tx_Ready is only a pulse!
+-- If data is not provided, Tx_Ready is de-asserted and 0 is transmitted
+-- Example of "8 bit address, 8bit read-data" (consecutive 8 bit transaction)
+-- In consecutive transactions, it always ends with an "Aborted"
+
 
 ------------------------------------------------------------------------------
 -- Architecture Declaration
@@ -96,6 +104,7 @@ architecture rtl of olo_intf_spi_slave is
         Resp_Sent       : std_logic;
         Resp_Aborted    : std_logic;
         Resp_Valid      : std_logic;
+        RxOutput        : std_logic;
     end record;
     signal r, r_next : two_process_r;
 
@@ -123,7 +132,6 @@ begin
         v := r;
 
         -- *** Default Values ***
-        --v.Done := '0';
         CsnRe_v := '0';
         CsnFe_v := '0';
         SclkRe_v := '0';
@@ -133,6 +141,7 @@ begin
         v.Resp_Sent := '0';
         v.Resp_Aborted := '0';
         v.Resp_Valid := '0';
+        v.RxOutput := '0';
 
         -- *** Edge Detections ***
         if SpiCsn_i /= to01(r.SpiCsnLast) then
@@ -210,8 +219,7 @@ begin
                     -- Last bit
                     if r.BitCnt = TransWidth_g - 1 then
                         -- Output Rx Data
-                        v.Rx_Valid := '1';
-                        v.Rx_RxData := v.ShiftReg;
+                        v.RxOutput := '1'; -- Done in next cycle to await shift register update
                         -- Transaction completed successfully
                         v.Resp_Valid := '1';
                         v.Resp_Sent := '1';
@@ -244,6 +252,12 @@ begin
             when others => null; -- unreachable code
             -- coverage on
         end case;
+
+        -- Output RX Data
+        if r.RxOutput = '1' then
+            v.Rx_Valid := '1';
+            v.Rx_RxData := r.ShiftReg;
+        end if;
 
         -- Return to idle if CS is high
         if SpiCsn_i = '1' then
@@ -289,6 +303,7 @@ begin
                 r.State             <= Idle_s;
                 r.Tx_Ready          <= '0';
                 r.SpiMisoTristate   <= '1';
+                r.RxOutput          <= '0';
             end if;
         end if;
     end process;

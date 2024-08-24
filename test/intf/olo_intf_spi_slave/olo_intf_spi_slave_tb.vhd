@@ -93,6 +93,7 @@ architecture sim of olo_intf_spi_slave_tb is
     -- *** Internal Messaging ***
     constant RxQueue : queue_t := new_queue;
     constant RxMsg : msg_type_t := new_msg_type("Rx Message");
+    signal RxCheckOngoing : boolean := false;
 
     procedure ExpectRx (
         Data    : std_logic_vector(TransWidth_g - 1 downto 0)
@@ -101,6 +102,13 @@ architecture sim of olo_intf_spi_slave_tb is
     begin
         push(msg, Data);
         push(RxQueue, msg);
+    end procedure;
+
+    procedure WaitUntilRxDone is
+    begin
+        if (not is_empty(RxQueue)) or RxCheckOngoing then
+            wait until is_empty(RxQueue) and (not RxCheckOngoing) and rising_edge(Clk);
+        end if;
     end procedure;
 
     procedure AwaitResp(
@@ -114,7 +122,8 @@ architecture sim of olo_intf_spi_slave_tb is
         wait until rising_edge(Clk);
         wait until falling_edge(Clk);
         check_equal(Resp_Valid, '0', "Resp_Valid not deasserted");
-    end procedure;       
+    end procedure;    
+
 
 begin
 
@@ -168,6 +177,7 @@ begin
 
                     -- Wait for Response
                     AwaitResp(Sent => '1');
+                    WaitUntilRxDone;
                 end loop;
             end if;
 
@@ -198,6 +208,7 @@ begin
             end if;
 
             -- *** Wait until done ***
+            WaitUntilRxDone;
             wait_until_idle(net, as_sync(master));
             wait for 1 us;
 
@@ -278,6 +289,7 @@ begin
             if is_empty(RxQueue) then
                 wait until not is_empty(RxQueue) and rising_edge(Clk);
             end if;
+            RxCheckOngoing <= true;
             -- get message
             msg := pop(RxQueue);
             msg_type := message_type(msg);
@@ -288,11 +300,12 @@ begin
 
                 -- Wait for RX data
                 WaitForValueStdl(Rx_Valid, '1', 1 ms, "Rx_Valid not asserted");
+                wait until rising_edge(Clk);
                 check_equal(Rx_RxData, Data(D'Range), "Rx_RxData wrong");
-
             else
                 error("Unexpected message type in vc_rx");
             end if;
+            RxCheckOngoing <= false;
         end loop;
     end process;
 
