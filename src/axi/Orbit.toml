@@ -1,0 +1,12 @@
+[ip]
+name = "olo-axi"
+uuid = "a54rs22u93x4ght40xwusynv0"
+version = "2.1.0"
+description = "AXI related modules"
+library = "olo"
+source = "https://github.com/chaseruskin/open-logic/archive/{{orbit.ip.version}}.zip"
+
+# See more keys and their definitions at https://chaseruskin.github.io/orbit/reference/manifest.html
+
+[dependencies]
+olo-base = "2.1.0"
