@@ -3,8 +3,16 @@
 version = 1
 
 [[ip]]
+name = "olo-base"
+version = "2.1.0"
+uuid = "d00odbrxjv7u0utenigoplox6"
+checksum = "f449e984a4bcd219a064a3f10ac122dc12b52f9c47774decb099d568e65376c7"
+url = "https://github.com/chaseruskin/open-logic/archive/{{orbit.ip.version}}.zip"
+dependencies = []
+
+[[ip]]
 name = "olo-intf"
 version = "2.1.0"
 uuid = "e9gwu2h42eekqt8lz8ga7rnnb"
 url = "https://github.com/chaseruskin/open-logic/archive/{{orbit.ip.version}}.zip"
-dependencies = []
+dependencies = ["olo-base+d00odbrxjv7u0utenigoplox6:2.1.0"]

@@ -7,4 +7,12 @@ name = "olo-axi"
 version = "2.1.0"
 uuid = "a54rs22u93x4ght40xwusynv0"
 url = "https://github.com/chaseruskin/open-logic/archive/{{orbit.ip.version}}.zip"
+dependencies = ["olo-base+d00odbrxjv7u0utenigoplox6:2.1.0"]
+
+[[ip]]
+name = "olo-base"
+version = "2.1.0"
+uuid = "d00odbrxjv7u0utenigoplox6"
+checksum = "f449e984a4bcd219a064a3f10ac122dc12b52f9c47774decb099d568e65376c7"
+url = "https://github.com/chaseruskin/open-logic/archive/{{orbit.ip.version}}.zip"
 dependencies = []
