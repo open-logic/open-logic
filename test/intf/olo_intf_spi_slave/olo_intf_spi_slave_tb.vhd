@@ -61,10 +61,10 @@ architecture sim of olo_intf_spi_slave_tb is
     signal Clk             : std_logic := '0'; 
     signal Rst             : std_logic;
     signal Rx_Valid        : std_logic;
-    signal Rx_RxData       : std_logic_vector(TransWidth_g - 1 downto 0);
+    signal Rx_Data          : std_logic_vector(TransWidth_g - 1 downto 0);
     signal Tx_Valid        : std_logic   := '0';
     signal Tx_Ready        : std_logic;
-    signal Tx_TxData       : std_logic_vector(TransWidth_g - 1 downto 0) := (others => '0');
+    signal Tx_Data          : std_logic_vector(TransWidth_g - 1 downto 0) := (others => '0');
     signal Resp_Valid      : std_logic;
     signal Resp_Sent       : std_logic;
     signal Resp_Aborted    : std_logic;
@@ -448,11 +448,11 @@ begin
             Rst             => Rst,
             -- RX Data      
             Rx_Valid        => Rx_Valid,
-            Rx_RxData       => Rx_RxData,
+            Rx_Data         => Rx_Data,
             -- TX Data
             Tx_Valid        => Tx_Valid,
             Tx_Ready        => Tx_Ready,
-            Tx_TxData       => Tx_TxData,
+            Tx_Data         => Tx_Data,
             -- Response Interface
             Resp_Valid      => Resp_Valid,
             Resp_Sent       => Resp_Sent,
@@ -512,7 +512,7 @@ begin
                 -- Wait for RX data
                 WaitForValueStdl(Rx_Valid, '1', 1 ms, "Rx_Valid not asserted: " & to_string(msg_p));
                 wait until rising_edge(Clk);
-                check_equal(Rx_RxData, Data(D'Range), "Rx_RxData wrong: " & to_string(msg_p));
+                check_equal(Rx_Data, Data(D'Range), "Rx_Data wrong: " & to_string(msg_p));
                 wait until falling_edge(Clk);
                 check_equal(Rx_Valid, '0', "Rx_Valid not deasserted: " & to_string(msg_p));
             else
@@ -593,7 +593,7 @@ begin
                     wait until rising_edge(Clk);
                 end loop;
                 Tx_Valid <= '1';
-                Tx_TxData <= Data;
+                Tx_Data <= Data;
                 wait until rising_edge(Clk);
                 Tx_Valid <= '0';
                 wait until falling_edge(Clk);

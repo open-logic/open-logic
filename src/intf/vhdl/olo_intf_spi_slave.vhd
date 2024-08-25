@@ -39,11 +39,11 @@ entity olo_intf_spi_slave is
         Rst             : in    std_logic;
         -- RX Data      
         Rx_Valid        : out   std_logic;
-        Rx_RxData       : out   std_logic_vector(TransWidth_g - 1 downto 0);
+        Rx_Data         : out   std_logic_vector(TransWidth_g - 1 downto 0);
         -- TX Data
-        Tx_Valid        : in    std_logic   := '1';
+        Tx_Valid        : in    std_logic                                     := '1';
         Tx_Ready        : out   std_logic;
-        Tx_TxData       : in    std_logic_vector(TransWidth_g - 1 downto 0) := (others => '0');
+        Tx_Data         : in    std_logic_vector(TransWidth_g - 1 downto 0)   := (others => '0');
         -- Response Interface
         Resp_Valid      : out   std_logic;
         Resp_Sent       : out   std_logic;
@@ -51,7 +51,7 @@ entity olo_intf_spi_slave is
         Resp_CleanEnd   : out   std_logic;
         -- SPI 
         Spi_Sclk        : in    std_logic;
-        Spi_Mosi        : in    std_logic                                      := '0';  
+        Spi_Mosi        : in    std_logic                                     := '0';  
         Spi_Cs_n        : in    std_logic; 
         -- Miso with internal Tristate
         Spi_Miso        : out   std_logic;
@@ -62,18 +62,15 @@ entity olo_intf_spi_slave is
 end entity;
 
 -- Test
+-- Single transaction: test "abort / nodata", "abort data", "complete nodata"
+-- continuous transactions: test "complete nodata"
 -- TB master vs. slave
+-- Apply MISO data as soon as latched (in latch state), check on delayed CSn - separate case
+-- Test high-speed clock
+-- Add waves to show resp
 
 -- Doc: 
--- CPHA=0 -> Tx_Ready is only a pulse!
--- If data is not provided, Tx_Ready is de-asserted and 0 is transmitted
--- Example of "8 bit address, 8bit read-data" (consecutive 8 bit transaction)
--- In consecutive transactions, it always ends with an "Aborted"
--- Dox "Max clk freq" (for TxOnSampleEdge and NotTxOnSampleEdge)
--- Doc "Clean End" = CS high when no data latched (no problem is there are additional edges)
--- 4 Cycles from CSn to MISO not Z (critical for TXonSample)
--- Doc TXon sample edge does not leave time for "RX->Controls TX" (critical for timing)
- -- Conlusion: TxOnSample edge only makes sense if "csn to first clock" is long enough and no need for consecutive
+-- Conlusion: TxOnSample edge only makes sense if "csn to first clock" is long enough and no need for consecutive
 
 
 ------------------------------------------------------------------------------
@@ -96,13 +93,13 @@ architecture rtl of olo_intf_spi_slave is
         ShiftReg        : std_logic_vector(TransWidth_g - 1 downto 0);
         IsConsecutive   : boolean;
         Rx_Valid        : std_logic;
-        Rx_RxData       : std_logic_vector(TransWidth_g - 1 downto 0);
+        Rx_Data         : std_logic_vector(TransWidth_g - 1 downto 0);
         Resp_Sent       : std_logic;
         Resp_Aborted    : std_logic;
         Resp_Valid      : std_logic;
         Resp_CleanEnd   : std_logic;
         RxOutput        : std_logic;
-        DataLatched    : std_logic;
+        DataLatched     : std_logic;
     end record;
     signal r, r_next : two_process_r;
 
@@ -118,7 +115,7 @@ begin
     --------------------------------------------------------------------------
     -- Combinatorial Proccess
     --------------------------------------------------------------------------
-    p_comb : process(r, Tx_TxData, Tx_Valid, SpiSclk_i, SpiMosi_i, SpiCsn_i)
+    p_comb : process(r, Tx_Data, Tx_Valid, SpiSclk_i, SpiMosi_i, SpiCsn_i)
         variable v                  : two_process_r;
         variable CsnRe_v, CsnFe_v   : std_logic;
         variable SclkRe_v, SclkFe_v : std_logic;
@@ -180,7 +177,7 @@ begin
                 v.BitCnt := 0;
                 -- Latch data
                 if Tx_Valid = '1' then
-                    v.ShiftReg := Tx_TxData;
+                    v.ShiftReg := Tx_Data;
                     v.Tx_Ready := '0';
                     v.DataLatched := '1';
                 end if;
@@ -260,7 +257,7 @@ begin
         -- Output RX Data
         if r.RxOutput = '1' then
             v.Rx_Valid := '1';
-            v.Rx_RxData := r.ShiftReg;
+            v.Rx_Data := r.ShiftReg;
         end if;
 
         -- Return to idle if CS is high
@@ -286,7 +283,7 @@ begin
     -- Outputs
     --------------------------------------------------------------------------
     Rx_Valid <= r.Rx_Valid;
-    Rx_RxData <= r.Rx_RxData;
+    Rx_Data <= r.Rx_Data;
     Tx_Ready <= r.Tx_Ready;
     Resp_Valid <= r.Resp_Valid;
     Resp_Sent <= r.Resp_Sent;
