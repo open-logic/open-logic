@@ -88,7 +88,7 @@ All signals in the response interface are single cycle pulses. The user may also
 | Name       | In/Out | Length | Default | Description                                                  |
 | :--------- | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Spi_Cs_n   | in     | 1      | N/A     | SPI chip select (low-active).                                |
-| Spi_Sclk   | in     | 1      | N/A     | SPI clock.<br />Frequency must be at least 10x lower than *Clk* frequency. |
+| Spi_Sclk   | in     | 1      | N/A     | SPI clock.<br />Frequency must be at least **10x lower than *Clk* frequency**. |
 | Spi_Mosi   | in     | 1      | '0'     | SPI data from master to slave.<br />Can be left unconnected if only the slave does send data. |
 | Spi_Miso   | out    | 1      | N/A     | Used only if **InternalTriState_g = true**<br />SPI data from slave to master. <br />Can be left unconnected if the only the master does send data. |
 | Spi_Miso_t | out    | 1      | N/A     | Used only if **InternalTriState_g = false**<br />*Spi_Miso* Tri-State signal ('1' = tristated, '0' drive)<br />Can be left unconnected if the only the master does send data. |
