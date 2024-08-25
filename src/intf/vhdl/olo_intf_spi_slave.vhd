@@ -64,13 +64,6 @@ end entity;
 -- Test
 -- TB master vs. slave
 
-
--- run.py
--- CPHA/CPOL
--- LSB/MSB first
--- Internal/External Tristate
--- Max sclk freq (clk/4)? clk/6?
-
 -- Doc: 
 -- CPHA=0 -> Tx_Ready is only a pulse!
 -- If data is not provided, Tx_Ready is de-asserted and 0 is transmitted
@@ -78,6 +71,9 @@ end entity;
 -- In consecutive transactions, it always ends with an "Aborted"
 -- Dox "Max clk freq" (for TxOnSampleEdge and NotTxOnSampleEdge)
 -- Doc "Clean End" = CS high when no data latched (no problem is there are additional edges)
+-- 4 Cycles from CSn to MISO not Z (critical for TXonSample)
+-- Doc TXon sample edge does not leave time for "RX->Controls TX" (critical for timing)
+ -- Conlusion: TxOnSample edge only makes sense if "csn to first clock" is long enough and no need for consecutive
 
 
 ------------------------------------------------------------------------------

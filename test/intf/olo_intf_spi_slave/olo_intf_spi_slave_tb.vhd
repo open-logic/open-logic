@@ -247,7 +247,7 @@ begin
             end if;
 
             -- *** Consecutive Transactions ***
-            if run("3ConsecutiveTransactions") then
+            if run("3ConsecutiveTransactions-CleanEnd") then
                 -- Only execute when enabled
                 if ConsecutiveTransactions_g then
                     -- Define Data
@@ -290,6 +290,44 @@ begin
                             ApplyTx(Miso48_v(TransWidth_g*(3-i)-1 downto TransWidth_g*(2-i)), 1, "Word " & to_string(i));
                         end if;
                     end loop;
+                end if;                
+            end if;
+
+            if run("2ConsecutiveTransactions-AbortEnd") then
+                -- Only execute when enabled
+                if ConsecutiveTransactions_g then
+                    -- Define Data
+                    Mosi48_v := X"1A2B3C4D5E6F";
+                    Miso48_v := X"112233445566";
+
+                    -- Start Transaction
+                    spi_master_push_transaction (net, master, TransWidth_g*2, 
+                        Mosi48_v(TransWidth_g*2-1 downto 0), Miso48_v(TransWidth_g*2-1 downto 0), 
+                        msg => "2 Consecutive Transactions");
+
+                    -- Expect RX Data                    
+                    if LsbFirst_g then
+                        ExpectRx(Mosi48_v(TransWidth_g-1 downto 0), "Word 0");
+                        ExpectRx(Mosi48_v(TransWidth_g*2-1 downto TransWidth_g), "Word 1");
+                    else
+                        ExpectRx(Mosi48_v(TransWidth_g*2-1 downto TransWidth_g), "Word 0");
+                        ExpectRx(Mosi48_v(TransWidth_g-1 downto 0), "Word 1");    
+                    end if;
+                    
+                    -- Expect Responses
+                    ExpectResp(Sent => '1');
+                    ExpectResp(Sent => '1');
+                    ExpectResp(Aborted => '1');
+
+                    -- Apply TX Data
+                    if LsbFirst_g then
+                        ApplyTx(Miso48_v(TransWidth_g-1 downto 0), 0, "Word 0"); -- First one immediately
+                        ApplyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 1, "Word 1"); 
+                    else
+                        ApplyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 0, "Word 0"); 
+                        ApplyTx(Miso48_v(TransWidth_g-1 downto 0), 1, "Word 1"); -- First one immediately
+                    end if;
+                    ApplyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 1, "Word 2"); -- aborted transaction; 
                 end if;                
             end if;
 

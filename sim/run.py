@@ -372,8 +372,11 @@ for InternalTriState in [True, False]:
     named_config(tb, {'InternalTriState_g': InternalTriState})
 #Test maximum clock frequency
 clkFreq = int(100e6)
-named_config(tb, {'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/10), 'TxOnSampleEdge_g' : True})
-named_config(tb, {'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/10), 'TxOnSampleEdge_g' : False})
+for CPHA in [0, 1]:
+    named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/10),
+                      'TxOnSampleEdge_g' : True, 'ConsecutiveTransactions_g' : True})
+    named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/10),
+                      'TxOnSampleEdge_g' : False, 'ConsecutiveTransactions_g' : True})
 
 
 ########################################################################################################################
