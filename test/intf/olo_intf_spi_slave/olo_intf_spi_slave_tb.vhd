@@ -41,7 +41,6 @@ entity olo_intf_spi_slave_tb is
         SpiCpol_g                   : integer range 0 to 1 := 0;
         ConsecutiveTransactions_g   : boolean := true;
         InternalTriState_g          : boolean := true;
-        TxOnSampleEdge_g            : boolean := False;
         runner_cfg                  : string
     );
 end entity olo_intf_spi_slave_tb;
@@ -439,8 +438,7 @@ begin
             SpiCPHA_g                   => SpiCpha_g,
             LsbFirst_g                  => LsbFirst_g,
             ConsecutiveTransactions_g   => ConsecutiveTransactions_g,
-            InternalTriState_g          => InternalTriState_g,
-            TxOnSampleEdge_g            => TxOnSampleEdge_g
+            InternalTriState_g          => InternalTriState_g
         )
         port map (
             -- Control Signals

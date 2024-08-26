@@ -30,8 +30,7 @@ entity olo_intf_spi_slave is
         SpiCPHA_g                   : natural range 0 to 1      := 1;
         LsbFirst_g                  : boolean                   := false;
         ConsecutiveTransactions_g   : boolean                   := false;
-        InternalTriState_g          : boolean                   := true;
-        TxOnSampleEdge_g            : boolean                   := true
+        InternalTriState_g          : boolean                   := true
     );
     port (
         -- Control Signals
@@ -79,7 +78,7 @@ end entity;
 architecture rtl of olo_intf_spi_slave is
 
     -- *** Types ***
-    type State_t is (Idle_s, LatchTx_s, WaitSampleEdge_s, WaitTransmitEdge_s, WaitCsHigh_s);
+    type State_t is (Idle_s, LatchTx_s, WaitSampleEdge_s, WaitInactiveEdge_s, WaitCsHigh_s);
 
     -- *** Two Process Method ***
     type two_process_r is record
@@ -208,8 +207,10 @@ begin
                 if SampleEdge_v = '1' then
                     if LsbFirst_g = false then
                         v.ShiftReg := r.ShiftReg(r.ShiftReg'high - 1 downto 0) & SpiMosi_i;
+                        v.SpiMisoData := r.ShiftReg(r.ShiftReg'high-1);
                     else
                         v.ShiftReg := SpiMosi_i & r.ShiftReg(r.ShiftReg'high downto 1);
+                        v.SpiMisoData := r.ShiftReg(1);
                     end if;
                     -- Last bit
                     if r.BitCnt = TransWidth_g - 1 then
@@ -229,22 +230,17 @@ begin
                         end if;
                     -- Continue with next bit
                     else
-                        v.State := WaitTransmitEdge_s;
+                        v.State := WaitInactiveEdge_s;
                     end if;
                 end if;
                 -- After first bit, transactions are consecutive
                 v.IsConsecutive := true;
 
-            when WaitTransmitEdge_s =>
+            when WaitInactiveEdge_s =>
                 -- Transmit on Transmit Edge
                 if TrasmitEdge_v = '1' then
-                    v.SpiMisoData := r.ShiftReg(TxIdx_c);
                     v.State := WaitSampleEdge_s;
                     v.BitCnt := r.BitCnt + 1;
-                end if;
-                -- For TxOnSampleEdge_g transmit immediately when the data is ready
-                if TxOnSampleEdge_g then
-                    v.SpiMisoData := r.ShiftReg(TxIdx_c);
                 end if;
 
             when WaitCsHigh_s => null;  -- Return to idle is handled after FSM          

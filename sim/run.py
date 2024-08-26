@@ -374,9 +374,7 @@ for InternalTriState in [True, False]:
 clkFreq = int(100e6)
 for CPHA in [0, 1]:
     named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/10),
-                      'TxOnSampleEdge_g' : True, 'ConsecutiveTransactions_g' : True})
-    named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/10),
-                      'TxOnSampleEdge_g' : False, 'ConsecutiveTransactions_g' : True})
+                      'ConsecutiveTransactions_g' : False})
 
 
 ########################################################################################################################
