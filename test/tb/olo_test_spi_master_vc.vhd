@@ -222,6 +222,7 @@ begin
                     wait for 0.5*instance.ClkPeriod;
                     CS_n <= '0';
                 end if;
+                wait for 0.5*instance.ClkPeriod;
 
                 -- Load data into shift register
                 ShiftRegTx_v := data_mosi;

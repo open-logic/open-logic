@@ -25,10 +25,11 @@ On the user-side there are 3 AXI4-Stream interfaces:
 * TX data (data transmitted from the slave - through MISO)
 * RX data (data received from the master - through MOSI)
 * Response - informing the user whether TX data was transmitted or if the master aborted the transaction by pulling *CS_n* high.
+  * The Response interface is optional and in most cases can be omitted.
 
 The all SPI signals are properly synchronized to *Clk* using [olo_intf_sync](./olo_intf_sync.md) within *olo_intf_spi_slave*.
 
-The maximum supported *Spi_Sclk* frequency is 10x less than the *Clk* frequency. However, timing might be tight in this case (one *Clk* cycle margin) - if propagation times are significant in an application, higher ratios between *Spi_Sclk* and *Clk* may be required.
+The maximum supported *Spi_Sclk* frequency is 6x less than the *Clk* frequency. However, timing might be tight in this case (one *Clk* cycle margin) - if propagation times are significant in an application, higher ratios between *Spi_Sclk* and *Clk* may be required.
 
 ## Generics
 
@@ -40,7 +41,7 @@ The maximum supported *Spi_Sclk* frequency is 10x less than the *Clk* frequency.
 | LsbFirst_g                | boolean  | false   | **True**: Transactions are LSB first (data bit 0 is sent first).<br />**False**: Transactions are MSB first (data bit 0 is sent last) |
 | ConsecutiveTransactions_g | boolean  | false   | **True**: Multiple transactions without *CS_n* going high are supported<br />**False**: *CS_n* must go high between transactions<br />Only enable when required - see [Details](#Details) for more information. |
 | InternalTriState_g        | boolean  | true    | **True** = Use internal tri-state buffer (*Spi_Miso* is used). <br />**False** = Use external tri-state buffer (*Spi_Miso_t* and *Spi_Miso_o*) are used). |
-| TxOnSampleEdge_g          | boolean  | true    | Transmit data on the sample edge of *Spi_Sclk* (not on the other edge). This can improve timing margin. However, some timings (e.g. the *t_csnsclk*) are not improved. <br /> |
+
 
 ## Interfaces
 
@@ -48,7 +49,7 @@ The maximum supported *Spi_Sclk* frequency is 10x less than the *Clk* frequency.
 
 | Name | In/Out | Length | Default | Description                                     |
 | :--- | :----- | :----- | ------- | :---------------------------------------------- |
-| Clk  | in     | 1      | -       | Clock                                           |
+| Clk  | in     | 1      | -       | Clock - Frequency must e at least 6x higher than *Spi_Sclk* frequecy                                            |
 | Rst  | in     | 1      | -       | Reset input (high-active, synchronous to *Clk*) |
 
 ### RX Data Interface
@@ -72,6 +73,8 @@ Interface for data sent to the master through *Spi_Miso.
 
 ### Response Interface
 
+In most cases transactions will never be aborted and hence the user can does not need to înterpret output of the *Response* interface. In this case, the related ports can be left unconnected.
+
 | Name          | In/Out | Length | Default | Description                                                  |
 | :------------ | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Resp_Valid    | out    | 1      | N/A     | AXI-S handshaking signal for *Resp_...*                      |
@@ -88,7 +91,7 @@ All signals in the response interface are single cycle pulses. The user may also
 | Name       | In/Out | Length | Default | Description                                                  |
 | :--------- | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Spi_Cs_n   | in     | 1      | N/A     | SPI chip select (low-active).                                |
-| Spi_Sclk   | in     | 1      | N/A     | SPI clock.<br />Frequency must be at least **10x lower than *Clk* frequency**. |
+| Spi_Sclk   | in     | 1      | N/A     | SPI clock.<br />Frequency must be at least **6x lower than *Clk* frequency**. |
 | Spi_Mosi   | in     | 1      | '0'     | SPI data from master to slave.<br />Can be left unconnected if only the slave does send data. |
 | Spi_Miso   | out    | 1      | N/A     | Used only if **InternalTriState_g = true**<br />SPI data from slave to master. <br />Can be left unconnected if the only the master does send data. |
 | Spi_Miso_t | out    | 1      | N/A     | Used only if **InternalTriState_g = false**<br />*Spi_Miso* Tri-State signal ('1' = tristated, '0' drive)<br />Can be left unconnected if the only the master does send data. |
@@ -109,6 +112,10 @@ The clock and data phase is configurable according to the SPI standard terminolo
 
 For CPHA = 1, the sampling happens on the second edge (blue) and data is applied on the first edge (red). For CPHA = 0 it is the opposite way.
 
+The implementation in *olo_intf_spi_slave* is slightly different. Data is sampled and applied on the same edge. Reason for this implementation is that the propagation delay from an incoming *Spi_Sclk* edge until the *Spi_Miso* data is updated is relatively long (4 clock cycles). As a result *Spi_Miso* hold-time is uncritical - and in contrast *Spi_Miso* setup time is critical. To maximize the allowed *Spi_Sclk* frequency, it is optimal to apply *Spi_Miso* output data as soon as possible (4 clock cycles after) the *Spi_Sclk* sampling edge.
+
+**--> Add figure of this <.--**
+
 #### LsbFirst_g
 
 If this generic is set to *true*, the data is transmitted/received LSB first. Otherwise data is received/transmitted MSB first.
@@ -120,22 +127,15 @@ If this generic is set to *true*, the data is transmitted/received LSB first. Ot
 
 If this is generic is set to *false*, *Spi_Cs_n* must always go high between two transactions. If it is *true*, transactions can happen consecutively (i.e. with *Spi_Cs_n*) staying low.
 
+**--> Fix Figures - Tx_Data becomes Rx_Data**
+
 <p align="center"><img src="spi/spi_slave_continuous_no.png"> </p>
 <p align="center"> Separate transactions (ConsecutiveTransactions_g = false) </p>
 
 <p align="center"><img src="spi/spi_slave_continuous_yes.png"> </p>
 <p align="center"> Consecutive transactions (ConsecutiveTransactions_g = true) </p>
 
-#### TxOnSampleEdge_g
-
-Due to the *Spi_Sclk* to *Spi_Miso* propagation delay of 4 clock cycles ("Tpd", timing margin gets pretty small in some cases when data is transmitted only if the transmit edge (other edge than sampling edge) of *Spi_Sclk* is detected.
-
-<p align="center"><img src="spi/spi_slave_timing_margin1.png"> </p>
-<p align="center"> Timing Margin</p>
-
-*TxOnSampleEdge_g*=false implements the behavior as described in the SPI standard, where data signals are updated on the other edge than the sampling edge of *Spi_Sclk*. However, in all cases this leads to rather small timing margins ("f" in the figure). Either on the first bit or on the following ones.
-
-To improve this situation, *olo_intf_spi_slave* does allow to transmit data on the sampling edge (instead of the other one). This improves timing margins ("t" in the figure) for all bits except for the first one. **The timing margin for the first bit can only be improved by increasing the time from the *Spi_Cs_n* falling edge until the first edge of *Spi_Sclk*.**
+Note that there is always at least one clock cycle of time available from *Rx_Valid* assertion until the latest point *Tx_Valid* must be asserted to inject data for the next transaction.
 
 ### User-Side Interfaces
 
@@ -146,7 +146,7 @@ This interface is used to transfer the TX data (to be transferred to the master 
 For the TX data interface (*Tx_...*) the following applies:
 
 * When *Tx_Ready* goes high and the user does not provide TX data (i.e. set *Tx_Valid*='1') before *Tx_Ready* goes low again, zeros are transmitted. The user *CANNOT* provide *Tx_Data* at a later point in time for this specific transaction.
-  *Tx_Ready* goes low when it is too late to provide the first bit of data in-time for the first transmitting clock edge.
+  *Tx_Ready* goes low when it is too late to send the first bit of data in-time for the first transmitting clock edge.
 
 * For the setting *SpiCPHA_g*=0, *Spi_Miso* must become valid after the falling-edge of *Spi_Cs_n* immediately, as visible from the figure in [Overview](#Overview). Therefore in this case, the application of *Tx_Data* must happen immediately. Hence *Tx_Ready* is only pulsed high for one single clock cycle and the user must present *Tx_Data* and apply *Tx_Valid*='1' in this cycle. 
 
@@ -160,7 +160,7 @@ This interface is used to transfer the RX data (received from the master through
 
 #### Response Interface
 
-Generally, the response interface *Resp_...* informs the user about how a transaction ended.
+Generally, the response interface *Resp_...* informs the user about how a transaction ended. In most cases this iformation is not needed and the user can leave all *Resp_...* ports unconnected.
 
 * *Resp_Sent*='1' indicates that data the user passed through *Tx_...* was successfully and completely sent to the master.
 * *Resp_Aborted*='1' indicates that *Spi_Cs_n* was pulled high *BEFORE* all data the user passed through *Tx_...* was sent to the master.
@@ -219,7 +219,6 @@ For read commands, read data is returned in Bits[7:0] of the next transaction. I
 <p align="center"><img src="spi/spi_slave_proto_noncons16_read.png"> </p>
 <p align="center"> Read Command </p>
 
-**Add figures for Read and Write**
 
 #### Consecutive Transactions 8 bit
 
@@ -232,16 +231,17 @@ Using 8-bit consecutive transactions, it is possible to build a protocol that sh
 <p align="center"><img src="spi/spi_slave_proto_cons8_write.png"> </p>
 <p align="center"> Write Command </p> 
 
-There is half a clock period between the last sample edge of the second byte (when the address and the command is known) and the first transmit edge of the third byte (by when TX data must be passed) if *TxOnSampleEdge_g*=false. Hence it is possible to pass read-data through *Tx_...* between Bit[8] and Bit[7] of the transaction (between the second and third 8-bit transaction for the slave).
+There is half a clock period between the last sample edge of the second byte (when the address and the command is known) and the first transmit edge of the third byte (by when TX data must be passed) if the *Spi_Sclk* frequency is significantly lowr than the *Clk* frequency. Hence it is possible to pass read-data through *Tx_...* between Bit[8] and Bit[7] of the transaction (between the second and third 8-bit transaction for the slave).
 
+**--> Shift Timing in Figure <--**
 <p align="center"><img src="spi/spi_slave_proto_cons8_read.png"> </p>
 <p align="center"> Write Command </p> 
 
 The only drawback of this solution is, that a small FSM is required to handle the different 8-bit transactions (from a slave perspective) that make up a 24-bit transaction (from master perspective).
 
-#### Consecutive Transactions 8 bit, TxOnSampleEdge_g=true
+#### Consecutive Transactions 8 bit - Fast SCLK
 
-In case of *TxOnSampleEdge_g*=true, the same approach works. However, in this case 32-bits (4 x 8 bits) are required because it is not guaranteed that *Rx_Valid* is asserted before *Tx_Ready* is de-asserted. The problem can be solved by adding one byte between the address-section and the data-section, leaving time to assemble *Tx_Data*.
+In case of high *Spi_Sclk* frequencies, it is not always possible to provide the next *Tx_Data* quick enough after *Rx_Valid*. In this case 32-bits (4 x 8 bits) are required and the additional data-byte is inserted to allow for more time for gnerating *Tx_Data* after the address was received through *Rx_Data*. 
 
 Because this topic affects read only, only the read transaction is shown. 
 
