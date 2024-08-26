@@ -175,10 +175,22 @@ begin
     p_control : process
         variable Mosi16_v, Miso16_v : std_logic_vector(15 downto 0);
         variable Mosi48_v, Miso48_v : std_logic_vector(47 downto 0);
+        variable TxVldDelay : integer;
+        constant ClkRatio_c : real := real(ClkFrequency_g) / real(BusFrequency_g);
     begin
         test_runner_setup(runner, runner_cfg);
 
         while test_suite loop
+
+            if ClkRatio_c < 6.0 then
+                check(false, "ClkFrequency_g must be at least 6 times higher than BusFrequency_g");
+            elsif ClkRatio_c < 8.0 then
+                TxVldDelay := 1;
+            elsif ClkRatio_c < 10.0 then
+                TxVldDelay := 2;
+            else
+                TxVldDelay := 3;
+            end if;
 
             -- Reset
             wait until rising_edge(Clk);
@@ -250,8 +262,8 @@ begin
                 -- Only execute when enabled
                 if ConsecutiveTransactions_g then
                     -- Define Data
-                    Mosi48_v := X"1A2B3C4D5E6F";
-                    Miso48_v := X"112233445566";
+                    Mosi48_v := X"81F13C81468F";
+                    Miso48_v := X"3C183C8F6481";
 
                     -- Start Transaction
                     spi_master_push_transaction (net, master, TransWidth_g*3, 
@@ -284,9 +296,9 @@ begin
                     -- Other TX Data applied with delay (there should be at least one clock cycle of time)
                     for i in 1 to 2 loop
                         if LsbFirst_g then
-                            ApplyTx(Miso48_v(TransWidth_g*(i+1)-1 downto TransWidth_g*i), 1, "Word " & to_string(i));
+                            ApplyTx(Miso48_v(TransWidth_g*(i+1)-1 downto TransWidth_g*i), TxVldDelay, "Word " & to_string(i));
                         else
-                            ApplyTx(Miso48_v(TransWidth_g*(3-i)-1 downto TransWidth_g*(2-i)), 1, "Word " & to_string(i));
+                            ApplyTx(Miso48_v(TransWidth_g*(3-i)-1 downto TransWidth_g*(2-i)), TxVldDelay, "Word " & to_string(i));
                         end if;
                     end loop;
                 end if;                
@@ -321,10 +333,10 @@ begin
                     -- Apply TX Data
                     if LsbFirst_g then
                         ApplyTx(Miso48_v(TransWidth_g-1 downto 0), 0, "Word 0"); -- First one immediately
-                        ApplyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 1, "Word 1"); 
+                        ApplyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), TxVldDelay, "Word 1"); 
                     else
                         ApplyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 0, "Word 0"); 
-                        ApplyTx(Miso48_v(TransWidth_g-1 downto 0), 1, "Word 1"); -- First one immediately
+                        ApplyTx(Miso48_v(TransWidth_g-1 downto 0), TxVldDelay, "Word 1"); -- First one immediately
                     end if;
                     ApplyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 1, "Word 2"); -- aborted transaction; 
                 end if;                

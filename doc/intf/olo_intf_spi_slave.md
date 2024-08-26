@@ -29,7 +29,7 @@ On the user-side there are 3 AXI4-Stream interfaces:
 
 The all SPI signals are properly synchronized to *Clk* using [olo_intf_sync](./olo_intf_sync.md) within *olo_intf_spi_slave*.
 
-The maximum supported *Spi_Sclk* frequency is 6x less than the *Clk* frequency. However, timing might be tight in this case (one *Clk* cycle margin) - if propagation times are significant in an application, higher ratios between *Spi_Sclk* and *Clk* may be required.
+The maximum supported *Spi_Sclk* frequency is 10x less than the *Clk* frequency (with some tricks up to 6x less).
 
 ## Generics
 
@@ -47,10 +47,10 @@ The maximum supported *Spi_Sclk* frequency is 6x less than the *Clk* frequency. 
 
 ### Control
 
-| Name | In/Out | Length | Default | Description                                     |
-| :--- | :----- | :----- | ------- | :---------------------------------------------- |
-| Clk  | in     | 1      | -       | Clock - Frequency must e at least 6x higher than *Spi_Sclk* frequecy                                            |
-| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to *Clk*) |
+| Name | In/Out | Length | Default | Description                                                  |
+| :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
+| Clk  | in     | 1      | -       | Clock - Frequency must e at least **10x higher than *Spi_Sclk* frequecy**<br />For higher SCLK frequencies refer to [Achieving High SCLK Frequencies](#Achieving-High-SCLK-Frequencies) |
+| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to *Clk*)              |
 
 ### RX Data Interface
 
@@ -91,7 +91,7 @@ All signals in the response interface are single cycle pulses. The user may also
 | Name       | In/Out | Length | Default | Description                                                  |
 | :--------- | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Spi_Cs_n   | in     | 1      | N/A     | SPI chip select (low-active).                                |
-| Spi_Sclk   | in     | 1      | N/A     | SPI clock.<br />Frequency must be at least **6x lower than *Clk* frequency**. |
+| Spi_Sclk   | in     | 1      | N/A     | SPI clock.<br />Frequency must be at least **10x lower than *Clk* frequency**.<br />For higher SCLK frequencies refer to [Achieving High SCLK Frequencies](#Achieving-High-SCLK-Frequencies) |
 | Spi_Mosi   | in     | 1      | '0'     | SPI data from master to slave.<br />Can be left unconnected if only the slave does send data. |
 | Spi_Miso   | out    | 1      | N/A     | Used only if **InternalTriState_g = true**<br />SPI data from slave to master. <br />Can be left unconnected if the only the master does send data. |
 | Spi_Miso_t | out    | 1      | N/A     | Used only if **InternalTriState_g = false**<br />*Spi_Miso* Tri-State signal ('1' = tristated, '0' drive)<br />Can be left unconnected if the only the master does send data. |
@@ -114,7 +114,8 @@ For CPHA = 1, the sampling happens on the second edge (blue) and data is applied
 
 The implementation in *olo_intf_spi_slave* is slightly different. Data is sampled and applied on the same edge. Reason for this implementation is that the propagation delay from an incoming *Spi_Sclk* edge until the *Spi_Miso* data is updated is relatively long (4 clock cycles). As a result *Spi_Miso* hold-time is uncritical - and in contrast *Spi_Miso* setup time is critical. To maximize the allowed *Spi_Sclk* frequency, it is optimal to apply *Spi_Miso* output data as soon as possible (4 clock cycles after) the *Spi_Sclk* sampling edge.
 
-**--> Add figure of this <.--**
+<p align="center"><img src="spi/spi_slave_timing_margin1.png"> </p>
+<p align="center"> Meaning of LsbFirst_g </p>
 
 #### LsbFirst_g
 
@@ -194,6 +195,16 @@ The propagation delay from *Spi_Sclk* edges to the application of *Spi_Miso* dat
 * One clock cycle for the edge detection
 * One clock cycle for setting *Spi_Miso*
 
+#### Achieving High SCLK Frequencies
+
+*Spi_Sclk* frequencies above 1/10 of the *Clk* frequencies is possible with some special considerations, which violate the normal AXI4-Stream handshaking.
+
+For *Spi_Sclk* frequencies between 1/8 and 1/10 of the *Clk* frequency, ensure that *Tx_Valid* goes high not more than two clock cycles after *Tx_Ready* is asserted. This limitation applies even if *Tx_Ready* stays high for longer.
+
+For *Spi_Sclk* frequencies between 1/6 and 1/8 of the *Clk* frequency, ensure that *Tx_Valid* goes high not more than one clock cycle after *Tx_Ready* is asserted. This limitation applies even if *Tx_Ready* stays high for longer.
+
+For high *Spi_Sclk* frequencies, the *Spi_Miso* line is timing critical regarding routing.
+
 ### Protocol Examples
 
 This section provides different possible SPI protocol definitions for an SPI register access with 10-bit register address and 8-bit register data. The aim is the sowcase the effect of different configuration options.
@@ -233,15 +244,14 @@ Using 8-bit consecutive transactions, it is possible to build a protocol that sh
 
 There is half a clock period between the last sample edge of the second byte (when the address and the command is known) and the first transmit edge of the third byte (by when TX data must be passed) if the *Spi_Sclk* frequency is significantly lowr than the *Clk* frequency. Hence it is possible to pass read-data through *Tx_...* between Bit[8] and Bit[7] of the transaction (between the second and third 8-bit transaction for the slave).
 
-**--> Shift Timing in Figure <--**
 <p align="center"><img src="spi/spi_slave_proto_cons8_read.png"> </p>
-<p align="center"> Write Command </p> 
+<p align="center"> Read Command </p> 
 
 The only drawback of this solution is, that a small FSM is required to handle the different 8-bit transactions (from a slave perspective) that make up a 24-bit transaction (from master perspective).
 
 #### Consecutive Transactions 8 bit - Fast SCLK
 
-In case of high *Spi_Sclk* frequencies, it is not always possible to provide the next *Tx_Data* quick enough after *Rx_Valid*. In this case 32-bits (4 x 8 bits) are required and the additional data-byte is inserted to allow for more time for gnerating *Tx_Data* after the address was received through *Rx_Data*. 
+In case of high *Spi_Sclk* frequencies (see [Achieving High SCLK Frequencies](#Achieving-High-SCLK-Frequencies)), it is not always possible to provide the next *Tx_Data* quick enough after *Rx_Valid*. In this case 32-bits (4 x 8 bits) are required and the additional data-byte is inserted to allow for more time for gnerating *Tx_Data* after the address was received through *Rx_Data*. 
 
 Because this topic affects read only, only the read transaction is shown. 
 
