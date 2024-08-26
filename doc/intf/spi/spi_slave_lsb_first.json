@@ -1,0 +1,6 @@
+{signal: [   
+  {name: 'Spi_Cs_n',                        wave: '10................1'},
+  {name: 'Spi_Sclk',                        wave: '0.1010101010101010.', period:1},  
+  {name: 'Spi_Miso/Mosi[LsbFirst_g=true]',  wave: 'x2.2.2.2.2.2.2.2.x.', period:1, data: ["D[0]", "D[1]", "D[2]", "D[3]", "D[4]", "D[5]", "D[6]", "D[7]"]},
+  {name: 'Spi_Miso/Mosi[LsbFirst_g=false]', wave: 'x2.2.2.2.2.2.2.2.x.', period:1, data: ["D[7]", "D[6]", "D[5]", "D[4]", "D[3]", "D[2]", "D[1]", "D[0]"]},
+]}

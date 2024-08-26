@@ -109,7 +109,8 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | ---------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_intf_sync](./intf/olo_intf_sync.md)             | Double stage synchronizer for external signals.              |
 | [olo_intf_i2c_master](./intf/olo_intf_i2c_master.md) | I2C Master - Supports the full standard including arbitration (multi-master I2C) and clock stretching. |
-| [olo_intf_spi_master](./intf/olo_intf_spi_master.md) | SPI Master - Supports handling multiple slaves and variable width transactions. |
+| [olo_intf_spi_master](./intf/olo_intf_spi_master.md) | SPI Master - Supports handling multiple slaves and variable width transactions as well as all clock phases and poloarities and LSB/MSB first. |
+| [olo_intf_spi_slave](./intf/olo_intf_spi_slave.md)   | SPI Slave - Supports all clock phases and poloarities and LSB/MSB first. |
 | [olo_intf_debounce](./intf/olo_intf_debounce.md)     | Debouncer (for bouncing signals from buttons and switches) - Includes double-stage synchronizers. |
 | [olo_intf_clk_meas](./intf/olo_intf_clk_meas.md)     | Measure the frequency of a clock.                            |
 

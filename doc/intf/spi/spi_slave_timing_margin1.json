@@ -1,0 +1,14 @@
+{signal: [   
+  {name: 'Clk',                                wave: 'P........................'},
+  {name: 'Spi_Cs_n',                           wave: '10.......................',
+                                               node: '.A...BC...D'},
+  {name: 'Spi_Sclk',                           wave: '0.....1....0....1....0...', 
+                                               node: '......C...DE...F...', period:1},  
+  {name: 'Spi_Mosi[CPHA=0]',   wave: 'x5.........5.........5...',  period:1, data: ["D[0]", "D[1]", "D[2]"]},
+  {name: 'Spi_Miso[CPHA=0]',   wave: 'z....5....5.........5....',  period:1, data: ["D[0]", "D[1]", "D[2]"]},
+  {name: 'Spi_Mosi[CPHA=1]',   wave: 'x.....5..............5...',  period:1, data: ["D[0]", "D[1]", "D[2]"]},
+  {name: 'Spi_Miso[CPHA=1]',   wave: 'z....5.........5.........', period:1, data: ["D[0]", "D[1]", "D[2]"]},
+
+], edge : [
+  'A+B 4xClk', 'C+D 4xClk', 'E+F 4xClk',
+]}
