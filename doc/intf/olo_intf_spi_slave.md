@@ -128,8 +128,6 @@ If this generic is set to *true*, the data is transmitted/received LSB first. Ot
 
 If this is generic is set to *false*, *Spi_Cs_n* must always go high between two transactions. If it is *true*, transactions can happen consecutively (i.e. with *Spi_Cs_n*) staying low.
 
-**--> Fix Figures - Tx_Data becomes Rx_Data**
-
 <p align="center"><img src="spi/spi_slave_continuous_no.png"> </p>
 <p align="center"> Separate transactions (ConsecutiveTransactions_g = false) </p>
 
