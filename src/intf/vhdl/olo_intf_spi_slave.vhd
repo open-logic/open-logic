@@ -26,8 +26,8 @@ library work;
 entity olo_intf_spi_slave is
     generic (
         TransWidth_g                : positive                  := 32;
-        SpiCPOL_g                   : natural range 0 to 1      := 1;
-        SpiCPHA_g                   : natural range 0 to 1      := 1;
+        SpiCPOL_g                   : natural range 0 to 1      := 0;
+        SpiCPHA_g                   : natural range 0 to 1      := 0;
         LsbFirst_g                  : boolean                   := false;
         ConsecutiveTransactions_g   : boolean                   := false;
         InternalTriState_g          : boolean                   := true

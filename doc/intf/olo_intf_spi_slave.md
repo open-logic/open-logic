@@ -36,8 +36,8 @@ The maximum supported *Spi_Sclk* frequency is 10x less than the *Clk* frequency 
 | Name                      | Type     | Default | Description                                                  |
 | :------------------------ | :------- | ------- | :----------------------------------------------------------- |
 | TransWidth_g              | positive | 32      | Number of bits in every SPI transaction.                     |
-| SpiCPOL_g                 | natural  | 1       | SPI clock polarity, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
-| SpiCPHA_g                 | natural  | 1       | SPI clock phase, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
+| SpiCPOL_g                 | natural  | 0       | SPI clock polarity, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
+| SpiCPHA_g                 | natural  | 0       | SPI clock phase, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
 | LsbFirst_g                | boolean  | false   | **True**: Transactions are LSB first (data bit 0 is sent first).<br />**False**: Transactions are MSB first (data bit 0 is sent last) |
 | ConsecutiveTransactions_g | boolean  | false   | **True**: Multiple transactions without *CS_n* going high are supported<br />**False**: *CS_n* must go high between transactions<br />Only enable when required - see [Details](#Details) for more information. |
 | InternalTriState_g        | boolean  | true    | **True** = Use internal tri-state buffer (*Spi_Miso* is used). <br />**False** = Use external tri-state buffer (*Spi_Miso_t* and *Spi_Miso_o*) are used). |
