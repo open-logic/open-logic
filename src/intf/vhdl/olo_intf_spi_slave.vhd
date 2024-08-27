@@ -60,18 +60,6 @@ entity olo_intf_spi_slave is
     );
 end entity;
 
--- Test
--- Single transaction: test "abort / nodata", "abort data", "complete nodata"
--- continuous transactions: test "complete nodata"
--- TB master vs. slave
--- Apply MISO data as soon as latched (in latch state), check on delayed CSn - separate case
--- Test high-speed clock
--- Add waves to show resp
-
--- Doc: 
--- Conlusion: TxOnSample edge only makes sense if "csn to first clock" is long enough and no need for consecutive
-
-
 ------------------------------------------------------------------------------
 -- Architecture Declaration
 ------------------------------------------------------------------------------
