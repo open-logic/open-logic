@@ -35,8 +35,8 @@ entity olo_base_cc_handshake is
         In_Valid    : in  std_logic := '1';
         In_Ready    : out std_logic; 
         Out_Clk     : in  std_logic;                                
-        Out_RstIn   : in  std_logic;                                
-        Out_RstOut  : out std_logic := '0';                                 
+        Out_RstIn   : in  std_logic := '0';                                
+        Out_RstOut  : out std_logic;                                 
         Out_Data    : out std_logic_vector(Width_g - 1 downto 0);
         Out_Valid   : out std_logic;
         Out_Ready   : in  std_logic := '1'
@@ -50,7 +50,7 @@ architecture rtl of olo_base_cc_handshake is
     -- Input Domain Signals
     signal RstInI           : std_logic;
     signal In_ReadyI        : std_logic; 
-    signal InLatched        : std_logic;
+    signal InLatched        : std_logic := '0';
     signal InTransaction    : std_logic;
     signal InAck            : std_logic;
 
@@ -58,7 +58,7 @@ architecture rtl of olo_base_cc_handshake is
     -- Output Domain Signals
     signal RstOutI          : std_logic;  
     signal OutTransaction   : std_logic;
-    signal OutLatched       : std_logic;
+    signal OutLatched       : std_logic := '0';
     signal OutAck           : std_logic;
     signal Out_ValidI       : std_logic;
     
