@@ -79,7 +79,7 @@ def named_config(tb, map : dict):
 ########################################################################################################################
 
 # Clock Crossings
-cc_tbs = ['olo_base_cc_simple_tb', 'olo_base_cc_status_tb', 'olo_base_cc_bits_tb', 'olo_base_cc_pulse_tb', 'olo_base_cc_reset_tb']
+cc_tbs = ['olo_base_cc_simple_tb', 'olo_base_cc_status_tb', 'olo_base_cc_bits_tb', 'olo_base_cc_pulse_tb', 'olo_base_cc_reset_tb', 'olo_base_cc_handshake_tb']
 for tb_name in cc_tbs:
     tb = olo_tb.test_bench(tb_name)
     # Iterate through various clock combinations
@@ -89,6 +89,15 @@ for tb_name in cc_tbs:
         if N == D and N != 1:
             continue
         named_config(tb, {'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
+
+# Specific cases to cc_handshake
+cc_handshake_tb = 'olo_base_cc_handshake_tb'
+tb = olo_tb.test_bench(cc_handshake_tb)
+for ReadyRst in [0, 1]:
+    named_config(tb, {'ReadyRstState_g': ReadyRst})
+for RandomStall in [True, False]:
+    named_config(tb, {'RandomStall_g': RandomStall})
+
 
 # Sync Clock Crossings
 scc_tbs = ['olo_base_cc_xn2n_tb', 'olo_base_cc_n2xn_tb']
