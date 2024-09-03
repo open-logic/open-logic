@@ -18,7 +18,7 @@ on:
   
 #Jobs  
 jobs:
-  simulation:
+  simulation-ghdl:
     runs-on: ubuntu-latest
     steps:
       #General Setup
@@ -33,16 +33,27 @@ jobs:
           os: ${{ runner.os }}
       #Run Simulation
       - name: Run Simulation
-        run: |
-         source ./.github/workflows/run_simulation.sh
-         echo "Simulation Done"
-      - name: Upload sim results
-        uses: actions/upload-artifact@v4
+        uses: ./.github/actions/simulation
         with:
-          name: VUnit Tests
-          path: sim/sim_report.xml
-      - name: Publish sim results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
+          os: ${{ runner.os }}
+          simulator: ghdl
+
+  simulation-nvc:
+    runs-on: ubuntu-latest
+    steps:
+      #General Setup
+      - name: Setup node
+        uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      #Setup environment
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
         with:
-          files: sim/sim_report.xml
+          os: ${{ runner.os }}
+      #Run Simulation
+      - name: Run Simulation
+        uses: ./.github/actions/simulation
+        with:
+          os: ${{ runner.os }}
+          simulator: nvc

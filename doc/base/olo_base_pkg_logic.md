@@ -90,6 +90,21 @@ function to01X(inp : in std_logic_vector) return std_logic_vector;
 * '1', 'H' --> '1'
 * all others --> 'X'
 
+### to01()
+
+Convert a *std_logic* resp all bits in a *std_logic_vector* to '0' or '1'.
+
+```
+to01(inp : in std_logic) return std_logic;
+function to01(inp : in std_logic_vector) return std_logic_vector;
+```
+
+'H' and 'L' are interpreted as '1' and '0', so this function can be used to convert weak signals from testbenches into binary signals.
+
+* '0', 'L' --> '0'
+* '1', 'H' --> '1'
+* all others --> '0'
+
 ### invertBitOrder()
 
 Invert bit-order in a *std_logic_vector*.

@@ -130,9 +130,26 @@ begin
                 check_equal(to01X('U'), 'X', "to01X('U')");
                 check_equal(to01X('X'), 'X', "to01X('X')");
 
+
             elsif run("to01X-stlv") then    
                 stdlv9 := "0101XXXXX";
                 check_equal(to01X("01LHW-ZUX"), stdlv9, "to01X(01HLW-ZUX)");
+
+            elsif run("to01-stdl") then
+                check_equal(to01('0'), '0', "to01('0')");
+                check_equal(to01('1'), '1', "to01('1')");
+                check_equal(to01('H'), '1', "to01('H')");
+                check_equal(to01('L'), '0', "to01('L')");
+                check_equal(to01('W'), '0', "to01('W')");
+                check_equal(to01('-'), '0', "to01('-')");
+                check_equal(to01('Z'), '0', "to01('Z')");
+                check_equal(to01('U'), '0', "to01('U')");
+                check_equal(to01('X'), '0', "to01('X')");
+
+
+            elsif run("to01-stlv") then    
+                stdlv9 := "010100000";
+                check_equal(to01("01LHW-ZUX"), stdlv9, "to01(01HLW-ZUX)");
 
             elsif run("invertBitOrder") then    
             stdlv9 := "110010101";
