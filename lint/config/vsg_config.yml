@@ -4,9 +4,9 @@
 # --  Authors: Patrick Studer
 # -------------------------------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # -- Description
-# ------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # -- VHDL Style Guide (VSG) Linter configuration file.
 # -- Compartible with version 3.25.0.
 # -- Usage:
@@ -72,7 +72,7 @@ indent:
                 after: "+1"
                 token: current
             end_keyword:
-                after: current
+                after: "-1"
                 token: "-1"
         case_generate_alternative:
             when_keyword:
@@ -246,11 +246,11 @@ indent:
                 token: current
         generic_map_aspect:
             close_parenthesis:
-                after: "-1"
+                after: "-2"
                 token: "-1"
             generic_keyword:
-                after: "+1"
-                token: current
+                after: "+2"
+                token: "+1"
         identifier_list:
             identifier:
                 after: current
@@ -378,11 +378,11 @@ indent:
                 token: current
         port_map_aspect:
             close_parenthesis:
-                after: "-1"
+                after: "-2"
                 token: "-1"
             port_keyword:
-                after: "+1"
-                token: current
+                after: "+2"
+                token: "+1"
         procedure_call:
             procedure_name:
                 after: current
@@ -574,19 +574,20 @@ pragma:
             "^\\s*--\\s+xilinx\\s+\\w+\\s*$",
             "^\\s*--\\s+xilinx\\s+\\w+\\s+\\w+\\s*$"
         ]
-
+          
 # -------------------------------------------------------------------------------------------------
 # -- Rule Definitions
 # -------------------------------------------------------------------------------------------------
 rule:
 
+        
     # ---------------------------------------------------------------------------------------------
     # -- Global Definitions
     # ---------------------------------------------------------------------------------------------
     global:
         # All rules enabled, fixable, and produce Errors. Default indent style is 4 spaces.
-        disable: False
-        fixable: True
+        disable: false
+        fixable: true
         severity: Error
         indent_size: 4
         indent_style: spaces
@@ -602,32 +603,32 @@ rule:
     # ---------------------------------------------------------------------------------------------
     after_001:
         # This rule checks for after x in signal assignments in clock processes.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         severity: Warning
         magnitude: 1
         phase: 1
         units: ns
     after_002:
         # This rule checks the after keywords are aligned in a clock process.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         severity: Warning
         blank_line_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
+        compact_alignment: yes
         phase: 5
     after_003:
         # This rule checks the after keywords do not exist in the reset portion of a clock process.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         magnitude: 1
         phase: 1
         severity: Warning
         units: ns
     alias_declaration_001:
         # This rule checks the alias keyword is on its own line.
-        fixable: False
+        fixable: false
         phase: 1
         severity: Warning
     alias_declaration_100:
@@ -637,24 +638,24 @@ rule:
         severity: Warning
     alias_declaration_101:
         # This rule checks for a single space before the is keyword if the : is present.
-        fixable: False
+        fixable: false
         number_of_spaces: 1
         phase: 2
         severity: Warning
     alias_declaration_102:
         # This rule checks for a single space after the is keyword.
-        number_of_spaces: 1
+        number_of_spaces: ">=1"
         phase: 2
         severity: Warning
     alias_declaration_103:
         # This rule checks for a single space before the designator.
-        fixable: False
+        fixable: false
         number_of_spaces: 1
         phase: 2
         severity: Warning
     alias_declaration_300:
         # This rule checks the indent of the alias keyword.
-        fixable: False
+        fixable: false
         phase: 4
         severity: Warning
     alias_declaration_500:
@@ -668,9 +669,9 @@ rule:
     alias_declaration_502:
         # This rule checks the alias designator has proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
         case_exceptions: []
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_n", "_p", "_i", "_o", "_t"]
@@ -679,17 +680,17 @@ rule:
         phase: 6
     alias_declaration_600:
         # This rule checks for valid prefixes on alias designators.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: ["a_"]
         severity: Warning
     alias_declaration_601:
         # This rule checks for valid suffixes on alias designators.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: []
@@ -783,31 +784,30 @@ rule:
         phase: 2
     architecture_024:
         # This rule checks for the architecture name in the end architecture statement. It is clearer to the reader to state which architecture the end statement is closing.
-        action: add
+        action: remove
         phase: 1
     architecture_025:
         # This rule checks for valid names for the architecture. Typical architecture names are: RTL, EMPTY, and BEHAVE. This rule allows the user to restrict what can be used for an architecture name.
-        fixable: False
-        names: ["rtl", "struct", "tb", "mdl"]
+        fixable: false
+        names: ["rtl", "struct", "sim", "mdl"]
         phase: 7
     architecture_026:
         # This rule checks the colons are in the same column for all declarations in the architecture declarative part.
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         include_type_is_keyword: no
         loop_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
     architecture_027:
         # This rule checks the alignment of inline comments in the architecture declarative part.
         blank_line_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
-        disable: True
-        fixable: False
+        compact_alignment: yes
+        disable: true
+        fixable: false
         include_lines_without_comments: no
         phase: 5
         separate_generic_port_alignment: yes
@@ -821,9 +821,9 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
-        disable: True
-        fixable: False
+        compact_alignment: yes
+        disable: true
+        fixable: false
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -853,12 +853,10 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
-        fixable: False
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
     architecture_600:
         # This rule checks for consistent capitalization of generic names in an architecture body.
         phase: 6
@@ -870,28 +868,16 @@ rule:
         phase: 4
     assert_002:
         # This rule checks the report keyword is on its own line for concurrent assertion statements.
-        disable: True
-        fixable: False
         phase: 1
-        severity: Warning
     assert_003:
         # This rule checks the report keyword is on its own line for sequential assertion statements.
-        disable: True
-        fixable: False
         phase: 1
-        severity: Warning
     assert_004:
         # This rule checks the severity keyword is on its own line for concurrent assertion statements.
-        disable: True
-        fixable: False
         phase: 1
-        severity: Warning
     assert_005:
         # This rule checks the severity keyword is on its own line for sequential assertion statements.
-        disable: True
-        fixable: False
         phase: 1
-        severity: Warning
     assert_100:
         # This rule checks for a single space after the assert keyword.
         number_of_spaces: 1
@@ -941,7 +927,7 @@ rule:
         phase: 6
     attribute_declaration_501:
         # This rule checks the identifier has proper case.
-        case: lower
+        case: upper
         case_exceptions: []
         phase: 6
         prefix_exceptions: []
@@ -968,7 +954,7 @@ rule:
         phase: 6
     attribute_specification_501:
         # This rule checks the attribute_designator has proper case.
-        case: lower
+        case: upper
         case_exceptions: []
         phase: 6
         prefix_exceptions: []
@@ -1002,7 +988,7 @@ rule:
         phase: 1
     block_007:
         # This rule checks the block label exists in the closing of the block statement.
-        action: add
+        action: remove
         phase: 1
     block_100:
         # This rule checks for a single space between the following block elements: label, label colon, block keyword, guard open parenthesis, guart close parenthesis, and is keywords.
@@ -1019,19 +1005,21 @@ rule:
     block_201:
         # This rule checks for a blank line below the block keyword.
         phase: 3
-        style: allow_comment
+        style: no_blank_line
     block_202:
         # This rule checks for blank lines or comments above the begin keyword.
         phase: 3
-        style: require_blank_line
+        style: no_blank_line
     block_203:
         # This rule checks for a blank line below the begin keyword.
+        disable: true
         phase: 3
-        style: require_blank_line
+        style: no_blank_line
     block_204:
         # This rule checks for blank lines or comments above the end keyword.
+        disable: true
         phase: 3
-        style: require_blank_line
+        style: no_blank_line
     block_205:
         # This rule checks for a blank line below the semicolon.
         phase: 3
@@ -1050,17 +1038,18 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
+        severity: Warning
     block_401:
         # This rule checks the colons are in the same column for all declarations in the block declarative part.
         blank_line_ends_group: yes
         case_control_statements_ends_group: no
         comment_line_ends_group: yes
-        compact_alignment: no
-        fixable: False
+        compact_alignment: yes
+        fixable: false
         if_control_statements_ends_group: no
         loop_control_statements_ends_group: no
         phase: 5
@@ -1070,12 +1059,13 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
     block_500:
         # This rule checks the label has proper case.
+        fixable: false
         case: lower
         case_exceptions: []
         phase: 6
@@ -1103,6 +1093,7 @@ rule:
         phase: 6
     block_506:
         # This rule checks the label has proper case on the end block declaration.
+        fixable: false
         case: lower
         case_exceptions: []
         phase: 6
@@ -1110,7 +1101,7 @@ rule:
         suffix_exceptions: []
     block_600:
         # This rule checks for valid suffixes on block labels. The default suffix is _blk.
-        disable: True
+        disable: true
         exceptions: []
         phase: 7
         severity: Warning
@@ -1136,7 +1127,7 @@ rule:
         # This rule checks the comment_left attribute exists for all comments.
         allow_indenting: yes
         comment_left: "-"
-        disable: True
+        disable: true
         min_height: 3
         phase: 1
         severity: Warning
@@ -1179,13 +1170,14 @@ rule:
         # This rule checks for blank lines or comments above the case keyword.
         phase: 3
         style: allow_comment
+        severity: Warning
     case_009:
         # This rule checks for blank lines or comments above the end keyword.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 3
         severity: Warning
-        style: require_blank_line
+        style: no_code
     case_010:
         # This rule checks for a blank line below the end case keywords.
         phase: 3
@@ -1197,8 +1189,8 @@ rule:
         phase: 4
     case_012:
         # This rule checks for code after the => operator.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 1
         severity: Warning
     case_013:
@@ -1232,15 +1224,13 @@ rule:
         phase: 1
     case_200:
         # This rule checks for a blank line below the => keyword.
-        disable: True
-        fixable: False
+        fixable: true
         phase: 3
-        severity: Warning
-        style: require_blank_line
+        style: no_blank_line
     case_201:
         # This rule checks for blank lines or comments above the when keyword.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 3
         severity: Warning
         style: allow_comment
@@ -1256,9 +1246,9 @@ rule:
         # This rule checks the => are aligned in case_generate_alternatives.
         blank_line_ends_group: no
         comment_line_ends_group: no
-        compact_alignment: no
-        disable: True
-        fixable: False
+        compact_alignment: yes
+        disable: true
+        fixable: false
         phase: 5
         severity: Warning
     case_generate_statement_500:
@@ -1278,14 +1268,14 @@ rule:
         phase: 4
     comment_011:
         # This rule checks for in-line comments and moves them to the line above. The indent of the comment will be set to the indent of the current line.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 1
         severity: Warning
     comment_012:
         # This rule checks for user defined keywords in comments.
-        fixable: False
-        keywords: ["BUG", "TODO", "FIXME"]
+        fixable: false
+        keywords: ["BUG", "TODO", "FIXME", "DEADCODE"]
         phase: 1
         severity: Warning
     comment_100:
@@ -1361,7 +1351,6 @@ rule:
         blank_line_ends_group: no
         comment_line_ends_group: no
         compact_alignment: no
-        fixable: False
         phase: 5
         separate_generic_port_alignment: yes
         severity: Warning
@@ -1372,17 +1361,17 @@ rule:
         style: require_blank_line
     component_019:
         # This rule checks for comments at the end of the port and generic clauses in component declarations. These comments represent additional maintainence. They will be out of sync with the entity at some point. Refer to the entity for port types, port directions and purpose.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 1
         severity: Warning
     component_020:
         # This rule checks for alignment of inline comments in the component declaration.
         blank_line_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
-        disable: True
-        fixable: False
+        compact_alignment: yes
+        disable: true
+        fixable: false
         include_lines_without_comments: no
         phase: 5
         separate_generic_port_alignment: yes
@@ -1393,7 +1382,7 @@ rule:
         phase: 1
     component_022:
         # This rule inserts the optional **component_simple_name** if it does not exist.
-        action: add
+        action: remove
         phase: 1
     concurrent_001:
         # This rule checks the indent of concurrent assignments.
@@ -1419,11 +1408,10 @@ rule:
         # This rule checks the alignment of the <= operator over multiple consecutive lines.
         blank_line_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
+        compact_alignment: yes
         generate_statement_ends_group: yes
         phase: 5
         separate_generic_port_alignment: yes
-        severity: Warning
     concurrent_008:
         # This rule checks the alignment of inline comments in consecutive concurrent statements.
         blank_line_ends_group: yes
@@ -1431,7 +1419,7 @@ rule:
         compact_alignment: no
         include_lines_without_comments: no
         phase: 5
-        severity: Warning
+        severity: Error
     concurrent_009:
         # This rule checks alignment of multiline concurrent conditional signal statements.
         align_else_keywords: no
@@ -1463,7 +1451,7 @@ rule:
         aggregate_parens_ends_group: yes
         blank_line_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
+        compact_alignment: yes
         ignore_single_line_aggregates: yes
         phase: 5
         severity: Warning
@@ -1471,12 +1459,12 @@ rule:
         # This rule checks the alignment of multiline concurrent simple signal assignments that contain arrays.
         align_left: no
         align_paren: yes
-        disable: True
+        disable: true
         phase: 5
         severity: Warning
     conditional_expressions_100:
         # This rule checks for a single space before the when keyword.
-        number_of_spaces: 1
+        number_of_spaces: ">=1"
         phase: 2
     conditional_expressions_101:
         # This rule checks for a single space after the when keyword.
@@ -1484,7 +1472,7 @@ rule:
         phase: 2
     conditional_expressions_102:
         # This rule checks for a single space before the else keyword.
-        number_of_spaces: 1
+        number_of_spaces: ">=1"
         phase: 2
     conditional_expressions_103:
         # This rule checks for a single space after the else keyword.
@@ -1504,7 +1492,7 @@ rule:
         phase: 1
     conditional_waveforms_100:
         # This rule checks for a single space before the when keyword.
-        number_of_spaces: 1
+        number_of_spaces: ">=1"
         phase: 2
     conditional_waveforms_101:
         # This rule checks for a single space after the when keyword.
@@ -1512,7 +1500,7 @@ rule:
         phase: 2
     conditional_waveforms_102:
         # This rule checks for a single space before the else keyword.
-        number_of_spaces: 1
+        number_of_spaces: ">=1"
         phase: 2
     conditional_waveforms_103:
         # This rule checks for a single space after the else keyword.
@@ -1536,9 +1524,9 @@ rule:
     constant_004:
         # This rule checks the constant identifier has proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
         case_exceptions: []
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_c"]
@@ -1561,7 +1549,7 @@ rule:
         # This rule checks the alignment of multiline constants that contain arrays.
         align_left: no
         align_paren: yes
-        disable: True
+        disable: true
         phase: 5
         severity: Warning
     constant_013:
@@ -1569,15 +1557,16 @@ rule:
         phase: 6
     constant_014:
         # This rule checks the indent of multiline constants that do not contain arrays.
-        disable: True
+        disable: true
         align_left: no
         align_paren: yes
         phase: 5
+        severity: Warning
     constant_015:
         # This rule checks for valid prefixes on constant identifiers. The default constant prefix is c_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: ["c_"]
         severity: Warning
@@ -1585,7 +1574,7 @@ rule:
         # This rule checks the structure of multiline constants that contain arrays.
         first_paren_new_line: no
         last_paren_new_line: ignore
-        open_paren_new_line: no
+        open_paren_new_line: ignore
         close_paren_new_line: no
         new_line_after_comma: ignore
         assign_on_single_line: yes
@@ -1613,14 +1602,16 @@ rule:
         # This rule checks for a blank line below a constant declaration unless there is another constant definition.
         phase: 3
         severity: Warning
+        style: require_blank_line
+        disable: true
     constant_400:
         # This rule checks the alignment of assignment keywords in constant declarations.
         aggregate_parens_ends_group: yes
         blank_line_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
-        disable: True
-        fixable: False
+        compact_alignment: yes
+        disable: true
+        fixable: false
         ignore_single_line_aggregates: yes
         phase: 5
         severity: Warning
@@ -1717,7 +1708,7 @@ rule:
     context_023:
         # This rule adds a blank line below the is keyword.
         phase: 3
-        style: allow_comment
+        style: no_blank_line
     context_024:
         # This rule checks for blank lines or comments above the end keyword.
         phase: 3
@@ -1733,6 +1724,7 @@ rule:
         severity: Warning
     context_ref_001:
         # This rule checks the indent of the context keyword.
+        disable: true
         phase: 4
     context_ref_002:
         # This rule checks for a single space between the context keyword and the context selected name.
@@ -1775,8 +1767,7 @@ rule:
         # This rule checks the alignment of := operator for signal, constant and variable declarations.
         blank_line_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
-        fixable: False
+        compact_alignment: yes
         phase: 5
         severity: Warning
     element_association_100:
@@ -1865,21 +1856,20 @@ rule:
         # This rule checks the alignment of := operator for each generic and port in the entity declaration.
         blank_line_ends_group: no
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         phase: 5
         separate_generic_port_alignment: yes
-        severity: Warning
     entity_019:
         # This rule checks for the entity name in the end entity statement.
-        action: add
+        action: remove
         phase: 1
     entity_020:
         # This rule checks for alignment of inline comments in the entity declaration.
         blank_line_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
-        disable: True
-        fixable: False
+        compact_alignment: yes
+        disable: true
+        fixable: false
         include_lines_without_comments: no
         phase: 5
         separate_generic_port_alignment: yes
@@ -1997,7 +1987,7 @@ rule:
         # This rule checks for blank lines or comments above the function keyword.
         phase: 3
         severity: Warning
-        style: allow_comment
+        style: no_code
     function_008:
         # This rule checks the indent of function parameters on multiple lines.
         phase: 4
@@ -2009,7 +1999,7 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -2026,19 +2016,19 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
+        severity: Warning
     function_016:
         # This rule checks the indent of return statements in function bodies.
         phase: 4
     function_017:
         # This rule checks the function designator has proper case.
-        case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
-        case_exceptions: []
-        fixable: False
+        case: camelCase
+        case_exceptions: ["to01X"]
+        fixable: false
         phase: 6
     function_018:
         # This rule checks the function keyword exist in the closing of the function specification.
@@ -2050,11 +2040,11 @@ rule:
         ignore_single_line: yes
         interface_element: add_new_line
         interface_list_semicolon: remove_new_line
-        last_close_paren: add_new_line
+        last_close_paren: remove_new_line
         phase: 1
     function_020:
         # This rule checks the function designator exists in the closing of the function specification.
-        action: add
+        action: remove
         phase: 1
     function_100:
         # This rule checks for a single space between the following function elements: function keyword, function designator, open parenthesis, close parenthesis, return keyword, return type and is keyword.
@@ -2077,26 +2067,25 @@ rule:
         phase: 6
     function_506:
         # This rule checks the function designator has proper case on the end function declaration.
-        case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        case: camelCase
         case_exceptions: []
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: []
     function_600:
         # This rule checks for valid prefixes on function designators. Default signal prefix is f_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: ["f_"]
         severity: Warning
     function_601:
         # This rule checks for valid suffixes on function designators. Default signal suffix is _f.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: ["_f"]
@@ -2109,16 +2098,14 @@ rule:
         phase: 2
     generate_003:
         # This rule checks for a blank line below the end generate keywords.
-        severity: Warning
-        fixable: False
         phase: 3
         style: require_blank_line
+        severity: Warning
     generate_004:
         # This rule checks for blank lines or comments before the generate label.
-        severity: Warning
-        fixable: False
         phase: 3
         style: allow_comment
+        severity: Warning
     generate_005:
         # This rule checks the generate label has proper case.
         case: lower
@@ -2146,7 +2133,7 @@ rule:
         phase: 6
     generate_011:
         # This rule checks the end generate label on for, case and if generate statements.
-        action: add
+        action: remove
         phase: 1
     generate_012:
         # This rule checks the end generate label has proper case.
@@ -2188,15 +2175,16 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         phase: 5
+        severity: Warning
     generate_401:
         # This rule checks the colons are in the same column for all declarations in the generate declarative part in for generate statements.
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         phase: 5
     generate_402:
@@ -2204,15 +2192,16 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         phase: 5
+        severity: Warning
     generate_403:
         # This rule checks the colons are in the same column for all declarations in the generate declarative part in if generate statements.
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
-        comment_line_ends_group: no
-        compact_alignment: no
+        comment_line_ends_group: yes
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         phase: 5
     generate_404:
@@ -2220,15 +2209,16 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         phase: 5
+        severity: Warning
     generate_405:
         # This rule checks the colons are in the same column for all declarations in the generate declarative part in case generate statements.
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         phase: 5
     generate_500:
@@ -2241,25 +2231,25 @@ rule:
         phase: 6
     generate_600:
         # This rule checks for valid suffixes on generate statement labels. The default suffix is _gen.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: []
     generate_601:
         # This rule checks for valid prefixes on generate parameter identifiers. The default generate prefix is gv_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: []
         severity: Warning
     generate_602:
         # This rule checks for valid suffixes on generate parameter identifiers. The default generate suffix is _gv.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: []
@@ -2268,7 +2258,7 @@ rule:
         phase: 4
     generic_003:
         # This rule checks for a single space between the generic keyword and the (.
-        number_of_spaces: 0
+        number_of_spaces: 1
         phase: 2
     generic_004:
         # This rule checks the indent of generic declarations.
@@ -2284,9 +2274,9 @@ rule:
     generic_007:
         # This rule checks the generic names have proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
         case_exceptions: ["tb_path", "output_path", "runner_cfg"]
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_g"]
@@ -2323,9 +2313,9 @@ rule:
         phase: 3
     generic_020:
         # This rule checks for valid prefixes on generic identifiers. The default generic prefix is g_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: []
         severity: Warning
@@ -2344,9 +2334,9 @@ rule:
     generic_map_002:
         # This rule checks generic names have proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
         case_exceptions: ["bus_handle", "master", "slave"]
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_g"]
@@ -2363,7 +2353,7 @@ rule:
         phase: 1
     generic_map_006:
         # This rule checks for a single space between the map keyword and the (.
-        number_of_spaces: 0
+        number_of_spaces: 1
         phase: 2
     generic_map_007:
         # This rule checks for a single space after the => keyword in generic maps.
@@ -2383,9 +2373,9 @@ rule:
         severity: Warning
     generic_map_601:
         # This rule checks for valid prefixes on generic identifiers in generic maps The default generic suffix is g_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: []
         severity: Warning
@@ -2398,8 +2388,8 @@ rule:
         phase: 4
     if_002:
         # This rule checks the boolean expression is enclosed in ().
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         parenthesis: insert
         phase: 1
         severity: Warning
@@ -2413,24 +2403,24 @@ rule:
         phase: 2
     if_005:
         # This rule checks for a single space after the elsif keyword.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         number_of_spaces: 1
         phase: 2
     if_006:
         # This rule checks for blank lines after the then keyword.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 3
     if_007:
         # This rule checks for blank lines before the elsif keyword.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 3
     if_008:
         # This rule checks for blank lines before the end if keywords.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 3
     if_009:
         # This rule checks the alignment of multiline boolean expressions.
@@ -2440,13 +2430,13 @@ rule:
         severity: Warning
     if_010:
         # This rule checks for blank lines before the else keyword.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 3
     if_011:
         # This rule checks for blank lines after the else keyword.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 3
     if_012:
         # This rule checks the indent of the elsif keyword.
@@ -2498,13 +2488,15 @@ rule:
         phase: 6
     if_030:
         # This rule checks a single blank line after the end if. In the case of nested if statements, the rule will be enfoced on the last end if.
+        disable: true
         phase: 3
         style: require_blank_line
         severity: Warning
     if_031:
         # This rule checks for blank lines or comments above the if keyword. In the case of nested if statements, the rule will be enfoced on the first if.
+        disable: true
         phase: 3
-        style: allow_comment
+        style: no_code
         severity: Warning
     if_034:
         # This rule checks the if keyword in the end if has proper case.
@@ -2553,11 +2545,13 @@ rule:
         # This rule checks for blank lines or comments above the instantiation.
         phase: 3
         style: allow_comment
+        severity: Warning
     instantiation_005:
         # This rule checks the port map keywords are on their own line.
         phase: 1
     instantiation_008:
         # This rule checks the instance label has proper case.
+        fixable: false
         case: lower
         case_exceptions: []
         phase: 6
@@ -2584,6 +2578,7 @@ rule:
         # This rule checks for a blank line below the end of the instantiation declaration.
         phase: 3
         style: require_blank_line
+        severity: Warning
     instantiation_027:
         # This rule checks the entity keyword has proper case in direct instantiations.
         case: lower
@@ -2599,7 +2594,7 @@ rule:
         # This rule checks for alignment of inline comments in an instantiation.
         blank_line_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
+        compact_alignment: yes
         include_lines_without_comments: no
         phase: 5
         separate_generic_port_alignment: yes
@@ -2617,8 +2612,8 @@ rule:
         phase: 1
     instantiation_034:
         # This rule checks for component versus direct instantiations.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         method: component
         phase: 1
         severity: Warning
@@ -2627,9 +2622,9 @@ rule:
         phase: 1
     instantiation_600:
         # This rule checks for valid suffixes on instantiation labels. The default suffix is _inst.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: []
@@ -2672,7 +2667,7 @@ rule:
         severity: Warning
     length_003:
         # This rule checks the length of a process statement.
-        length: 160
+        length: 200
         phase: 7
         severity: Warning
     library_001:
@@ -2702,7 +2697,7 @@ rule:
     library_007:
         # This rule checks for blank lines or comments above the use declaration.
         phase: 3
-        style: no_blank_line
+        style: no_blank_line_unless_different_library
     library_008:
         # This rule checks the indent of the use keyword.
         phase: 4
@@ -2741,14 +2736,14 @@ rule:
         phase: 1
     loop_statement_006:
         # This rule checks that loop statements have a label.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 1
         severity: Warning
     loop_statement_007:
         # This rule checks the end loop_statement line has a label. The closing label will be added if the opening loop_statement label exists.
         action: remove
-        fixable: False
+        fixable: false
         phase: 1
         severity: Warning
     loop_statement_100:
@@ -2778,17 +2773,15 @@ rule:
         severity: Warning
     loop_statement_201:
         # This rule checks for blank lines below the loop keyword.
-        disable: True
-        fixable: False
+        disable: true
         phase: 3
-        style: require_blank_line
+        style: no_blank_line
         severity: Warning
     loop_statement_202:
         # This rule checks for blank lines or comments above the end keyword.
-        disable: True
-        fixable: False
+        disable: true
         phase: 3
-        style: require_blank_line
+        style: no_code
         severity: Warning
     loop_statement_203:
         # This rule checks for blank lines below the end loop keywords.
@@ -2838,25 +2831,25 @@ rule:
         severity: Warning
     loop_statement_601:
         # This rule checks for valid suffixes on loop labels. The default prefix is _loop.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: ["_loop"]
     loop_statement_602:
         # This rule checks for valid prefixes on loop parameter identifiers. The default loop prefix is lv_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: ["lv_"]
         severity: Warning
     loop_statement_603:
         # This rule checks for valid suffixes on loop parameter identifiers. The default loop suffix is _lv.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: ["_lv"]
@@ -2921,21 +2914,22 @@ rule:
         suffix_exceptions: []
     package_014:
         # This rule checks the package name exists on the same line as the end package keywords.
-        action: add
+        action: remove
         phase: 1
     package_015:
         # This rule checks the indent of the end package declaration.
         phase: 4
     package_016:
         # This rule checks for valid suffixes on package identifiers. The default package suffix is _pkg.
+        disable: true
         exceptions: []
         phase: 7
         suffixes: ["_pkg"]
     package_017:
         # This rule checks for valid prefixes on package identifiers. The default package prefix is pkg_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: []
     package_018:
@@ -2946,17 +2940,18 @@ rule:
         # This rule checks the identifiers for all declarations are aligned in the package declarative region.
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
-        comment_line_ends_group: no
-        compact_alignment: no
+        comment_line_ends_group: yes
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
+        severity: Warning
     package_400:
         # This rule checks the colons are in the same column for all declarations in the package declarative part.
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -2964,7 +2959,7 @@ rule:
         # This rule checks the alignment of inline comments in the package declarative part.
         blank_line_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         include_lines_without_comments: no
         phase: 5
         separate_generic_port_alignment: yes
@@ -2973,7 +2968,7 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -2986,7 +2981,7 @@ rule:
         phase: 1
     package_body_003:
         # This rule checks the package name exists in the closing of the package body declaration.
-        action: add
+        action: remove
         phase: 1
     package_body_100:
         # This rule checks for a single space between package, body and is keywords.
@@ -3003,7 +2998,7 @@ rule:
     package_body_201:
         # This rule checks for a blank line below the package keyword.
         phase: 3
-        style: allow_comment
+        style: require_blank_line
     package_body_202:
         # This rule checks for blank lines or comments above the end keyword.
         phase: 3
@@ -3023,16 +3018,17 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
+        severity: Warning
     package_body_401:
         # This rule checks the colons are in the same column for all declarations in the package body declarative part.
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -3041,7 +3037,7 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -3085,14 +3081,15 @@ rule:
         suffix_exceptions: []
     package_body_600:
         # This rule checks for valid suffixes on package body identifiers. The default package suffix is _pkg.
+        disable: true
         exceptions: []
         phase: 7
         suffixes: ["_pkg"]
     package_body_601:
         # This rule checks for valid prefixes on package body identifiers. The default package prefix is pkg_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: []
         severity: Warning
@@ -3105,7 +3102,7 @@ rule:
         phase: 4
     port_003:
         # This rule checks for a single space after the port keyword and (.
-        number_of_spaces: 0
+        number_of_spaces: 1
         phase: 2
     port_004:
         # This rule checks the indent of port declarations.
@@ -3128,24 +3125,24 @@ rule:
     port_010:
         # This rule checks the port names have proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
         case_exceptions: []
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_n", "_p", "_i", "_o", "_t"]
     port_011:
         # This rule checks for valid prefixes on port identifiers. The default port prefixes are: i_, o_, io_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: []
         severity: Warning
     port_012:
         # This rule checks for default assignments on port declarations.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 1
         severity: Warning
     port_013:
@@ -3185,16 +3182,16 @@ rule:
         phase: 3
     port_023:
         # This rule checks for missing modes in port declarations.
-        fixable: False
+        fixable: false
         phase: 1
     port_024:
         # This rule checks for blank lines before the close parenthesis in port declarations.
         phase: 3
     port_025:
         # This rule checks for valid suffixes on port identifiers. The default port suffixes are _i, _o, _io.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: []
@@ -3212,81 +3209,81 @@ rule:
         phase: 2
     port_600:
         # This rule checks for valid prefixes on port identifiers for input ports.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: ["i_"]
         severity: Warning
     port_601:
         # This rule checks for valid prefixes on port identifiers for output ports.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: ["o_"]
         severity: Warning
     port_602:
         # This rule checks for valid prefixes on port identifiers for inout ports.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: ["io_"]
         severity: Warning
     port_603:
         # This rule checks for valid prefixes on port identifiers for buffer ports.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: ["b_"]
         severity: Warning
     port_604:
         # This rule checks for valid prefixes on port identifiers for linkage ports.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: ["l_"]
         severity: Warning
     port_605:
         # This rule checks for valid suffixes on port identifiers for input ports.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: ["_i"]
     port_606:
         # This rule checks for valid suffixes on port identifiers for output ports.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: ["_o"]
     port_607:
         # This rule checks for valid suffixes on port identifiers for inout ports.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: ["_io"]
     port_608:
         # This rule checks for valid suffixes on port identifiers for buffer ports.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: ["_b"]
     port_609:
         # This rule checks for valid suffixes on port identifiers for linkage ports.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: ["_l"]
@@ -3297,9 +3294,9 @@ rule:
     port_map_002:
         # This rule checks the port names have proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
         case_exceptions: []
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_n", "_p", "_i", "_o", "_t"]
@@ -3326,8 +3323,8 @@ rule:
         phase: 1
     port_map_010:
         # This rule checks for comments at the end of the port and generic assignments in instantiations. These comments represent additional maintainence. They will be out of sync with the entity at some point. Refer to the entity for port types, port directions and purpose.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 1
         severity: Warning
     port_map_100:
@@ -3339,29 +3336,33 @@ rule:
         style: no_blank_line
     pragma_300:
         # This rule checks the indent of pragmas.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 4
     pragma_400:
         # This rule checks for blank lines or comments above opening pragmas.
+        disable: true
         severity: Warning
         phase: 3
         style: no_code
     pragma_401:
         # This rule checks for a blank line below opening pragmas.
+        disable: true
         severity: Warning
         phase: 3
         style: no_blank_line
     pragma_402:
         # This rule checks for blank lines or comments above closing pragmas.
+        disable: true
         severity: Warning
         phase: 3
         style: no_blank_line
     pragma_403:
         # This rule checks for a blank line below closing pragmas.
+        disable: true
         severity: Warning
         phase: 3
-        style: no_code
+        style: no_blank_line
     procedure_001:
         # This rule checks the indent of the procedure keyword.
         phase: 4
@@ -3393,10 +3394,11 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
+        severity: Warning
     procedure_012:
         # This rule checks the procedure keyword exist in the closing of the procedure specification.
         action: add
@@ -3407,11 +3409,11 @@ rule:
         ignore_single_line: yes
         interface_element: add_new_line
         interface_list_semicolon: remove_new_line
-        last_close_paren: add_new_line
+        last_close_paren: remove_new_line
         phase: 1
     procedure_014:
         # This rule checks the procedure designator exists in the closing of the procedure specification.
-        action: add
+        action: remove
         phase: 1
     procedure_100:
         # This rule checks for a single space between the following procedure elements: procedure keyword, procedure designator, open parenthesis, close parenthesis, and is keywords.
@@ -3430,7 +3432,7 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -3438,14 +3440,14 @@ rule:
         # This rule checks the alignment of the colon for each parameter in the procedure declaration.
         blank_line_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         phase: 5
         separate_generic_port_alignment: yes
     procedure_411:
         # This rule checks the alignment of := operator for each parameter in the procedure declaration.
         blank_line_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         phase: 5
         separate_generic_port_alignment: yes
     procedure_500:
@@ -3454,10 +3456,9 @@ rule:
         phase: 6
     procedure_501:
         # This rule checks the procedure designator has proper case.
-        case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        case: camelCase
         case_exceptions: []
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: []
@@ -3480,9 +3481,9 @@ rule:
     procedure_506:
         # This rule checks the procedure designator has proper case on the end procedure declaration.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
         case_exceptions: []
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: []
@@ -3522,19 +3523,22 @@ rule:
         phase: 4
     procedure_call_400:
         # This rule checks the alignment of multiline procedure calls.
-        align_left: no
+        disable: true
+        align_left: yes
         align_paren: yes
         phase: 5
+        severity: Warning
     procedure_call_401:
         # This rule checks the alignment of :code:`=>` keywords in procedure calls.
         blank_line_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         phase: 5
         separate_generic_port_alignment: yes
         severity: Warning
     procedure_call_500:
         # This rule checks the label has proper case.
+        fixable: false
         case: lower
         phase: 6
     procedure_call_501:
@@ -3602,6 +3606,7 @@ rule:
         phase: 1
     process_017:
         # This rule checks the process label has proper case.
+        fixable: false
         case: lower
         case_exceptions: []
         phase: 6
@@ -3609,7 +3614,7 @@ rule:
         suffix_exceptions: []
     process_018:
         # This rule checks the end process line has a label. The closing label will be added if the opening process label exists.
-        action: add
+        action: remove
         phase: 1
     process_019:
         # This rule checks the end process label has proper case.
@@ -3623,18 +3628,21 @@ rule:
         align_left: no
         align_paren: yes
         phase: 4
+        severity: Warning
     process_021:
         # This rule checks for blank lines above the begin keyword if there are no process declarative items.
         phase: 1
-        style: require_blank_line
+        style: no_blank_line
     process_022:
         # This rule checks for a blank line below the begin keyword.
         phase: 3
-        style: require_blank_line
+        style: no_blank_line
     process_023:
         # This rule checks for a blank line above the end process keyword.
+        disable: true
         phase: 3
         style: require_blank_line
+        severity: Warning
     process_024:
         # This rule checks for a single space after the process label.
         number_of_spaces: 1
@@ -3645,14 +3653,12 @@ rule:
         phase: 2
     process_026:
         # This rule checks for blank lines above the first declarative line, if it exists.
-        disable: True
-        fixable: False
         phase: 3
         style: no_blank_line
     process_027:
         # This rule checks for blank lines above the begin keyword if a declarative item exists.
         phase: 3
-        style: require_blank_line
+        style: no_blank_line
     process_028:
         # This rule checks the alignment of the closing parenthesis of a sensitivity list. Parenthesis on multiple lines should be in the same column.
         align_to: keyword
@@ -3663,8 +3669,8 @@ rule:
         phase: 1
     process_030:
         # This rule checks for a single signal per line in a sensitivity list that is not the last one. The sensitivity list is required by the compiler, but provides no useful information to the reader. Therefore, the vertical spacing of the sensitivity list should be minimized. This will help with code readability.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 1
         severity: Warning
     process_031:
@@ -3672,7 +3678,7 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -3681,7 +3687,7 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -3689,7 +3695,7 @@ rule:
         # This rule aligns inline comments between the end of the process sensitivity list and the process begin keyword.
         blank_line_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         include_lines_without_comments: no
         phase: 5
         separate_generic_port_alignment: yes
@@ -3697,9 +3703,9 @@ rule:
         # This rule checks the alignment of inline comments between the process begin and end process lines.
         blank_line_ends_group: no
         comment_line_ends_group: no
-        compact_alignment: no
-        disable: True
-        fixable: False
+        compact_alignment: yes
+        disable: true
+        fixable: false
         include_lines_without_comments: yes
         phase: 5
         separate_generic_port_alignment: yes
@@ -3723,25 +3729,24 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
     process_401:
         # This rule checks the colons are in the same column for all attribute specifications.
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
     process_600:
         # This rule checks for valid suffixes on process labels. The default suffix is _proc.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: []
@@ -3768,7 +3773,7 @@ rule:
         phase: 1
     record_type_definition_005:
         # This rule checks for the optional simple name in the end record statement.
-        action: add
+        action: remove
         phase: 1
     record_type_definition_006:
         # This rule checks the optional simple name is on the same line as the record keyword.
@@ -3815,8 +3820,8 @@ rule:
         phase: 1
     report_statement_002:
         # This rule checks the severity keyword is on its own line.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 1
         severity: Warning
     report_statement_100:
@@ -3844,7 +3849,7 @@ rule:
         phase: 6
     reserved_001:
         # This rule checks for VHDL reserved words being used as identifiers and names.
-        fixable: False
+        fixable: false
         phase: 1
         standard: all
     return_statement_300:
@@ -3908,8 +3913,8 @@ rule:
         phase: 2
     selected_assignment_104:
         # This rule checks for a single space after the assignment.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         number_of_spaces: 1
         phase: 2
         severity: Warning
@@ -3930,7 +3935,10 @@ rule:
         phase: 4
     selected_assignment_400:
         # This rule checks the alignment of multiline selected assignment statements.
+        align_left: no
+        align_paren: yes
         phase: 5
+        severity: Warning
     selected_assignment_500:
         # This rule checks the with keyword has proper case.
         case: lower
@@ -3963,6 +3971,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
+        severity: Warning
     sequential_006:
         # This rule checks for comments within multiline sequential statements.
         phase: 2
@@ -3990,7 +3999,7 @@ rule:
         aggregate_parens_ends_group: no
         blank_line_ends_group: no
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         ignore_single_line_aggregates: yes
         phase: 5
     sequential_401:
@@ -4006,6 +4015,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
+        severity: Warning
     signal_001:
         # This rule checks the indent of signal declarations.
         phase: 4
@@ -4016,9 +4026,9 @@ rule:
     signal_004:
         # This rule checks the signal name has proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
-        case_exceptions: ["rs", "rp", "ra", "rs_next", "rp_next", "ra_next", "net"]
-        fixable: False
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
+        case_exceptions: ["r", "rs", "rp", "ra", "r_next", "rs_next", "rp_next", "ra_next", "net"]
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_n", "_p", "_i", "_o", "_t"]
@@ -4032,15 +4042,15 @@ rule:
         phase: 2
     signal_007:
         # This rule checks for default assignments in signal declarations.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 1
         severity: Warning
     signal_008:
         # This rule checks for valid prefixes on signal identifiers. Default signal prefix is s_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: []
         severity: Warning
@@ -4048,9 +4058,9 @@ rule:
         # This rule checks multiple signal declarations on a single line are column aligned.
         blank_line_ends_group: no
         comment_line_ends_group: no
-        compact_alignment: no
-        disable: True
-        fixable: False
+        compact_alignment: yes
+        disable: true
+        fixable: false
         phase: 5
         severity: Warning
     signal_014:
@@ -4062,13 +4072,13 @@ rule:
         phase: 1
     signal_017:
         # This rule checks the structure of signal constraints.
-        array_constraint: all_in_one_line
-        exceptions: []
+        array_constraint: ignore
+        exceptions: ["keep_record_constraint_with_single_element_on_one_line"]
         phase: 1
-        record_constraint_close_paren: add_new_line
-        record_constraint_comma: add_new_line
+        record_constraint_close_paren: remove_new_line
+        record_constraint_comma: remove_new_line
         record_constraint_element: add_new_line
-        record_constraint_open_paren: add_new_line
+        record_constraint_open_paren: remove_new_line
     signal_100:
         # This rule checks for a single space before the identifier.
         number_of_spaces: 1
@@ -4084,7 +4094,10 @@ rule:
         phase: 2
     signal_200:
         # This rule checks for a blank line below a signal declaration unless there is another signal definition.
+        disable: true
         phase: 3
+        style: require_blank_line
+        severity: Warning
     signal_400:
         # This rule checks alignment of multiline constraints in signal declarations.
         align_left: no
@@ -4092,9 +4105,9 @@ rule:
         phase: 5
     signal_600:
         # This rule checks for valid suffixes on signal identifiers. Default signal suffix is _s.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         severity: Warning
         suffixes: []
@@ -4109,25 +4122,26 @@ rule:
     subprogram_body_202:
         # This rule checks for blank lines above the begin keyword.
         phase: 3
-        style: require_blank_line
+        style: no_blank_line
     subprogram_body_203:
         # This rule checks for a blank line below the begin keyword.
         phase: 3
-        style: require_blank_line
+        style: no_blank_line
     subprogram_body_204:
         # This rule checks for blank lines above the end keyword.
         phase: 3
-        style: require_blank_line
+        style: no_blank_line
+        severity: Warning
     subprogram_body_205:
         # This rule checks for a blank line below the end of the function declaration.
         phase: 3
-        style: allow_comment
+        style: require_blank_line
     subprogram_body_400:
         # This rule checks the alignment of the <= and := operators over consecutive sequential assignments in subprogram bodies.
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: yes
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -4137,7 +4151,7 @@ rule:
         blank_line_ends_group: yes
         case_control_statements_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
@@ -4149,15 +4163,15 @@ rule:
         phase: 6
     subtype_004:
         # This rule checks for valid prefixes in subtype identifiers. The default new subtype prefix is st_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: []
         severity: Warning
     subtype_100:
         # This rule checks for a single space before the identifier.
-        number_of_spaces: 1
+        number_of_spaces: ">=1"
         phase: 2
     subtype_500:
         # This rule checks the subtype keyword has proper case.
@@ -4166,9 +4180,9 @@ rule:
     subtype_501:
         # This rule checks the identifier has proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
-        fixable: False
-        suffix_exceptions: ["_t"]
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
+        fixable: false
+        suffix_exceptions: ["_t", "_c"]
         phase: 6
     subtype_502:
         # This rule checks the is keyword has proper case.
@@ -4189,9 +4203,9 @@ rule:
     type_004:
         # This rule checks the type identifier has proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
         case_exceptions: []
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_r", "_t", "_a"]
@@ -4214,12 +4228,13 @@ rule:
         phase: 1
     type_010:
         # This rule checks for blank lines or comments above the type declaration.
+        disable: true
         phase: 3
-        style: no_code
+        style: allow_comment
     type_011:
         # This rule checks for a blank line below the type declaration.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 3
         style: require_blank_line
     type_012:
@@ -4234,9 +4249,9 @@ rule:
         phase: 6
     type_015:
         # This rule checks for valid prefixes in user defined type identifiers. The default new type prefix is t_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: []
         severity: Warning
@@ -4251,24 +4266,25 @@ rule:
         phase: 1
     type_100:
         # This rule checks for a single space before the identifier.
-        number_of_spaces: 1
+        number_of_spaces: ">=1"
         phase: 2
     type_200:
         # This rule checks for a blank line below a type declaration unless there is another type declaration.
-        disable: True
         phase: 3
+        style: require_blank_line
+        severity: Warning
     type_400:
         # This rule checks the colons are in the same column for all elements in the block declarative part.
         blank_line_ends_group: yes
         comment_line_ends_group: no
-        compact_alignment: no
+        compact_alignment: yes
         phase: 5
         separate_generic_port_alignment: yes
     type_500:
         # This rule checks enumerate types have proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
-        fixable: False
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
+        fixable: false
         suffix_exceptions: ["_s"]
         phase: 6
     type_501:
@@ -4316,6 +4332,7 @@ rule:
         phase: 6
     use_clause_502:
         # This rule checks the item name called out in the selected name has proper case.
+        disable: true
         case: lower
         case_exceptions: []
         phase: 6
@@ -4333,9 +4350,9 @@ rule:
     variable_004:
         # This rule checks the variable name has proper case.
         case: regex
-        regex: "(((?:[A-Z])+(?:[a-z0-9])*)+_?)+"
+        regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
         case_exceptions: ["v", "vs", "vp", "va"]
-        fixable: False
+        fixable: false
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_v"]
@@ -4349,8 +4366,8 @@ rule:
         phase: 2
     variable_007:
         # This rule checks for default assignments in variable declarations.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 1
         severity: Warning
     variable_011:
@@ -4358,9 +4375,9 @@ rule:
         phase: 6
     variable_012:
         # This rule checks for valid prefixes on variable identifiers. The default variable prefix is v_.
-        disable: True
+        disable: true
         exceptions: []
-        fixable: False
+        fixable: false
         phase: 7
         prefixes: []
         severity: Warning
@@ -4375,7 +4392,7 @@ rule:
         record_constraint_open_paren: add_new_line
     variable_100:
         # This rule checks for a single space before the identifier.
-        number_of_spaces: 1
+        number_of_spaces: ">=1"
         phase: 2
     variable_101:
         # This rule checks for a single space after the shared keyword.
@@ -4391,6 +4408,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
+        severity: Warning
     variable_600:
         # This rule checks for valid suffix on variable identifiers. The default variable suffix is _v.
         exceptions: ["v", "vs", "vp", "va"]
@@ -4442,10 +4460,11 @@ rule:
         wrap_at_when: yes
     variable_assignment_401:
         # This rule checks the alignment of multiline variable assignments that contain arrays.
+        disable: true
         align_left: no
         align_paren: yes
         phase: 5
-        disable: true
+        severity: Warning
     wait_001:
         # This rule checks for indentation of the wait keyword. Proper indentation enhances comprehension.
         phase: 4
@@ -4482,8 +4501,8 @@ rule:
         phase: 2
     whitespace_011:
         # This rule checks for at least a single space before and after math operators +, -, /, \* and \\.
-        disable: True
-        fixable: False
+        disable: true
+        fixable: false
         phase: 2
         severity: Warning
     whitespace_013:
@@ -4497,6 +4516,54 @@ rule:
         blank_lines_allowed: 1
         phase: 3
 
+file_rules:
+    - "./src/base/vhdl/olo_base_fifo_async.vhd":
+        rule:
+            signal_004:
+                case_exceptions: ["ri", "ro", "r", "rs", "rp", "ra", "ri_next", "ro_next", "r_next", "rs_next", "rp_next", "ra_next", "net"]
+            variable_004:
+                case_exceptions: ["vi", "vo", "v", "vs", "vp", "va"]
+    - "./src/axi/vhdl/olo_axi_pkg_protocol.vhd":
+        rule:
+            constant_004:
+                disable: true
+    - "./src/intf/vhdl/olo_intf_i2c_master.vhd":
+        rule:
+            constant_004:
+                disable: true
+            constant_600:
+                disable: true
+                
+                
+    - "C:/GitLab/PATRICK-STUDER/open-logic/src/base/vhdl/olo_base_fifo_async.vhd":
+        rule:
+            signal_004:
+                case_exceptions: ["ri", "ro", "r", "rs", "rp", "ra", "ri_next", "ro_next", "r_next", "rs_next", "rp_next", "ra_next", "net"]
+            variable_004:
+                case_exceptions: ["vi", "vo", "v", "vs", "vp", "va"]
+    - "C:/GitLab/PATRICK-STUDER/open-logic/src/axi/vhdl/olo_axi_pkg_protocol.vhd":
+        rule:
+            constant_004:
+                disable: true
+    - "C:/GitLab/PATRICK-STUDER/open-logic/src/intf/vhdl/olo_intf_i2c_master.vhd":
+        rule:
+            constant_004:
+                disable: true
+            constant_600:
+                disable: true
+    - "C:/GitLab/PATRICK-STUDER/open-logic/test/axi/olo_axi_master_simple/olo_axi_master_simple_tb.vhd":
+        rule:
+            # Ignore vunit verification components port maps.
+            port_map_002:
+                case_exceptions: ["aclk", "areset_n",
+                                  "tvalid", "tready", "tdata", "tlast", "tkeep", "tstrb", "tid", "tdest", "tuser",
+                                  "arready", "arvalid", "araddr", "rready", "rvalid",
+                                  "rdata", "rresp",
+                                  "awready", "awvalid", "awaddr", "wready",
+                                  "wvalid", "wdata", "wstrb",
+                                  "bvalid", "bready", "bresp",
+                                  "clk", "adr", "dat_i", "dat_o", "sel", "cyc", "stb", "we", "stall", "ack",
+                                  "rx", "tx"] 
 # -------------------------------------------------------------------------------------------------
 # -- EOF
 # -------------------------------------------------------------------------------------------------
