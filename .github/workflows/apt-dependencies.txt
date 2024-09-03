@@ -1,2 +1,13 @@
 gnat
 libgnat-9
+build-essential 
+automake 
+autoconf
+flex 
+check 
+llvm-dev 
+pkg-config 
+zlib1g-dev 
+libdw-dev
+libffi-dev
+libzstd-dev

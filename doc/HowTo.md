@@ -4,6 +4,20 @@
 
 # Open Logic - How To ...
 
+## ... Use Open Logic in a Questasim Simulation
+
+There is a script to compile all *Open Logic* sources into a library *olo*. To run the script, follow the steps below:
+
+1. Open Questasim
+2. In the Questasim TCL shell, execute the command `source <open-logic-root>/tools/questa/vcom_sources.tcl`
+
+That's it. Nothing more.
+
+* All *Open Logic* sources are configured to be compiled into the library *olo*
+  ![Sources](./general/questa/vcom_sources.png)
+
+
+
 ## ... Use Open Logic in a Efinix Efinity Project
 
 There is a script to import all *Open Logic* sources into a Efinity project.
@@ -108,6 +122,7 @@ To run the simulations, navigate to *\<root\>/sim* and execute the following com
 ```
 python3 run.py            # For GHDL
 python3 run.py --modelsim # For Modelsim/QuestaSim
+python3 run.py --nvc      # For NVC
 ```
 
 Tipp: For faster runtimes, you may want to use multiple threads to execute simulations. This can be achieved by adding the argument `-p 16` (16 is the number of threads, you may use any other number fitting your CPU).
@@ -120,7 +135,7 @@ You should now see an output indicating that all tests pass.
 
 For debugging purposes, you may want to visualize a test-case in the GUI. 
 
-For GHDL simulations, the GTKWave tool must be installed (it's the GUI to GHDL). For Questasim a GUI is included.
+For GHDL and NVC simulations, the GTKWave tool must be installed (it's the GUI to GHDL/NVC). For Questasim a GUI is included.
 
 To show simulation results in the GUI, navigate to *\<root\>/sim* and execute the following command:
 
@@ -134,7 +149,7 @@ Where test-case is the exact test-case to display, e.g. "olo_tb.olo_base_cc_bits
 python3 run.py olo_tb.olo_base_cc_bits_tb.D=19-N=20.SimpleTransfer --gui
 ```
 
-The simulator GUI will show up (the example is showing GTKWave - the GHDL GUI):
+The simulator GUI will show up (the example is showing GTKWave - the GHDL/NVC GUI):
 
 ![SimGui](./general/GtkwaveGui.png)
 

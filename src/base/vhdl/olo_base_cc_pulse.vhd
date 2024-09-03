@@ -107,16 +107,15 @@ begin
         );
 
     -- Data receive side (Output)
+    Out_Pulse <= ToggleOutLast xor ToggleOut;
     PulseOut_p : process(Out_Clk)
     begin
         if rising_edge(Out_Clk) then
-            ToggleOutLast <= ToggleOut;
-            Out_Pulse <= ToggleOutLast xor ToggleOut;
+            ToggleOutLast <= ToggleOut;   
 
             -- Reset
             if RstOutI = '1' then
                 ToggleOutLast <= (others => '0');
-                Out_Pulse <= (others => '0');
             end if;
         end if;
     end process;

@@ -3,25 +3,43 @@ from vunit import VUnit
 from glob import glob
 import os
 import sys
+from enum import Enum
+
+class Simulator(Enum):
+    GHDL = 1
+    MODELSIM = 2
+    NVC = 3
 
 #Argument handling
 argv = sys.argv[1:]
-USE_GHDL = True
+SIMULATOR = Simulator.GHDL
 USE_COVERAGE = False
+
+#Simulator Selection
+#.. The environment variable VUNIT_SIMULATOR has precedence over the commandline options.
 if "--modelsim" in sys.argv:
-    USE_GHDL = False
+    SIMULATOR = Simulator.MODELSIM
     argv.remove("--modelsim")
+if "--nvc" in sys.argv:
+    SIMULATOR = Simulator.NVC
+    argv.remove("--nvc")
+if "--ghdl" in sys.argv:
+    SIMULATOR = Simulator.GHDL
+    argv.remove("--ghdl")
 if "--coverage" in sys.argv:
     USE_COVERAGE = True
     argv.remove("--coverage")
-    if USE_GHDL:
-        "Coverage is only allowed with --modelsim"
+    if SIMULATOR != Simulator.MODELSIM:
+        raise "Coverage is only allowed with --modelsim"
 
 # Obviously the simulator must be chosen before sources are added
-if USE_GHDL:
-    os.environ['VUNIT_SIMULATOR'] = 'ghdl'
-else:
-    os.environ['VUNIT_SIMULATOR'] = 'modelsim'
+if 'VUNIT_SIMULATOR' not in os.environ:
+    if SIMULATOR == Simulator.GHDL:
+        os.environ['VUNIT_SIMULATOR'] = 'ghdl'
+    elif SIMULATOR == Simulator.NVC:
+        os.environ['VUNIT_SIMULATOR'] = 'nvc'
+    else:
+        os.environ['VUNIT_SIMULATOR'] = 'modelsim'
 
 # Parse VUnit Arguments
 vu = VUnit.from_argv(compile_builtins=False, argv=argv)
@@ -46,8 +64,8 @@ files = glob('../test/**/*.vhd', recursive=True)
 olo_tb.add_source_files(files)
 
 # Obviously flags must be set after files are imported
-if USE_GHDL:
-    vu.add_compile_option('ghdl.a_flags', ['-frelaxed-rules', '-Wno-hide', '-Wno-shared'])
+vu.add_compile_option('ghdl.a_flags', ['-frelaxed-rules', '-Wno-hide', '-Wno-shared'])
+vu.add_compile_option('nvc.a_flags', ['--relaxed'])
 
 ########################################################################################################################
 # Shared Functions
@@ -61,7 +79,7 @@ def named_config(tb, map : dict):
 ########################################################################################################################
 
 # Clock Crossings
-cc_tbs = ['olo_base_cc_simple_tb', 'olo_base_cc_status_tb', 'olo_base_cc_bits_tb', 'olo_base_cc_pulse_tb', 'olo_base_cc_reset_tb']
+cc_tbs = ['olo_base_cc_simple_tb', 'olo_base_cc_status_tb', 'olo_base_cc_bits_tb', 'olo_base_cc_pulse_tb', 'olo_base_cc_reset_tb', 'olo_base_cc_handshake_tb']
 for tb_name in cc_tbs:
     tb = olo_tb.test_bench(tb_name)
     # Iterate through various clock combinations
@@ -71,6 +89,15 @@ for tb_name in cc_tbs:
         if N == D and N != 1:
             continue
         named_config(tb, {'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
+
+# Specific cases to cc_handshake
+cc_handshake_tb = 'olo_base_cc_handshake_tb'
+tb = olo_tb.test_bench(cc_handshake_tb)
+for ReadyRst in [0, 1]:
+    named_config(tb, {'ReadyRstState_g': ReadyRst})
+for RandomStall in [True, False]:
+    named_config(tb, {'RandomStall_g': RandomStall})
+
 
 # Sync Clock Crossings
 scc_tbs = ['olo_base_cc_xn2n_tb', 'olo_base_cc_n2xn_tb']
@@ -335,12 +362,37 @@ tb = olo_tb.test_bench(spi_master_fixsize_tb)
 for LsbFirst in [False, True]:
     named_config(tb, {'LsbFirst_g': LsbFirst})
 
+spi_slave_tb = 'olo_intf_spi_slave_tb'
+tb = olo_tb.test_bench(spi_slave_tb)
+#Test different configs for transactions (all combinations)
+for CPHA in [0, 1]:
+    for CPOL in [0, 1]:
+        for Consecutive in [False, True]:
+            #Try TxOnSampleEdge
+            named_config(tb, {'SpiCpha_g': CPHA, 'SpiCpol_g': CPOL, 'ConsecutiveTransactions_g' : Consecutive})
+#Test Lsb/Msb first
+for LsbFirst in [True, False]:
+    named_config(tb, {'LsbFirst_g': LsbFirst})
+#Test different transaction widths
+for TransWidth in [8, 16]:
+    named_config(tb, {'TransWidth_g': TransWidth})
+#Test external tristate
+for InternalTriState in [True, False]:
+    named_config(tb, {'InternalTriState_g': InternalTriState})
+#Test maximum clock frequency
+clkFreq = int(100e6)
+for CPHA in [0, 1]:
+    named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/6),
+                      'ConsecutiveTransactions_g' : True})
+    named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g': int(clkFreq/8),
+                      'ConsecutiveTransactions_g': True})
+
 
 ########################################################################################################################
 # Execution
 ########################################################################################################################
-if USE_GHDL:
-    olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
+
+olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 
 if USE_COVERAGE:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])

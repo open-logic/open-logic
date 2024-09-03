@@ -289,4 +289,30 @@ You may notice that the *Buttons* inputs as well as the *Led* outputs are invert
 
 ## Notes
 
-Efinity as of today does not allow scripted builds. Therefore in contrast to other tutorials, no scripted build option is provided.
+If you should want to build the tutorial project without many manual mouse clicks, you can do so by following the steps below:
+
+* Open a shell/terminal
+
+* In the terminal, navigate to the directory \<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/prj_vhdl
+
+  * For verilog, just replace *prj_vhdl* by *prj_verilog* in all paths and file-names
+
+
+  ```
+  cd <open-logic-root>/doc/tutorials/EfinityTutorial/Files/prj_vhdl
+  ```
+
+* Run the project build from command line
+  For Linux:
+
+  ```
+  efx_run --prj ./prj_vhdl.xml
+  ```
+
+  For Verilog:
+
+  ```
+  efx_run.bat --prj ./prj_vhdl.xml
+  ```
+
+Note: replace \<open-logic-root\> with the root folder of your *Open Logic* working copy.

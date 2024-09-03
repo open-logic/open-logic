@@ -70,6 +70,16 @@ Read and write logic are fully independent. So reads and writes can happen at th
 
 Transaction requests are forwarded from the slave interface to the master interfaces. Responses are forwarded from the master interface to the slave interface.
 
+#### Note about AXI Id Signals
+The following signals are not included in the olo_axi_master_full interface but they could be mandatory for some applications or tools:
+
+- M_Axi_AwId
+- M_Axi_BId
+- M_Axi_ArId
+- M_Axi_RId
+  
+These signals are not included in olo_axi_master_full on purpose as they are not strictly needed to handle an AXI transaction. If some application or tool require these signals, the user should add them in the wrapping entity.
+
 ### User Write Command Interface
 
 | Name         | In/Out | Length                      | Default | Description                                                  |

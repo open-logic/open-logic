@@ -22,16 +22,17 @@ Packages with type declarations and functions used in *Open Logic* internally or
 
 Clock crossings are a key topic and they all follow the same [clock crossing principles](./base/clock_crossing_principles.md). 
 
-| Entity                                               | Description                                                  |
-| ---------------------------------------------------- | ------------------------------------------------------------ |
-| [olo_base_cc_reset](./base/olo_base_cc_reset.md)     | Synchronization of resets between two clock domains (bi-directional) |
-| [olo_base_cc_bits](./base/olo_base_cc_bits.md)       | Transfer a group of individual single bit signals from one clock domain to another clock domain |
-| [olo_base_cc_pulse](./base/olo_base_cc_pulse.md)     | Transfer single-cycle pulses from one clock domain to another clock domain |
-| [olo_base_cc_simple](./base/olo_base_cc_simple.md)   | Transfer selectively valid data from one clock domain to another clock domain (data/valid pair) |
-| [olo_base_cc_status](./base/olo_base_cc_status.md)   | Transfer status and configuration information from one clock domain to another clock domain. The update rate is relatively low but consistency is guaranteed |
-| [olo_base_cc_n2xn](./base/olo_base_cc_n2xn.md)       | Transfer data from a slower clock to a faster phase aligned clock (output clock frequency is an exact integer multiple of the input clock frequency and the clocks are phase aligned). |
-| [olo_base_cc_xn2n](./base/olo_base_cc_xn2n.md)       | Transfer data from a faster clock to a slower phase aligned clock (input clock frequency is an exact integer multiple of the output clock frequency and the clocks are phase aligned). |
-| [olo_base_fifo_async](./base/olo_base_fifo_async.md) | Asynchronous FIFO (separate write and read clocks)<br />This is not a pure clock-crossing entity but it can be used as such. |
+| Entity                                                   | Description                                                  |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_base_cc_reset](./base/olo_base_cc_reset.md)         | Synchronization of resets between two clock domains (bi-directional) |
+| [olo_base_cc_bits](./base/olo_base_cc_bits.md)           | Transfer a group of individual single bit signals from one clock domain to another clock domain |
+| [olo_base_cc_pulse](./base/olo_base_cc_pulse.md)         | Transfer single-cycle pulses from one clock domain to another clock domain |
+| [olo_base_cc_simple](./base/olo_base_cc_simple.md)       | Transfer selectively valid data from one clock domain to another clock domain (data/valid pair) |
+| [olo_base_cc_status](./base/olo_base_cc_status.md)       | Transfer status and configuration information from one clock domain to another clock domain. The update rate is relatively low but consistency is guaranteed |
+| [olo_base_cc_n2xn](./base/olo_base_cc_n2xn.md)           | Transfer data from a slower clock to a faster phase aligned clock (output clock frequency is an exact integer multiple of the input clock frequency and the clocks are phase aligned). |
+| [olo_base_cc_xn2n](./base/olo_base_cc_xn2n.md)           | Transfer data from a faster clock to a slower phase aligned clock (input clock frequency is an exact integer multiple of the output clock frequency and the clocks are phase aligned). |
+| [olo_base_cc_handshake](./base/olo_base_cc_handshake.md) | Transfer data from one clock domain to another clock domain using the standard *Valid*/*Ready* handshaking.<br />For technologies with distributed RAM (LUT can be used as small RAM), [olo_base_fifo_async](./base/olo_base_fifo_async.md) in most cases is preferred over this entity. |
+| [olo_base_fifo_async](./base/olo_base_fifo_async.md)     | Asynchronous FIFO (separate write and read clocks)<br />This is not a pure clock-crossing entity but it can be used as such. |
 
 ### RAM Implementations (olo_base_ram_\<...\>)
 
@@ -95,13 +96,22 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_axi_master_simple](./axi/olo_axi_master_simple.md) | AXI4 master - does execute arbitrarily sized transfer over AXI4. The *_simple* version of the master does only allow access to word-aligned addresses and sizes. |
 | [olo_axi_master_full](./axi/olo_axi_master_full.md)     | AXI4 master - Same as [olo_axi_master_simple](./axi/olo_axi_master_simple.md) but does allow access that are not word-aligned (in terms of start address, size or both). |
 
+**Note:** *Open Logic* focuses on providing utilities for development of AXI endpoints (masters and slaves). *Open Logic* does not aim to provide AXI interconnect infrastructure (e.g. crossbars, interconnects, ...). Often the vendor IPs are used (for tool integration reasons) for these aspects. If you are looking for a pure VHDL implementation of AXI interconnects, it's suggested that you use one of the following libraries:
+
+* [hdl-modules](https://github.com/hdl-modules)
+  * hdl-modules utilizes VHDL-2008 which has limited support in some tools (namely the Standard and Lite versions of Quartus Prime)
+  * hdl-modules currently does only contain synthesis attributes for AMD (Vivado)
+* [SURF](https://github.com/slaclab/surf)
+  * SURF currently does only target AMD (Vivado) and Altera (Quartus Prime)
+
 ## intf
 
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_intf_sync](./intf/olo_intf_sync.md)             | Double stage synchronizer for external signals.              |
 | [olo_intf_i2c_master](./intf/olo_intf_i2c_master.md) | I2C Master - Supports the full standard including arbitration (multi-master I2C) and clock stretching. |
-| [olo_intf_spi_master](./intf/olo_intf_spi_master.md) | SPI Master - Supports handling multiple slaves and variable width transactions. |
+| [olo_intf_spi_master](./intf/olo_intf_spi_master.md) | SPI Master - Supports handling multiple slaves and variable width transactions as well as all clock phases and poloarities and LSB/MSB first. |
+| [olo_intf_spi_slave](./intf/olo_intf_spi_slave.md)   | SPI Slave - Supports all clock phases and poloarities and LSB/MSB first. |
 | [olo_intf_debounce](./intf/olo_intf_debounce.md)     | Debouncer (for bouncing signals from buttons and switches) - Includes double-stage synchronizers. |
 | [olo_intf_clk_meas](./intf/olo_intf_clk_meas.md)     | Measure the frequency of a clock.                            |
 

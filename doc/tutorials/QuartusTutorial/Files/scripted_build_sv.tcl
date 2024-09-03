@@ -3,9 +3,9 @@ package require ::quartus::project
 package require ::quartus::flow
 
 #Create project
-file mkdir tutorial_prj
-cd ./tutorial_prj
-project_new -revision tutorial_prj tutorial_prj
+file mkdir tutorial_prj_sv
+cd ./tutorial_prj_sv
+project_new -revision tutorial_prj_sv tutorial_prj_sv
 
 # Project Settings
 set_global_assignment -name FAMILY "Cyclone V"
