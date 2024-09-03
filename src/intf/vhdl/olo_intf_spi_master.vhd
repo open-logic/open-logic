@@ -1,18 +1,18 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler, Franz Herzog
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler, Franz Herzog
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements a simple SPI-master
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -22,9 +22,9 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_intf_spi_master is
     generic (
         ClkFreq_g       : real;
@@ -39,7 +39,7 @@ entity olo_intf_spi_master is
     );
     port (
         -- Control Signals
-        Clk             : in  std_logic; 
+        Clk             : in  std_logic;
         Rst             : in  std_logic;
         -- Command Interface
         Cmd_Valid       : in  std_logic;
@@ -50,7 +50,7 @@ entity olo_intf_spi_master is
         -- Response Interface
         Resp_Valid      : out std_logic;
         Resp_Data       : out std_logic_vector(MaxTransWidth_g - 1 downto 0);
-        -- SPI 
+        -- SPI
         Spi_Sclk        : out std_logic;
         Spi_Mosi        : out std_logic;
         Spi_Miso        : in  std_logic                                                        := '0';
@@ -58,9 +58,9 @@ entity olo_intf_spi_master is
     );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_intf_spi_master is
 
     -- *** Types ***
@@ -109,7 +109,7 @@ architecture rtl of olo_intf_spi_master is
     -- Synthesis attributes for Efnix (Efinity)
     attribute syn_keep : boolean;
     attribute syn_keep of SpiMiso_i : signal is true;
-    
+
     -- *** Functions and procedures ***
     function GetClockLevel(ClkActive : boolean) return std_logic is
     begin

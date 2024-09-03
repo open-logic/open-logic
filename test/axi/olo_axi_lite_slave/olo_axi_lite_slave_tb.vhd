@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -26,9 +26,9 @@ library work;
     use work.olo_test_pkg_axi.all;
     use work.olo_test_axi_master_pkg.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_axi_lite_slave_tb is
     generic (
@@ -47,19 +47,19 @@ architecture sim of olo_axi_lite_slave_tb is
     constant UserWidth_c     : integer   := 0;
     constant DataWidth_c     : integer   := AxiDataWidth_g;
     constant ByteWidth_c     : integer   := DataWidth_c/8;
-    
+
     subtype IdRange_r   is natural range IdWidth_c-1 downto 0;
     subtype AddrRange_r is natural range AddrWidth_c-1 downto 0;
     subtype UserRange_r is natural range UserWidth_c-1 downto 0;
     subtype DataRange_r is natural range DataWidth_c-1 downto 0;
     subtype ByteRange_r is natural range ByteWidth_c-1 downto 0;
-    
+
     signal AxiMs    : AxiMs_r ( ArId(IdRange_r), AwId(IdRange_r),
                                 ArAddr(AddrRange_r), AwAddr(AddrRange_r),
                                 ArUser(UserRange_r), AwUser(UserRange_r), WUser(UserRange_r),
                                 WData(DataRange_r),
                                 WStrb(ByteRange_r));
-    
+
     signal AxiSm    : AxiSm_r ( RId(IdRange_r), BId(IdRange_r),
                                 RUser(UserRange_r), BUser(UserRange_r),
                                 RData(DataRange_r));
@@ -199,7 +199,7 @@ begin
             -- Write Timing
             if run("WriteTiming") then
                 push_single_write(net, axiMaster, to_unsigned(32, AddrWidth_c), X"D0", bReadyDelay => 100 ns);
-                push_single_write(net, axiMaster, to_unsigned(64, AddrWidth_c), X"D4", wValidDelay => 100 ns);                
+                push_single_write(net, axiMaster, to_unsigned(64, AddrWidth_c), X"D4", wValidDelay => 100 ns);
                 -- Check write on RB side [0]
                 wait until rising_edge(Clk) and Rb_Wr = '1';
                 check_equal(Rb_Addr, 32, "Rb_Addr wrong");
@@ -285,7 +285,7 @@ begin
     i_dut : entity olo.olo_axi_lite_slave
         generic map (
             AxiAddrWidth_g      => AxiAddrWidth_g,
-            AxiDataWidth_g      => AxiDataWidth_g 
+            AxiDataWidth_g      => AxiDataWidth_g
         )
         port map (
             -- System

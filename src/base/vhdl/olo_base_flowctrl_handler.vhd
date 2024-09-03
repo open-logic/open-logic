@@ -1,34 +1,34 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Implements full flow-control handling (including Ready/backpressure) for
 -- processing entities that do not support flow-control natively.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_flowctrl_handler is
-    generic ( 
+    generic (
         InWidth_g           : positive;
         OutWidth_g          : positive;
-        SamplesToAbsorb_g   : positive;                                                   
-        RamStyle_g          : string    := "auto";       
+        SamplesToAbsorb_g   : positive;
+        RamStyle_g          : string    := "auto";
         RamBehavior_g       : string    := "RBW"
     );
-    port (    
+    port (
         -- Control Ports
         Clk           : in  std_logic;
         Rst           : in  std_logic;
@@ -50,9 +50,9 @@ entity olo_base_flowctrl_handler is
 end entity;
 
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_flowctrl_handler is
     -- Constants
     constant FifoDepth_c : positive := 2*(SamplesToAbsorb_g+2);
@@ -68,15 +68,15 @@ begin
 
     -- *** FIFO Instantiation ***
     i_fifo : entity work.olo_base_fifo_sync
-        generic map ( 
-            Width_g         => OutWidth_g,                
-            Depth_g         => FifoDepth_c,                                 
-            AlmEmptyOn_g    => true,      
-            AlmEmptyLevel_g => FifoDepth_c/2,                 
-            RamStyle_g      => RamStyle_g,   
-            RamBehavior_g   => RamBehavior_g    
+        generic map (
+            Width_g         => OutWidth_g,
+            Depth_g         => FifoDepth_c,
+            AlmEmptyOn_g    => true,
+            AlmEmptyLevel_g => FifoDepth_c/2,
+            RamStyle_g      => RamStyle_g,
+            RamBehavior_g   => RamBehavior_g
         )
-        port map (    
+        port map (
               Clk           => Clk,
               Rst           => Rst,
               In_Data       => FromProc_Data,
@@ -86,7 +86,7 @@ begin
               Out_Valid     => Out_Valid,
               Out_Ready     => Out_Ready,
               AlmEmpty      => Fifo_HalfEmpty
-              
+
         );
 
     -- *** Assertions ***

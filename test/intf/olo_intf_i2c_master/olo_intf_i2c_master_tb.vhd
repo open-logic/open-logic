@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -28,15 +28,15 @@ library work;
     use work.olo_test_i2c_pkg.all;
     use work.olo_test_activity_pkg.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_intf_i2c_master_tb is
     generic (
         BusFrequency_g              : integer := 100_000;
         InternalTriState_g          : boolean := true;
-        runner_cfg                  : string  
+        runner_cfg                  : string
     );
 end entity olo_intf_i2c_master_tb;
 
@@ -44,9 +44,9 @@ architecture sim of olo_intf_i2c_master_tb is
     -------------------------------------------------------------------------
     -- Fixed Generics
     -------------------------------------------------------------------------
-    constant Scl_Period_c     : time    := (1 sec) / real(BusFrequency_g); 
-    constant BusBusyTimeout_c : real    := 200.0/ real(BusFrequency_g); 
-    constant CmdTimeout_c     : real    := 50.0/ real(BusFrequency_g); 
+    constant Scl_Period_c     : time    := (1 sec) / real(BusFrequency_g);
+    constant BusBusyTimeout_c : real    := 200.0/ real(BusFrequency_g);
+    constant CmdTimeout_c     : real    := 50.0/ real(BusFrequency_g);
 
     -------------------------------------------------------------------------
     -- TB Defnitions
@@ -61,33 +61,33 @@ architecture sim of olo_intf_i2c_master_tb is
     signal Clk             : std_logic                           := '0';
     signal Rst             : std_logic                           := '0';
     -- Command Interface
-    signal Cmd_Ready       : std_logic;                   
-    signal Cmd_Valid       : std_logic                           := '0';                     
+    signal Cmd_Ready       : std_logic;
+    signal Cmd_Valid       : std_logic                           := '0';
     signal Cmd_Command     : std_logic_vector(2 downto 0);
     signal Cmd_Data        : std_logic_vector(7 downto 0);
     signal Cmd_Ack         : std_logic;
     -- Response Interface
-    signal Resp_Valid      : std_logic;                   
+    signal Resp_Valid      : std_logic;
     signal Resp_Command    : std_logic_vector(2 downto 0);
     signal Resp_Data       : std_logic_vector(7 downto 0);
-    signal Resp_Ack        : std_logic;                   
-    signal Resp_ArbLost    : std_logic;                   
+    signal Resp_Ack        : std_logic;
+    signal Resp_ArbLost    : std_logic;
     signal Resp_SeqErr     : std_logic;
     -- Status Interface
-    signal Status_BusBusy  : std_logic;                   
-    signal Status_CmdTo    : std_logic;                   
-    -- I2c Interface with internal Tri-State 
-    signal I2c_Scl         : std_logic                          := 'Z';           
-    signal I2c_Sda         : std_logic                          := 'Z';           
+    signal Status_BusBusy  : std_logic;
+    signal Status_CmdTo    : std_logic;
+    -- I2c Interface with internal Tri-State
+    signal I2c_Scl         : std_logic                          := 'Z';
+    signal I2c_Sda         : std_logic                          := 'Z';
     -- I2c Interface with external Tri-State
-    signal I2c_Scl_i       : std_logic                          := '0';     
-    signal I2c_Scl_o       : std_logic;            
-    signal I2c_Scl_t       : std_logic;            
-    signal I2c_Sda_i       : std_logic                          := '0';     
-    signal I2c_Sda_o       : std_logic;            
+    signal I2c_Scl_i       : std_logic                          := '0';
+    signal I2c_Scl_o       : std_logic;
+    signal I2c_Scl_t       : std_logic;
+    signal I2c_Sda_i       : std_logic                          := '0';
+    signal I2c_Sda_o       : std_logic;
     signal I2c_Sda_t       : std_logic;
-    
-    
+
+
     -------------------------------------------------------------------------
     -- TB Defnitions
     -------------------------------------------------------------------------
@@ -174,7 +174,7 @@ begin
             Rst <= '0';
             wait until rising_edge(Clk);
             StartTime_v := now;
-            
+
 
 
             -- *** Basics ***
@@ -334,8 +334,8 @@ begin
                 CheckResp(CMD_REC, Data => X"46");
                 CheckResp(CMD_STOP);
                 WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");  
-            end if;              
+                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+            end if;
 
             -- *** Test delayed command ***
             if run("CmdDelayed") then
@@ -468,11 +468,11 @@ begin
                 CheckResp(CMD_START);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
                 CheckResp(CMD_SEND, Ack => '1');
-                CheckResp(CMD_STOP, ArbLost => '1'); 
+                CheckResp(CMD_STOP, ArbLost => '1');
                 WaitForValueStdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
                 CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
- 
+
             if run("MultiMaster-ArbLostRepStartContinue") then
                 -- Arbitration lost during repeated start (other master continues writing)
                 -- I2C Slave
@@ -496,7 +496,7 @@ begin
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
                 CheckResp(CMD_SEND, Ack => '1');
                 CheckResp(CMD_REPSTART, ArbLost => '1');
-                CheckResp(CMD_STOP, SeqErr => '1'); 
+                CheckResp(CMD_STOP, SeqErr => '1');
                 WaitForValueStdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
                 CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
@@ -522,7 +522,7 @@ begin
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
                 CheckResp(CMD_SEND, Ack => '1');
                 CheckResp(CMD_REPSTART, ArbLost => '1');
-                CheckResp(CMD_STOP, SeqErr => '1'); 
+                CheckResp(CMD_STOP, SeqErr => '1');
                 WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
                 CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
@@ -601,7 +601,7 @@ begin
                 -- I2C Slave
                 i2c_expect_start(net, i2c_slave, msg => "start slave");
                 i2c_force_bus_release(net, i2c_slave); -- return to idle state
-                -- data not checked because its not relevant               
+                -- data not checked because its not relevant
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"E3", true);
@@ -628,7 +628,7 @@ begin
                 -- I2C Slave
                 i2c_expect_start(net, i2c_slave, msg => "start slave");
                 i2c_force_bus_release(net, i2c_slave); -- return to idle state
-                -- data not checked because its not relevant               
+                -- data not checked because its not relevant
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"E3", true);
@@ -662,7 +662,7 @@ begin
                 wait for BusBusyTimeout_c * 1.1 * (1 sec);
                 check_equal(Status_BusBusy, '0', "Status_BusBusy 0 end");
             end if;
-         
+
             -- Wait for idle
             wait_until_idle(net, as_sync(i2c_slave));
             wait_until_idle(net, as_sync(i2c_master));
@@ -687,14 +687,14 @@ begin
             ClkFrequency_g      => Clk_Frequency_c,
             I2cFrequency_g      => real(BusFrequency_g),
             BusBusyTimeout_g    => BusBusyTimeout_c,
-            CmdTimeout_g        => CmdTimeout_c,      
+            CmdTimeout_g        => CmdTimeout_c,
             InternalTriState_g  => InternalTriState_g,
             DisableAsserts_g    => true
         )
         port map (
             -- Control Signals
-            Clk            => Clk,     
-            Rst            => Rst,   
+            Clk            => Clk,
+            Rst            => Rst,
             -- Command Interface
             Cmd_Ready      => Cmd_Ready,
             Cmd_Valid      => Cmd_Valid,
@@ -709,11 +709,11 @@ begin
             Resp_ArbLost   => Resp_ArbLost,
             Resp_SeqErr    => Resp_SeqErr,
             -- Status Interface
-            Status_BusBusy  => Status_BusBusy,            
-            Status_CmdTo    => Status_CmdTo,           
-            -- I2c Interface with internal Tri-State 
-            I2c_Scl         => I2c_Scl,          
-            I2c_Sda         => I2c_Sda,         
+            Status_BusBusy  => Status_BusBusy,
+            Status_CmdTo    => Status_CmdTo,
+            -- I2c Interface with internal Tri-State
+            I2c_Scl         => I2c_Scl,
+            I2c_Sda         => I2c_Sda,
             -- I2c Interface with external Tri-State
             I2c_Scl_i       => I2c_Scl_i,
             I2c_Scl_o       => I2c_Scl_o,

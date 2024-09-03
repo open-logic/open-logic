@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,9 +21,9 @@ library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_flowctrl_handler_tb is
     generic (
@@ -126,7 +126,7 @@ begin
                 InPauses <= 3;
                 wait until rising_edge(Clk);
                 InputStart <= '0';
-                CheckOutput(30, 0, Out_Ready);               
+                CheckOutput(30, 0, Out_Ready);
             end if;
 
             if run("OutputLimitedSlow") then
@@ -134,7 +134,7 @@ begin
                 InputSize <= 30;
                 wait until rising_edge(Clk);
                 InputStart <= '0';
-                CheckOutput(30, 20, Out_Ready);      
+                CheckOutput(30, 20, Out_Ready);
             end if;
 
             if run("OutputLimitedFast") then
@@ -142,7 +142,7 @@ begin
                 InputSize <= 30;
                 wait until rising_edge(Clk);
                 InputStart <= '0';
-                CheckOutput(30, 3, Out_Ready);      
+                CheckOutput(30, 3, Out_Ready);
             end if;
 
             if run("InputOutputLimited") then
@@ -151,7 +151,7 @@ begin
                 InPauses <= 3;
                 wait until rising_edge(Clk);
                 InputStart <= '0';
-                CheckOutput(30, 3, Out_Ready);      
+                CheckOutput(30, 3, Out_Ready);
             end if;
 
             if run("InPausesBurst") then
@@ -161,7 +161,7 @@ begin
                 InPausesBurst <= Delay_c;
                 wait until rising_edge(Clk);
                 InputStart <= '0';
-                CheckOutput(30, 0, Out_Ready);      
+                CheckOutput(30, 0, Out_Ready);
             end if;
 
             if run("OutPausesBurst") then
@@ -169,9 +169,9 @@ begin
                 InputSize <= 30;
                 wait until rising_edge(Clk);
                 InputStart <= '0';
-                CheckOutput(30, Delay_c, Out_Ready, Delay_c);      
+                CheckOutput(30, Delay_c, Out_Ready, Delay_c);
             end if;
-            
+
             -- Wait between cases;
             wait for 1 us;
 
@@ -220,14 +220,14 @@ begin
             RstState_g      => True
         )
         port map (
-            Clk                             => Clk,     
-            Rst                             => Rst,    
-            In_Valid                        => '1',  
+            Clk                             => Clk,
+            Rst                             => Rst,
+            In_Valid                        => '1',
             In_Data(OutWidth_c-1 downto 0)  => ToProc_Data(OutWidth_c-1 downto 0),
-            In_Data(OutWidth_c)             => ToProc_Valid,                                            
+            In_Data(OutWidth_c)             => ToProc_Valid,
             Out_Data(OutWidth_c-1 downto 0) => FromProc_Data,
             Out_Data(OutWidth_c)            => FromProc_Valid
-        ); 
+        );
 
     ------------------------------------------------------------
     -- Custom Processes

@@ -1,9 +1,9 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
 ------------------------------------------------------------
 -- Libraries
@@ -76,7 +76,7 @@ begin
     -- Clock
     -------------------------------------------------------------------------
     Clk  <= not Clk after 0.5 * Clk_Period_c;
-  
+
 
     -------------------------------------------------------------------------
     -- TB Control
@@ -86,7 +86,7 @@ begin
     p_control : process
     begin
         test_runner_setup(runner, runner_cfg);
-        
+
         while test_suite loop
 
             -- Reset
@@ -129,7 +129,7 @@ begin
                 In_Req <= "10111";
                 wait for 1 ns;
                 check_equal(Out_Grant, 2#00100#, "Out_Grant 4 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly"); 
+                check_equal(Out_Valid, '1', "Valid low unexpectedly");
                 wait until rising_edge(Clk);
                 wait for 1 ns;
                 check_equal(Out_Grant, 2#00010#, "Out_Grant 5 Wrong");

@@ -1,19 +1,19 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This is a pure VHDL and vendor indpendent true dual port RAM with optional
 -- byte enables.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,37 +21,37 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Test synthesis: Try odd widths without BE, try 3 bits (<8) without BE
 entity olo_base_ram_tdp is
-    generic ( 
-        Depth_g         : positive;   
-        Width_g         : positive;    
-        RdLatency_g     : positive  := 1;   
-        RamStyle_g      : string    := "auto";   
+    generic (
+        Depth_g         : positive;
+        Width_g         : positive;
+        RdLatency_g     : positive  := 1;
+        RamStyle_g      : string    := "auto";
         RamBehavior_g   : string    := "RBW";
         UseByteEnable_g : boolean   := false
     );                                                      -- "RBW" = read-before-write, "WBR" = write-before-read
-    port (   
+    port (
         A_Clk     : in  std_logic;
         A_Addr    : in  std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        A_Be      : in  std_logic_vector(Width_g / 8 - 1 downto 0)          := (others => '1'); 
-        A_WrEna   : in  std_logic                                           := '0'; 
-        A_WrData  : in  std_logic_vector(Width_g - 1 downto 0)              := (others => '0'); 
-        A_RdData  : out std_logic_vector(Width_g - 1 downto 0);   
+        A_Be      : in  std_logic_vector(Width_g / 8 - 1 downto 0)          := (others => '1');
+        A_WrEna   : in  std_logic                                           := '0';
+        A_WrData  : in  std_logic_vector(Width_g - 1 downto 0)              := (others => '0');
+        A_RdData  : out std_logic_vector(Width_g - 1 downto 0);
         B_Clk     : in  std_logic;
         B_Addr    : in  std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         B_Be      : in  std_logic_vector(Width_g / 8 - 1 downto 0)          := (others => '1');
-        B_WrEna   : in  std_logic                                           := '0'; 
+        B_WrEna   : in  std_logic                                           := '0';
         B_WrData  : in  std_logic_vector(Width_g - 1 downto 0)              := (others => '0');
         B_RdData  : out std_logic_vector(Width_g - 1 downto 0));
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_ram_tdp is
 
     -- Constants
@@ -79,11 +79,11 @@ architecture rtl of olo_base_ram_tdp is
 begin
 
     -- Assertions
-    assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR" 
-        report "olo_base_ram_tdp: RamBehavior_g must Be RBW or WBR" 
+    assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR"
+        report "olo_base_ram_tdp: RamBehavior_g must Be RBW or WBR"
         severity error;
-    assert (Width_g mod 8 = 0) or (not UseByteEnable_g) 
-        report "olo_base_ram_tdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled" 
+    assert (Width_g mod 8 = 0) or (not UseByteEnable_g)
+        report "olo_base_ram_tdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
         severity error;
 
     -- Port A

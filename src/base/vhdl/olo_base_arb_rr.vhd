@@ -1,18 +1,18 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements an efficient round-robin arbiter.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -22,20 +22,20 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_arb_rr is
     generic (
         Width_g    : positive
-    );  
-    port (   
-        Clk         : in  std_logic;                                
-        Rst         : in  std_logic;                                
-        In_Req      : in  std_logic_vector(Width_g-1 downto 0);   
-        Out_Grant   : out std_logic_vector(Width_g-1 downto 0);   
-        Out_Ready   : in  std_logic;                                
-        Out_Valid   : out std_logic);                               
+    );
+    port (
+        Clk         : in  std_logic;
+        Rst         : in  std_logic;
+        In_Req      : in  std_logic_vector(Width_g-1 downto 0);
+        Out_Grant   : out std_logic_vector(Width_g-1 downto 0);
+        Out_Ready   : in  std_logic;
+        Out_Valid   : out std_logic);
 end entity;
 
 architecture rtl of olo_base_arb_rr is
@@ -88,7 +88,7 @@ begin
 
             -- Apply to record
             r_next <= v;
-            
+
         end process;
 
         -- *** Sequential Process ***

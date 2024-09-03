@@ -1,13 +1,13 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity measures the frequency of a clock under the assumption that
 -- the frequency of the main-clock (Clk) is exactly correct.
 
@@ -31,10 +31,10 @@ entity olo_intf_clk_meas is
     );
     port (
         -- Control Signals
-        Clk           : in  std_logic; 
-        Rst           : in  std_logic;     
+        Clk           : in  std_logic;
+        Rst           : in  std_logic;
         -- Test Results
-        ClkTest       : in  std_logic; 
+        ClkTest       : in  std_logic;
         Freq_Hz       : out std_logic_vector(31 downto 0);
         Freq_Valid    : out std_logic
     );
@@ -59,7 +59,7 @@ architecture rtl of olo_intf_clk_meas is
     signal CntrTest_T       : integer range 0 to MaxClkTestFrequencyInt_c;
     signal Rst_T            : std_logic;
     signal SecPulse_T       : std_logic;
-    signal Result_T         : std_logic_vector(ResultWidth_c-1 downto 0);   
+    signal Result_T         : std_logic_vector(ResultWidth_c-1 downto 0);
     signal ResultValid_T    : std_logic;
 
 begin
@@ -78,7 +78,7 @@ begin
 
             -- Default Value
             Freq_Valid <= '0';
-            
+
             -- Request new result
             if SecPulse_M = '1' then
                 AwaitResult_M <= '1';
@@ -88,7 +88,7 @@ begin
                     Freq_Valid <= '1';
                 end if;
             end if;
-                
+
             -- Latch new result
             if ResultValid_M = '1' then
                 Freq_Hz   <= std_logic_vector(resize(unsigned(Result_M), Freq_Hz'length));
@@ -102,7 +102,7 @@ begin
                 Freq_Hz         <= (others => '0');
                 Freq_Valid       <= '0';
             end if;
-        
+
         end if;
     end process;
 
@@ -116,7 +116,7 @@ begin
 
             -- Default Value
             ResultValid_T <= '0';
-            
+
             -- Every second, reset counter and output result
             if SecPulse_T = '1' then
                  Result_T      <= toUslv(CntrTest_T, ResultWidth_c);
@@ -126,12 +126,12 @@ begin
             elsif CntrTest_T /= MaxClkTestFrequencyInt_c then
                 CntrTest_T <= CntrTest_T + 1;
             end if;
-          
+
             -- *** Reset ***
             if Rst = '1' then
                 CntrTest_T      <= 0;
                 ResultValid_T   <= '0';
-            end if;          
+            end if;
         end if;
     end process;
 
@@ -144,37 +144,37 @@ begin
             FreqClkHz_g    => ClkFrequency_g,
             FreqStrobeHz_g => 1.0
         )
-        port map (   
+        port map (
             Clk         => Clk,
-            Rst         => Rst,     
+            Rst         => Rst,
             Out_Valid   => SecPulse_M
         );
 
     -- Second pulse and reset CC
-    i_sec_pulse_cc : entity work.olo_base_cc_pulse                        
-        port map (   
+    i_sec_pulse_cc : entity work.olo_base_cc_pulse
+        port map (
             In_Clk        => Clk,
-            In_RstIn      => Rst,                                                                    
+            In_RstIn      => Rst,
             In_Pulse(0)   => SecPulse_M,
-            Out_Clk       => ClkTest,                                                                 
-            Out_RstOut    => Rst_T,                                   
+            Out_Clk       => ClkTest,
+            Out_RstOut    => Rst_T,
             Out_Pulse(0)  => SecPulse_T
-    ); 
+    );
 
     -- Result CC
     i_result_cc : entity work.olo_base_cc_simple
         generic map (
-            Width_g     => ResultWidth_c                  
-        )                          
-        port map (   
-            In_Clk      => ClkTest,                                                            
-            In_Data     => Result_T,   
-            In_Valid    => ResultValid_T,                               
-            Out_Clk     => Clk,                                 
-            Out_RstIn   => Rst,                                                                
+            Width_g     => ResultWidth_c
+        )
+        port map (
+            In_Clk      => ClkTest,
+            In_Data     => Result_T,
+            In_Valid    => ResultValid_T,
+            Out_Clk     => Clk,
+            Out_RstIn   => Rst,
             Out_Data    => Result_M,
-            Out_Valid   => ResultValid_M                            
-        ); 
+            Out_Valid   => ResultValid_M
+        );
 
 
 end;

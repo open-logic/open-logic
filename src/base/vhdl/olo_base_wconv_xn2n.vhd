@@ -1,19 +1,19 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements a simple data-width conversion. The input width
 -- must be an integer multiple of the output width (Wi = n*Wo)
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -23,27 +23,27 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_wconv_xn2n is
     generic (
-        InWidth_g  : positive; 
+        InWidth_g  : positive;
         OutWidth_g : positive
     );
-  port (   
-        Clk         : in  std_logic;                                                       
-        Rst         : in  std_logic;                                                       
-        In_Valid    : in  std_logic;                                                       
-        In_Ready    : out std_logic;                                                       
-        In_Data     : in  std_logic_vector(InWidth_g - 1 downto 0);                       
-        In_Last     : in  std_logic                                                 := '0';  
-        In_WordEna  : in  std_logic_vector(InWidth_g / OutWidth_g - 1 downto 0)     := (others => '1');  
-        Out_Valid   : out std_logic;                                                     
-        Out_Ready   : in  std_logic                                                 := '1'; 
-        Out_Data    : out std_logic_vector(OutWidth_g - 1 downto 0); 
+  port (
+        Clk         : in  std_logic;
+        Rst         : in  std_logic;
+        In_Valid    : in  std_logic;
+        In_Ready    : out std_logic;
+        In_Data     : in  std_logic_vector(InWidth_g - 1 downto 0);
+        In_Last     : in  std_logic                                                 := '0';
+        In_WordEna  : in  std_logic_vector(InWidth_g / OutWidth_g - 1 downto 0)     := (others => '1');
+        Out_Valid   : out std_logic;
+        Out_Ready   : in  std_logic                                                 := '1';
+        Out_Data    : out std_logic_vector(OutWidth_g - 1 downto 0);
         Out_Last    : out std_logic
-    );               
+    );
 end entity;
 
 

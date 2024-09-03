@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,9 +21,9 @@ library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_tdm_mux_tb is
     generic (
@@ -36,7 +36,7 @@ architecture sim of olo_base_tdm_mux_tb is
     -------------------------------------------------------------------------
     -- Constants
     -------------------------------------------------------------------------
-    constant Width_c        : natural   := 16;    
+    constant Width_c        : natural   := 16;
     constant Channels_c     : natural   := 5;
     constant ClkPeriod_c    : time      := 10 ns;
 
@@ -58,14 +58,14 @@ architecture sim of olo_base_tdm_mux_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk         : std_logic                                                  := '0';                                                       
-    signal Rst         : std_logic                                                  := '1';                                                       
-    signal In_Valid    : std_logic                                                  := '0';                                                       
-    signal In_Data     : std_logic_vector(Width_c - 1 downto 0)                     := (others => '0');    
+    signal Clk         : std_logic                                                  := '0';
+    signal Rst         : std_logic                                                  := '1';
+    signal In_Valid    : std_logic                                                  := '0';
+    signal In_Data     : std_logic_vector(Width_c - 1 downto 0)                     := (others => '0');
     signal In_ChSel    : std_logic_vector(2 downto 0)                               := (others => '0');
-    signal In_Last     : std_logic                                                  := '0';  
-    signal Out_Valid   : std_logic                                                  := '0';                                                     
-    signal Out_Data    : std_logic_vector(Width_c - 1 downto 0)                     := (others => '0'); 
+    signal In_Last     : std_logic                                                  := '0';
+    signal Out_Valid   : std_logic                                                  := '0';
+    signal Out_Data    : std_logic_vector(Width_c - 1 downto 0)                     := (others => '0');
     signal Out_Last    : std_logic                                                  := '0';
 begin
 
@@ -160,17 +160,17 @@ begin
             Channels_g   => Channels_c,
             Width_g      => Width_c
         )
-        port map (   
-            Clk         => Clk,       
-            Rst         => Rst,    
-            In_ChSel    => In_ChSel,   
-            In_Valid    => In_Valid,  
-            In_Data     => In_Data,   
-            In_Last     => In_Last,   
-            Out_Valid   => Out_Valid, 
+        port map (
+            Clk         => Clk,
+            Rst         => Rst,
+            In_ChSel    => In_ChSel,
+            In_Valid    => In_Valid,
+            In_Data     => In_Data,
+            In_Last     => In_Last,
+            Out_Valid   => Out_Valid,
             Out_Data    => Out_Data,
             Out_Last    => Out_Last
-        ); 
+        );
 
     ------------------------------------------------------------
     -- Verification Components
@@ -186,7 +186,7 @@ begin
         tlast  => In_Last,
         tuser  => In_ChSel
     );
-  
+
     vc_response : entity vunit_lib.axi_stream_slave
     generic map (
         slave => axisSlave

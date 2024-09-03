@@ -1,18 +1,18 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
--- This is a debouncer for button and switch inputs. It contains a 
+---------------------------------------------------------------------------------------------------
+-- This is a debouncer for button and switch inputs. It contains a
 -- double stage synchronizer to synchronize those inputs to the clock.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,9 +21,9 @@ library ieee;
 library work;
     use work.olo_base_pkg_array.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 
 entity olo_intf_debounce is
     generic (
@@ -31,21 +31,21 @@ entity olo_intf_debounce is
         DebounceTime_g  : real      := 20.0e-3;
         Width_g         : positive  := 1;
         IdleLevel_g     : std_logic := '0';
-        Mode_g          : string    := "LOW_LATENCY"    -- LOW_LATENCY or GLITCH_FILTER        
+        Mode_g          : string    := "LOW_LATENCY"    -- LOW_LATENCY or GLITCH_FILTER
     );
     port (
         -- control signals
-        Clk         : in    std_logic; 
+        Clk         : in    std_logic;
         Rst         : in    std_logic;
         -- Input clock domain
         DataAsync   : in    std_logic_vector(Width_g - 1 downto 0);
         DataOut     : out   std_logic_vector(Width_g - 1 downto 0)
     );
 end entity;
- 
-------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 
 architecture struct of olo_intf_debounce is
 
@@ -74,16 +74,16 @@ architecture struct of olo_intf_debounce is
         DataOut     : std_logic_vector(Bits_c-1 downto 0);
     end record;
     signal r, r_next     : two_process_r;
-  
+
 
 begin
 
-    assert Mode_g = "GLITCH_FILTER" or Mode_g = "LOW_LATENCY" 
+    assert Mode_g = "GLITCH_FILTER" or Mode_g = "LOW_LATENCY"
         report "olo_intf_debounce: Illegal Mode_g - " & Mode_g
         severity failure;
 
     assert DebounceTicks_c >= 10
-        report "olo_intf_debounce: DebounceTime too short (must be >= 10 clock cycles) - " & 
+        report "olo_intf_debounce: DebounceTime too short (must be >= 10 clock cycles) - " &
         "DebounceTime_g=" & real'image(DebounceTime_g) & " ClkFrequency_g=" & real'image(ClkFrequency_g)
         severity failure;
 
@@ -111,7 +111,7 @@ begin
                 v.IsStable(i) := '0';
             end if;
 
-            -- GLITCH_FILTER mode 
+            -- GLITCH_FILTER mode
             if Mode_g = "GLITCH_FILTER" then
                 -- Only forward signal once stable
                 if r.IsStable(i) = '1' then
@@ -173,11 +173,11 @@ begin
                 FreqClkHz_g    => ClkFrequency_g,
                 FreqStrobeHz_g => ActualTickFrequency_c
             )
-            port map (   
-                Clk         => Clk,  
+            port map (
+                Clk         => Clk,
                 Rst         => Rst,
                 Out_Valid   => Tick
-            );  
+            );
     end generate;
 
     g_no_strobe : if not UseStrobeDiv_c generate

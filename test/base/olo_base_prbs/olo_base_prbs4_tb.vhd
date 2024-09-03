@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -22,9 +22,9 @@ library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_prbs4_tb is
     generic (
@@ -40,7 +40,7 @@ architecture sim of olo_base_prbs4_tb is
     -------------------------------------------------------------------------
     constant PrbsSequence_c     : std_logic_vector(14 downto 0) := "010110010001111";
     constant PrbsSequenceRep_c  : std_logic_vector(2*PrbsSequence_c'length-1 downto 0) := PrbsSequence_c & PrbsSequence_c;
-    constant States_c : t_aslv4 (0 to PrbsSequence_c'high) := ( "1111", "1110", "1100", "1000", 
+    constant States_c : t_aslv4 (0 to PrbsSequence_c'high) := ( "1111", "1110", "1100", "1000",
                                                                 "0001", "0010", "0100", "1001",
                                                                 "0011", "0110", "1101", "1010",
                                                                 "0101", "1011", "0111");
@@ -69,9 +69,9 @@ architecture sim of olo_base_prbs4_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk              : std_logic                                      := '0';                              
-    signal Rst              : std_logic                                      := '0';                                                 
-    signal Out_Data         : std_logic_vector(BitsPerSymbol_g- 1 downto 0)  := (others => '0'); 
+    signal Clk              : std_logic                                      := '0';
+    signal Rst              : std_logic                                      := '0';
+    signal Out_Data         : std_logic_vector(BitsPerSymbol_g- 1 downto 0)  := (others => '0');
     signal Out_Ready        : std_logic                                      := '0';
     signal Out_Valid        : std_logic                                      := '0';
     signal State_Current    : std_logic_vector(3 downto 0)                   := (others => '0');
@@ -134,7 +134,7 @@ begin
                     StartBit_v := StartBit_v + BitsPerSymbol_g;
                 end loop;
             end if;
-            
+
             wait_until_idle(net, as_sync(axisSlave));
             wait for 1 us;
 
@@ -160,15 +160,15 @@ begin
             BitsPerSymbol_g => BitsPerSymbol_g
         )
         port map (
-            Clk             => Clk,     
-            Rst             => Rst,                           
+            Clk             => Clk,
+            Rst             => Rst,
             Out_Data        => Out_Data,
             Out_Ready       => Out_Ready,
             Out_Valid       => Out_Valid,
             State_Current   => State_Current,
             State_New       => State_New,
             State_Set       => State_Set
-        ); 
+        );
 
     ------------------------------------------------------------
     -- Verification Components

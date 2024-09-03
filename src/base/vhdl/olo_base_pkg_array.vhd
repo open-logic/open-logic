@@ -1,23 +1,23 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Waldemar Koprek, Oliver Bruendler
-------------------------------------------------------------------------------
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Waldemar Koprek, Oliver Bruendler
+---------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Package containing commonly used array types
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee ;
     use ieee.std_logic_1164.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Package Header
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 package olo_base_pkg_array is
     type t_aslv2    is array (natural range <>) of std_logic_vector( 1 downto 0);
     type t_aslv3    is array (natural range <>) of std_logic_vector( 2 downto 0);
@@ -53,7 +53,7 @@ package olo_base_pkg_array is
     type t_aslv48   is array (natural range <>) of std_logic_vector(47 downto 0);
     type t_aslv64   is array (natural range <>) of std_logic_vector(63 downto 0);
     type t_aslv512  is array (natural range <>) of std_logic_vector(511 downto 0);
-    
+
     type t_ainteger is array (natural range <>) of integer;
     type t_areal is array (natural range <>) of real;
     type t_abool is array (natural range <>) of boolean;
@@ -64,9 +64,9 @@ package olo_base_pkg_array is
 
 end package;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Package Body
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 package body olo_base_pkg_array is
 
     function aInteger2aReal(a : in t_ainteger) return t_areal is

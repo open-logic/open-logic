@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -19,9 +19,9 @@ library vunit_lib;
 
 library olo;
     use olo.olo_base_pkg_math.all;
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_strobe_gen_tb is
     generic (
@@ -47,11 +47,11 @@ architecture sim of olo_base_strobe_gen_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk         : std_logic                                      := '0';                              
-    signal Rst         : std_logic                                      := '0';    
-    signal In_Sync     : std_logic                                      := '0';                              
-    signal Out_Valid   : std_logic                                      := '0';                              
-    signal Out_Ready   : std_logic                                      := '1';                       
+    signal Clk         : std_logic                                      := '0';
+    signal Rst         : std_logic                                      := '0';
+    signal In_Sync     : std_logic                                      := '0';
+    signal Out_Valid   : std_logic                                      := '0';
+    signal Out_Ready   : std_logic                                      := '1';
 
 begin
 
@@ -113,7 +113,7 @@ begin
                 check_equal(Out_Valid, '0', "deassertion");
                 wait until rising_edge(Clk) and Out_Valid = '1';
                 StrobePeriod_v := now - LastStrobe_v;
-                check(abs(StrobePeriod_v-Strobe_Period_c) < 0.5 * Clk_Period_c, "period");              
+                check(abs(StrobePeriod_v-Strobe_Period_c) < 0.5 * Clk_Period_c, "period");
             end if;
 
             -- ReadyLow
@@ -139,7 +139,7 @@ begin
                     wait until rising_edge(Clk);
                     check_equal(Out_Valid, '0', "deassertion");
                 end loop;
-            end if;                
+            end if;
 
             wait for 1 us;
 
@@ -163,11 +163,11 @@ begin
             FreqStrobeHz_g  => FreqStrobeHz_c
         )
         port map (
-            Clk         => Clk,     
-            Rst         => Rst,    
-            In_Sync     => In_Sync,                                   
-            Out_Valid   => Out_Valid,  
+            Clk         => Clk,
+            Rst         => Rst,
+            In_Sync     => In_Sync,
+            Out_Valid   => Out_Valid,
             Out_Ready   => Out_Ready
-        ); 
+        );
 
 end sim;

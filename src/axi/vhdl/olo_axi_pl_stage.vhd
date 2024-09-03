@@ -1,25 +1,25 @@
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2019 by Enclustra GmbH, Switzerland
 -- Copyright (c) 2024 by Oliver Bründler
 -- All rights reserved.
 -- Authors: Eduardo del Castillo, Oliver Bründler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements multiple pipeline stages for an axi4 interface.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_axi_pl_stage is
     generic (
         AddrWidth_g : positive  := 32;
@@ -35,7 +35,7 @@ entity olo_axi_pl_stage is
 
         -- Slave Interface
         -- write address channel
-        S_AwId     : in  std_logic_vector(IdWidth_g - 1 downto 0)       := (others => '0');    
+        S_AwId     : in  std_logic_vector(IdWidth_g - 1 downto 0)       := (others => '0');
         S_AwAddr   : in  std_logic_vector(AddrWidth_g - 1 downto 0);
         S_AwValid  : in  std_logic;
         S_AwReady  : out std_logic;
@@ -137,9 +137,9 @@ entity olo_axi_pl_stage is
     );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_axi_pl_stage is
 
     -- AXI constants
@@ -208,7 +208,7 @@ begin
         M_AwSize  <= AwDataOut(AwSize_r);
         M_AwLen   <= AwDataOut(AwLen_r);
         M_AwAddr  <= AwDataOut(AwAddr_r);
-        M_AwId    <= AwDataOut(AwId_r);  
+        M_AwId    <= AwDataOut(AwId_r);
         M_AwQos   <= AwDataOut(AwQos_r);
         M_AwUser  <= AwDataOut(AwUser_r);
         M_AwRegion <= AwDataOut(AwRegion_r);
@@ -231,7 +231,7 @@ begin
         WDataIn(WStrb_r) <= S_WStrb;
         WDataIn(WLast_r) <= S_WLast;
         WDataIn(WUser_r) <= S_WUser;
-        
+
         -- pipeline stage
         i_pl : entity work.olo_base_pl_stage
             generic map (
@@ -323,7 +323,7 @@ begin
         ArDataIn(ArQos_r) <= S_ArQos;
         ArDataIn(ArUser_r) <= S_ArUser;
         ArDataIn(ArRegion_r) <= S_ArRegion;
-        
+
         -- pipeline stage
         i_pl : entity work.olo_base_pl_stage
             generic map(
@@ -367,7 +367,7 @@ begin
 
         signal RDataIn, RDataOut : std_logic_vector(RUser_r'high downto 0);
     begin
-        -- map signals into one vector        
+        -- map signals into one vector
         RDataIn(RData_r) <= M_RData;
         RDataIn(RResp_r) <= M_RResp;
         RDataIn(RLast_r) <= M_RLast;

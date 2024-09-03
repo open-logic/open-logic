@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,9 +21,9 @@ library work;
 library olo;
     use olo.olo_base_pkg_math.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_intf_debounce_tb is
     generic (
@@ -52,7 +52,7 @@ architecture sim of olo_intf_debounce_tb is
     constant MaxPropDelay_c      : time      := 5*Clk_Period_c;
     constant MaxDetTime_c        : time      := Time_Debounce_c*1.1+MaxPropDelay_c;
 
-    signal BounceOhter           : boolean := false;  
+    signal BounceOhter           : boolean := false;
 
     -------------------------------------------------------------------------
     -- Interface Signals
@@ -132,7 +132,7 @@ begin
                 else
                     wait for MaxDetTime_c;
                 end if;
-                check_equal(DataOut(0), IdleLevel_c, "Idle Value wrong after pulse");     
+                check_equal(DataOut(0), IdleLevel_c, "Idle Value wrong after pulse");
             end if;
 
             if run("ShortPulse") then
@@ -152,14 +152,14 @@ begin
                 DataAsync(0) <= IdleLevel_c;
                 -- Wait until new value is detected
                 wait for Time_Debounce_c*0.8;
-                if IsLowLat_c then                    
+                if IsLowLat_c then
                     check_equal(DataOut(0), not IdleLevel_c, "After Pulse Value wrong");
                 else
                     CheckLastActivity(DataOut(0), Time_Debounce_c*0.8, choose(IdleLevel_c='0', 0, 1), "Value after pulse 1");
                 end if;
                 -- After pulse value
                 wait for Time_Debounce_c*0.3+MaxPropDelay_c;
-                check_equal(DataOut(0), IdleLevel_c, "After Pulse Value wrong 2");  
+                check_equal(DataOut(0), IdleLevel_c, "After Pulse Value wrong 2");
             end if;
 
             -- Bouncy Pulse
@@ -202,9 +202,9 @@ begin
                     DataAsync(0) <= not DataAsync(0);
                 end loop;
                 wait for MaxDetTime_c;
-                check_equal(DataOut(0), IdleLevel_c, "Idle Value wrong after pulse");     
+                check_equal(DataOut(0), IdleLevel_c, "Idle Value wrong after pulse");
             end if;
-            
+
             -- Bounce other signal constantly
             if run("BounceOtherSig") then
                 -- bounce other signal
@@ -230,9 +230,9 @@ begin
                 else
                     wait for MaxDetTime_c;
                 end if;
-                check_equal(DataOut(0), IdleLevel_c, "Idle Value wrong after pulse");   
+                check_equal(DataOut(0), IdleLevel_c, "Idle Value wrong after pulse");
                 -- end bouncing other signal
-                BounceOhter <= false;  
+                BounceOhter <= false;
             end if;
 
             -- Delay between tests
@@ -254,7 +254,7 @@ begin
                 DataAsync(1) <= not  DataAsync(1) ;
                 if not BounceOhter then
                     exit;
-                end if; 
+                end if;
             end loop;
             DataAsync(1) <= IdleLevel_c;
         end if;

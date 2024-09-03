@@ -1,9 +1,9 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ library vunit_lib;
     context vunit_lib.com_context;
     use vunit_lib.sync_pkg.all;
 
-package olo_test_spi_master_pkg is  
+package olo_test_spi_master_pkg is
 
     -- *** VUnit instance type ***
     type olo_test_spi_master_t is record
@@ -54,13 +54,13 @@ package olo_test_spi_master_pkg is
     constant SpiMasterPushTransactionMsg  : msg_type_t := new_msg_type("SpiMasterPushTransaction");
 
     -- Constructor
-    impure function new_olo_test_spi_master( 
+    impure function new_olo_test_spi_master(
         busFrequency    : real    := 1.0e6;
         lsbFirst        : boolean := false;
         maxTransWidth   : natural := 32;
         cpha            : integer range 0 to 1 := 0;
         cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t;
-        
+
     -- Casts
     impure function as_sync(instance : olo_test_spi_master_t) return sync_handle_t;
 
@@ -77,7 +77,7 @@ package body olo_test_spi_master_pkg is
         transaction_bits    : positive;
         data_mosi           : std_logic_vector  := "X";
         data_miso           : std_logic_vector  := "X";
-        csn_first           : boolean           := false; 
+        csn_first           : boolean           := false;
         timeout             : time              := 1 ms;
         msg                 : string            := ""
     ) is
@@ -102,27 +102,27 @@ package body olo_test_spi_master_pkg is
         push(Msg_v, csn_first);
         push(Msg_v, timeout);
         push_string(Msg_v, msg);
-        
+
         -- Send message
         send(net, spi.p_actor, Msg_v);
     end;
 
     -- Constructor
-    impure function new_olo_test_spi_master( 
+    impure function new_olo_test_spi_master(
         busFrequency    : real    := 1.0e6;
         lsbFirst        : boolean := false;
         maxTransWidth    : natural := 32;
         cpha            : integer range 0 to 1 := 0;
         cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t is
     begin
-        return (p_actor => new_actor, 
+        return (p_actor => new_actor,
                 LsbFirst => lsbFirst,
                 MaxTransWidth => maxTransWidth,
-                ClkPeriod => (1 sec) / busFrequency,                
+                ClkPeriod => (1 sec) / busFrequency,
                 CPHA => cpha,
                 CPOL => cpol);
     end;
-        
+
     -- Casts
     impure function as_sync(instance : olo_test_spi_master_t) return sync_handle_t is
     begin
@@ -226,8 +226,8 @@ begin
 
                 -- Load data into shift register
                 ShiftRegTx_v := data_mosi;
-                ShiftRegRx_v := (others => 'U'); 
-                
+                ShiftRegRx_v := (others => 'U');
+
                 -- For CPHA0 apply data immediately
                 if instance.CPHA = 0 then
                     Mosi <= ShiftRegTx_v(TxIdx_v);
@@ -281,7 +281,7 @@ begin
                 end if;
 
                 -- checks
-                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_miso(transaction_bits - 1 downto 0), "SPI master received wrong data: " & to_string(msg_p));	
+                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_miso(transaction_bits - 1 downto 0), "SPI master received wrong data: " & to_string(msg_p));
 
                 -- Wait for minimum CSn high time
                 wait for 0.5*instance.ClkPeriod;
@@ -291,7 +291,7 @@ begin
                 handle_wait_until_idle(net, msg_type, request_msg);
             else
                 unexpected_msg_type(msg_type);
-            end if;                
+            end if;
         end loop;
     end process;
 

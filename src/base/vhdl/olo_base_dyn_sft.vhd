@@ -1,19 +1,19 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2020 by Oliver Bruendler
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2020 by Oliver Bruendler
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements a dynamic shift implemented in multiple stages in
 -- order to achieve good timing.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -23,31 +23,31 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_dyn_sft is
     generic (
-        Direction_g         : string;                                     
-        SelBitsPerStage_g   : positive := 4;                                          
-        MaxShift_g          : positive;                                         
-        Width_g             : positive;                                         
-        SignExtend_g        : boolean  := false                                     
-    ); 
-    port (   
-        Clk         : in  std_logic;                                            
-        Rst         : in  std_logic;                                            
-        In_Valid    : in  std_logic                                             := '1';                                            
-        In_Shift    : in  std_logic_vector(log2ceil(MaxShift_g+1)- 1 downto 0); 
-        In_Data     : in  std_logic_vector(Width_g - 1 downto 0);               
-        Out_Valid   : out std_logic;                                            
-        Out_Data    : out std_logic_vector(Width_g - 1 downto 0) 
-    ); 
+        Direction_g         : string;
+        SelBitsPerStage_g   : positive := 4;
+        MaxShift_g          : positive;
+        Width_g             : positive;
+        SignExtend_g        : boolean  := false
+    );
+    port (
+        Clk         : in  std_logic;
+        Rst         : in  std_logic;
+        In_Valid    : in  std_logic                                             := '1';
+        In_Shift    : in  std_logic_vector(log2ceil(MaxShift_g+1)- 1 downto 0);
+        In_Data     : in  std_logic_vector(Width_g - 1 downto 0);
+        Out_Valid   : out std_logic;
+        Out_Data    : out std_logic_vector(Width_g - 1 downto 0)
+    );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_dyn_sft is
     -- Constants
     constant Stages_c : integer := integer(ceil(real(In_Shift'length) / real(SelBitsPerStage_g)));
@@ -89,7 +89,7 @@ begin
         for stg in 0 to Stages_c - 1 loop
             -- Stage constants calculation
             StepSize_v := 2**(stg * SelBitsPerStageLimited_c);
-            
+
             -- Shift implementation
             Select_v         := to_integer(unsigned(r.Shift(stg)(SelBitsPerStageLimited_c - 1 downto 0)));
             if Direction_g = "RIGHT" then

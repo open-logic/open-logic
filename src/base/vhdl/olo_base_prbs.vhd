@@ -6,14 +6,14 @@
 ----------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------
--- Description: 
+-- Description:
 ----------------------------------------------------------------------------------
 -- A generic pseudo random binary sequence based on a linear-feedback shifter
 -- register.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,9 +21,9 @@ library ieee;
 library work;
     use work.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_prbs is
     generic (
         LfsrWidth_g     : positive range 2 to natural'high;
@@ -32,8 +32,8 @@ entity olo_base_prbs is
         BitsPerSymbol_g : positive                          := 1
     );
     port (
-        -- Control Ports   
-        Clk              : in  std_logic; 
+        -- Control Ports
+        Clk              : in  std_logic;
         Rst              : in  std_logic;
         -- Output
         Out_Data         : out std_logic_vector(BitsPerSymbol_g-1 downto 0);
@@ -44,16 +44,16 @@ entity olo_base_prbs is
         State_New        : in  std_logic_vector(LfsrWidth_g-1 downto 0)     := (others => '0');
         State_Set        : in  std_logic                                    := '0'
     );
-        
+
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 
 architecture behav of olo_base_prbs is
     -- Signals
-    signal LfsrReg  : std_logic_vector(LfsrWidth_g-1 downto 0); 
+    signal LfsrReg  : std_logic_vector(LfsrWidth_g-1 downto 0);
 begin
 
     assert Polynomial_g'length = LfsrWidth_g report "###ERROR###: olo_base_prbs - Polynomial_g width must match LfsrWidth_g" severity error;

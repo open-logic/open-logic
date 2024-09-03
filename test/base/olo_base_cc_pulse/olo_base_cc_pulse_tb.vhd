@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -19,9 +19,9 @@ library work;
 
 library olo;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_cc_pulse_tb is
     generic (
@@ -88,7 +88,7 @@ begin
             Out_RstOut  => Out_RstOut,
             Out_Pulse   => Out_Pulse
         );
-  
+
 
     -------------------------------------------------------------------------
     -- Clock
@@ -130,7 +130,7 @@ begin
                 -- Check if both sides exited reset
                 check(In_RstOut = '0', "In_RstOut not de-asserted");
                 check(Out_RstOut = '0', "Out_RstOut not de-asserted");
-            
+
                 -- Check if RstA is propagated to both sides
                 wait until rising_edge(In_Clk);
                 In_RstIn <= '1';
@@ -153,7 +153,7 @@ begin
                 check(In_RstOut'last_event < MaxReactionTime_c*2, "In_RstOut not asserted after Out_RstIn");
                 check(Out_RstOut'last_event < MaxReactionTime_c*2, "Out_RstOut not asserted after Out_RstIn");
 
-            
+
 
             -- *** Pulse Tests ***
             elsif run("Normal-Operation") then
@@ -175,7 +175,7 @@ begin
                     check_equal(Out_Pulse, v, "Pulse not removed 1");
                 end loop;
 
-                -- multiple pulses 
+                -- multiple pulses
                 -- .. in practice pulses could be shifted by one clock cycle but in simulation they are not
                 -- Send pulse
                 wait until rising_edge(In_Clk);
@@ -187,7 +187,7 @@ begin
                 wait until rising_edge(Out_Clk);
                 wait until rising_edge(Out_Clk);
                 v := (others => '0');
-                check_equal(Out_Pulse, v, "Pulse not removed 2");      
+                check_equal(Out_Pulse, v, "Pulse not removed 2");
 
             -- *** Test if no pulse is transferred after the internal toggle FF is reset by RstIn ***
             elsif run("NoPulse-RstIn") then
@@ -199,7 +199,7 @@ begin
                 PulseSig(In_RstIn, In_Clk);
                 wait for MaxReactionTime_c;
                 CheckNoActivityStlv(Out_Pulse, MaxReactionTime_c*2, "Unexpected pulse 3");
-            
+
 
             -- *** Test if no pulse is transferred after the internal toggle FF is reset by RstOut ***
             elsif run("NoPulse-RstOut") then

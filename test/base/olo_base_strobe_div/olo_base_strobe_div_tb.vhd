@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -19,9 +19,9 @@ library vunit_lib;
 
 library olo;
     use olo.olo_base_pkg_math.all;
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_strobe_div_tb is
     generic (
@@ -46,12 +46,12 @@ architecture sim of olo_base_strobe_div_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk         : std_logic                                              := '0';                              
-    signal Rst         : std_logic                                              := '0';    
-    signal In_Ratio    : std_logic_vector(log2ceil(MaxRatio_c-1)-1 downto 0)    := (others => '0');                          
+    signal Clk         : std_logic                                              := '0';
+    signal Rst         : std_logic                                              := '0';
+    signal In_Ratio    : std_logic_vector(log2ceil(MaxRatio_c-1)-1 downto 0)    := (others => '0');
     signal In_Valid    : std_logic                                              := '0';
-    signal Out_Valid   : std_logic                                              := '0';                              
-    signal Out_Ready   : std_logic                                              := '1';                       
+    signal Out_Valid   : std_logic                                              := '0';
+    signal Out_Ready   : std_logic                                              := '1';
 
 begin
 
@@ -99,7 +99,7 @@ begin
                         wait until rising_edge(Clk);
                         In_Valid <= '0';
                         wait until falling_edge(Clk);
-                        check_equal(Out_valid, '0', "Strobe not de-asserted");     
+                        check_equal(Out_valid, '0', "Strobe not de-asserted");
                     else
                         wait until rising_edge(Clk);
                         In_Valid <= '0';
@@ -107,9 +107,9 @@ begin
                         wait until rising_edge(Clk);
                         check_equal(Out_valid, '1', "Strobe not asserted");
                         wait until rising_edge(Clk);
-                        check_equal(Out_valid, '0', "Strobe not de-asserted");   
+                        check_equal(Out_valid, '0', "Strobe not de-asserted");
                     end if;
-                end loop;         
+                end loop;
             end if;
 
             -- ReadyLow
@@ -134,11 +134,11 @@ begin
                         wait until falling_edge(Clk);
                         check_equal(Out_valid, '1', "Strobe not asserted");
                         wait until rising_edge(Clk);
-                        In_Valid <= '0'; 
+                        In_Valid <= '0';
                     else
                         wait until rising_edge(Clk);
                         check_relation(Out_Valid'last_event > (now-time1_v), "Unexpected strobe");
-                        In_Valid <= '0'; 
+                        In_Valid <= '0';
                     end if;
                     wait until rising_edge(Clk);
                     check_equal(Out_valid, '1', "Strobe not kept 1");
@@ -146,13 +146,13 @@ begin
                     wait until rising_edge(Clk);
                     check_equal(Out_valid, '1', "Strobe not kept 2");
                     wait until rising_edge(Clk);
-                    check_equal(Out_valid, '0', "Strobe not de-asserted");   
-                    Out_Ready <= '0'; 
-                end loop;         
-            end if;  
+                    check_equal(Out_valid, '0', "Strobe not de-asserted");
+                    Out_Ready <= '0';
+                end loop;
+            end if;
 
             -- Immediate Assert on Decrease
-            if run("DecreaseHandling") then                
+            if run("DecreaseHandling") then
                 Out_Ready <= '1';
 
                 for i in 3 to 5 loop
@@ -176,7 +176,7 @@ begin
                         wait until rising_edge(Clk);
                         In_Valid <= '0';
                         wait until falling_edge(Clk);
-                        check_equal(Out_valid, '0', "Strobe not de-asserted");     
+                        check_equal(Out_valid, '0', "Strobe not de-asserted");
                     else
                         wait until rising_edge(Clk);
                         In_Valid <= '0';
@@ -184,10 +184,10 @@ begin
                         wait until rising_edge(Clk);
                         check_equal(Out_valid, '1', "Strobe not asserted");
                         wait until rising_edge(Clk);
-                        check_equal(Out_valid, '0', "Strobe not de-asserted");   
+                        check_equal(Out_valid, '0', "Strobe not de-asserted");
                     end if;
-                end loop;         
-            end if; 
+                end loop;
+            end if;
 
             wait for 1 us;
 
@@ -211,12 +211,12 @@ begin
             Latency_g       => Latency_g
         )
         port map (
-            Clk         => Clk,     
-            Rst         => Rst,    
-            In_Ratio    => In_Ratio,    
-            In_Valid    => In_Valid,                               
-            Out_Valid   => Out_Valid,  
+            Clk         => Clk,
+            Rst         => Rst,
+            In_Ratio    => In_Ratio,
+            In_Valid    => In_Valid,
+            Out_Valid   => Out_Valid,
             Out_Ready   => Out_Ready
-        ); 
+        );
 
 end sim;

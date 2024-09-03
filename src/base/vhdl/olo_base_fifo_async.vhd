@@ -1,19 +1,19 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This is a very basic asynchronous FIFO. The clocks can be fully asynchronous
 -- (unrelated). It  has optional level- and almost-full/empty ports.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -22,54 +22,54 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_fifo_async is
     generic (
-        Width_g         : positive;              
-        Depth_g         : positive;         -- must be power of two         
-        AlmFullOn_g     : boolean   := false;   
-        AlmFullLevel_g  : natural   := 0;              
-        AlmEmptyOn_g    : boolean   := false;   
-        AlmEmptyLevel_g : natural   := 0;              
-        RamStyle_g      : string    := "auto";  
-        RamBehavior_g   : string    := "RBW";   
+        Width_g         : positive;
+        Depth_g         : positive;         -- must be power of two
+        AlmFullOn_g     : boolean   := false;
+        AlmFullLevel_g  : natural   := 0;
+        AlmEmptyOn_g    : boolean   := false;
+        AlmEmptyLevel_g : natural   := 0;
+        RamStyle_g      : string    := "auto";
+        RamBehavior_g   : string    := "RBW";
         ReadyRstState_g : std_logic := '1'
-    ); 
-    port (   
+    );
+    port (
         -- Input interface
-        In_Clk          : in  std_logic;                              
-        In_Rst          : in  std_logic;    
-        In_RstOut       : out std_logic;                          
-        In_Data         : in  std_logic_vector(Width_g-1 downto 0); 
-        In_Valid        : in  std_logic := '1';                              
-        In_Ready        : out std_logic;         
+        In_Clk          : in  std_logic;
+        In_Rst          : in  std_logic;
+        In_RstOut       : out std_logic;
+        In_Data         : in  std_logic_vector(Width_g-1 downto 0);
+        In_Valid        : in  std_logic := '1';
+        In_Ready        : out std_logic;
         -- Input Status
-        In_Full         : out std_logic;                              
-        In_Empty        : out std_logic;                              
-        In_AlmFull      : out std_logic;                              
-        In_AlmEmpty     : out std_logic;                         
+        In_Full         : out std_logic;
+        In_Empty        : out std_logic;
+        In_AlmFull      : out std_logic;
+        In_AlmEmpty     : out std_logic;
         In_Level        : out std_logic_vector(log2ceil(Depth_g+1)-1 downto 0);
         -- Output Interface
-        Out_Clk         : in  std_logic; 
-        Out_Rst         : in  std_logic; 
+        Out_Clk         : in  std_logic;
+        Out_Rst         : in  std_logic;
         Out_RstOut      : out std_logic;
-        Out_Data        : out std_logic_vector(Width_g-1 downto 0); 
-        Out_Valid       : out std_logic; 
-        Out_Ready       : in  std_logic := '1'; 
+        Out_Data        : out std_logic_vector(Width_g-1 downto 0);
+        Out_Valid       : out std_logic;
+        Out_Ready       : in  std_logic := '1';
         -- Output Status
-        Out_Full        : out std_logic;  
+        Out_Full        : out std_logic;
         Out_Empty       : out std_logic;
-        Out_AlmFull     : out std_logic;                                   
-        Out_AlmEmpty    : out std_logic; 
+        Out_AlmFull     : out std_logic;
+        Out_AlmEmpty    : out std_logic;
         Out_Level       : out std_logic_vector(log2ceil(Depth_g+1)-1 downto 0)
     );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_fifo_async is
 
     constant AddrWidth_c    : positive := log2ceil(Depth_g)+1;
@@ -287,17 +287,17 @@ begin
         );
 
     -- Reset CC
-    i_rst_cc : entity work.olo_base_cc_reset                      
-        port map (   
-            A_Clk       => In_Clk,                             
-            A_RstIn     => In_Rst,                         
-            A_RstOut    => RstInInt,                                
-            B_Clk       => Out_Clk,                                  
-            B_RstIn     => Out_Rst,                           
+    i_rst_cc : entity work.olo_base_cc_reset
+        port map (
+            A_Clk       => In_Clk,
+            A_RstIn     => In_Rst,
+            A_RstOut    => RstInInt,
+            B_Clk       => Out_Clk,
+            B_RstIn     => Out_Rst,
             B_RstOut    => RstOutInt
         );
     Out_RstOut <= RstOutInt;
     In_RstOut <= RstInInt;
-    
+
 
 end architecture;

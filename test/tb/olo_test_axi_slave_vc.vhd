@@ -1,8 +1,8 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -97,7 +97,7 @@ package olo_test_axi_slave_pkg is
         signal net      : inout network_t;
         AxiSlave        : olo_test_axi_slave_t;
         startValue      : unsigned;
-        increment       : natural               := 1; 
+        increment       : natural               := 1;
         beats           : natural               := 1;       -- number of beats to write
         firstStrb       : std_logic_vector      := "X";
         lastStrb        : std_logic_vector      := "X";
@@ -132,7 +132,7 @@ package olo_test_axi_slave_pkg is
         signal net      : inout network_t;
         AxiSlave        : olo_test_axi_slave_t;
         startValue      : unsigned;
-        increment       : natural               := 1; 
+        increment       : natural               := 1;
         beats           : natural               := 1;       -- number of beats to write
         resp            : Resp_t                := xRESP_OKAY_c;
         id              : std_logic_vector      := "X";
@@ -215,8 +215,8 @@ package olo_test_axi_slave_pkg is
 
 end package;
 
-package body olo_test_axi_slave_pkg is 
-  
+package body olo_test_axi_slave_pkg is
+
     -- *** Push Individual Messages ***
     -- Expect AW transaction
     procedure expect_aw (
@@ -241,7 +241,7 @@ package body olo_test_axi_slave_pkg is
         push(msg, resize(addr, AxiSlave.AddrWidth));
         push(msg, id_v);
         push(msg, len);
-        push(msg, burst);        
+        push(msg, burst);
         push(msg, delay);
         send(net, AxiSlave.p_actor, msg);
     end;
@@ -269,7 +269,7 @@ package body olo_test_axi_slave_pkg is
         push(msg, resize(addr, AxiSlave.AddrWidth));
         push(msg, id_v);
         push(msg, len);
-        push(msg, burst);        
+        push(msg, burst);
         push(msg, delay);
         send(net, AxiSlave.p_actor, msg);
     end;
@@ -279,7 +279,7 @@ package body olo_test_axi_slave_pkg is
         signal net      : inout network_t;
         AxiSlave        : olo_test_axi_slave_t;
         startValue      : unsigned;
-        increment       : natural               := 1; 
+        increment       : natural               := 1;
         beats           : natural               := 1;       -- number of beats to write
         firstStrb       : std_logic_vector      := "X";
         lastStrb        : std_logic_vector      := "X";
@@ -381,7 +381,7 @@ package body olo_test_axi_slave_pkg is
         signal net      : inout network_t;
         AxiSlave        : olo_test_axi_slave_t;
         startValue      : unsigned;
-        increment       : natural               := 1; 
+        increment       : natural               := 1;
         beats           : natural               := 1;       -- number of beats to write
         resp            : Resp_t                := xRESP_OKAY_c;
         id              : std_logic_vector      := "X";
@@ -404,8 +404,8 @@ package body olo_test_axi_slave_pkg is
         end loop;
         -- implementation
         push_r_arbitrary(net, AxiSlave, beats, allData_v, resp, id_v, delay, beatDelay);
-    end;   
-    
+    end;
+
     procedure push_r_arbitrary (
         signal net      : inout network_t;
         AxiSlave        : olo_test_axi_slave_t;
@@ -444,7 +444,7 @@ package body olo_test_axi_slave_pkg is
         end loop;
         send(net, AxiSlave.p_actor, msg);
     end;
-    
+
 
     -- *** Push Compount Messages ***
     -- Single beat write
@@ -513,7 +513,7 @@ package body olo_test_axi_slave_pkg is
         expect_ar(net, AxiSlave, addr, len => beats, delay => ArReadyDelay);
         push_r(net, AxiSlave, dataStart, dataIncrement, beats, resp => xRESP_OKAY_c, delay => RValidDelay, beatDelay => beatDelay);
     end;
-    
+
 
     -- Constructor
     impure function new_olo_test_axi_slave(dataWidth : natural;
@@ -521,14 +521,14 @@ package body olo_test_axi_slave_pkg is
                                 idWidth   : natural := 0;
                                 userWidth : natural := 0 ) return olo_test_axi_slave_t is
     begin
-        return (p_actor => new_actor, 
-                DataWidth => dataWidth, 
+        return (p_actor => new_actor,
+                DataWidth => dataWidth,
                 AddrWidth => addrWidth,
                 IdWidth => idWidth,
                 UserWidth => userWidth,
                 DataBytes => dataWidth/8);
     end;
-        
+
     -- Casts
     impure function as_sync(instance : olo_test_axi_slave_t) return sync_handle_t is
     begin
@@ -620,7 +620,7 @@ begin
             else
                 delete(copy_msg);
                 unexpected_msg_type(msg_type);
-            end if;                
+            end if;
         end loop;
     end process;
 
@@ -811,7 +811,7 @@ begin
         end loop;
         wait;
     end process;
-    
+
     -- B process
     b_process : process
         variable msg : msg_t;

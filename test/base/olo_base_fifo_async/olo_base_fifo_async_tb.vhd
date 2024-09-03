@@ -1,13 +1,13 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -19,9 +19,9 @@ library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_fifo_async_tb is
     generic (
@@ -136,7 +136,7 @@ begin
         test_runner_setup(runner, runner_cfg);
 
         while test_suite loop
-            
+
             -- reset
             In_Rst  <= '1';
             Out_Rst <= '1';
@@ -170,7 +170,7 @@ begin
             check_equal(Out_Valid, '0', "Out_Valid reset state not '0'");
             check_equal(Out_Full, '0', "Out_Full reset state not '0'");
             check_equal(Out_Empty, '1', "Out_Empty reset state not '1'");
-            check_equal(Out_Level, 0, "Out_Level reset state not 0"); 
+            check_equal(Out_Level, 0, "Out_Level reset state not 0");
             if AlmFullOn_g then
                 check_equal(Out_AlmFull, '0', "Out_AlmFull reset state not '0'");
             end if;

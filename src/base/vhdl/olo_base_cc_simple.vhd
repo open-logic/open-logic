@@ -1,48 +1,48 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This is a very basic clock crossing that allows passing single samples of data
 -- from one clock domain to another. It only works if sample rates are significantly
 -- lower than the clock speed of both domains.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_cc_simple is
     generic (
-        Width_g     : positive := 1                             
-    );                              
-    port (   
-        In_Clk      : in  std_logic;                                  
-        In_RstIn    : in  std_logic := '0';                                  
-        In_RstOut   : out std_logic;                                  
-        In_Data     : in  std_logic_vector(Width_g - 1 downto 0);     
-        In_Valid    : in  std_logic;                                  
-        Out_Clk     : in  std_logic;                                  
-        Out_RstIn   : in  std_logic := '0';                                  
-        Out_RstOut  : out std_logic;                                  
-        Out_Data    : out std_logic_vector(Width_g - 1 downto 0);     
-        Out_Valid   : out std_logic                                   
-    );                                  
+        Width_g     : positive := 1
+    );
+    port (
+        In_Clk      : in  std_logic;
+        In_RstIn    : in  std_logic := '0';
+        In_RstOut   : out std_logic;
+        In_Data     : in  std_logic_vector(Width_g - 1 downto 0);
+        In_Valid    : in  std_logic;
+        Out_Clk     : in  std_logic;
+        Out_RstIn   : in  std_logic := '0';
+        Out_RstOut  : out std_logic;
+        Out_Data    : out std_logic_vector(Width_g - 1 downto 0);
+        Out_Valid   : out std_logic
+    );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture struct of olo_base_cc_simple is
 
     -- Input Domain signals
@@ -58,7 +58,7 @@ architecture struct of olo_base_cc_simple is
     attribute dont_touch             : boolean;
     attribute keep                   : string;
     attribute dont_touch of Out_Data_Sig       : signal is true;
-    attribute keep of Out_Data_Sig             : signal is "yes"; 
+    attribute keep of Out_Data_Sig             : signal is "yes";
 
 begin
 

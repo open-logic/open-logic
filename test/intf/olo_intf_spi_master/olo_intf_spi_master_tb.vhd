@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -27,9 +27,9 @@ library work;
     use work.olo_test_spi_slave_pkg.all;
     use work.olo_test_activity_pkg.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_intf_spi_master_tb is
     generic (
@@ -37,14 +37,14 @@ entity olo_intf_spi_master_tb is
         LsbFirst_g                  : boolean := false;
         SpiCpha_g                   : integer range 0 to 1 := 0;
         SpiCpol_g                   : integer range 0 to 1 := 0;
-        runner_cfg                  : string  
+        runner_cfg                  : string
     );
 end entity olo_intf_spi_master_tb;
 
 architecture sim of olo_intf_spi_master_tb is
     -------------------------------------------------------------------------
     -- Fixed Generics
-    ------------------------------------------------------------------------- 
+    -------------------------------------------------------------------------
     constant SclkFreq_c      : real                      := real(BusFrequency_g);
     constant MaxTransWidth_c : positive                  := 32;
     constant CsHighTime_c    : real                      := 100.0e-9;
@@ -68,19 +68,19 @@ architecture sim of olo_intf_spi_master_tb is
     signal Cmd_Slave       : std_logic_vector(log2ceil(SlaveCnt_c) - 1 downto 0)        := (others => '0');
     signal Cmd_Data        : std_logic_vector(MaxTransWidth_c - 1 downto 0)             := (others => '0');
     signal Cmd_TransWidth  : std_logic_vector(log2ceil(MaxTransWidth_c+1)-1 downto 0)   := (others => '0');
-    signal Resp_Valid      : std_logic;    
-    signal Resp_Data       : std_logic_vector(MaxTransWidth_c - 1 downto 0);    
+    signal Resp_Valid      : std_logic;
+    signal Resp_Data       : std_logic_vector(MaxTransWidth_c - 1 downto 0);
     signal Spi_Sclk        : std_logic;
     signal Spi_Mosi        : std_logic;
     signal Spi_Miso        : std_logic                                                   := '0';
     signal Spi_Cs_n        : std_logic_vector(SlaveCnt_c - 1 downto 0)                   := (others => '1');
-    
+
     -------------------------------------------------------------------------
     -- TB Defnitions
     -------------------------------------------------------------------------
 
     -- *** Verification Compnents ***
-    constant slave0 : olo_test_spi_slave_t := new_olo_test_spi_slave( 
+    constant slave0 : olo_test_spi_slave_t := new_olo_test_spi_slave(
         busFrequency    => SclkFreq_c,
         lsbFirst        => LsbFirst_g,
         maxTransWidth   => MaxTransWidth_c,
@@ -88,7 +88,7 @@ architecture sim of olo_intf_spi_master_tb is
         cpol            => SpiCpol_g
     );
 
-    constant slave1 : olo_test_spi_slave_t := new_olo_test_spi_slave( 
+    constant slave1 : olo_test_spi_slave_t := new_olo_test_spi_slave(
         busFrequency    => SclkFreq_c,
         lsbFirst        => LsbFirst_g,
         maxTransWidth   => MaxTransWidth_c,
@@ -148,7 +148,7 @@ begin
             wait until rising_edge(Clk);
             Rst <= '0';
             wait until rising_edge(Clk);
-            
+
             -- *** Basics ***
             if run("ResetValues") then
                 wait for 1 us;
@@ -192,8 +192,8 @@ begin
 
                 -- Cmd_Slave 0 Transfer
                 SendCommand(0, X"11111111", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
-                CheckResponse(X"22222222");               
-            end if;       
+                CheckResponse(X"22222222");
+            end if;
 
             -- *** Edge Cases ***
             if run("Cmd_ValidWhileBusy") then
@@ -248,8 +248,8 @@ begin
         )
         port map (
             -- Control Signals
-            Clk             => Clk,     
-            Rst             => Rst,   
+            Clk             => Clk,
+            Rst             => Rst,
             -- Command Interface
             Cmd_Valid       => Cmd_Valid,
             Cmd_Slave       => Cmd_Slave,
@@ -258,8 +258,8 @@ begin
             Cmd_Data        => Cmd_Data,
             -- Response interface
             Resp_Valid      => Resp_Valid,
-            Resp_Data       => Resp_Data,            
-            -- SPI 
+            Resp_Data       => Resp_Data,
+            -- SPI
             Spi_Sclk        => Spi_Sclk,
             Spi_Mosi        => Spi_Mosi,
             Spi_Miso        => Spi_Miso,

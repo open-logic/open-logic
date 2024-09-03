@@ -1,19 +1,19 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This is a pure VHDL and vendor indpendent simple dual port RAM with
 -- optional byte enables.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,35 +21,35 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
 
-    ------------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_ram_sdp is
     generic (
-        Depth_g         : positive;     
-        Width_g         : positive; 
+        Depth_g         : positive;
+        Width_g         : positive;
         IsAsync_g       : boolean  := false;
-        RdLatency_g     : positive := 1;  
-        RamStyle_g      : string   := "auto"; 
+        RdLatency_g     : positive := 1;
+        RamStyle_g      : string   := "auto";
         RamBehavior_g   : string   := "RBW";
         UseByteEnable_g : boolean  := false
     );
-    port (   
+    port (
         Clk         : in  std_logic;
         Wr_Addr     : in  std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         Wr_Ena      : in  std_logic                                         := '1';
-        Wr_Be       : in  std_logic_vector(Width_g / 8 - 1 downto 0)        := (others => '1'); 
+        Wr_Be       : in  std_logic_vector(Width_g / 8 - 1 downto 0)        := (others => '1');
         Wr_Data     : in  std_logic_vector(Width_g - 1 downto 0);
         Rd_Clk      : in  std_logic                                         := '0';
         Rd_Addr     : in  std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         Rd_Ena      : in  std_logic                                         := '1';
         Rd_Data     : out std_logic_vector(Width_g - 1 downto 0)
-    );                          
+    );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_ram_sdp is
 
     -- constants
@@ -79,11 +79,11 @@ architecture rtl of olo_base_ram_sdp is
 begin
 
     -- Assertions
-    assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR" 
-        report "olo_base_ram_sdp: RamBehavior_g must Be RBW or WBR" 
+    assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR"
+        report "olo_base_ram_sdp: RamBehavior_g must Be RBW or WBR"
         severity error;
-    assert (Width_g mod 8 = 0) or (not UseByteEnable_g) 
-        report "olo_base_ram_sdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled" 
+    assert (Width_g mod 8 = 0) or (not UseByteEnable_g)
+        report "olo_base_ram_sdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
         severity error;
 
     -- Synchronous Implementation

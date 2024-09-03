@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -24,16 +24,16 @@ library olo;
 library osvvm;
     use osvvm.RandomPkg.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_dyn_sft_tb is
     generic (
         runner_cfg          : string;
-        Direction_g         : string   := "LEFT";                                     
-        SelBitsPerStage_g   : positive := 4;                                          
-        MaxShift_g          : positive := 16;                                                                              
+        Direction_g         : string   := "LEFT";
+        SelBitsPerStage_g   : positive := 4;
+        MaxShift_g          : positive := 16;
         SignExtend_g        : boolean  := true
     );
 end entity olo_base_dyn_sft_tb;
@@ -95,13 +95,13 @@ architecture sim of olo_base_dyn_sft_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk         : std_logic                                      := '0';                              
-    signal Rst         : std_logic                                      := '0';    
-    signal In_Valid    : std_logic                                      := '0';                          
-    signal In_Data     : std_logic_vector(DataWidth_c-1 downto 0)       := (others => '0'); 
+    signal Clk         : std_logic                                      := '0';
+    signal Rst         : std_logic                                      := '0';
+    signal In_Valid    : std_logic                                      := '0';
+    signal In_Data     : std_logic_vector(DataWidth_c-1 downto 0)       := (others => '0');
     signal In_Shift    : std_logic_vector(ShiftBits_c-1 downto 0)       := (others => '0');
-    signal Out_Valid   : std_logic                                      := '0';                              
-    signal Out_Data    : std_logic_vector(DataWidth_c-1 downto 0)       := (others => '0'); 
+    signal Out_Valid   : std_logic                                      := '0';
+    signal Out_Data    : std_logic_vector(DataWidth_c-1 downto 0)       := (others => '0');
 
 begin
 
@@ -159,21 +159,21 @@ begin
     -------------------------------------------------------------------------
     i_dut : entity olo.olo_base_dyn_sft
         generic map (
-            Direction_g         => Direction_g,                                    
-            SelBitsPerStage_g   => SelBitsPerStage_g,                                  
-            MaxShift_g          => MaxShift_g,                                       
-            Width_g             => DataWidth_c,                                     
+            Direction_g         => Direction_g,
+            SelBitsPerStage_g   => SelBitsPerStage_g,
+            MaxShift_g          => MaxShift_g,
+            Width_g             => DataWidth_c,
             SignExtend_g        => SignExtend_g
         )
         port map (
-            Clk         => Clk,     
-            Rst         => Rst,    
-            In_Valid    => In_Valid,                               
-            In_Shift    => In_Shift,   
-            In_Data     => In_Data,    
-            Out_Valid   => Out_Valid,                       
+            Clk         => Clk,
+            Rst         => Rst,
+            In_Valid    => In_Valid,
+            In_Shift    => In_Shift,
+            In_Data     => In_Data,
+            Out_Valid   => Out_Valid,
             Out_Data    => Out_Data
-        ); 
+        );
 
     ------------------------------------------------------------
     -- Verification Components
@@ -189,7 +189,7 @@ begin
         tuser  => In_Shift,
         tdata  => In_Data
     );
-  
+
     vc_response : entity vunit_lib.axi_stream_slave
     generic map (
         slave => axisSlave
@@ -197,7 +197,7 @@ begin
     port map (
         aclk   => Clk,
         tvalid => Out_Valid,
-        tdata  => Out_Data   
+        tdata  => Out_Data
     );
 
 end sim;

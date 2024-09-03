@@ -1,13 +1,13 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This is a very basic clock crossing that allows passing pulses from one clock
 -- domain to another. The pulse frequency must be significantly lower than then
 -- slower clock speed.
@@ -15,36 +15,36 @@
 -- that pulses arriving in the same clock cycle are transmitted in the same
 -- clock cycle.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_cc_pulse is
     generic (
-        NumPulses_g     : positive := 1                                
-    );                          
-    port (   
-        In_Clk          : in  std_logic;                                   
-        In_RstIn        : in  std_logic := '0';                                   
-        In_RstOut       : out std_logic;                                    
-        In_Pulse        : in  std_logic_vector(NumPulses_g - 1 downto 0);  
-        Out_Clk         : in  std_logic;                                   
-        Out_RstIn       : in  std_logic := '0';                                   
-        Out_RstOut      : out std_logic;                                    
+        NumPulses_g     : positive := 1
+    );
+    port (
+        In_Clk          : in  std_logic;
+        In_RstIn        : in  std_logic := '0';
+        In_RstOut       : out std_logic;
+        In_Pulse        : in  std_logic_vector(NumPulses_g - 1 downto 0);
+        Out_Clk         : in  std_logic;
+        Out_RstIn       : in  std_logic := '0';
+        Out_RstOut      : out std_logic;
         Out_Pulse       : out std_logic_vector(NumPulses_g - 1 downto 0)
-    ); 
+    );
 end entity;
 
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_cc_pulse is
 
     type Pulse_t is array (natural range <>) of std_logic_vector(NumPulses_g - 1 downto 0);
@@ -60,23 +60,21 @@ architecture rtl of olo_base_cc_pulse is
     signal ToggleOut        : std_logic_vector(NumPulses_g - 1 downto 0);
     signal ToggleOutLast    : std_logic_vector(NumPulses_g - 1 downto 0);
 
-    --
-
-begin
+    -- begin
 
     -- *** Reset Crossing ***
-    i_rst : entity work.olo_base_cc_reset                   
-        port map (   
+    i_rst : entity work.olo_base_cc_reset
+        port map (
             A_Clk       => In_Clk,
             A_RstIn     => In_RstIn,
             A_RstOut    => RstInI,
-            B_Clk       => Out_Clk, 
+            B_Clk       => Out_Clk,
             B_RstIn     => Out_RstIn,
             B_RstOut    => RstOutI
         );
     In_RstOut <= RstInI;
     Out_RstOut <= RstOutI;
-        
+
 
     -- *** Pulse Crossing ***
     p_reg : process(In_Clk)
@@ -88,7 +86,7 @@ begin
             end if;
         end if;
     end process;
-    
+
     -- Combinatorial because register is in olo_base_cc_bits
     ToggleIn <= ToggleLast xor In_Pulse;
 
@@ -111,7 +109,7 @@ begin
     PulseOut_p : process(Out_Clk)
     begin
         if rising_edge(Out_Clk) then
-            ToggleOutLast <= ToggleOut;   
+            ToggleOutLast <= ToggleOut;
 
             -- Reset
             if RstOutI = '1' then
@@ -120,6 +118,6 @@ begin
         end if;
     end process;
 
-  
+
 end architecture;
 

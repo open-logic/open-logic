@@ -1,4 +1,4 @@
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 ----                                                                      ----
 ----  Text Utils                                                          ----
 ----                                                                      ----
@@ -14,14 +14,14 @@
 ----    - Oyvind Harboe, oyvind.harboe zylin.com                          ----
 ----    - Oliver Bründler, Paul Scherrer Instititute                      ----
 ----                                                                      ----
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 ----                                                                      ----
 ---- Copyright (c) 2008 Oyvind Harboe <oyvind.harboe zylin.com>           ----
 ---- Copyright (c) Paul Scherrer Institute (www.psi.ch)                   ----
 ----                                                                      ----
 ---- Distributed under the BSD license                                    ----
 ----                                                                      ----
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 ----                                                                      ----
 ---- Design unit:      txt_util (Package)                                 ----
 ---- File name:        txt_util.vhdl                                      ----
@@ -39,7 +39,7 @@
 ---- Simulation tools: GHDL [Sokcho edition] (0.2x)                       ----
 ---- Text editor:      SETEdit 0.5.x                                      ----
 ----                                                                      ----
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -82,21 +82,21 @@ package olo_tb_txt_util is
    -- convert std_logic_vector into a string in hex format
    function hstr(slv: std_logic_vector) return string;
    function hstr(slv: unsigned) return string;
-   
+
    -- convert integer to string, VHDL2008 built-in equivalent
    function to_string(int : integer) return string;
 
    -- convert real to string, VHDL2008 built-in equivalent
    function to_string(num : real) return string;
-   
+
     -- convert signed to string, VHDL2008 built-in equivalent
    function to_string(num : signed) return string;
 
    -- convert unsigned to string, VHDL2008 built-in equivalent
-   function to_string(num : unsigned) return string;   
-   
+   function to_string(num : unsigned) return string;
+
    -- convert std_logic_vector to string, VHDL2008 built-in equivalent
-   function to_string(num : std_logic_vector) return string; 
+   function to_string(num : std_logic_vector) return string;
 
 
    -- functions to manipulate strings
@@ -114,36 +114,36 @@ package olo_tb_txt_util is
    -- convert a string to lower case
    function to_lower(s: string) return string;
 
-  
-   
+
+
    -- functions to convert strings into other formats
    --------------------------------------------------
-   
+
    -- converts a character into std_logic
-   function to_std_logic(c: character) return std_logic; 
-   
+   function to_std_logic(c: character) return std_logic;
+
    -- converts a string into std_logic_vector
-   function to_std_logic_vector(s: string) return std_logic_vector; 
+   function to_std_logic_vector(s: string) return std_logic_vector;
 
 
- 
+
    -- file I/O
    -----------
-      
+
    -- read variable length string from input file
-   procedure str_read(file in_file: TEXT; 
+   procedure str_read(file in_file: TEXT;
                       res_string: out string);
 
-   procedure str_write(file out_file: TEXT; 
+   procedure str_write(file out_file: TEXT;
                        new_string: in  string);
-       
+
    -- print string to a file and start new line
    procedure print(file out_file: TEXT;
                    new_string: in  string);
-   
+
    -- print character to a file and start new line
    procedure print(file out_file: TEXT;
-                   char:       in  character);                   
+                   char:       in  character);
 end package olo_tb_txt_util;
 
 
@@ -196,8 +196,8 @@ package body olo_tb_txt_util is
 
    -- converts std_logic_vector into a string (binary base)
    -- (this also takes care of the fact that the range of
-   --  a string is natural while a std_logic_vector may
-   --  have an integer range)
+   -- a string is natural while a std_logic_vector may
+   -- have an integer range)
    function str(slv: std_logic_vector) return string is
       variable result : string (1 to slv'length);
       variable r      : integer;
@@ -281,19 +281,19 @@ package body olo_tb_txt_util is
    begin
       -- bug fix for negative numbers
       abs_int:=abs(int);
-  
+
       num    :=abs_int;
-  
+
       while num>=base loop                       -- Determine how many
          len:=len+1;                             -- characters required
          num:=num/base;                          -- to represent the
       end loop;                                  -- number.
-  
+
       for i in len downto 1 loop                 -- Convert the number to
           temp(i):=chr(abs_int/power mod base);  -- a string starting
           power:=power*base;                     -- with the right hand
       end loop ;                                 -- side.
-  
+
       -- return result and add sign if required
       if int<0 then
          return '-'& temp(1 to len);
@@ -352,13 +352,13 @@ package body olo_tb_txt_util is
    begin
       return hstr(std_logic_vector(slv));
    end function hstr;
-   
+
    -- VHDL2008 to_string built-in equivalents
    function to_string(int : integer) return string is
    begin
       return str(int);
    end function;
-   
+
    function to_string(num : real) return string is
    begin
       return real'image(num);
@@ -368,16 +368,16 @@ package body olo_tb_txt_util is
    begin
       return integer'image(to_integer(num));
    end function;
-   
+
    function to_string(num : unsigned) return string is
    begin
       return integer'image(to_integer(num));
    end function;
-   
+
    function to_string(num : std_logic_vector) return string is
    begin
       return str(num);
-   end function;   
+   end function;
 
    -- functions to manipulate strings
    -----------------------------------
@@ -477,9 +477,9 @@ package body olo_tb_txt_util is
    end to_lower;
 
    -- functions to convert strings into other types
-   
+
    -- converts a character into a std_logic
-   
+
    function to_std_logic(c: character) return std_logic is
       variable sl : std_logic;
    begin
@@ -488,29 +488,29 @@ package body olo_tb_txt_util is
                 sl:='U';
            when 'X' =>
                 sl:='X';
-           when '0' => 
+           when '0' =>
                 sl:='0';
-           when '1' => 
+           when '1' =>
                 sl:='1';
-           when 'Z' => 
+           when 'Z' =>
                 sl:='Z';
-           when 'W' => 
+           when 'W' =>
                 sl:='W';
-           when 'L' => 
+           when 'L' =>
                 sl:='L';
-           when 'H' => 
+           when 'H' =>
                 sl:='H';
-           when '-' => 
+           when '-' =>
                 sl:='-';
            when others =>
                 sl:='X';
       end case;
       return sl;
    end function to_std_logic;
-   
-   
+
+
    -- converts a string into std_logic_vector
-   function to_std_logic_vector(s: string) return std_logic_vector is 
+   function to_std_logic_vector(s: string) return std_logic_vector is
       variable slv : std_logic_vector(s'high-s'low downto 0);
       variable k   : integer;
    begin
@@ -521,14 +521,14 @@ package body olo_tb_txt_util is
       end loop;
       return slv;
    end function to_std_logic_vector;
-                                       
-                                       
+
+
    ----------------
-   --  file I/O  --
+   -- file I/O  --
    ----------------
-   
+
    -- read variable length string from input file
-   procedure str_read(file in_file: TEXT; 
+   procedure str_read(file in_file: TEXT;
                       res_string: out string) is
       variable l         : line;
       variable c         : character;
@@ -538,8 +538,8 @@ package body olo_tb_txt_util is
       -- clear the contents of the result string
       for i in res_string'range loop
           res_string(i):=' ';
-      end loop;   
-      -- read all characters of the line, up to the length  
+      end loop;
+      -- read all characters of the line, up to the length
       -- of the results string
       for i in res_string'range loop
           read(l,c,is_string);
@@ -547,9 +547,9 @@ package body olo_tb_txt_util is
           if not is_string then -- found end of line
              exit;
           end if;
-      end loop; 
+      end loop;
    end procedure str_read;
-   
+
    -- print string to a file
    procedure print(file out_file: TEXT;
                    new_string: in  string) is
@@ -558,7 +558,7 @@ package body olo_tb_txt_util is
       write(l,new_string);
       writeline(out_file,l);
    end procedure print;
-   
+
    -- print character to a file and start new line
    procedure print(file out_file: TEXT;
                    char: in  character) is
@@ -567,10 +567,10 @@ package body olo_tb_txt_util is
       write(l,char);
       writeline(out_file,l);
    end procedure print;
-   
+
    -- appends contents of a string to a file until line feed occurs
    -- (LF is considered to be the end of the string)
-   procedure str_write(file out_file: TEXT; 
+   procedure str_write(file out_file: TEXT;
                        new_string: in  string) is
    begin
       for i in new_string'range loop
@@ -578,6 +578,6 @@ package body olo_tb_txt_util is
           if new_string(i)=LF then -- end of string
              exit;
           end if;
-      end loop;               
+      end loop;
    end str_write;
 end package body olo_tb_txt_util;

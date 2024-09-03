@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -18,14 +18,14 @@ library vunit_lib;
 library olo;
     use olo.olo_base_pkg_math.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_ram_tdp_tb is
     generic (
         runner_cfg      : string;
-        Width_g         : positive range 5 to 128  := 32; 
+        Width_g         : positive range 5 to 128  := 32;
         RamBehavior_g   : string    := "RBW";
         UseByteEnable_g : boolean   := false;
         RdLatency_g     : positive range 1 to 2 := 1
@@ -77,7 +77,7 @@ architecture sim of olo_base_ram_tdp_tb is
         Addr <= toUslv(0, Addr'length);
         for i in 1 to RdLatency_g loop
             wait until rising_edge(Clk);
-        end loop; 
+        end loop;
         check_equal(RdData, toUslv(data, RdData'length), message);
     end procedure;
 
@@ -113,7 +113,7 @@ architecture sim of olo_base_ram_tdp_tb is
                                signal Rd_Addr   : out std_logic_vector;
                                signal Rd_Data   : in std_logic_vector) is
     begin
-        if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then        
+        if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then
             -- Byte 0 test
             Wr_Be <= toSslv(-1, Wr_Be'length); -- BE not checked -> all ones
             Write(1, 0, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
@@ -149,33 +149,33 @@ architecture sim of olo_base_ram_tdp_tb is
                 WrData <= toUslv(1, WrData'length);
                 wait until rising_edge(Clk);
                 Addr <= toUslv(2, Addr'length);
-                WrData <= toUslv(2, WrData'length);       
+                WrData <= toUslv(2, WrData'length);
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 5, "rw: 1=5");
                     else
-                        check_equal(RdData, 1, "rw: 1=1 wbr");    
+                        check_equal(RdData, 1, "rw: 1=1 wbr");
                     end if;
                 end if;
                 Addr <= toUslv(3, Addr'length);
-                WrData <= toUslv(3, WrData'length);    
+                WrData <= toUslv(3, WrData'length);
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 6, "rw: 2=6");
                     else
                         check_equal(RdData, 2, "rw: 2=2 wbr");
-                    end if;    
+                    end if;
                 elsif RdLatency_g = 2 then
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 5, "rw: 1=5");
                     else
-                        check_equal(RdData, 1, "rw: 1=1 wbr");    
+                        check_equal(RdData, 1, "rw: 1=1 wbr");
                     end if;
-                end if;                   
+                end if;
                 Addr <= toUslv(4, Addr'length);
-                WrData <= toUslv(4, WrData'length);  
+                WrData <= toUslv(4, WrData'length);
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
@@ -188,10 +188,10 @@ architecture sim of olo_base_ram_tdp_tb is
                         check_equal(RdData, 6, "rw: 2=6");
                     else
                         check_equal(RdData, 2, "rw: 2=2 wbr");
-                    end if;   
+                    end if;
                 end if;
                 Addr <= toUslv(5, Addr'length);
-                WrData <= toUslv(5, WrData'length);  
+                WrData <= toUslv(5, WrData'length);
                 wait until rising_edge(Clk);
                 WrEna <= '0';
                 Check(1, 1, Clk, Addr, RdData, "rw: 1=1");
@@ -205,14 +205,14 @@ architecture sim of olo_base_ram_tdp_tb is
     signal A_Clk       : std_logic                                          := '0';
     signal A_Addr      : std_logic_vector(7 downto 0);
     signal A_WrEna     : std_logic                                          := '0';
-    signal A_Be        : std_logic_vector(BeSigWidth_c-1 downto 0)          := (others => '1'); 
-    signal A_WrData    : std_logic_vector(Width_g - 1 downto 0); 
+    signal A_Be        : std_logic_vector(BeSigWidth_c-1 downto 0)          := (others => '1');
+    signal A_WrData    : std_logic_vector(Width_g - 1 downto 0);
     signal A_RdData    : std_logic_vector(Width_g - 1 downto 0);
     signal B_Clk       : std_logic                                          := '0';
     signal B_Addr      : std_logic_vector(7 downto 0);
     signal B_WrEna     : std_logic                                          := '0';
-    signal B_Be        : std_logic_vector(BeSigWidth_c-1 downto 0)          := (others => '1'); 
-    signal B_WrData    : std_logic_vector(Width_g - 1 downto 0); 
+    signal B_Be        : std_logic_vector(BeSigWidth_c-1 downto 0)          := (others => '1');
+    signal B_WrData    : std_logic_vector(Width_g - 1 downto 0);
     signal B_RdData    : std_logic_vector(Width_g - 1 downto 0);
 
 begin
@@ -222,26 +222,26 @@ begin
     -------------------------------------------------------------------------
     i_dut : entity olo.olo_base_ram_tdp
         generic map (
-            Depth_g         => 200,                                      
-            Width_g         => Width_g,                                                   
+            Depth_g         => 200,
+            Width_g         => Width_g,
             RamBehavior_g   => RamBehavior_g,
             UseByteEnable_g => UseByteEnable_g,
             RdLatency_g     => RdLatency_g
         )
-        port map (   
+        port map (
             A_Clk       => A_Clk,
             A_Addr      => A_Addr,
-            A_WrEna     => A_WrEna, 
-            A_Be        => A_Be(BeWidth_c-1 downto 0),  
+            A_WrEna     => A_WrEna,
+            A_Be        => A_Be(BeWidth_c-1 downto 0),
             A_WrData    => A_WrData,
             A_RdData    => A_RdData,
             B_Clk       => B_Clk,
             B_Addr      => B_Addr,
-            B_WrEna     => B_WrEna, 
-            B_Be        => B_Be(BeWidth_c-1 downto 0),  
+            B_WrEna     => B_WrEna,
+            B_Be        => B_Be(BeWidth_c-1 downto 0),
             B_WrData    => B_WrData,
             B_RdData    => B_RdData
-        ); 
+        );
 
     -------------------------------------------------------------------------
     -- Clock
@@ -294,7 +294,7 @@ begin
             -- Read while write
             elsif run("ReadDuringWrite-B") then
                 ReadDuringWrite(B_Clk, B_Addr, B_WrData, B_WrEna, B_Be, B_RdData);
-     
+
            end if;
 
         end loop;

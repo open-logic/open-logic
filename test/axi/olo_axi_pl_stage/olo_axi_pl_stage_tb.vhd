@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -26,9 +26,9 @@ library work;
     use work.olo_test_axi_slave_pkg.all;
     use work.olo_test_axi_master_pkg.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_axi_pl_stage_tb is
     generic (
@@ -37,7 +37,7 @@ entity olo_axi_pl_stage_tb is
         UserWidth_g     : integer := 0;
         DataWidth_g     : integer := 16;
         Stages_g        : positive := 2;
-        runner_cfg      : string  
+        runner_cfg      : string
     );
 end entity olo_axi_pl_stage_tb;
 
@@ -46,19 +46,19 @@ architecture sim of olo_axi_pl_stage_tb is
     -- AXI Definition
     -------------------------------------------------------------------------
     constant ByteWidth_c     : integer   := DataWidth_g/8;
-    
+
     subtype IdRange_r   is natural range IdWidth_g-1 downto 0;
     subtype AddrRange_r is natural range AddrWidth_g-1 downto 0;
     subtype UserRange_r is natural range UserWidth_g-1 downto 0;
     subtype DataRange_r is natural range DataWidth_g-1 downto 0;
     subtype ByteRange_r is natural range ByteWidth_c-1 downto 0;
-    
+
     signal AxiMs_m, AxiMs_s : AxiMs_r ( ArId(IdRange_r), AwId(IdRange_r),
                                         ArAddr(AddrRange_r), AwAddr(AddrRange_r),
                                         ArUser(UserRange_r), AwUser(UserRange_r), WUser(UserRange_r),
                                         WData(DataRange_r),
                                         WStrb(ByteRange_r));
-    
+
     signal AxiSm_m, AxiSm_s : AxiSm_r ( RId(IdRange_r), BId(IdRange_r),
                                         RUser(UserRange_r), BUser(UserRange_r),
                                         RData(DataRange_r));
@@ -141,7 +141,7 @@ begin
                 -- Slave
                 expect_single_write(net, axiSlave, X"12345678", X"ABCD");
                 push_single_read(net, axiSlave, X"AFFE0000", X"1234");
-            end if;           
+            end if;
 
             -- Pipelined Write - AwReady driven
             if run("PipelinedWrites-AwReadyDelay") then
@@ -163,8 +163,8 @@ begin
                     push_single_write(net, axiMaster, to_unsigned(256*i, 32), to_unsigned(i, 16));
                     expect_single_write(net, axiSlave, to_unsigned(256*i, 32), to_unsigned(i, 16));
                 end loop;
-            end if;    
-            
+            end if;
+
             -- Pipelined Write - BReady driven
             if run("PipelinedWrites-BReadyDelay") then
                 -- Blocked Aw-Ready
@@ -174,7 +174,7 @@ begin
                     push_single_write(net, axiMaster, to_unsigned(256*i, 32), to_unsigned(i, 16));
                     expect_single_write(net, axiSlave, to_unsigned(256*i, 32), to_unsigned(i, 16));
                 end loop;
-            end if; 
+            end if;
 
             -- Pipelined Read - ArReady driven
             if run("PipelinedRead-ArReadyDelay") then
@@ -213,7 +213,7 @@ begin
                 -- Slave
                 push_burst_read_aligned(net, axiSlave, X"AFFE0000", X"1234", 1, 16);
             end if;
-                    
+
             -- Wait for idle
             wait_until_idle(net, as_sync(axiMaster));
             wait_until_idle(net, as_sync(axiSlave));
@@ -242,8 +242,8 @@ begin
             Stages_g        => Stages_g
         )
         port map (
-            Clk         => Clk,     
-            Rst         => Rst,    
+            Clk         => Clk,
+            Rst         => Rst,
             -- Slave Interface
             -- write address channel
             S_AwId     => AxiMs_m.AwId,

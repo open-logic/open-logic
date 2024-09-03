@@ -1,13 +1,13 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -20,9 +20,9 @@ library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_fifo_sync_tb is
     generic (
@@ -124,14 +124,14 @@ begin
             -- check if ready state during reset is correct
             check_equal(toStdl(ReadyRstState_g), In_Ready, "In_Ready reset state not according to generic");
             wait for 1 us;
-        
+
             -- Remove reset
             wait until rising_edge(Clk);
             Rst <= '0';
             wait until rising_edge(Clk);
-        
+
             if run("Reset") then
-                -- Check Reset State            
+                -- Check Reset State
                 check_equal(In_Ready, '1', "In_Ready after reset state not '1'");
                 check_equal(Out_Valid, '0', "Out_Valid reset state not '0'");
                 check_equal(Full, '0', "Full reset state not '0'");
@@ -173,7 +173,7 @@ begin
                 check_equal(Out_Data, 16#0001#, "Illegal Out_Data 1");
                 check_equal(Empty, '0', "Empty not low");
                 check_equal(In_Level, 2, "In_Level not 2");
-                check_equal(Out_Level, 1, "Out_Level not 1");          
+                check_equal(Out_Level, 1, "Out_Level not 1");
                 -- Pause 2
                 wait until falling_edge(Clk);
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
@@ -181,7 +181,7 @@ begin
                 check_equal(Out_Data, 16#0001#, "Illegal Out_Data 1");
                 check_equal(Empty, '0', "Empty not low");
                 check_equal(In_Level, 2, "In_Level not 2");
-                check_equal(Out_Level, 2, "Out_Level not 2");  
+                check_equal(Out_Level, 2, "Out_Level not 2");
                 -- Read ack 1
                 wait until falling_edge(Clk);
                 Out_Ready <= '1';
@@ -190,7 +190,7 @@ begin
                 check_equal(Out_Data, 16#0001#, "Illegal Out_Data 1");
                 check_equal(Empty, '0', "Empty not low");
                 check_equal(In_Level, 2, "In_Level not 2");
-                check_equal(Out_Level, 2, "Out_Level not 2"); 
+                check_equal(Out_Level, 2, "Out_Level not 2");
                 -- Read ack 2
                 wait until falling_edge(Clk);
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
@@ -198,7 +198,7 @@ begin
                 check_equal(Out_Data, 16#0002#, "Illegal Out_Data 2");
                 check_equal(Empty, '0', "Empty not low");
                 check_equal(In_Level, 2, "In_Level not 2");
-                check_equal(Out_Level, 1, "Out_Level not 1"); 
+                check_equal(Out_Level, 1, "Out_Level not 1");
                 -- empty 1
                 wait until falling_edge(Clk);
                 Out_Ready <= '0';
@@ -206,15 +206,15 @@ begin
                 check_equal(Out_Valid, '0', "Out_Valid not high");
                 check_equal(Empty, '1', "Empty not high");
                 check_equal(In_Level, 1, "In_Level not 1");
-                check_equal(Out_Level, 0, "Out_Level not 0"); 
+                check_equal(Out_Level, 0, "Out_Level not 0");
                 -- empty 2
                 wait until falling_edge(Clk);
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
                 check_equal(Out_Valid, '0', "Out_Valid not high");
                 check_equal(Empty, '1', "Empty not high");
                 check_equal(In_Level, 0, "In_Level not 0");
-                check_equal(Out_Level, 0, "Out_Level not 0"); 
-    
+                check_equal(Out_Level, 0, "Out_Level not 0");
+
             elsif run("WriteFullFifo") then
                 wait until falling_edge(Clk);
                 -- Fill FIFO
@@ -254,7 +254,7 @@ begin
                 check_equal(Full, '0', "Full not de-asserted");
                 check_equal(In_Level, 0, "In_Level not Empty");
                 check_equal(Out_Level, 0, "Out_Level not Empty");
-            
+
             elsif run("ReadEmptyFifo") then
                 wait until falling_edge(Clk);
                 check_equal(Empty, '1', "Empty not asserted");

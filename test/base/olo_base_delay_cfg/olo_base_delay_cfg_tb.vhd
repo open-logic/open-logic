@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,15 +21,15 @@ library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_delay_cfg_tb is
     generic (
         runner_cfg      : string;
         SupportZero_g   : boolean := false;
-        RamBehavior_g   : string   := "RBW";  
+        RamBehavior_g   : string   := "RBW";
         RandomStall_g   : boolean   := false
     );
 end entity olo_base_delay_cfg_tb;
@@ -51,12 +51,12 @@ architecture sim of olo_base_delay_cfg_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk         : std_logic                                              := '0';                              
-    signal Rst         : std_logic                                              := '0';    
-    signal Delay       : std_logic_vector(log2ceil(MaxDelay_c+1)-1 downto 0)    := (others => '0'); 
-    signal In_Valid    : std_logic                                              := '0';                                                        
-    signal In_Data     : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0');                                               
-    signal Out_Data    : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0'); 
+    signal Clk         : std_logic                                              := '0';
+    signal Rst         : std_logic                                              := '0';
+    signal Delay       : std_logic_vector(log2ceil(MaxDelay_c+1)-1 downto 0)    := (others => '0');
+    signal In_Valid    : std_logic                                              := '0';
+    signal In_Data     : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0');
+    signal Out_Data    : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0');
 
     -------------------------------------------------------------------------
     -- TB Defnitions
@@ -119,17 +119,17 @@ begin
             if run("FixDelay1") then
                 Delay <= toUslv(1, Delay'length);
                 PushN(net, 20);
-            end if;   
-            
+            end if;
+
             if run("FixDelay2") then
                 Delay <= toUslv(2, Delay'length);
                 PushN(net, 20);
-            end if;    
-            
+            end if;
+
             if run("FixDelay3") then
                 Delay <= toUslv(3, Delay'length);
                 PushN(net, 20);
-            end if;      
+            end if;
 
             if run("FixDelay5") then
                 Delay <= toUslv(5, Delay'length);
@@ -140,26 +140,26 @@ begin
                 Delay <= toUslv(MaxDelay_c, Delay'length);
                 PushN(net, 40);
             end if;
-            
+
             if run("IncreaseDelay") then
                 Delay <= toUslv(5, Delay'length);
-                PushN(net, 40);   
+                PushN(net, 40);
                 wait_until_idle(net, as_sync(axisMaster));
                 Delay <= toUslv(7, Delay'length);
-                PushN(net, 40);                        
+                PushN(net, 40);
             end if;
 
             if run("DecreaseDelay") then
                 Delay <= toUslv(7, Delay'length);
-                PushN(net, 40);   
+                PushN(net, 40);
                 wait_until_idle(net, as_sync(axisMaster));
                 Delay <= toUslv(2, Delay'length);
-                PushN(net, 10);     
-                wait_until_idle(net, as_sync(axisMaster));  
+                PushN(net, 10);
+                wait_until_idle(net, as_sync(axisMaster));
                 Delay <= toUslv(1, Delay'length);
-                PushN(net, 10);  
+                PushN(net, 10);
             end if;
-            
+
             wait_until_idle(net, as_sync(axisMaster));
             wait for 1 us;
 
@@ -185,13 +185,13 @@ begin
             RamBehavior_g   => RamBehavior_g
         )
         port map (
-            Clk         => Clk,     
-            Rst         => Rst,    
+            Clk         => Clk,
+            Rst         => Rst,
             Delay       => Delay,
-            In_Valid    => In_Valid,                               
-            In_Data     => In_Data,                        
+            In_Valid    => In_Valid,
+            In_Data     => In_Data,
             Out_Data    => Out_Data
-        ); 
+        );
 
     ------------------------------------------------------------
     -- Verification Components

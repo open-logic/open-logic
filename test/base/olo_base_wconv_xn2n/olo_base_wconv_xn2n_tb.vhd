@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,9 +21,9 @@ library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_wconv_xn2n_tb is
     generic (
@@ -38,7 +38,7 @@ architecture sim of olo_base_wconv_xn2n_tb is
     -- Constants
     -------------------------------------------------------------------------
     constant OutWidth_c     : natural   := 4;
-    constant InWidth_c      : natural   := OutWidth_c*WidthRatio_g;    
+    constant InWidth_c      : natural   := OutWidth_c*WidthRatio_g;
     constant ClkPeriod_c    : time      := 10 ns;
 
     -------------------------------------------------------------------------
@@ -83,16 +83,16 @@ architecture sim of olo_base_wconv_xn2n_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk         : std_logic                                                  := '0';                                                       
-    signal Rst         : std_logic                                                  := '1';                                                       
-    signal In_Valid    : std_logic                                                  := '0';                                                       
-    signal In_Ready    : std_logic                                                  := '0';                                                       
-    signal In_Data     : std_logic_vector(InWidth_c - 1 downto 0)                   := (others => '0');                       
-    signal In_Last     : std_logic                                                  := '0';  
-    signal In_WordEna  : std_logic_vector(InWidth_c / OutWidth_c - 1 downto 0)      := (others => '0');  
-    signal Out_Valid   : std_logic                                                  := '0';                                                     
-    signal Out_Ready   : std_logic                                                  := '0'; 
-    signal Out_Data    : std_logic_vector(OutWidth_c - 1 downto 0)                  := (others => '0'); 
+    signal Clk         : std_logic                                                  := '0';
+    signal Rst         : std_logic                                                  := '1';
+    signal In_Valid    : std_logic                                                  := '0';
+    signal In_Ready    : std_logic                                                  := '0';
+    signal In_Data     : std_logic_vector(InWidth_c - 1 downto 0)                   := (others => '0');
+    signal In_Last     : std_logic                                                  := '0';
+    signal In_WordEna  : std_logic_vector(InWidth_c / OutWidth_c - 1 downto 0)      := (others => '0');
+    signal Out_Valid   : std_logic                                                  := '0';
+    signal Out_Ready   : std_logic                                                  := '0';
+    signal Out_Data    : std_logic_vector(OutWidth_c - 1 downto 0)                  := (others => '0');
     signal Out_Last    : std_logic                                                  := '0';
 
 begin
@@ -120,7 +120,7 @@ begin
 
             -- Single Word
             if run("Basic") then
-                -- Without last       
+                -- Without last
                 CheckCounterValue(net, 1, '0');
                 push_axi_stream(net, axisMaster, CounterValue(1), tuser => onesVector(WidthRatio_g), tlast => '0');
                 -- With last
@@ -176,7 +176,7 @@ begin
                     check_axi_stream(net, axisSlave, toUslv(3, OutWidth_c), tlast => '1', blocking => false, msg => "last word c");
                     push_axi_stream(net, axisMaster, CounterValue(5), tuser => onesVector(WidthRatio_g), tlast => '0');
                     push_axi_stream(net, axisMaster, toUslv(3*2**8+5, inWidth_c), tuser => toUslv(2#101#, WidthRatio_g), tlast => '1');
-    
+
                 end if;
             end if;
 
@@ -202,19 +202,19 @@ begin
             InWidth_g    => InWidth_c,
             OutWidth_g   => OutWidth_c
         )
-        port map (   
-            Clk         => Clk,       
-            Rst         => Rst,       
-            In_Valid    => In_Valid,  
-            In_Ready    => In_Ready,  
-            In_Data     => In_Data,   
-            In_Last     => In_Last,   
+        port map (
+            Clk         => Clk,
+            Rst         => Rst,
+            In_Valid    => In_Valid,
+            In_Ready    => In_Ready,
+            In_Data     => In_Data,
+            In_Last     => In_Last,
             In_WordEna  => In_WordEna,
-            Out_Valid   => Out_Valid, 
-            Out_Ready   => Out_Ready, 
-            Out_Data    => Out_Data,  
-            Out_Last    => Out_Last  
-        ); 
+            Out_Valid   => Out_Valid,
+            Out_Ready   => Out_Ready,
+            Out_Data    => Out_Data,
+            Out_Last    => Out_Last
+        );
 
     ------------------------------------------------------------
     -- Verification Components
@@ -231,7 +231,7 @@ begin
         tlast  => In_Last,
         tuser  => In_WordEna
     );
-  
+
     vc_response : entity vunit_lib.axi_stream_slave
     generic map (
         slave => axisSlave
@@ -241,7 +241,7 @@ begin
         tvalid => Out_Valid,
         tready => Out_Ready,
         tdata  => Out_Data,
-        tlast  => Out_LAst 
+        tlast  => Out_LAst
     );
 
 end sim;

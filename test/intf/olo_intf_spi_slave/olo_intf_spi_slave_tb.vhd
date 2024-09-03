@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -27,9 +27,9 @@ library work;
     use work.olo_test_spi_master_pkg.all;
     use work.olo_test_activity_pkg.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_intf_spi_slave_tb is
     generic (
@@ -57,7 +57,7 @@ architecture sim of olo_intf_spi_slave_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk             : std_logic := '0'; 
+    signal Clk             : std_logic := '0';
     signal Rst             : std_logic;
     signal Rx_Valid        : std_logic;
     signal Rx_Data          : std_logic_vector(TransWidth_g - 1 downto 0);
@@ -69,8 +69,8 @@ architecture sim of olo_intf_spi_slave_tb is
     signal Resp_Aborted    : std_logic;
     signal Resp_CleanEnd   : std_logic;
     signal Spi_Sclk        : std_logic := choose(SpiCpol_g = 0, '0', '1');
-    signal Spi_Mosi        : std_logic := '0';  
-    signal Spi_Cs_n        : std_logic := '1'; 
+    signal Spi_Mosi        : std_logic := '0';
+    signal Spi_Cs_n        : std_logic := '1';
     signal Spi_Miso        : std_logic;
     signal Spi_Miso_con    : std_logic;
     signal Spi_Miso_o      : std_logic;
@@ -84,7 +84,7 @@ architecture sim of olo_intf_spi_slave_tb is
     -------------------------------------------------------------------------
 
     -- *** Verification Compnents ***
-    constant master : olo_test_spi_master_t := new_olo_test_spi_master( 
+    constant master : olo_test_spi_master_t := new_olo_test_spi_master(
         busFrequency    => SclkFreq_c,
         lsbFirst        => LsbFirst_g,
         maxTransWidth   => TransWidth_g*3,
@@ -139,7 +139,7 @@ architecture sim of olo_intf_spi_slave_tb is
         if (not is_empty(RespQueue)) or RespCheckOngoing then
             wait until is_empty(RespQueue) and (not RespCheckOngoing) and rising_edge(Clk);
         end if;
-    end procedure;   
+    end procedure;
 
     -- Tx Handling
     constant TxQueue : queue_t := new_queue;
@@ -200,7 +200,7 @@ begin
             wait until rising_edge(Clk);
             Rst <= '0';
             wait until rising_edge(Clk);
-            
+
             -- *** Basics ***
             if run("ResetValues") then
                 check_equal(Rx_Valid, '0', "Rx_Valid wrong after reset");
@@ -215,7 +215,7 @@ begin
                     -- Define Data
                     Mosi16_v := toUslv(16#1234#+i, 16);
                     Miso16_v := toUslv(16#5678#+i, 16);
-                    
+
                     -- Start Transaction
                     spi_master_push_transaction (net, master, TransWidth_g, Mosi16_v(D'Range), Miso16_v(D'Range), msg => "SimpleTransaction");
 
@@ -241,7 +241,7 @@ begin
                     -- Define Data
                     Mosi16_v := X"ABCD";
                     Miso16_v := X"1357";
-                    
+
                     -- Start Transaction
                     spi_master_push_transaction (net, master, TransWidth_g, Mosi16_v(D'Range), Miso16_v(D'Range), msg => "SimpleTransaction");
 
@@ -267,11 +267,11 @@ begin
                     Miso48_v := X"3C183C8F6481";
 
                     -- Start Transaction
-                    spi_master_push_transaction (net, master, TransWidth_g*3, 
-                        Mosi48_v(TransWidth_g*3-1 downto 0), Miso48_v(TransWidth_g*3-1 downto 0), 
+                    spi_master_push_transaction (net, master, TransWidth_g*3,
+                        Mosi48_v(TransWidth_g*3-1 downto 0), Miso48_v(TransWidth_g*3-1 downto 0),
                         msg => "3 Consecutive Transactions");
 
-                    -- Expect RX Data                    
+                    -- Expect RX Data
                     if LsbFirst_g then
                         for i in 0 to 2 loop
                             ExpectRx(Mosi48_v(TransWidth_g*(i+1)-1 downto TransWidth_g*i), "Word " & to_string(i));
@@ -279,9 +279,9 @@ begin
                     else
                         for i in 2 downto 0 loop
                             ExpectRx(Mosi48_v(TransWidth_g*(i+1)-1 downto TransWidth_g*i), "Word " & to_string(i));
-                        end loop;      
+                        end loop;
                     end if;
-                    
+
                     -- Expect Responses
                     for i in 0 to 2 loop
                         ExpectResp(Sent => '1');
@@ -302,7 +302,7 @@ begin
                             ApplyTx(Miso48_v(TransWidth_g*(3-i)-1 downto TransWidth_g*(2-i)), TxVldDelay, "Word " & to_string(i));
                         end if;
                     end loop;
-                end if;                
+                end if;
             end if;
 
             if run("2ConsecutiveTransactions-AbortEnd") then
@@ -313,19 +313,19 @@ begin
                     Miso48_v := X"112233445566";
 
                     -- Start Transaction
-                    spi_master_push_transaction (net, master, TransWidth_g*2, 
-                        Mosi48_v(TransWidth_g*2-1 downto 0), Miso48_v(TransWidth_g*2-1 downto 0), 
+                    spi_master_push_transaction (net, master, TransWidth_g*2,
+                        Mosi48_v(TransWidth_g*2-1 downto 0), Miso48_v(TransWidth_g*2-1 downto 0),
                         msg => "2 Consecutive Transactions");
 
-                    -- Expect RX Data                    
+                    -- Expect RX Data
                     if LsbFirst_g then
                         ExpectRx(Mosi48_v(TransWidth_g-1 downto 0), "Word 0");
                         ExpectRx(Mosi48_v(TransWidth_g*2-1 downto TransWidth_g), "Word 1");
                     else
                         ExpectRx(Mosi48_v(TransWidth_g*2-1 downto TransWidth_g), "Word 0");
-                        ExpectRx(Mosi48_v(TransWidth_g-1 downto 0), "Word 1");    
+                        ExpectRx(Mosi48_v(TransWidth_g-1 downto 0), "Word 1");
                     end if;
-                    
+
                     -- Expect Responses
                     ExpectResp(Sent => '1');
                     ExpectResp(Sent => '1');
@@ -334,13 +334,13 @@ begin
                     -- Apply TX Data
                     if LsbFirst_g then
                         ApplyTx(Miso48_v(TransWidth_g-1 downto 0), 0, "Word 0"); -- First one immediately
-                        ApplyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), TxVldDelay, "Word 1"); 
+                        ApplyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), TxVldDelay, "Word 1");
                     else
-                        ApplyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 0, "Word 0"); 
+                        ApplyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 0, "Word 0");
                         ApplyTx(Miso48_v(TransWidth_g-1 downto 0), TxVldDelay, "Word 1"); -- First one immediately
                     end if;
-                    ApplyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 1, "Word 2"); -- aborted transaction; 
-                end if;                
+                    ApplyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 1, "Word 2"); -- aborted transaction;
+                end if;
             end if;
 
             -- *** TX Data Timeout ***
@@ -348,7 +348,7 @@ begin
                 if SpiCpha_g = 1 then
                     -- Define Data
                     Mosi16_v := X"1357";
-                     
+
                     -- Start Transaction (exect zero response due to no data)
                     spi_master_push_transaction (net, master, TransWidth_g, Mosi16_v(D'Range), zerosVector(TransWidth_g));
 
@@ -366,7 +366,7 @@ begin
                 -- Define Data
                 Mosi16_v := toUslv(16#1234#, 16);
                 Miso16_v := toUslv(16#5678#, 16);
-                
+
                 -- Start Transaction
                 spi_master_push_transaction (net, master, TransWidth_g, Mosi16_v(D'Range), Miso16_v(D'Range), csn_first => true);
 
@@ -388,15 +388,15 @@ begin
                 -- Define Data
                 Mosi16_v := toUslv(16#1234#, 16);
                 Miso16_v := toUslv(16#5678#, 16);
-                
+
                 -- Start Transaction
                 if LsbFirst_g then
-                    spi_master_push_transaction (net, master, TransWidth_g-2, 
+                    spi_master_push_transaction (net, master, TransWidth_g-2,
                         Mosi16_v(TransWidth_g-3 downto 0), Miso16_v(TransWidth_g-3 downto 0), msg => "Failing Transaction");
                 else
-                    spi_master_push_transaction (net, master, TransWidth_g-2, 
+                    spi_master_push_transaction (net, master, TransWidth_g-2,
                         Mosi16_v(TransWidth_g-1 downto 2), Miso16_v(TransWidth_g-1 downto 2), msg => "Failing Transaction");
-                end if;                   
+                end if;
 
                 -- Expect Response (Aborted)
                 ExpectResp(Aborted => '1');
@@ -408,9 +408,9 @@ begin
                 -- Define Data
                 Mosi16_v := toUslv(16#1A1B#, 16);
                 Miso16_v := toUslv(16#3E3F#, 16);
-                
+
                 -- Start Transaction
-                spi_master_push_transaction (net, master, TransWidth_g, 
+                spi_master_push_transaction (net, master, TransWidth_g,
                     Mosi16_v(D'range), Miso16_v(D'range), msg => "Successful Transaction");
 
                 -- Expect RX Data
@@ -455,9 +455,9 @@ begin
         )
         port map (
             -- Control Signals
-            Clk             => Clk, 
+            Clk             => Clk,
             Rst             => Rst,
-            -- RX Data      
+            -- RX Data
             Rx_Valid        => Rx_Valid,
             Rx_Data         => Rx_Data,
             -- TX Data
@@ -469,10 +469,10 @@ begin
             Resp_Sent       => Resp_Sent,
             Resp_Aborted    => Resp_Aborted,
             Resp_CleanEnd   => Resp_CleanEnd,
-            -- SPI 
+            -- SPI
             Spi_Sclk        => Spi_Sclk,
-            Spi_Mosi        => Spi_Mosi,  
-            Spi_Cs_n        => Spi_Cs_n, 
+            Spi_Mosi        => Spi_Mosi,
+            Spi_Cs_n        => Spi_Cs_n,
             -- Miso with internal Tristate
             Spi_Miso        => Spi_Miso_con,
             -- Miso with external Tristate

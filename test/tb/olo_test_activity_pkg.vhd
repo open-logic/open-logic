@@ -1,13 +1,13 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler, Benoit Stef
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler, Benoit Stef
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -19,9 +19,9 @@ library vunit_lib;
 library olo;
     use olo.olo_base_pkg_math.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Package Header
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 package olo_test_activity_pkg is
 
     -- Wait for a given time and check if the signal is idle
@@ -49,18 +49,18 @@ package olo_test_activity_pkg is
                                 ExpVal          : in std_logic_vector;      -- expected value
                                 Timeout         : in time;                  -- time to wait for
                                 Msg             : in string);               -- bool out to stop Tb for ex.
-                            
+
     -- check if std is arrived within a defined period of time
     procedure WaitForValueStdl( signal Sig      : in std_logic;             -- Signal to check
                                 ExpVal          : in std_logic;             -- expected value
                                 Timeout         : in time;                  -- time to wait for
-                                Msg             : in string);               -- bool out to stop Tb for ex.                      
+                                Msg             : in string);               -- bool out to stop Tb for ex.
 
 end olo_test_activity_pkg;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Package Body
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 package body olo_test_activity_pkg is
 
     -- *** CheckNoActivity ***
@@ -91,7 +91,7 @@ package body olo_test_activity_pkg is
         if Level /= -1 then
             check_equal(Sig, choose(Level = 0, '0', '1'), "CheckLastActivity() - wrong level: " & Msg);
         end if;
-    end procedure;   
+    end procedure;
 
     -- *** PulseSig ***
     procedure PulseSig(signal Sig  : out std_logic;
@@ -105,34 +105,34 @@ package body olo_test_activity_pkg is
     end procedure;
 
     -- *** Wait for Standard logic vector to happen ***
-    procedure WaitForValueStdlv(signal Sig      : in std_logic_vector;  
-                                ExpVal          : in std_logic_vector;  
-                                Timeout         : in time;              
+    procedure WaitForValueStdlv(signal Sig      : in std_logic_vector;
+                                ExpVal          : in std_logic_vector;
+                                Timeout         : in time;
                                 Msg             : in string) is
     begin
         if Sig /= ExpVal then
             wait until ExpVal = Sig for timeout;
             if ExpVal /= Sig then
-                error(  "WaitForValueStdlv() failed: " & Msg & 
+                error(  "WaitForValueStdlv() failed: " & Msg &
                         " Target state not reached" &
                         " [Expected " & to_string(ExpVal) & "(0x" & to_hstring(ExpVal) & ")" &
                         ", Received " & to_string(Sig) & "(0x" & to_hstring(Sig) & ")" & "]");
             end if;
         end if;
     end procedure;
-    
+
     -- *** Wait for Standard logic to happen ***
-    procedure WaitForValueStdl( signal Sig      : in std_logic;     
-                                ExpVal          : in std_logic;         
-                                Timeout         : in time;      
+    procedure WaitForValueStdl( signal Sig      : in std_logic;
+                                ExpVal          : in std_logic;
+                                Timeout         : in time;
                                 Msg             : in string) is
     begin
         if Sig /= ExpVal then
             wait until ExpVal = Sig for timeout;
             if ExpVal /= Sig then
-                error(  "WaitForValueStdl() failed: " & Msg & 
+                error(  "WaitForValueStdl() failed: " & Msg &
                         " Target state not reached" &
-                        " [Expected " & to_string(ExpVal) & 
+                        " [Expected " & to_string(ExpVal) &
                         ", Received " & to_string(Sig) & "]");
             end if;
         end if;

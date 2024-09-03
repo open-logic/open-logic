@@ -1,19 +1,19 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements a simple data-width conversion. The output width
 -- must be an integer multiple of the input width (Wo = n*Wi).
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -23,32 +23,32 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_wconv_n2xn is
-    generic ( 
-        InWidth_g  : positive;  
+    generic (
+        InWidth_g  : positive;
         OutWidth_g : positive
     );
-    port ( 
-        Clk          : in  std_logic;                                   
-        Rst          : in  std_logic;                                   
-        In_Valid     : in  std_logic                                    := '1';                                   
-        In_Ready     : out std_logic;                                   
-        In_Data      : in  std_logic_vector(InWidth_g - 1 downto 0);    
-        In_Last      : in  std_logic                                    := '0';                            
-        Out_Valid    : out std_logic;                                   
-        Out_Ready    : in  std_logic                                    := '1';                            
-        Out_Data     : out std_logic_vector(OutWidth_g - 1 downto 0);   
-        Out_Last     : out std_logic;                                   
+    port (
+        Clk          : in  std_logic;
+        Rst          : in  std_logic;
+        In_Valid     : in  std_logic                                    := '1';
+        In_Ready     : out std_logic;
+        In_Data      : in  std_logic_vector(InWidth_g - 1 downto 0);
+        In_Last      : in  std_logic                                    := '0';
+        Out_Valid    : out std_logic;
+        Out_Ready    : in  std_logic                                    := '1';
+        Out_Data     : out std_logic_vector(OutWidth_g - 1 downto 0);
+        Out_Last     : out std_logic;
         Out_WordEna  : out std_logic_vector(OutWidth_g / InWidth_g - 1 downto 0)
-    ); 
+    );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_wconv_n2xn is
 
     -- *** Constants ***
@@ -73,7 +73,7 @@ begin
     assert OutWidth_g >= InWidth_g report "olo_base_wconv_n2xn: OutWidth_g must be bigger or equal than InWidth_g" severity error;
 
     -- Implement conversion logic only if required
-    g_convert : if OutWidth_g > InWidth_g generate    
+    g_convert : if OutWidth_g > InWidth_g generate
 
         p_comb : process(r, In_Valid, In_Data, Out_Ready, In_Last)
             variable v           : two_process_r;
@@ -151,7 +151,7 @@ begin
         Out_Last  <= In_Last;
         Out_WordEna <= (others => '1');
         In_Ready  <= Out_Ready;
-        
+
     end generate g_equalwidth;
 
 end architecture;

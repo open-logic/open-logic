@@ -1,17 +1,17 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---	All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements a simple SPI-slave
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -20,9 +20,9 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_intf_spi_slave is
     generic (
         TransWidth_g                : positive                  := 32;
@@ -34,9 +34,9 @@ entity olo_intf_spi_slave is
     );
     port (
         -- Control Signals
-        Clk             : in    std_logic; 
+        Clk             : in    std_logic;
         Rst             : in    std_logic;
-        -- RX Data      
+        -- RX Data
         Rx_Valid        : out   std_logic;
         Rx_Data         : out   std_logic_vector(TransWidth_g - 1 downto 0);
         -- TX Data
@@ -48,10 +48,10 @@ entity olo_intf_spi_slave is
         Resp_Sent       : out   std_logic;
         Resp_Aborted    : out   std_logic;
         Resp_CleanEnd   : out   std_logic;
-        -- SPI 
+        -- SPI
         Spi_Sclk        : in    std_logic;
-        Spi_Mosi        : in    std_logic                                     := '0';  
-        Spi_Cs_n        : in    std_logic; 
+        Spi_Mosi        : in    std_logic                                     := '0';
+        Spi_Cs_n        : in    std_logic;
         -- Miso with internal Tristate
         Spi_Miso        : out   std_logic;
         -- Miso with external Tristate
@@ -60,9 +60,9 @@ entity olo_intf_spi_slave is
     );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_intf_spi_slave is
 
     -- *** Types ***
@@ -180,7 +180,7 @@ begin
                 end if;
                 -- Leaving the state
                 if LeaveState_v then
-                    v.State := WaitSampleEdge_s;  
+                    v.State := WaitSampleEdge_s;
                     -- Data was not present in time
                     if r.DataLatched = '0' and Tx_Valid = '0' then
                         v.ShiftReg := (others => '0');
@@ -231,7 +231,7 @@ begin
                     v.BitCnt := r.BitCnt + 1;
                 end if;
 
-            when WaitCsHigh_s => null;  -- Return to idle is handled after FSM          
+            when WaitCsHigh_s => null;  -- Return to idle is handled after FSM
 
             -- coverage off
             when others => null; -- unreachable code

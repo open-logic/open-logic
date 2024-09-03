@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,9 +21,9 @@ library work;
 library olo;
     use olo.olo_base_pkg_math.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_reset_gen_tb is
     generic (
@@ -116,7 +116,7 @@ begin
                 WaitForValueStdl(RstOut, '1', 1 us, "AsyncDetect - RstOut assertion");
                 WaitForValueStdl(RstOut, '0', Clk_Period_c*(RstPulseCycles_g*2), "AsyncDetect - RstOut de-assertion");
             end if;
-            
+
             -- Pulse Duration
             if run("PulseDuration") then
                 -- Reset Assertion
@@ -129,7 +129,7 @@ begin
                 for i in 0 to RstPulseCycles_g-1 loop
                     check_equal(RstOut, '1', "reset removed early");
                     wait until rising_edge(Clk);
-                end loop;               
+                end loop;
                 wait for 0.1*Clk_Period_c;
                 check_equal(RstOut, '0', "reset removed late");
             end if;
@@ -146,16 +146,16 @@ begin
                 -- Wait for reset output (only check when enabled)
                 if AsyncResetOutput_g then
                     check_equal(RstOut, '1', "AsyncForward - RstOut assertion");
-                    WaitForValueStdl(RstOut, '0', Clk_Period_c*(RstPulseCycles_g*2), "AsyncForward - RstOut de-assertion");   
-                end if;                
+                    WaitForValueStdl(RstOut, '0', Clk_Period_c*(RstPulseCycles_g*2), "AsyncForward - RstOut de-assertion");
+                end if;
             end if;
 
             -- Delay between tests
             wait for 1 us;
-            
+
         end loop;
 
-           
+
 
         -- TB done
         test_runner_cleanup(runner);

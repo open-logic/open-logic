@@ -1,8 +1,8 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -41,7 +41,7 @@ package olo_test_axi_master_pkg is
     constant AxiArMsg : msg_type_t := new_msg_type("axi ar");
     constant AxiWMsg : msg_type_t := new_msg_type("axi w");
     constant AxiBMsg : msg_type_t := new_msg_type("axi b");
-    constant AxiRMsg : msg_type_t := new_msg_type("axi r");    
+    constant AxiRMsg : msg_type_t := new_msg_type("axi r");
 
     -- Aw State
     constant AwQueue : queue_t := new_queue;
@@ -96,13 +96,13 @@ package olo_test_axi_master_pkg is
         signal net      : inout network_t;
         axiMaster       : olo_test_axi_master_t;
         startValue      : unsigned;
-        increment       : natural               := 1; 
+        increment       : natural               := 1;
         beats           : natural               := 1;       -- number of beats to write
         firstStrb       : std_logic_vector      := "X";
         lastStrb        : std_logic_vector      := "X";
         delay           : time                  := 0 ns     -- delay before sending the message
     );
-    
+
     -- Expect b message (write response)
     procedure expect_b (
         signal net      : inout network_t;
@@ -117,7 +117,7 @@ package olo_test_axi_master_pkg is
         signal net      : inout network_t;
         axiMaster       : olo_test_axi_master_t;
         startValue      : unsigned;
-        increment       : natural               := 1; 
+        increment       : natural               := 1;
         beats           : natural               := 1;       -- number of beats to write
         resp            : Resp_t                := xRESP_OKAY_c;
         id              : std_logic_vector      := "X";
@@ -189,7 +189,7 @@ package olo_test_axi_master_pkg is
 
 end package;
 
-package body olo_test_axi_master_pkg is 
+package body olo_test_axi_master_pkg is
     -- *** Push individual messages ***
     -- Push AW message
     procedure push_aw (
@@ -301,7 +301,7 @@ package body olo_test_axi_master_pkg is
         push(msg, delay);
         send(net, axiMaster.p_actor, msg);
     end procedure;
-    
+
 
     -- Expect R message
     procedure expect_r (
@@ -359,7 +359,7 @@ package body olo_test_axi_master_pkg is
         signal net      : inout network_t;
         axiMaster       : olo_test_axi_master_t;
         addr            : unsigned;
-        data            : unsigned; 
+        data            : unsigned;
         id              : std_logic_vector      := "X";
         arValidDelay    : time := 0 ns;
         rReadyDelay     : time := 0 ns
@@ -416,13 +416,13 @@ package body olo_test_axi_master_pkg is
                                                 idWidth   : natural := 0;
                                                 userWidth : natural := 0 ) return olo_test_axi_master_t is
     begin
-        return (p_actor => new_actor, 
-                DataWidth => dataWidth, 
+        return (p_actor => new_actor,
+                DataWidth => dataWidth,
                 AddrWidth => addrWidth,
                 IdWidth => idWidth,
                 UserWidth => userWidth);
     end;
-        
+
     -- Casts
     impure function as_sync(instance : olo_test_axi_master_t) return sync_handle_t is
     begin
@@ -652,7 +652,7 @@ begin
             else
                 unexpected_msg_type(msg_type);
             end if;
-            delete(msg);   
+            delete(msg);
         end loop;
         wait;
     end process;
@@ -778,7 +778,7 @@ begin
                 AxiMs.BReady   <= '1';
                 wait until rising_edge(Clk) and AxiSm.BValid = '1';
                 check_equal(AxiSm.BResp, resp, "expect_b: BResp not as expected");
-                if id /= "X" then 
+                if id /= "X" then
                     check_equal(AxiSm.BId, id, "expect_b: BId not as expected");
                 end if;
                 AxiMs.BReady    <= '0';

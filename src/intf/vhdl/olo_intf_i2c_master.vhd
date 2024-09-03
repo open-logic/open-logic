@@ -1,18 +1,18 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements a simple I2C-master (multi master capable)
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Package for Interface Simplification
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -30,9 +30,9 @@ package olo_intf_i2c_master_pkg is
     constant CMD_REC      : std_logic_vector(2 downto 0) := "100";
 end package;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -43,54 +43,54 @@ library work;
     use work.olo_base_pkg_logic.all;
     use work.olo_intf_i2c_master_pkg.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_intf_i2c_master is
     generic (
-        ClkFrequency_g      : real; 
-        I2cFrequency_g      : real    := 100.0e3;   
+        ClkFrequency_g      : real;
+        I2cFrequency_g      : real    := 100.0e3;
         BusBusyTimeout_g    : real    := 1.0e-3;
-        CmdTimeout_g        : real    := 1.0e-3;         
+        CmdTimeout_g        : real    := 1.0e-3;
         InternalTriState_g  : boolean := true;
         DisableAsserts_g    : boolean := false
     );
-    port(   
+    port(
         -- Control Signals
         Clk             : in    std_logic;
-        Rst             : in    std_logic; 
+        Rst             : in    std_logic;
         -- Command Interface
-        Cmd_Ready       : out   std_logic;                   
-        Cmd_Valid       : in    std_logic;                     
+        Cmd_Ready       : out   std_logic;
+        Cmd_Valid       : in    std_logic;
         Cmd_Command     : in    std_logic_vector(2 downto 0);
         Cmd_Data        : in    std_logic_vector(7 downto 0);
         Cmd_Ack         : in    std_logic;
         -- Response Interface
-        Resp_Valid      : out   std_logic;                   
+        Resp_Valid      : out   std_logic;
         Resp_Command    : out   std_logic_vector(2 downto 0);
         Resp_Data       : out   std_logic_vector(7 downto 0);
-        Resp_Ack        : out   std_logic;                   
-        Resp_ArbLost    : out   std_logic;                   
+        Resp_Ack        : out   std_logic;
+        Resp_ArbLost    : out   std_logic;
         Resp_SeqErr     : out   std_logic;
         -- Status Interface
-        Status_BusBusy  : out   std_logic;                   
-        Status_CmdTo    : out   std_logic;                   
-        -- I2c Interface with internal Tri-State 
-        I2c_Scl         : inout std_logic                       := 'Z';           
-        I2c_Sda         : inout std_logic                       := 'Z';           
+        Status_BusBusy  : out   std_logic;
+        Status_CmdTo    : out   std_logic;
+        -- I2c Interface with internal Tri-State
+        I2c_Scl         : inout std_logic                       := 'Z';
+        I2c_Sda         : inout std_logic                       := 'Z';
         -- I2c Interface with external Tri-State
-        I2c_Scl_i       : in    std_logic                       := '0';     
-        I2c_Scl_o       : out   std_logic;            
-        I2c_Scl_t       : out   std_logic;            
-        I2c_Sda_i       : in    std_logic                       := '0';     
-        I2c_Sda_o       : out   std_logic;            
+        I2c_Scl_i       : in    std_logic                       := '0';
+        I2c_Scl_o       : out   std_logic;
+        I2c_Scl_t       : out   std_logic;
+        I2c_Sda_i       : in    std_logic                       := '0';
+        I2c_Sda_o       : out   std_logic;
         I2c_Sda_t       : out   std_logic
-    );           
+    );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_intf_i2c_master is
 
     -- *** Constants ***
@@ -99,7 +99,7 @@ architecture rtl of olo_intf_i2c_master is
     constant CmdTimeoutLimit_c    : integer := integer(ClkFrequency_g * CmdTimeout_g) - 1;
 
     -- *** Types ***
-    type Fsm_t is ( BusIdle_s, BusBusy_s, MinIdle_s, Start1_s, Start2_s, WaitCmd_s, WaitLowCenter_s, 
+    type Fsm_t is ( BusIdle_s, BusBusy_s, MinIdle_s, Start1_s, Start2_s, WaitCmd_s, WaitLowCenter_s,
                     Stop1_s, Stop2_s, Stop3_s, RepStart1_s,
                     DataBit1_s, DataBit2_s, DataBit3_s, DataBit4_s, ArbitLost_s);
 
@@ -150,7 +150,7 @@ begin
     begin
         -- *** hold variables stable ***
         v := r;
-        
+
         -- *** Edge Detection ***
         --SclRe_v   := not r.SclLast and I2cScl_Sync;
         --SclFe_v   := r.SclLast and not I2cScl_Sync;
@@ -158,11 +158,11 @@ begin
         SdaFe_v   := r.SdaLast and not I2cSda_Sync;
         v.SclLast := I2cScl_Sync;
         v.SdaLast := I2cSda_Sync;
-        
+
         -- *** Start/Stop Detection ***
         I2cStart_v := r.SclLast and I2cScl_Sync and SdaFe_v;
         I2cStop_v  := r.SclLast and I2cScl_Sync and SdaRe_v;
-        
+
         -- *** Quarter Period Counter ***
         -- The FSM may overwrite the counter in some cases!
         v.QPeriodTick := '0';
@@ -188,7 +188,7 @@ begin
         else
             v.TimeoutCmdCnt := (others => '0');
         end if;
-            
+
         -- *** Latch Command ***
         if (r.Cmd_Ready = '1') and (Cmd_Valid = '1') then
             v.CmdTypeLatch := Cmd_Command;
@@ -267,9 +267,9 @@ begin
             -- Start Condition
             --------------------------------------------------------------------------------
             -- State    BusBusy_s   Start1_s   Start2_s   WaitCmd_s
-            --        __________________________________
+            -- __________________________________
             -- Scl ...                                  |___________ ...
-            --        _______________________
+            -- _______________________
             -- SDA ...                       |______________________ ...
             when Start1_s =>
                 if r.QPeriodTick = '1' then
@@ -353,9 +353,9 @@ begin
             -- Repeated Start Condition
             --------------------------------------------------------------------------------
             -- State       RepStart1_s   Start1_s   Start2_s   WaitCmd_s
-            --                          _____________________
+            -- _____________________
             -- Scl ..._________________|                     |___________ ...
-            --           __________________________
+            -- __________________________
             -- SDA ...XXX                          |_____________________ ...
             -- States after RepStart1_s are shared with normal start condition
 
@@ -363,7 +363,7 @@ begin
                 if r.QPeriodTick = '1' then
                     -- The rest of the sequence is same as for START
                     v.Fsm := Start1_s;
-                    
+
                     -- Handle Arbitration other master prvents repeating start by transmitting 0
                     if I2cSda_Sync = '0' then
                         v.Fsm := ArbitLost_s;
@@ -375,14 +375,14 @@ begin
             -- Data Bit
             --------------------------------------------------------------------------------
             -- State  DataBit1_s   DataBit2_s   DataBit3_s   WaitCmd_s / DataBit4_s
-            --                    _________________________
+            -- _________________________
             -- Scl ...___________|                         |___________ ...
-            --
-            -- SDA ...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+            -- -- SDA ...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
             -- The DataBit1_s is the second half of the SCL low period. So the
             -- SDA Line is set at the beginning of DataBit1_s. After the SCL high period
             -- of the last bit, the state is changed to WaitCmd_s. Otherwise the first half of the SCL low
             -- period is executed (DataBit4_s) before the next bit starts (DataBit1_s)
+
 
             when DataBit1_s =>
                 if r.QPeriodTick = '1' then
@@ -466,9 +466,9 @@ begin
             -- Stop Condition
             --------------------------------------------------------------------------------
             -- State   WaitCmd_s   Stop1_s   Stop2_s   Stop3_s   BusIdle_s
-            --                              _____________________
+            -- _____________________
             -- Scl ..._____________________|                     |__________ ...
-            --                                         _____________________
+            -- _____________________
             -- SDA ...XXXXXXXXXXXX____________________|                      ...
 
             when Stop1_s =>
@@ -507,7 +507,7 @@ begin
                 v.SclOut := '1';
                 v.SdaOut := '1';
 
-            --  Send Response in case the arbitration was lost
+            -- Send Response in case the arbitration was lost
             when ArbitLost_s =>
                 v.Fsm            := BusBusy_s;
                 v.Resp_Valid      := '1';
@@ -515,14 +515,14 @@ begin
                 v.Resp_ArbLost := '1';
                 v.SclOut         := '1';
                 v.SdaOut         := '1';
-            
+
             -- coverage off
             when others => null; -- unreacable code
             -- coverage on
         end case;
-                
+
         -- TODO: FSM Stuck detection timeout!
-                
+
         -- *** Bus Busy ***
         if r.Fsm = BusIdle_s then
             v.Status_BusBusy := '0';

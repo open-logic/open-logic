@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -18,14 +18,14 @@ library vunit_lib;
 library olo;
     use olo.olo_base_pkg_math.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_ram_sp_tb is
     generic (
         runner_cfg      : string;
-        Width_g         : positive range 5 to 128  := 32; 
+        Width_g         : positive range 5 to 128  := 32;
         RdLatency_g     : positive range 1 to 2 := 1;
         RamBehavior_g   : string    := "RBW";
         UseByteEnable_g : boolean   := false
@@ -75,7 +75,7 @@ architecture sim of olo_base_ram_sp_tb is
         wait until rising_edge(Clk); -- Address sampled
         for i in 1 to RdLatency_g loop
             wait until rising_edge(Clk);
-        end loop; 
+        end loop;
         check_equal(RdData, toUslv(data, RdData'length), message);
     end procedure;
 
@@ -96,20 +96,20 @@ begin
     -------------------------------------------------------------------------
     i_dut : entity olo.olo_base_ram_sp
         generic map (
-            Depth_g         => 200,                                      
-            Width_g         => Width_g,    
-            RdLatency_g     => RdLatency_g,                                               
+            Depth_g         => 200,
+            Width_g         => Width_g,
+            RdLatency_g     => RdLatency_g,
             RamBehavior_g   => RamBehavior_g,
             UseByteEnable_g => UseByteEnable_g
         )
-        port map (   
+        port map (
             Clk        => Clk,
             Addr       => Addr,
             Be         => Be(BeWidth_c-1 downto 0), -- Extract only used bits of minimally sized vector to avoid GHDL issues
             WrEna      => WrEna,
             WrData     => WrData,
             RdData     => RdData
-        ); 
+        );
 
     -------------------------------------------------------------------------
     -- Clock
@@ -129,7 +129,7 @@ begin
 
             -- Wait for some time
             wait for 1 us;
-            wait until rising_edge(Clk);            
+            wait until rising_edge(Clk);
 
             -- Write 3 Values, Read back
             if run("Basic") then
@@ -148,16 +148,16 @@ begin
 
             -- Check byte enables
             if run("ByteEnable") then
-                if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then        
+                if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then
                     -- Byte 0 test
-                    Be <= (others => '1'); 
+                    Be <= (others => '1');
                     Write(1, 0, Clk, Addr, WrData, WrEna);
-                    Be <= (others => '0'); 
+                    Be <= (others => '0');
                     Be(0) <= '1';
                     Write(1, 16#ABCD#, Clk, Addr, WrData, WrEna);
                     Check(1, 16#00CD#, Clk, Addr, RdData, "BE[0]");
                     -- Byte 1 test
-                    Be <= (others => '0'); 
+                    Be <= (others => '0');
                     Be(1) <= '1';
                     Write(1, 16#1234#, Clk, Addr, WrData, WrEna);
                     Check(1, 16#12CD#, Clk, Addr, RdData, "BE[1]");
@@ -167,7 +167,7 @@ begin
             -- Read while write
             if run("ReadDuringWrite") then
                 -- Initialize
-                Be <= (others => '1'); 
+                Be <= (others => '1');
                 Write(1, 5, Clk, Addr, WrData, WrEna);
                 Write(2, 6, Clk, Addr, WrData, WrEna);
                 Write(3, 7, Clk, Addr, WrData, WrEna);
@@ -177,33 +177,33 @@ begin
                 WrData <= toUslv(1, WrData'length);
                 wait until rising_edge(Clk);
                 Addr <= toUslv(2, Addr'length);
-                WrData <= toUslv(2, WrData'length);       
+                WrData <= toUslv(2, WrData'length);
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 5, "rw: 1=5");
                     else
-                        check_equal(RdData, 1, "rw: 1=1 wbr");    
+                        check_equal(RdData, 1, "rw: 1=1 wbr");
                     end if;
                 end if;
                 Addr <= toUslv(3, Addr'length);
-                WrData <= toUslv(3, WrData'length);    
+                WrData <= toUslv(3, WrData'length);
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 6, "rw: 2=6");
                     else
                         check_equal(RdData, 2, "rw: 2=2 wbr");
-                    end if;    
+                    end if;
                 elsif RdLatency_g = 2 then
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 5, "rw: 1=5");
                     else
-                        check_equal(RdData, 1, "rw: 1=1 wbr");    
+                        check_equal(RdData, 1, "rw: 1=1 wbr");
                     end if;
-                end if;                    
+                end if;
                 Addr <= toUslv(4, Addr'length);
-                WrData <= toUslv(4, WrData'length);  
+                WrData <= toUslv(4, WrData'length);
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
                     if RamBehavior_g = "RBW" then
@@ -216,10 +216,10 @@ begin
                         check_equal(RdData, 6, "rw: 2=6");
                     else
                         check_equal(RdData, 2, "rw: 2=2 wbr");
-                    end if; 
+                    end if;
                 end if;
                 Addr <= toUslv(5, Addr'length);
-                WrData <= toUslv(5, WrData'length);  
+                WrData <= toUslv(5, WrData'length);
                 wait until rising_edge(Clk);
                 WrEna <= '0';
                 Check(1, 1, Clk, Addr, RdData, "rw: 1=1");

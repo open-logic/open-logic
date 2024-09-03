@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,9 +21,9 @@ library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_pl_stage_tb is
     generic (
@@ -83,14 +83,14 @@ architecture sim of olo_base_pl_stage_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk         : std_logic                                      := '0';                              
-    signal Rst         : std_logic                                      := '0';    
-    signal In_Valid    : std_logic                                      := '0';                              
-    signal In_Ready    : std_logic                                      := '0';                              
-    signal In_Data     : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0'); 
-    signal Out_Valid   : std_logic                                      := '0';                              
-    signal Out_Ready   : std_logic                                      := '0';                       
-    signal Out_Data    : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0'); 
+    signal Clk         : std_logic                                      := '0';
+    signal Rst         : std_logic                                      := '0';
+    signal In_Valid    : std_logic                                      := '0';
+    signal In_Ready    : std_logic                                      := '0';
+    signal In_Data     : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
+    signal Out_Valid   : std_logic                                      := '0';
+    signal Out_Ready   : std_logic                                      := '0';
+    signal Out_Data    : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
 
 begin
 
@@ -131,7 +131,7 @@ begin
                 Push100(net);
                 Check100(net);
             end if;
-            
+
             if run("OutLimited") then
                 -- Skip if ready is not implemented (backpressure does not need to be tested in this case)
                 if UseReady_g then
@@ -141,7 +141,7 @@ begin
                 end if;
             end if;
 
-            if run("InLimited") then 
+            if run("InLimited") then
                 Check100(net);
                 InDelay := Clk_Period_c*5;
                 Push100(net);
@@ -172,15 +172,15 @@ begin
             Stages_g      => Stages_g
         )
         port map (
-            Clk         => Clk,     
-            Rst         => Rst,    
-            In_Valid    => In_Valid,                               
-            In_Ready    => In_Ready,   
-            In_Data     => In_Data,    
-            Out_Valid   => Out_Valid,  
-            Out_Ready   => Out_Ready,                       
+            Clk         => Clk,
+            Rst         => Rst,
+            In_Valid    => In_Valid,
+            In_Ready    => In_Ready,
+            In_Data     => In_Data,
+            Out_Valid   => Out_Valid,
+            Out_Ready   => Out_Ready,
             Out_Data    => Out_Data
-        ); 
+        );
 
     ------------------------------------------------------------
     -- Verification Components
@@ -195,7 +195,7 @@ begin
         tready => In_Ready,
         tdata  => In_Data
     );
-  
+
     vc_response : entity vunit_lib.axi_stream_slave
     generic map (
         slave => axisSlave
@@ -204,7 +204,7 @@ begin
         aclk   => Clk,
         tvalid => Out_Valid,
         tready => Out_Ready,
-        tdata  => Out_Data   
+        tdata  => Out_Data
     );
 
 end sim;

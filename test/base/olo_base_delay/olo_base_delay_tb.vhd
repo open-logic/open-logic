@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,9 +21,9 @@ library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_delay_tb is
     generic (
@@ -73,11 +73,11 @@ architecture sim of olo_base_delay_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk         : std_logic                                      := '0';                              
-    signal Rst         : std_logic                                      := '0';    
-    signal In_Valid    : std_logic                                      := '0';                                                        
-    signal In_Data     : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');                                               
-    signal Out_Data    : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0'); 
+    signal Clk         : std_logic                                      := '0';
+    signal Rst         : std_logic                                      := '0';
+    signal In_Valid    : std_logic                                      := '0';
+    signal In_Data     : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
+    signal Out_Data    : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
 
 begin
 
@@ -106,11 +106,11 @@ begin
                 Push1000(net);
             end if;
 
-            if run("InLimited") then 
+            if run("InLimited") then
                 InDelay := Clk_Period_c*5;
                 Push1000(net);
             end if;
-            
+
             wait_until_idle(net, as_sync(axisMaster));
             wait for 1 us;
 
@@ -138,12 +138,12 @@ begin
             RamBehavior_g   => RamBehavior_g
         )
         port map (
-            Clk         => Clk,     
-            Rst         => Rst,    
-            In_Valid    => In_Valid,                               
-            In_Data     => In_Data,                        
+            Clk         => Clk,
+            Rst         => Rst,
+            In_Valid    => In_Valid,
+            In_Data     => In_Data,
             Out_Data    => Out_Data
-        ); 
+        );
 
     ------------------------------------------------------------
     -- Verification Components

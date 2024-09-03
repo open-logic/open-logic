@@ -1,9 +1,9 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ library vunit_lib;
     context vunit_lib.com_context;
     use vunit_lib.sync_pkg.all;
 
-package olo_test_spi_slave_pkg is  
+package olo_test_spi_slave_pkg is
 
     -- *** VUnit instance type ***
     type olo_test_spi_slave_t is record
@@ -53,13 +53,13 @@ package olo_test_spi_slave_pkg is
     constant SpiSlavePushTransactionMsg  : msg_type_t := new_msg_type("SpiSlavePushTransaction");
 
     -- Constructor
-    impure function new_olo_test_spi_slave( 
+    impure function new_olo_test_spi_slave(
         busFrequency    : real    := 1.0e6;
         lsbFirst        : boolean := false;
         maxTransWidth   : natural := 32;
         cpha            : integer range 0 to 1 := 0;
         cpol            : integer range 0 to 1 := 0) return olo_test_spi_slave_t;
-        
+
     -- Casts
     impure function as_sync(instance : olo_test_spi_slave_t) return sync_handle_t;
 
@@ -99,27 +99,27 @@ package body olo_test_spi_slave_pkg is
         push(Msg_v, miso_v);
         push(Msg_v, timeout);
         push_string(Msg_v, msg);
-        
+
         -- Send message
         send(net, spi.p_actor, Msg_v);
     end;
 
     -- Constructor
-    impure function new_olo_test_spi_slave( 
+    impure function new_olo_test_spi_slave(
         busFrequency    : real    := 1.0e6;
         lsbFirst        : boolean := false;
         maxTransWidth   : natural := 32;
         cpha            : integer range 0 to 1 := 0;
         cpol            : integer range 0 to 1 := 0) return olo_test_spi_slave_t is
     begin
-        return (p_actor => new_actor, 
+        return (p_actor => new_actor,
                 LsbFirst => lsbFirst,
                 MaxTransWidth => maxTransWidth,
                 BusFrequency => busFrequency,
                 CPHA => cpha,
                 CPOL => cpol);
     end;
-        
+
     -- Casts
     impure function as_sync(instance : olo_test_spi_slave_t) return sync_handle_t is
     begin
@@ -205,12 +205,12 @@ begin
                 -- Wait for CSn
                 WaitForValueStdl(Cs_n, '0', timeout, to_string(msg_p));
                 ShiftRegTx_v := data_miso;
-                ShiftRegRx_v := (others => 'U');              
+                ShiftRegRx_v := (others => 'U');
 
                 -- loop over bits
                 for i in 0 to transaction_bits - 1 loop
 
-                    -- Wait for apply edge 
+                    -- Wait for apply edge
                     if (instance.CPHA = 1) and (i /= transaction_bits - 1) then
                         if instance.CPOL = 0 then
                             wait until rising_edge(Sclk);
@@ -261,13 +261,13 @@ begin
                 Miso <= 'Z';
 
                 -- checks
-                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_mosi(transaction_bits - 1 downto 0), "SPI slave received wrong data");	
+                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_mosi(transaction_bits - 1 downto 0), "SPI slave received wrong data");
 
             elsif msg_type = wait_until_idle_msg then
                 handle_wait_until_idle(net, msg_type, request_msg);
             else
                 unexpected_msg_type(msg_type);
-            end if;                
+            end if;
         end loop;
     end process;
 

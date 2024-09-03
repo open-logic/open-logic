@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -26,19 +26,19 @@ library work;
     use work.olo_test_pkg_axi.all;
     use work.olo_test_axi_slave_pkg.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_axi_master_simple_tb is
     generic (
-        AxiAddrWidth_g              : natural range 16 to 64   := 32;   
-        AxiDataWidth_g              : natural range 16 to 64   := 32;   
-        AxiMaxOpenTransactions_g    : natural range 1 to 8     := 2;     
-        ImplRead_g                  : boolean                  := true; 
-        ImplWrite_g                 : boolean                  := true; 
-        RamBehavior_g               : string                   := "RBW"; 
-        runner_cfg                  : string  
+        AxiAddrWidth_g              : natural range 16 to 64   := 32;
+        AxiDataWidth_g              : natural range 16 to 64   := 32;
+        AxiMaxOpenTransactions_g    : natural range 1 to 8     := 2;
+        ImplRead_g                  : boolean                  := true;
+        ImplWrite_g                 : boolean                  := true;
+        RamBehavior_g               : string                   := "RBW";
+        runner_cfg                  : string
     );
 end entity olo_axi_master_simple_tb;
 
@@ -46,7 +46,7 @@ architecture sim of olo_axi_master_simple_tb is
     -------------------------------------------------------------------------
     -- Fixed Generics
     -------------------------------------------------------------------------
-    constant UserTransactionSizeBits_c   : natural      := 10; 
+    constant UserTransactionSizeBits_c   : natural      := 10;
     constant AxiMaxBeats_c               : natural      := 32;
     constant DataFifoDepth_c             : natural      := 16;
 
@@ -54,19 +54,19 @@ architecture sim of olo_axi_master_simple_tb is
     -- AXI Definition
     -------------------------------------------------------------------------
     constant ByteWidth_c     : integer   := AxiDataWidth_g/8;
-    
+
     subtype IdRange_r   is natural range -1 downto 0;
     subtype AddrRange_r is natural range AxiAddrWidth_g-1 downto 0;
     subtype UserRange_r is natural range 1 downto 0;
     subtype DataRange_r is natural range AxiDataWidth_g-1 downto 0;
     subtype ByteRange_r is natural range ByteWidth_c-1 downto 0;
-    
+
     signal AxiMs : AxiMs_r (ArId(IdRange_r), AwId(IdRange_r),
                             ArAddr(AddrRange_r), AwAddr(AddrRange_r),
                             ArUser(UserRange_r), AwUser(UserRange_r), WUser(UserRange_r),
                             WData(DataRange_r),
                             WStrb(ByteRange_r));
-    
+
     signal AxiSm : AxiSm_r (RId(IdRange_r), BId(IdRange_r),
                             RUser(UserRange_r), BUser(UserRange_r),
                             RData(DataRange_r));
@@ -88,7 +88,7 @@ architecture sim of olo_axi_master_simple_tb is
     constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
 
     type Response_t is (RespSuccess, RespError);
-        
+
 
     -------------------------------------------------------------------------
     -- Interface Signals
@@ -97,33 +97,33 @@ architecture sim of olo_axi_master_simple_tb is
     signal Clk             : std_logic                                                   := '0';
     signal Rst             : std_logic                                                   := '0';
     -- Write Command Interface
-    signal CmdWr_Addr      : std_logic_vector(AxiAddrWidth_g - 1 downto 0)               := (others => '0'); 
-    signal CmdWr_Size      : std_logic_vector(UserTransactionSizeBits_c - 1 downto 0)    := (others => '0'); 
-    signal CmdWr_LowLat    : std_logic                                                   := '0';             
-    signal CmdWr_Valid     : std_logic                                                   := '0';             
-    signal CmdWr_Ready     : std_logic;                                                                    
+    signal CmdWr_Addr      : std_logic_vector(AxiAddrWidth_g - 1 downto 0)               := (others => '0');
+    signal CmdWr_Size      : std_logic_vector(UserTransactionSizeBits_c - 1 downto 0)    := (others => '0');
+    signal CmdWr_LowLat    : std_logic                                                   := '0';
+    signal CmdWr_Valid     : std_logic                                                   := '0';
+    signal CmdWr_Ready     : std_logic;
     -- Read Command Interface
-    signal CmdRd_Addr      : std_logic_vector(AxiAddrWidth_g - 1 downto 0)               := (others => '0');  
-    signal CmdRd_Size      : std_logic_vector(UserTransactionSizeBits_c - 1 downto 0)    := (others => '0');  
-    signal CmdRd_LowLat    : std_logic                                                   := '0';              
-    signal CmdRd_Valid     : std_logic                                                   := '0';              
-    signal CmdRd_Ready     : std_logic;                                                                     
+    signal CmdRd_Addr      : std_logic_vector(AxiAddrWidth_g - 1 downto 0)               := (others => '0');
+    signal CmdRd_Size      : std_logic_vector(UserTransactionSizeBits_c - 1 downto 0)    := (others => '0');
+    signal CmdRd_LowLat    : std_logic                                                   := '0';
+    signal CmdRd_Valid     : std_logic                                                   := '0';
+    signal CmdRd_Ready     : std_logic;
     -- Write Data
     signal Wr_Data         : std_logic_vector(AxiDataWidth_g - 1 downto 0)               := (others => '0');
     signal Wr_Be           : std_logic_vector(AxiDataWidth_g / 8 - 1 downto 0)           := (others => '0');
-    signal Wr_Valid        : std_logic                                                   := '0';            
-    signal Wr_Ready        : std_logic;                                                                      
+    signal Wr_Valid        : std_logic                                                   := '0';
+    signal Wr_Ready        : std_logic;
     -- Read Data
-    signal Rd_Data         : std_logic_vector(AxiDataWidth_g - 1 downto 0);                                 
-    signal Rd_Valid        : std_logic;                                                                     
-    signal Rd_Ready        : std_logic                                                   := '0';            
+    signal Rd_Data         : std_logic_vector(AxiDataWidth_g - 1 downto 0);
+    signal Rd_Valid        : std_logic;
+    signal Rd_Ready        : std_logic                                                   := '0';
     -- Response
-    signal Wr_Done         : std_logic;                                                                       
-    signal Wr_Error        : std_logic;                                                                       
-    signal Rd_Done         : std_logic;                                                                       
-    signal Rd_Error        : std_logic;  
+    signal Wr_Done         : std_logic;
+    signal Wr_Error        : std_logic;
+    signal Rd_Done         : std_logic;
+    signal Rd_Error        : std_logic;
     signal Rd_Last         : std_logic;
-    
+
     -------------------------------------------------------------------------
     -- TB Defnitions
     -------------------------------------------------------------------------
@@ -166,7 +166,7 @@ architecture sim of olo_axi_master_simple_tb is
 
     procedure PushWrData(   signal net      : inout network_t;
                             startValue      : unsigned;
-                            increment       : natural               := 1; 
+                            increment       : natural               := 1;
                             beats           : natural               := 1;
                             firstStrb       : std_logic_vector      := onesVector(AxiDataWidth_g/8);
                             lastStrb        : std_logic_vector      := onesVector(AxiDataWidth_g/8)) is
@@ -257,7 +257,7 @@ begin
                     check_equal(Rd_Done, '0', "Rd_Done");
                     check_equal(Rd_Error, '0', "Rd_Error");
                 end if;
-                if ImplWrite_g then                
+                if ImplWrite_g then
                     check_equal(Wr_Done, '0', "Wr_Done");
                     check_equal(Wr_Error, '0', "Wr_Error");
                 end if;
@@ -273,7 +273,7 @@ begin
                         expect_single_write (net, axiSlave, X"1080", X"ABCD");
                         -- Master
                         PushCommand(net, wrCmdMaster, X"1080", 1, CmdLowLat => choose(LowLatency=1, '1', '0'));
-                        PushWrData(net, X"ABCD");                
+                        PushWrData(net, X"ABCD");
                         -- Blocking
                         ExpectWrResponse(RespSuccess);
                     end loop;
@@ -287,9 +287,9 @@ begin
                         -- Slave
                         expect_single_write (net, axiSlave, X"1088", X"ABC1");
                         -- Master
-                        PushWrData(net, X"ABC1"); 
+                        PushWrData(net, X"ABC1");
                         wait for 200 ns;
-                        PushCommand(net, wrCmdMaster, X"1088", 1, CmdLowLat => choose(LowLatency=1, '1', '0'));                               
+                        PushCommand(net, wrCmdMaster, X"1088", 1, CmdLowLat => choose(LowLatency=1, '1', '0'));
                         -- Blocking
                         ExpectWrResponse(RespSuccess);
                     end loop;
@@ -300,16 +300,16 @@ begin
                 if ImplWrite_g then
                     for LowLatency in 0 to 1 loop
                         -- Master
-                        PushCommand(net, wrCmdMaster, X"1090", 1, CmdLowLat => choose(LowLatency=1, '1', '0')); 
+                        PushCommand(net, wrCmdMaster, X"1090", 1, CmdLowLat => choose(LowLatency=1, '1', '0'));
                         wait for 200 ns;
                         if LowLatency = 0 then
                             check_equal(AxiMs.AwValid, '0', "HighLatency write executed before data was present");
                         else
                             check_equal(AxiMs.AwValid, '1', "LowLatency write not executed before data was present");
                         end if;
-                        PushWrData(net, X"ABC2");    
+                        PushWrData(net, X"ABC2");
                         -- Slave
-                        expect_single_write (net, axiSlave, X"1090", X"ABC2");                    
+                        expect_single_write (net, axiSlave, X"1090", X"ABC2");
                         -- Blocking
                         ExpectWrResponse(RespSuccess);
                     end loop;
@@ -322,7 +322,7 @@ begin
                     expect_single_write (net, axiSlave, X"0100", X"03", AwReadyDelay => 200 ns);
                     -- Master
                     PushCommand(net, wrCmdMaster, X"0100", 1);
-                    PushWrData(net, X"03");                
+                    PushWrData(net, X"03");
                     -- Blocking
                     ExpectWrResponse(RespSuccess);
                 end if;
@@ -334,7 +334,7 @@ begin
                     expect_single_write (net, axiSlave, X"0200", X"04", WReadyDelay => 200 ns);
                     -- Master
                     PushCommand(net, wrCmdMaster, X"0200", 1);
-                    PushWrData(net, X"04");                
+                    PushWrData(net, X"04");
                     -- Blocking
                     ExpectWrResponse(RespSuccess);
                 end if;
@@ -346,7 +346,7 @@ begin
                     expect_single_write (net, axiSlave, X"0208", X"05", BValidDelay => 200 ns);
                     -- Master
                     PushCommand(net, wrCmdMaster, X"0208", 1);
-                    PushWrData(net, X"05");                
+                    PushWrData(net, X"05");
                     -- Blocking
                     ExpectWrResponse(RespSuccess);
                 end if;
@@ -360,11 +360,11 @@ begin
                     push_b(net, axiSlave, resp => xRESP_SLVERR_c);
                     -- Master
                     PushCommand(net, wrCmdMaster, X"0300", 1);
-                    PushWrData(net, X"05");                
+                    PushWrData(net, X"05");
                     -- Blocking
                     ExpectWrResponse(RespError);
                 end if;
-            end if;         
+            end if;
 
             -- *** Single Reads ***
             if run("SingleRead") then
@@ -374,7 +374,7 @@ begin
                         push_single_read (net, axiSlave, X"0200", X"120A");
                         -- Master
                         PushCommand(net, rdCmdMaster, X"0200", 1, CmdLowLat => choose(LowLatency=1, '1', '0'));
-                        ExpectRdData(net, X"120A");                
+                        ExpectRdData(net, X"120A");
                         -- Blocking
                         ExpectRdResponse(RespSuccess);
                     end loop;
@@ -382,12 +382,12 @@ begin
             end if;
 
             if run("SingleRead-DelayedArReady") then
-                if ImplRead_g then 
+                if ImplRead_g then
                     -- Slave
                     push_single_read (net, axiSlave, X"0208", X"10", ArReadyDelay => 200 ns);
                     -- Master
                     PushCommand(net, rdCmdMaster, X"0208", 1);
-                    ExpectRdData(net, X"10");                
+                    ExpectRdData(net, X"10");
                     -- Blocking
                     ExpectRdResponse(RespSuccess);
                 end if;
@@ -399,7 +399,7 @@ begin
                     push_single_read (net, axiSlave, X"0210", X"20", RVAlidDelay => 200 ns);
                     -- Master
                     PushCommand(net, rdCmdMaster, X"0210", 1);
-                    ExpectRdData(net, X"20");                
+                    ExpectRdData(net, X"20");
                     -- Blocking
                     ExpectRdResponse(RespSuccess);
                 end if;
@@ -412,7 +412,7 @@ begin
                     push_r(net, axiSlave, X"23", resp => xRESP_SLVERR_c);
                     -- Master
                     PushCommand(net, rdCmdMaster, X"0300", 1);
-                    ExpectRdData(net, X"23");                
+                    ExpectRdData(net, X"23");
                     -- Blocking
                     ExpectRdResponse(RespError);
                 end if;
@@ -426,7 +426,7 @@ begin
                         expect_burst_write_aligned(net, axiSlave, X"0100", X"1234", 1, 12);
                         -- Master
                         PushCommand(net, wrCmdMaster, X"0100", 12, CmdLowLat => choose(LowLatency=1, '1', '0'));
-                        PushWrData(net, X"1234", 1, 12);                
+                        PushWrData(net, X"1234", 1, 12);
                         -- Blocking
                         ExpectWrResponse(RespSuccess);
                     end loop;
@@ -441,7 +441,7 @@ begin
                     expect_burst_write_aligned(net, axiSlave, X"1000", X"1236", 1, 6);
                     -- Master
                     PushCommand(net, wrCmdMaster, X"1000"-2*AxiDataWidth_g/8, 8);
-                    PushWrData(net, X"1234", 1, 8);                
+                    PushWrData(net, X"1234", 1, 8);
                     -- Blocking
                     ExpectWrResponse(RespSuccess);
                 end if;
@@ -458,7 +458,7 @@ begin
                     expect_burst_write_aligned(net, axiSlave, X"2000", X"14", 1, 6);
                     -- Master
                     PushCommand(net, wrCmdMaster, X"2000"-2*AxiDataWidth_g/8, 8);
-                    PushWrData(net, X"12", 1, 8);                
+                    PushWrData(net, X"12", 1, 8);
                     -- Blocking
                     ExpectWrResponse(RespError);
                 end if;
@@ -473,7 +473,7 @@ begin
                         push_burst_read_aligned (net, axiSlave, X"0210", X"10EF", 1, 12);
                         -- Master
                         PushCommand(net, rdCmdMaster, X"0210", 12, CmdLowLat => choose(LowLatency=1, '1', '0'));
-                        ExpectRdData(net, X"10EF", 1, 12);                
+                        ExpectRdData(net, X"10EF", 1, 12);
                         -- Blocking
                         ExpectRdResponse(RespSuccess);
                     end loop;
@@ -488,7 +488,7 @@ begin
                     push_burst_read_aligned (net, axiSlave, X"2000", X"0B", 1, 6);
                     -- Master
                     PushCommand(net, rdCmdMaster, X"2000"-2*AxiDataWidth_g/8, 8);
-                    ExpectRdData(net, X"09", 1, 8);                
+                    ExpectRdData(net, X"09", 1, 8);
                     -- Blocking
                     ExpectRdResponse(RespSuccess);
                 end if;
@@ -504,7 +504,7 @@ begin
                     push_burst_read_aligned (net, axiSlave, X"3000", X"14", 1, 6);
                     -- Master
                     PushCommand(net, rdCmdMaster, X"3000"-2*AxiDataWidth_g/8, 8);
-                    ExpectRdData(net, X"12", 1, 8);                
+                    ExpectRdData(net, X"12", 1, 8);
                     -- Blocking
                     ExpectRdResponse(RespError);
                 end if;
@@ -528,10 +528,10 @@ begin
                             check_equal(AxiMs.ArValid, '1', "Second Command not Valid despite low-latency");
                         end if;
                         -- Execute both commands
-                        ExpectRdData(net, X"10", 1, DataFifoDepth_c); 
+                        ExpectRdData(net, X"10", 1, DataFifoDepth_c);
                         ExpectRdResponse(RespSuccess);
                         push_burst_read_aligned (net, axiSlave, X"5000", X"40", 1, 4);
-                        ExpectRdData(net, X"40", 1, 4);                     
+                        ExpectRdData(net, X"40", 1, 4);
                         ExpectRdResponse(RespSuccess);
                     end loop;
                 end if;
@@ -544,7 +544,7 @@ begin
                     push_burst_read_aligned (net, axiSlave, X"0210", X"10EF", 1, 12, beatDelay => 50 ns);
                     -- Master
                     PushCommand(net, rdCmdMaster, X"0210", 12, CmdLowLat => '0');
-                    ExpectRdData(net, X"10EF", 1, 12);                
+                    ExpectRdData(net, X"10EF", 1, 12);
                     -- Blocking
                     ExpectRdResponse(RespSuccess);
                 end if;
@@ -556,7 +556,7 @@ begin
                     expect_burst_write_aligned(net, axiSlave, X"0100", X"1234", 1, 12, beatDelay => 50 ns);
                     -- Master
                     PushCommand(net, wrCmdMaster, X"0100", 12, CmdLowLat => '0');
-                    PushWrData(net, X"1234", 1, 12);                
+                    PushWrData(net, X"1234", 1, 12);
                     -- Blocking
                     ExpectWrResponse(RespSuccess);
                 end if;
@@ -571,7 +571,7 @@ begin
                     push_burst_read_aligned (net, axiSlave, X"0210"+AxiMaxBeats_c*2*ByteWidth_c, X"10EF"+AxiMaxBeats_c*2, 1, 5);
                     -- Master
                     PushCommand(net, rdCmdMaster, X"0210", AxiMaxBeats_c*2+5, CmdLowLat => '1'); -- must be lowlatency becuause larger than FIFO
-                    ExpectRdData(net, X"10EF", 1, AxiMaxBeats_c*2+5);                
+                    ExpectRdData(net, X"10EF", 1, AxiMaxBeats_c*2+5);
                     -- Blocking
                     ExpectRdResponse(RespSuccess);
                 end if;
@@ -585,13 +585,13 @@ begin
                     expect_burst_write_aligned(net, axiSlave, X"0100"+AxiMaxBeats_c*2*ByteWidth_c, X"1234"+AxiMaxBeats_c*2, 1, 5);
                     -- Master
                     PushCommand(net, wrCmdMaster, X"0100", AxiMaxBeats_c*2+5, CmdLowLat => '1'); -- must be lowlatency becuause larger than FIFO
-                    PushWrData(net, X"1234", 1, AxiMaxBeats_c*2+5);                
+                    PushWrData(net, X"1234", 1, AxiMaxBeats_c*2+5);
                     -- Blocking
                     ExpectWrResponse(RespSuccess);
                 end if;
             end if;
 
-                    
+
             -- Wait for idle
             wait_until_idle(net, as_sync(axiSlave));
             wait_until_idle(net, as_sync(rdDataSlave));
@@ -616,12 +616,12 @@ begin
     -------------------------------------------------------------------------
     i_dut : entity olo.olo_axi_master_simple
         generic map (
-            AxiAddrWidth_g              => AxiAddrWidth_g, 
+            AxiAddrWidth_g              => AxiAddrWidth_g,
             AxiDataWidth_g              => AxiDataWidth_g,
             AxiMaxBeats_g               => AxiMaxBeats_c,
-            AxiMaxOpenTransactions_g    => AxiMaxOpenTransactions_g,  
+            AxiMaxOpenTransactions_g    => AxiMaxOpenTransactions_g,
             -- User Configuration
-            UserTransactionSizeBits_g   => UserTransactionSizeBits_c, 
+            UserTransactionSizeBits_g   => UserTransactionSizeBits_c,
             DataFifoDepth_g             => DataFifoDepth_c,
             ImplRead_g                  => ImplRead_g,
             ImplWrite_g                 => ImplWrite_g,
@@ -629,35 +629,35 @@ begin
         )
         port map (
             -- Control Signals
-            Clk            => Clk,     
-            Rst            => Rst,   
+            Clk            => Clk,
+            Rst            => Rst,
             -- User Command Interface
             CmdWr_Addr     => CmdWr_Addr,
             CmdWr_Size     => CmdWr_Size,
-            CmdWr_LowLat   => CmdWr_LowLat,           
-            CmdWr_Valid    => CmdWr_Valid,        
-            CmdWr_Ready    => CmdWr_Ready,                                                                
+            CmdWr_LowLat   => CmdWr_LowLat,
+            CmdWr_Valid    => CmdWr_Valid,
+            CmdWr_Ready    => CmdWr_Ready,
             -- User Command Interface
             CmdRd_Addr     => CmdRd_Addr,
             CmdRd_Size     => CmdRd_Size,
-            CmdRd_LowLat   => CmdRd_LowLat,          
-            CmdRd_Valid    => CmdRd_Valid,            
-            CmdRd_Ready    => CmdRd_Ready,                                                                  
+            CmdRd_LowLat   => CmdRd_LowLat,
+            CmdRd_Valid    => CmdRd_Valid,
+            CmdRd_Ready    => CmdRd_Ready,
             -- Write Data
             Wr_Data        => Wr_Data,
             Wr_Be          => Wr_Be,
-            Wr_Valid       => Wr_Valid,         
-            Wr_Ready       => Wr_Ready,                                                      
+            Wr_Valid       => Wr_Valid,
+            Wr_Ready       => Wr_Ready,
             -- Read Data
-            Rd_Data        => Rd_Data,              
+            Rd_Data        => Rd_Data,
             Rd_Valid       => Rd_Valid,
-            Rd_Ready       => Rd_Ready,  
-            Rd_Last        => Rd_Last,          
+            Rd_Ready       => Rd_Ready,
+            Rd_Last        => Rd_Last,
             -- Response
-            Wr_Done        => Wr_Done,                                                                      
-            Wr_Error       => Wr_Error,                                                               
-            Rd_Done        => Rd_Done,                                                     
-            Rd_Error       => Rd_Error,                                                               
+            Wr_Done        => Wr_Done,
+            Wr_Error       => Wr_Error,
+            Rd_Done        => Rd_Done,
+            Rd_Error       => Rd_Error,
             -- AXI Address Write Channel
             M_Axi_AwAddr   => AxiMs.AwAddr,
             M_Axi_AwValid  => AxiMs.AwValid,
@@ -667,17 +667,17 @@ begin
             M_Axi_AwBurst  => AxiMs.AwBurst,
             M_Axi_AwLock   => AxiMs.AwLock,
             M_Axi_AwCache  => AxiMs.AwCache,
-            M_Axi_AwProt   => AxiMs.AwProt,        
-            -- AXI Write Data Channel      
+            M_Axi_AwProt   => AxiMs.AwProt,
+            -- AXI Write Data Channel
             M_Axi_WData    => AxiMs.WData,
             M_Axi_WStrb    => AxiMs.WStrb,
             M_Axi_WValid   => AxiMs.WValid,
             M_Axi_WReady   => AxiSm.WReady,
-            M_Axi_WLast    => AxiMs.WLast,    
+            M_Axi_WLast    => AxiMs.WLast,
             -- AXI Write Response Channel
             M_Axi_BResp    => AxiSm.BResp,
             M_Axi_BValid   => AxiSm.BValid,
-            M_Axi_BReady   => AxiMs.BReady,         
+            M_Axi_BReady   => AxiMs.BReady,
             -- AXI Read Address Channel
             M_Axi_ArAddr   => AxiMs.ArAddr,
             M_Axi_ArValid  => AxiMs.ArValid,
@@ -687,13 +687,13 @@ begin
             M_Axi_ArBurst  => AxiMs.ArBurst,
             M_Axi_ArLock   => AxiMs.ArLock,
             M_Axi_ArCache  => AxiMs.ArCache,
-            M_Axi_ArProt   => AxiMs.ArProt,         
-            -- AXI Read Data Channel 
+            M_Axi_ArProt   => AxiMs.ArProt,
+            -- AXI Read Data Channel
             M_Axi_RData    => AxiSm.RData,
             M_Axi_RValid   => AxiSm.RValid,
             M_Axi_RReady   => AxiMs.RReady,
             M_Axi_RResp    => AxiSm.RResp,
-            M_Axi_RLast    => AxiSm.RLast            
+            M_Axi_RLast    => AxiSm.RLast
         );
 
     ------------------------------------------------------------
@@ -719,7 +719,7 @@ begin
             tvalid => Rd_Valid,
             tready => Rd_Ready,
             tdata  => Rd_Data,
-            tlast  => Rd_Last   
+            tlast  => Rd_Last
         );
 
     b_wr_cmd : block
@@ -754,7 +754,7 @@ begin
                 tready => CmdRd_Ready,
                 tdata => TData
             );
-        
+
         CmdRd_Addr <= TData(CmdAddrRange_r);
         CmdRd_Size <= TData(CmdSizeRange_r);
         CmdRd_LowLat <= TData(CmdLowLat_r);

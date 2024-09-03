@@ -1,19 +1,19 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This is a very basic synchronous FIFO. It  has optional level- and
 -- almost-full/empty ports.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,22 +21,22 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_fifo_sync is
-    generic ( 
-        Width_g         : positive;                   
-        Depth_g         : positive;                  
-        AlmFullOn_g     : boolean   := false;        
-        AlmFullLevel_g  : natural   := 0;                   
-        AlmEmptyOn_g    : boolean   := false;        
-        AlmEmptyLevel_g : natural   := 0;                   
-        RamStyle_g      : string    := "auto";       
-        RamBehavior_g   : string    := "RBW";        
+    generic (
+        Width_g         : positive;
+        Depth_g         : positive;
+        AlmFullOn_g     : boolean   := false;
+        AlmFullLevel_g  : natural   := 0;
+        AlmEmptyOn_g    : boolean   := false;
+        AlmEmptyLevel_g : natural   := 0;
+        RamStyle_g      : string    := "auto";
+        RamBehavior_g   : string    := "RBW";
         ReadyRstState_g : std_logic := '1'
     );
-    port (    
+    port (
         -- Control Ports
           Clk           : in  std_logic;
           Rst           : in  std_logic;
@@ -51,18 +51,18 @@ entity olo_base_fifo_sync is
           Out_Ready     : in  std_logic                                             := '1';
           Out_Level     : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
           -- Status
-          Full          : out std_logic; 
+          Full          : out std_logic;
           AlmFull       : out std_logic;
-          Empty         : out std_logic; 
+          Empty         : out std_logic;
           AlmEmpty      : out std_logic
-          
+
     );
 end entity;
 
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_fifo_sync is
 
     type two_process_r is record

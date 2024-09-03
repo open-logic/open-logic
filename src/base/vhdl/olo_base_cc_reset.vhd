@@ -1,49 +1,49 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This is a very basic clock crossing that allows to clock-cross resets. It
 -- does assert reset on the other clock domain immediately and de-asserts the
 -- reset synchronously to the corresponding clock.
 -- The reset is clock-crossed in both directions
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
-entity olo_base_cc_reset is                        
-    port (   
-        A_Clk       : in  std_logic;                                   
-        A_RstIn     : in  std_logic := '0';                            
-        A_RstOut    : out std_logic;                                   
-        B_Clk       : in  std_logic;                                   
-        B_RstIn     : in  std_logic := '0';                            
+---------------------------------------------------------------------------------------------------
+entity olo_base_cc_reset is
+    port (
+        A_Clk       : in  std_logic;
+        A_RstIn     : in  std_logic := '0';
+        A_RstOut    : out std_logic;
+        B_Clk       : in  std_logic;
+        B_RstIn     : in  std_logic := '0';
         B_RstOut    : out std_logic
-    );                                
+    );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture struct of olo_base_cc_reset is
-  
+
     -- Domain A signals
     signal RstALatch   : std_logic := '1';
     signal RstRqstB2A  : std_logic_vector(2 downto 0) := (others => '0');
     signal RstAckB2A   : std_logic; --std_logic_vector(2 downto 0) := (others => '0');
- 
+
 
     -- Domain B signals
     signal RstBLatch   : std_logic := '1';
@@ -73,19 +73,19 @@ architecture struct of olo_base_cc_reset is
    -- Synthesis attributes Altera (Quartus)
    attribute dont_merge : boolean;
    attribute dont_merge of RstRqstB2A : signal is true;
-   attribute dont_merge of RstAckB2A : signal is true;   
+   attribute dont_merge of RstAckB2A : signal is true;
    attribute dont_merge of RstRqstA2B : signal is true;
-   attribute dont_merge of RstAckA2B : signal is true;  
+   attribute dont_merge of RstAckA2B : signal is true;
 
    attribute preserve : boolean;
    attribute preserve of RstRqstB2A : signal is true;
-   attribute preserve of RstAckB2A : signal is true;   
+   attribute preserve of RstAckB2A : signal is true;
    attribute preserve of RstRqstA2B : signal is true;
-   attribute preserve of RstAckA2B : signal is true;   
-  
-  
+   attribute preserve of RstAckA2B : signal is true;
+
+
   begin
-  
+
     -- Domain A
     ARstSync_p : process(A_Clk, RstBLatch)
     begin
@@ -109,7 +109,7 @@ architecture struct of olo_base_cc_reset is
         end if;
     end process;
     A_RstOut <= RstALatch or RstRqstB2A(RstRqstB2A'left);
-  
+
     -- Domain B
     BRstSync_p : process(B_Clk, RstALatch)
     begin
@@ -165,5 +165,5 @@ architecture struct of olo_base_cc_reset is
         );
 
   end architecture;
-  
+
   

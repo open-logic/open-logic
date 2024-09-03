@@ -1,9 +1,9 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -28,8 +28,8 @@ package olo_test_i2c_pkg is
     -- *** Constants ***
     constant I2c_ACK    : std_logic := '0';
     constant I2c_NACK   : std_logic := '1';
-    
-    type I2c_Transaction_t is (I2c_READ, I2c_WRITE);   
+
+    type I2c_Transaction_t is (I2c_READ, I2c_WRITE);
 
     -- *** VUnit instance type ***
     type olo_test_i2c_t is record
@@ -51,7 +51,7 @@ package olo_test_i2c_pkg is
     procedure i2c_push_repeated_start (
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
-        delay           : time                  := 0 ns;  
+        delay           : time                  := 0 ns;
         msg             : string                := ""
     );
 
@@ -59,7 +59,7 @@ package olo_test_i2c_pkg is
     procedure i2c_push_stop (
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
-        delay           : time                  := 0 ns;  
+        delay           : time                  := 0 ns;
         msg             : string                := ""
     );
 
@@ -77,26 +77,26 @@ package olo_test_i2c_pkg is
 
     -- *** Slave Operations ***
     -- Wait for start (and switch to slave operation mode)
-    procedure i2c_expect_start( 
+    procedure i2c_expect_start(
         signal net      : inout network_t;
-        i2c             : olo_test_i2c_t;        
+        i2c             : olo_test_i2c_t;
         timeout         : time              := 1 ms;
         msg             : string                := ""
-    );  
+    );
 
     -- Wait for repeated start
-    procedure i2c_expect_repeated_start(    
+    procedure i2c_expect_repeated_start(
         signal net      : inout network_t;
-        i2c             : olo_test_i2c_t;        
+        i2c             : olo_test_i2c_t;
         timeout         : time              := 1 ms;
         clkStretch      : time              := 0 ns;
         msg             : string                := ""
-    );  
+    );
 
     -- Wait for stop (and switch to idle operation mode)
-    procedure i2c_expect_stop(  
+    procedure i2c_expect_stop(
         signal net      : inout network_t;
-        i2c             : olo_test_i2c_t;        
+        i2c             : olo_test_i2c_t;
         timeout         : time              := 1 ms;
         clkStretch      : time              := 0 ns;
         msg             : string                := ""
@@ -180,8 +180,8 @@ package olo_test_i2c_pkg is
 
 end package;
 
-package body olo_test_i2c_pkg is 
-  
+package body olo_test_i2c_pkg is
+
     -- *** Master Operations ***
 
     -- Send start (and switch to master operation mode)
@@ -189,7 +189,7 @@ package body olo_test_i2c_pkg is
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
         delay           : time                  := 0 ns;
-        msg             : string                := ""  
+        msg             : string                := ""
     ) is
         variable Msg_v : msg_t := new_msg(I2cPushStartMsg);
     begin
@@ -203,7 +203,7 @@ package body olo_test_i2c_pkg is
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
         delay           : time                  := 0 ns;
-        msg             : string                := "" 
+        msg             : string                := ""
     ) is
         variable Msg_v : msg_t := new_msg(I2cPushRepeatedStartMsg);
     begin
@@ -217,7 +217,7 @@ package body olo_test_i2c_pkg is
         signal net      : inout network_t;
         i2c             : olo_test_i2c_t;
         delay           : time                  := 0 ns;
-        msg             : string                := "" 
+        msg             : string                := ""
     ) is
         variable Msg_v : msg_t := new_msg(I2cPushStopMsg);
     begin
@@ -235,7 +235,7 @@ package body olo_test_i2c_pkg is
         addrBits        : natural range 7 to 10 := 7;
         expectedAck     : std_logic             := I2c_ACK;
         delay           : time                  := 0 ns;
-        msg             : string                := "" 
+        msg             : string                := ""
     ) is
         variable Msg_v : msg_t := new_msg(I2cPushAddrMsg);
     begin
@@ -252,9 +252,9 @@ package body olo_test_i2c_pkg is
     -- *** Slave Operations ***
 
     -- Wait for start (and switch to slave operation mode)
-    procedure i2c_expect_start( 
+    procedure i2c_expect_start(
         signal net      : inout network_t;
-        i2c             : olo_test_i2c_t;        
+        i2c             : olo_test_i2c_t;
         timeout         : time              := 1 ms;
         msg             : string                := ""
     ) is
@@ -266,9 +266,9 @@ package body olo_test_i2c_pkg is
     end procedure;
 
     -- Wait for repeated start
-    procedure i2c_expect_repeated_start(    
+    procedure i2c_expect_repeated_start(
         signal net      : inout network_t;
-        i2c             : olo_test_i2c_t;        
+        i2c             : olo_test_i2c_t;
         timeout         : time              := 1 ms;
         clkStretch      : time              := 0 ns;
         msg             : string                := ""
@@ -282,9 +282,9 @@ package body olo_test_i2c_pkg is
     end procedure;
 
     -- Wait for stop (and switch to idle operation mode)
-    procedure i2c_expect_stop(  
+    procedure i2c_expect_stop(
         signal net      : inout network_t;
-        i2c             : olo_test_i2c_t;        
+        i2c             : olo_test_i2c_t;
         timeout         : time              := 1 ms;
         clkStretch      : time              := 0 ns;
         msg             : string                := ""
@@ -386,7 +386,7 @@ package body olo_test_i2c_pkg is
     end procedure;
 
 
-    -- *** Infrastructure ***  
+    -- *** Infrastructure ***
 
     -- Pull Up
     procedure I2cPullup(signal Scl : inout std_logic;
@@ -397,13 +397,13 @@ package body olo_test_i2c_pkg is
     end procedure;
 
     -- Constructor
-    impure function new_olo_test_i2c( 
+    impure function new_olo_test_i2c(
         busFrequency : real    := 100.0e3) return olo_test_i2c_t is
     begin
-        return (p_actor => new_actor, 
+        return (p_actor => new_actor,
                 BusFrequency => busFrequency);
     end;
-        
+
     -- Casts
     impure function as_sync(instance : olo_test_i2c_t) return sync_handle_t is
     begin
@@ -481,16 +481,16 @@ architecture rtl of olo_test_i2c_vc is
     begin
         return (1 sec) / instance.BusFrequency;
     end function;
-    
+
     impure function ClkHalfPeriod return time is
     begin
         return (0.5 sec) / instance.BusFrequency;
-    end function;   
-    
+    end function;
+
     impure function ClkQuartPeriod return time is
     begin
         return (0.25 sec) / instance.BusFrequency;
-    end function;   
+    end function;
 
     -- *** Bit Transfers ***
     procedure SendBitInclClock( Data        : in    std_logic;
@@ -501,15 +501,15 @@ architecture rtl of olo_test_i2c_vc is
     begin
         -- Initial Check
         LevelCheck(Scl, '0', Msg & " - SCL is HIGH but was expected LOW here [SendBitInclClock]");
-        
-        -- Assert Data      
+
+        -- Assert Data
         if Data = '0' then
             Sda <= '0';
         else
             Sda <= 'Z';
         end if;
         wait for ClkQuartPeriod;
-        
+
         -- Send Clk Pulse
         Scl <= 'Z';
         LevelWait(Scl, '1', Msg & " - SCL held low by other device [SendBitInclClock]", Timeout);
@@ -518,21 +518,21 @@ architecture rtl of olo_test_i2c_vc is
         LevelCheck(Sda, Data, Msg & " - SDA readback does not match SDA transmit value during SCL pulse [SendBitInclClock]");
         CheckLastActivity(Sda, ClkHalfPeriod, -1, Msg & " - SDA not stable during SCL pulse [SendBitInclClock]");
         Scl <= '0';
-        wait for ClkQuartPeriod;    
+        wait for ClkQuartPeriod;
     end procedure;
 
     procedure ReceiveBitInclClock(  variable Data   : out   std_logic;
                                     signal Scl      : inout std_logic;
                                     signal Sda      : inout std_logic;
                                     Msg             : in    string;
-                                    Timeout         : in    time        := 1 ms) is 
+                                    Timeout         : in    time        := 1 ms) is
     begin
         -- Initial Check
         LevelCheck(Scl, '0', Msg & " - SCL is HIGH but was expected LOW here [ReceiveBitInclClock]");
-        
+
         -- Wait for assertion
         wait for ClkQuartPeriod;
-        
+
         -- Send Clk Pulse
         Scl <= 'Z';
         LevelWait(Scl, '1', Msg & " - SCL held low by other device [ReceiveBitInclClock]", Timeout);
@@ -541,49 +541,49 @@ architecture rtl of olo_test_i2c_vc is
         CheckLastActivity(Sda, ClkHalfPeriod, -1, Msg & " - SDA not stable during SCL pulse [ReceiveBitInclClock]");
         Data := to01X(Sda);
         Scl <= '0';
-        wait for ClkQuartPeriod;    
-    end procedure;  
+        wait for ClkQuartPeriod;
+    end procedure;
 
     procedure SendBitExclClock(     Data            : in    std_logic;
                                     signal Scl      : inout std_logic;
                                     signal Sda      : inout std_logic;
                                     Msg             : in    string;
                                     Timeout         : in    time        := 1 ms;
-                                    ClkStretch      : in    time        := 0 ns) is 
+                                    ClkStretch      : in    time        := 0 ns) is
         variable Stretched_v : boolean := false;
     begin
         -- Initial Check
         LevelCheck(Scl, '0', Msg & " - SCL is HIGH but was expected LOW here [ReceiveBitInclClock]");
-        
+
         -- Clock stretching
         if ClkStretch > 0 ns then
             Scl <= '0';
             wait for ClkStretch;
             Stretched_v := true;
         end if;
-        
-        -- Assert Data      
+
+        -- Assert Data
         if Data = '0' then
             Sda <= '0';
         else
             Sda <= 'Z';
-        end if; 
+        end if;
         if Stretched_v then
             wait for ClkQuartPeriod;
             Scl <= 'Z';
         end if;
-        
+
         -- Wait clock rising edge
         LevelWait(Scl, '1', Msg & " - SCL did not go high [ReceiveBitInclClock]", Timeout);
-        
+
         -- wait clock falling edge
         LevelWait(Scl, '0', Msg & " - SCL did not go low [ReceiveBitInclClock]", Timeout);
         LevelCheck(Sda, Data, Msg & " - SDA readback does not match SDA transmit value during SCL pulse [ReceiveBitInclClock]");
         CheckLastActivity(Sda, ClkHalfPeriod, -1, Msg & " - SDA not stable during SCL pulse [ReceiveBitInclClock]");
-        
+
         -- wait until center of low
         wait for ClkQuartPeriod;
-    end procedure;  
+    end procedure;
 
     procedure ReceiveBitExclClock(  Data            : out   std_logic;
                                     signal Scl      : inout std_logic;
@@ -594,27 +594,27 @@ architecture rtl of olo_test_i2c_vc is
     begin
         -- Initial Check
         LevelCheck(Scl, '0', Msg & " - SCL is HIGH but was expected LOW here [ReceiveBitExclClock]");
-        
+
         -- Clock stretching
         if ClkStretch > 0 ns then
             Scl <= '0';
             wait for ClkStretch;
             Scl <= 'Z';
-        end if;     
+        end if;
 
         -- Wait clock rising edge
         LevelWait(Scl, '1', Msg & " - SCL did not go high [ReceiveBitExclClock]", Timeout);
-        
+
         -- wait clock falling edge
         LevelWait(Scl, '0', Msg & " - SCL did not go low [ReceiveBitExclClock]", Timeout);
         CheckLastActivity(Sda, ClkHalfPeriod, -1, Msg & " - SDA not stable during SCL pulse [ReceiveBitExclClock]");
         Data := to01X(Sda);
-        
+
         -- wait until center of low
         wait for ClkQuartPeriod;
     end procedure;
 
-    -- *** Byte Transfers ***   
+    -- *** Byte Transfers ***
     procedure SendByteInclClock(    Data        : in    std_logic_vector(7 downto 0);
                                     signal Scl  : inout std_logic;
                                     signal Sda  : inout std_logic;
@@ -622,7 +622,7 @@ architecture rtl of olo_test_i2c_vc is
     begin
         -- Do bits
         for i in 7 downto 0 loop
-            SendBitInclClock(Data(i), Scl, Sda, Msg & " - Bit " & integer'image(7-i));  
+            SendBitInclClock(Data(i), Scl, Sda, Msg & " - Bit " & integer'image(7-i));
         end loop;
     end procedure;
 
@@ -634,7 +634,7 @@ architecture rtl of olo_test_i2c_vc is
     begin
         -- Do bits
         for i in 7 downto 0 loop
-            SendBitExclClock(Data(i), Scl, Sda, Msg & " - Bit " & integer'image(7-i), ClkStretch => ClkStretch);    
+            SendBitExclClock(Data(i), Scl, Sda, Msg & " - Bit " & integer'image(7-i), ClkStretch => ClkStretch);
         end loop;
     end procedure;
 
@@ -646,7 +646,7 @@ architecture rtl of olo_test_i2c_vc is
     begin
         -- Do bits
         for i in 7 downto 0 loop
-            ReceiveBitInclClock(RxByte_v(i), Scl, Sda, Msg & " - Bit " & integer'image(7-i));   
+            ReceiveBitInclClock(RxByte_v(i), Scl, Sda, Msg & " - Bit " & integer'image(7-i));
         end loop;
         check_equal(RxByte_v, ExpData, Msg & " - Received wrong byte");
     end procedure;
@@ -660,7 +660,7 @@ architecture rtl of olo_test_i2c_vc is
     begin
         -- Do bits
         for i in 7 downto 0 loop
-            ReceiveBitExclClock(RxByte_v(i), Scl, Sda, Msg & " - Bit " & integer'image(7-i), ClkStretch => ClkStretch); 
+            ReceiveBitExclClock(RxByte_v(i), Scl, Sda, Msg & " - Bit " & integer'image(7-i), ClkStretch => ClkStretch);
         end loop;
         check_equal(RxByte_v, ExpData, Msg & " - Received wrong byte");
     end procedure;
@@ -672,14 +672,14 @@ architecture rtl of olo_test_i2c_vc is
     begin
         return Addr*2+choose(IsRead, 1, 0);
     end function;
-    
+
     -- Free Bus
     procedure I2cBusFree(   signal Scl : inout std_logic;
                             signal Sda : inout std_logic) is
     begin
         Scl <= 'Z';
         Sda <= 'Z';
-    end procedure;     
+    end procedure;
 
 begin
 
@@ -734,18 +734,18 @@ begin
                 opmode := I2c_MASTER;
                 LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 before I2C-START can be sent [I2cPushStart]");
                 LevelCheck(Scl, '1', to_string(msg_p) & " - SDA must be 1 before I2C-START can be sent [I2cPushStart]");
-                
+
                 -- Do start condition
                 wait for ClkQuartPeriod;
                 Sda <= '0';
                 LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA falling edge [I2cPushStart]");
                 wait for ClkQuartPeriod;
-                
+
                 -- Go to center of clk low period
                 Scl <= '0';
-                wait for ClkQuartPeriod;      
-                
-                
+                wait for ClkQuartPeriod;
+
+
             elsif msg_type = I2cPushRepeatedStartMsg then
                 -- Push Repeated Start
                 delay := pop(request_msg);
@@ -759,7 +759,7 @@ begin
                 if to01X(Scl) = '1' then
                     LevelCheck(Sda, '1', to_string(msg_p) & " - SDA must be 1 before procedure is called if SCL = 1 [I2cPushRepeatedStart]");
                 end if;
-            
+
                 -- Do repeated start
                 if Scl = '0' then
                     Sda <= 'Z';
@@ -791,7 +791,7 @@ begin
                 if to01X(Scl) = '1' then
                     LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 before procedure is called if SCL = 1 [I2cPushStop]");
                 end if;
-                
+
                 -- Do stop
                 if Scl = '0' then
                     Sda <= '0';
@@ -800,15 +800,15 @@ begin
                     wait for ClkQuartPeriod;
                     LevelCheck(Scl, '1', to_string(msg_p) & " - SCL held low by other device [I2cPushStop]");
                 else
-                    wait for ClkQuartPeriod;        
+                    wait for ClkQuartPeriod;
                 end if;
                 Sda <= 'Z';
                 LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA rising edge [I2cPushStop]");
-                
+
                 -- Go to center of clk high period
                 wait for ClkQuartPeriod;
-                opmode := I2c_IDLE; 
-                
+                opmode := I2c_IDLE;
+
             elsif msg_type = I2cPushAddrMsg then
                 -- Push Address
                 address := pop(request_msg);
@@ -857,12 +857,12 @@ begin
                 opmode := I2c_SLAVE;
                 LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 before I2C-START can be received [I2cExpectStart]");
                 LevelCheck(Sda, '1', to_string(msg_p) & " - SDA must be 1 before I2C-START can be received [I2cExpectStart]");
-                
+
                 -- Do start checking
                 LevelWait(Sda, '0', to_string(msg_p) & " - SDA did not go low [I2cExpectStart]", timeout);
                 LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA falling edge [I2cExpectStart]");
                 LevelWait(Scl, '0', to_string(msg_p) & " - SCL did not go low [I2cExpectStart]", timeout);
-                LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 during SCL falling edge [I2cExpectStart]");   
+                LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 during SCL falling edge [I2cExpectStart]");
 
                 -- Wait for center of SCL low
                 wait for ClkQuartPeriod;
@@ -878,7 +878,7 @@ begin
                 if to01X(Scl) = '1' then
                     LevelCheck(Sda, '1', to_string(msg_p) & " - SDA must be 1 if SCL = 1 when waiting for a I2C-REPEATED-START [I2cExpectRepeatedStart]");
                 end if;
-            
+
                 -- Do Check
                 if to01X(Scl) = '0' then
                     -- Clock stretching
@@ -886,15 +886,15 @@ begin
                         Scl <= '0';
                         wait for clkStretch;
                         Scl <= 'Z';
-                    end if; 
+                    end if;
                     LevelWait(Scl, '1', to_string(msg_p) & " - SCL did not go high [I2cExpectRepeatedStart]", timeout);
                     LevelCheck(Sda, '1', to_string(msg_p) & " - SDA must be 1 before SCL goes high [I2cExpectRepeatedStart]");
                 end if;
                 LevelWait(Sda, '0', to_string(msg_p) & " - SDA did not go low [I2cExpectRepeatedStart]", timeout);
                 LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA falling edge [I2cExpectRepeatedStart]");
                 LevelWait(Scl, '0', to_string(msg_p) & " - SCL did not go low [I2cExpectRepeatedStart]", timeout);
-                LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 during SCL falling edge [I2cExpectRepeatedStart]");       
-                
+                LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 during SCL falling edge [I2cExpectRepeatedStart]");
+
                 -- Wait for center of SCL low
                 wait for ClkQuartPeriod;
 
@@ -909,7 +909,7 @@ begin
                 if to01X(Scl) = '1' then
                     LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 if SCL = 1 when waiting for a I2C-STOP [I2cExpectStop]");
                 end if;
-                
+
                 -- Do Check
                 if to01X(Scl) = '0' then
                     -- Clock stretching
@@ -917,13 +917,13 @@ begin
                         Scl <= '0';
                         wait for clkStretch;
                         Scl <= 'Z';
-                    end if; 
+                    end if;
                     LevelWait(Scl, '1', to_string(msg_p) & " - SCL did not go high [I2cExpectStop]", timeout);
                     LevelCheck(Sda, '0', to_string(msg_p) & " - SDA must be 0 before SCL goes high [I2cExpectStop]");
                 end if;
                 LevelWait(Sda, '1', to_string(msg_p) & " - SDA did not go high [I2cExpectStop]", timeout);
                 LevelCheck(Scl, '1', to_string(msg_p) & " - SCL must be 1 during SDA rising edge [I2cExpectStop]");
-                
+
                 -- Go to center of clk high period
                 wait for ClkQuartPeriod;
                 opmode := I2c_IDLE;
@@ -1011,7 +1011,7 @@ begin
                     ExpectByteInclClock(Data_v, Scl, Sda, to_string(msg_p) & " - Receive byte in master mode [I2cExpectRxByte]");
                     SendBitInclClock(ackOutput, Scl, Sda, to_string(msg_p) & " - ACK in master mode [I2cExpectRxByte]");
                 else
-                    ExpectByteExclClock(Data_v, Scl, Sda, to_string(msg_p) & " - Receive byte in slave mode [I2cExpectRxByte]", ClkStretch => clkStretch);           
+                    ExpectByteExclClock(Data_v, Scl, Sda, to_string(msg_p) & " - Receive byte in slave mode [I2cExpectRxByte]", ClkStretch => clkStretch);
                     SendBitExclClock(ackOutput, Scl, Sda, to_string(msg_p) & " - ACK in slave mode [I2cExpectRxByte]", ClkStretch => clkStretch);
                     I2cBusFree(Scl, Sda);
                 end if;
@@ -1031,13 +1031,13 @@ begin
                 -- Force Bus Release
                 I2cBusFree(Scl, Sda);
                 opmode := I2c_IDLE;
-    
+
 
             elsif msg_type = wait_until_idle_msg then
                 handle_wait_until_idle(net, msg_type, request_msg);
             else
                 unexpected_msg_type(msg_type);
-            end if;                
+            end if;
         end loop;
     end process;
 

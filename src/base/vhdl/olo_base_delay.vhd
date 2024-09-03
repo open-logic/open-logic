@@ -1,19 +1,19 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This is a delay element. It is either emplemented in BRAM or SRL. The output
 -- is always a fabric register for improved timing.
--- 
-------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,17 +21,17 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_delay is
     generic (
         Width_g         : positive;
         Delay_g         : natural;
-        Resource_g      : string                            := "AUTO";   
-        BramThreshold_g : positive range 3 to positive'high := 128;    
-        RstState_g      : boolean                           := True;     
-        RamBehavior_g   : string                            := "RBW" 
+        Resource_g      : string                            := "AUTO";
+        BramThreshold_g : positive range 3 to positive'high := 128;
+        RstState_g      : boolean                           := True;
+        RamBehavior_g   : string                            := "RBW"
     );
     port(
         -- Control Ports
@@ -44,9 +44,9 @@ entity olo_base_delay is
     );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_delay is
 
     signal MemOut      : std_logic_vector(Width_g - 1 downto 0);
@@ -108,7 +108,7 @@ begin
                 if Rst = '1' then
                     WrAddr <= std_logic_vector(to_unsigned(MemTaps_c - 1, WrAddr'length));
                     RdAddr <= (others => '0');
-                end if; 
+                end if;
             end if;
         end process;
 

@@ -1,13 +1,13 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -22,9 +22,9 @@ library work;
 
 library olo;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_cc_simple_tb is
     generic (
@@ -106,7 +106,7 @@ begin
             tvalid => Out_Valid,
             tdata  => Out_Data
         );
-  
+
 
     -------------------------------------------------------------------------
     -- Clock
@@ -147,9 +147,9 @@ begin
             check(In_RstOut = '0', "In_RstOut not de-asserted");
             check(Out_RstOut = '0', "Out_RstOut not de-asserted");
 
-            -- *** Reset Tests ***        
+            -- *** Reset Tests ***
             if run("Reset") then
-            
+
                 -- Check if RstA is propagated to both sides
                 PulseSig(In_RstIn, In_Clk);
                 wait for 1 us;
@@ -189,19 +189,19 @@ begin
                 check_equal(Out_Data, 16#CD#, "Received wrong value 2");
                 CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 2");
 
-            elsif run("MaxRate") then            
-                for i in 1 to 10 loop  
-                    wait until rising_edge(In_Clk);   
-                    stdlv := std_logic_vector(to_unsigned(i, In_Data'length));       
+            elsif run("MaxRate") then
+                for i in 1 to 10 loop
+                    wait until rising_edge(In_Clk);
+                    stdlv := std_logic_vector(to_unsigned(i, In_Data'length));
                     In_Data <= stdlv;
                     In_Valid  <= '1';
-                    check_axi_stream(net, slave_axi_stream, stdlv, blocking => false);                
+                    check_axi_stream(net, slave_axi_stream, stdlv, blocking => false);
                     wait until rising_edge(In_Clk);
                     In_Valid  <= '0';
                     wait for MaxRatePeriod_c-ClkOut_Period_c;
                 end loop;
                 wait_until_idle(net, as_sync(slave_axi_stream));
-            end if;        
+            end if;
         end loop;
         -- TB done
         test_runner_cleanup(runner);

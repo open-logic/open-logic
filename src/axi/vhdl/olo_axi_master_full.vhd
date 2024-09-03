@@ -1,13 +1,13 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements a full AXI master. In contrast to olo_axi_master_full,
 -- this entity can do unaligned transfers and it supports different width for the
 -- AXI interface than for the data interface. The AXI interface can be wider than
@@ -15,9 +15,9 @@
 -- The flexibility of doing unaligned transfers is paid by lower performance for
 -- very small transfers. There is an overhead of some clock cycles per command.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -26,96 +26,96 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_axi_master_full is
     generic (
         -- AXI Configuration
-        AxiAddrWidth_g             : natural range 12 to 64  := 32;  
-        AxiDataWidth_g             : natural range 8 to 1024 := 32;  
-        AxiMaxBeats_g              : natural range 1 to 256  := 256;  
-        AxiMaxOpenTransactions_g   : natural range 1 to 8    := 8;    
+        AxiAddrWidth_g             : natural range 12 to 64  := 32;
+        AxiDataWidth_g             : natural range 8 to 1024 := 32;
+        AxiMaxBeats_g              : natural range 1 to 256  := 256;
+        AxiMaxOpenTransactions_g   : natural range 1 to 8    := 8;
         -- User Configuration
-        UserTransactionSizeBits_g  : natural                 := 32;   
-        DataFifoDepth_g            : natural                 := 1024; 
-        UserDataWidth_g            : natural                 := 32;   
-        ImplRead_g                 : boolean                 := true; 
-        ImplWrite_g                : boolean                 := true; 
-        RamBehavior_g              : string                  := "RBW" 
+        UserTransactionSizeBits_g  : natural                 := 32;
+        DataFifoDepth_g            : natural                 := 1024;
+        UserDataWidth_g            : natural                 := 32;
+        ImplRead_g                 : boolean                 := true;
+        ImplWrite_g                : boolean                 := true;
+        RamBehavior_g              : string                  := "RBW"
     );
     port (
         -- Control Signals
-        Clk             : in  std_logic;                                                                       
-        Rst             : in  std_logic;                                                                       
+        Clk             : in  std_logic;
+        Rst             : in  std_logic;
         -- User Command Interface
-        CmdWr_Addr      : in  std_logic_vector(AxiAddrWidth_g - 1 downto 0)                 := (others => '0');  
-        CmdWr_Size      : in  std_logic_vector(UserTransactionSizeBits_g - 1 downto 0)      := (others => '0');  
-        CmdWr_LowLat    : in  std_logic                                                     := '0';              
-        CmdWr_Valid     : in  std_logic                                                     := '0';              
-        CmdWr_Ready     : out std_logic;                                                                       
+        CmdWr_Addr      : in  std_logic_vector(AxiAddrWidth_g - 1 downto 0)                 := (others => '0');
+        CmdWr_Size      : in  std_logic_vector(UserTransactionSizeBits_g - 1 downto 0)      := (others => '0');
+        CmdWr_LowLat    : in  std_logic                                                     := '0';
+        CmdWr_Valid     : in  std_logic                                                     := '0';
+        CmdWr_Ready     : out std_logic;
         -- User Command Interface
-        CmdRd_Addr      : in  std_logic_vector(AxiAddrWidth_g - 1 downto 0)                 := (others => '0');  
-        CmdRd_Size      : in  std_logic_vector(UserTransactionSizeBits_g - 1 downto 0)      := (others => '0');  
-        CmdRd_LowLat    : in  std_logic                                                     := '0';              
-        CmdRd_Valid     : in  std_logic                                                     := '0';              
-        CmdRd_Ready     : out std_logic;                                                                       
+        CmdRd_Addr      : in  std_logic_vector(AxiAddrWidth_g - 1 downto 0)                 := (others => '0');
+        CmdRd_Size      : in  std_logic_vector(UserTransactionSizeBits_g - 1 downto 0)      := (others => '0');
+        CmdRd_LowLat    : in  std_logic                                                     := '0';
+        CmdRd_Valid     : in  std_logic                                                     := '0';
+        CmdRd_Ready     : out std_logic;
         -- Write Data
-        Wr_Data         : in  std_logic_vector(UserDataWidth_g - 1 downto 0)                := (others => '0');  
-        Wr_Valid        : in  std_logic                                                     := '0';              
-        Wr_Ready        : out std_logic;                                                                      
+        Wr_Data         : in  std_logic_vector(UserDataWidth_g - 1 downto 0)                := (others => '0');
+        Wr_Valid        : in  std_logic                                                     := '0';
+        Wr_Ready        : out std_logic;
         -- Read Data
-        Rd_Data         : out std_logic_vector(UserDataWidth_g - 1 downto 0);                                     
+        Rd_Data         : out std_logic_vector(UserDataWidth_g - 1 downto 0);
         Rd_Last         : out std_logic;
-        Rd_Valid        : out std_logic;                                                                       
-        Rd_Ready        : in  std_logic                                                     := '1';              
+        Rd_Valid        : out std_logic;
+        Rd_Ready        : in  std_logic                                                     := '1';
         -- Response
-        Wr_Done         : out std_logic;                                                                       
-        Wr_Error        : out std_logic;                                                                     
-        Rd_Done         : out std_logic;                                                                       
-        Rd_Error        : out std_logic;                                                                       
+        Wr_Done         : out std_logic;
+        Wr_Error        : out std_logic;
+        Rd_Done         : out std_logic;
+        Rd_Error        : out std_logic;
         -- AXI Address Write Channel
-        M_Axi_AwAddr    : out std_logic_vector(AxiAddrWidth_g - 1 downto 0); 
-        M_Axi_AwLen     : out std_logic_vector(7 downto 0); 
-        M_Axi_AwSize    : out std_logic_vector(2 downto 0); 
-        M_Axi_AwBurst   : out std_logic_vector(1 downto 0); 
+        M_Axi_AwAddr    : out std_logic_vector(AxiAddrWidth_g - 1 downto 0);
+        M_Axi_AwLen     : out std_logic_vector(7 downto 0);
+        M_Axi_AwSize    : out std_logic_vector(2 downto 0);
+        M_Axi_AwBurst   : out std_logic_vector(1 downto 0);
         M_Axi_AwLock    : out std_logic;
-        M_Axi_AwCache   : out std_logic_vector(3 downto 0); 
-        M_Axi_AwProt    : out std_logic_vector(2 downto 0); 
+        M_Axi_AwCache   : out std_logic_vector(3 downto 0);
+        M_Axi_AwProt    : out std_logic_vector(2 downto 0);
         M_Axi_AwValid   : out std_logic;
-        M_Axi_AwReady   : in  std_logic                                                     := '0'; 
-        -- AXI Write Data Channel                                                           
+        M_Axi_AwReady   : in  std_logic                                                     := '0';
+        -- AXI Write Data Channel
         M_Axi_WData     : out std_logic_vector(AxiDataWidth_g - 1 downto 0);
         M_Axi_WStrb     : out std_logic_vector(AxiDataWidth_g / 8 - 1 downto 0);
         M_Axi_WLast     : out std_logic;
         M_Axi_WValid    : out std_logic;
-        M_Axi_WReady    : in  std_logic                                                     := '0'; 
+        M_Axi_WReady    : in  std_logic                                                     := '0';
         -- AXI Write Response Channel
-        M_Axi_BResp     : in  std_logic_vector(1 downto 0)                                  := (others => '0'); 
-        M_Axi_BValid    : in  std_logic                                                     := '0'; 
-        M_Axi_BReady    : out std_logic;  
+        M_Axi_BResp     : in  std_logic_vector(1 downto 0)                                  := (others => '0');
+        M_Axi_BValid    : in  std_logic                                                     := '0';
+        M_Axi_BReady    : out std_logic;
         -- AXI Read Address Channel
-        M_Axi_ArAddr    : out std_logic_vector(AxiAddrWidth_g - 1 downto 0); 
-        M_Axi_ArLen     : out std_logic_vector(7 downto 0); 
-        M_Axi_ArSize    : out std_logic_vector(2 downto 0); 
+        M_Axi_ArAddr    : out std_logic_vector(AxiAddrWidth_g - 1 downto 0);
+        M_Axi_ArLen     : out std_logic_vector(7 downto 0);
+        M_Axi_ArSize    : out std_logic_vector(2 downto 0);
         M_Axi_ArBurst   : out std_logic_vector(1 downto 0);
-        M_Axi_ArLock    : out std_logic; 
-        M_Axi_ArCache   : out std_logic_vector(3 downto 0); 
-        M_Axi_ArProt    : out std_logic_vector(2 downto 0); 
+        M_Axi_ArLock    : out std_logic;
+        M_Axi_ArCache   : out std_logic_vector(3 downto 0);
+        M_Axi_ArProt    : out std_logic_vector(2 downto 0);
         M_Axi_ArValid   : out std_logic;
-        M_Axi_ArReady   : in  std_logic                                                     := '0'; 
+        M_Axi_ArReady   : in  std_logic                                                     := '0';
         -- AXI Read Data Channel
-        M_Axi_RData     : in  std_logic_vector(AxiDataWidth_g - 1 downto 0)                 := (others => '0'); 
-        M_Axi_RResp     : in  std_logic_vector(1 downto 0)                                  := (others => '0'); 
-        M_Axi_RLast     : in  std_logic                                                     := '0'; 
-        M_Axi_RValid    : in  std_logic                                                     := '0'; 
+        M_Axi_RData     : in  std_logic_vector(AxiDataWidth_g - 1 downto 0)                 := (others => '0');
+        M_Axi_RResp     : in  std_logic_vector(1 downto 0)                                  := (others => '0');
+        M_Axi_RLast     : in  std_logic                                                     := '0';
+        M_Axi_RValid    : in  std_logic                                                     := '0';
         M_Axi_RReady    : out std_logic
     );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_axi_master_full is
 
     -- *** Constants ***
@@ -240,10 +240,10 @@ begin
     begin
         -- *** Keep two process variables stable ***
         v := r;
-        
+
         -- *** Write Related Code ***
         if ImplWrite_g then
-            
+
             -- *** Command FSM ***
             v.WrStartTf    := '0';
             v.AxiWrCmd_Vld := '0';
@@ -264,7 +264,7 @@ begin
                         v.CmdWr_Ready := '0';
                         v.WrCmdFsm     := Apply_s;
                     end if;
-                    
+
                 when Apply_s =>
                     if (AxiWrCmd_Rdy = '1') and (r.WrWconvFsm = Idle_s) and (r.WrAlignFsm = Idle_s) then
                         v.AxiWrCmd_Vld  := '1';
@@ -281,7 +281,7 @@ begin
                             end if;
                         end loop;
                     end if;
-                        
+
                 -- coverage off
                 when others => null;    -- unreachable code
                 -- coverage on
@@ -319,7 +319,7 @@ begin
                 -- coverage on
 
             end case;
-                    
+
             -- *** Alignment FSM ***
             -- Initial values
             WrDataEna <= '0';
@@ -385,7 +385,7 @@ begin
                 -- coverage on
             end case;
         end if;
-                
+
         -- *** Read Related Code ***
         if ImplRead_g then
 
@@ -457,7 +457,7 @@ begin
                         v.CmdRd_Ready := '1';
                         v.RdStartTf    := '0';
                     end if;
-                
+
                 -- coverage off
                 when others => null;    -- unreachable code
                 -- coverage on
@@ -532,9 +532,9 @@ begin
             -- Send data to FIFO
             RdPl_Last <= r.RdAlignLast and not (reduceOr(r.RdAlignByteVld(r.RdAlignByteVld'high downto DataBytes_c))); -- assert when no more data is available after this beat
             RdPl_Data <= r.RdAlignReg(UserDataWidth_g - 1 downto 0);
-            
+
         end if;
-            
+
         -- *** Update Signal ***
         r_next <= v;
     end process;
@@ -574,9 +574,9 @@ begin
     CmdRd_Ready <= r.CmdRd_Ready;
 
 
-    ------------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Instantiations
-    ------------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- AXI Master Interface
     AxiWrDat_Data <= r.WrAlignReg(AxiWrDat_Data'range);
     AxiWrDat_Be   <= r.WrAlignBe(AxiWrDat_Be'range);
@@ -686,11 +686,11 @@ begin
         WrWconv_Vld <= WrWconvEna and WrPl_Vld;
         WrData_Rdy  <= AxiWrDat_Rdy and WrDataEna;
         i_wc_wr : entity work.olo_base_wconv_n2xn
-            generic map ( 
+            generic map (
                 InWidth_g   => UserDataWidth_g,
                 OutWidth_g  => AxiDataWidth_g
             )
-            port map(    
+            port map(
                 Clk         => Clk,
                 Rst         => Rst,
                 In_Valid    => WrWconv_Vld,
@@ -716,9 +716,9 @@ begin
         InData <= RdPl_Last & RdPl_Data;
         i_pl_rd_data : entity work.olo_base_pl_stage
             generic map (
-                Width_g     => UserDataWidth_g+1  
+                Width_g     => UserDataWidth_g+1
             )
-            port map (     
+            port map (
                 Clk         => Clk,
                 Rst         => Rst,
                 In_Data     => InData,
