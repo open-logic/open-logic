@@ -146,7 +146,6 @@ architecture rtl of olo_axi_master_simple is
 
     -- *** Two Process Record ***
     type two_process_r is record
-
         -- *** Write Related Registers ***
         -- Command Interface
         CmdWr_Ready     : std_logic;
@@ -236,15 +235,21 @@ architecture rtl of olo_axi_master_simple is
 begin
 
     -- *** Assertions ***
-    assert AxiDataWidth_g mod 8 = 0 report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be a multiple of 8" severity failure;
-    assert isPower2(AxiDataWidth_g/8) report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be 2^X bytes" severity failure;
-    assert UserTransactionSizeBits_g < AxiAddrWidth_g-log2(AxiDataWidth_g/8) report "###ERROR###: olo_axi_master_simple UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-log2(AxiDataWidth_g/8), see documentation" severity failure;
+    assert AxiDataWidth_g mod 8 = 0
+        report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be a multiple of 8"
+        severity failure;
+    assert isPower2(AxiDataWidth_g/8)
+        report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be 2^X bytes"
+        severity failure;
+    assert UserTransactionSizeBits_g < AxiAddrWidth_g-log2(AxiDataWidth_g/8)
+        report "###ERROR###: olo_axi_master_simple UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-log2(AxiDataWidth_g/8), see documentation"
+        severity failure;
 
     -- *** Combinatorial Process ***
     p_comb : process (r, M_Axi_AwReady, M_Axi_BValid, M_Axi_BResp, WrDataFifoORdy, WrDataFifoOVld, WrTransFifoOutVld,
                      WrTransFifoBeats, WrRespIsLast, WrRespFifoVld, CmdWr_Addr, CmdWr_Size, CmdWr_LowLat, CmdWr_Valid,
                      Wr_Valid, WrData_Rdy_I, M_Axi_ArReady, RdRespIsLast, RdRespFifoVld, RdRespLast, CmdRd_Addr,
-                     CmdRd_Size, CmdRd_LowLat, CmdRd_Valid, Rd_Ready, RdDat_Vld_I, M_Axi_RResp)
+                     CmdRd_Size, CmdRd_LowLat, CmdRd_Valid, Rd_Ready, RdDat_Vld_I, M_Axi_RResp) is
         variable v               : two_process_r;
         variable WrMax4kBeats_v  : unsigned(13 - UnusedAddrBits_c downto 0);
         variable RdMax4kBeats_v  : unsigned(13 - UnusedAddrBits_c downto 0);
@@ -413,7 +418,9 @@ begin
             v.Wr_Done  := '0';
             v.Wr_Error := '0';
             if M_Axi_BValid = '1' then
-                assert WrRespFifoVld = '1' report "###ERROR###: olo_axi_master_simple internal error --> WrRespFifo Empty" severity error;
+                assert WrRespFifoVld = '1'
+                    report "###ERROR###: olo_axi_master_simple internal error --> WrRespFifo Empty"
+                    severity error;
                 v.WrOpenTrans := v.WrOpenTrans - 1; -- Use v. because it may have been modified above and this modification has not to be overriden
                 if WrRespIsLast = '1' then
                     if (M_Axi_BResp /= xRESP_OKAY_c) then
@@ -536,7 +543,9 @@ begin
             v.Rd_Done  := '0';
             v.Rd_Error := '0';
             if RdRespLast = '1' then
-                assert RdRespFifoVld = '1' report "###ERROR###: olo_axi_master_simple internal error --> RdRespFifo Empty" severity error;
+                assert RdRespFifoVld = '1'
+                    report "###ERROR###: olo_axi_master_simple internal error --> RdRespFifo Empty"
+                    severity error;
                 v.RdOpenTrans := v.RdOpenTrans - 1; -- Use v. because it may have been modified above and this modification has not to be overriden
                 if RdRespIsLast = '1' then
                     if (M_Axi_RResp /= xRESP_OKAY_c) then
@@ -558,7 +567,7 @@ begin
     end process;
 
     -- *** Registered Process ***
-    p_reg : process(Clk)
+    p_reg : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;
@@ -657,7 +666,7 @@ begin
             );
 
         -- Write Data FIFO
-        b_fifo_wr_data : block
+        b_fifo_wr_data : block is
             signal InData  : std_logic_vector(Wr_Data'length + Wr_Be'length - 1 downto 0);
             signal OutData : std_logic_vector(InData'range);
         begin
@@ -703,7 +712,8 @@ begin
                 In_Ready    => open,               -- Not required since maximum of open transactions is limitted
                 Out_Data(0) => WrRespIsLast,
                 Out_Valid   => WrRespFifoVld,
-                Out_Ready   => M_Axi_BValid);
+                Out_Ready   => M_Axi_BValid
+            );
     end generate;
 
     -- Tie signals to ground if read not implemented
@@ -718,7 +728,7 @@ begin
     g_read : if ImplRead_g generate
 
         -- Read Data FIFO
-        b_fifo_rd_data : block
+        b_fifo_rd_data : block is
             signal InData, OutData : std_logic_vector(Rd_Data'length downto 0);
         begin
             -- Assemble Input data

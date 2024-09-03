@@ -32,28 +32,29 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_axi_master_simple_tb is
     generic (
-        AxiAddrWidth_g              : natural range 16 to 64   := 32;
-        AxiDataWidth_g              : natural range 16 to 64   := 32;
-        AxiMaxOpenTransactions_g    : natural range 1 to 8     := 2;
-        ImplRead_g                  : boolean                  := true;
-        ImplWrite_g                 : boolean                  := true;
-        RamBehavior_g               : string                   := "RBW";
+        AxiAddrWidth_g              : natural range 16 to 64 := 32;
+        AxiDataWidth_g              : natural range 16 to 64 := 32;
+        AxiMaxOpenTransactions_g    : natural range 1 to 8   := 2;
+        ImplRead_g                  : boolean                := true;
+        ImplWrite_g                 : boolean                := true;
+        RamBehavior_g               : string                 := "RBW";
         runner_cfg                  : string
     );
-end entity olo_axi_master_simple_tb;
+end entity;
 
 architecture sim of olo_axi_master_simple_tb is
-    -------------------------------------------------------------------------
-    -- Fixed Generics
-    -------------------------------------------------------------------------
-    constant UserTransactionSizeBits_c   : natural      := 10;
-    constant AxiMaxBeats_c               : natural      := 32;
-    constant DataFifoDepth_c             : natural      := 16;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
+    -- Fixed Generics
+    -----------------------------------------------------------------------------------------------
+    constant UserTransactionSizeBits_c : natural      := 10;
+    constant AxiMaxBeats_c             : natural      := 32;
+    constant DataFifoDepth_c           : natural      := 16;
+
+    -----------------------------------------------------------------------------------------------
     -- AXI Definition
-    -------------------------------------------------------------------------
-    constant ByteWidth_c     : integer   := AxiDataWidth_g/8;
+    -----------------------------------------------------------------------------------------------
+    constant ByteWidth_c : integer   := AxiDataWidth_g/8;
 
     subtype IdRange_r   is natural range -1 downto 0;
     subtype AddrRange_r is natural range AxiAddrWidth_g-1 downto 0;
@@ -62,18 +63,18 @@ architecture sim of olo_axi_master_simple_tb is
     subtype ByteRange_r is natural range ByteWidth_c-1 downto 0;
 
     signal AxiMs : AxiMs_r (ArId(IdRange_r), AwId(IdRange_r),
-                            ArAddr(AddrRange_r), AwAddr(AddrRange_r),
-                            ArUser(UserRange_r), AwUser(UserRange_r), WUser(UserRange_r),
-                            WData(DataRange_r),
-                            WStrb(ByteRange_r));
+                             ArAddr(AddrRange_r), AwAddr(AddrRange_r),
+                             ArUser(UserRange_r), AwUser(UserRange_r), WUser(UserRange_r),
+                             WData(DataRange_r),
+                             WStrb(ByteRange_r));
 
     signal AxiSm : AxiSm_r (RId(IdRange_r), BId(IdRange_r),
-                            RUser(UserRange_r), BUser(UserRange_r),
-                            RData(DataRange_r));
+                             RUser(UserRange_r), BUser(UserRange_r),
+                             RData(DataRange_r));
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     subtype CmdAddrRange_r is natural range AxiAddrWidth_g-1 downto 0;
     subtype CmdSizeRange_r is natural range UserTransactionSizeBits_c+CmdAddrRange_r'high downto CmdAddrRange_r'high+1;
     constant CmdLowLat_r : natural := CmdSizeRange_r'high+1;
@@ -81,68 +82,67 @@ architecture sim of olo_axi_master_simple_tb is
     subtype DatDataRange_r is natural range AxiDataWidth_g-1 downto 0;
     subtype DatBeRange_r is natural range AxiDataWidth_g/8+DatDataRange_r'high downto DatDataRange_r'high+1;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant Clk_Frequency_c   : real    := 100.0e6;
-    constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
+    -----------------------------------------------------------------------------------------------
+    constant Clk_Frequency_c : real    := 100.0e6;
+    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
 
     type Response_t is (RespSuccess, RespError);
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Contral Sginal
-    signal Clk             : std_logic                                                   := '0';
-    signal Rst             : std_logic                                                   := '0';
+    signal Clk          : std_logic                                                   := '0';
+    signal Rst          : std_logic                                                   := '0';
     -- Write Command Interface
-    signal CmdWr_Addr      : std_logic_vector(AxiAddrWidth_g - 1 downto 0)               := (others => '0');
-    signal CmdWr_Size      : std_logic_vector(UserTransactionSizeBits_c - 1 downto 0)    := (others => '0');
-    signal CmdWr_LowLat    : std_logic                                                   := '0';
-    signal CmdWr_Valid     : std_logic                                                   := '0';
-    signal CmdWr_Ready     : std_logic;
+    signal CmdWr_Addr   : std_logic_vector(AxiAddrWidth_g - 1 downto 0)               := (others => '0');
+    signal CmdWr_Size   : std_logic_vector(UserTransactionSizeBits_c - 1 downto 0)    := (others => '0');
+    signal CmdWr_LowLat : std_logic                                                   := '0';
+    signal CmdWr_Valid  : std_logic                                                   := '0';
+    signal CmdWr_Ready  : std_logic;
     -- Read Command Interface
-    signal CmdRd_Addr      : std_logic_vector(AxiAddrWidth_g - 1 downto 0)               := (others => '0');
-    signal CmdRd_Size      : std_logic_vector(UserTransactionSizeBits_c - 1 downto 0)    := (others => '0');
-    signal CmdRd_LowLat    : std_logic                                                   := '0';
-    signal CmdRd_Valid     : std_logic                                                   := '0';
-    signal CmdRd_Ready     : std_logic;
+    signal CmdRd_Addr   : std_logic_vector(AxiAddrWidth_g - 1 downto 0)               := (others => '0');
+    signal CmdRd_Size   : std_logic_vector(UserTransactionSizeBits_c - 1 downto 0)    := (others => '0');
+    signal CmdRd_LowLat : std_logic                                                   := '0';
+    signal CmdRd_Valid  : std_logic                                                   := '0';
+    signal CmdRd_Ready  : std_logic;
     -- Write Data
-    signal Wr_Data         : std_logic_vector(AxiDataWidth_g - 1 downto 0)               := (others => '0');
-    signal Wr_Be           : std_logic_vector(AxiDataWidth_g / 8 - 1 downto 0)           := (others => '0');
-    signal Wr_Valid        : std_logic                                                   := '0';
-    signal Wr_Ready        : std_logic;
+    signal Wr_Data      : std_logic_vector(AxiDataWidth_g - 1 downto 0)               := (others => '0');
+    signal Wr_Be        : std_logic_vector(AxiDataWidth_g / 8 - 1 downto 0)           := (others => '0');
+    signal Wr_Valid     : std_logic                                                   := '0';
+    signal Wr_Ready     : std_logic;
     -- Read Data
-    signal Rd_Data         : std_logic_vector(AxiDataWidth_g - 1 downto 0);
-    signal Rd_Valid        : std_logic;
-    signal Rd_Ready        : std_logic                                                   := '0';
+    signal Rd_Data      : std_logic_vector(AxiDataWidth_g - 1 downto 0);
+    signal Rd_Valid     : std_logic;
+    signal Rd_Ready     : std_logic                                                   := '0';
     -- Response
-    signal Wr_Done         : std_logic;
-    signal Wr_Error        : std_logic;
-    signal Rd_Done         : std_logic;
-    signal Rd_Error        : std_logic;
-    signal Rd_Last         : std_logic;
+    signal Wr_Done      : std_logic;
+    signal Wr_Error     : std_logic;
+    signal Rd_Done      : std_logic;
+    signal Rd_Error     : std_logic;
+    signal Rd_Last      : std_logic;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
 
     -- *** Verification Compnents ***
-    constant axiSlave : olo_test_axi_slave_t := new_olo_test_axi_slave (
+    constant axiSlave     : olo_test_axi_slave_t := new_olo_test_axi_slave (
         dataWidth => AxiDataWidth_g,
         addrWidth => AxiAddrWidth_g,
         idWidth => 0
     );
-    constant rdDataSlave : axi_stream_slave_t := new_axi_stream_slave (
+    constant rdDataSlave  : axi_stream_slave_t := new_axi_stream_slave (
         data_length => AxiDataWidth_g,
         stall_config => new_stall_config(0.0, 0, 0)
     );
-    constant wrCmdMaster : axi_stream_master_t := new_axi_stream_master (
+    constant wrCmdMaster  : axi_stream_master_t := new_axi_stream_master (
         data_length => AxiAddrWidth_g+UserTransactionSizeBits_c+1,
         stall_config => new_stall_config(0.0, 0, 0)
     );
-    constant rdCmdMaster : axi_stream_master_t := new_axi_stream_master (
+    constant rdCmdMaster  : axi_stream_master_t := new_axi_stream_master (
         data_length => AxiAddrWidth_g+UserTransactionSizeBits_c+1,
         stall_config => new_stall_config(0.0, 0, 0)
     );
@@ -151,11 +151,12 @@ architecture sim of olo_axi_master_simple_tb is
         stall_config => new_stall_config(0.0, 0, 0)
     );
 
-    procedure PushCommand(  signal net  : inout network_t;
-                            CmdMaster   : axi_stream_master_t;
-                            CmdAddr     : unsigned;
-                            CmdSize     : integer;
-                            CmdLowLat   : std_logic := '0') is
+    procedure PushCommand (
+            signal net : inout network_t;
+            CmdMaster  : axi_stream_master_t;
+            CmdAddr    : unsigned;
+            CmdSize    : integer;
+            CmdLowLat  : std_logic := '0') is
         variable TData : std_logic_vector(CmdLowLat_r downto 0);
     begin
         TData(CmdAddrRange_r) := std_logic_vector(resize(CmdAddr, AxiAddrWidth_g));
@@ -164,14 +165,15 @@ architecture sim of olo_axi_master_simple_tb is
         push_axi_stream(net, CmdMaster, TData);
     end procedure;
 
-    procedure PushWrData(   signal net      : inout network_t;
-                            startValue      : unsigned;
-                            increment       : natural               := 1;
-                            beats           : natural               := 1;
-                            firstStrb       : std_logic_vector      := onesVector(AxiDataWidth_g/8);
-                            lastStrb        : std_logic_vector      := onesVector(AxiDataWidth_g/8)) is
+    procedure PushWrData (
+            signal net : inout network_t;
+            startValue : unsigned;
+            increment  : natural          := 1;
+            beats      : natural          := 1;
+            firstStrb  : std_logic_vector := onesVector(AxiDataWidth_g/8);
+            lastStrb   : std_logic_vector := onesVector(AxiDataWidth_g/8)) is
         variable TData : std_logic_vector(DatBeRange_r'high downto 0);
-        variable Data : unsigned(AxiDataWidth_g-1 downto 0);
+        variable Data  : unsigned(AxiDataWidth_g-1 downto 0);
     begin
         Data := resize(startValue, AxiDataWidth_g);
         for i in 0 to beats-1 loop
@@ -188,10 +190,11 @@ architecture sim of olo_axi_master_simple_tb is
         end loop;
     end procedure;
 
-    procedure ExpectRdData( signal net      : inout network_t;
-                            startValue      : unsigned;
-                            increment       : natural               := 1;
-                            beats           : natural               := 1) is
+    procedure ExpectRdData (
+            signal net : inout network_t;
+            startValue : unsigned;
+            increment  : natural := 1;
+            beats      : natural := 1) is
         variable Data : unsigned(AxiDataWidth_g-1 downto 0);
         variable Last : std_logic := '0';
     begin
@@ -206,7 +209,7 @@ architecture sim of olo_axi_master_simple_tb is
         end loop;
     end procedure;
 
-    procedure ExpectWrResponse(Response : Response_t) is
+    procedure ExpectWrResponse (Response : Response_t) is
     begin
         wait until rising_edge(Clk) and ((Wr_Done = '1') or (Wr_Error = '1'));
         if Response = RespSuccess then
@@ -218,7 +221,7 @@ architecture sim of olo_axi_master_simple_tb is
         end if;
     end procedure;
 
-    procedure ExpectRdResponse(Response : Response_t) is
+    procedure ExpectRdResponse (Response : Response_t) is
     begin
         wait until rising_edge(Clk) and ((Rd_Done = '1') or (Rd_Error = '1'));
         if Response = RespSuccess then
@@ -232,12 +235,13 @@ architecture sim of olo_axi_master_simple_tb is
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -464,7 +468,6 @@ begin
                 end if;
             end if;
 
-
             -- *** Burst Reads ***
             if run("BurstRead") then
                 if ImplRead_g then
@@ -591,7 +594,6 @@ begin
                 end if;
             end if;
 
-
             -- Wait for idle
             wait_until_idle(net, as_sync(axiSlave));
             wait_until_idle(net, as_sync(rdDataSlave));
@@ -605,15 +607,14 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5*Clk_Period_c;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_axi_master_simple
         generic map (
             AxiAddrWidth_g              => AxiAddrWidth_g,
@@ -696,9 +697,9 @@ begin
             M_Axi_RLast    => AxiSm.RLast
         );
 
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Verification Components
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     vc_slave : entity work.olo_test_axi_slave_vc
         generic map (
             instance => axiSlave
@@ -722,7 +723,7 @@ begin
             tlast  => Rd_Last
         );
 
-    b_wr_cmd : block
+    b_wr_cmd : block is
         signal TData : std_logic_vector(CmdLowLat_r downto 0);
     begin
         vc_wr_cmd : entity vunit_lib.axi_stream_master
@@ -733,15 +734,15 @@ begin
                 aclk   => Clk,
                 tvalid => CmdWr_Valid,
                 tready => CmdWr_Ready,
-                tdata => TData
+                tdata  => TData
             );
 
-        CmdWr_Addr <= TData(CmdAddrRange_r);
-        CmdWr_Size <= TData(CmdSizeRange_r);
+        CmdWr_Addr   <= TData(CmdAddrRange_r);
+        CmdWr_Size   <= TData(CmdSizeRange_r);
         CmdWr_LowLat <= TData(CmdLowLat_r);
     end block;
 
-    b_rd_cmd : block
+    b_rd_cmd : block is
         signal TData : std_logic_vector(CmdLowLat_r downto 0);
     begin
         vc_rd_cmd : entity vunit_lib.axi_stream_master
@@ -752,15 +753,15 @@ begin
                 aclk   => Clk,
                 tvalid => CmdRd_Valid,
                 tready => CmdRd_Ready,
-                tdata => TData
+                tdata  => TData
             );
 
-        CmdRd_Addr <= TData(CmdAddrRange_r);
-        CmdRd_Size <= TData(CmdSizeRange_r);
+        CmdRd_Addr   <= TData(CmdAddrRange_r);
+        CmdRd_Size   <= TData(CmdSizeRange_r);
         CmdRd_LowLat <= TData(CmdLowLat_r);
     end block;
 
-    b_wr_data : block
+    b_wr_data : block is
         signal TData : std_logic_vector(DatBeRange_r'high downto 0);
     begin
         vc_wr_data : entity vunit_lib.axi_stream_master
@@ -771,12 +772,11 @@ begin
                 aclk   => Clk,
                 tvalid => Wr_Valid,
                 tready => Wr_Ready,
-                tdata => TData
+                tdata  => TData
             );
 
         Wr_Data <= TData(DatDataRange_r);
-        Wr_Be <= TData(DatBeRange_r);
+        Wr_Be   <= TData(DatBeRange_r);
     end block;
 
-
-end sim;
+end architecture;

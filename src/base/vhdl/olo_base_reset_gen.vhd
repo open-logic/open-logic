@@ -32,9 +32,9 @@ entity olo_base_reset_gen is
         AsyncResetOutput_g  : boolean                           := false
     );
     port (
-        Clk         : in  std_logic;
-        RstOut      : out std_logic;
-        RstIn       : in  std_logic := not RstInPolarity_g
+        Clk         : in    std_logic;
+        RstOut      : out   std_logic;
+        RstIn       : in    std_logic := not RstInPolarity_g
     );
 end entity;
 
@@ -44,18 +44,18 @@ end entity;
 architecture struct of olo_base_reset_gen is
 
     -- Reset Synchronizer
-    signal RstSyncChain     : std_logic_vector(2 downto 0) := (others => '1');
-    signal RstSync          : std_logic;
+    signal RstSyncChain : std_logic_vector(2 downto 0) := (others => '1');
+    signal RstSync      : std_logic;
 
     -- Pulse prolongation
-    constant PulseCntMax_c  : natural := max(RstPulseCycles_g-4, 0);
-    signal PulseCnt         : integer range 0 to PulseCntMax_c := 0;
-    signal RstPulse         : std_logic := '1';
+    constant PulseCntMax_c : natural := max(RstPulseCycles_g-4, 0);
+    signal PulseCnt        : integer range 0 to PulseCntMax_c := 0;
+    signal RstPulse        : std_logic := '1';
 
-  begin
+begin
 
     -- Reset Synchronizer
-    RstSync_p : process(Clk, RstIn)
+    RstSync_p : process (Clk, RstIn) is
     begin
         if RstIn = RstInPolarity_g then
             RstSyncChain <= (others => '1');
@@ -63,12 +63,14 @@ architecture struct of olo_base_reset_gen is
             RstSyncChain <= RstSyncChain(RstSyncChain'left - 1 downto 0) & '0';
         end if;
     end process;
+
     RstSync <= RstSyncChain(RstSyncChain'left);
 
     -- Prolong reset pulse
     g_prolong : if RstPulseCycles_g > 3 generate
+
         -- Generate Pulse
-        p_prolong : process(Clk)
+        p_prolong : process (Clk) is
         begin
             if rising_edge(Clk) then
                 -- Reset
@@ -101,6 +103,6 @@ architecture struct of olo_base_reset_gen is
         RstOut <= RstSync;
     end generate;
 
-  end architecture;
+end architecture;
 
-  
+

@@ -30,19 +30,19 @@ entity olo_base_cc_reset_tb is
         ClockRatio_N_g : integer := 3;
         ClockRatio_D_g : integer := 2
     );
-end entity olo_base_cc_reset_tb;
+end entity;
 
 architecture sim of olo_base_cc_reset_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     constant ClockRatio_c : real    := real(ClockRatio_N_g) / real(ClockRatio_D_g);
     constant DataWidth_c  : integer := 8;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     constant ClkA_Frequency_c     : real    := 100.0e6;
     constant ClkA_Period_c        : time    := (1 sec) / ClkA_Frequency_c;
     constant ClkB_Frequency_c     : real    := ClkA_Frequency_c * ClockRatio_c;
@@ -51,9 +51,9 @@ architecture sim of olo_base_cc_reset_tb is
     constant PropagationTime_c    : time    := 3.01*SlowerClock_Period_c;
     constant RemovalTime_c        : time    := 10*SlowerClock_Period_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     signal A_Clk    : std_logic                                 := '0';
     signal A_RstIn  : std_logic                                 := '0';
     signal A_RstOut : std_logic;
@@ -61,41 +61,42 @@ architecture sim of olo_base_cc_reset_tb is
     signal B_RstIn  : std_logic                                  := '0';
     signal B_RstOut : std_logic;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Signals
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     signal LastRstA : time := 0 ns;
     signal LastRstB : time := 0 ns;
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_cc_reset
-        port map(
+        port map (
             -- Clock Domain A
             A_Clk     => A_Clk,
             A_RstIn   => A_RstIn,
             A_RstOut  => A_RstOut,
             -- Clock Domain B
-            B_Clk    => B_Clk,
-            B_RstIn  => B_RstIn,
-            B_RstOut => B_RstOut
+            B_Clk     => B_Clk,
+            B_RstIn   => B_RstIn,
+            B_RstOut  => B_RstOut
         );
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
-    A_Clk  <= not A_Clk after 0.5 * ClkA_Period_c;
+    -----------------------------------------------------------------------------------------------
+    A_Clk <= not A_Clk after 0.5 * ClkA_Period_c;
     B_Clk <= not B_Clk after 0.5 * ClkB_Period_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because Resets are not data-flow oriented
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -161,7 +162,6 @@ begin
                 check_equal(B_RstOut, '0', "deassert B 3.2");
                 check_equal(A_RstOut, '0', "deassert A 3.2");
 
-
             -- Check ignore glitches RST B
             elsif run("RstB-GlitchIgnore") then
                 wait until rising_edge(B_Clk);
@@ -213,18 +213,18 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    p_rstDetectA : process
+    p_rstDetectA : process is
     begin
         wait until A_RstOut = '1' and B_RstOut = '1'; -- chekck that both resets are asserted at the same time
         wait until rising_edge(A_Clk) and A_RstOut = '1'; -- check that the reset gets de-asserted
         LastRstA <= now;
     end process;
 
-    p_rstDetectB : process
+    p_rstDetectB : process is
     begin
         wait until A_RstOut = '1' and A_RstOut = '1';
         wait until rising_edge(B_Clk) and B_RstOut = '1';
         LastRstB <= now;
     end process;
 
-end sim;
+end architecture;

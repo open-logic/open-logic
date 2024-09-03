@@ -30,12 +30,13 @@ entity olo_base_arb_rr is
         Width_g    : positive
     );
     port (
-        Clk         : in  std_logic;
-        Rst         : in  std_logic;
-        In_Req      : in  std_logic_vector(Width_g-1 downto 0);
-        Out_Grant   : out std_logic_vector(Width_g-1 downto 0);
-        Out_Ready   : in  std_logic;
-        Out_Valid   : out std_logic);
+        Clk         : in    std_logic;
+        Rst         : in    std_logic;
+        In_Req      : in    std_logic_vector(Width_g-1 downto 0);
+        Out_Grant   : out   std_logic_vector(Width_g-1 downto 0);
+        Out_Ready   : in    std_logic;
+        Out_Valid   : out   std_logic
+    );
 end entity;
 
 architecture rtl of olo_base_arb_rr is
@@ -50,12 +51,14 @@ architecture rtl of olo_base_arb_rr is
     signal RequestMasked : std_logic_vector(In_Req'range);
     signal GrantMasked   : std_logic_vector(Out_Grant'range);
     signal GrantUnmasked : std_logic_vector(Out_Grant'range);
+
 begin
+
     -- Only generate code for non-zero sized arbiters to avoid illegal range delcarations
     g_non_zero : if Width_g > 0 generate
 
         -- *** Combinatorial Process ***
-        p_comb : process(r, In_Req, Out_Ready, GrantMasked, GrantUnmasked)
+        p_comb : process (r, In_Req, Out_Ready, GrantMasked, GrantUnmasked) is
             variable v       : two_process_r;
             variable Grant_v : std_logic_vector(Out_Grant'range);
         begin
@@ -92,7 +95,7 @@ begin
         end process;
 
         -- *** Sequential Process ***
-        p_seq : process(Clk)
+        p_seq : process (Clk) is
         begin
             if rising_edge(Clk) then
                 r <= r_next;
@@ -105,7 +108,7 @@ begin
         -- *** Component Instantiations ***
         i_prio_masked : entity work.olo_base_arb_prio
             generic map (
-                Width_g => Width_g,
+                Width_g   => Width_g,
                 Latency_g => 0
             )
             port map (
@@ -117,7 +120,7 @@ begin
 
         i_prio_unmasked : entity work.olo_base_arb_prio
             generic map (
-                Width_g => Width_g,
+                Width_g   => Width_g,
                 Latency_g => 0
             )
             port map (

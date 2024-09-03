@@ -27,18 +27,19 @@ entity olo_base_pkg_logic_tb is
     generic (
         runner_cfg     : string
     );
-end entity olo_base_pkg_logic_tb;
+end entity;
 
 architecture sim of olo_base_pkg_logic_tb is
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a package TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
         variable stdlv5 : std_logic_vector(4 downto 0);
         variable stdlv3 : std_logic_vector(2 downto 0);
         variable stdlv9 : std_logic_vector(8 downto 0);
@@ -70,7 +71,6 @@ begin
                 check_equal(shiftRight(stdlv5, -2, '1'), stdlv5(2 downto 0) & "11", "shiftLeft(stdlv5, -2, '1')");
                 check_equal(shiftRight(stdlv5, 2, '0'), "00" & stdlv5(4 downto 2), "shiftLeft(stdlv5, 2, '0')");
                 check_equal(shiftRight(stdlv5, 1, '1'), '1' & stdlv5(4 downto 1), "shiftLeft(stdlv5, 1, '1')");
-
 
             elsif run("binaryToGray") then
                 stdlv3 := "000"; check_equal(binaryToGray(stdlv3), 2#000#, "binaryToGray(000)");
@@ -130,7 +130,6 @@ begin
                 check_equal(to01X('U'), 'X', "to01X('U')");
                 check_equal(to01X('X'), 'X', "to01X('X')");
 
-
             elsif run("to01X-stlv") then
                 stdlv9 := "0101XXXXX";
                 check_equal(to01X("01LHW-ZUX"), stdlv9, "to01X(01HLW-ZUX)");
@@ -146,7 +145,6 @@ begin
                 check_equal(to01('U'), '0', "to01('U')");
                 check_equal(to01('X'), '0', "to01('X')");
 
-
             elsif run("to01-stlv") then
                 stdlv9 := "010100000";
                 check_equal(to01("01LHW-ZUX"), stdlv9, "to01(01HLW-ZUX)");
@@ -157,8 +155,6 @@ begin
 
             end if;
 
-
-
         end loop;
 
         wait for 1 ns;
@@ -167,4 +163,4 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-end sim;
+end architecture;

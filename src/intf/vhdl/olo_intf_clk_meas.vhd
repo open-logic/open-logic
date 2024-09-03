@@ -11,9 +11,9 @@
 -- This entity measures the frequency of a clock under the assumption that
 -- the frequency of the main-clock (Clk) is exactly correct.
 
--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,9 +21,9 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
 
--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_intf_clk_meas is
     generic (
         ClkFrequency_g          : real;
@@ -31,18 +31,18 @@ entity olo_intf_clk_meas is
     );
     port (
         -- Control Signals
-        Clk           : in  std_logic;
-        Rst           : in  std_logic;
+        Clk           : in    std_logic;
+        Rst           : in    std_logic;
         -- Test Results
-        ClkTest       : in  std_logic;
-        Freq_Hz       : out std_logic_vector(31 downto 0);
-        Freq_Valid    : out std_logic
+        ClkTest       : in    std_logic;
+        Freq_Hz       : out   std_logic_vector(31 downto 0);
+        Freq_Valid    : out   std_logic
     );
-end;
+end entity;
 
--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_intf_clk_meas is
 
     -- Constants
@@ -50,28 +50,32 @@ architecture rtl of olo_intf_clk_meas is
     constant ResultWidth_c            : integer := log2ceil(integer(MaxClkTestFrequencyInt_c)+1);
 
     -- Signals Master Clock
-    signal AwaitResult_M    : std_logic;
-    signal SecPulse_M       : std_logic;
-    signal ResultValid_M    : std_logic;
-    signal Result_M         : std_logic_vector(ResultWidth_c-1 downto 0);
+    signal AwaitResult_M : std_logic;
+    signal SecPulse_M    : std_logic;
+    signal ResultValid_M : std_logic;
+    signal Result_M      : std_logic_vector(ResultWidth_c-1 downto 0);
 
     -- Signals Test Clock
-    signal CntrTest_T       : integer range 0 to MaxClkTestFrequencyInt_c;
-    signal Rst_T            : std_logic;
-    signal SecPulse_T       : std_logic;
-    signal Result_T         : std_logic_vector(ResultWidth_c-1 downto 0);
-    signal ResultValid_T    : std_logic;
+    signal CntrTest_T    : integer range 0 to MaxClkTestFrequencyInt_c;
+    signal Rst_T         : std_logic;
+    signal SecPulse_T    : std_logic;
+    signal Result_T      : std_logic_vector(ResultWidth_c-1 downto 0);
+    signal ResultValid_T : std_logic;
 
 begin
 
     -- *** Assertions ***
-    assert ClkFrequency_g >= 100.0 report "olo_intfclk_meas: ClkFrequency_g must >= 100 Hz" severity failure;
-    assert MaxClkTestFrequency_g >= 100.0 report "olo_intfclk_meas: MaxClkTestFrequency_g must be >= 100 Hz" severity failure;
+    assert ClkFrequency_g >= 100.0
+        report "olo_intfclk_meas: ClkFrequency_g must >= 100 Hz"
+        severity failure;
+    assert MaxClkTestFrequency_g >= 100.0
+        report "olo_intfclk_meas: MaxClkTestFrequency_g must be >= 100 Hz"
+        severity failure;
 
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Master Clock Process
-    --------------------------------------------------------------------------
-    p_rstGen : process(Clk)
+    -----------------------------------------------------------------------------------------------
+    p_rstGen : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- *** Normal Operation ***
@@ -84,32 +88,32 @@ begin
                 AwaitResult_M <= '1';
                 -- If no new value was detected, the clock is stopped (0 Hz)
                 if AwaitResult_M = '1' then
-                    Freq_Hz  <= (others => '0');
+                    Freq_Hz    <= (others => '0');
                     Freq_Valid <= '1';
                 end if;
             end if;
 
             -- Latch new result
             if ResultValid_M = '1' then
-                Freq_Hz   <= std_logic_vector(resize(unsigned(Result_M), Freq_Hz'length));
+                Freq_Hz       <= std_logic_vector(resize(unsigned(Result_M), Freq_Hz'length));
                 AwaitResult_M <= '0';
-                Freq_Valid  <= '1';
+                Freq_Valid    <= '1';
             end if;
 
             -- *** Reset ***
             if Rst = '1' then
-                AwaitResult_M   <= '0';
-                Freq_Hz         <= (others => '0');
-                Freq_Valid       <= '0';
+                AwaitResult_M <= '0';
+                Freq_Hz       <= (others => '0');
+                Freq_Valid    <= '0';
             end if;
 
         end if;
     end process;
 
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Test Clock Process
-    --------------------------------------------------------------------------
-    p_meas : process(ClkTest)
+    -----------------------------------------------------------------------------------------------
+    p_meas : process (ClkTest) is
     begin
         if rising_edge(ClkTest) then
             -- *** Normal Operation ***
@@ -119,9 +123,9 @@ begin
 
             -- Every second, reset counter and output result
             if SecPulse_T = '1' then
-                 Result_T      <= toUslv(CntrTest_T, ResultWidth_c);
-                CntrTest_T    <= 1;          --the first edge implicitly arrived
-                ResultValid_T     <= '1';
+                Result_T      <= toUslv(CntrTest_T, ResultWidth_c);
+                CntrTest_T    <= 1;          -- the first edge implicitly arrived
+                ResultValid_T <= '1';
             -- Otherwise count (prevent overflows!)
             elsif CntrTest_T /= MaxClkTestFrequencyInt_c then
                 CntrTest_T <= CntrTest_T + 1;
@@ -129,15 +133,15 @@ begin
 
             -- *** Reset ***
             if Rst = '1' then
-                CntrTest_T      <= 0;
-                ResultValid_T   <= '0';
+                CntrTest_T    <= 0;
+                ResultValid_T <= '0';
             end if;
         end if;
     end process;
 
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Component Instantiations
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Second pulse generation
     i_sec_pulse : entity work.olo_base_strobe_gen
         generic map (
@@ -159,7 +163,7 @@ begin
             Out_Clk       => ClkTest,
             Out_RstOut    => Rst_T,
             Out_Pulse(0)  => SecPulse_T
-    );
+        );
 
     -- Result CC
     i_result_cc : entity work.olo_base_cc_simple
@@ -176,10 +180,9 @@ begin
             Out_Valid   => ResultValid_M
         );
 
+end architecture;
 
-end;
-
--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- EOF
--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 

@@ -31,30 +31,29 @@ entity olo_base_prbs4_tb is
         runner_cfg      : string;
         BitsPerSymbol_g : positive := 2
     );
-end entity olo_base_prbs4_tb;
+end entity;
 
 architecture sim of olo_base_prbs4_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
-    constant PrbsSequence_c     : std_logic_vector(14 downto 0) := "010110010001111";
-    constant PrbsSequenceRep_c  : std_logic_vector(2*PrbsSequence_c'length-1 downto 0) := PrbsSequence_c & PrbsSequence_c;
-    constant States_c : t_aslv4 (0 to PrbsSequence_c'high) := ( "1111", "1110", "1100", "1000",
+    -----------------------------------------------------------------------------------------------
+    constant PrbsSequence_c    : std_logic_vector(14 downto 0) := "010110010001111";
+    constant PrbsSequenceRep_c : std_logic_vector(2*PrbsSequence_c'length-1 downto 0) := PrbsSequence_c & PrbsSequence_c;
+    constant States_c          : t_aslv4 (0 to PrbsSequence_c'high) := ("1111", "1110", "1100", "1000",
                                                                 "0001", "0010", "0100", "1001",
                                                                 "0011", "0110", "1101", "1010",
                                                                 "0101", "1011", "0111");
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant Clk_Frequency_c   : real    := 100.0e6;
-    constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
+    constant Clk_Frequency_c : real    := 100.0e6;
+    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    shared variable InDelay     : time := 0 ns;
-
+    -----------------------------------------------------------------------------------------------
+    shared variable InDelay  : time := 0 ns;
 
     -- *** Verification Compnents ***
     constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
@@ -62,30 +61,31 @@ architecture sim of olo_base_prbs4_tb is
         stall_config => new_stall_config(0.5, 0, 10)
     );
 
-    constant stateSlave : axi_stream_slave_t := new_axi_stream_slave (
+    constant stateSlave  : axi_stream_slave_t := new_axi_stream_slave (
         data_length => 4,
         stall_config => new_stall_config(0.0, 0, 0)
     );
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal Clk              : std_logic                                      := '0';
-    signal Rst              : std_logic                                      := '0';
-    signal Out_Data         : std_logic_vector(BitsPerSymbol_g- 1 downto 0)  := (others => '0');
-    signal Out_Ready        : std_logic                                      := '0';
-    signal Out_Valid        : std_logic                                      := '0';
-    signal State_Current    : std_logic_vector(3 downto 0)                   := (others => '0');
-    signal State_New        : std_logic_vector(3 downto 0)                   := (others => '0');
-    signal State_Set        : std_logic                                      := '0';
+    -----------------------------------------------------------------------------------------------
+    signal Clk           : std_logic                                      := '0';
+    signal Rst           : std_logic                                      := '0';
+    signal Out_Data      : std_logic_vector(BitsPerSymbol_g- 1 downto 0)  := (others => '0');
+    signal Out_Ready     : std_logic                                      := '0';
+    signal Out_Valid     : std_logic                                      := '0';
+    signal State_Current : std_logic_vector(3 downto 0)                   := (others => '0');
+    signal State_New     : std_logic_vector(3 downto 0)                   := (others => '0');
+    signal State_Set     : std_logic                                      := '0';
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
         variable StartBit_v : integer;
         variable Symbol_v   : std_logic_vector(BitsPerSymbol_g-1 downto 0);
     begin
@@ -106,7 +106,7 @@ begin
             if run("CheckSequence") then
                 StartBit_v := 0;
                 while StartBit_v < 15 loop
-                    Symbol_v := PrbsSequenceRep_c(StartBit_v+BitsPerSymbol_g-1 downto StartBit_v);
+                    Symbol_v   := PrbsSequenceRep_c(StartBit_v+BitsPerSymbol_g-1 downto StartBit_v);
                     check_axi_stream(net, axisSlave, Symbol_v, blocking => false, msg => "Wrong Data");
                     check_axi_stream(net, stateSlave, States_c(StartBit_v), blocking => false, msg => "Wrong State");
                     StartBit_v := StartBit_v + BitsPerSymbol_g;
@@ -128,7 +128,7 @@ begin
                 -- Chekc Sequency
                 StartBit_v := 6;
                 while StartBit_v < 15 loop
-                    Symbol_v := PrbsSequenceRep_c(StartBit_v+BitsPerSymbol_g-1 downto StartBit_v);
+                    Symbol_v   := PrbsSequenceRep_c(StartBit_v+BitsPerSymbol_g-1 downto StartBit_v);
                     check_axi_stream(net, axisSlave, Symbol_v, blocking => false, msg => "Wrong Data");
                     check_axi_stream(net, stateSlave, States_c(StartBit_v), blocking => false, msg => "Wrong State");
                     StartBit_v := StartBit_v + BitsPerSymbol_g;
@@ -143,15 +143,14 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5*Clk_Period_c;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_prbs
         generic map (
             LfsrWidth_g     => 4,
@@ -170,28 +169,28 @@ begin
             State_Set       => State_Set
         );
 
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Verification Components
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     vc_data : entity vunit_lib.axi_stream_slave
-    generic map (
-        slave => axisSlave
-    )
-    port map (
-        aclk   => Clk,
-        tvalid => Out_Valid,
-        tready => Out_Ready,
-        tdata  => Out_Data
-    );
+        generic map (
+            slave => axisSlave
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => Out_Valid,
+            tready => Out_Ready,
+            tdata  => Out_Data
+        );
 
     vc_state : entity vunit_lib.axi_stream_slave
-    generic map (
-        slave => stateSlave
-    )
-    port map (
-        aclk   => Clk,
-        tvalid => Out_Ready,
-        tdata  => State_Current
-    );
+        generic map (
+            slave => stateSlave
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => Out_Ready,
+            tdata  => State_Current
+        );
 
-end sim;
+end architecture;

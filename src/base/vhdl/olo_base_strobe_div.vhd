@@ -26,15 +26,15 @@ library work;
 entity olo_base_strobe_div is
     generic (
         MaxRatio_g  : positive;
-        Latency_g   : natural range 0 to 1  := 1
+        Latency_g   : natural range 0 to 1 := 1
     );
     port (
-        Clk         : in  std_logic;
-        Rst         : in  std_logic;
-        In_Ratio    : in  std_logic_vector(log2ceil(MaxRatio_g)-1 downto 0)   := toUslv(MaxRatio_g-1, log2ceil(MaxRatio_g));
-        In_Valid    : in  std_logic;
-        Out_Valid   : out std_logic;
-        Out_Ready   : in  std_logic                                             := '1'
+        Clk         : in    std_logic;
+        Rst         : in    std_logic;
+        In_Ratio    : in    std_logic_vector(log2ceil(MaxRatio_g)-1 downto 0) := toUslv(MaxRatio_g-1, log2ceil(MaxRatio_g));
+        In_Valid    : in    std_logic;
+        Out_Valid   : out   std_logic;
+        Out_Ready   : in    std_logic                                         := '1'
     );
 end entity;
 
@@ -45,15 +45,16 @@ architecture rtl of olo_base_strobe_div is
 
     -- *** Two Process Method ***
     type two_process_r is record
-        Count       : natural range 0 to MaxRatio_g-1;
-        OutValid    : std_logic;
+        Count    : natural range 0 to MaxRatio_g-1;
+        OutValid : std_logic;
     end record;
     signal r, r_next : two_process_r;
+
 begin
 
-    p_comb : process(r, In_Valid, In_Ratio, Out_Ready)
+    p_comb : process (r, In_Valid, In_Ratio, Out_Ready) is
         variable OutValid_v : std_logic;
-        variable v : two_process_r;
+        variable v          : two_process_r;
     begin
         -- *** hold variables stable ***
         v := r;
@@ -61,7 +62,7 @@ begin
         -- Ratio Counter
         if In_Valid = '1' then
             if r.Count >= unsigned(In_Ratio) or MaxRatio_g = 1 then
-                v.Count := 0;
+                v.Count    := 0;
                 v.OutValid := '1';
             else
                 v.Count := r.Count + 1;
@@ -87,12 +88,12 @@ begin
         r_next <= v;
     end process;
 
-    p_seq : process(Clk)
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;
             if Rst = '1' then
-                r.Count <= 0;
+                r.Count    <= 0;
                 r.OutValid <= '0';
             end if;
         end if;

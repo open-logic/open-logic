@@ -1,176 +1,167 @@
 ---------------------------------------------------------------------------------------------------
-----                                                                      ----
-----  Text Utils                                                          ----
-----                                                                      ----
-----  http://www.opencores.org/                                           ----
-----                                                                      ----
-----  Description:                                                        ----
-----  Utils to handle text. Used for the testbenches.                     ----
-----                                                                      ----
-----  To Do:                                                              ----
-----  -                                                                   ----
-----                                                                      ----
-----  Authors:                                                            ----
-----    - Oyvind Harboe, oyvind.harboe zylin.com                          ----
-----    - Oliver Bründler, Paul Scherrer Instititute                      ----
-----                                                                      ----
+-- Text Utils                                                                                    --
+-- http://www.opencores.org/                                                                     --
+--                                                                                               --
+-- Description:                                                                                  --
+-- Utils to handle text. Used for the testbenches.                                               --
+--                                                                                               --
+-- To Do:                                                                                        --
+-- -                                                                                             --
+--                                                                                               --
+-- Authors:                                                                                      --
+--   - Oyvind Harboe, oyvind.harboe zylin.com                                                    --
+--   - Oliver Bründler, Paul Scherrer Instititute                                                --
 ---------------------------------------------------------------------------------------------------
-----                                                                      ----
----- Copyright (c) 2008 Oyvind Harboe <oyvind.harboe zylin.com>           ----
----- Copyright (c) Paul Scherrer Institute (www.psi.ch)                   ----
-----                                                                      ----
----- Distributed under the BSD license                                    ----
-----                                                                      ----
+-- Copyright (c) 2008 Oyvind Harboe <oyvind.harboe zylin.com>                                    --
+-- Copyright (c) Paul Scherrer Institute (www.psi.ch)                                            --
+--                                                                                               --
+-- Distributed under the BSD license                                                             --
 ---------------------------------------------------------------------------------------------------
-----                                                                      ----
----- Design unit:      txt_util (Package)                                 ----
----- File name:        txt_util.vhdl                                      ----
----- Note:             None                                               ----
----- Limitations:      None known                                         ----
----- Errors:           None known                                         ----
----- Library:          zpu                                                ----
----- Dependencies:     IEEE.std_logic_1164                                ----
-----                   IEEE.numeric_std                                   ----
-----                   std.textio                                         ----
----- Target FPGA:      N/A                                                ----
----- Language:         VHDL                                               ----
----- Wishbone:         No                                                 ----
----- Synthesis tools:  Xilinx Release 9.2.03i - xst J.39                  ----
----- Simulation tools: GHDL [Sokcho edition] (0.2x)                       ----
----- Text editor:      SETEdit 0.5.x                                      ----
-----                                                                      ----
+-- Design unit:      txt_util (Package)                                                          --
+-- File name:        txt_util.vhdl                                                               --
+-- Note:             None                                                                        --
+-- Limitations:      None known                                                                  --
+-- Errors:           None known                                                                  --
+-- Library:          zpu                                                                         --
+-- Dependencies:     IEEE.std_logic_1164                                                         --
+--                   IEEE.numeric_std                                                            --
+--                   std.textio                                                                  --
+-- Target FPGA:      N/A                                                                         --
+-- Language:         VHDL                                                                        --
+-- Wishbone:         No                                                                          --
+-- Synthesis tools:  Xilinx Release 9.2.03i - xst J.39                                           --
+-- Simulation tools: GHDL [Sokcho edition] (0.2x)                                                --
+-- Text editor:      SETEdit 0.5.x                                                               --
 ---------------------------------------------------------------------------------------------------
 
 library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+    use IEEE.std_logic_1164.all;
+    use IEEE.numeric_std.all;
 
-use std.textio.all;
+    use std.textio.all;
 
 -- library zpu;
 
 package olo_tb_txt_util is
-   -- prints a message to the screen
-   procedure print(text: string);
 
-   -- prints the message when active
-   -- useful for debug switches
-   procedure print(active: boolean; text: string);
+    -- prints a message to the screen
+   procedure print (text: string);
 
-   -- converts std_logic into a character
-   function chr(sl: std_logic) return character;
+    -- prints the message when active
+    -- useful for debug switches
+   procedure print (active: boolean; text: string);
 
-   -- converts std_logic into a string (1 to 1)
-   function str(sl: std_logic) return string;
+    -- converts std_logic into a character
+   function chr (sl: std_logic) return character;
 
-   -- converts std_logic_vector into a string (binary base)
-   function str(slv: std_logic_vector) return string;
+    -- converts std_logic into a string (1 to 1)
+   function str (sl: std_logic) return string;
 
-   -- converts boolean into a string
-   function str(b: boolean) return string;
+    -- converts std_logic_vector into a string (binary base)
+   function str (slv: std_logic_vector) return string;
 
-   -- converts an integer into a single character
-   -- (can also be used for hex conversion and other bases)
-   function chr(int: integer) return character;
+    -- converts boolean into a string
+   function str (b: boolean) return string;
 
-   -- converts integer into string using specified base
-   function str(int: integer; base: integer) return string;
+    -- converts an integer into a single character
+    -- (can also be used for hex conversion and other bases)
+   function chr (int: integer) return character;
 
-   -- converts integer to string, using base 10
-   function str(int: integer) return string;
+    -- converts integer into string using specified base
+   function str (int: integer; base: integer) return string;
 
-   -- convert std_logic_vector into a string in hex format
-   function hstr(slv: std_logic_vector) return string;
-   function hstr(slv: unsigned) return string;
+    -- converts integer to string, using base 10
+   function str (int: integer) return string;
 
-   -- convert integer to string, VHDL2008 built-in equivalent
-   function to_string(int : integer) return string;
+    -- convert std_logic_vector into a string in hex format
+   function hstr (slv: std_logic_vector) return string;
+   function hstr (slv: unsigned) return string;
 
-   -- convert real to string, VHDL2008 built-in equivalent
-   function to_string(num : real) return string;
+    -- convert integer to string, VHDL2008 built-in equivalent
+   function to_string (int : integer) return string;
+
+    -- convert real to string, VHDL2008 built-in equivalent
+   function to_string (num : real) return string;
 
     -- convert signed to string, VHDL2008 built-in equivalent
-   function to_string(num : signed) return string;
+   function to_string (num : signed) return string;
 
-   -- convert unsigned to string, VHDL2008 built-in equivalent
-   function to_string(num : unsigned) return string;
+    -- convert unsigned to string, VHDL2008 built-in equivalent
+   function to_string (num : unsigned) return string;
 
-   -- convert std_logic_vector to string, VHDL2008 built-in equivalent
-   function to_string(num : std_logic_vector) return string;
+    -- convert std_logic_vector to string, VHDL2008 built-in equivalent
+   function to_string (num : std_logic_vector) return string;
 
+    -- functions to manipulate strings
+    -----------------------------------------------------------------------------------------------
 
-   -- functions to manipulate strings
-   -----------------------------------
+    -- convert a character to upper case
+   function to_upper (c: character) return character;
 
-   -- convert a character to upper case
-   function to_upper(c: character) return character;
+    -- convert a character to lower case
+   function to_lower (c: character) return character;
 
-   -- convert a character to lower case
-   function to_lower(c: character) return character;
+    -- convert a string to upper case
+   function to_upper (s: string) return string;
 
-   -- convert a string to upper case
-   function to_upper(s: string) return string;
+    -- convert a string to lower case
+   function to_lower (s: string) return string;
 
-   -- convert a string to lower case
-   function to_lower(s: string) return string;
+    -- functions to convert strings into other formats
+    -----------------------------------------------------------------------------------------------
 
+    -- converts a character into std_logic
+   function to_std_logic (c: character) return std_logic;
 
+    -- converts a string into std_logic_vector
+   function to_std_logic_vector (s: string) return std_logic_vector;
 
-   -- functions to convert strings into other formats
-   --------------------------------------------------
+    -- file I/O
+    -----------------------------------------------------------------------------------------------
 
-   -- converts a character into std_logic
-   function to_std_logic(c: character) return std_logic;
+    -- read variable length string from input file
+   procedure str_read (
+            file in_file : TEXT;
+            res_string   : out string);
 
-   -- converts a string into std_logic_vector
-   function to_std_logic_vector(s: string) return std_logic_vector;
+   procedure str_write (
+            file out_file : TEXT;
+            new_string    : in  string);
 
+    -- print string to a file and start new line
+   procedure print (
+            file out_file : TEXT;
+            new_string    : in  string);
 
+    -- print character to a file and start new line
+   procedure print (
+            file out_file : TEXT;
+            char          :       in  character);
 
-   -- file I/O
-   -----------
-
-   -- read variable length string from input file
-   procedure str_read(file in_file: TEXT;
-                      res_string: out string);
-
-   procedure str_write(file out_file: TEXT;
-                       new_string: in  string);
-
-   -- print string to a file and start new line
-   procedure print(file out_file: TEXT;
-                   new_string: in  string);
-
-   -- print character to a file and start new line
-   procedure print(file out_file: TEXT;
-                   char:       in  character);
-end package olo_tb_txt_util;
-
-
-
+end package;
 
 package body olo_tb_txt_util is
-   -- prints text to the screen
-   procedure print(text: string) is
-      variable msg_line: line;
+    -- prints text to the screen
+   procedure print (text: string) is
+        variable msg_line: line;
    begin
-      --synopsys translate off
+        -- synopsys translate off
       write(msg_line, text);
       writeline(output, msg_line);
-      --synopsys translate on
-   end procedure print;
+    -- synopsys translate on
+   end procedure;
 
-   -- prints text to the screen when active
-   procedure print(active: boolean; text: string)  is
+    -- prints text to the screen when active
+   procedure print (active: boolean; text: string) is
    begin
-      if active then
+        if active then
          print(text);
-      end if;
-   end procedure print;
+        end if;
+   end procedure;
 
-   -- converts std_logic into a character
-   function chr(sl: std_logic) return character is
-      variable c: character;
+    -- converts std_logic into a character
+   function chr (sl: std_logic) return character is
+        variable c: character;
    begin
       case sl is
            when 'U' => c:= 'U';
@@ -184,23 +175,23 @@ package body olo_tb_txt_util is
            when '-' => c:= '-';
       end case;
       return c;
-   end function chr;
+   end function;
 
-   -- converts std_logic into a string (1 to 1)
-   function str(sl: std_logic) return string is
-      variable s: string(1 to 1);
+    -- converts std_logic into a string (1 to 1)
+   function str (sl: std_logic) return string is
+        variable s: string(1 to 1);
    begin
       s(1):=chr(sl);
       return s;
-   end function str;
+   end function;
 
-   -- converts std_logic_vector into a string (binary base)
-   -- (this also takes care of the fact that the range of
-   -- a string is natural while a std_logic_vector may
-   -- have an integer range)
-   function str(slv: std_logic_vector) return string is
-      variable result : string (1 to slv'length);
-      variable r      : integer;
+    -- converts std_logic_vector into a string (binary base)
+    -- (this also takes care of the fact that the range of
+    -- a string is natural while a std_logic_vector may
+    -- have an integer range)
+   function str (slv: std_logic_vector) return string is
+        variable result : string (1 to slv'length);
+        variable r      : integer;
    begin
       r:=1;
       for i in slv'range loop
@@ -208,25 +199,24 @@ package body olo_tb_txt_util is
           r:=r+1;
       end loop;
       return result;
-   end function str;
+   end function;
 
-
-   function str(b: boolean) return string is
+   function str (b: boolean) return string is
    begin
-      if b then
+        if b then
          return "true";
       else
          return "false";
-      end if;
-   end function str;
+        end if;
+   end function;
 
-   -- converts an integer into a character
-   -- for 0 to 9 the obvious mapping is used, higher
-   -- values are mapped to the characters A-Z
-   -- (this is usefull for systems with base > 10)
-   -- (adapted from Steve Vogwell's posting in comp.lang.vhdl)
-   function chr(int: integer) return character is
-      variable c: character;
+    -- converts an integer into a character
+    -- for 0 to 9 the obvious mapping is used, higher
+    -- values are mapped to the characters A-Z
+    -- (this is usefull for systems with base > 10)
+    -- (adapted from Steve Vogwell's posting in comp.lang.vhdl)
+   function chr (int: integer) return character is
+        variable c: character;
    begin
       case int is
            when  0 => c := '0';
@@ -268,23 +258,23 @@ package body olo_tb_txt_util is
            when others => c := '?';
       end case;
       return c;
-   end function chr;
+   end function;
 
-   -- convert integer to string using specified base
-   -- (adapted from Steve Vogwell's posting in comp.lang.vhdl)
-   function str(int: integer; base: integer) return string is
-      variable temp    : string(1 to 10);
-      variable num     : integer;
-      variable abs_int : integer;
-      variable len     : integer:=1;
-      variable power   : integer:=1;
+    -- convert integer to string using specified base
+    -- (adapted from Steve Vogwell's posting in comp.lang.vhdl)
+   function str (int: integer; base: integer) return string is
+        variable temp    : string(1 to 10);
+        variable num     : integer;
+        variable abs_int : integer;
+        variable len     : integer:=1;
+        variable power   : integer:=1;
    begin
-      -- bug fix for negative numbers
+        -- bug fix for negative numbers
       abs_int:=abs(int);
 
       num    :=abs_int;
 
-      while num>=base loop                       -- Determine how many
+      while num >= base loop                       -- Determine how many
          len:=len+1;                             -- characters required
          num:=num/base;                          -- to represent the
       end loop;                                  -- number.
@@ -292,33 +282,33 @@ package body olo_tb_txt_util is
       for i in len downto 1 loop                 -- Convert the number to
           temp(i):=chr(abs_int/power mod base);  -- a string starting
           power:=power*base;                     -- with the right hand
-      end loop ;                                 -- side.
+      end loop;                                 -- side.
 
-      -- return result and add sign if required
-      if int<0 then
+        -- return result and add sign if required
+        if int < 0 then
          return '-'& temp(1 to len);
       else
          return temp(1 to len);
-      end if;
-   end function str;
+        end if;
+   end function;
 
-   -- convert integer to string, using base 10
-   function str(int: integer) return string is
+    -- convert integer to string, using base 10
+   function str (int: integer) return string is
    begin
-      return str(int, 10) ;
-   end function str;
+      return str(int, 10);
+   end function;
 
-   -- converts a std_logic_vector into a hex string.
-   function hstr(slv: std_logic_vector) return string is
-      variable hexlen: integer;
-      variable longslv : std_logic_vector(67 downto 0):=(others => '0');
-      variable hex : string(1 to 16);
-      variable fourbit : std_logic_vector(3 downto 0);
+    -- converts a std_logic_vector into a hex string.
+   function hstr (slv: std_logic_vector) return string is
+        variable hexlen  : integer;
+        variable longslv : std_logic_vector(67 downto 0):=(others => '0');
+        variable hex     : string(1 to 16);
+        variable fourbit : std_logic_vector(3 downto 0);
    begin
       hexlen:=(slv'left+1)/4;
-      if (slv'left+1) mod 4/=0 then
+        if (slv'left+1) mod 4 /= 0 then
          hexlen := hexlen + 1;
-      end if;
+        end if;
       longslv(slv'left downto 0) := slv;
       for i in (hexlen-1) downto 0 loop
           fourbit:=longslv(((i*4)+3) downto (i*4));
@@ -346,46 +336,45 @@ package body olo_tb_txt_util is
           end case;
       end loop;
       return hex(1 to hexlen);
-   end function hstr;
+   end function;
 
-   function hstr(slv: unsigned) return string is
+   function hstr (slv: unsigned) return string is
    begin
       return hstr(std_logic_vector(slv));
-   end function hstr;
+   end function;
 
-   -- VHDL2008 to_string built-in equivalents
-   function to_string(int : integer) return string is
+    -- VHDL2008 to_string built-in equivalents
+   function to_string (int : integer) return string is
    begin
       return str(int);
    end function;
 
-   function to_string(num : real) return string is
+   function to_string (num : real) return string is
    begin
       return real'image(num);
    end function;
 
-   function to_string(num : signed) return string is
+   function to_string (num : signed) return string is
    begin
       return integer'image(to_integer(num));
    end function;
 
-   function to_string(num : unsigned) return string is
+   function to_string (num : unsigned) return string is
    begin
       return integer'image(to_integer(num));
    end function;
 
-   function to_string(num : std_logic_vector) return string is
+   function to_string (num : std_logic_vector) return string is
    begin
       return str(num);
    end function;
 
-   -- functions to manipulate strings
-   -----------------------------------
+    -- functions to manipulate strings
+    -----------------------------------------------------------------------------------------------
 
-
-   -- convert a character to upper case
-   function to_upper(c: character) return character is
-      variable u: character;
+    -- convert a character to upper case
+   function to_upper (c: character) return character is
+        variable u : character;
    begin
       case c is
            when 'a' => u:='A';
@@ -417,12 +406,11 @@ package body olo_tb_txt_util is
            when others => u:=c;
       end case;
       return u;
-   end function to_upper;
+   end function;
 
-
-   -- convert a character to lower case
-   function to_lower(c: character) return character is
-      variable l: character;
+    -- convert a character to lower case
+   function to_lower (c: character) return character is
+        variable l : character;
    begin
       case c is
            when 'A' => l:='a';
@@ -454,34 +442,34 @@ package body olo_tb_txt_util is
            when others => l:=c;
       end case;
       return l;
-   end function to_lower;
+   end function;
 
-   -- convert a string to upper case
-   function to_upper(s: string) return string is
-      variable uppercase: string (s'range);
+    -- convert a string to upper case
+   function to_upper (s: string) return string is
+        variable uppercase : string (s'range);
    begin
       for i in s'range loop
           uppercase(i):=to_upper(s(i));
       end loop;
       return uppercase;
-   end to_upper;
+   end function;
 
-   -- convert a string to lower case
-   function to_lower(s: string) return string is
-      variable lowercase: string (s'range);
+    -- convert a string to lower case
+   function to_lower (s: string) return string is
+        variable lowercase : string (s'range);
    begin
       for i in s'range loop
           lowercase(i):=to_lower(s(i));
       end loop;
       return lowercase;
-   end to_lower;
+   end function;
 
-   -- functions to convert strings into other types
+    -- functions to convert strings into other types
 
-   -- converts a character into a std_logic
+    -- converts a character into a std_logic
 
-   function to_std_logic(c: character) return std_logic is
-      variable sl : std_logic;
+   function to_std_logic (c: character) return std_logic is
+        variable sl : std_logic;
    begin
       case c is
            when 'U' =>
@@ -506,13 +494,12 @@ package body olo_tb_txt_util is
                 sl:='X';
       end case;
       return sl;
-   end function to_std_logic;
+   end function;
 
-
-   -- converts a string into std_logic_vector
-   function to_std_logic_vector(s: string) return std_logic_vector is
-      variable slv : std_logic_vector(s'high-s'low downto 0);
-      variable k   : integer;
+    -- converts a string into std_logic_vector
+   function to_std_logic_vector (s: string) return std_logic_vector is
+        variable slv : std_logic_vector(s'high-s'low downto 0);
+        variable k   : integer;
    begin
       k:=s'high-s'low;
       for i in s'range loop
@@ -520,64 +507,68 @@ package body olo_tb_txt_util is
           k     :=k-1;
       end loop;
       return slv;
-   end function to_std_logic_vector;
+   end function;
 
+    -----------------------------------------------------------------------------------------------
+    -- file I/O  --
+    -----------------------------------------------------------------------------------------------
 
-   ----------------
-   -- file I/O  --
-   ----------------
-
-   -- read variable length string from input file
-   procedure str_read(file in_file: TEXT;
-                      res_string: out string) is
-      variable l         : line;
-      variable c         : character;
-      variable is_string : boolean;
+    -- read variable length string from input file
+   procedure str_read (
+            file in_file : TEXT;
+            res_string   : out string) is
+        variable l         : line;
+        variable c         : character;
+        variable is_string : boolean;
    begin
       readline(in_file, l);
-      -- clear the contents of the result string
+        -- clear the contents of the result string
       for i in res_string'range loop
           res_string(i):=' ';
       end loop;
-      -- read all characters of the line, up to the length
-      -- of the results string
+        -- read all characters of the line, up to the length
+        -- of the results string
       for i in res_string'range loop
           read(l,c,is_string);
           res_string(i):=c;
-          if not is_string then -- found end of line
+            if not is_string then -- found end of line
              exit;
-          end if;
+            end if;
       end loop;
-   end procedure str_read;
+   end procedure;
 
-   -- print string to a file
-   procedure print(file out_file: TEXT;
-                   new_string: in  string) is
-      variable l: line;
+    -- print string to a file
+   procedure print (
+            file out_file : TEXT;
+            new_string    : in  string) is
+        variable l: line;
    begin
       write(l,new_string);
       writeline(out_file,l);
-   end procedure print;
+   end procedure;
 
-   -- print character to a file and start new line
-   procedure print(file out_file: TEXT;
-                   char: in  character) is
-      variable l: line;
+    -- print character to a file and start new line
+   procedure print (
+            file out_file : TEXT;
+            char          : in  character) is
+        variable l: line;
    begin
       write(l,char);
       writeline(out_file,l);
-   end procedure print;
+   end procedure;
 
-   -- appends contents of a string to a file until line feed occurs
-   -- (LF is considered to be the end of the string)
-   procedure str_write(file out_file: TEXT;
-                       new_string: in  string) is
+    -- appends contents of a string to a file until line feed occurs
+    -- (LF is considered to be the end of the string)
+   procedure str_write (
+            file out_file : TEXT;
+            new_string    : in  string) is
    begin
       for i in new_string'range loop
           print(out_file,new_string(i));
-          if new_string(i)=LF then -- end of string
+            if new_string(i) = LF then -- end of string
              exit;
-          end if;
+            end if;
       end loop;
-   end str_write;
-end package body olo_tb_txt_util;
+   end procedure;
+
+end package body;

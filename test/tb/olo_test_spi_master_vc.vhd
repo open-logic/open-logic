@@ -5,10 +5,9 @@
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
-
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- VC Package
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -27,44 +26,43 @@ package olo_test_spi_master_pkg is
 
     -- *** VUnit instance type ***
     type olo_test_spi_master_t is record
-        p_actor         : actor_t;
-        LsbFirst        : boolean;
-        MaxTransWidth   : positive;
-        ClkPeriod       : time;
-        CPHA            : integer range 0 to 1;
-        CPOL            : integer range 0 to 1;
+        p_actor       : actor_t;
+        LsbFirst      : boolean;
+        MaxTransWidth : positive;
+        ClkPeriod     : time;
+        CPHA          : integer range 0 to 1;
+        CPOL          : integer range 0 to 1;
     end record;
 
     -- *** Slave Operations ***
 
     -- Transaction
     procedure spi_master_push_transaction (
-        signal net          : inout network_t;
-        spi                 : olo_test_spi_master_t;
-        transaction_bits    : positive;
-        data_mosi           : std_logic_vector  := "X";
-        data_miso           : std_logic_vector  := "X";
-        csn_first           : boolean           := false; -- CSn is operated before Sclk at beginning/end of transaction
-        timeout             : time              := 1 ms;
-        msg                 : string             := ""
-    );
+            signal net       : inout network_t;
+            spi              : olo_test_spi_master_t;
+            transaction_bits : positive;
+            data_mosi        : std_logic_vector := "X";
+            data_miso        : std_logic_vector := "X";
+            csn_first        : boolean          := false; -- CSn is operated before Sclk at beginning/end of transaction
+            timeout          : time             := 1 ms;
+            msg              : string           := "");
 
     -- *** VUnit Operations ***
     -- Message Types
-    constant SpiMasterPushTransactionMsg  : msg_type_t := new_msg_type("SpiMasterPushTransaction");
+    constant SpiMasterPushTransactionMsg : msg_type_t := new_msg_type("SpiMasterPushTransaction");
 
     -- Constructor
-    impure function new_olo_test_spi_master(
-        busFrequency    : real    := 1.0e6;
-        lsbFirst        : boolean := false;
-        maxTransWidth   : natural := 32;
-        cpha            : integer range 0 to 1 := 0;
-        cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t;
+    impure function new_olo_test_spi_master (
+            busFrequency    : real    := 1.0e6;
+            lsbFirst        : boolean := false;
+            maxTransWidth   : natural := 32;
+            cpha            : integer range 0 to 1 := 0;
+            cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t;
 
     -- Casts
-    impure function as_sync(instance : olo_test_spi_master_t) return sync_handle_t;
+    impure function as_sync (instance : olo_test_spi_master_t) return sync_handle_t;
 
-end;
+end package;
 
 package body olo_test_spi_master_pkg is
 
@@ -72,15 +70,14 @@ package body olo_test_spi_master_pkg is
 
     -- Transaction
     procedure spi_master_push_transaction (
-        signal net          : inout network_t;
-        spi                 : olo_test_spi_master_t;
-        transaction_bits    : positive;
-        data_mosi           : std_logic_vector  := "X";
-        data_miso           : std_logic_vector  := "X";
-        csn_first           : boolean           := false;
-        timeout             : time              := 1 ms;
-        msg                 : string            := ""
-    ) is
+            signal net       : inout network_t;
+            spi              : olo_test_spi_master_t;
+            transaction_bits : positive;
+            data_mosi        : std_logic_vector := "X";
+            data_miso        : std_logic_vector := "X";
+            csn_first        : boolean          := false;
+            timeout          : time             := 1 ms;
+            msg              : string           := "") is
         variable Msg_v : msg_t := new_msg(SpiMasterPushTransactionMsg);
         variable mosi_v : std_logic_vector(spi.MaxTransWidth-1 downto 0) := (others => '0');
         variable miso_v : std_logic_vector(spi.MaxTransWidth-1 downto 0) := (others => 'X');
@@ -105,15 +102,15 @@ package body olo_test_spi_master_pkg is
 
         -- Send message
         send(net, spi.p_actor, Msg_v);
-    end;
+    end procedure;
 
     -- Constructor
-    impure function new_olo_test_spi_master(
-        busFrequency    : real    := 1.0e6;
-        lsbFirst        : boolean := false;
-        maxTransWidth    : natural := 32;
-        cpha            : integer range 0 to 1 := 0;
-        cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t is
+    impure function new_olo_test_spi_master (
+            busFrequency    : real    := 1.0e6;
+            lsbFirst        : boolean := false;
+            maxTransWidth    : natural := 32;
+            cpha            : integer range 0 to 1 := 0;
+            cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t is
     begin
         return (p_actor => new_actor,
                 LsbFirst => lsbFirst,
@@ -121,18 +118,19 @@ package body olo_test_spi_master_pkg is
                 ClkPeriod => (1 sec) / busFrequency,
                 CPHA => cpha,
                 CPOL => cpol);
-    end;
+    end function;
 
     -- Casts
-    impure function as_sync(instance : olo_test_spi_master_t) return sync_handle_t is
+    impure function as_sync (instance : olo_test_spi_master_t) return sync_handle_t is
     begin
         return instance.p_actor;
-    end;
-end;
+    end function;
 
-------------------------------------------------------------------------------------------------------------------------
+end package body;
+
+---------------------------------------------------------------------------------------------------
 -- Component Implementation
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -156,28 +154,29 @@ entity olo_test_spi_master_vc is
         instance                 : olo_test_spi_master_t
     );
     port (
-        Sclk     : out       std_logic;
-        CS_n     : out       std_logic;
-        Mosi     : out       std_logic;
-        Miso     : in        std_logic
+        Sclk     : out   std_logic;
+        CS_n     : out   std_logic;
+        Mosi     : out   std_logic;
+        Miso     : in    std_logic
     );
 end entity;
 
 architecture rtl of olo_test_spi_master_vc is
+
 begin
 
     -- Main Process
-    main : process
+    main : process is
         -- Messaging
-        variable request_msg        : msg_t;
-        variable reply_msg          : msg_t;
-        variable msg_type           : msg_type_t;
-        variable transaction_bits   : positive;
-        variable data_mosi          : std_logic_vector(instance.MaxTransWidth-1 downto 0);
-        variable data_miso          : std_logic_vector(instance.MaxTransWidth-1 downto 0);
-        variable csn_first          : boolean;
-        variable timeout            : time;
-        variable msg_p              : string_ptr_t;
+        variable request_msg      : msg_t;
+        variable reply_msg        : msg_t;
+        variable msg_type         : msg_type_t;
+        variable transaction_bits : positive;
+        variable data_mosi        : std_logic_vector(instance.MaxTransWidth-1 downto 0);
+        variable data_miso        : std_logic_vector(instance.MaxTransWidth-1 downto 0);
+        variable csn_first        : boolean;
+        variable timeout          : time;
+        variable msg_p            : string_ptr_t;
 
         -- Shift Registers
         variable ShiftRegRx_v : std_logic_vector(instance.MaxTransWidth-1 downto 0);
@@ -185,8 +184,7 @@ begin
         variable TxIdx_v      : integer;
 
         -- Others
-        variable LastEdge_v   : time;
-
+        variable LastEdge_v : time;
     begin
         -- Initialization
         Mosi <= '0';
@@ -203,11 +201,11 @@ begin
             if msg_type = SpiMasterPushTransactionMsg then
                 -- Pop Transaction
                 transaction_bits := pop(request_msg);
-                data_mosi := pop(request_msg);
-                data_miso := pop(request_msg);
-                csn_first := pop(request_msg);
-                timeout := pop(request_msg);
-                msg_p := new_string_ptr(pop_string(request_msg));
+                data_mosi        := pop(request_msg);
+                data_miso        := pop(request_msg);
+                csn_first        := pop(request_msg);
+                timeout          := pop(request_msg);
+                msg_p            := new_string_ptr(pop_string(request_msg));
 
                 -- Select tx bit index
                 TxIdx_v := choose(instance.LsbFirst, 0, transaction_bits - 1);
@@ -295,4 +293,4 @@ begin
         end loop;
     end process;
 
-end;
+end architecture;

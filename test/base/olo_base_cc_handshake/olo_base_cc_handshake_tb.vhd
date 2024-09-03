@@ -33,46 +33,46 @@ entity olo_base_cc_handshake_tb is
         ClockRatio_N_g  : integer := 1;
         ClockRatio_D_g  : integer := 1
     );
-end entity olo_base_cc_handshake_tb;
+end entity;
 
 architecture sim of olo_base_cc_handshake_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
-    constant ClockRatio_c       : real      := real(ClockRatio_N_g) / real(ClockRatio_D_g);
-    constant DataWidth_c        : integer   := 16;
-    constant ReadyRstState_c    : std_logic := choose(ReadyRstState_g=0, '0', '1');
+    -----------------------------------------------------------------------------------------------
+    constant ClockRatio_c    : real      := real(ClockRatio_N_g) / real(ClockRatio_D_g);
+    constant DataWidth_c     : integer   := 16;
+    constant ReadyRstState_c : std_logic := choose(ReadyRstState_g = 0, '0', '1');
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     constant ClkIn_Frequency_c    : real    := 100.0e6;
     constant ClkIn_Period_c       : time    := (1 sec) / ClkIn_Frequency_c;
     constant ClkOut_Frequency_c   : real    := ClkIn_Frequency_c * ClockRatio_c;
     constant ClkOut_Period_c      : time    := (1 sec) / ClkOut_Frequency_c;
     constant SlowerClock_Period_c : time    := (1 sec) / minimum(ClkIn_Frequency_c, ClkOut_Frequency_c);
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    shared variable InDelay     : time := 0 ns;
-    shared variable OutDelay    : time := 0 ns;
-
+    -----------------------------------------------------------------------------------------------
+    shared variable InDelay  : time := 0 ns;
+    shared variable OutDelay : time := 0 ns;
 
     -- *** Verification Compnents ***
     constant axisMaster : axi_stream_master_t := new_axi_stream_master (
         data_length => DataWidth_c,
         stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 20)
     );
-    constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
+    constant axisSlave  : axi_stream_slave_t := new_axi_stream_slave (
         data_length => DataWidth_c,
         stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 20)
     );
 
     -- *** Procedures ***
-    procedure PushValues (signal net : inout network_t;
-                          values     : integer := 100) is
+    procedure PushValues (
+            signal net : inout network_t;
+            values     : integer := 100) is
     begin
         for i in 0 to values-1 loop
             wait for InDelay;
@@ -80,8 +80,9 @@ architecture sim of olo_base_cc_handshake_tb is
         end loop;
     end procedure;
 
-    procedure CheckValues (signal net : inout network_t;
-                           values     : integer := 100) is
+    procedure CheckValues (
+            signal net : inout network_t;
+            values     : integer := 100) is
     begin
         for i in 0 to values-1 loop
             wait for OutDelay;
@@ -89,36 +90,37 @@ architecture sim of olo_base_cc_handshake_tb is
         end loop;
     end procedure;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal In_Clk      : std_logic                                      := '0';
-    signal In_RstIn    : std_logic                                      := '0';
-    signal In_RstOut   : std_logic                                      := '0';
-    signal In_Valid    : std_logic                                      := '0';
-    signal In_Ready    : std_logic                                      := '0';
-    signal In_Data     : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
-    signal Out_Clk     : std_logic                                      := '0';
-    signal Out_RstIn   : std_logic                                      := '0';
-    signal Out_RstOut  : std_logic                                      := '0';
-    signal Out_Valid   : std_logic                                      := '0';
-    signal Out_Ready   : std_logic                                      := '0';
-    signal Out_Data    : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
+    -----------------------------------------------------------------------------------------------
+    signal In_Clk     : std_logic                                      := '0';
+    signal In_RstIn   : std_logic                                      := '0';
+    signal In_RstOut  : std_logic                                      := '0';
+    signal In_Valid   : std_logic                                      := '0';
+    signal In_Ready   : std_logic                                      := '0';
+    signal In_Data    : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
+    signal Out_Clk    : std_logic                                      := '0';
+    signal Out_RstIn  : std_logic                                      := '0';
+    signal Out_RstOut : std_logic                                      := '0';
+    signal Out_Valid  : std_logic                                      := '0';
+    signal Out_Ready  : std_logic                                      := '0';
+    signal Out_Data   : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 10 ms);
-    p_control : process
+
+    p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
 
         while test_suite loop
 
-            InDelay := 0 ns;
+            InDelay  := 0 ns;
             OutDelay := 0 ns;
 
             -- Reset
@@ -138,7 +140,6 @@ begin
                 wait until rising_edge(In_Clk) and In_RstOut = '1' and Out_RstOut = '1';
                 wait until rising_edge(Out_Clk) and In_RstOut = '1' and Out_RstOut = '1';
                 check_equal(In_Ready, ReadyRstState_c, "In_Ready in reset");
-
 
             -- Single Word
             elsif run("Basic") then
@@ -179,16 +180,15 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     In_Clk  <= not In_Clk after 0.5 * ClkIn_Period_c;
     Out_Clk <= not Out_Clk after 0.5 * ClkOut_Period_c;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_cc_handshake
         generic map (
             Width_g         => DataWidth_c,
@@ -209,29 +209,29 @@ begin
             Out_Data    => Out_Data
         );
 
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Verification Components
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     vc_stimuli : entity vunit_lib.axi_stream_master
-    generic map (
-        master => axisMaster
-    )
-    port map (
-        aclk   => In_Clk,
-        tvalid => In_Valid,
-        tready => In_Ready,
-        tdata  => In_Data
-    );
+        generic map (
+            master => axisMaster
+        )
+        port map (
+            aclk   => In_Clk,
+            tvalid => In_Valid,
+            tready => In_Ready,
+            tdata  => In_Data
+        );
 
     vc_response : entity vunit_lib.axi_stream_slave
-    generic map (
-        slave => axisSlave
-    )
-    port map (
-        aclk   => Out_Clk,
-        tvalid => Out_Valid,
-        tready => Out_Ready,
-        tdata  => Out_Data
-    );
+        generic map (
+            slave => axisSlave
+        )
+        port map (
+            aclk   => Out_Clk,
+            tvalid => Out_Valid,
+            tready => Out_Ready,
+            tdata  => Out_Data
+        );
 
-end sim;
+end architecture;

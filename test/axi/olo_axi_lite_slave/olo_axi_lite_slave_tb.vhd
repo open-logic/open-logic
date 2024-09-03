@@ -32,21 +32,22 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_axi_lite_slave_tb is
     generic (
-        AxiAddrWidth_g      : positive := 32;
+        AxiAddrWidth_g      : positive                          := 32;
         AxiDataWidth_g      : positive range 8 to positive'high := 16;
-        runner_cfg      : string
+        runner_cfg          : string
     );
-end entity olo_axi_lite_slave_tb;
+end entity;
 
 architecture sim of olo_axi_lite_slave_tb is
-    -------------------------------------------------------------------------
+
+    -----------------------------------------------------------------------------------------------
     -- AXI Definition
-    -------------------------------------------------------------------------
-    constant IdWidth_c       : integer   := 0;
-    constant AddrWidth_c     : integer   := AxiAddrWidth_g;
-    constant UserWidth_c     : integer   := 0;
-    constant DataWidth_c     : integer   := AxiDataWidth_g;
-    constant ByteWidth_c     : integer   := DataWidth_c/8;
+    -----------------------------------------------------------------------------------------------
+    constant IdWidth_c   : integer   := 0;
+    constant AddrWidth_c : integer   := AxiAddrWidth_g;
+    constant UserWidth_c : integer   := 0;
+    constant DataWidth_c : integer   := AxiDataWidth_g;
+    constant ByteWidth_c : integer   := DataWidth_c/8;
 
     subtype IdRange_r   is natural range IdWidth_c-1 downto 0;
     subtype AddrRange_r is natural range AddrWidth_c-1 downto 0;
@@ -54,29 +55,28 @@ architecture sim of olo_axi_lite_slave_tb is
     subtype DataRange_r is natural range DataWidth_c-1 downto 0;
     subtype ByteRange_r is natural range ByteWidth_c-1 downto 0;
 
-    signal AxiMs    : AxiMs_r ( ArId(IdRange_r), AwId(IdRange_r),
-                                ArAddr(AddrRange_r), AwAddr(AddrRange_r),
-                                ArUser(UserRange_r), AwUser(UserRange_r), WUser(UserRange_r),
-                                WData(DataRange_r),
-                                WStrb(ByteRange_r));
+    signal AxiMs : AxiMs_r (ArId(IdRange_r), AwId(IdRange_r),
+                             ArAddr(AddrRange_r), AwAddr(AddrRange_r),
+                             ArUser(UserRange_r), AwUser(UserRange_r), WUser(UserRange_r),
+                             WData(DataRange_r),
+                             WStrb(ByteRange_r));
 
-    signal AxiSm    : AxiSm_r ( RId(IdRange_r), BId(IdRange_r),
-                                RUser(UserRange_r), BUser(UserRange_r),
-                                RData(DataRange_r));
+    signal AxiSm : AxiSm_r (RId(IdRange_r), BId(IdRange_r),
+                             RUser(UserRange_r), BUser(UserRange_r),
+                             RData(DataRange_r));
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant Clk_Frequency_c   : real    := 100.0e6;
-    constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
+    constant Clk_Frequency_c : real    := 100.0e6;
+    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
 
     -- *** Verification Compnents ***
     constant axiMaster : olo_test_axi_master_t := new_olo_test_axi_master (
@@ -85,31 +85,31 @@ architecture sim of olo_axi_lite_slave_tb is
         idWidth => IdWidth_c
     );
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Control
-    signal Clk             : std_logic                                         := '0';
-    signal Rst             : std_logic                                         := '0';
+    signal Clk : std_logic                                         := '0';
+    signal Rst : std_logic                                         := '0';
 
     -- Register Interface
-    signal Rb_Addr          : std_logic_vector(AxiAddrWidth_g - 1 downto 0);
-    signal Rb_Wr            : std_logic;
-    signal Rb_ByteEna       : std_logic_vector((AxiDataWidth_g/8) - 1 downto 0);
-    signal Rb_WrData        : std_logic_vector(AxiDataWidth_g - 1 downto 0);
-    signal Rb_Rd            : std_logic;
-    signal Rb_RdData        : std_logic_vector(AxiDataWidth_g - 1 downto 0);
-    signal Rb_RdValid       : std_logic                                         := '0';
-
+    signal Rb_Addr    : std_logic_vector(AxiAddrWidth_g - 1 downto 0);
+    signal Rb_Wr      : std_logic;
+    signal Rb_ByteEna : std_logic_vector((AxiDataWidth_g/8) - 1 downto 0);
+    signal Rb_WrData  : std_logic_vector(AxiDataWidth_g - 1 downto 0);
+    signal Rb_Rd      : std_logic;
+    signal Rb_RdData  : std_logic_vector(AxiDataWidth_g - 1 downto 0);
+    signal Rb_RdValid : std_logic                                         := '0';
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
         variable Addr_v : unsigned(AxiAddrWidth_g - 1 downto 0);
         variable Data_v : unsigned(AxiDataWidth_g - 1 downto 0);
         variable Strb_v : std_logic_vector((AxiDataWidth_g/8) - 1 downto 0);
@@ -161,12 +161,12 @@ begin
                         wait until rising_edge(Clk);
                         check_equal(Rb_Rd, '0', "Rb_Rd not de-asserted, rdDel = " & integer'image(rdDel));
                     end loop;
-                    Rb_RdData <= std_logic_vector(Data_v);
+                    Rb_RdData  <= std_logic_vector(Data_v);
                     Rb_RdValid <= '1';
                     wait until rising_edge(Clk);
                     check_equal(Rb_Rd, '0', "Rb_Rd not de-asserted, rdDel = " & integer'image(rdDel));
                     Rb_RdValid <= '0';
-                    Rb_RdData <= (others => '0');
+                    Rb_RdData  <= (others => '0');
                 end loop;
             end if;
 
@@ -174,7 +174,7 @@ begin
             if run("WriteStrobes") then
                 for byteIdx in 0 to (AxiDataWidth_g/8)-1 loop
                     -- Values for iteration
-                    Strb_v := (others => '0');
+                    Strb_v          := (others => '0');
                     Strb_v(byteIdx) := '1';
                     -- Operate VC
                     push_single_write(net, axiMaster, to_unsigned(128, AddrWidth_c), X"1D", strb => Strb_v);
@@ -227,21 +227,21 @@ begin
                 -- Check read on RB side [0]
                 wait until rising_edge(Clk) and Rb_Rd = '1';
                 check_equal(Rb_Addr, 16#A0#, "Rb_Addr wrong [0]");
-                Rb_RdData <= toUslv(16#01#, AxiDataWidth_g);
+                Rb_RdData  <= toUslv(16#01#, AxiDataWidth_g);
                 Rb_RdValid <= '1';
                 wait until rising_edge(Clk);
                 check_equal(Rb_Rd, '0', "Rb_Rd not de-asserted [0]");
                 Rb_RdValid <= '0';
-                Rb_RdData <= (others => '0');
+                Rb_RdData  <= (others => '0');
                 -- Check read on RB side [1]
                 wait until rising_edge(Clk) and Rb_Rd = '1';
                 check_equal(Rb_Addr, 16#B0#, "Rb_Addr wrong [1]");
-                Rb_RdData <= toUslv(16#02#, AxiDataWidth_g);
+                Rb_RdData  <= toUslv(16#02#, AxiDataWidth_g);
                 Rb_RdValid <= '1';
                 wait until rising_edge(Clk);
                 check_equal(Rb_Rd, '0', "Rb_Rd not de-asserted [1]");
                 Rb_RdValid <= '0';
-                Rb_RdData <= (others => '0');
+                Rb_RdData  <= (others => '0');
             end if;
 
             -- Address MAsking
@@ -250,10 +250,10 @@ begin
                 -- Check write on RB side
                 wait until rising_edge(Clk) and Rb_Wr = '1';
                 case AxiDataWidth_g is
-                    when 8   => check_equal(Rb_Addr, 16#8F#, "Rb_Addr wrong 8");
-                    when 16  => check_equal(Rb_Addr, 16#8E#, "Rb_Addr wrong 16");
-                    when 32  => check_equal(Rb_Addr, 16#8C#, "Rb_Addr wrong 32");
-                    when 64  => check_equal(Rb_Addr, 16#88#, "Rb_Addr wrong 64");
+                    when 8 => check_equal(Rb_Addr, 16#8F#, "Rb_Addr wrong 8");
+                    when 16 => check_equal(Rb_Addr, 16#8E#, "Rb_Addr wrong 16");
+                    when 32 => check_equal(Rb_Addr, 16#8C#, "Rb_Addr wrong 32");
+                    when 64 => check_equal(Rb_Addr, 16#88#, "Rb_Addr wrong 64");
                     when 128 => check_equal(Rb_Addr, 16#80#, "Rb_Addr wrong 128");
                     when others => check(false, "Illegal AxiDataWidth_g (must be btween 8 and 128)");
                 end case;
@@ -273,15 +273,14 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5*Clk_Period_c;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_axi_lite_slave
         generic map (
             AxiAddrWidth_g      => AxiAddrWidth_g,
@@ -322,9 +321,9 @@ begin
             Rb_RdData           => Rb_RdData,
             Rb_RdValid          => Rb_RdValid
         );
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Verification Components
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     vc_master : entity work.olo_test_axi_lite_master_vc
         generic map (
             instance => axiMaster
@@ -336,5 +335,4 @@ begin
             AxiSm => AxiSm
         );
 
-
-end sim;
+end architecture;

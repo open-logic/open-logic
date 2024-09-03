@@ -39,31 +39,31 @@ entity olo_base_fifo_async is
     );
     port (
         -- Input interface
-        In_Clk          : in  std_logic;
-        In_Rst          : in  std_logic;
-        In_RstOut       : out std_logic;
-        In_Data         : in  std_logic_vector(Width_g-1 downto 0);
-        In_Valid        : in  std_logic := '1';
-        In_Ready        : out std_logic;
+        In_Clk          : in    std_logic;
+        In_Rst          : in    std_logic;
+        In_RstOut       : out   std_logic;
+        In_Data         : in    std_logic_vector(Width_g-1 downto 0);
+        In_Valid        : in    std_logic := '1';
+        In_Ready        : out   std_logic;
         -- Input Status
-        In_Full         : out std_logic;
-        In_Empty        : out std_logic;
-        In_AlmFull      : out std_logic;
-        In_AlmEmpty     : out std_logic;
-        In_Level        : out std_logic_vector(log2ceil(Depth_g+1)-1 downto 0);
+        In_Full         : out   std_logic;
+        In_Empty        : out   std_logic;
+        In_AlmFull      : out   std_logic;
+        In_AlmEmpty     : out   std_logic;
+        In_Level        : out   std_logic_vector(log2ceil(Depth_g+1)-1 downto 0);
         -- Output Interface
-        Out_Clk         : in  std_logic;
-        Out_Rst         : in  std_logic;
-        Out_RstOut      : out std_logic;
-        Out_Data        : out std_logic_vector(Width_g-1 downto 0);
-        Out_Valid       : out std_logic;
-        Out_Ready       : in  std_logic := '1';
+        Out_Clk         : in    std_logic;
+        Out_Rst         : in    std_logic;
+        Out_RstOut      : out   std_logic;
+        Out_Data        : out   std_logic_vector(Width_g-1 downto 0);
+        Out_Valid       : out   std_logic;
+        Out_Ready       : in    std_logic := '1';
         -- Output Status
-        Out_Full        : out std_logic;
-        Out_Empty       : out std_logic;
-        Out_AlmFull     : out std_logic;
-        Out_AlmEmpty    : out std_logic;
-        Out_Level       : out std_logic_vector(log2ceil(Depth_g+1)-1 downto 0)
+        Out_Full        : out   std_logic;
+        Out_Empty       : out   std_logic;
+        Out_AlmFull     : out   std_logic;
+        Out_AlmEmpty    : out   std_logic;
+        Out_Level       : out   std_logic_vector(log2ceil(Depth_g+1)-1 downto 0)
     );
 end entity;
 
@@ -76,39 +76,41 @@ architecture rtl of olo_base_fifo_async is
     constant RamAddrWidth_c : positive := log2ceil(Depth_g);
 
     type two_process_in_r is record
-        WrAddr         : unsigned(AddrWidth_c-1 downto 0); -- One additional bit for full/empty detection
-        WrAddrGray     : std_logic_vector(AddrWidth_c-1 downto 0);
-        RdAddr         : unsigned(AddrWidth_c-1 downto 0);
+        WrAddr     : unsigned(AddrWidth_c-1 downto 0); -- One additional bit for full/empty detection
+        WrAddrGray : std_logic_vector(AddrWidth_c-1 downto 0);
+        RdAddr     : unsigned(AddrWidth_c-1 downto 0);
     end record;
 
     type two_process_out_r is record
-        RdAddr         : unsigned(AddrWidth_c-1 downto 0); -- One additional bit for full/empty detection
-        RdAddrGray     : std_logic_vector(AddrWidth_c-1 downto 0);
-        WrAddr         : unsigned(AddrWidth_c-1 downto 0);
-        OutLevel       : unsigned(AddrWidth_c-1 downto 0);
+        RdAddr     : unsigned(AddrWidth_c-1 downto 0); -- One additional bit for full/empty detection
+        RdAddrGray : std_logic_vector(AddrWidth_c-1 downto 0);
+        WrAddr     : unsigned(AddrWidth_c-1 downto 0);
+        OutLevel   : unsigned(AddrWidth_c-1 downto 0);
     end record;
 
-    signal ri, ri_next : two_process_in_r  := ( WrAddr         => (others => '0'),
+    signal ri, ri_next : two_process_in_r  := (WrAddr         => (others => '0'),
                                                 WrAddrGray     => (others => '0'),
                                                 RdAddr         => (others => '0'));
-    signal ro, ro_next : two_process_out_r := ( RdAddr         => (others => '0'),
+    signal ro, ro_next : two_process_out_r := (RdAddr         => (others => '0'),
                                                 RdAddrGray     => (others => '0'),
                                                 WrAddr         => (others => '0'),
                                                 OutLevel       => (others => '0'));
 
-    signal RstInInt     : std_logic;
-    signal RstOutInt    : std_logic;
-    signal RamWr        : std_logic;
-    signal RamRdAddr    : std_logic_vector(RamAddrWidth_c-1 downto 0);
-    signal RamWrAddr    : std_logic_vector(RamAddrWidth_c-1 downto 0);
-    signal WrAddrGray   : std_logic_vector(AddrWidth_c-1 downto 0);
-    signal RdAddrGray   : std_logic_vector(AddrWidth_c-1 downto 0);
+    signal RstInInt   : std_logic;
+    signal RstOutInt  : std_logic;
+    signal RamWr      : std_logic;
+    signal RamRdAddr  : std_logic_vector(RamAddrWidth_c-1 downto 0);
+    signal RamWrAddr  : std_logic_vector(RamAddrWidth_c-1 downto 0);
+    signal WrAddrGray : std_logic_vector(AddrWidth_c-1 downto 0);
+    signal RdAddrGray : std_logic_vector(AddrWidth_c-1 downto 0);
 
 begin
 
-    assert log2(Depth_g) = log2ceil(Depth_g) report "###ERROR###: olo_base_fifo_async: only power of two Depth_g is allowed" severity error;
+    assert log2(Depth_g) = log2ceil(Depth_g)
+        report "###ERROR###: olo_base_fifo_async: only power of two Depth_g is allowed"
+        severity error;
 
-    p_comb : process(In_Valid, Out_Ready, ri, ro, RstInInt, WrAddrGray, RdAddrGray)
+    p_comb : process (In_Valid, Out_Ready, ri, ro, RstInInt, WrAddrGray, RdAddrGray) is
         variable vi        : two_process_in_r;
         variable vo        : two_process_out_r;
         variable InLevel_v : unsigned(log2ceil(Depth_g) downto 0);
@@ -120,8 +122,8 @@ begin
         -- *** Write Side ***
         -- Defaults
         In_Ready    <= '0';
-        In_Full   <= '0';
-        In_Empty  <= '0';
+        In_Full     <= '0';
+        In_Empty    <= '0';
         In_AlmFull  <= '0';
         In_AlmEmpty <= '0';
         RamWr       <= '0';
@@ -160,8 +162,8 @@ begin
         -- *** Read Side ***
         -- Defaults
         Out_Valid    <= '0';
-        Out_Full   <= '0';
-        Out_Empty  <= '0';
+        Out_Full     <= '0';
+        Out_Empty    <= '0';
         Out_AlmFull  <= '0';
         Out_AlmEmpty <= '0';
 
@@ -214,41 +216,41 @@ begin
 
     end process;
 
-    p_seq_in : process(In_Clk)
+    p_seq_in : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
             ri <= ri_next;
             if RstInInt = '1' then
-                ri.WrAddr         <= (others => '0');
-                ri.WrAddrGray     <= (others => '0');
-                ri.RdAddr         <= (others => '0');
+                ri.WrAddr     <= (others => '0');
+                ri.WrAddrGray <= (others => '0');
+                ri.RdAddr     <= (others => '0');
             end if;
         end if;
     end process;
 
-    p_seq_out : process(Out_Clk)
+    p_seq_out : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
             ro <= ro_next;
             if RstOutInt = '1' then
-                ro.RdAddr         <= (others => '0');
-                ro.RdAddrGray     <= (others => '0');
-                ro.WrAddr         <= (others => '0');
-                ro.OutLevel       <= (others => '0');
+                ro.RdAddr     <= (others => '0');
+                ro.RdAddrGray <= (others => '0');
+                ro.WrAddr     <= (others => '0');
+                ro.OutLevel   <= (others => '0');
             end if;
         end if;
     end process;
 
     RamWrAddr <= std_logic_vector(ri.WrAddr(log2ceil(Depth_g) - 1 downto 0));
     i_ram : entity work.olo_base_ram_sdp
-        generic map(
+        generic map (
             Depth_g         => Depth_g,
             Width_g         => Width_g,
             RamStyle_g      => RamStyle_g,
             IsAsync_g       => true,
             RamBehavior_g   => RamBehavior_g
         )
-        port map(
+        port map (
             Clk         => In_Clk,
             Wr_Addr     => RamWrAddr,
             Wr_Ena      => RamWr,
@@ -297,7 +299,6 @@ begin
             B_RstOut    => RstOutInt
         );
     Out_RstOut <= RstOutInt;
-    In_RstOut <= RstInInt;
-
+    In_RstOut  <= RstInInt;
 
 end architecture;

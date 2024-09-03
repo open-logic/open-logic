@@ -28,45 +28,45 @@ library olo;
 entity olo_intf_debounce_tb is
     generic (
         IdleLevel_g         : integer range 0 to 1 := 0;
-        DebounceCycles_g    : integer   := 200;
-        Mode_g              : string    := "LOW_LATENCY";
+        DebounceCycles_g    : integer              := 200;
+        Mode_g              : string               := "LOW_LATENCY";
         runner_cfg          : string
     );
-end entity olo_intf_debounce_tb;
+end entity;
 
 architecture sim of olo_intf_debounce_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
-    constant DataWidth_c  : integer := 2;
+    -----------------------------------------------------------------------------------------------
+    constant DataWidth_c : integer := 2;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant IdleLevel_c         : std_logic := choose(IdleLevel_g = 0, '0', '1');
-    constant Clk_Frequency_c     : real      := 100.0e6;
-    constant Clk_Period_c        : time      := (1 sec) / Clk_Frequency_c;
-    constant Time_Debounce_c     : time      := Clk_Period_c*DebounceCycles_g;
-    constant IsLowLat_c          : boolean   := (Mode_g = "LOW_LATENCY");
-    constant MaxPropDelay_c      : time      := 5*Clk_Period_c;
-    constant MaxDetTime_c        : time      := Time_Debounce_c*1.1+MaxPropDelay_c;
+    -----------------------------------------------------------------------------------------------
+    constant IdleLevel_c     : std_logic := choose(IdleLevel_g = 0, '0', '1');
+    constant Clk_Frequency_c : real      := 100.0e6;
+    constant Clk_Period_c    : time      := (1 sec) / Clk_Frequency_c;
+    constant Time_Debounce_c : time      := Clk_Period_c*DebounceCycles_g;
+    constant IsLowLat_c      : boolean   := (Mode_g = "LOW_LATENCY");
+    constant MaxPropDelay_c  : time      := 5*Clk_Period_c;
+    constant MaxDetTime_c    : time      := Time_Debounce_c*1.1+MaxPropDelay_c;
 
-    signal BounceOhter           : boolean := false;
+    signal BounceOhter : boolean := false;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal Clk         : std_logic                                  := '0';
-    signal Rst         : std_logic                                  := '1';
-    signal DataAsync   : std_logic_vector(DataWidth_c - 1 downto 0) := (others => IdleLevel_c);
-    signal DataOut     : std_logic_vector(DataWidth_c - 1 downto 0);
+    -----------------------------------------------------------------------------------------------
+    signal Clk       : std_logic                                  := '0';
+    signal Rst       : std_logic                                  := '1';
+    signal DataAsync : std_logic_vector(DataWidth_c - 1 downto 0) := (others => IdleLevel_c);
+    signal DataOut   : std_logic_vector(DataWidth_c - 1 downto 0);
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_intf_debounce
         generic map (
             ClkFrequency_g  => Clk_Frequency_c,
@@ -75,25 +75,26 @@ begin
             IdleLevel_g     => IdleLevel_c,
             Mode_g          => Mode_g
         )
-        port map(
+        port map (
             Clk         => Clk,
             Rst         => Rst,
             DataAsync   => DataAsync,
             DataOut     => DataOut
         );
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
-    Clk  <= not Clk after 0.5 * Clk_Period_c;
+    -----------------------------------------------------------------------------------------------
+    Clk <= not Clk after 0.5 * Clk_Period_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
-        constant RstVal_c : std_logic_vector(DataWidth_c - 1 downto 0) := (others => IdleLevel_c);
+
+    p_control : process is
+        constant RstVal_c    : std_logic_vector(DataWidth_c - 1 downto 0) := (others => IdleLevel_c);
         variable StartTime_v : time;
     begin
         test_runner_setup(runner, runner_cfg);
@@ -126,8 +127,8 @@ begin
                 wait for MaxDetTime_c;
                 -- End of pulse
                 DataAsync(0) <= IdleLevel_c;
-                 -- Wait until new value is detected
-                 if IsLowLat_c then
+                -- Wait until new value is detected
+                if IsLowLat_c then
                     wait for MaxPropDelay_c;
                 else
                     wait for MaxDetTime_c;
@@ -224,8 +225,8 @@ begin
                 wait for MaxDetTime_c;
                 -- End of pulse
                 DataAsync(0) <= IdleLevel_c;
-                 -- Wait until new value is detected
-                 if IsLowLat_c then
+                -- Wait until new value is detected
+                if IsLowLat_c then
                     wait for MaxPropDelay_c;
                 else
                     wait for MaxDetTime_c;
@@ -245,13 +246,13 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    p_other : process
+    p_other : process is
     begin
         wait until rising_edge(Clk);
         if BounceOhter then
             loop
                 wait for Time_Debounce_c*0.1;
-                DataAsync(1) <= not  DataAsync(1) ;
+                DataAsync(1) <= not  DataAsync(1);
                 if not BounceOhter then
                     exit;
                 end if;
@@ -260,6 +261,4 @@ begin
         end if;
     end process;
 
-
-
-end sim;
+end architecture;

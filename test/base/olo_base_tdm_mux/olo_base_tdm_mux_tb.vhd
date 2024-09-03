@@ -29,20 +29,20 @@ entity olo_base_tdm_mux_tb is
     generic (
         runner_cfg      : string
     );
-end entity olo_base_tdm_mux_tb;
+end entity;
 
 architecture sim of olo_base_tdm_mux_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
-    constant Width_c        : natural   := 16;
-    constant Channels_c     : natural   := 5;
-    constant ClkPeriod_c    : time      := 10 ns;
+    -----------------------------------------------------------------------------------------------
+    constant Width_c     : natural   := 16;
+    constant Channels_c  : natural   := 5;
+    constant ClkPeriod_c : time      := 10 ns;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
 
     -- *** Verification Compnents ***
     constant axisMaster : axi_stream_master_t := new_axi_stream_master (
@@ -50,32 +50,33 @@ architecture sim of olo_base_tdm_mux_tb is
         user_length => 3,
         stall_config => new_stall_config(0.0, 0, 0)
     );
-    constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
+    constant axisSlave  : axi_stream_slave_t := new_axi_stream_slave (
         data_length => Width_c,
         stall_config => new_stall_config(0.0, 0, 0)
     );
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal Clk         : std_logic                                                  := '0';
-    signal Rst         : std_logic                                                  := '1';
-    signal In_Valid    : std_logic                                                  := '0';
-    signal In_Data     : std_logic_vector(Width_c - 1 downto 0)                     := (others => '0');
-    signal In_ChSel    : std_logic_vector(2 downto 0)                               := (others => '0');
-    signal In_Last     : std_logic                                                  := '0';
-    signal Out_Valid   : std_logic                                                  := '0';
-    signal Out_Data    : std_logic_vector(Width_c - 1 downto 0)                     := (others => '0');
-    signal Out_Last    : std_logic                                                  := '0';
+    -----------------------------------------------------------------------------------------------
+    signal Clk       : std_logic                                                  := '0';
+    signal Rst       : std_logic                                                  := '1';
+    signal In_Valid  : std_logic                                                  := '0';
+    signal In_Data   : std_logic_vector(Width_c - 1 downto 0)                     := (others => '0');
+    signal In_ChSel  : std_logic_vector(2 downto 0)                               := (others => '0');
+    signal In_Last   : std_logic                                                  := '0';
+    signal Out_Valid : std_logic                                                  := '0';
+    signal Out_Data  : std_logic_vector(Width_c - 1 downto 0)                     := (others => '0');
+    signal Out_Last  : std_logic                                                  := '0';
+
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
 
-    p_control : process
+    p_control : process is
         variable ChSel_v : integer;
     begin
         test_runner_setup(runner, runner_cfg);
@@ -147,14 +148,14 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
-    Clk  <= not Clk after 0.5 * ClkPeriod_c;
+    -----------------------------------------------------------------------------------------------
+    Clk <= not Clk after 0.5 * ClkPeriod_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_tdm_mux
         generic map (
             Channels_g   => Channels_c,
@@ -172,30 +173,30 @@ begin
             Out_Last    => Out_Last
         );
 
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Verification Components
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     vc_stimuli : entity vunit_lib.axi_stream_master
-    generic map (
-        master => axisMaster
-    )
-    port map (
-        aclk   => Clk,
-        tvalid => In_Valid,
-        tdata  => In_Data,
-        tlast  => In_Last,
-        tuser  => In_ChSel
-    );
+        generic map (
+            master => axisMaster
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => In_Valid,
+            tdata  => In_Data,
+            tlast  => In_Last,
+            tuser  => In_ChSel
+        );
 
     vc_response : entity vunit_lib.axi_stream_slave
-    generic map (
-        slave => axisSlave
-    )
-    port map (
-        aclk   => Clk,
-        tvalid => Out_Valid,
-        tdata  => Out_Data,
-        tlast  => Out_Last
-    );
+        generic map (
+            slave => axisSlave
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => Out_Valid,
+            tdata  => Out_Data,
+            tlast  => Out_Last
+        );
 
-end sim;
+end architecture;

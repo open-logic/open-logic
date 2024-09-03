@@ -36,27 +36,27 @@ entity olo_base_dyn_sft_tb is
         MaxShift_g          : positive := 16;
         SignExtend_g        : boolean  := true
     );
-end entity olo_base_dyn_sft_tb;
+end entity;
 
 architecture sim of olo_base_dyn_sft_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
-    constant DataWidth_c    : integer := 16;
-    constant ShiftBits_c    : integer := log2ceil(MaxShift_g+1);
-    constant ValueLow_c     : integer := -(2**(DataWidth_c-1));
-    constant ValueHigh_c     : integer := 2**(DataWidth_c-1)-1;
+    -----------------------------------------------------------------------------------------------
+    constant DataWidth_c : integer := 16;
+    constant ShiftBits_c : integer := log2ceil(MaxShift_g+1);
+    constant ValueLow_c  : integer := -(2**(DataWidth_c-1));
+    constant ValueHigh_c : integer := 2**(DataWidth_c-1)-1;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant Clk_Frequency_c   : real    := 100.0e6;
-    constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
+    constant Clk_Frequency_c : real    := 100.0e6;
+    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    shared variable Random : RandomPType;
+    -----------------------------------------------------------------------------------------------
+    shared variable Random   : RandomPType;
 
     -- *** Verification Compnents ***
     constant axisMaster : axi_stream_master_t := new_axi_stream_master (
@@ -64,17 +64,18 @@ architecture sim of olo_base_dyn_sft_tb is
         user_length => ShiftBits_c,
         stall_config => new_stall_config(0.5, 0, 10)
     );
-    constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
+    constant axisSlave  : axi_stream_slave_t := new_axi_stream_slave (
         data_length => DataWidth_c,
         stall_config => new_stall_config(0.0, 0, 0)
     );
 
     -- *** Procedures ***
-    procedure TestShift(signal net : inout network_t;
-                        value : in integer;
-                        shift : in integer) is
-        variable OutValue_v     : integer;
-        variable InUnsigned_v   : integer;
+    procedure TestShift (
+            signal net : inout network_t;
+            value      : in integer;
+            shift      : in integer) is
+        variable OutValue_v   : integer;
+        variable InUnsigned_v : integer;
     begin
         push_axi_stream(net, axisMaster, toSslv(value, DataWidth_c), tuser => toUslv(shift, ShiftBits_c));
         if Direction_g = "LEFT" then
@@ -92,25 +93,26 @@ architecture sim of olo_base_dyn_sft_tb is
         check_axi_stream(net, axisSlave, toSslv(OutValue_v, DataWidth_c), blocking => false, msg => "Wrong Data - input: " & integer'image(value) & " shift: " & integer'image(shift));
     end procedure;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal Clk         : std_logic                                      := '0';
-    signal Rst         : std_logic                                      := '0';
-    signal In_Valid    : std_logic                                      := '0';
-    signal In_Data     : std_logic_vector(DataWidth_c-1 downto 0)       := (others => '0');
-    signal In_Shift    : std_logic_vector(ShiftBits_c-1 downto 0)       := (others => '0');
-    signal Out_Valid   : std_logic                                      := '0';
-    signal Out_Data    : std_logic_vector(DataWidth_c-1 downto 0)       := (others => '0');
+    -----------------------------------------------------------------------------------------------
+    signal Clk       : std_logic                                      := '0';
+    signal Rst       : std_logic                                      := '0';
+    signal In_Valid  : std_logic                                      := '0';
+    signal In_Data   : std_logic_vector(DataWidth_c-1 downto 0)       := (others => '0');
+    signal In_Shift  : std_logic_vector(ShiftBits_c-1 downto 0)       := (others => '0');
+    signal Out_Valid : std_logic                                      := '0';
+    signal Out_Data  : std_logic_vector(DataWidth_c-1 downto 0)       := (others => '0');
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
         Random.InitSeed(Random'instance_name);
@@ -148,15 +150,14 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5*Clk_Period_c;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_dyn_sft
         generic map (
             Direction_g         => Direction_g,
@@ -175,29 +176,29 @@ begin
             Out_Data    => Out_Data
         );
 
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Verification Components
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     vc_stimuli : entity vunit_lib.axi_stream_master
-    generic map (
-        master => axisMaster
-    )
-    port map (
-        aclk   => Clk,
-        tvalid => In_Valid,
-        tready => '1',
-        tuser  => In_Shift,
-        tdata  => In_Data
-    );
+        generic map (
+            master => axisMaster
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => In_Valid,
+            tready => '1',
+            tuser  => In_Shift,
+            tdata  => In_Data
+        );
 
     vc_response : entity vunit_lib.axi_stream_slave
-    generic map (
-        slave => axisSlave
-    )
-    port map (
-        aclk   => Clk,
-        tvalid => Out_Valid,
-        tdata  => Out_Data
-    );
+        generic map (
+            slave => axisSlave
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => Out_Valid,
+            tdata  => Out_Data
+        );
 
-end sim;
+end architecture;

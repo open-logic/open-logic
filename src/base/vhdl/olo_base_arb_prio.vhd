@@ -29,13 +29,13 @@ library work;
 entity olo_base_arb_prio is
     generic (
         Width_g    : positive;
-        Latency_g  : natural   := 1
+        Latency_g  : natural := 1
     );
     port (
-        Clk        : in  std_logic;
-        Rst        : in  std_logic;
-        In_Req     : in  std_logic_vector(Width_g-1 downto 0);
-        Out_Grant  : out std_logic_vector(Width_g-1 downto 0)
+        Clk        : in    std_logic;
+        Rst        : in    std_logic;
+        In_Req     : in    std_logic_vector(Width_g-1 downto 0);
+        Out_Grant  : out   std_logic_vector(Width_g-1 downto 0)
     );
 end entity;
 
@@ -48,14 +48,14 @@ architecture rtl of olo_base_arb_prio is
     signal Grant_I : std_logic_vector(Out_Grant'range);
     -- Output Registers
     type Data_t is array (natural range<>) of std_logic_vector(Out_Grant'range);
-    signal RdPipe     : Data_t(1 to Latency_g);
+    signal RdPipe  : Data_t(1 to Latency_g);
 
 begin
 
     -- Only generate code for non-zero sized arbiters to avoid illegal range delcarations
     g_non_zero : if Width_g > 0 generate
 
-        p_comb : process(In_Req)
+        p_comb : process (In_Req) is
             variable OredRequest_v : std_logic_vector(In_Req'range);
         begin
             -- Or request vector
@@ -67,17 +67,19 @@ begin
 
         -- Registered Output
         g_reg : if Latency_g > 0 generate
-            p_outreg : process(Clk)
+
+            p_outreg : process (Clk) is
             begin
                 if rising_edge(Clk) then
                     if Rst = '1' then
                         RdPipe <= (others => (others => '0'));
                     else
-                        RdPipe(1) <= Grant_I;
+                        RdPipe(1)              <= Grant_I;
                         RdPipe(2 to Latency_g) <= RdPipe(1 to Latency_g-1);
                     end if;
                 end if;
             end process;
+
             Out_Grant <= RdPipe(Latency_g);
         end generate;
 
@@ -85,6 +87,6 @@ begin
         g_nreg : if Latency_g = 0 generate
             Out_Grant <= Grant_I;
         end generate;
-  end generate;
+    end generate;
 
 end architecture;

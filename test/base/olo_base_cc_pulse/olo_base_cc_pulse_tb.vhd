@@ -29,19 +29,19 @@ entity olo_base_cc_pulse_tb is
         ClockRatio_N_g : integer := 3;
         ClockRatio_D_g : integer := 2
     );
-end entity olo_base_cc_pulse_tb;
+end entity;
 
 architecture sim of olo_base_cc_pulse_tb is
 
-  -------------------------------------------------------------------------
-  -- Constants
-  -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
+    -- Constants
+    -----------------------------------------------------------------------------------------------
   constant ClockRatio_c : real    := real(ClockRatio_N_g) / real(ClockRatio_D_g);
   constant NumPulses_c  : integer := 4;
 
-  -------------------------------------------------------------------------
-  -- TB Defnitions
-  -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
+    -- TB Defnitions
+    -----------------------------------------------------------------------------------------------
   constant ClkIn_Frequency_c    : real    := 100.0e6;
   constant ClkIn_Period_c       : time    := (1 sec) / ClkIn_Frequency_c;
   constant ClkOut_Frequency_c   : real    := ClkIn_Frequency_c * ClockRatio_c;
@@ -49,29 +49,25 @@ architecture sim of olo_base_cc_pulse_tb is
   constant SlowerClock_Period_c : time    := (1 sec) / minimum(ClkIn_Frequency_c, ClkOut_Frequency_c);
   constant MaxReactionTime_c    : time    := 10*SlowerClock_Period_c;
 
-  -------------------------------------------------------------------------
-  -- Interface Signals
-  -------------------------------------------------------------------------
-  signal In_Clk         : std_logic                                  := '0';
-  signal In_RstIn       : std_logic                                  := '1';
-  signal In_RstOut      : std_logic;
-  signal In_Pulse       : std_logic_vector(NumPulses_c - 1 downto 0) := X"0";
-  signal In_Valid       : std_logic                                  := '0';
-  signal Out_Clk        : std_logic                                  := '0';
-  signal Out_RstIn      : std_logic                                  := '1';
-  signal Out_RstOut     : std_logic;
-  signal Out_Pulse      : std_logic_vector(NumPulses_c - 1 downto 0);
-  signal Out_Valid      : std_logic;
-
-  -------------------------------------------------------------------------
-  -- Procedure
-  -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
+    -- Interface Signals
+    -----------------------------------------------------------------------------------------------
+    signal In_Clk     : std_logic                                  := '0';
+    signal In_RstIn   : std_logic                                  := '1';
+    signal In_RstOut  : std_logic;
+    signal In_Pulse   : std_logic_vector(NumPulses_c - 1 downto 0) := X"0";
+    signal In_Valid   : std_logic                                  := '0';
+    signal Out_Clk    : std_logic                                  := '0';
+    signal Out_RstIn  : std_logic                                  := '1';
+    signal Out_RstOut : std_logic;
+    signal Out_Pulse  : std_logic_vector(NumPulses_c - 1 downto 0);
+    signal Out_Valid  : std_logic;
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_cc_pulse
         generic map (
             NumPulses_g => NumPulses_c
@@ -89,19 +85,19 @@ begin
             Out_Pulse   => Out_Pulse
         );
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     In_Clk  <= not In_Clk after 0.5 * ClkIn_Period_c;
     Out_Clk <= not Out_Clk after 0.5 * ClkOut_Period_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
         variable v : std_logic_vector(Out_Pulse'range);
     begin
         test_runner_setup(runner, runner_cfg);
@@ -109,7 +105,7 @@ begin
         while test_suite loop
 
             -- Reset
-            In_RstIn <= '1';
+            In_RstIn  <= '1';
             Out_RstIn <= '1';
             wait for MaxReactionTime_c;
 
@@ -119,7 +115,7 @@ begin
 
             -- Remove reset
             wait until rising_edge(In_Clk);
-            In_RstIn <= '0';
+            In_RstIn  <= '0';
             wait until rising_edge(Out_Clk);
             Out_RstIn <= '0';
             wait for MaxReactionTime_c;
@@ -153,8 +149,6 @@ begin
                 check(In_RstOut'last_event < MaxReactionTime_c*2, "In_RstOut not asserted after Out_RstIn");
                 check(Out_RstOut'last_event < MaxReactionTime_c*2, "Out_RstOut not asserted after Out_RstIn");
 
-
-
             -- *** Pulse Tests ***
             elsif run("Normal-Operation") then
 
@@ -166,12 +160,12 @@ begin
                     wait until rising_edge(In_Clk);
                     In_Pulse(idx) <= '0';
                     -- Wait for output pulse
-                    v := (others => '0');
+                    v      := (others => '0');
                     v(idx) := '1';
                     WaitForValueStdlv(Out_Pulse, v, 100 us, "Pulse not transferred 1");
                     wait until rising_edge(Out_Clk);
                     wait until rising_edge(Out_Clk);
-                    v := (others => '0');
+                    v      := (others => '0');
                     check_equal(Out_Pulse, v, "Pulse not removed 1");
                 end loop;
 
@@ -200,7 +194,6 @@ begin
                 wait for MaxReactionTime_c;
                 CheckNoActivityStlv(Out_Pulse, MaxReactionTime_c*2, "Unexpected pulse 3");
 
-
             -- *** Test if no pulse is transferred after the internal toggle FF is reset by RstOut ***
             elsif run("NoPulse-RstOut") then
                 -- transfer one pulse
@@ -214,9 +207,8 @@ begin
             end if;
         end loop;
 
-
         -- TB done
         test_runner_cleanup(runner);
     end process;
 
-end sim;
+end architecture;

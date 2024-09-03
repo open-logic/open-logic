@@ -23,11 +23,13 @@ library work;
     use work.olo_base_pkg_logic.all;
 
 package olo_intf_i2c_master_pkg is
+
     constant CMD_START    : std_logic_vector(2 downto 0) := "000";
     constant CMD_STOP     : std_logic_vector(2 downto 0) := "001";
     constant CMD_REPSTART : std_logic_vector(2 downto 0) := "010";
     constant CMD_SEND     : std_logic_vector(2 downto 0) := "011";
     constant CMD_REC      : std_logic_vector(2 downto 0) := "100";
+
 end package;
 
 ---------------------------------------------------------------------------------------------------
@@ -55,7 +57,7 @@ entity olo_intf_i2c_master is
         InternalTriState_g  : boolean := true;
         DisableAsserts_g    : boolean := false
     );
-    port(
+    port (
         -- Control Signals
         Clk             : in    std_logic;
         Rst             : in    std_logic;
@@ -76,13 +78,13 @@ entity olo_intf_i2c_master is
         Status_BusBusy  : out   std_logic;
         Status_CmdTo    : out   std_logic;
         -- I2c Interface with internal Tri-State
-        I2c_Scl         : inout std_logic                       := 'Z';
-        I2c_Sda         : inout std_logic                       := 'Z';
+        I2c_Scl         : inout std_logic := 'Z';
+        I2c_Sda         : inout std_logic := 'Z';
         -- I2c Interface with external Tri-State
-        I2c_Scl_i       : in    std_logic                       := '0';
+        I2c_Scl_i       : in    std_logic := '0';
         I2c_Scl_o       : out   std_logic;
         I2c_Scl_t       : out   std_logic;
-        I2c_Sda_i       : in    std_logic                       := '0';
+        I2c_Sda_i       : in    std_logic := '0';
         I2c_Sda_o       : out   std_logic;
         I2c_Sda_t       : out   std_logic
     );
@@ -99,13 +101,13 @@ architecture rtl of olo_intf_i2c_master is
     constant CmdTimeoutLimit_c    : integer := integer(ClkFrequency_g * CmdTimeout_g) - 1;
 
     -- *** Types ***
-    type Fsm_t is ( BusIdle_s, BusBusy_s, MinIdle_s, Start1_s, Start2_s, WaitCmd_s, WaitLowCenter_s,
+    type Fsm_t is (BusIdle_s, BusBusy_s, MinIdle_s, Start1_s, Start2_s, WaitCmd_s, WaitLowCenter_s,
                     Stop1_s, Stop2_s, Stop3_s, RepStart1_s,
                     DataBit1_s, DataBit2_s, DataBit3_s, DataBit4_s, ArbitLost_s);
 
     -- *** Two Process Method ***
     type two_process_r is record
-        Status_BusBusy     : std_logic;
+        Status_BusBusy : std_logic;
         Cmd_Ready      : std_logic;
         SclLast        : std_logic;
         SdaLast        : std_logic;
@@ -118,19 +120,19 @@ architecture rtl of olo_intf_i2c_master is
         Fsm            : Fsm_t;
         SclOut         : std_logic;
         SdaOut         : std_logic;
-        Resp_Valid      : std_logic;
-        Resp_Ack      : std_logic;
-        Resp_SeqErr      : std_logic;
+        Resp_Valid     : std_logic;
+        Resp_Ack       : std_logic;
+        Resp_SeqErr    : std_logic;
         Resp_Data      : std_logic_vector(7 downto 0);
-        Resp_ArbLost : std_logic;
+        Resp_ArbLost   : std_logic;
         BitCnt         : unsigned(3 downto 0); -- 8 Data + 1 Ack = 9 = 4 bits
         ShReg          : std_logic_vector(8 downto 0);
         CmdTimeout     : std_logic;
-        Status_CmdTo  : std_logic;
+        Status_CmdTo   : std_logic;
     end record;
-    signal r, r_next     : two_process_r;
-    attribute dont_touch : string;
-    attribute dont_touch of r : signal is "true"; -- Required to Fix Vivado 2018.2 Synthesis Bug! Is fixed in Vivado 2019.1 according to Xilinx.
+    signal r, r_next : two_process_r;
+    attribute DONT_TOUCH : string;
+    attribute DONT_TOUCH of r : signal is "true"; -- Required to Fix Vivado 2018.2 Synthesis Bug! Is fixed in Vivado 2019.1 according to Xilinx.
 
     -- Tri-state buffer muxing
     signal I2cScl_Input : std_logic;
@@ -140,20 +142,20 @@ architecture rtl of olo_intf_i2c_master is
 
 begin
 
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
-    --------------------------------------------------------------------------
-    p_comb : process(r, I2cScl_Sync, I2cSda_Sync, Cmd_Valid, Cmd_Command, Cmd_Data, Cmd_Ack)
-      variable v                                  : two_process_r;
-      variable   SdaRe_v, SdaFe_v : std_logic;
-      variable I2cStart_v, I2cStop_v              : std_logic;
+    -----------------------------------------------------------------------------------------------
+    p_comb : process (r, I2cScl_Sync, I2cSda_Sync, Cmd_Valid, Cmd_Command, Cmd_Data, Cmd_Ack) is
+        variable v                     : two_process_r;
+        variable SdaRe_v, SdaFe_v      : std_logic;
+        variable I2cStart_v, I2cStop_v : std_logic;
     begin
         -- *** hold variables stable ***
         v := r;
 
         -- *** Edge Detection ***
-        --SclRe_v   := not r.SclLast and I2cScl_Sync;
-        --SclFe_v   := r.SclLast and not I2cScl_Sync;
+        -- SclRe_v   := not r.SclLast and I2cScl_Sync;
+        -- SclFe_v   := r.SclLast and not I2cScl_Sync;
         SdaRe_v   := not r.SdaLast and I2cSda_Sync;
         SdaFe_v   := r.SdaLast and not I2cSda_Sync;
         v.SclLast := I2cScl_Sync;
@@ -196,13 +198,13 @@ begin
         end if;
 
         -- *** Default Values ***
-        v.Resp_Valid      := '0';
-        v.Resp_Ack      := not r.ShReg(0);
-        v.Resp_Data      := r.ShReg(8 downto 1);
-        v.Resp_SeqErr      := '0';
+        v.Resp_Valid   := '0';
+        v.Resp_Ack     := not r.ShReg(0);
+        v.Resp_Data    := r.ShReg(8 downto 1);
+        v.Resp_SeqErr  := '0';
         v.Resp_ArbLost := '0';
-        v.Status_CmdTo  := '0';
-        v.Cmd_Ready      := '0';
+        v.Status_CmdTo := '0';
+        v.Cmd_Ready    := '0';
 
         -- *** FSM ***
         case r.Fsm is
@@ -218,16 +220,16 @@ begin
 
                 -- Detect Bus Busy by Start Command
                 if (r.Cmd_Ready = '1') and (Cmd_Valid = '1') then
-                      -- Everyting else than START commands is ignored and an error is printed in this case
+                    -- Everyting else than START commands is ignored and an error is printed in this case
                     assert (Cmd_Command = CMD_START) or DisableAsserts_g
                         report "###ERROR###: olo_intf_i2c_master: In idle state, only CMD_START commands are allowed!"
                         severity error;
                     v.CmdTypeLatch := Cmd_Command;
                     if Cmd_Command = CMD_START then
-                        v.Fsm          := Start1_s;
-                        v.Cmd_Ready    := '0';
+                        v.Fsm       := Start1_s;
+                        v.Cmd_Ready := '0';
                     else
-                        v.Resp_Valid := '1';
+                        v.Resp_Valid  := '1';
                         v.Resp_SeqErr := '1';
                     end if;
                 -- Detect Busy from other master
@@ -263,7 +265,6 @@ begin
                 v.SclOut := '1';
                 v.SdaOut := '1';
 
-
             -- Start Condition
             --------------------------------------------------------------------------------
             -- State    BusBusy_s   Start1_s   Start2_s   WaitCmd_s
@@ -291,7 +292,7 @@ begin
 
             when Start2_s =>
                 if r.QPeriodTick = '1' then
-                    v.Fsm       := WaitCmd_s;
+                    v.Fsm        := WaitCmd_s;
                     v.Resp_Valid := '1';
                 end if;
                 v.SclOut := '1';
@@ -307,21 +308,21 @@ begin
                 -- All commands except START are allowed, START commands are ignored
                 if (r.Cmd_Ready = '1') and (Cmd_Valid = '1') then
                     assert (Cmd_Command = CMD_STOP) or (Cmd_Command = CMD_REPSTART) or (Cmd_Command = CMD_SEND) or (Cmd_Command = CMD_REC) or DisableAsserts_g
-                    report "###ERROR###: olo_intf_i2c_master: In WaitCmd_s state, CMD_START commands are not allowed!"
-                    severity error;
+                        report "###ERROR###: olo_intf_i2c_master: In WaitCmd_s state, CMD_START commands are not allowed!"
+                        severity error;
                     if (Cmd_Command = CMD_STOP) or (Cmd_Command = CMD_REPSTART) or (Cmd_Command = CMD_SEND) or (Cmd_Command = CMD_REC) then
                         v.Fsm       := WaitLowCenter_s;
                         v.Cmd_Ready := '0';
                     else
-                        v.Resp_Valid := '1';
+                        v.Resp_Valid  := '1';
                         v.Resp_SeqErr := '1';
                     end if;
                     -- Latch data (used for SEND)
                     v.ShReg := Cmd_Data & '0';
                 -- Command timeout - In this case send a STOP to free the bus
                 elsif r.CmdTimeout = '1' then
-                    v.Fsm           := WaitLowCenter_s;
-                    v.Cmd_Ready     := '0';
+                    v.Fsm          := WaitLowCenter_s;
+                    v.Cmd_Ready    := '0';
                     v.Status_CmdTo := '1';
                 end if;
 
@@ -339,12 +340,12 @@ begin
                     -- Else, go to requested command
                     else
                         case r.CmdTypeLatch is
-                            when CMD_STOP     => v.Fsm := Stop1_s;
+                            when CMD_STOP => v.Fsm := Stop1_s;
                             when CMD_REPSTART => v.Fsm := RepStart1_s;
-                            when CMD_SEND     => v.Fsm := DataBit1_s;
-                            when CMD_REC      => v.Fsm := DataBit1_s;
+                            when CMD_SEND => v.Fsm := DataBit1_s;
+                            when CMD_REC => v.Fsm := DataBit1_s;
                             -- coverage off
-                            when others       => null; -- unreacable code
+                            when others => null; -- unreacable code
                             -- coverage on
                         end case;
                     end if;
@@ -383,7 +384,6 @@ begin
             -- of the last bit, the state is changed to WaitCmd_s. Otherwise the first half of the SCL low
             -- period is executed (DataBit4_s) before the next bit starts (DataBit1_s)
 
-
             when DataBit1_s =>
                 if r.QPeriodTick = '1' then
                     v.Fsm := DataBit2_s;
@@ -416,7 +416,7 @@ begin
 
             when DataBit2_s =>
                 if r.QPeriodTick = '1' then
-                    v.Fsm   := DataBit3_s;
+                    v.Fsm := DataBit3_s;
                     -- Shift register in the middle of the CLK pulse
                     v.ShReg := r.ShReg(7 downto 0) & I2cSda_Sync;
                 end if;
@@ -432,14 +432,14 @@ begin
                     if I2cSda_Sync /= r.SdaOut then
                         v.Fsm := ArbitLost_s;
                     end if;
-                    -- Receiving does not need arbitration since slave addresses are unique
+                -- Receiving does not need arbitration since slave addresses are unique
                 end if;
 
             when DataBit3_s =>
                 if r.QPeriodTick = '1' then
                     -- Command Done after 9 bits (8 Data + 1 Ack)
                     if r.BitCnt = 8 then
-                        v.Fsm       := WaitCmd_s;
+                        v.Fsm        := WaitCmd_s;
                         v.Resp_Valid := '1';
                     -- Else goto next bit
                     else
@@ -453,7 +453,7 @@ begin
                     if I2cSda_Sync /= r.SdaOut then
                         v.Fsm := ArbitLost_s;
                     end if;
-                    -- Receiving does not need arbitration since slave addresses are unique
+                -- Receiving does not need arbitration since slave addresses are unique
                 end if;
 
             when DataBit4_s =>
@@ -497,7 +497,7 @@ begin
                         v.Fsm := ArbitLost_s;
                     -- Else the STOP was successful
                     else
-                        v.Fsm       := BusIdle_s;
+                        v.Fsm := BusIdle_s;
                         -- Send response only if the stop was not generated by a timeout
                         if r.CmdTimeout = '0' then
                             v.Resp_Valid := '1';
@@ -509,12 +509,12 @@ begin
 
             -- Send Response in case the arbitration was lost
             when ArbitLost_s =>
-                v.Fsm            := BusBusy_s;
-                v.Resp_Valid      := '1';
-                v.Resp_Ack      := '0';
+                v.Fsm          := BusBusy_s;
+                v.Resp_Valid   := '1';
+                v.Resp_Ack     := '0';
                 v.Resp_ArbLost := '1';
-                v.SclOut         := '1';
-                v.SdaOut         := '1';
+                v.SclOut       := '1';
+                v.SdaOut       := '1';
 
             -- coverage off
             when others => null; -- unreacable code
@@ -534,67 +534,67 @@ begin
         r_next <= v;
     end process;
 
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Outputs
-    --------------------------------------------------------------------------
-    Status_BusBusy     <= r.Status_BusBusy;
+    -----------------------------------------------------------------------------------------------
+    Status_BusBusy <= r.Status_BusBusy;
     Cmd_Ready      <= r.Cmd_Ready;
-    Resp_Valid      <= r.Resp_Valid;
-    Resp_Command     <= r.CmdTypeLatch;
-    Resp_ArbLost <= r.Resp_ArbLost;
-    Resp_Ack      <= r.Resp_Ack;
+    Resp_Valid     <= r.Resp_Valid;
+    Resp_Command   <= r.CmdTypeLatch;
+    Resp_ArbLost   <= r.Resp_ArbLost;
+    Resp_Ack       <= r.Resp_Ack;
     Resp_Data      <= r.Resp_Data;
-    Resp_SeqErr      <= r.Resp_SeqErr;
-    Status_CmdTo  <= r.Status_CmdTo;
+    Resp_SeqErr    <= r.Resp_SeqErr;
+    Status_CmdTo   <= r.Status_CmdTo;
     g_intTristate : if InternalTriState_g generate
-        I2c_Scl <= 'Z' when r.SclOut = '1' else '0';
-        I2c_Sda <= 'Z' when r.SdaOut = '1' else '0';
-        I2c_Scl_o  <= '0';
-        I2c_Sda_o  <= '0';
-        I2c_Scl_t  <= '1';
-        I2c_Sda_t  <= '1';
+        I2c_Scl   <= 'Z' when r.SclOut = '1' else '0';
+        I2c_Sda   <= 'Z' when r.SdaOut = '1' else '0';
+        I2c_Scl_o <= '0';
+        I2c_Sda_o <= '0';
+        I2c_Scl_t <= '1';
+        I2c_Sda_t <= '1';
     end generate;
     g_extTristatte : if not InternalTriState_g generate
-        I2c_Scl_o  <= r.SclOut;
-        I2c_Sda_o  <= r.SdaOut;
-        I2c_Scl_t  <= r.SclOut;
-        I2c_Sda_t  <= r.SdaOut;
-        I2c_Scl <= 'Z';
-        I2c_Sda <= 'Z';
+        I2c_Scl_o <= r.SclOut;
+        I2c_Sda_o <= r.SdaOut;
+        I2c_Scl_t <= r.SclOut;
+        I2c_Sda_t <= r.SdaOut;
+        I2c_Scl   <= 'Z';
+        I2c_Sda   <= 'Z';
     end generate;
 
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Sequential Proccess
-    --------------------------------------------------------------------------
-    p_seq : process(Clk)
+    -----------------------------------------------------------------------------------------------
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;
             if Rst = '1' then
-                r.Status_BusBusy   <= '0';
-                r.Cmd_Ready    <= '0';
-                r.SclLast      <= '1';
-                r.SdaLast      <= '1';
-                r.BusBusyToCnt <= (others => '0');
-                r.Fsm          <= BusIdle_s;
-                r.SclOut       <= '1';
-                r.SdaOut       <= '1';
-                r.Resp_Valid    <= '0';
+                r.Status_BusBusy <= '0';
+                r.Cmd_Ready      <= '0';
+                r.SclLast        <= '1';
+                r.SdaLast        <= '1';
+                r.BusBusyToCnt   <= (others => '0');
+                r.Fsm            <= BusIdle_s;
+                r.SclOut         <= '1';
+                r.SdaOut         <= '1';
+                r.Resp_Valid     <= '0';
             end if;
         end if;
     end process;
 
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Component Instantiations
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     I2cScl_Input <= to01X(I2c_Scl) when InternalTriState_g else I2c_Scl_i;
     I2cSda_Input <= to01X(I2c_Sda) when InternalTriState_g else I2c_Sda_i;
 
     i_sync : entity work.olo_intf_sync
-        generic map(
+        generic map (
             width_g     => 2
         )
-        port map(
+        port map (
             Clk             => Clk,
             DataAsync(0)    => I2cScl_Input,
             DataAsync(1)    => I2cSda_Input,

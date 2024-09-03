@@ -42,12 +42,12 @@ package olo_axi_pkg_protocol is
     constant AxSIZE_64_c  : Size_t := "110";
     constant AxSIZE_128_c : Size_t := "111";
 
-end olo_axi_pkg_protocol;
+end package;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Body
 ---------------------------------------------------------------------------------------------------
 package body olo_axi_pkg_protocol is
 
-end olo_axi_pkg_protocol;
+end package body;
 

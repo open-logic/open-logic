@@ -32,42 +32,42 @@ entity olo_base_cc_simple_tb is
         ClockRatio_N_g : integer := 3;
         ClockRatio_D_g : integer := 2
     );
-end entity olo_base_cc_simple_tb;
+end entity;
 
 architecture sim of olo_base_cc_simple_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     constant ClockRatio_c : real    := real(ClockRatio_N_g) / real(ClockRatio_D_g);
     constant DataWidth_c  : integer := 8;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     constant ClkIn_Frequency_c  : real    := 100.0e6;
     constant ClkIn_Period_c     : time    := (1 sec) / ClkIn_Frequency_c;
     constant ClkOut_Frequency_c : real    := ClkIn_Frequency_c * ClockRatio_c;
     constant ClkOut_Period_c    : time    := (1 sec) / ClkOut_Frequency_c;
     constant MaxRatePeriod_c    : time    := ClkOut_Period_c*5;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal In_Clk         : std_logic                                  := '0';
-    signal In_RstIn       : std_logic                                  := '1';
-    signal In_RstOut      : std_logic;
-    signal In_Data        : std_logic_vector(DataWidth_c - 1 downto 0) := X"00";
-    signal In_Valid       : std_logic                                  := '0';
-    signal Out_Clk        : std_logic                                  := '0';
-    signal Out_RstIn      : std_logic                                  := '1';
-    signal Out_RstOut     : std_logic;
-    signal Out_Data       : std_logic_vector(DataWidth_c - 1 downto 0);
-    signal Out_Valid      : std_logic;
+    -----------------------------------------------------------------------------------------------
+    signal In_Clk     : std_logic                                  := '0';
+    signal In_RstIn   : std_logic                                  := '1';
+    signal In_RstOut  : std_logic;
+    signal In_Data    : std_logic_vector(DataWidth_c - 1 downto 0) := X"00";
+    signal In_Valid   : std_logic                                  := '0';
+    signal Out_Clk    : std_logic                                  := '0';
+    signal Out_RstIn  : std_logic                                  := '1';
+    signal Out_RstOut : std_logic;
+    signal Out_Data   : std_logic_vector(DataWidth_c - 1 downto 0);
+    signal Out_Valid  : std_logic;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Verification Components
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     constant slave_axi_stream : axi_stream_slave_t := new_axi_stream_slave (
         data_length => DataWidth_c,
         stall_config => new_stall_config(0.0, 0, 0)
@@ -75,9 +75,9 @@ architecture sim of olo_base_cc_simple_tb is
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_cc_simple
         generic map (
             Width_g => DataWidth_c
@@ -107,20 +107,20 @@ begin
             tdata  => Out_Data
         );
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     In_Clk  <= not In_Clk after 0.5 * ClkIn_Period_c;
     Out_Clk <= not Out_Clk after 0.5 * ClkOut_Period_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
-        variable zero : std_logic := '0';
+
+    p_control : process is
+        variable zero  : std_logic := '0';
         variable stdlv : std_logic_vector(In_Data'range);
     begin
         test_runner_setup(runner, runner_cfg);
@@ -128,7 +128,7 @@ begin
         while test_suite loop
 
             -- Reset
-            In_RstIn <= '1';
+            In_RstIn  <= '1';
             Out_RstIn <= '1';
             wait for 1 us;
 
@@ -138,7 +138,7 @@ begin
 
             -- Remove reset
             wait until rising_edge(In_Clk);
-            In_RstIn <= '0';
+            In_RstIn  <= '0';
             wait until rising_edge(Out_Clk);
             Out_RstIn <= '0';
             wait for 1 us;
@@ -170,21 +170,21 @@ begin
             elsif run("Transfer") then
 
                 wait until rising_edge(In_Clk);
-                In_Data <= X"AB";
-                In_Valid  <= '1';
+                In_Data  <= X"AB";
+                In_Valid <= '1';
                 wait until rising_edge(In_Clk);
-                In_Data <= X"00";
-                In_Valid  <= '0';
+                In_Data  <= X"00";
+                In_Valid <= '0';
                 wait until rising_edge(Out_Clk) and Out_Valid = '1';
                 check_equal(Out_Data, 16#AB#, "Received wrong value 1");
                 CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 1");
 
                 wait until rising_edge(In_Clk);
-                In_Data <= X"CD";
-                In_Valid  <= '1';
+                In_Data  <= X"CD";
+                In_Valid <= '1';
                 wait until rising_edge(In_Clk);
-                In_Data <= X"00";
-                In_Valid  <= '0';
+                In_Data  <= X"00";
+                In_Valid <= '0';
                 wait until rising_edge(Out_Clk) and Out_Valid = '1';
                 check_equal(Out_Data, 16#CD#, "Received wrong value 2");
                 CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 2");
@@ -192,12 +192,12 @@ begin
             elsif run("MaxRate") then
                 for i in 1 to 10 loop
                     wait until rising_edge(In_Clk);
-                    stdlv := std_logic_vector(to_unsigned(i, In_Data'length));
-                    In_Data <= stdlv;
-                    In_Valid  <= '1';
+                    stdlv    := std_logic_vector(to_unsigned(i, In_Data'length));
+                    In_Data  <= stdlv;
+                    In_Valid <= '1';
                     check_axi_stream(net, slave_axi_stream, stdlv, blocking => false);
                     wait until rising_edge(In_Clk);
-                    In_Valid  <= '0';
+                    In_Valid <= '0';
                     wait for MaxRatePeriod_c-ClkOut_Period_c;
                 end loop;
                 wait_until_idle(net, as_sync(slave_axi_stream));
@@ -207,4 +207,4 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-end sim;
+end architecture;

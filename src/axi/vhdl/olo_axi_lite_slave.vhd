@@ -32,43 +32,43 @@ entity olo_axi_lite_slave is
         AxiDataWidth_g      : positive := 32;
         ReadTimeoutClks_g   : positive := 100
     );
-    port(
+    port (
         -- Control Sgignals
-        Clk           : in  std_logic;
-        Rst           : in  std_logic;
+        Clk               : in    std_logic;
+        Rst               : in    std_logic;
         -- AXI-Lite Interface
         -- AR channel
-        S_AxiLite_ArAddr  : in  std_logic_vector(AxiAddrWidth_g - 1 downto 0);
-        S_AxiLite_ArValid : in  std_logic;
-        S_AxiLite_ArReady : out std_logic;
+        S_AxiLite_ArAddr  : in    std_logic_vector(AxiAddrWidth_g - 1 downto 0);
+        S_AxiLite_ArValid : in    std_logic;
+        S_AxiLite_ArReady : out   std_logic;
         -- AW channel
-        S_AxiLite_AwAddr  : in  std_logic_vector(AxiAddrWidth_g - 1 downto 0);
-        S_AxiLite_AwValid : in  std_logic;
-        S_AxiLite_AwReady : out std_logic;
+        S_AxiLite_AwAddr  : in    std_logic_vector(AxiAddrWidth_g - 1 downto 0);
+        S_AxiLite_AwValid : in    std_logic;
+        S_AxiLite_AwReady : out   std_logic;
         -- W channel
-        S_AxiLite_WData   : in  std_logic_vector(AxiDataWidth_g - 1 downto 0);
-        S_AxiLite_WStrb   : in  std_logic_vector((AxiDataWidth_g/8) - 1 downto 0);
-        S_AxiLite_WValid  : in  std_logic;
-        S_AxiLite_WReady  : out std_logic;
+        S_AxiLite_WData   : in    std_logic_vector(AxiDataWidth_g - 1 downto 0);
+        S_AxiLite_WStrb   : in    std_logic_vector((AxiDataWidth_g/8) - 1 downto 0);
+        S_AxiLite_WValid  : in    std_logic;
+        S_AxiLite_WReady  : out   std_logic;
         -- B channel
-        S_AxiLite_BResp   : out std_logic_vector(1 downto 0);
-        S_AxiLite_BValid  : out std_logic;
-        S_AxiLite_BReady  : in  std_logic;
+        S_AxiLite_BResp   : out   std_logic_vector(1 downto 0);
+        S_AxiLite_BValid  : out   std_logic;
+        S_AxiLite_BReady  : in    std_logic;
         -- R channel
-        S_AxiLite_RData   : out std_logic_vector(AxiDataWidth_g - 1 downto 0);
-        S_AxiLite_RResp   : out std_logic_vector(1 downto 0);
-        S_AxiLite_RValid  : out std_logic;
-        S_AxiLite_RReady  : in  std_logic;
+        S_AxiLite_RData   : out   std_logic_vector(AxiDataWidth_g - 1 downto 0);
+        S_AxiLite_RResp   : out   std_logic_vector(1 downto 0);
+        S_AxiLite_RValid  : out   std_logic;
+        S_AxiLite_RReady  : in    std_logic;
         -- Register Interface
-        Rb_Addr          : out std_logic_vector(AxiAddrWidth_g - 1 downto 0);
-        Rb_Wr            : out std_logic;
-        Rb_ByteEna       : out std_logic_vector((AxiDataWidth_g/8) - 1 downto 0);
-        Rb_WrData        : out std_logic_vector(AxiDataWidth_g - 1 downto 0);
-        Rb_Rd            : out std_logic;
-        Rb_RdData        : in  std_logic_vector(AxiDataWidth_g - 1 downto 0);
-        Rb_RdValid       : in  std_logic
+        Rb_Addr           : out   std_logic_vector(AxiAddrWidth_g - 1 downto 0);
+        Rb_Wr             : out   std_logic;
+        Rb_ByteEna        : out   std_logic_vector((AxiDataWidth_g/8) - 1 downto 0);
+        Rb_WrData         : out   std_logic_vector(AxiDataWidth_g - 1 downto 0);
+        Rb_Rd             : out   std_logic;
+        Rb_RdData         : in    std_logic_vector(AxiDataWidth_g - 1 downto 0);
+        Rb_RdValid        : in    std_logic
     );
-end olo_axi_lite_slave;
+end entity;
 
 ---------------------------------------------------------------------------------------------------
 -- Architecture
@@ -98,27 +98,31 @@ architecture rtl of olo_axi_lite_slave is
     signal r, r_next : TwoProcess_r;
 
     constant UnusedBits_g : natural := log2(AxiDataWidth_g/8);
+
 begin
 
     -- *** Assertions ***
-    assert AxiDataWidth_g mod 8 = 0 report "###ERROR###: olo_axi_lite_slave AxiDataWidth_g must be a multiple of 8" severity failure;
-    assert isPower2(AxiDataWidth_g/8) report "###ERROR###: olo_axi_lite_slave AxiDataWidth_g must be 2^X bytes" severity failure;
-
+    assert AxiDataWidth_g mod 8 = 0
+        report "###ERROR###: olo_axi_lite_slave AxiDataWidth_g must be a multiple of 8"
+        severity failure;
+    assert isPower2(AxiDataWidth_g/8)
+        report "###ERROR###: olo_axi_lite_slave AxiDataWidth_g must be 2^X bytes"
+        severity failure;
 
     -- *** Combinatorial Process ***
     p_comb : process (r, S_AxiLite_ArAddr, S_AxiLite_ArValid, S_AxiLite_AwAddr, S_AxiLite_AwValid,
                       S_AxiLite_WData, S_AxiLite_WStrb, S_AxiLite_WValid, S_AxiLite_BReady,
-                      S_AxiLite_RReady, Rb_RdData, Rb_RdValid)
+                      S_AxiLite_RReady, Rb_RdData, Rb_RdValid) is
         variable v : TwoProcess_r;
     begin
         -- Keep variables stable
         v := r;
 
         -- Default values
-        v.ArReady   := '0';
-        v.AwReady   := '0';
-        v.Wr        := '0';
-        v.Rd        := '0';
+        v.ArReady := '0';
+        v.AwReady := '0';
+        v.Wr      := '0';
+        v.Rd      := '0';
 
         -- FSM
         case r.State is
@@ -126,69 +130,69 @@ begin
             when Idle =>
                 -- Idle
                 if S_AxiLite_ArValid = '1' then
-                    v.State    := RdCmd;
-                    v.ArReady  := '1';
+                    v.State   := RdCmd;
+                    v.ArReady := '1';
                 elsif S_AxiLite_AwValid = '1' then
-                    v.State    := WrCmd;
-                    v.AwReady  := '1';
+                    v.State   := WrCmd;
+                    v.AwReady := '1';
                 end if;
 
             -- Write
             when WrCmd =>
                 -- Latch write command
-                v.Addr     := S_AxiLite_AwAddr(S_AxiLite_AwAddr'high downto UnusedBits_g) & zerosVector(UnusedBits_g);
+                v.Addr := S_AxiLite_AwAddr(S_AxiLite_AwAddr'high downto UnusedBits_g) & zerosVector(UnusedBits_g);
                 -- Get ready for write data
-                v.WReady   := '1';
-                v.State    := WrData;
+                v.WReady := '1';
+                v.State  := WrData;
 
             when WrData =>
                 -- Receive write data
                 if S_AxiLite_WValid = '1' then
-                    v.State    := WrResp;
-                    v.WReady   := '0';
-                    v.ByteEna  := S_AxiLite_WStrb;
-                    v.WrData   := S_AxiLite_WData;
-                    v.Wr       := '1';
-                    v.BValid   := '1';
+                    v.State   := WrResp;
+                    v.WReady  := '0';
+                    v.ByteEna := S_AxiLite_WStrb;
+                    v.WrData  := S_AxiLite_WData;
+                    v.Wr      := '1';
+                    v.BValid  := '1';
                 end if;
 
             when WrResp =>
                 -- Wait for response transferred
                 if S_AxiLite_BReady = '1' then
-                    v.State    := Idle;
-                    v.BValid   := '0';
+                    v.State  := Idle;
+                    v.BValid := '0';
                 end if;
 
             -- Read
             when RdCmd =>
                 -- Forward read command
-                v.Addr     := S_AxiLite_ArAddr;
-                v.Rd       := '1';
-                v.State    := RdData;
-                v.ToCnt    := ReadTimeoutClks_g-1;
+                v.Addr  := S_AxiLite_ArAddr;
+                v.Rd    := '1';
+                v.State := RdData;
+                v.ToCnt := ReadTimeoutClks_g-1;
 
             when RdData =>
                 -- Wait for read data
                 if Rb_RdValid = '1' then
-                    v.RData    := Rb_RdData;
-                    v.RValid   := '1';
-                    v.RResp    := xRESP_OKAY_c;
-                    v.State    := RdResp;
+                    v.RData  := Rb_RdData;
+                    v.RValid := '1';
+                    v.RResp  := xRESP_OKAY_c;
+                    v.State  := RdResp;
                 end if;
                 -- Timeout handling
                 if v.ToCnt = 0 then
-                    v.RValid   := '1';
-                    v.RResp    := xRESP_SLVERR_c;
-                    v.State    := RdResp;
+                    v.RValid := '1';
+                    v.RResp  := xRESP_SLVERR_c;
+                    v.State  := RdResp;
                 else
-                    v.ToCnt    := v.ToCnt - 1;
+                    v.ToCnt := v.ToCnt - 1;
                 end if;
 
             when RdResp =>
                 -- Wait for response transferred
                 if S_AxiLite_RReady = '1' then
-                    v.State    := Idle;
-                    v.RValid   := '0';
+                    v.State  := Idle;
+                    v.RValid := '0';
                 end if;
 
             -- coverage off
@@ -198,40 +202,40 @@ begin
         end case;
 
         -- Outputs AXI
-        S_AxiLite_ArReady  <= r.ArReady;
-        S_AxiLite_AwReady  <= r.AwReady;
-        S_AxiLite_WReady   <= r.WReady;
-        S_AxiLite_BResp    <= xRESP_OKAY_c; -- Writes can't fail
-        S_AxiLite_BValid   <= r.BValid;
-        S_AxiLite_RData    <= r.RData;
-        S_AxiLite_RResp    <= r.RResp;
-        S_AxiLite_RValid   <= r.RValid;
+        S_AxiLite_ArReady <= r.ArReady;
+        S_AxiLite_AwReady <= r.AwReady;
+        S_AxiLite_WReady  <= r.WReady;
+        S_AxiLite_BResp   <= xRESP_OKAY_c; -- Writes can't fail
+        S_AxiLite_BValid  <= r.BValid;
+        S_AxiLite_RData   <= r.RData;
+        S_AxiLite_RResp   <= r.RResp;
+        S_AxiLite_RValid  <= r.RValid;
 
         -- Outputs RB
-        Rb_Addr            <= r.Addr;
-        Rb_ByteEna         <= r.ByteEna;
-        Rb_WrData          <= r.WrData;
-        Rb_Wr              <= r.Wr;
-        Rb_Rd              <= r.Rd;
+        Rb_Addr    <= r.Addr;
+        Rb_ByteEna <= r.ByteEna;
+        Rb_WrData  <= r.WrData;
+        Rb_Wr      <= r.Wr;
+        Rb_Rd      <= r.Rd;
 
         -- Assign signal
-        r_next             <= v;
+        r_next <= v;
     end process;
 
     -- *** Sequential Process ***
-    p_seq : process(Clk)
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
-            r                <= r_next;
+            r <= r_next;
             if Rst = '1' then
-                r.State       <= Idle;
-                r.ArReady     <= '0';
-                r.AwReady     <= '0';
-                r.WReady      <= '0';
-                r.Wr          <= '0';
-                r.BValid      <= '0';
-                r.Rd          <= '0';
-                r.RValid      <= '0';
+                r.State   <= Idle;
+                r.ArReady <= '0';
+                r.AwReady <= '0';
+                r.WReady  <= '0';
+                r.Wr      <= '0';
+                r.BValid  <= '0';
+                r.Rd      <= '0';
+                r.RValid  <= '0';
             end if;
         end if;
     end process;

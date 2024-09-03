@@ -31,32 +31,32 @@ entity olo_base_cc_status_tb is
         ClockRatio_N_g : integer := 3;
         ClockRatio_D_g : integer := 2
     );
-end entity olo_base_cc_status_tb;
+end entity;
 
 architecture sim of olo_base_cc_status_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     constant ClockRatio_c : real    := real(ClockRatio_N_g) / real(ClockRatio_D_g);
     constant DataWidth_c  : integer := 8;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant ClkIn_Frequency_c     : real    := 100.0e6;
-    constant ClkIn_Period_c        : time    := (1 sec) / ClkIn_Frequency_c;
-    constant ClkOut_Frequency_c    : real    := ClkIn_Frequency_c * ClockRatio_c;
-    constant ClkOut_Period_c       : time    := (1 sec) / ClkOut_Frequency_c;
-    constant SlowerClock_Period_c  : time    := (1 sec) / minimum(ClkIn_Frequency_c, ClkOut_Frequency_c);
+    -----------------------------------------------------------------------------------------------
+    constant ClkIn_Frequency_c    : real    := 100.0e6;
+    constant ClkIn_Period_c       : time    := (1 sec) / ClkIn_Frequency_c;
+    constant ClkOut_Frequency_c   : real    := ClkIn_Frequency_c * ClockRatio_c;
+    constant ClkOut_Period_c      : time    := (1 sec) / ClkOut_Frequency_c;
+    constant SlowerClock_Period_c : time    := (1 sec) / minimum(ClkIn_Frequency_c, ClkOut_Frequency_c);
 
-    constant Time_Rst_Assert_c     : time    := 2 * SlowerClock_Period_c;
-    constant Time_Rst_Recover_c    : time    := 10 * SlowerClock_Period_c;
-    constant Time_MaxDel_c         : time    := 15 * SlowerClock_Period_c;
+    constant Time_Rst_Assert_c  : time    := 2 * SlowerClock_Period_c;
+    constant Time_Rst_Recover_c : time    := 10 * SlowerClock_Period_c;
+    constant Time_MaxDel_c      : time    := 15 * SlowerClock_Period_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     signal In_Clk     : std_logic                                  := '0';
     signal In_RstIn   : std_logic                                  := '1';
     signal In_RstOut  : std_logic;
@@ -68,19 +68,19 @@ architecture sim of olo_base_cc_status_tb is
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_cc_status
         generic map (
             Width_g => DataWidth_c
         )
-        port map(
+        port map (
             -- Clock Domain A
-            In_Clk    => In_Clk,
-            In_RstIn  => In_RstIn,
-            In_RstOut => In_RstOut,
-            In_Data   => In_Data,
+            In_Clk     => In_Clk,
+            In_RstIn   => In_RstIn,
+            In_RstOut  => In_RstOut,
+            In_Data    => In_Data,
             -- Clock Domain B
             Out_Clk    => Out_Clk,
             Out_RstIn  => Out_RstIn,
@@ -88,25 +88,26 @@ begin
             Out_Data   => Out_Data
         );
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     In_Clk  <= not In_Clk after 0.5 * ClkIn_Period_c;
     Out_Clk <= not Out_Clk after 0.5 * ClkOut_Period_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
 
         while test_suite loop
 
             -- Reset
-            In_RstIn <= '1';
+            In_RstIn  <= '1';
             Out_RstIn <= '1';
             wait for 1 us;
 
@@ -116,7 +117,7 @@ begin
 
             -- Remove reset
             wait until rising_edge(In_Clk);
-            In_RstIn <= '0';
+            In_RstIn  <= '0';
             wait until rising_edge(Out_Clk);
             Out_RstIn <= '0';
             wait for 1 us;
@@ -153,41 +154,41 @@ begin
             -- *** Data Tests ***
             elsif run("Data") then
                 -- data transfer after resetting both
-                In_RstIn <= '1';
+                In_RstIn  <= '1';
                 Out_RstIn <= '1';
                 wait for Time_Rst_Assert_c;
-                In_RstIn <= '0';
+                In_RstIn  <= '0';
                 Out_RstIn <= '0';
                 wait for Time_Rst_Recover_c;
-                In_Data  <= X"AB";
+                In_Data   <= X"AB";
                 WaitForValueStdlv(Out_Data, X"AB", Time_MaxDel_c, "Data not transferred 1");
-                In_Data  <= X"CD";
+                In_Data   <= X"CD";
                 WaitForValueStdlv(Out_Data, X"CD", Time_MaxDel_c, "Data not transferred 2");
 
                 -- data transfer with A longer in reset
-                In_RstIn <= '1';
+                In_RstIn  <= '1';
                 Out_RstIn <= '1';
                 wait for Time_Rst_Assert_c;
                 Out_RstIn <= '0';
                 wait for 100 * SlowerClock_Period_c;
-                In_RstIn <= '0';
+                In_RstIn  <= '0';
                 wait for Time_Rst_Recover_c;
-                In_Data  <= X"12";
+                In_Data   <= X"12";
                 WaitForValueStdlv(Out_Data, X"12", Time_MaxDel_c, "Data not transferred 3");
-                In_Data  <= X"34";
+                In_Data   <= X"34";
                 WaitForValueStdlv(Out_Data, X"34", Time_MaxDel_c, "Data not transferred 4");
 
                 -- data transfer with B longer in reset
-                In_RstIn <= '1';
+                In_RstIn  <= '1';
                 Out_RstIn <= '1';
                 wait for Time_Rst_Assert_c;
-                In_RstIn <= '0';
+                In_RstIn  <= '0';
                 wait for 100 * SlowerClock_Period_c;
                 Out_RstIn <= '0';
                 wait for Time_Rst_Recover_c;
-                In_Data  <= X"56";
+                In_Data   <= X"56";
                 WaitForValueStdlv(Out_Data, X"56", Time_MaxDel_c, "Data not transferred 5");
-                In_Data  <= X"78";
+                In_Data   <= X"78";
                 WaitForValueStdlv(Out_Data, X"78", Time_MaxDel_c, "Data not transferred 6");
             end if;
 
@@ -197,4 +198,4 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-end sim;
+end architecture;

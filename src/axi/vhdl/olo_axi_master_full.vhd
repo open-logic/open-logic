@@ -46,70 +46,70 @@ entity olo_axi_master_full is
     );
     port (
         -- Control Signals
-        Clk             : in  std_logic;
-        Rst             : in  std_logic;
+        Clk             : in    std_logic;
+        Rst             : in    std_logic;
         -- User Command Interface
-        CmdWr_Addr      : in  std_logic_vector(AxiAddrWidth_g - 1 downto 0)                 := (others => '0');
-        CmdWr_Size      : in  std_logic_vector(UserTransactionSizeBits_g - 1 downto 0)      := (others => '0');
-        CmdWr_LowLat    : in  std_logic                                                     := '0';
-        CmdWr_Valid     : in  std_logic                                                     := '0';
-        CmdWr_Ready     : out std_logic;
+        CmdWr_Addr      : in    std_logic_vector(AxiAddrWidth_g - 1 downto 0)            := (others => '0');
+        CmdWr_Size      : in    std_logic_vector(UserTransactionSizeBits_g - 1 downto 0) := (others => '0');
+        CmdWr_LowLat    : in    std_logic                                                := '0';
+        CmdWr_Valid     : in    std_logic                                                := '0';
+        CmdWr_Ready     : out   std_logic;
         -- User Command Interface
-        CmdRd_Addr      : in  std_logic_vector(AxiAddrWidth_g - 1 downto 0)                 := (others => '0');
-        CmdRd_Size      : in  std_logic_vector(UserTransactionSizeBits_g - 1 downto 0)      := (others => '0');
-        CmdRd_LowLat    : in  std_logic                                                     := '0';
-        CmdRd_Valid     : in  std_logic                                                     := '0';
-        CmdRd_Ready     : out std_logic;
+        CmdRd_Addr      : in    std_logic_vector(AxiAddrWidth_g - 1 downto 0)            := (others => '0');
+        CmdRd_Size      : in    std_logic_vector(UserTransactionSizeBits_g - 1 downto 0) := (others => '0');
+        CmdRd_LowLat    : in    std_logic                                                := '0';
+        CmdRd_Valid     : in    std_logic                                                := '0';
+        CmdRd_Ready     : out   std_logic;
         -- Write Data
-        Wr_Data         : in  std_logic_vector(UserDataWidth_g - 1 downto 0)                := (others => '0');
-        Wr_Valid        : in  std_logic                                                     := '0';
-        Wr_Ready        : out std_logic;
+        Wr_Data         : in    std_logic_vector(UserDataWidth_g - 1 downto 0)           := (others => '0');
+        Wr_Valid        : in    std_logic                                                := '0';
+        Wr_Ready        : out   std_logic;
         -- Read Data
-        Rd_Data         : out std_logic_vector(UserDataWidth_g - 1 downto 0);
-        Rd_Last         : out std_logic;
-        Rd_Valid        : out std_logic;
-        Rd_Ready        : in  std_logic                                                     := '1';
+        Rd_Data         : out   std_logic_vector(UserDataWidth_g - 1 downto 0);
+        Rd_Last         : out   std_logic;
+        Rd_Valid        : out   std_logic;
+        Rd_Ready        : in    std_logic                                                := '1';
         -- Response
-        Wr_Done         : out std_logic;
-        Wr_Error        : out std_logic;
-        Rd_Done         : out std_logic;
-        Rd_Error        : out std_logic;
+        Wr_Done         : out   std_logic;
+        Wr_Error        : out   std_logic;
+        Rd_Done         : out   std_logic;
+        Rd_Error        : out   std_logic;
         -- AXI Address Write Channel
-        M_Axi_AwAddr    : out std_logic_vector(AxiAddrWidth_g - 1 downto 0);
-        M_Axi_AwLen     : out std_logic_vector(7 downto 0);
-        M_Axi_AwSize    : out std_logic_vector(2 downto 0);
-        M_Axi_AwBurst   : out std_logic_vector(1 downto 0);
-        M_Axi_AwLock    : out std_logic;
-        M_Axi_AwCache   : out std_logic_vector(3 downto 0);
-        M_Axi_AwProt    : out std_logic_vector(2 downto 0);
-        M_Axi_AwValid   : out std_logic;
-        M_Axi_AwReady   : in  std_logic                                                     := '0';
+        M_Axi_AwAddr    : out   std_logic_vector(AxiAddrWidth_g - 1 downto 0);
+        M_Axi_AwLen     : out   std_logic_vector(7 downto 0);
+        M_Axi_AwSize    : out   std_logic_vector(2 downto 0);
+        M_Axi_AwBurst   : out   std_logic_vector(1 downto 0);
+        M_Axi_AwLock    : out   std_logic;
+        M_Axi_AwCache   : out   std_logic_vector(3 downto 0);
+        M_Axi_AwProt    : out   std_logic_vector(2 downto 0);
+        M_Axi_AwValid   : out   std_logic;
+        M_Axi_AwReady   : in    std_logic                                                := '0';
         -- AXI Write Data Channel
-        M_Axi_WData     : out std_logic_vector(AxiDataWidth_g - 1 downto 0);
-        M_Axi_WStrb     : out std_logic_vector(AxiDataWidth_g / 8 - 1 downto 0);
-        M_Axi_WLast     : out std_logic;
-        M_Axi_WValid    : out std_logic;
-        M_Axi_WReady    : in  std_logic                                                     := '0';
+        M_Axi_WData     : out   std_logic_vector(AxiDataWidth_g - 1 downto 0);
+        M_Axi_WStrb     : out   std_logic_vector(AxiDataWidth_g / 8 - 1 downto 0);
+        M_Axi_WLast     : out   std_logic;
+        M_Axi_WValid    : out   std_logic;
+        M_Axi_WReady    : in    std_logic                                                := '0';
         -- AXI Write Response Channel
-        M_Axi_BResp     : in  std_logic_vector(1 downto 0)                                  := (others => '0');
-        M_Axi_BValid    : in  std_logic                                                     := '0';
-        M_Axi_BReady    : out std_logic;
+        M_Axi_BResp     : in    std_logic_vector(1 downto 0)                             := (others => '0');
+        M_Axi_BValid    : in    std_logic                                                := '0';
+        M_Axi_BReady    : out   std_logic;
         -- AXI Read Address Channel
-        M_Axi_ArAddr    : out std_logic_vector(AxiAddrWidth_g - 1 downto 0);
-        M_Axi_ArLen     : out std_logic_vector(7 downto 0);
-        M_Axi_ArSize    : out std_logic_vector(2 downto 0);
-        M_Axi_ArBurst   : out std_logic_vector(1 downto 0);
-        M_Axi_ArLock    : out std_logic;
-        M_Axi_ArCache   : out std_logic_vector(3 downto 0);
-        M_Axi_ArProt    : out std_logic_vector(2 downto 0);
-        M_Axi_ArValid   : out std_logic;
-        M_Axi_ArReady   : in  std_logic                                                     := '0';
+        M_Axi_ArAddr    : out   std_logic_vector(AxiAddrWidth_g - 1 downto 0);
+        M_Axi_ArLen     : out   std_logic_vector(7 downto 0);
+        M_Axi_ArSize    : out   std_logic_vector(2 downto 0);
+        M_Axi_ArBurst   : out   std_logic_vector(1 downto 0);
+        M_Axi_ArLock    : out   std_logic;
+        M_Axi_ArCache   : out   std_logic_vector(3 downto 0);
+        M_Axi_ArProt    : out   std_logic_vector(2 downto 0);
+        M_Axi_ArValid   : out   std_logic;
+        M_Axi_ArReady   : in    std_logic                                                := '0';
         -- AXI Read Data Channel
-        M_Axi_RData     : in  std_logic_vector(AxiDataWidth_g - 1 downto 0)                 := (others => '0');
-        M_Axi_RResp     : in  std_logic_vector(1 downto 0)                                  := (others => '0');
-        M_Axi_RLast     : in  std_logic                                                     := '0';
-        M_Axi_RValid    : in  std_logic                                                     := '0';
-        M_Axi_RReady    : out std_logic
+        M_Axi_RData     : in    std_logic_vector(AxiDataWidth_g - 1 downto 0)            := (others => '0');
+        M_Axi_RResp     : in    std_logic_vector(1 downto 0)                             := (others => '0');
+        M_Axi_RLast     : in    std_logic                                                := '0';
+        M_Axi_RValid    : in    std_logic                                                := '0';
+        M_Axi_RReady    : out   std_logic
     );
 end entity;
 
@@ -119,8 +119,8 @@ end entity;
 architecture rtl of olo_axi_master_full is
 
     -- *** Constants ***
-    constant AxiBytes_c   : natural := AxiDataWidth_g / 8;
-    constant DataBytes_c  : natural := UserDataWidth_g / 8;
+    constant AxiBytes_c  : natural := AxiDataWidth_g / 8;
+    constant DataBytes_c : natural := UserDataWidth_g / 8;
 
     -- *** Type ***
     type WriteCmdFsm_t is (Idle_s, Apply_s);
@@ -130,7 +130,7 @@ architecture rtl of olo_axi_master_full is
     type ReadDataFsm_t is (Idle_s, Transfer_s, Wait_s);
 
     -- *** Functions ***
-    function AlignedAddr_f(Addr : in unsigned(AxiAddrWidth_g-1 downto 0))
+    function AlignedAddr_f (Addr : in unsigned(AxiAddrWidth_g-1 downto 0))
     return unsigned is
         variable Addr_v : unsigned(Addr'range) := (others => '0');
     begin
@@ -140,7 +140,6 @@ architecture rtl of olo_axi_master_full is
 
     -- *** Two Process Record ***
     type two_process_r is record
-
         -- *** Write Related Registers ***
         WrCmdFsm        : WriteCmdFsm_t;
         WrLastAddr      : unsigned(AxiAddrWidth_g - 1 downto 0);
@@ -195,12 +194,12 @@ architecture rtl of olo_axi_master_full is
     signal r, r_next : two_process_r;
 
     -- *** Instantiation Signals ***
-    signal WrPl_Data   : std_logic_vector(Wr_Data'range);
-    signal WrPl_Vld    : std_logic;
+    signal WrPl_Data     : std_logic_vector(Wr_Data'range);
+    signal WrPl_Vld      : std_logic;
     signal AxiWrCmd_Rdy  : std_logic;
     signal AxiWrDat_Rdy  : std_logic;
     signal AxiWrDat_Data : std_logic_vector(AxiDataWidth_g - 1 downto 0);
-    signal WrPl_Rdy    : std_logic;
+    signal WrPl_Rdy      : std_logic;
     signal AxiWrDat_Be   : std_logic_vector(AxiBytes_c - 1 downto 0);
     signal WrWconvEna    : std_logic;
     signal WrWconv_Vld   : std_logic;
@@ -225,18 +224,26 @@ architecture rtl of olo_axi_master_full is
 begin
 
     -- *** Assertions ***
-    assert isPower2(AxiDataWidth_g/8) report "olo_axi_master_full - AxiDataWidth_g must be a power of two of bytes" severity failure;
-    assert UserDataWidth_g mod 8 = 0 report "olo_axi_master_full UserDataWidth_g must be a multiple of 8" severity failure;
-    assert AxiDataWidth_g mod UserDataWidth_g = 0 report "olo_axi_master_full AxiDataWidth_g must be a multiple of UserDataWidth_g" severity failure;
-    assert UserTransactionSizeBits_g <= AxiAddrWidth_g report "olo_axi_master_full UserTransactionSizeBits_g must be smaller or equal to AxiAddrWidth_g" severity failure;
+    assert isPower2(AxiDataWidth_g/8)
+        report "olo_axi_master_full - AxiDataWidth_g must be a power of two of bytes"
+        severity failure;
+    assert UserDataWidth_g mod 8 = 0
+        report "olo_axi_master_full UserDataWidth_g must be a multiple of 8"
+        severity failure;
+    assert AxiDataWidth_g mod UserDataWidth_g = 0
+        report "olo_axi_master_full AxiDataWidth_g must be a multiple of UserDataWidth_g"
+        severity failure;
+    assert UserTransactionSizeBits_g <= AxiAddrWidth_g
+        report "olo_axi_master_full UserTransactionSizeBits_g must be smaller or equal to AxiAddrWidth_g"
+        severity failure;
 
     -- *** Combinatorial Process ***
-    p_comb : process(r, CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat, AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data, WrWconv_Rdy, WrPl_Vld, WrData_Vld, WrData_Data, WrData_Last, WrData_We, RdPl_Rdy)
-      variable v              : two_process_r;
-      variable WriteBe_v      : std_logic_vector(AxiBytes_c - 1 downto 0);
-      variable RdAlignReady_v : std_logic;
-      variable RdLowIdxInt_v  : integer range 0 to AxiBytes_c;
-      variable RdDatBe_v      : std_logic_vector(AxiBytes_c - 1 downto 0);
+    p_comb : process (r, CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat, AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data, WrWconv_Rdy, WrPl_Vld, WrData_Vld, WrData_Data, WrData_Last, WrData_We, RdPl_Rdy) is
+        variable v              : two_process_r;
+        variable WriteBe_v      : std_logic_vector(AxiBytes_c - 1 downto 0);
+        variable RdAlignReady_v : std_logic;
+        variable RdLowIdxInt_v  : integer range 0 to AxiBytes_c;
+        variable RdDatBe_v      : std_logic_vector(AxiBytes_c - 1 downto 0);
     begin
         -- *** Keep two process variables stable ***
         v := r;
@@ -250,8 +257,8 @@ begin
             case r.WrCmdFsm is
 
                 when Idle_s =>
-                    v.CmdWr_Ready    := '1';
-                    v.WrLastAddr      := unsigned(CmdWr_Addr) + unsigned(CmdWr_Size) - 1;
+                    v.CmdWr_Ready := '1';
+                    v.WrLastAddr  := unsigned(CmdWr_Addr) + unsigned(CmdWr_Size) - 1;
                     if unsigned(CmdWr_Size(log2(DataBytes_c) - 1 downto 0)) = 0 then
                         v.WrDataWordsCmd := resize(unsigned(CmdWr_Size(CmdWr_Size'high downto log2(DataBytes_c))), UserTransactionSizeBits_g);
                     else
@@ -262,7 +269,7 @@ begin
                     v.AxiWrCmd_LowLat := CmdWr_LowLat;
                     if CmdWr_Valid = '1' then
                         v.CmdWr_Ready := '0';
-                        v.WrCmdFsm     := Apply_s;
+                        v.WrCmdFsm    := Apply_s;
                     end if;
 
                 when Apply_s =>
@@ -270,7 +277,7 @@ begin
                         v.AxiWrCmd_Vld  := '1';
                         v.WrStartTf     := '1';
                         v.WrCmdFsm      := Idle_s;
-                        v.CmdWr_Ready  := '1';
+                        v.CmdWr_Ready   := '1';
                         v.AxiWrCmd_Size := std_logic_vector(resize(shift_right(AlignedAddr_f(r.WrLastAddr) - unsigned(r.AxiWrCmd_Addr), log2(AxiBytes_c)) + 1, UserTransactionSizeBits_g));
                         -- Calculate byte enables for last word
                         for byte in 0 to AxiBytes_c - 1 loop
@@ -323,7 +330,7 @@ begin
             -- *** Alignment FSM ***
             -- Initial values
             WrDataEna <= '0';
-            --v.WrAlignVld := '0';
+            -- v.WrAlignVld := '0';
             -- Word- to Byte-Enable conversion
             for i in 0 to AxiBytes_c - 1 loop
                 WriteBe_v(i) := WrData_We(i / UserDataWidth_g);
@@ -354,20 +361,20 @@ begin
                             WriteBe_v := (others => '0');
                         end if;
                         -- Shift
-                        v.WrAlignReg(AxiDataWidth_g - 1 downto 0)                                                           := r.WrAlignReg(r.WrAlignReg'left downto AxiDataWidth_g);
-                        v.WrAlignBe(AxiBytes_c - 1 downto 0)                                                                  := r.WrAlignBe(r.WrAlignBe'left downto AxiBytes_c);
+                        v.WrAlignReg(AxiDataWidth_g - 1 downto 0) := r.WrAlignReg(r.WrAlignReg'left downto AxiDataWidth_g);
+                        v.WrAlignBe(AxiBytes_c - 1 downto 0)      := r.WrAlignBe(r.WrAlignBe'left downto AxiBytes_c);
                         -- New Data
                         v.WrAlignReg((to_integer(r.WrAlignShift) + AxiBytes_c) * 8 - 1 downto to_integer(r.WrAlignShift) * 8) := WrData_Data;
                         v.WrAlignBe(to_integer(r.WrAlignShift) + AxiBytes_c - 1 downto to_integer(r.WrAlignShift))            := WriteBe_v;
                         -- Flow control
-                        v.WrAlignVld                                                                                          := '1';
+                        v.WrAlignVld := '1';
                         if r.AxiWordCnt = unsigned(r.WrAlignCmdSize) then
                             v.WrAlignFsm                         := Last_s;
                             v.WrAlignBe(AxiBytes_c - 1 downto 0) := v.WrAlignBe(AxiBytes_c - 1 downto 0) and r.WrAlignLastBe;
                         end if;
-                        v.AxiWordCnt                                                                                          := r.AxiWordCnt + 1;
+                        v.AxiWordCnt := r.AxiWordCnt + 1;
                         -- Force last data out
-                        v.WrAlignLast                                                                                         := WrData_Last;
+                        v.WrAlignLast := WrData_Last;
                     elsif AxiWrDat_Rdy = '1' then
                         v.WrAlignVld := '0';
                     end if;
@@ -411,8 +418,7 @@ begin
             case r.RdCmdFsm is
 
                 when Idle_s =>
-
-                    v.CmdRd_Ready    := '1';
+                    v.CmdRd_Ready     := '1';
                     v.RdLastAddr      := unsigned(CmdRd_Addr) + unsigned(CmdRd_Size) - 1;
                     v.RdFirstAddrOffs := unsigned(CmdRd_Addr(v.RdFirstAddrOffs'range));
                     v.AxiRdCmd_Addr   := std_logic_vector(AlignedAddr_f(unsigned(CmdRd_Addr)));
@@ -421,7 +427,7 @@ begin
                     v.RdLowIdx        := to_unsigned(AxiBytes_c, v.RdLowIdx'length) - unsigned(CmdRd_Addr(v.RdShift'range));
                     if CmdRd_Valid = '1' then
                         v.CmdRd_Ready := '0';
-                        v.RdCmdFsm     := Apply_s;
+                        v.RdCmdFsm    := Apply_s;
                     end if;
 
                 when Apply_s =>
@@ -453,9 +459,9 @@ begin
                 when WaitDataFsm_s =>
                     v.RdStartTf := '1';
                     if r.RdDataFsm = Idle_s then
-                        v.RdCmdFsm     := Idle_s;
+                        v.RdCmdFsm    := Idle_s;
                         v.CmdRd_Ready := '1';
-                        v.RdStartTf    := '0';
+                        v.RdStartTf   := '0';
                     end if;
 
                 -- coverage off
@@ -464,8 +470,8 @@ begin
             end case;
 
             -- *** Data FSM ***
-            v.RdDataEna  := '0';
-            RdDatBe_v    := (others => '1');
+            v.RdDataEna := '0';
+            RdDatBe_v   := (others => '1');
             case r.RdDataFsm is
 
                 when Idle_s =>
@@ -486,7 +492,7 @@ begin
                         RdDatBe_v := RdDatBe_v and r.RdDatFirstBe;
                     end if;
                     if r.RdCurrentWord = r.RdDataWords then
-                        RdDatBe_v    := RdDatBe_v and r.RdDatLastBe;
+                        RdDatBe_v := RdDatBe_v and r.RdDatLastBe;
                     end if;
                     if (RdAlignReady_v = '1') and (AxiRdDat_Vld = '1') and (r.RdDataEna = '1') then
                         v.RdCurrentWord := r.RdCurrentWord + 1;
@@ -509,7 +515,7 @@ begin
 
             -- *** Data Alignment ***
             AxiRdDat_Rdy <= RdAlignReady_v;
-            RdPl_Vld   <= '0';
+            RdPl_Vld     <= '0';
             -- shift
             if (RdPl_Rdy = '1') and (RdAlignReady_v = '0' or AxiRdDat_Vld = '1' or r.RdAlignLast = '1') then
                 -- Shift is only done if data can be consumed (RdPl_Rdy) and either no new data is required for the next shift (RdAlignReady_v = '0'),
@@ -524,9 +530,9 @@ begin
             end if;
             -- get new data
             if RdAlignReady_v = '1' and AxiRdDat_Vld = '1' then
-                v.RdAlignReg(RdLowIdxInt_v * 8 + AxiDataWidth_g - 1 downto RdLowIdxInt_v * 8)   := AxiRdDat_Data;
-                v.RdAlignByteVld(RdLowIdxInt_v + AxiBytes_c - 1 downto RdLowIdxInt_v)           := RdDatBe_v;
-                v.RdAlignLast                                                                   := AxiRdDat_Last;
+                v.RdAlignReg(RdLowIdxInt_v * 8 + AxiDataWidth_g - 1 downto RdLowIdxInt_v * 8) := AxiRdDat_Data;
+                v.RdAlignByteVld(RdLowIdxInt_v + AxiBytes_c - 1 downto RdLowIdxInt_v)         := RdDatBe_v;
+                v.RdAlignLast                                                                 := AxiRdDat_Last;
             end if;
 
             -- Send data to FIFO
@@ -540,7 +546,7 @@ begin
     end process;
 
     -- *** Registered Process ***
-    p_reg : process(Clk)
+    p_reg : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;
@@ -548,7 +554,7 @@ begin
                 -- *** Write Related Registers ***
                 if ImplWrite_g then
                     r.WrCmdFsm     <= Idle_s;
-                    r.CmdWr_Ready <= '0';
+                    r.CmdWr_Ready  <= '0';
                     r.AxiWrCmd_Vld <= '0';
                     r.WrWconvFsm   <= Idle_s;
                     r.WrStartTf    <= '0';
@@ -558,7 +564,7 @@ begin
                 -- *** Read Related Registers ***
                 if ImplRead_g then
                     r.RdCmdFsm       <= Idle_s;
-                    r.CmdRd_Ready   <= '0';
+                    r.CmdRd_Ready    <= '0';
                     r.AxiRdCmd_Vld   <= '0';
                     r.RdDataFsm      <= Idle_s;
                     r.RdStartTf      <= '0';
@@ -572,7 +578,6 @@ begin
     -- *** Outputs ***
     CmdWr_Ready <= r.CmdWr_Ready;
     CmdRd_Ready <= r.CmdRd_Ready;
-
 
     -----------------------------------------------------------------------------------------------
     -- Instantiations
@@ -690,7 +695,7 @@ begin
                 InWidth_g   => UserDataWidth_g,
                 OutWidth_g  => AxiDataWidth_g
             )
-            port map(
+            port map (
                 Clk         => Clk,
                 Rst         => Rst,
                 In_Valid    => WrWconv_Vld,
@@ -733,8 +738,8 @@ begin
     end generate;
     g_nread : if not ImplRead_g generate
         Rd_Valid <= '0';
-        Rd_Data <= (others => '0');
-        Rd_Last <= '0';
+        Rd_Data  <= (others => '0');
+        Rd_Last  <= '0';
     end generate;
 
 end architecture;

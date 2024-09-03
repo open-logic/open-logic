@@ -25,23 +25,25 @@ library work;
 ---------------------------------------------------------------------------------------------------
 package olo_base_pkg_logic is
 
-    function zerosVector(size : in natural) return std_logic_vector;
+    function zerosVector (size : in natural) return std_logic_vector;
 
-    function onesVector(size : in natural) return std_logic_vector;
+    function onesVector (size : in natural) return std_logic_vector;
 
-    function shiftLeft(     arg  : in std_logic_vector;
-                            bits : in integer;
-                            fill : in std_logic := '0')
+    function shiftLeft (
+            arg  : in std_logic_vector;
+            bits : in integer;
+            fill : in std_logic := '0')
                             return std_logic_vector;
 
-    function shiftRight(    arg  : in std_logic_vector;
-                            bits : in integer;
-                            fill : in std_logic := '0')
+    function shiftRight (
+            arg  : in std_logic_vector;
+            bits : in integer;
+            fill : in std_logic := '0')
                             return std_logic_vector;
 
-    function binaryToGray(binary : in std_logic_vector) return std_logic_vector;
+    function binaryToGray (binary : in std_logic_vector) return std_logic_vector;
 
-    function grayToBinary(gray : in std_logic_vector) return std_logic_vector;
+    function grayToBinary (gray : in std_logic_vector) return std_logic_vector;
 
     -- Parallel Prefix Computation of the OR function
     -- Input --> Output
@@ -49,23 +51,23 @@ package olo_base_pkg_logic is
     -- 0101  --> 0111
     -- 0011  --> 0011
     -- 0010  --> 0011
-    function ppcOr(inp : in std_logic_vector) return std_logic_vector;
+    function ppcOr (inp : in std_logic_vector) return std_logic_vector;
 
-    function reduceOr(vec : in std_logic_vector) return std_logic;
+    function reduceOr (vec : in std_logic_vector) return std_logic;
 
-    function reduceAnd(vec : in std_logic_vector) return std_logic;
+    function reduceAnd (vec : in std_logic_vector) return std_logic;
 
-    function reduceXor(vec : in std_logic_vector) return std_logic;
+    function reduceXor (vec : in std_logic_vector) return std_logic;
 
-    function to01X(inp : in std_logic) return std_logic;
+    function to01X (inp : in std_logic) return std_logic;
 
-    function to01X(inp : in std_logic_vector) return std_logic_vector;
+    function to01X (inp : in std_logic_vector) return std_logic_vector;
 
-    function to01(inp : in std_logic) return std_logic;
+    function to01 (inp : in std_logic) return std_logic;
 
-    function to01(inp : in std_logic_vector) return std_logic_vector;
+    function to01 (inp : in std_logic_vector) return std_logic_vector;
 
-    function invertBitOrder(inp : in std_logic_vector) return std_logic_vector;
+    function invertBitOrder (inp : in std_logic_vector) return std_logic_vector;
 
     -- LFSR / CRC / PRBS Polynomials
     -- 1 for the x^n positions used
@@ -101,7 +103,7 @@ package olo_base_pkg_logic is
     constant Polynomial_Prbs31_c : std_logic_vector(30 downto 0) := "1001000000000000000000000000000";
     constant Polynomial_Prbs32_c : std_logic_vector(31 downto 0) := "10000000001000000000000000000011";
 
-end olo_base_pkg_logic;
+end package;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Body
@@ -109,23 +111,24 @@ end olo_base_pkg_logic;
 package body olo_base_pkg_logic is
 
     -- *** ZerosVector ***
-    function zerosVector(size : in natural) return std_logic_vector is
+    function zerosVector (size : in natural) return std_logic_vector is
         constant c : std_logic_vector(size - 1 downto 0) := (others => '0');
     begin
         return c;
     end function;
 
     -- *** OnesVector ***
-    function onesVector(size : in natural) return std_logic_vector is
+    function onesVector (size : in natural) return std_logic_vector is
         constant c : std_logic_vector(size - 1 downto 0) := (others => '1');
     begin
         return c;
     end function;
 
     -- *** ShiftLeft ***
-    function shiftLeft(     arg  : in std_logic_vector;
-                            bits : in integer;
-                            fill : in std_logic := '0')
+    function shiftLeft (
+            arg  : in std_logic_vector;
+            bits : in integer;
+            fill : in std_logic := '0')
                             return std_logic_vector is
         constant argDt : std_logic_vector(arg'high downto arg'low) := arg;
         variable v     : std_logic_vector(argDt'range);
@@ -140,9 +143,10 @@ package body olo_base_pkg_logic is
     end function;
 
     -- *** ShiftRight ***
-    function shiftRight(    arg  : in std_logic_vector;
-                            bits : in integer;
-                            fill : in std_logic := '0')
+    function shiftRight (
+            arg  : in std_logic_vector;
+            bits : in integer;
+            fill : in std_logic := '0')
                             return std_logic_vector is
         constant argDt : std_logic_vector(arg'high downto arg'low) := arg;
         variable v     : std_logic_vector(argDt'range);
@@ -157,7 +161,7 @@ package body olo_base_pkg_logic is
     end function;
 
     -- *** BinaryToGray ***
-    function binaryToGray(binary : in std_logic_vector) return std_logic_vector is
+    function binaryToGray (binary : in std_logic_vector) return std_logic_vector is
         variable Gray_v : std_logic_vector(binary'range);
     begin
         Gray_v := binary xor ('0' & binary(binary'high downto binary'low + 1));
@@ -165,7 +169,7 @@ package body olo_base_pkg_logic is
     end function;
 
     -- *** GrayToBinary ***
-    function grayToBinary(gray : in std_logic_vector) return std_logic_vector is
+    function grayToBinary (gray : in std_logic_vector) return std_logic_vector is
         variable Binary_v : std_logic_vector(gray'range);
     begin
         Binary_v(Binary_v'high) := gray(gray'high);
@@ -176,7 +180,7 @@ package body olo_base_pkg_logic is
     end function;
 
     -- *** PpcOr ***
-    function ppcOr(inp : in std_logic_vector) return std_logic_vector is
+    function ppcOr (inp : in std_logic_vector) return std_logic_vector is
         constant Stages_c    : integer := log2ceil(inp'length);
         constant Pwr2Width_c : integer := 2**Stages_c;
         type StageOut_t is array (natural range <>) of std_logic_vector(Pwr2Width_c - 1 downto 0);
@@ -199,7 +203,7 @@ package body olo_base_pkg_logic is
         return StageOut_v(Stages_c)(inp'length - 1 downto 0);
     end function;
 
-    function reduceOr(vec : in std_logic_vector) return std_logic is
+    function reduceOr (vec : in std_logic_vector) return std_logic is
         variable tmp : std_logic;
     begin
         tmp := '0';
@@ -209,7 +213,7 @@ package body olo_base_pkg_logic is
         return tmp;
     end function;
 
-    function reduceAnd(vec : in std_logic_vector) return std_logic is
+    function reduceAnd (vec : in std_logic_vector) return std_logic is
         variable tmp : std_logic;
     begin
         tmp := '1';
@@ -219,7 +223,7 @@ package body olo_base_pkg_logic is
         return tmp;
     end function;
 
-    function reduceXor(vec : in std_logic_vector) return std_logic is
+    function reduceXor (vec : in std_logic_vector) return std_logic is
         variable tmp : std_logic;
     begin
         tmp := '0';
@@ -229,16 +233,16 @@ package body olo_base_pkg_logic is
         return tmp;
     end function;
 
-    function to01X(inp : in std_logic) return std_logic is
+    function to01X (inp : in std_logic) return std_logic is
     begin
         case inp is
             when '0' | 'L' => return '0';
             when '1' | 'H' => return '1';
-            when others    => return 'X';
+            when others => return 'X';
         end case;
     end function;
 
-    function to01X(inp : in std_logic_vector) return std_logic_vector is
+    function to01X (inp : in std_logic_vector) return std_logic_vector is
         variable tmp : std_logic_vector(inp'range);
     begin
         for i in inp'low to inp'high loop
@@ -247,16 +251,16 @@ package body olo_base_pkg_logic is
         return tmp;
     end function;
 
-    function to01(inp : in std_logic) return std_logic is
+    function to01 (inp : in std_logic) return std_logic is
     begin
         case inp is
             when '0' | 'L' => return '0';
             when '1' | 'H' => return '1';
-            when others    => return '0';
+            when others => return '0';
         end case;
     end function;
 
-    function to01(inp : in std_logic_vector) return std_logic_vector is
+    function to01 (inp : in std_logic_vector) return std_logic_vector is
         variable tmp : std_logic_vector(inp'range);
     begin
         for i in inp'low to inp'high loop
@@ -265,9 +269,9 @@ package body olo_base_pkg_logic is
         return tmp;
     end function;
 
-    function invertBitOrder(inp : in std_logic_vector) return std_logic_vector is
+    function invertBitOrder (inp : in std_logic_vector) return std_logic_vector is
         variable inp_v : std_logic_vector(inp'length-1 downto 0);
-        variable tmp : std_logic_vector(inp_v'range);
+        variable tmp   : std_logic_vector(inp_v'range);
     begin
         inp_v := inp;
         for i in 0 to inp_v'high loop

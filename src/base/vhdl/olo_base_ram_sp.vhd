@@ -11,7 +11,6 @@
 -- This is a pure VHDL and vendor indpendent true single-port RAM with
 -- optional byte-enables.
 
-
 ---------------------------------------------------------------------------------------------------
 -- Libraries
 ---------------------------------------------------------------------------------------------------
@@ -29,18 +28,18 @@ entity olo_base_ram_sp is
     generic (
         Depth_g         : positive;
         Width_g         : positive;
-        RdLatency_g     : positive  := 1;
-        RamStyle_g      : string    := "auto";
-        RamBehavior_g   : string    := "RBW";
-        UseByteEnable_g : boolean   := false
+        RdLatency_g     : positive := 1;
+        RamStyle_g      : string   := "auto";
+        RamBehavior_g   : string   := "RBW";
+        UseByteEnable_g : boolean  := false
     );
     port (
-        Clk             : in  std_logic;
-        Addr            : in  std_logic_vector(log2ceil(Depth_g)-1 downto 0);
-        Be              : in  std_logic_vector(Width_g / 8 - 1 downto 0)       := (others => '1');
-        WrEna           : in  std_logic                                        := '1';
-        WrData          : in  std_logic_vector(Width_g - 1 downto 0);
-        RdData          : out std_logic_vector(Width_g - 1 downto 0)
+        Clk             : in    std_logic;
+        Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
+        Be              : in    std_logic_vector(Width_g / 8 - 1 downto 0) := (others => '1');
+        WrEna           : in    std_logic                                  := '1';
+        WrData          : in    std_logic_vector(Width_g - 1 downto 0);
+        RdData          : out   std_logic_vector(Width_g - 1 downto 0)
     );
 end entity;
 
@@ -57,21 +56,21 @@ architecture rtl of olo_base_ram_sp is
     shared variable mem : data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
 
     -- Read registers
-    signal rd_pipe      : data_t(1 to RdLatency_g);
+    signal rd_pipe : data_t(1 to RdLatency_g);
 
     -- AMD RAM implementation attribute
-    attribute ram_style : string;
-    attribute ram_style of mem : variable is RamStyle_g;
-    attribute shreg_extract : string;
-    attribute shreg_extract of rd_pipe : signal is "no";
+    attribute RAM_STYLE : string;
+    attribute RAM_STYLE of mem         : variable is RamStyle_g;
+    attribute SHREG_EXTRACT : string;
+    attribute SHREG_EXTRACT of rd_pipe : signal is "no";
 
     -- Altera RAM implementation attribute
-    attribute ramstyle : string;
-    attribute ramstyle of mem : variable is RamStyle_g;
+    attribute RAMSTYLE : string;
+    attribute RAMSTYLE of mem : variable is RamStyle_g;
 
     -- Efinix RAM implementation attributes
-    attribute syn_ramstyle : string;
-    attribute syn_ramstyle of mem : variable is RamStyle_g;
+    attribute SYN_RAMSTYLE : string;
+    attribute SYN_RAMSTYLE of mem : variable is RamStyle_g;
 
 begin
 
@@ -83,7 +82,7 @@ begin
         report "olo_base_ram_sp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
         severity error;
 
-    ram_p : process(Clk)
+    ram_p : process (Clk) is
     begin
         if rising_edge(Clk) then
             if RamBehavior_g = "RBW" then
@@ -99,7 +98,7 @@ begin
                     end loop;
                 -- Write without byte enables
                 else
-                    mem(to_integer(unsigned(Addr))):= WrData;
+                    mem(to_integer(unsigned(Addr))) := WrData;
                 end if;
             end if;
             if RamBehavior_g = "WBR" then

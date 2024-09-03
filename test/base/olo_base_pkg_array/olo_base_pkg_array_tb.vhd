@@ -26,19 +26,20 @@ entity olo_base_pkg_array_tb is
     generic (
         runner_cfg     : string
     );
-end entity olo_base_pkg_array_tb;
+end entity;
 
 architecture sim of olo_base_pkg_array_tb is
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a package TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
-        variable aint : t_ainteger(0 to 2);
+
+    p_control : process is
+        variable aint  : t_ainteger(0 to 2);
         variable areal : t_areal(0 to 2);
         variable abool : t_abool(0 to 2);
         variable stdlv : std_logic_vector(0 to 2);
@@ -50,7 +51,7 @@ begin
         while test_suite loop
 
             if run("aInteger2aReal") then
-                aint := (1, -2, 3);
+                aint  := (1, -2, 3);
                 areal := aInteger2aReal(aint);
                 check_equal(areal(0), 1.0, "aInteger2aReal->0", 0.001);
                 check_equal(areal(1), -2.0, "aInteger2aReal->1", 0.001);
@@ -80,4 +81,4 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-end sim;
+end architecture;

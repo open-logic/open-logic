@@ -31,11 +31,11 @@ entity olo_base_cc_bits is
     port (
         -- Input clock domain
         In_Clk   : in    std_logic;
-        In_Rst   : in    std_logic   := '0';
+        In_Rst   : in    std_logic := '0';
         In_Data  : in    std_logic_vector(Width_g - 1 downto 0);
         -- Output clock domain
         Out_Clk  : in    std_logic;
-        Out_Rst  : in    std_logic   := '0';
+        Out_Rst  : in    std_logic := '0';
         Out_Data : out   std_logic_vector(Width_g - 1 downto 0)
     );
 end entity;
@@ -47,52 +47,51 @@ end entity;
 architecture struct of olo_base_cc_bits is
 
     -- Synchronizer registers (plain VHDL)
-    signal RegIn    : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
-    signal Reg0     : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
-    signal Reg1     : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
+    signal RegIn : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
+    signal Reg0  : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
+    signal Reg1  : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
 
     -- Synthesis attributes AMD (Vivado)
-    attribute shreg_extract : string;
-    attribute shreg_extract of Reg0 : signal is "no";
-    attribute shreg_extract of Reg1 : signal is "no";
-    attribute shreg_extract of RegIn : signal is "no";
+    attribute SHREG_EXTRACT : string;
+    attribute SHREG_EXTRACT of Reg0  : signal is "no";
+    attribute SHREG_EXTRACT of Reg1  : signal is "no";
+    attribute SHREG_EXTRACT of RegIn : signal is "no";
 
     -- Synthesis attributes for AMD (Vivado) and Efinix (Efinity)
-    attribute async_reg : boolean;
-    attribute async_reg of Reg0 : signal is true;
-    attribute async_reg of Reg1 : signal is true;
-    attribute async_reg of RegIn : signal is true;
+    attribute ASYNC_REG : boolean;
+    attribute ASYNC_REG of Reg0  : signal is true;
+    attribute ASYNC_REG of Reg1  : signal is true;
+    attribute ASYNC_REG of RegIn : signal is true;
 
-    attribute syn_srlstyle : string;
-    attribute syn_srlstyle of Reg0 : signal is "registers";
-    attribute syn_srlstyle of Reg1 : signal is "registers";
-    attribute syn_srlstyle of RegIn : signal is "registers";
+    attribute SYN_SRLSTYLE : string;
+    attribute SYN_SRLSTYLE of Reg0  : signal is "registers";
+    attribute SYN_SRLSTYLE of Reg1  : signal is "registers";
+    attribute SYN_SRLSTYLE of RegIn : signal is "registers";
 
     -- Synthesis attributes Altera (Quartus)
-    attribute dont_merge : boolean;
-    attribute dont_merge of Reg0 : signal is true;
-    attribute dont_merge of Reg1 : signal is true;
-    attribute dont_merge of RegIn : signal is true;
+    attribute DONT_MERGE : boolean;
+    attribute DONT_MERGE of Reg0  : signal is true;
+    attribute DONT_MERGE of Reg1  : signal is true;
+    attribute DONT_MERGE of RegIn : signal is true;
 
-    attribute preserve : boolean;
-    attribute preserve of Reg0 : signal is true;
-    attribute preserve of Reg1 : signal is true;
-    attribute preserve of RegIn : signal is true;
+    attribute PRESERVE : boolean;
+    attribute PRESERVE of Reg0  : signal is true;
+    attribute PRESERVE of Reg1  : signal is true;
+    attribute PRESERVE of RegIn : signal is true;
 
     signal In_Clk_Sig : std_logic;
 
     -- Synthesis attributes Xilinx
-    attribute dont_touch                    : boolean;
-    attribute keep                          : string;
-    attribute dont_touch of In_Clk_Sig      : signal is true;
-    attribute keep of In_Clk_Sig            : signal is "yes";
-
+    attribute DONT_TOUCH                    : boolean;
+    attribute KEEP                          : string;
+    attribute DONT_TOUCH of In_Clk_Sig : signal is true;
+    attribute KEEP of In_Clk_Sig       : signal is "yes";
 
 begin
 
     In_Clk_Sig <= In_Clk;
 
-    p_inff : process(In_Clk)
+    p_inff : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
             RegIn <= In_Data;
@@ -102,7 +101,7 @@ begin
         end if;
     end process;
 
-    p_outff : process(Out_Clk)
+    p_outff : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
             Reg0 <= RegIn;
@@ -113,6 +112,7 @@ begin
             end if;
         end if;
     end process;
+
     Out_Data <= Reg1;
 
 end architecture;

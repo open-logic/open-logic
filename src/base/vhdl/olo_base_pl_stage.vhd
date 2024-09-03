@@ -18,7 +18,7 @@
 ---------------------------------------------------------------------------------------------------
 
 library ieee;
-use ieee.std_logic_1164.all;
+    use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
@@ -28,21 +28,21 @@ use ieee.std_logic_1164.all;
 entity olo_base_pl_stage is
     generic (
         Width_g     : positive;
-        UseReady_g  : boolean   := true;
-        Stages_g    : natural   := 1
+        UseReady_g  : boolean := true;
+        Stages_g    : natural := 1
     );
     port (
         -- Control Ports
-        Clk         : in  std_logic;
-        Rst         : in  std_logic;
+        Clk         : in    std_logic;
+        Rst         : in    std_logic;
         -- Input
-        In_Valid    : in  std_logic := '1';
-        In_Ready    : out std_logic;
-        In_Data     : in  std_logic_vector(Width_g-1 downto 0);
+        In_Valid    : in    std_logic := '1';
+        In_Ready    : out   std_logic;
+        In_Data     : in    std_logic_vector(Width_g-1 downto 0);
         -- Output
-        Out_Valid   : out std_logic;
-        Out_Ready   : in  std_logic := '1';
-        Out_Data    : out std_logic_vector(Width_g-1 downto 0)
+        Out_Valid   : out   std_logic;
+        Out_Ready   : in    std_logic := '1';
+        Out_Data    : out   std_logic_vector(Width_g-1 downto 0)
     );
 end entity;
 
@@ -50,6 +50,7 @@ end entity;
 -- Architecture
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_pl_stage is
+
     -- Single Stage Entity forward-declaration (defined later in this file)
     component olo_base_pl_stage_single is
         generic (
@@ -57,66 +58,68 @@ architecture rtl of olo_base_pl_stage is
             UseReady_g  : boolean   := true
         );
         port (
-            Clk         : in  std_logic;
-            Rst         : in  std_logic;
-            In_Valid    : in  std_logic;
-            In_Ready    : out std_logic;
-            In_Data     : in  std_logic_vector(Width_g-1 downto 0);
-            Out_Valid   : out std_logic;
-            Out_Ready   : in  std_logic := '1';
-            Out_Data    : out std_logic_vector(Width_g-1 downto 0)
+            Clk         : in    std_logic;
+            Rst         : in    std_logic;
+            In_Valid    : in    std_logic;
+            In_Ready    : out   std_logic;
+            In_Data     : in    std_logic_vector(Width_g-1 downto 0);
+            Out_Valid   : out   std_logic;
+            Out_Ready   : in    std_logic := '1';
+            Out_Data    : out   std_logic_vector(Width_g-1 downto 0)
         );
     end component;
     -- Signals
     type Data_t is array (natural range <>) of std_logic_vector(Width_g - 1 downto 0);
-    signal data_s : Data_t(0 to Stages_g);
-    signal valid_s  : std_logic_vector(0 to Stages_g);
-    signal ready_s  : std_logic_vector(0 to Stages_g);
+    signal data_s  : Data_t(0 to Stages_g);
+    signal valid_s : std_logic_vector(0 to Stages_g);
+    signal ready_s : std_logic_vector(0 to Stages_g);
+
 begin
+
     -- *** On or more stages required ***
     g_nonzero : if Stages_g > 0 generate
-        valid_s(0)  <= In_Valid;
-        In_Ready    <= ready_s(0);
-        data_s(0)   <= In_Data;
+        valid_s(0) <= In_Valid;
+        In_Ready   <= ready_s(0);
+        data_s(0)  <= In_Data;
 
         g_stages : for i in 0 to Stages_g - 1 generate
             i_stg : component olo_base_pl_stage_single
-                generic map(
-                    Width_g   => Width_g,
+                generic map (
+                    Width_g    => Width_g,
                     UseReady_g => UseReady_g
                 )
-                port map(
-                    Clk => Clk,
-                    Rst => Rst,
-                    In_Valid => valid_s(i),
-                    In_Ready => ready_s(i),
-                    In_Data => data_s(i),
+                port map (
+                    Clk       => Clk,
+                    Rst       => Rst,
+                    In_Valid  => valid_s(i),
+                    In_Ready  => ready_s(i),
+                    In_Data   => data_s(i),
                     Out_Valid => valid_s(i + 1),
                     Out_Ready => ready_s(i + 1),
-                    Out_Data => data_s(i + 1)
+                    Out_Data  => data_s(i + 1)
                 );
         end generate;
 
-        Out_Valid           <= valid_s(Stages_g);
-        ready_s(Stages_g)   <= Out_Ready;
-        Out_Data            <= data_s(Stages_g);
+        Out_Valid         <= valid_s(Stages_g);
+        ready_s(Stages_g) <= Out_Ready;
+        Out_Data          <= data_s(Stages_g);
     end generate;
 
     -- *** Zero stages ***
     g_zero : if Stages_g = 0 generate
-        Out_Valid    <= In_Valid;
-        Out_Data    <= In_Data;
-        In_Ready <= Out_Ready;
+        Out_Valid <= In_Valid;
+        Out_Data  <= In_Data;
+        In_Ready  <= Out_Ready;
     end generate;
 
-end;
+end architecture;
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries
 ---------------------------------------------------------------------------------------------------
 
 library ieee;
-use ieee.std_logic_1164.all;
+    use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
@@ -126,20 +129,20 @@ use ieee.std_logic_1164.all;
 entity olo_base_pl_stage_single is
     generic (
         Width_g     : positive;
-        UseReady_g  : boolean   := true
+        UseReady_g  : boolean := true
     );
     port (
         -- Control Ports
-        Clk         : in  std_logic;
-        Rst         : in  std_logic;
+        Clk         : in    std_logic;
+        Rst         : in    std_logic;
         -- Input
-        In_Valid    : in  std_logic;
-        In_Ready    : out std_logic;
-        In_Data     : in  std_logic_vector(Width_g-1 downto 0);
+        In_Valid    : in    std_logic;
+        In_Ready    : out   std_logic;
+        In_Data     : in    std_logic_vector(Width_g-1 downto 0);
         -- Output
-        Out_Valid   : out std_logic;
-        Out_Ready   : in  std_logic := '1';
-        Out_Data    : out std_logic_vector(Width_g-1 downto 0)
+        Out_Valid   : out   std_logic;
+        Out_Ready   : in    std_logic := '1';
+        Out_Data    : out   std_logic_vector(Width_g-1 downto 0)
     );
 end entity;
 
@@ -147,13 +150,14 @@ end entity;
 -- Architecture
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_pl_stage_single is
+
     -- two process method
     type tp_r is record
         DataMain    : std_logic_vector(Width_g - 1 downto 0);
         DataMainVld : std_logic;
         DataShad    : std_logic_vector(Width_g - 1 downto 0);
         DataShadVld : std_logic;
-        In_Ready       : std_logic;
+        In_Ready    : std_logic;
     end record;
     signal r, r_next : tp_r;
 
@@ -162,7 +166,7 @@ begin
     -- *** Pipeline Stage with RDY ***
     g_rdy : if UseReady_g generate
 
-        p_comb : process(In_Valid, In_Data, Out_Ready, r)
+        p_comb : process (In_Valid, In_Data, Out_Ready, r) is
             variable v         : tp_r;
             variable IsStuck_v : boolean;
         begin
@@ -203,67 +207,67 @@ begin
             r_next <= v;
         end process;
 
-        In_Ready <= r.In_Ready;
+        In_Ready  <= r.In_Ready;
         Out_Valid <= r.DataMainVld;
-        Out_Data <= r.DataMain;
+        Out_Data  <= r.DataMain;
 
-        p_seq : process(Clk)
+        p_seq : process (Clk) is
         begin
             if rising_edge(Clk) then
                 r <= r_next;
                 if Rst = '1' then
                     r.DataMainVld <= '0';
                     r.DataShadVld <= '0';
-                    r.In_Ready       <= '1';
+                    r.In_Ready    <= '1';
                 end if;
             end if;
         end process;
-    end generate;
 
+    end generate;
 
     -- *** Pipeline Stage without RDY ***
     g_nrdy : if not UseReady_g generate
-        signal VldReg   : std_logic;
-        signal DataReg  : std_logic_vector(Width_g-1 downto 0);
+        signal VldReg  : std_logic;
+        signal DataReg : std_logic_vector(Width_g-1 downto 0);
 
         -- Synthesis attributes AMD (Vivado)
-        attribute shreg_extract : string;
-        attribute shreg_extract of VldReg : signal is "no";
-        attribute shreg_extract of DataReg : signal is "no";
+        attribute SHREG_EXTRACT : string;
+        attribute SHREG_EXTRACT of VldReg : signal is "no";
+        attribute SHREG_EXTRACT of DataReg : signal is "no";
 
         -- Synthesis attributes AMD (Vivado) and Efinix (Efinity)
-        attribute syn_srlstyle : string;
-        attribute syn_srlstyle of VldReg : signal is "registers";
-        attribute syn_srlstyle of DataReg : signal is "registers";
+        attribute SYN_SRLSTYLE : string;
+        attribute SYN_SRLSTYLE of VldReg : signal is "registers";
+        attribute SYN_SRLSTYLE of DataReg : signal is "registers";
 
         -- Synthesis attributes Efinix (Efinity)
-        attribute syn_preserve : boolean;
-        attribute syn_preserve of VldReg : signal is true;
-        attribute syn_preserve of DataReg : signal is true;
+        attribute SYN_PRESERVE : boolean;
+        attribute SYN_PRESERVE of VldReg : signal is true;
+        attribute SYN_PRESERVE of DataReg : signal is true;
 
         -- Synthesis attributes Altera (Quartus)
-        attribute dont_merge : boolean;
-        attribute dont_merge of VldReg : signal is true;
-        attribute dont_merge of DataReg : signal is true;
+        attribute DONT_MERGE : boolean;
+        attribute DONT_MERGE of VldReg : signal is true;
+        attribute DONT_MERGE of DataReg : signal is true;
 
-        attribute preserve : boolean;
-        attribute preserve of VldReg : signal is true;
-        attribute preserve of DataReg : signal is true;
+        attribute PRESERVE : boolean;
+        attribute PRESERVE of VldReg : signal is true;
+        attribute PRESERVE of DataReg : signal is true;
     begin
 
-        p_stg : process(Clk)
+        p_stg : process (Clk) is
         begin
             if rising_edge(Clk) then
                 DataReg <= In_Data;
-                VldReg <= In_Valid;
+                VldReg  <= In_Valid;
                 if Rst = '1' then
                     VldReg <= '0';
                 end if;
             end if;
         end process;
 
-        In_Ready <= '1'; -- Not used!
-        Out_Data <= DataReg;
+        In_Ready  <= '1'; -- Not used!
+        Out_Data  <= DataReg;
         Out_Valid <= VldReg;
 
     end generate;

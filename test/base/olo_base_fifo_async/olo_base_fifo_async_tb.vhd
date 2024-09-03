@@ -32,20 +32,20 @@ entity olo_base_fifo_async_tb is
         RamBehavior_g   : string               := "RBW";
         ReadyRstState_g : integer range 0 to 1 := 1
     );
-end entity olo_base_fifo_async_tb;
+end entity;
 
 architecture sim of olo_base_fifo_async_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     constant DataWidth_c     : integer := 16;
     constant AlmFullLevel_c  : natural := Depth_g - 3;
     constant AlmEmptyLevel_c : natural := 5;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     constant ClockInFrequency_c  : real    := 100.0e6;
     constant ClockInPeriod_c     : time    := (1 sec) / ClockInFrequency_c;
     constant ClockOutFrequency_c : real    := 83.333e6;
@@ -53,9 +53,9 @@ architecture sim of olo_base_fifo_async_tb is
 
     shared variable CheckNow : boolean := False;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     signal In_Clk       : std_logic                                            := '0';
     signal In_Rst       : std_logic                                            := '1';
     signal Out_Clk      : std_logic                                            := '0';
@@ -79,9 +79,9 @@ architecture sim of olo_base_fifo_async_tb is
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_fifo_async
         generic map (
             Width_g         => DataWidth_c,
@@ -92,8 +92,8 @@ begin
             AlmEmptyLevel_g => AlmEmptyLevel_c,
             RamBehavior_g   => RamBehavior_g,
             ReadyRstState_g => toStdl(ReadyRstState_g)
-      )
-      port map(
+        )
+        port map (
             -- Control Ports
             In_Clk          => In_Clk,
             In_Rst          => In_Rst,
@@ -121,17 +121,18 @@ begin
             Out_Level       => Out_Level
         );
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
-    In_Clk    <= not In_Clk after 0.5 * ClockInPeriod_c;
-    Out_Clk   <= not Out_Clk after 0.5 * ClockOutPeriod_c;
+    -----------------------------------------------------------------------------------------------
+    In_Clk  <= not In_Clk after 0.5 * ClockInPeriod_c;
+    Out_Clk <= not Out_Clk after 0.5 * ClockOutPeriod_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     test_runner_watchdog(runner, 10 ms);
-    p_control : process
+
+    p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -143,7 +144,7 @@ begin
             -- check if ready state during reset is correct
             wait for 20 ns;                     -- reset must be transferred to other clock domain
             wait until rising_edge(In_Clk);
-            check_equal(In_Ready, toStdl(ReadyRstState_g) , "In_Ready reset state not according to generic");
+            check_equal(In_Ready, toStdl(ReadyRstState_g), "In_Ready reset state not according to generic");
             wait for 1 us;
 
             -- Remove reset
@@ -160,7 +161,7 @@ begin
             check_equal(In_Empty, '1', "In_Empty reset state not '1'");
             check_equal(In_Level, 0, "In_Level reset state not 0");
             if AlmFullOn_g then
-                check_equal(In_almFull, '0', "In_AlmFull reset state not '0'");
+                check_equal(In_AlmFull, '0', "In_AlmFull reset state not '0'");
             end if;
             if AlmEmptyOn_g then
                 check_equal(In_AlmEmpty, '1', "In_AlmEmpty reset state not '1'");
@@ -182,21 +183,21 @@ begin
                 -- Write 1
                 wait until falling_edge(In_Clk);
                 In_Data  <= X"0001";
-                In_Valid  <= '1';
+                In_Valid <= '1';
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
                 check_equal(In_Empty, '1', "In_Empty not high");
                 check_equal(In_Level, 0, "In_Level not 0");
                 -- Write 2
                 wait until falling_edge(In_Clk);
-                In_Data  <= X"0002";
+                In_Data <= X"0002";
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
                 check_equal(In_Empty, '0', "Empty not low");
                 check_equal(In_Level, 1, "In_Level not 1");
                 -- Pause 1
                 wait until falling_edge(In_Clk);
                 In_Data  <= X"0003";
-                In_Valid  <= '0';
+                In_Valid <= '0';
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
                 check_equal(In_Empty, '0', "Empty not low");
                 check_equal(In_Level, 2, "In_Level not 2");
@@ -252,10 +253,10 @@ begin
                 -- Fill FIFO
                 for i in 0 to Depth_g - 1 loop
                     In_Valid <= '1';
-                    In_Data <= std_logic_vector(to_unsigned(i, In_Data'length));
+                    In_Data  <= std_logic_vector(to_unsigned(i, In_Data'length));
                     wait until falling_edge(In_Clk);
                 end loop;
-                In_Valid  <= '0';
+                In_Valid <= '0';
                 wait for 1 us;
                 check_equal(In_Full, '1', "In_Full not asserted");
                 check_equal(Out_Full, '1', "Out_Full not asserted");
@@ -263,12 +264,12 @@ begin
                 check_equal(Out_Level, Depth_g, "Out_Level not full");
                 -- Add more data (not written because full)
                 wait until falling_edge(In_Clk);
-                In_Valid  <= '1';
+                In_Valid <= '1';
                 In_Data  <= X"ABCD";
                 wait until falling_edge(In_Clk);
                 In_Data  <= X"8765";
                 wait until falling_edge(In_Clk);
-                In_Valid  <= '0';
+                In_Valid <= '0';
                 wait for 1 us;
                 check_equal(In_Full, '1', "In_Full not asserted");
                 check_equal(Out_Full, '1', "Out_Full not asserted");
@@ -306,7 +307,7 @@ begin
                 check_equal(Out_Level, 0, "Out_Level not empty");
                 wait until falling_edge(In_Clk);
                 In_Valid  <= '1';
-                In_Data  <= X"8765";
+                In_Data   <= X"8765";
                 wait until falling_edge(In_Clk);
                 In_Valid  <= '0';
                 wait for 1 us;
@@ -331,7 +332,7 @@ begin
                 for i in 0 to Depth_g - 1 loop
                     wait until falling_edge(In_Clk);
                     In_Valid <= '1';
-                    In_Data <= std_logic_vector(to_unsigned(i, In_Data'length));
+                    In_Data  <= std_logic_vector(to_unsigned(i, In_Data'length));
                     wait until falling_edge(In_Clk);
                     In_Valid <= '0';
                     wait for 1 us;
@@ -394,15 +395,15 @@ begin
                         wait until falling_edge(In_Clk);
                         for i in 0 to 4 loop
                             In_Valid <= '1';
-                            In_Data <= std_logic_vector(to_unsigned(i, In_Data'length));
+                            In_Data  <= std_logic_vector(to_unsigned(i, In_Data'length));
                             wait until falling_edge(In_Clk);
                             for k in 1 to wrDel loop
                                 In_Valid <= '0';
-                                In_Data <= X"0000";
+                                In_Data  <= X"0000";
                                 wait until falling_edge(In_Clk);
                             end loop;
                         end loop;
-                        In_Valid  <= '0';
+                        In_Valid <= '0';
                         -- Read data
                         wait until falling_edge(Out_Clk);
                         for i in 0 to 4 loop
@@ -427,11 +428,11 @@ begin
                     wait until falling_edge(In_Clk);
                 end loop;
                 In_Data  <= X"ABCD";
-                In_Valid  <= '1';
+                In_Valid <= '1';
                 wait until falling_edge(In_Clk);
                 In_Data  <= X"4321";
                 wait until falling_edge(In_Clk);
-                In_Valid  <= '0';
+                In_Valid <= '0';
                 wait until Out_Valid = '1' and rising_edge(Out_Clk);
                 check_equal(Out_Empty, '0', "Empty asserted");
                 check_equal(Out_Data, 16#ABCD#, "Wrong data 0");
@@ -447,6 +448,6 @@ begin
 
         -- TB done
         test_runner_cleanup(runner);
-  end process;
+    end process;
 
-end sim;
+end architecture;

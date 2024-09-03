@@ -85,12 +85,12 @@ package olo_test_pkg_axi is
         BValid  : std_logic;                        -- Write response valid. This signal indicates that the channel is signaling a valid write response.
     end record;
 
-end olo_test_pkg_axi;
+end package;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Body
 ---------------------------------------------------------------------------------------------------
 package body olo_test_pkg_axi is
 
-end olo_test_pkg_axi;
+end package body;
 

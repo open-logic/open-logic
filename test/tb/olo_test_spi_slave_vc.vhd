@@ -5,10 +5,9 @@
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
-
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- VC Package
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -27,43 +26,42 @@ package olo_test_spi_slave_pkg is
 
     -- *** VUnit instance type ***
     type olo_test_spi_slave_t is record
-        p_actor         : actor_t;
-        LsbFirst        : boolean;
-        MaxTransWidth   : positive;
-        BusFrequency    : real;
-        CPHA            : integer range 0 to 1;
-        CPOL            : integer range 0 to 1;
+        p_actor       : actor_t;
+        LsbFirst      : boolean;
+        MaxTransWidth : positive;
+        BusFrequency  : real;
+        CPHA          : integer range 0 to 1;
+        CPOL          : integer range 0 to 1;
     end record;
 
     -- *** Master Operations ***
 
     -- Transaction
     procedure spi_slave_push_transaction (
-        signal net          : inout network_t;
-        spi                 : olo_test_spi_slave_t;
-        transaction_bits    : positive;
-        data_mosi           : std_logic_vector  := "X";
-        data_miso           : std_logic_vector  := "X";
-        timeout             : time              := 1 ms;
-        msg                 : string                := ""
-    );
+            signal net       : inout network_t;
+            spi              : olo_test_spi_slave_t;
+            transaction_bits : positive;
+            data_mosi        : std_logic_vector := "X";
+            data_miso        : std_logic_vector := "X";
+            timeout          : time             := 1 ms;
+            msg              : string           := "");
 
     -- *** VUnit Operations ***
     -- Message Types
-    constant SpiSlavePushTransactionMsg  : msg_type_t := new_msg_type("SpiSlavePushTransaction");
+    constant SpiSlavePushTransactionMsg : msg_type_t := new_msg_type("SpiSlavePushTransaction");
 
     -- Constructor
-    impure function new_olo_test_spi_slave(
-        busFrequency    : real    := 1.0e6;
-        lsbFirst        : boolean := false;
-        maxTransWidth   : natural := 32;
-        cpha            : integer range 0 to 1 := 0;
-        cpol            : integer range 0 to 1 := 0) return olo_test_spi_slave_t;
+    impure function new_olo_test_spi_slave (
+            busFrequency    : real    := 1.0e6;
+            lsbFirst        : boolean := false;
+            maxTransWidth   : natural := 32;
+            cpha            : integer range 0 to 1 := 0;
+            cpol            : integer range 0 to 1 := 0) return olo_test_spi_slave_t;
 
     -- Casts
-    impure function as_sync(instance : olo_test_spi_slave_t) return sync_handle_t;
+    impure function as_sync (instance : olo_test_spi_slave_t) return sync_handle_t;
 
-end;
+end package;
 
 package body olo_test_spi_slave_pkg is
 
@@ -71,14 +69,13 @@ package body olo_test_spi_slave_pkg is
 
     -- Transaction
     procedure spi_slave_push_transaction (
-        signal net          : inout network_t;
-        spi                 : olo_test_spi_slave_t;
-        transaction_bits    : positive;
-        data_mosi           : std_logic_vector  := "X";
-        data_miso           : std_logic_vector  := "X";
-        timeout             : time              := 1 ms;
-        msg                 : string            := ""
-    ) is
+            signal net       : inout network_t;
+            spi              : olo_test_spi_slave_t;
+            transaction_bits : positive;
+            data_mosi        : std_logic_vector := "X";
+            data_miso        : std_logic_vector := "X";
+            timeout          : time             := 1 ms;
+            msg              : string           := "") is
         variable Msg_v : msg_t := new_msg(SpiSlavePushTransactionMsg);
         variable mosi_v : std_logic_vector(spi.MaxTransWidth-1 downto 0) := (others => '0');
         variable miso_v : std_logic_vector(spi.MaxTransWidth-1 downto 0) := (others => 'X');
@@ -102,15 +99,15 @@ package body olo_test_spi_slave_pkg is
 
         -- Send message
         send(net, spi.p_actor, Msg_v);
-    end;
+    end procedure;
 
     -- Constructor
-    impure function new_olo_test_spi_slave(
-        busFrequency    : real    := 1.0e6;
-        lsbFirst        : boolean := false;
-        maxTransWidth   : natural := 32;
-        cpha            : integer range 0 to 1 := 0;
-        cpol            : integer range 0 to 1 := 0) return olo_test_spi_slave_t is
+    impure function new_olo_test_spi_slave (
+            busFrequency    : real    := 1.0e6;
+            lsbFirst        : boolean := false;
+            maxTransWidth   : natural := 32;
+            cpha            : integer range 0 to 1 := 0;
+            cpol            : integer range 0 to 1 := 0) return olo_test_spi_slave_t is
     begin
         return (p_actor => new_actor,
                 LsbFirst => lsbFirst,
@@ -118,18 +115,19 @@ package body olo_test_spi_slave_pkg is
                 BusFrequency => busFrequency,
                 CPHA => cpha,
                 CPOL => cpol);
-    end;
+    end function;
 
     -- Casts
-    impure function as_sync(instance : olo_test_spi_slave_t) return sync_handle_t is
+    impure function as_sync (instance : olo_test_spi_slave_t) return sync_handle_t is
     begin
         return instance.p_actor;
-    end;
-end;
+    end function;
 
-------------------------------------------------------------------------------------------------------------------------
+end package body;
+
+---------------------------------------------------------------------------------------------------
 -- Component Implementation
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -153,10 +151,10 @@ entity olo_test_spi_slave_vc is
         instance                 : olo_test_spi_slave_t
     );
     port (
-        Sclk     : in       std_logic;
-        CS_n     : in       std_logic;
-        Mosi     : in       std_logic;
-        Miso     : out      std_logic
+        Sclk     : in    std_logic;
+        CS_n     : in    std_logic;
+        Mosi     : in    std_logic;
+        Miso     : out   std_logic
     );
 end entity;
 
@@ -165,24 +163,23 @@ architecture rtl of olo_test_spi_slave_vc is
 begin
 
     -- Main Process
-    main : process
+    main : process is
         -- Messaging
-        variable request_msg        : msg_t;
-        variable reply_msg          : msg_t;
-        variable msg_type           : msg_type_t;
-        variable transaction_bits   : positive;
-        variable data_mosi          : std_logic_vector(instance.MaxTransWidth-1 downto 0);
-        variable data_miso          : std_logic_vector(instance.MaxTransWidth-1 downto 0);
-        variable timeout            : time;
-        variable msg_p              : string_ptr_t;
+        variable request_msg      : msg_t;
+        variable reply_msg        : msg_t;
+        variable msg_type         : msg_type_t;
+        variable transaction_bits : positive;
+        variable data_mosi        : std_logic_vector(instance.MaxTransWidth-1 downto 0);
+        variable data_miso        : std_logic_vector(instance.MaxTransWidth-1 downto 0);
+        variable timeout          : time;
+        variable msg_p            : string_ptr_t;
 
         -- Shift Registers
         variable ShiftRegRx_v : std_logic_vector(instance.MaxTransWidth-1 downto 0);
         variable ShiftRegTx_v : std_logic_vector(instance.MaxTransWidth-1 downto 0);
 
         -- Others
-        variable LastEdge_v   : time;
-
+        variable LastEdge_v : time;
     begin
         -- Initialization
         Miso <= 'Z';
@@ -197,13 +194,13 @@ begin
             if msg_type = SpiSlavePushTransactionMsg then
                 -- Pop Transaction
                 transaction_bits := pop(request_msg);
-                data_mosi := pop(request_msg);
-                data_miso := pop(request_msg);
-                timeout := pop(request_msg);
-                msg_p := new_string_ptr(pop_string(request_msg));
+                data_mosi        := pop(request_msg);
+                data_miso        := pop(request_msg);
+                timeout          := pop(request_msg);
+                msg_p            := new_string_ptr(pop_string(request_msg));
 
                 -- Wait for CSn
-                WaitForValueStdl(Cs_n, '0', timeout, to_string(msg_p));
+                WaitForValueStdl(CS_n, '0', timeout, to_string(msg_p));
                 ShiftRegTx_v := data_miso;
                 ShiftRegRx_v := (others => 'U');
 
@@ -227,10 +224,10 @@ begin
 
                     -- shift TX
                     if instance.LsbFirst then
-                        Miso <= ShiftRegTx_v(0);
+                        Miso         <= ShiftRegTx_v(0);
                         ShiftRegTx_v := 'U' & ShiftRegTx_v(instance.MaxTransWidth - 1 downto 1);
                     else
-                        Miso <= ShiftRegTx_v(transaction_bits - 1);
+                        Miso         <= ShiftRegTx_v(transaction_bits - 1);
                         ShiftRegTx_v := ShiftRegTx_v(instance.MaxTransWidth - 2 downto 0) & 'U';
                     end if;
 
@@ -248,7 +245,7 @@ begin
 
                     -- Shift RX
                     if instance.LsbFirst then
-                        ShiftRegRx_v := 'U' & ShiftRegRx_v(instance.MaxTransWidth - 1 downto 1);
+                        ShiftRegRx_v                       := 'U' & ShiftRegRx_v(instance.MaxTransWidth - 1 downto 1);
                         ShiftRegRx_v(transaction_bits - 1) := Mosi;
                     else
                         ShiftRegRx_v := ShiftRegRx_v(instance.MaxTransWidth - 2 downto 0) & Mosi;
@@ -257,7 +254,7 @@ begin
                 end loop;
 
                 -- wait fir CS going high
-                WaitForValueStdl(Cs_n, '1', timeout, to_string(msg_p));
+                WaitForValueStdl(CS_n, '1', timeout, to_string(msg_p));
                 Miso <= 'Z';
 
                 -- checks
@@ -271,4 +268,4 @@ begin
         end loop;
     end process;
 
-end;
+end architecture;

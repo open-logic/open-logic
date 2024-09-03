@@ -29,41 +29,41 @@ entity olo_base_delay_cfg_tb is
     generic (
         runner_cfg      : string;
         SupportZero_g   : boolean := false;
-        RamBehavior_g   : string   := "RBW";
-        RandomStall_g   : boolean   := false
+        RamBehavior_g   : string  := "RBW";
+        RandomStall_g   : boolean := false
     );
-end entity olo_base_delay_cfg_tb;
+end entity;
 
 architecture sim of olo_base_delay_cfg_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
-    constant DataWidth_c   : integer := 16;
-    constant MaxDelay_c    : integer := 20;
+    -----------------------------------------------------------------------------------------------
+    constant DataWidth_c : integer := 16;
+    constant MaxDelay_c  : integer := 20;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant Clk_Frequency_c   : real    := 100.0e6;
-    constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
+    -----------------------------------------------------------------------------------------------
+    constant Clk_Frequency_c : real    := 100.0e6;
+    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal Clk         : std_logic                                              := '0';
-    signal Rst         : std_logic                                              := '0';
-    signal Delay       : std_logic_vector(log2ceil(MaxDelay_c+1)-1 downto 0)    := (others => '0');
-    signal In_Valid    : std_logic                                              := '0';
-    signal In_Data     : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0');
-    signal Out_Data    : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0');
+    -----------------------------------------------------------------------------------------------
+    signal Clk      : std_logic                                              := '0';
+    signal Rst      : std_logic                                              := '0';
+    signal Delay    : std_logic_vector(log2ceil(MaxDelay_c+1)-1 downto 0)    := (others => '0');
+    signal In_Valid : std_logic                                              := '0';
+    signal In_Data  : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0');
+    signal Out_Data : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0');
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    shared variable InDelay         : time := 0 ns;
-    shared variable DataCounter     : integer;
-    shared variable StartChecking   : integer;
+    -----------------------------------------------------------------------------------------------
+    shared variable InDelay       : time := 0 ns;
+    shared variable DataCounter   : integer;
+    shared variable StartChecking : integer;
 
     -- *** Verification Compnents ***
     constant axisMaster : axi_stream_master_t := new_axi_stream_master (
@@ -72,8 +72,9 @@ architecture sim of olo_base_delay_cfg_tb is
     );
 
     -- *** Procedures ***
-    procedure PushN(signal net : inout network_t;
-                    count : integer ) is
+    procedure PushN (
+            signal net : inout network_t;
+            count      : integer) is
     begin
         wait for 0.1 ns; -- make sure Delay signal is updated
         StartChecking := max(DataCounter + 5, fromUslv(Delay)); -- start checking on 5th sample or delay (the bigger, output must be valid)
@@ -84,20 +85,22 @@ architecture sim of olo_base_delay_cfg_tb is
             DataCounter := DataCounter + 1;
         end loop;
     end procedure;
+
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
 
         while test_suite loop
 
-            InDelay := 0 ns;
+            InDelay     := 0 ns;
             DataCounter := 0;
 
             -- Reset
@@ -168,15 +171,14 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5*Clk_Period_c;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_delay_cfg
         generic map (
             Width_g         => DataWidth_c,
@@ -193,24 +195,24 @@ begin
             Out_Data    => Out_Data
         );
 
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Verification Components
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     vc_stimuli : entity vunit_lib.axi_stream_master
-    generic map (
-        master => axisMaster
-    )
-    port map (
-        aclk   => Clk,
-        tvalid => In_Valid,
-        tready => '1',
-        tdata  => In_Data
-    );
+        generic map (
+            master => axisMaster
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => In_Valid,
+            tready => '1',
+            tdata  => In_Data
+        );
 
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Custom Processes
-    ------------------------------------------------------------
-    p_checkout : process(Clk)
+    -----------------------------------------------------------------------------------------------
+    p_checkout : process (Clk) is
     begin
         if rising_edge(Clk) then
             if In_Valid = '1' then
@@ -222,4 +224,4 @@ begin
         end if;
     end process;
 
-end sim;
+end architecture;

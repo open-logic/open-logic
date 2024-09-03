@@ -25,35 +25,35 @@ library olo;
 entity olo_base_ram_sdp_tb is
     generic (
         runner_cfg      : string;
-        Width_g         : positive range 5 to 128  := 32;
-        RamBehavior_g   : string    := "RBW";
-        UseByteEnable_g : boolean   := false;
-        IsAsync_g       : boolean   := false;
-        RdLatency_g     : positive range 1 to 2 := 1
+        Width_g         : positive range 5 to 128 := 32;
+        RamBehavior_g   : string                  := "RBW";
+        UseByteEnable_g : boolean                 := false;
+        IsAsync_g       : boolean                 := false;
+        RdLatency_g     : positive range 1 to 2   := 1
     );
-end entity olo_base_ram_sdp_tb;
+end entity;
 
 architecture sim of olo_base_ram_sdp_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
-    constant BeWidth_c      : integer := Width_g/8;
-    constant BeSigWidth_c   : integer := maximum(BeWidth_c, 2); -- Must be at least 2 bits to avoid compile errors with GHDL.
-                                                                -- .. GHDL checks ranges also on code in a not executed if-clause.
-    constant ClkPeriod_c    : time    := 10 ns;
-    constant RdClkPeriod_c  : time    := 33.3 ns;
+    -----------------------------------------------------------------------------------------------
+    constant BeWidth_c     : integer := Width_g/8;
+    constant BeSigWidth_c  : integer := maximum(BeWidth_c, 2); -- Must be at least 2 bits to avoid compile errors with GHDL.
+    -- .. GHDL checks ranges also on code in a not executed if-clause.
+    constant ClkPeriod_c   : time    := 10 ns;
+    constant RdClkPeriod_c : time    := 33.3 ns;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    procedure Write(    address : natural;
-                        data    : natural;
-                        signal Clk  : in std_logic;
-                        signal Addr : out std_logic_vector;
-                        signal WrData : out std_logic_vector;
-                        signal WrEna : out std_logic) is
+    -----------------------------------------------------------------------------------------------
+    procedure Write (
+            address       : natural;
+            data          : natural;
+            signal Clk    : in std_logic;
+            signal Addr   : out std_logic_vector;
+            signal WrData : out std_logic_vector;
+            signal WrEna  : out std_logic) is
     begin
         wait until rising_edge(Clk);
         Addr <= toUslv(address, Addr'length);
@@ -65,12 +65,13 @@ architecture sim of olo_base_ram_sdp_tb is
         WrData <= toUslv(0, WrData'length);
     end procedure;
 
-    procedure Check(    address : natural;
-                        data    : natural;
-                        signal Clk  : in std_logic;
-                        signal Addr : out std_logic_vector;
-                        signal RdData : in std_logic_vector;
-                        message : string) is
+    procedure Check (
+            address       : natural;
+            data          : natural;
+            signal Clk    : in std_logic;
+            signal Addr   : out std_logic_vector;
+            signal RdData : in std_logic_vector;
+            message       : string) is
     begin
         wait until rising_edge(Clk);
         Addr <= toUslv(address, Addr'length);
@@ -82,24 +83,24 @@ architecture sim of olo_base_ram_sdp_tb is
         check_equal(RdData, toUslv(data, RdData'length), message);
     end procedure;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal Clk      : std_logic                                          := '0';
-    signal Wr_Addr     : std_logic_vector(7 downto 0);
-    signal Wr_Ena      : std_logic                                          := '1';
-    signal Wr_Be       : std_logic_vector(BeSigWidth_c-1 downto 0)          := (others => '1');
-    signal Wr_Data     : std_logic_vector(Width_g - 1 downto 0);
-    signal Rd_Clk      : std_logic                                          := '0';
-    signal Rd_Addr     : std_logic_vector(7 downto 0);
-    signal Rd_Ena      : std_logic                                          := '1';
-    signal Rd_Data     : std_logic_vector(Width_g - 1 downto 0);
+    -----------------------------------------------------------------------------------------------
+    signal Clk     : std_logic                                          := '0';
+    signal Wr_Addr : std_logic_vector(7 downto 0);
+    signal Wr_Ena  : std_logic                                          := '1';
+    signal Wr_Be   : std_logic_vector(BeSigWidth_c-1 downto 0)          := (others => '1');
+    signal Wr_Data : std_logic_vector(Width_g - 1 downto 0);
+    signal Rd_Clk  : std_logic                                          := '0';
+    signal Rd_Addr : std_logic_vector(7 downto 0);
+    signal Rd_Ena  : std_logic                                          := '1';
+    signal Rd_Data : std_logic_vector(Width_g - 1 downto 0);
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_ram_sdp
         generic map (
             Depth_g         => 200,
@@ -110,7 +111,7 @@ begin
             RdLatency_g     => RdLatency_g
         )
         port map (
-            Clk      => Clk,
+            Clk         => Clk,
             Wr_Addr     => Wr_Addr,
             Wr_Ena      => Wr_Ena,
             Wr_Be       => Wr_Be(BeWidth_c-1 downto 0),
@@ -121,21 +122,21 @@ begin
             Rd_Data     => Rd_Data
         );
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
-    Clk  <= not Clk after 0.5 * ClkPeriod_c;
+    -----------------------------------------------------------------------------------------------
+    Clk <= not Clk after 0.5 * ClkPeriod_c;
     g_async : if IsAsync_g generate
         Rd_Clk <= not Rd_Clk after 0.5 * RdClkPeriod_c;
     end generate;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -188,9 +189,9 @@ begin
             if run("ByteEnable") then
                 if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then
                     -- Byte 0 test
-                    Wr_Be <= (others => '1');
+                    Wr_Be    <= (others => '1');
                     Write(1, 0, Clk, Wr_Addr, Wr_Data, Wr_Ena);
-                    Wr_Be <= (others => '0');
+                    Wr_Be    <= (others => '0');
                     Wr_Be(0) <= '1';
                     Write(1, 16#ABCD#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                     if IsAsync_g then
@@ -199,7 +200,7 @@ begin
                         Check(1, 16#00CD#, Clk, Rd_Addr, Rd_Data, "BE[0]");
                     end if;
                     -- Byte 1 test
-                    Wr_Be <= (others => '0');
+                    Wr_Be    <= (others => '0');
                     Wr_Be(1) <= '1';
                     Write(1, 16#1234#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                     if IsAsync_g then
@@ -215,12 +216,12 @@ begin
                 -- Only makes sense in Sync CAse
                 if not IsAsync_g then
                     -- Initialize
-                    Wr_Be <= (others => '1');
+                    Wr_Be   <= (others => '1');
                     Write(1, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                     Write(2, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                     Write(3, 7, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                     wait until rising_edge(Clk);
-                    Wr_Ena <= '1';
+                    Wr_Ena  <= '1';
                     Wr_Addr <= toUslv(1, Wr_Addr'length);
                     Rd_Addr <= toUslv(1, Rd_Addr'length);
                     Wr_Data <= toUslv(1, Wr_Data'length);
@@ -274,7 +275,7 @@ begin
                     Rd_Addr <= toUslv(5, Rd_Addr'length);
                     Wr_Data <= toUslv(5, Wr_Data'length);
                     wait until rising_edge(Clk);
-                    Wr_Ena <= '0';
+                    Wr_Ena  <= '0';
                     Check(1, 1, Clk, Rd_Addr, Rd_Data, "rw: 1=1");
                     Check(2, 2, Clk, Rd_Addr, Rd_Data, "rw: 2=2");
                     Check(3, 3, Clk, Rd_Addr, Rd_Data, "rw: 3=3");
@@ -286,4 +287,4 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-end sim;
+end architecture;

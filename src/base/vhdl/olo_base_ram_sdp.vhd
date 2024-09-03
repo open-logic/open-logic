@@ -21,7 +21,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
 
-    -----------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
 entity olo_base_ram_sdp is
@@ -35,15 +35,15 @@ entity olo_base_ram_sdp is
         UseByteEnable_g : boolean  := false
     );
     port (
-        Clk         : in  std_logic;
-        Wr_Addr     : in  std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        Wr_Ena      : in  std_logic                                         := '1';
-        Wr_Be       : in  std_logic_vector(Width_g / 8 - 1 downto 0)        := (others => '1');
-        Wr_Data     : in  std_logic_vector(Width_g - 1 downto 0);
-        Rd_Clk      : in  std_logic                                         := '0';
-        Rd_Addr     : in  std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        Rd_Ena      : in  std_logic                                         := '1';
-        Rd_Data     : out std_logic_vector(Width_g - 1 downto 0)
+        Clk         : in    std_logic;
+        Wr_Addr     : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+        Wr_Ena      : in    std_logic                                  := '1';
+        Wr_Be       : in    std_logic_vector(Width_g / 8 - 1 downto 0) := (others => '1');
+        Wr_Data     : in    std_logic_vector(Width_g - 1 downto 0);
+        Rd_Clk      : in    std_logic                                  := '0';
+        Rd_Addr     : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+        Rd_Ena      : in    std_logic                                  := '1';
+        Rd_Data     : out   std_logic_vector(Width_g - 1 downto 0)
     );
 end entity;
 
@@ -60,21 +60,21 @@ architecture rtl of olo_base_ram_sdp is
     shared variable mem : data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
 
     -- Read registers
-    signal rd_pipe      : data_t(1 to RdLatency_g);
+    signal rd_pipe : data_t(1 to RdLatency_g);
 
     -- AMD RAM implementation attributes
-    attribute ram_style : string;
-    attribute ram_style of mem : variable is RamStyle_g;
-    attribute shreg_extract : string;
-    attribute shreg_extract of rd_pipe : signal is "no";
+    attribute RAM_STYLE : string;
+    attribute RAM_STYLE of mem         : variable is RamStyle_g;
+    attribute SHREG_EXTRACT : string;
+    attribute SHREG_EXTRACT of rd_pipe : signal is "no";
 
     -- Altera RAM implementation attributes
-    attribute ramstyle : string;
-    attribute ramstyle of mem : variable is RamStyle_g;
+    attribute RAMSTYLE : string;
+    attribute RAMSTYLE of mem : variable is RamStyle_g;
 
     -- Efinix RAM implementation attributes
-    attribute syn_ramstyle : string;
-    attribute syn_ramstyle of mem : variable is RamStyle_g;
+    attribute SYN_RAMSTYLE : string;
+    attribute SYN_RAMSTYLE of mem : variable is RamStyle_g;
 
 begin
 
@@ -88,7 +88,8 @@ begin
 
     -- Synchronous Implementation
     g_sync : if not IsAsync_g generate
-        ram_p : process(Clk)
+
+        ram_p : process (Clk) is
         begin
             if rising_edge(Clk) then
                 if RamBehavior_g = "RBW" then
@@ -106,7 +107,7 @@ begin
                         end loop;
                     -- Write without byte enables
                     else
-                        mem(to_integer(unsigned(Wr_Addr))):= Wr_Data;
+                        mem(to_integer(unsigned(Wr_Addr))) := Wr_Data;
                     end if;
                 end if;
                 if RamBehavior_g = "WBR" then
@@ -119,12 +120,13 @@ begin
                 rd_pipe(2 to RdLatency_g) <= rd_pipe(1 to RdLatency_g-1);
             end if;
         end process;
+
     end generate;
 
     -- Asynchronous implementation
     g_async : if IsAsync_g generate
 
-        write_p : process(Clk)
+        write_p : process (Clk) is
         begin
             if rising_edge(Clk) then
                 if Wr_Ena = '1' then
@@ -137,13 +139,13 @@ begin
                         end loop;
                     -- Write without byte enables
                     else
-                        mem(to_integer(unsigned(Wr_Addr))):= Wr_Data;
+                        mem(to_integer(unsigned(Wr_Addr))) := Wr_Data;
                     end if;
                 end if;
             end if;
         end process;
 
-        read_p : process(Rd_Clk)
+        read_p : process (Rd_Clk) is
         begin
             if rising_edge(Rd_Clk) then
                 if Rd_Ena = '1' then

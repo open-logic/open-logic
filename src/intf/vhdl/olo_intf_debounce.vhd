@@ -51,30 +51,29 @@ architecture struct of olo_intf_debounce is
 
     -- Time Constants
     -- Idea is to have a counter in the range 15-31 for each bit
-    constant TargetTickFrequency_c  : real := 1.0/(DebounceTime_g/31.0);
-    constant TickCycles_c           : real := ceil(ClkFrequency_g/TargetTickFrequency_c);
-    constant ActualTickFrequency_c  : real := ClkFrequency_g/TickCycles_c;
-    constant DebounceTicks_c        : integer := integer(ceil(DebounceTime_g*ActualTickFrequency_c));
-    constant UseStrobeDiv_c         : boolean := integer(TickCycles_c) >= 2;
+    constant TargetTickFrequency_c : real := 1.0/(DebounceTime_g/31.0);
+    constant TickCycles_c          : real := ceil(ClkFrequency_g/TargetTickFrequency_c);
+    constant ActualTickFrequency_c : real := ClkFrequency_g/TickCycles_c;
+    constant DebounceTicks_c       : integer := integer(ceil(DebounceTime_g*ActualTickFrequency_c));
+    constant UseStrobeDiv_c        : boolean := integer(TickCycles_c) >= 2;
 
     -- Other Constants
-    constant Bits_c                 : integer := DataAsync'length;
+    constant Bits_c : integer := DataAsync'length;
 
     -- Instantiation Signals
-    signal DataSync     : std_logic_vector(DataAsync'range);
-    signal Tick         : std_logic;
+    signal DataSync : std_logic_vector(DataAsync'range);
+    signal Tick     : std_logic;
 
     -- Two Process Signals
     subtype Cnt_t is integer range 0 to DebounceTicks_c;
     type Cnt_a is array (0 to Bits_c-1) of Cnt_t;
     type two_process_r is record
-        StableCnt   : Cnt_a;
-        LastState   : std_logic_vector(Bits_c-1 downto 0);
-        IsStable    : std_logic_vector(Bits_c-1 downto 0);
-        DataOut     : std_logic_vector(Bits_c-1 downto 0);
+        StableCnt : Cnt_a;
+        LastState : std_logic_vector(Bits_c-1 downto 0);
+        IsStable  : std_logic_vector(Bits_c-1 downto 0);
+        DataOut   : std_logic_vector(Bits_c-1 downto 0);
     end record;
-    signal r, r_next     : two_process_r;
-
+    signal r, r_next : two_process_r;
 
 begin
 
@@ -84,11 +83,11 @@ begin
 
     assert DebounceTicks_c >= 10
         report "olo_intf_debounce: DebounceTime too short (must be >= 10 clock cycles) - " &
-        "DebounceTime_g=" & real'image(DebounceTime_g) & " ClkFrequency_g=" & real'image(ClkFrequency_g)
+               "DebounceTime_g=" & real'image(DebounceTime_g) & " ClkFrequency_g=" & real'image(ClkFrequency_g)
         severity failure;
 
     -- *** Combinatorial Process ***
-    i_comb : process(r, DataSync, Tick)
+    i_comb : process (r, DataSync, Tick) is
         variable v : two_process_r;
     begin
         -- Hold variables stable
@@ -108,7 +107,7 @@ begin
             -- Reset counters on state change
             if DataSync(i) /= r.LastState(i) then
                 v.StableCnt(i) := 0;
-                v.IsStable(i) := '0';
+                v.IsStable(i)  := '0';
             end if;
 
             -- GLITCH_FILTER mode
@@ -137,7 +136,7 @@ begin
     end process;
 
     -- *** Sequential Process ***
-    i_seq : process(Clk)
+    i_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- normal operation

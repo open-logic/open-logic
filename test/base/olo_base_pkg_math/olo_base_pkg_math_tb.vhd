@@ -27,26 +27,27 @@ entity olo_base_pkg_math_tb is
     generic (
         runner_cfg     : string
     );
-end entity olo_base_pkg_math_tb;
+end entity;
 
 architecture sim of olo_base_pkg_math_tb is
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a package TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
         variable stdlva, stdlvb : std_logic_vector(2 downto 0);
-        variable stra : string(1 to 3) := "bla";
-        variable strb : string(1 to 5) := "blubb";
-        variable usa, usb : unsigned(2 downto 0);
-        variable tra, trb, trc : t_areal(0 to 1);
-        variable taint : t_ainteger(0 to 3);
-        variable tabool : t_abool(0 to 3);
-        variable tra4 : t_areal(0 to 3);
+        variable stra           : string(1 to 3) := "bla";
+        variable strb           : string(1 to 5) := "blubb";
+        variable usa, usb       : unsigned(2 downto 0);
+        variable tra, trb, trc  : t_areal(0 to 1);
+        variable taint          : t_ainteger(0 to 3);
+        variable tabool         : t_abool(0 to 3);
+        variable tra4           : t_areal(0 to 3);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -222,11 +223,10 @@ begin
             end if;
         end loop;
 
-
         wait for 1 ns;
 
         -- TB done
         test_runner_cleanup(runner);
     end process;
 
-end sim;
+end architecture;

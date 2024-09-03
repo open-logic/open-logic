@@ -38,27 +38,25 @@ entity olo_base_fifo_sync is
     );
     port (
         -- Control Ports
-          Clk           : in  std_logic;
-          Rst           : in  std_logic;
-          -- Input Data
-          In_Data       : in  std_logic_vector(Width_g - 1 downto 0);
-          In_Valid      : in  std_logic                                             := '1';
-          In_Ready      : out std_logic;
-          In_Level      : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
-          -- Output Data
-          Out_Data      : out std_logic_vector(Width_g - 1 downto 0);
-          Out_Valid     : out std_logic;
-          Out_Ready     : in  std_logic                                             := '1';
-          Out_Level     : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
-          -- Status
-          Full          : out std_logic;
-          AlmFull       : out std_logic;
-          Empty         : out std_logic;
-          AlmEmpty      : out std_logic
-
+        Clk           : in    std_logic;
+        Rst           : in    std_logic;
+        -- Input Data
+        In_Data       : in    std_logic_vector(Width_g - 1 downto 0);
+        In_Valid      : in    std_logic := '1';
+        In_Ready      : out   std_logic;
+        In_Level      : out   std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
+        -- Output Data
+        Out_Data      : out   std_logic_vector(Width_g - 1 downto 0);
+        Out_Valid     : out   std_logic;
+        Out_Ready     : in    std_logic := '1';
+        Out_Level     : out   std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
+        -- Status
+        Full          : out   std_logic;
+        AlmFull       : out   std_logic;
+        Empty         : out   std_logic;
+        AlmEmpty      : out   std_logic
     );
 end entity;
-
 
 ---------------------------------------------------------------------------------------------------
 -- Architecture
@@ -81,7 +79,7 @@ architecture rtl of olo_base_fifo_sync is
 
 begin
 
-    p_comb : process(In_Valid, Out_Ready, Rst, r)
+    p_comb : process (In_Valid, Out_Ready, Rst, r) is
         variable v : two_process_r;
     begin
         -- hold variables stable
@@ -107,11 +105,11 @@ begin
 
         -- Write side status
         if unsigned(r.WrLevel) = Depth_g then
-            In_Ready  <= '0';
-            Full <= '1';
+            In_Ready <= '0';
+            Full     <= '1';
         else
-            In_Ready  <= '1';
-            Full <= '0';
+            In_Ready <= '1';
+            Full     <= '0';
         end if;
         -- Artificially keep InRdy low during reset if required
         if (ReadyRstState_g = '0') and (Rst = '1') then
@@ -125,7 +123,7 @@ begin
         end if;
 
         -- Read side
-        v.WrDown  := '0';
+        v.WrDown := '0';
         if unsigned(r.RdLevel) /= 0 and Out_Ready = '1' then
             if unsigned(r.RdAddr) /= Depth_g - 1 then
                 v.RdAddr := std_logic_vector(unsigned(r.RdAddr) + 1);
@@ -143,11 +141,11 @@ begin
 
         -- Read side status
         if unsigned(r.RdLevel) > 0 then
-            Out_Valid   <= '1';
-            Empty <= '0';
+            Out_Valid <= '1';
+            Empty     <= '0';
         else
-            Out_Valid   <= '0';
-            Empty <= '1';
+            Out_Valid <= '0';
+            Empty     <= '1';
         end if;
 
         if AlmEmptyOn_g and unsigned(r.RdLevel) <= AlmEmptyLevel_g then
@@ -165,7 +163,7 @@ begin
     Out_Level <= r.RdLevel;
     In_Level  <= r.WrLevel;
 
-    p_seq : process(Clk)
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;
@@ -187,7 +185,7 @@ begin
             RamStyle_g      => RamStyle_g,
             RamBehavior_g   => RamBehavior_g
         )
-        port map(
+        port map (
             Clk         => Clk,
             Wr_Addr     => r.WrAddr,
             Wr_Ena      => RamWr,

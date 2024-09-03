@@ -33,14 +33,14 @@ entity olo_base_delay is
         RstState_g      : boolean                           := True;
         RamBehavior_g   : string                            := "RBW"
     );
-    port(
+    port (
         -- Control Ports
-        Clk      : in  std_logic;
-        Rst      : in  std_logic;
+        Clk      : in    std_logic;
+        Rst      : in    std_logic;
         -- Data
-        In_Data  : in  std_logic_vector(Width_g-1 downto 0);
-        In_Valid : in  std_logic                                := '1';
-        Out_Data : out std_logic_vector(Width_g-1 downto 0)
+        In_Data  : in    std_logic_vector(Width_g-1 downto 0);
+        In_Valid : in    std_logic := '1';
+        Out_Data : out   std_logic_vector(Width_g-1 downto 0)
     );
 end entity;
 
@@ -52,23 +52,31 @@ architecture rtl of olo_base_delay is
     signal MemOut      : std_logic_vector(Width_g - 1 downto 0);
     constant MemTaps_c : natural := work.olo_base_pkg_math.max(Delay_g - 1, 0);
 
-    attribute shreg_extract : string;
-    attribute srl_style : string;
+    attribute SHREG_EXTRACT : string;
+    attribute SRL_STYLE : string;
+
 begin
 
     -- *** Assertions ***
-    assert Resource_g = "AUTO" or Resource_g = "SRL" or Resource_g = "BRAM" report "###ERROR###: olo_base_delay: Unknown Resource_g - " & Resource_g severity error;
-    assert Resource_g /= "BRAM" or Delay_g >= 3 report "###ERROR###: olo_base_delay: Delay_g >= 3 required for Resource_g=BRAM" severity error;
-    assert BramThreshold_g > 3 report "###ERROR###: olo_base_delay: BramThreshold_g must be > 3" severity error;
+    assert Resource_g = "AUTO" or Resource_g = "SRL" or Resource_g = "BRAM"
+        report "###ERROR###: olo_base_delay: Unknown Resource_g - " & Resource_g
+        severity error;
+    assert Resource_g /= "BRAM" or Delay_g >= 3
+        report "###ERROR###: olo_base_delay: Delay_g >= 3 required for Resource_g=BRAM"
+        severity error;
+    assert BramThreshold_g > 3
+        report "###ERROR###: olo_base_delay: BramThreshold_g must be > 3"
+        severity error;
 
     -- *** SRL ***
     g_srl : if (Delay_g > 1) and ((Resource_g = "SRL") or ((Resource_g = "AUTO") and (Delay_g < BramThreshold_g))) generate
         type Srl_t is array (0 to MemTaps_c - 1) of std_logic_vector(Width_g - 1 downto 0);
         signal SrlSig : Srl_t := (others => (others => '0'));
-        attribute shreg_extract of SrlSig : signal is "true";
-        attribute srl_style of SrlSig : signal is "srl";
+        attribute SHREG_EXTRACT of SrlSig : signal is "true";
+        attribute SRL_STYLE of SrlSig : signal is "srl";
     begin
-        p_srl : process(Clk)
+
+        p_srl : process (Clk) is
         begin
             if rising_edge(Clk) then
                 if In_Valid = '1' then
@@ -77,6 +85,7 @@ begin
                 end if;
             end if;
         end process;
+
         MemOut <= SrlSig(SrlSig'high);
     end generate;
 
@@ -84,8 +93,9 @@ begin
     g_bram : if (Delay_g > 1) and ((Resource_g = "BRAM") or ((Resource_g = "AUTO") and (Delay_g >= BramThreshold_g))) generate
         signal RdAddr, WrAddr : std_logic_vector(log2ceil(MemTaps_c) - 1 downto 0) := (others => '0');
     begin
+
         -- address control process
-        p_bram : process(Clk)
+        p_bram : process (Clk) is
         begin
             if rising_edge(Clk) then
                 -- normal Operation
@@ -143,7 +153,8 @@ begin
     g_nonzero : if Delay_g > 0 generate
         signal RstStateCnt : integer range 0 to Delay_g - 1;
     begin
-        p_outreg : process(Clk)
+
+        p_outreg : process (Clk) is
         begin
             if rising_edge(Clk) then
                 -- Normal operation
@@ -151,18 +162,20 @@ begin
                     if RstState_g = false or RstStateCnt = Delay_g - 1 then
                         Out_Data <= MemOut;
                     else
-                        Out_Data     <= (others => '0');
+                        Out_Data    <= (others => '0');
                         RstStateCnt <= RstStateCnt + 1;
                     end if;
                 end if;
 
                 -- Reset
                 if Rst = '1' then
-                    Out_Data     <= (others => '0');
+                    Out_Data    <= (others => '0');
                     RstStateCnt <= 0;
                 end if;
             end if;
         end process;
+
     end generate;
-end;
+
+end architecture;
 

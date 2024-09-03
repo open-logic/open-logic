@@ -30,17 +30,16 @@ entity olo_base_cc_pulse is
         NumPulses_g     : positive := 1
     );
     port (
-        In_Clk          : in  std_logic;
-        In_RstIn        : in  std_logic := '0';
-        In_RstOut       : out std_logic;
-        In_Pulse        : in  std_logic_vector(NumPulses_g - 1 downto 0);
-        Out_Clk         : in  std_logic;
-        Out_RstIn       : in  std_logic := '0';
-        Out_RstOut      : out std_logic;
-        Out_Pulse       : out std_logic_vector(NumPulses_g - 1 downto 0)
+        In_Clk          : in    std_logic;
+        In_RstIn        : in    std_logic := '0';
+        In_RstOut       : out   std_logic;
+        In_Pulse        : in    std_logic_vector(NumPulses_g - 1 downto 0);
+        Out_Clk         : in    std_logic;
+        Out_RstIn       : in    std_logic := '0';
+        Out_RstOut      : out   std_logic;
+        Out_Pulse       : out   std_logic_vector(NumPulses_g - 1 downto 0)
     );
 end entity;
-
 
 ---------------------------------------------------------------------------------------------------
 -- Architecture
@@ -50,17 +49,17 @@ architecture rtl of olo_base_cc_pulse is
     type Pulse_t is array (natural range <>) of std_logic_vector(NumPulses_g - 1 downto 0);
 
     -- Resets
-    signal RstInI           : std_logic;
-    signal RstOutI          : std_logic;
+    signal RstInI  : std_logic;
+    signal RstOutI : std_logic;
 
     -- Data transmit side
-    signal ToggleIn         : std_logic_vector(NumPulses_g - 1 downto 0);
-    signal ToggleLast       : std_logic_vector(NumPulses_g - 1 downto 0);
+    signal ToggleIn      : std_logic_vector(NumPulses_g - 1 downto 0);
+    signal ToggleLast    : std_logic_vector(NumPulses_g - 1 downto 0);
     -- Data receive side
-    signal ToggleOut        : std_logic_vector(NumPulses_g - 1 downto 0);
-    signal ToggleOutLast    : std_logic_vector(NumPulses_g - 1 downto 0);
+    signal ToggleOut     : std_logic_vector(NumPulses_g - 1 downto 0);
+    signal ToggleOutLast : std_logic_vector(NumPulses_g - 1 downto 0);
 
-    -- begin
+begin
 
     -- *** Reset Crossing ***
     i_rst : entity work.olo_base_cc_reset
@@ -72,12 +71,11 @@ architecture rtl of olo_base_cc_pulse is
             B_RstIn     => Out_RstIn,
             B_RstOut    => RstOutI
         );
-    In_RstOut <= RstInI;
+    In_RstOut  <= RstInI;
     Out_RstOut <= RstOutI;
 
-
     -- *** Pulse Crossing ***
-    p_reg : process(In_Clk)
+    p_reg : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
             ToggleLast <= ToggleIn;
@@ -106,7 +104,8 @@ architecture rtl of olo_base_cc_pulse is
 
     -- Data receive side (Output)
     Out_Pulse <= ToggleOutLast xor ToggleOut;
-    PulseOut_p : process(Out_Clk)
+
+    PulseOut_p : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
             ToggleOutLast <= ToggleOut;
@@ -117,7 +116,6 @@ architecture rtl of olo_base_cc_pulse is
             end if;
         end if;
     end process;
-
 
 end architecture;
 

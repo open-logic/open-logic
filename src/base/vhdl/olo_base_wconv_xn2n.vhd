@@ -31,21 +31,20 @@ entity olo_base_wconv_xn2n is
         InWidth_g  : positive;
         OutWidth_g : positive
     );
-  port (
-        Clk         : in  std_logic;
-        Rst         : in  std_logic;
-        In_Valid    : in  std_logic;
-        In_Ready    : out std_logic;
-        In_Data     : in  std_logic_vector(InWidth_g - 1 downto 0);
-        In_Last     : in  std_logic                                                 := '0';
-        In_WordEna  : in  std_logic_vector(InWidth_g / OutWidth_g - 1 downto 0)     := (others => '1');
-        Out_Valid   : out std_logic;
-        Out_Ready   : in  std_logic                                                 := '1';
-        Out_Data    : out std_logic_vector(OutWidth_g - 1 downto 0);
-        Out_Last    : out std_logic
+    port (
+        Clk         : in    std_logic;
+        Rst         : in    std_logic;
+        In_Valid    : in    std_logic;
+        In_Ready    : out   std_logic;
+        In_Data     : in    std_logic_vector(InWidth_g - 1 downto 0);
+        In_Last     : in    std_logic                                             := '0';
+        In_WordEna  : in    std_logic_vector(InWidth_g / OutWidth_g - 1 downto 0) := (others => '1');
+        Out_Valid   : out   std_logic;
+        Out_Ready   : in    std_logic                                             := '1';
+        Out_Data    : out   std_logic_vector(OutWidth_g - 1 downto 0);
+        Out_Last    : out   std_logic
     );
 end entity;
-
 
 architecture rtl of olo_base_wconv_xn2n is
 
@@ -62,12 +61,17 @@ architecture rtl of olo_base_wconv_xn2n is
     signal r, r_next : two_process_r;
 
 begin
-    assert floor(RatioReal_c) = ceil(RatioReal_c) report "olo_base_wconv_xn2n: Ratio OutWidth_g/InWidth_g must be an integer number" severity error;
-    assert OutWidth_g < InWidth_g report "olo_base_wconv_n2xn: OutWidth_g must be smaller than InWidth_g" severity error;
 
-    p_comb : process(r, In_Valid, In_Data, Out_Ready, In_WordEna, In_Last)
-          variable v         : two_process_r;
-          variable IsReady_v : std_logic;
+    assert floor(RatioReal_c) = ceil(RatioReal_c)
+        report "olo_base_wconv_xn2n: Ratio OutWidth_g/InWidth_g must be an integer number"
+        severity error;
+    assert OutWidth_g < InWidth_g
+        report "olo_base_wconv_n2xn: OutWidth_g must be smaller than InWidth_g"
+        severity error;
+
+    p_comb : process (r, In_Valid, In_Data, Out_Ready, In_WordEna, In_Last) is
+        variable v         : two_process_r;
+        variable IsReady_v : std_logic;
     begin
         -- *** hold variables stable ***
         v := r;
@@ -82,8 +86,8 @@ begin
 
         -- Get new data
         if IsReady_v = '1' and In_Valid = '1' then
-            v.Data                     := In_Data;
-            v.DataVld                  := In_WordEna;
+            v.Data    := In_Data;
+            v.DataVld := In_WordEna;
             -- Assert last to the correct data-word
             v.DataLast := (others => '0');
             for i in RatioInt_c-1 downto 0 loop
@@ -102,14 +106,14 @@ begin
         -- Outputs
         Out_Data  <= r.Data(OutWidth_g - 1 downto 0);
         In_Ready  <= IsReady_v;
-        Out_Valid  <= r.DataVld(0);
-        Out_Last <= r.DataLast(0);
+        Out_Valid <= r.DataVld(0);
+        Out_Last  <= r.DataLast(0);
 
         -- *** assign signal ***
         r_next <= v;
     end process;
 
-    p_seq : process(Clk)
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;

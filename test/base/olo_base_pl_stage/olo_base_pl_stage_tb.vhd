@@ -28,37 +28,36 @@ library olo;
 entity olo_base_pl_stage_tb is
     generic (
         runner_cfg      : string;
-        Stages_g        : natural   := 1;
-        UseReady_g      : boolean   := true;
-        RandomStall_g   : boolean   := false
+        Stages_g        : natural := 1;
+        UseReady_g      : boolean := true;
+        RandomStall_g   : boolean := false
     );
-end entity olo_base_pl_stage_tb;
+end entity;
 
 architecture sim of olo_base_pl_stage_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
-    constant DataWidth_c  : integer := 16;
+    -----------------------------------------------------------------------------------------------
+    constant DataWidth_c : integer := 16;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant Clk_Frequency_c   : real    := 100.0e6;
-    constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
+    constant Clk_Frequency_c : real    := 100.0e6;
+    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    shared variable InDelay     : time := 0 ns;
-    shared variable OutDelay    : time := 0 ns;
-
+    -----------------------------------------------------------------------------------------------
+    shared variable InDelay  : time := 0 ns;
+    shared variable OutDelay : time := 0 ns;
 
     -- *** Verification Compnents ***
     constant axisMaster : axi_stream_master_t := new_axi_stream_master (
         data_length => DataWidth_c,
         stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
     );
-    constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
+    constant axisSlave  : axi_stream_slave_t := new_axi_stream_slave (
         data_length => DataWidth_c,
         stall_config => new_stall_config(choose(RandomStall_g and UseReady_g, 0.5, 0.0), 0, 10)
     );
@@ -80,32 +79,33 @@ architecture sim of olo_base_pl_stage_tb is
         end loop;
     end procedure;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal Clk         : std_logic                                      := '0';
-    signal Rst         : std_logic                                      := '0';
-    signal In_Valid    : std_logic                                      := '0';
-    signal In_Ready    : std_logic                                      := '0';
-    signal In_Data     : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
-    signal Out_Valid   : std_logic                                      := '0';
-    signal Out_Ready   : std_logic                                      := '0';
-    signal Out_Data    : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
+    -----------------------------------------------------------------------------------------------
+    signal Clk       : std_logic                                      := '0';
+    signal Rst       : std_logic                                      := '0';
+    signal In_Valid  : std_logic                                      := '0';
+    signal In_Ready  : std_logic                                      := '0';
+    signal In_Data   : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
+    signal Out_Valid : std_logic                                      := '0';
+    signal Out_Ready : std_logic                                      := '0';
+    signal Out_Data  : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
 
         while test_suite loop
 
-            InDelay := 0 ns;
+            InDelay  := 0 ns;
             OutDelay := 0 ns;
 
             -- Reset
@@ -156,15 +156,14 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5*Clk_Period_c;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_pl_stage
         generic map (
             Width_g       => DataWidth_c,
@@ -182,29 +181,29 @@ begin
             Out_Data    => Out_Data
         );
 
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Verification Components
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     vc_stimuli : entity vunit_lib.axi_stream_master
-    generic map (
-        master => axisMaster
-    )
-    port map (
-        aclk   => Clk,
-        tvalid => In_Valid,
-        tready => In_Ready,
-        tdata  => In_Data
-    );
+        generic map (
+            master => axisMaster
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => In_Valid,
+            tready => In_Ready,
+            tdata  => In_Data
+        );
 
     vc_response : entity vunit_lib.axi_stream_slave
-    generic map (
-        slave => axisSlave
-    )
-    port map (
-        aclk   => Clk,
-        tvalid => Out_Valid,
-        tready => Out_Ready,
-        tdata  => Out_Data
-    );
+        generic map (
+            slave => axisSlave
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => Out_Valid,
+            tready => Out_Ready,
+            tdata  => Out_Data
+        );
 
-end sim;
+end architecture;

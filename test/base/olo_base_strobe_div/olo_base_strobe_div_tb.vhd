@@ -26,42 +26,43 @@ library olo;
 entity olo_base_strobe_div_tb is
     generic (
         runner_cfg      : string;
-        Latency_g       : natural      := 1
+        Latency_g       : natural := 1
     );
-end entity olo_base_strobe_div_tb;
+end entity;
 
 architecture sim of olo_base_strobe_div_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------
-    constant MaxRatio_c     : integer   := 100;
-    constant FreqClkHz_c    : real      := 100.0e6;
+    -----------------------------------------------------------------------------------------------
+    constant MaxRatio_c  : integer   := 100;
+    constant FreqClkHz_c : real      := 100.0e6;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant Clk_Period_c      : time    := (1 sec) / FreqClkHz_c;
+    -----------------------------------------------------------------------------------------------
+    constant Clk_Period_c : time    := (1 sec) / FreqClkHz_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal Clk         : std_logic                                              := '0';
-    signal Rst         : std_logic                                              := '0';
-    signal In_Ratio    : std_logic_vector(log2ceil(MaxRatio_c-1)-1 downto 0)    := (others => '0');
-    signal In_Valid    : std_logic                                              := '0';
-    signal Out_Valid   : std_logic                                              := '0';
-    signal Out_Ready   : std_logic                                              := '1';
+    -----------------------------------------------------------------------------------------------
+    signal Clk       : std_logic                                              := '0';
+    signal Rst       : std_logic                                              := '0';
+    signal In_Ratio  : std_logic_vector(log2ceil(MaxRatio_c-1)-1 downto 0)    := (others => '0');
+    signal In_Valid  : std_logic                                              := '0';
+    signal Out_Valid : std_logic                                              := '0';
+    signal Out_Ready : std_logic                                              := '1';
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
-        variable time1_v   : time;
+
+    p_control : process is
+        variable time1_v : time;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -77,7 +78,7 @@ begin
 
             -- Generate Strobe
             if run("Basic") then
-                In_Ratio <= toUslv(4-1, In_Ratio'length);
+                In_Ratio  <= toUslv(4-1, In_Ratio'length);
                 Out_Ready <= '1';
 
                 for i in 0 to 5 loop
@@ -95,26 +96,26 @@ begin
                         check_relation(Out_Valid'last_event > (now-time1_v), "Unexpected strobe");
                         check_equal(Out_Valid, '0', "Unexpected strobe");
                         wait until falling_edge(Clk);
-                        check_equal(Out_valid, '1', "Strobe not asserted");
+                        check_equal(Out_Valid, '1', "Strobe not asserted");
                         wait until rising_edge(Clk);
                         In_Valid <= '0';
                         wait until falling_edge(Clk);
-                        check_equal(Out_valid, '0', "Strobe not de-asserted");
+                        check_equal(Out_Valid, '0', "Strobe not de-asserted");
                     else
                         wait until rising_edge(Clk);
                         In_Valid <= '0';
                         check_relation(Out_Valid'last_event > (now-time1_v), "Unexpected strobe");
                         wait until rising_edge(Clk);
-                        check_equal(Out_valid, '1', "Strobe not asserted");
+                        check_equal(Out_Valid, '1', "Strobe not asserted");
                         wait until rising_edge(Clk);
-                        check_equal(Out_valid, '0', "Strobe not de-asserted");
+                        check_equal(Out_Valid, '0', "Strobe not de-asserted");
                     end if;
                 end loop;
             end if;
 
             -- ReadyLow
             if run("ReadyLow") then
-                In_Ratio <= toUslv(5-1, In_Ratio'length);
+                In_Ratio  <= toUslv(5-1, In_Ratio'length);
                 Out_Ready <= '0';
 
                 for i in 0 to 5 loop
@@ -132,7 +133,7 @@ begin
                         check_relation(Out_Valid'last_event > (now-time1_v), "Unexpected strobe");
                         check_equal(Out_Valid, '0', "Unexpected strobe");
                         wait until falling_edge(Clk);
-                        check_equal(Out_valid, '1', "Strobe not asserted");
+                        check_equal(Out_Valid, '1', "Strobe not asserted");
                         wait until rising_edge(Clk);
                         In_Valid <= '0';
                     else
@@ -141,12 +142,12 @@ begin
                         In_Valid <= '0';
                     end if;
                     wait until rising_edge(Clk);
-                    check_equal(Out_valid, '1', "Strobe not kept 1");
+                    check_equal(Out_Valid, '1', "Strobe not kept 1");
                     Out_Ready <= '1';
                     wait until rising_edge(Clk);
-                    check_equal(Out_valid, '1', "Strobe not kept 2");
+                    check_equal(Out_Valid, '1', "Strobe not kept 2");
                     wait until rising_edge(Clk);
-                    check_equal(Out_valid, '0', "Strobe not de-asserted");
+                    check_equal(Out_Valid, '0', "Strobe not de-asserted");
                     Out_Ready <= '0';
                 end loop;
             end if;
@@ -157,7 +158,7 @@ begin
 
                 for i in 3 to 5 loop
                     In_Ratio <= toUslv(10-1, In_Ratio'length);
-                    time1_v := now;
+                    time1_v  := now;
                     -- Not forwarded
                     for j in 0 to 3 loop
                         In_Valid <= '1';
@@ -172,19 +173,19 @@ begin
                         check_relation(Out_Valid'last_event > (now-time1_v), "Unexpected strobe");
                         check_equal(Out_Valid, '0', "Unexpected strobe");
                         wait until falling_edge(Clk);
-                        check_equal(Out_valid, '1', "Strobe not asserted");
+                        check_equal(Out_Valid, '1', "Strobe not asserted");
                         wait until rising_edge(Clk);
                         In_Valid <= '0';
                         wait until falling_edge(Clk);
-                        check_equal(Out_valid, '0', "Strobe not de-asserted");
+                        check_equal(Out_Valid, '0', "Strobe not de-asserted");
                     else
                         wait until rising_edge(Clk);
                         In_Valid <= '0';
                         check_relation(Out_Valid'last_event > (now-time1_v), "Unexpected strobe");
                         wait until rising_edge(Clk);
-                        check_equal(Out_valid, '1', "Strobe not asserted");
+                        check_equal(Out_Valid, '1', "Strobe not asserted");
                         wait until rising_edge(Clk);
-                        check_equal(Out_valid, '0', "Strobe not de-asserted");
+                        check_equal(Out_Valid, '0', "Strobe not de-asserted");
                     end if;
                 end loop;
             end if;
@@ -196,15 +197,14 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5*Clk_Period_c;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_strobe_div
         generic map (
             MaxRatio_g      => MaxRatio_c,
@@ -219,4 +219,4 @@ begin
             Out_Ready   => Out_Ready
         );
 
-end sim;
+end architecture;
