@@ -95,9 +95,10 @@ architecture rtl of olo_axi_lite_slave is
         RResp   : Resp_t;
         ToCnt   : natural range 0 to ReadTimeoutClks_g-1;
     end record;
+
     signal r, r_next : TwoProcess_r;
 
-    constant UnusedBits_g : natural := log2(AxiDataWidth_g/8);
+    constant UnusedBits_c : natural := log2(AxiDataWidth_g/8);
 
 begin
 
@@ -140,7 +141,7 @@ begin
             -- Write
             when WrCmd =>
                 -- Latch write command
-                v.Addr := S_AxiLite_AwAddr(S_AxiLite_AwAddr'high downto UnusedBits_g) & zerosVector(UnusedBits_g);
+                v.Addr := S_AxiLite_AwAddr(S_AxiLite_AwAddr'high downto UnusedBits_c) & zerosVector(UnusedBits_c);
                 -- Get ready for write data
                 v.WReady := '1';
                 v.State  := WrData;
