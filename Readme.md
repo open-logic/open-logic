@@ -81,7 +81,7 @@ This goal is self explaining. It is implemented as follows:
 
 ### Pure VHDL
 
-*Open Logic* does not rely on vendor specific code (e.g. primitives) and can be compiled to very FPGA. Code is written with different technologies in mind (e.g. using read-before-write or write-before-read blockRAM, containing synthesis attributes for different tools) and hence works efficiently on all devices available and is known to be portable to future device families. Portability to new device families in general does not need any update on the *Open Logic* library.
+*Open Logic* does not rely on vendor specific code (e.g. primitives) and can be compiled to every FPGA. Code is written with different technologies in mind (e.g. using read-before-write or write-before-read blockRAM, containing synthesis attributes for different tools) and hence works efficiently on all devices available and is known to be portable to future device families. Portability to new device families in general does not need any update on the *Open Logic* library.
 
 Thanks to the *pure VHDL* philosophy, *Open Logic* simulates fast and is fully supported by the open-source GHDL simulator. This is crucial for an open-source project because it allows participating on the development at zero tool-cost.
 
