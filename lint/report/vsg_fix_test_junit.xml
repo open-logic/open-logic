@@ -1,0 +1,792 @@
+<?xml version="1.0" ?>
+<testsuite errors="0" hostname="HORNET" failures="45" timestamp="2024-09-03T11:05:15" tests="51" time="0" name="vhdl-style-guide">
+  <properties>
+  </properties>
+  <testcase name="./test/axi/olo_axi_lite_slave/olo_axi_lite_slave_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 82 : Format axiMaster to match defined regex
+      subtype_501: 52 : Format IdRange_r to match defined regex
+      subtype_501: 53 : Format AddrRange_r to match defined regex
+      subtype_501: 54 : Format UserRange_r to match defined regex
+      subtype_501: 55 : Format DataRange_r to match defined regex
+      subtype_501: 56 : Format ByteRange_r to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/axi/olo_axi_master_full/olo_axi_master_full_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 81 : Format CmdLowLat_r to match defined regex
+      constant_004: 132 : Format axiSlave to match defined regex
+      constant_004: 137 : Format rdDataSlave to match defined regex
+      constant_004: 141 : Format wrCmdMaster to match defined regex
+      constant_004: 145 : Format rdCmdMaster to match defined regex
+      constant_004: 149 : Format wrDataMaster to match defined regex
+      constant_004: 260 : Format beats to match defined regex
+      function_017: 231 : Format AxiWordAddr into camelCase
+      function_017: 239 : Format DataAsVector into camelCase
+      function_017: 255 : Format DataAsVectorAliged into camelCase
+      function_017: 271 : Format StrbAsVectorAliged into camelCase
+      procedure_501: 155 : Format PushCommand into camelCase
+      procedure_501: 170 : Format PushWrData into camelCase
+      procedure_501: 185 : Format ExpectRdData into camelCase
+      procedure_501: 205 : Format ExpectWrResponse into camelCase
+      procedure_501: 218 : Format ExpectRdResponse into camelCase
+      subtype_501: 60 : Format IdRange_r to match defined regex
+      subtype_501: 61 : Format AddrRange_r to match defined regex
+      subtype_501: 62 : Format UserRange_r to match defined regex
+      subtype_501: 63 : Format DataRange_r to match defined regex
+      subtype_501: 64 : Format ByteRange_r to match defined regex
+      subtype_501: 79 : Format CmdAddrRange_r to match defined regex
+      subtype_501: 80 : Format CmdSizeRange_r to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/axi/olo_axi_master_simple/olo_axi_master_simple_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 80 : Format CmdLowLat_r to match defined regex
+      constant_004: 132 : Format axiSlave to match defined regex
+      constant_004: 137 : Format rdDataSlave to match defined regex
+      constant_004: 141 : Format wrCmdMaster to match defined regex
+      constant_004: 145 : Format rdCmdMaster to match defined regex
+      constant_004: 149 : Format wrDataMaster to match defined regex
+      procedure_501: 154 : Format PushCommand into camelCase
+      procedure_501: 168 : Format PushWrData into camelCase
+      procedure_501: 193 : Format ExpectRdData into camelCase
+      procedure_501: 212 : Format ExpectWrResponse into camelCase
+      procedure_501: 224 : Format ExpectRdResponse into camelCase
+      subtype_501: 59 : Format IdRange_r to match defined regex
+      subtype_501: 60 : Format AddrRange_r to match defined regex
+      subtype_501: 61 : Format UserRange_r to match defined regex
+      subtype_501: 62 : Format DataRange_r to match defined regex
+      subtype_501: 63 : Format ByteRange_r to match defined regex
+      subtype_501: 78 : Format CmdAddrRange_r to match defined regex
+      subtype_501: 79 : Format CmdSizeRange_r to match defined regex
+      subtype_501: 82 : Format DatDataRange_r to match defined regex
+      subtype_501: 83 : Format DatBeRange_r to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/axi/olo_axi_pl_stage/olo_axi_pl_stage_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 81 : Format axiMaster to match defined regex
+      constant_004: 88 : Format axiSlave to match defined regex
+      signal_004: 57 : Format AxiMs_m to match defined regex
+      signal_004: 57 : Format AxiMs_s to match defined regex
+      signal_004: 63 : Format AxiSm_m to match defined regex
+      signal_004: 63 : Format AxiSm_s to match defined regex
+      subtype_501: 51 : Format IdRange_r to match defined regex
+      subtype_501: 52 : Format AddrRange_r to match defined regex
+      subtype_501: 53 : Format UserRange_r to match defined regex
+      subtype_501: 54 : Format DataRange_r to match defined regex
+      subtype_501: 55 : Format ByteRange_r to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_bae_arb_rr/olo_base_arb_rr_tb.vhd" time="0">
+    <failure type="Failure">
+      loop_statement_302: 301 : Use 8 spaces for indent
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_arb_prio/olo_base_arb_prio_tb.vhd" time="0">
+  </testcase>
+  <testcase name="./test/base/olo_base_cc_bits/olo_base_cc_bits_tb.vhd" time="0">
+  </testcase>
+  <testcase name="./test/base/olo_base_cc_handshake/olo_base_cc_handshake_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 63 : Format axisMaster to match defined regex
+      constant_004: 67 : Format axisSlave to match defined regex
+      procedure_501: 73 : Format PushValues into camelCase
+      procedure_501: 83 : Format CheckValues into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_cc_n2xn/olo_base_cc_n2xn_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 59 : Format axisMaster to match defined regex
+      constant_004: 63 : Format axisSlave to match defined regex
+      procedure_501: 69 : Format Push100 into camelCase
+      procedure_501: 77 : Format Check100 into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_cc_pulse/olo_base_cc_pulse_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_001: 39 : Use 4 spaces for indent
+      constant_001: 40 : Use 4 spaces for indent
+      constant_001: 45 : Use 4 spaces for indent
+      constant_001: 46 : Use 4 spaces for indent
+      constant_001: 47 : Use 4 spaces for indent
+      constant_001: 48 : Use 4 spaces for indent
+      constant_001: 49 : Use 4 spaces for indent
+      constant_001: 50 : Use 4 spaces for indent
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_cc_reset/olo_base_cc_reset_tb.vhd" time="0">
+    <failure type="Failure">
+      process_017: 216 : Change &quot;p_rstDetectA&quot; to &quot;p_rstdetecta&quot;
+      process_017: 223 : Change &quot;p_rstDetectB&quot; to &quot;p_rstdetectb&quot;
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_cc_simple/olo_base_cc_simple_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 71 : Format slave_axi_stream to match defined regex
+      variable_004: 123 : Format zero to match defined regex
+      variable_004: 124 : Format stdlv to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_cc_status/olo_base_cc_status_tb.vhd" time="0">
+  </testcase>
+  <testcase name="./test/base/olo_base_cc_xn2n/olo_base_cc_xn2n_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 59 : Format axisMaster to match defined regex
+      constant_004: 63 : Format axisSlave to match defined regex
+      procedure_501: 69 : Format Push100 into camelCase
+      procedure_501: 77 : Format Check100 into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_delay/olo_base_delay_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 58 : Format axisMaster to match defined regex
+      procedure_501: 64 : Format Push1000 into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_delay_cfg/olo_base_delay_cfg_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 69 : Format axisMaster to match defined regex
+      procedure_501: 75 : Format PushN into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_dyn_sft/olo_base_dyn_sft_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 62 : Format axisMaster to match defined regex
+      constant_004: 67 : Format axisSlave to match defined regex
+      procedure_501: 73 : Format TestShift into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_fifo_async/olo_base_fifo_async_tb.vhd" time="0">
+    <failure type="Failure">
+      procedure_call_302: 347 : Use 28 spaces for indent
+      wait_001: 207 : Use 20 spaces for indent
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_fifo_sync/olo_base_fifo_sync_tb.vhd" time="0">
+  </testcase>
+  <testcase name="./test/base/olo_base_flowctrl_handler/olo_base_flowctrl_handler_tb.vhd" time="0">
+    <failure type="Failure">
+      if_003: 83 : Add 1 space(s) between if and (
+      if_004: 244 : Add 1 space(s) between ) and then
+      port_map_100: 212 : Add 1 space(s) between FromProc_Valid and =&gt;
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_pkg_array/olo_base_pkg_array_tb.vhd" time="0">
+    <failure type="Failure">
+      variable_004: 42 : Format aint to match defined regex
+      variable_004: 43 : Format areal to match defined regex
+      variable_004: 44 : Format abool to match defined regex
+      variable_004: 45 : Format stdlv to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_pkg_logic/olo_base_pkg_logic_tb.vhd" time="0">
+    <failure type="Failure">
+      procedure_call_302: 154 : Use 16 spaces for indent
+      variable_assignment_001: 153 : Use 16 spaces for indent
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_pkg_math/olo_base_pkg_math_tb.vhd" time="0">
+    <failure type="Failure">
+      variable_004: 43 : Format stdlva to match defined regex
+      variable_004: 43 : Format stdlvb to match defined regex
+      variable_004: 44 : Format stra to match defined regex
+      variable_004: 45 : Format strb to match defined regex
+      variable_004: 46 : Format usa to match defined regex
+      variable_004: 46 : Format usb to match defined regex
+      variable_004: 47 : Format tra to match defined regex
+      variable_004: 47 : Format trb to match defined regex
+      variable_004: 47 : Format trc to match defined regex
+      variable_004: 48 : Format taint to match defined regex
+      variable_004: 49 : Format tabool to match defined regex
+      variable_004: 50 : Format tra4 to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_pl_stage/olo_base_pl_stage_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 56 : Format axisMaster to match defined regex
+      constant_004: 60 : Format axisSlave to match defined regex
+      procedure_501: 66 : Format Push100 into camelCase
+      procedure_501: 74 : Format Check100 into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_prbs/olo_base_prbs4_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 59 : Format axisSlave to match defined regex
+      constant_004: 64 : Format stateSlave to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_ram_sdp/olo_base_ram_sdp_tb.vhd" time="0">
+    <failure type="Failure">
+      procedure_501: 50 : Format Write into camelCase
+      procedure_501: 68 : Format Check into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_ram_sp/olo_base_ram_sp_tb.vhd" time="0">
+    <failure type="Failure">
+      procedure_501: 48 : Format Write into camelCase
+      procedure_501: 66 : Format Check into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_ram_tdp/olo_base_ram_tdp_tb.vhd" time="0">
+    <failure type="Failure">
+      if_012: 174 : Use 8 spaces for indent
+      if_012: 190 : Use 8 spaces for indent
+      if_013: 161 : Use 12 spaces for indent
+      if_013: 171 : Use 12 spaces for indent
+      if_013: 177 : Use 12 spaces for indent
+      if_013: 187 : Use 12 spaces for indent
+      if_013: 193 : Use 12 spaces for indent
+      procedure_call_302: 147 : Use 8 spaces for indent
+      procedure_call_302: 148 : Use 8 spaces for indent
+      procedure_call_302: 149 : Use 8 spaces for indent
+      procedure_call_302: 160 : Use 16 spaces for indent
+      procedure_call_302: 162 : Use 16 spaces for indent
+      procedure_call_302: 170 : Use 16 spaces for indent
+      procedure_call_302: 172 : Use 16 spaces for indent
+      procedure_call_302: 176 : Use 16 spaces for indent
+      procedure_call_302: 178 : Use 16 spaces for indent
+      procedure_call_302: 186 : Use 16 spaces for indent
+      procedure_call_302: 188 : Use 16 spaces for indent
+      procedure_call_302: 192 : Use 16 spaces for indent
+      procedure_call_302: 194 : Use 16 spaces for indent
+      procedure_call_302: 201 : Use 8 spaces for indent
+      procedure_call_302: 202 : Use 8 spaces for indent
+      procedure_call_302: 203 : Use 8 spaces for indent
+      wait_001: 150 : Use 8 spaces for indent
+      wait_001: 154 : Use 8 spaces for indent
+      wait_001: 157 : Use 8 spaces for indent
+      wait_001: 167 : Use 8 spaces for indent
+      wait_001: 183 : Use 8 spaces for indent
+      wait_001: 199 : Use 8 spaces for indent
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_reset_gen/olo_base_reset_gen_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_100: 44 : Add 1 space(s) between := and choose
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_strobe_div/olo_base_strobe_div_backpressonly_tb.vhd" time="0">
+    <failure type="Failure">
+      entity_003: 22 : Insert blank line above
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_strobe_div/olo_base_strobe_div_fixratio_tb.vhd" time="0">
+    <failure type="Failure">
+      entity_003: 22 : Insert blank line above
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_strobe_div/olo_base_strobe_div_tb.vhd" time="0">
+    <failure type="Failure">
+      entity_003: 22 : Insert blank line above
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_strobe_gen/olo_base_strobe_gen_tb.vhd" time="0">
+    <failure type="Failure">
+      entity_003: 22 : Insert blank line above
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_tdm_mux/olo_base_tdm_mux_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 48 : Format axisMaster to match defined regex
+      constant_004: 53 : Format axisSlave to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_wconv_n2xn/olo_base_wconv_n2xn_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 50 : Format axisMaster to match defined regex
+      constant_004: 54 : Format axisSlave to match defined regex
+      function_017: 60 : Format CounterValue into camelCase
+      procedure_501: 69 : Format PushCounterValue into camelCase
+      variable_004: 61 : Format x to match defined regex
+      variable_004: 74 : Format lastCheck to match defined regex
+      variable_004: 111 : Format data to match defined regex
+      variable_004: 112 : Format last to match defined regex
+      variable_004: 113 : Format wordEna to match defined regex
+      variable_004: 114 : Format tkeep to match defined regex
+      variable_004: 114 : Format tstrb to match defined regex
+      variable_004: 115 : Format tdest to match defined regex
+      variable_004: 115 : Format tid to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/base/olo_base_wconv_xn2n/olo_base_wconv_xn2n_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 50 : Format axisMaster to match defined regex
+      constant_004: 55 : Format axisSlave to match defined regex
+      function_017: 60 : Format CounterValue into camelCase
+      procedure_501: 69 : Format CheckCounterValue into camelCase
+      variable_004: 61 : Format x to match defined regex
+      variable_004: 70 : Format lastCheck to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/intf/olo_intf_clk_meas/olo_intf_clk_meas_tb.vhd" time="0">
+    <failure type="Failure">
+      procedure_501: 63 : Format CheckFrequency into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/intf/olo_intf_debounce/olo_intf_debounce_tb.vhd" time="0">
+  </testcase>
+  <testcase name="./test/intf/olo_intf_i2c_master/olo_intf_i2c_master_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 96 : Format i2c_slave to match defined regex
+      constant_004: 100 : Format i2c_master to match defined regex
+      procedure_501: 108 : Format PushCommand into camelCase
+      procedure_501: 128 : Format CheckResp into camelCase
+      variable_004: 115 : Format msg to match defined regex
+      variable_004: 754 : Format msg to match defined regex
+      variable_004: 755 : Format msg_type to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/intf/olo_intf_spi_master/olo_intf_spi_master_fixsize_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 82 : Format slave0 to match defined regex
+      procedure_501: 90 : Format SendCommand into camelCase
+      procedure_501: 106 : Format CheckResponse into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/intf/olo_intf_spi_master/olo_intf_spi_master_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_004: 84 : Format slave0 to match defined regex
+      constant_004: 92 : Format slave1 to match defined regex
+      procedure_501: 100 : Format SendCommand into camelCase
+      procedure_501: 120 : Format CheckResponse into camelCase
+    </failure>
+  </testcase>
+  <testcase name="./test/intf/olo_intf_spi_slave/olo_intf_spi_slave_tb.vhd" time="0">
+    <failure type="Failure">
+      constant_001: 119 : Use 8 spaces for indent
+      constant_001: 120 : Use 8 spaces for indent
+      constant_001: 143 : Use 12 spaces for indent
+      constant_001: 144 : Use 12 spaces for indent
+      procedure_001: 123 : Use 8 spaces for indent
+      procedure_001: 135 : Use 8 spaces for indent
+      procedure_001: 147 : Use 12 spaces for indent
+      procedure_001: 159 : Use 12 spaces for indent
+      procedure_002: 112 : Use 8 spaces for indent
+      procedure_002: 128 : Use 8 spaces for indent
+      procedure_002: 136 : Use 12 spaces for indent
+      procedure_002: 152 : Use 12 spaces for indent
+      procedure_002: 160 : Use 16 spaces for indent
+      procedure_003: 116 : Use 8 spaces for indent
+      procedure_003: 133 : Use 8 spaces for indent
+      procedure_003: 140 : Use 12 spaces for indent
+      procedure_003: 157 : Use 12 spaces for indent
+      procedure_003: 164 : Use 16 spaces for indent
+      procedure_call_302: 129 : Use 12 spaces for indent
+      procedure_call_302: 130 : Use 12 spaces for indent
+      procedure_call_302: 131 : Use 12 spaces for indent
+      procedure_call_302: 132 : Use 12 spaces for indent
+      procedure_call_302: 153 : Use 16 spaces for indent
+      procedure_call_302: 154 : Use 16 spaces for indent
+      procedure_call_302: 155 : Use 16 spaces for indent
+      procedure_call_302: 156 : Use 16 spaces for indent
+      wait_001: 114 : Use 16 spaces for indent
+      wait_001: 138 : Use 20 spaces for indent
+      wait_001: 162 : Use 24 spaces for indent
+    </failure>
+  </testcase>
+  <testcase name="./test/intf/olo_intf_sync/olo_intf_sync_tb.vhd" time="0">
+  </testcase>
+  <testcase name="./test/tb/legacy/olo_tb_txt_util.vhd" time="0">
+    <failure type="Failure">
+      case_004: 222 : Change the number of space(s) between when and 0 to 1
+      case_004: 223 : Change the number of space(s) between when and 1 to 1
+      case_004: 224 : Change the number of space(s) between when and 2 to 1
+      case_004: 225 : Change the number of space(s) between when and 3 to 1
+      case_004: 226 : Change the number of space(s) between when and 4 to 1
+      case_004: 227 : Change the number of space(s) between when and 5 to 1
+      case_004: 228 : Change the number of space(s) between when and 6 to 1
+      case_004: 229 : Change the number of space(s) between when and 7 to 1
+      case_004: 230 : Change the number of space(s) between when and 8 to 1
+      case_004: 231 : Change the number of space(s) between when and 9 to 1
+      variable_006: 146 : Add 1 space(s) between msg_line and :
+      variable_006: 164 : Add 1 space(s) between c and :
+      variable_006: 182 : Add 1 space(s) between s and :
+      variable_006: 219 : Add 1 space(s) between c and :
+      variable_006: 544 : Add 1 space(s) between l and :
+      variable_006: 554 : Add 1 space(s) between l and :
+      variable_102: 269 : Add 1 space(s) between integer and :=
+      variable_102: 270 : Add 1 space(s) between integer and :=
+      variable_102: 304 : Add 1 space(s) between ) and :=
+      variable_103: 269 : Add 1 space(s) between := and 1
+      variable_103: 270 : Add 1 space(s) between := and 1
+      variable_103: 304 : Add 1 space(s) between := and (
+      variable_assignment_002: 196 : Add 1 space(s) between := and 1
+      variable_assignment_002: 199 : Add 1 space(s) between := and r
+      variable_assignment_002: 275 : Add 1 space(s) between := and abs_int
+      variable_assignment_002: 278 : Add 1 space(s) between := and len
+      variable_assignment_002: 279 : Add 1 space(s) between := and num
+      variable_assignment_002: 284 : Add 1 space(s) between := and power
+      variable_assignment_002: 406 : Add 1 space(s) between := and c
+      variable_assignment_002: 442 : Add 1 space(s) between := and c
+      variable_assignment_002: 504 : Add 1 space(s) between := and s
+      variable_assignment_002: 507 : Add 1 space(s) between := and k
+      variable_assignment_002: 533 : Add 1 space(s) between := and c
+      variable_assignment_003: 167 : Add 1 space(s) between c and :=
+      variable_assignment_003: 168 : Add 1 space(s) between c and :=
+      variable_assignment_003: 169 : Add 1 space(s) between c and :=
+      variable_assignment_003: 170 : Add 1 space(s) between c and :=
+      variable_assignment_003: 171 : Add 1 space(s) between c and :=
+      variable_assignment_003: 172 : Add 1 space(s) between c and :=
+      variable_assignment_003: 173 : Add 1 space(s) between c and :=
+      variable_assignment_003: 174 : Add 1 space(s) between c and :=
+      variable_assignment_003: 175 : Add 1 space(s) between c and :=
+      variable_assignment_003: 184 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 196 : Add 1 space(s) between r and :=
+      variable_assignment_003: 199 : Add 1 space(s) between r and :=
+      variable_assignment_003: 273 : Add 1 space(s) between abs_int and :=
+      variable_assignment_003: 278 : Add 1 space(s) between len and :=
+      variable_assignment_003: 279 : Add 1 space(s) between num and :=
+      variable_assignment_003: 283 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 284 : Add 1 space(s) between power and :=
+      variable_assignment_003: 308 : Add 1 space(s) between hexlen and :=
+      variable_assignment_003: 314 : Add 1 space(s) between fourbit and :=
+      variable_assignment_003: 316 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 317 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 318 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 319 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 320 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 321 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 322 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 323 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 324 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 325 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 326 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 327 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 328 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 329 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 330 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 331 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 332 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 333 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 334 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 335 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 380 : Add 1 space(s) between u and :=
+      variable_assignment_003: 381 : Add 1 space(s) between u and :=
+      variable_assignment_003: 382 : Add 1 space(s) between u and :=
+      variable_assignment_003: 383 : Add 1 space(s) between u and :=
+      variable_assignment_003: 384 : Add 1 space(s) between u and :=
+      variable_assignment_003: 385 : Add 1 space(s) between u and :=
+      variable_assignment_003: 386 : Add 1 space(s) between u and :=
+      variable_assignment_003: 387 : Add 1 space(s) between u and :=
+      variable_assignment_003: 388 : Add 1 space(s) between u and :=
+      variable_assignment_003: 389 : Add 1 space(s) between u and :=
+      variable_assignment_003: 390 : Add 1 space(s) between u and :=
+      variable_assignment_003: 391 : Add 1 space(s) between u and :=
+      variable_assignment_003: 392 : Add 1 space(s) between u and :=
+      variable_assignment_003: 393 : Add 1 space(s) between u and :=
+      variable_assignment_003: 394 : Add 1 space(s) between u and :=
+      variable_assignment_003: 395 : Add 1 space(s) between u and :=
+      variable_assignment_003: 396 : Add 1 space(s) between u and :=
+      variable_assignment_003: 397 : Add 1 space(s) between u and :=
+      variable_assignment_003: 398 : Add 1 space(s) between u and :=
+      variable_assignment_003: 399 : Add 1 space(s) between u and :=
+      variable_assignment_003: 400 : Add 1 space(s) between u and :=
+      variable_assignment_003: 401 : Add 1 space(s) between u and :=
+      variable_assignment_003: 402 : Add 1 space(s) between u and :=
+      variable_assignment_003: 403 : Add 1 space(s) between u and :=
+      variable_assignment_003: 404 : Add 1 space(s) between u and :=
+      variable_assignment_003: 405 : Add 1 space(s) between u and :=
+      variable_assignment_003: 406 : Add 1 space(s) between u and :=
+      variable_assignment_003: 416 : Add 1 space(s) between l and :=
+      variable_assignment_003: 417 : Add 1 space(s) between l and :=
+      variable_assignment_003: 418 : Add 1 space(s) between l and :=
+      variable_assignment_003: 419 : Add 1 space(s) between l and :=
+      variable_assignment_003: 420 : Add 1 space(s) between l and :=
+      variable_assignment_003: 421 : Add 1 space(s) between l and :=
+      variable_assignment_003: 422 : Add 1 space(s) between l and :=
+      variable_assignment_003: 423 : Add 1 space(s) between l and :=
+      variable_assignment_003: 424 : Add 1 space(s) between l and :=
+      variable_assignment_003: 425 : Add 1 space(s) between l and :=
+      variable_assignment_003: 426 : Add 1 space(s) between l and :=
+      variable_assignment_003: 427 : Add 1 space(s) between l and :=
+      variable_assignment_003: 428 : Add 1 space(s) between l and :=
+      variable_assignment_003: 429 : Add 1 space(s) between l and :=
+      variable_assignment_003: 430 : Add 1 space(s) between l and :=
+      variable_assignment_003: 431 : Add 1 space(s) between l and :=
+      variable_assignment_003: 432 : Add 1 space(s) between l and :=
+      variable_assignment_003: 433 : Add 1 space(s) between l and :=
+      variable_assignment_003: 434 : Add 1 space(s) between l and :=
+      variable_assignment_003: 435 : Add 1 space(s) between l and :=
+      variable_assignment_003: 436 : Add 1 space(s) between l and :=
+      variable_assignment_003: 437 : Add 1 space(s) between l and :=
+      variable_assignment_003: 438 : Add 1 space(s) between l and :=
+      variable_assignment_003: 439 : Add 1 space(s) between l and :=
+      variable_assignment_003: 440 : Add 1 space(s) between l and :=
+      variable_assignment_003: 441 : Add 1 space(s) between l and :=
+      variable_assignment_003: 442 : Add 1 space(s) between l and :=
+      variable_assignment_003: 452 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 462 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 476 : Add 1 space(s) between sl and :=
+      variable_assignment_003: 478 : Add 1 space(s) between sl and :=
+      variable_assignment_003: 480 : Add 1 space(s) between sl and :=
+      variable_assignment_003: 482 : Add 1 space(s) between sl and :=
+      variable_assignment_003: 484 : Add 1 space(s) between sl and :=
+      variable_assignment_003: 486 : Add 1 space(s) between sl and :=
+      variable_assignment_003: 488 : Add 1 space(s) between sl and :=
+      variable_assignment_003: 490 : Add 1 space(s) between sl and :=
+      variable_assignment_003: 492 : Add 1 space(s) between sl and :=
+      variable_assignment_003: 494 : Add 1 space(s) between sl and :=
+      variable_assignment_003: 504 : Add 1 space(s) between k and :=
+      variable_assignment_003: 506 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 527 : Add 1 space(s) between ) and :=
+      variable_assignment_003: 533 : Add 1 space(s) between ) and :=
+      whitespace_007: 532 : Add 1 space(s) between , and c
+      whitespace_007: 532 : Add 1 space(s) between , and is_string
+      whitespace_007: 546 : Add 1 space(s) between , and new_string
+      whitespace_007: 547 : Add 1 space(s) between , and l
+      whitespace_007: 556 : Add 1 space(s) between , and char
+      whitespace_007: 557 : Add 1 space(s) between , and l
+      whitespace_007: 567 : Add 1 space(s) between , and new_string
+      whitespace_010: 289 : Add 1 space(s) before &amp;. 
+    </failure>
+  </testcase>
+  <testcase name="./test/tb/olo_test_activity_pkg.vhd" time="0">
+    <failure type="Failure">
+      package_401: 53 : Move -5 columns
+      package_401: 54 : Move -5 columns
+      package_401: 55 : Move -5 columns
+      package_401: 56 : Move -5 columns
+      package_401: 60 : Move -12 columns
+      package_401: 61 : Move -12 columns
+      package_401: 62 : Move -12 columns
+      package_401: 63 : Move -12 columns
+    </failure>
+  </testcase>
+  <testcase name="./test/tb/olo_test_axi_master_vc.vhd" time="0">
+    <failure type="Failure">
+      reserved_001: 279 : Invalid use of reserved word begin
+      reserved_001: 281 : Invalid use of reserved word if
+      reserved_001: 285 : Invalid use of reserved word then
+      reserved_001: 299 : Invalid use of reserved word end
+      reserved_001: 300 : Invalid use of reserved word if
+      reserved_001: 328 : Invalid use of reserved word end
+      reserved_001: 329 : Invalid use of reserved word procedure
+      reserved_001: 333 : Invalid use of reserved word procedure
+      reserved_001: 336 : Invalid use of reserved word signal
+    </failure>
+  </testcase>
+  <testcase name="./test/tb/olo_test_axi_slave_vc.vhd" time="0">
+    <failure type="Failure">
+      reserved_001: 220 : Invalid use of reserved word begin
+      reserved_001: 222 : Invalid use of reserved word if
+      reserved_001: 226 : Invalid use of reserved word then
+      reserved_001: 240 : Invalid use of reserved word end
+      reserved_001: 241 : Invalid use of reserved word if
+      reserved_001: 292 : Invalid use of reserved word end
+      reserved_001: 293 : Invalid use of reserved word procedure
+      reserved_001: 297 : Invalid use of reserved word procedure
+      reserved_001: 300 : Invalid use of reserved word signal
+      reserved_001: 310 : Invalid use of reserved word begin
+      reserved_001: 312 : Invalid use of reserved word if
+      reserved_001: 316 : Invalid use of reserved word then
+      reserved_001: 330 : Invalid use of reserved word end
+      reserved_001: 331 : Invalid use of reserved word if
+      reserved_001: 382 : Invalid use of reserved word end
+      reserved_001: 383 : Invalid use of reserved word procedure
+      reserved_001: 387 : Invalid use of reserved word procedure
+      reserved_001: 390 : Invalid use of reserved word signal
+      reserved_001: 403 : Invalid use of reserved word begin
+      reserved_001: 405 : Invalid use of reserved word if
+      reserved_001: 409 : Invalid use of reserved word then
+      reserved_001: 423 : Invalid use of reserved word downto
+      reserved_001: 429 : Invalid use of reserved word end
+      reserved_001: 430 : Invalid use of reserved word if
+      reserved_001: 432 : Invalid use of reserved word if
+      reserved_001: 436 : Invalid use of reserved word then
+      reserved_001: 452 : Invalid use of reserved word downto
+      reserved_001: 461 : Invalid use of reserved word end
+      reserved_001: 462 : Invalid use of reserved word if
+      reserved_001: 465 : Invalid use of reserved word for
+      reserved_001: 467 : Invalid use of reserved word in
+      reserved_001: 469 : Invalid use of reserved word to
+      reserved_001: 472 : Invalid use of reserved word loop
+      reserved_001: 481 : Invalid use of reserved word downto
+      reserved_001: 493 : Invalid use of reserved word if
+      reserved_001: 497 : Invalid use of reserved word and
+      reserved_001: 501 : Invalid use of reserved word then
+      reserved_001: 510 : Invalid use of reserved word downto
+      reserved_001: 517 : Invalid use of reserved word elsif
+      reserved_001: 522 : Invalid use of reserved word and
+      reserved_001: 526 : Invalid use of reserved word then
+      reserved_001: 535 : Invalid use of reserved word downto
+      reserved_001: 542 : Invalid use of reserved word end
+      reserved_001: 543 : Invalid use of reserved word if
+      reserved_001: 545 : Invalid use of reserved word end
+      reserved_001: 546 : Invalid use of reserved word loop
+      reserved_001: 560 : Invalid use of reserved word end
+      reserved_001: 561 : Invalid use of reserved word procedure
+      reserved_001: 564 : Invalid use of reserved word procedure
+      reserved_001: 567 : Invalid use of reserved word signal
+      reserved_001: 580 : Invalid use of reserved word begin
+      reserved_001: 582 : Invalid use of reserved word if
+      reserved_001: 586 : Invalid use of reserved word then
+      reserved_001: 602 : Invalid use of reserved word end
+      reserved_001: 603 : Invalid use of reserved word if
+      reserved_001: 635 : Invalid use of reserved word for
+      reserved_001: 637 : Invalid use of reserved word in
+      reserved_001: 639 : Invalid use of reserved word to
+      reserved_001: 642 : Invalid use of reserved word loop
+      reserved_001: 653 : Invalid use of reserved word downto
+      reserved_001: 669 : Invalid use of reserved word downto
+      reserved_001: 679 : Invalid use of reserved word if
+      reserved_001: 684 : Invalid use of reserved word then
+      reserved_001: 689 : Invalid use of reserved word end
+      reserved_001: 690 : Invalid use of reserved word if
+      reserved_001: 710 : Invalid use of reserved word end
+      reserved_001: 711 : Invalid use of reserved word loop
+      reserved_001: 720 : Invalid use of reserved word end
+      reserved_001: 721 : Invalid use of reserved word procedure
+      reserved_001: 725 : Invalid use of reserved word procedure
+      reserved_001: 728 : Invalid use of reserved word signal
+      reserved_001: 736 : Invalid use of reserved word begin
+      reserved_001: 738 : Invalid use of reserved word if
+      reserved_001: 742 : Invalid use of reserved word then
+      reserved_001: 756 : Invalid use of reserved word end
+      reserved_001: 757 : Invalid use of reserved word if
+      reserved_001: 792 : Invalid use of reserved word end
+      reserved_001: 793 : Invalid use of reserved word procedure
+      reserved_001: 797 : Invalid use of reserved word procedure
+      reserved_001: 800 : Invalid use of reserved word signal
+      reserved_001: 813 : Invalid use of reserved word begin
+      reserved_001: 815 : Invalid use of reserved word if
+      reserved_001: 819 : Invalid use of reserved word then
+      reserved_001: 833 : Invalid use of reserved word end
+      reserved_001: 834 : Invalid use of reserved word if
+      reserved_001: 837 : Invalid use of reserved word for
+      reserved_001: 839 : Invalid use of reserved word in
+      reserved_001: 841 : Invalid use of reserved word to
+      reserved_001: 844 : Invalid use of reserved word loop
+      reserved_001: 853 : Invalid use of reserved word downto
+      reserved_001: 865 : Invalid use of reserved word end
+      reserved_001: 866 : Invalid use of reserved word loop
+      reserved_001: 881 : Invalid use of reserved word end
+      reserved_001: 882 : Invalid use of reserved word procedure
+      reserved_001: 885 : Invalid use of reserved word procedure
+      reserved_001: 888 : Invalid use of reserved word signal
+      reserved_001: 901 : Invalid use of reserved word begin
+      reserved_001: 903 : Invalid use of reserved word if
+      reserved_001: 907 : Invalid use of reserved word then
+      reserved_001: 921 : Invalid use of reserved word end
+      reserved_001: 922 : Invalid use of reserved word if
+      reserved_001: 966 : Invalid use of reserved word for
+      reserved_001: 968 : Invalid use of reserved word in
+      reserved_001: 970 : Invalid use of reserved word to
+      reserved_001: 973 : Invalid use of reserved word loop
+      reserved_001: 984 : Invalid use of reserved word downto
+      reserved_001: 993 : Invalid use of reserved word if
+      reserved_001: 998 : Invalid use of reserved word then
+      reserved_001: 1003 : Invalid use of reserved word end
+      reserved_001: 1004 : Invalid use of reserved word if
+      reserved_001: 1018 : Invalid use of reserved word end
+      reserved_001: 1019 : Invalid use of reserved word loop
+      reserved_001: 1028 : Invalid use of reserved word end
+      reserved_001: 1029 : Invalid use of reserved word procedure
+      reserved_001: 1034 : Invalid use of reserved word procedure
+      reserved_001: 1037 : Invalid use of reserved word signal
+    </failure>
+  </testcase>
+  <testcase name="./test/tb/olo_test_i2c_vc.vhd" time="0">
+    <failure type="Failure">
+      port_009: 418 : Change number of spaces after *inout* to 1.
+      port_009: 419 : Change number of spaces after *inout* to 1.
+    </failure>
+  </testcase>
+  <testcase name="./test/tb/olo_test_pkg_axi.vhd" time="0">
+    <failure type="Failure">
+      package_401: 30 : Move -3 columns
+      package_401: 31 : Move -3 columns
+      package_401: 32 : Move -3 columns
+      package_401: 33 : Move -3 columns
+      package_401: 34 : Move -3 columns
+      package_401: 35 : Move -3 columns
+      package_401: 36 : Move -3 columns
+      package_401: 37 : Move -3 columns
+      package_401: 38 : Move -3 columns
+      package_401: 39 : Move -3 columns
+      package_401: 40 : Move -3 columns
+      package_401: 41 : Move -3 columns
+      package_401: 43 : Move -3 columns
+      package_401: 45 : Move -3 columns
+      package_401: 46 : Move -3 columns
+      package_401: 47 : Move -3 columns
+      package_401: 48 : Move -3 columns
+      package_401: 49 : Move -3 columns
+      package_401: 50 : Move -3 columns
+      package_401: 51 : Move -3 columns
+      package_401: 52 : Move -3 columns
+      package_401: 53 : Move -3 columns
+      package_401: 54 : Move -2 columns
+      package_401: 55 : Move -3 columns
+      package_401: 56 : Move -3 columns
+      package_401: 58 : Move -3 columns
+      package_401: 59 : Move -3 columns
+      package_401: 60 : Move -3 columns
+      package_401: 61 : Move -3 columns
+      package_401: 62 : Move -3 columns
+      package_401: 64 : Move -3 columns
+      package_401: 69 : Move -4 columns
+      package_401: 71 : Move -4 columns
+      package_401: 72 : Move -4 columns
+      package_401: 73 : Move -4 columns
+      package_401: 74 : Move -4 columns
+      package_401: 75 : Move -4 columns
+      package_401: 76 : Move -4 columns
+      package_401: 78 : Move -4 columns
+      package_401: 80 : Move -4 columns
+      package_401: 82 : Move -4 columns
+      package_401: 83 : Move -4 columns
+      package_401: 84 : Move -4 columns
+      package_401: 85 : Move -4 columns
+    </failure>
+  </testcase>
+  <testcase name="./test/tb/olo_test_spi_master_vc.vhd" time="0">
+    <failure type="Failure">
+      function_017: 55 : Format new_olo_test_spi_master into camelCase
+      function_017: 63 : Format as_sync into camelCase
+      function_017: 108 : Format new_olo_test_spi_master into camelCase
+      function_017: 124 : Format as_sync into camelCase
+      generic_007: 154 : Format instance to match defined regex
+      procedure_501: 40 : Format spi_master_push_transaction into camelCase
+      procedure_501: 72 : Format spi_master_push_transaction into camelCase
+      type_004: 28 : Format olo_test_spi_master_t to match defined regex
+      variable_004: 82 : Format mosi_v to match defined regex
+      variable_004: 83 : Format miso_v to match defined regex
+      variable_004: 171 : Format request_msg to match defined regex
+      variable_004: 172 : Format reply_msg to match defined regex
+      variable_004: 173 : Format msg_type to match defined regex
+      variable_004: 174 : Format transaction_bits to match defined regex
+      variable_004: 175 : Format data_mosi to match defined regex
+      variable_004: 176 : Format data_miso to match defined regex
+      variable_004: 177 : Format csn_first to match defined regex
+      variable_004: 178 : Format timeout to match defined regex
+      variable_004: 179 : Format msg_p to match defined regex
+    </failure>
+  </testcase>
+  <testcase name="./test/tb/olo_test_spi_slave_vc.vhd" time="0">
+    <failure type="Failure">
+      function_017: 54 : Format new_olo_test_spi_slave into camelCase
+      function_017: 62 : Format as_sync into camelCase
+      function_017: 105 : Format new_olo_test_spi_slave into camelCase
+      function_017: 121 : Format as_sync into camelCase
+      generic_007: 151 : Format instance to match defined regex
+      procedure_501: 40 : Format spi_slave_push_transaction into camelCase
+      procedure_501: 71 : Format spi_slave_push_transaction into camelCase
+      type_004: 28 : Format olo_test_spi_slave_t to match defined regex
+      variable_004: 80 : Format mosi_v to match defined regex
+      variable_004: 81 : Format miso_v to match defined regex
+      variable_004: 168 : Format request_msg to match defined regex
+      variable_004: 169 : Format reply_msg to match defined regex
+      variable_004: 170 : Format msg_type to match defined regex
+      variable_004: 171 : Format transaction_bits to match defined regex
+      variable_004: 172 : Format data_mosi to match defined regex
+      variable_004: 173 : Format data_miso to match defined regex
+      variable_004: 174 : Format timeout to match defined regex
+      variable_004: 175 : Format msg_p to match defined regex
+    </failure>
+  </testcase>
+  <system-out>
+  </system-out>
+  <system-err>
+  </system-err>
+</testsuite>

@@ -1,12 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -28,69 +28,69 @@ library work;
     use work.olo_test_i2c_pkg.all;
     use work.olo_test_activity_pkg.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_intf_i2c_master_tb is
     generic (
         BusFrequency_g              : integer := 100_000;
         InternalTriState_g          : boolean := true;
-        runner_cfg                  : string  
+        runner_cfg                  : string
     );
-end entity olo_intf_i2c_master_tb;
+end entity;
 
 architecture sim of olo_intf_i2c_master_tb is
-    -------------------------------------------------------------------------
+
+    -----------------------------------------------------------------------------------------------
     -- Fixed Generics
-    ------------------------------------------------------------------------- 
-    constant Scl_Period_c     : time    := (1 sec) / real(BusFrequency_g); 
-    constant BusBusyTimeout_c : real    := 200.0/ real(BusFrequency_g); 
-    constant CmdTimeout_c     : real    := 50.0/ real(BusFrequency_g); 
+    -----------------------------------------------------------------------------------------------
+    constant Scl_Period_c     : time    := (1 sec) / real(BusFrequency_g);
+    constant BusBusyTimeout_c : real    := 200.0/ real(BusFrequency_g);
+    constant CmdTimeout_c     : real    := 50.0/ real(BusFrequency_g);
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant Clk_Frequency_c   : real    := 1.0e6*16.0;
-    constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
+    -----------------------------------------------------------------------------------------------
+    constant Clk_Frequency_c : real    := 1.0e6*16.0;
+    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Contral Sginal
-    signal Clk             : std_logic                           := '0';
-    signal Rst             : std_logic                           := '0';
+    signal Clk            : std_logic                           := '0';
+    signal Rst            : std_logic                           := '0';
     -- Command Interface
-    signal Cmd_Ready       : std_logic;                   
-    signal Cmd_Valid       : std_logic                           := '0';                     
-    signal Cmd_Command     : std_logic_vector(2 downto 0);
-    signal Cmd_Data        : std_logic_vector(7 downto 0);
-    signal Cmd_Ack         : std_logic;
+    signal Cmd_Ready      : std_logic;
+    signal Cmd_Valid      : std_logic                           := '0';
+    signal Cmd_Command    : std_logic_vector(2 downto 0);
+    signal Cmd_Data       : std_logic_vector(7 downto 0);
+    signal Cmd_Ack        : std_logic;
     -- Response Interface
-    signal Resp_Valid      : std_logic;                   
-    signal Resp_Command    : std_logic_vector(2 downto 0);
-    signal Resp_Data       : std_logic_vector(7 downto 0);
-    signal Resp_Ack        : std_logic;                   
-    signal Resp_ArbLost    : std_logic;                   
-    signal Resp_SeqErr     : std_logic;
+    signal Resp_Valid     : std_logic;
+    signal Resp_Command   : std_logic_vector(2 downto 0);
+    signal Resp_Data      : std_logic_vector(7 downto 0);
+    signal Resp_Ack       : std_logic;
+    signal Resp_ArbLost   : std_logic;
+    signal Resp_SeqErr    : std_logic;
     -- Status Interface
-    signal Status_BusBusy  : std_logic;                   
-    signal Status_CmdTo    : std_logic;                   
-    -- I2c Interface with internal Tri-State 
-    signal I2c_Scl         : std_logic                          := 'Z';           
-    signal I2c_Sda         : std_logic                          := 'Z';           
+    signal Status_BusBusy : std_logic;
+    signal Status_CmdTo   : std_logic;
+    -- I2c Interface with internal Tri-State
+    signal I2c_Scl        : std_logic                          := 'Z';
+    signal I2c_Sda        : std_logic                          := 'Z';
     -- I2c Interface with external Tri-State
-    signal I2c_Scl_i       : std_logic                          := '0';     
-    signal I2c_Scl_o       : std_logic;            
-    signal I2c_Scl_t       : std_logic;            
-    signal I2c_Sda_i       : std_logic                          := '0';     
-    signal I2c_Sda_o       : std_logic;            
-    signal I2c_Sda_t       : std_logic;
-    
-    
-    -------------------------------------------------------------------------
+    signal I2c_Scl_i      : std_logic                          := '0';
+    signal I2c_Scl_o      : std_logic;
+    signal I2c_Scl_t      : std_logic;
+    signal I2c_Sda_i      : std_logic                          := '0';
+    signal I2c_Sda_o      : std_logic;
+    signal I2c_Sda_t      : std_logic;
+
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
 
     -- *** Verification Compnents ***
     constant i2c_slave : olo_test_i2c_t := new_olo_test_i2c (
@@ -103,16 +103,15 @@ architecture sim of olo_intf_i2c_master_tb is
 
     -- *** Internal Messaging ***
     constant CmdQueue : queue_t := new_queue;
-    constant CmdMsg : msg_type_t := new_msg_type("I2C Command");
+    constant CmdMsg   : msg_type_t := new_msg_type("I2C Command");
 
     procedure PushCommand (
-        Command : std_logic_vector(2 downto 0);
-        SetData : boolean                       := false;
-        Data    : std_logic_vector(7 downto 0)  := (others => '0');
-        SetAck  : boolean                       := false;
-        Ack     : std_logic                     := '1';
-        Delay   : time                          := 0 ns
-    ) is
+            Command : std_logic_vector(2 downto 0);
+            SetData : boolean                      := false;
+            Data    : std_logic_vector(7 downto 0) := (others => '0');
+            SetAck  : boolean                      := false;
+            Ack     : std_logic                    := '1';
+            Delay   : time                         := 0 ns) is
         variable msg : msg_t := new_msg(CmdMsg);
     begin
         push(msg, Command);
@@ -126,14 +125,13 @@ architecture sim of olo_intf_i2c_master_tb is
 
     constant NoData_c : std_logic_vector(7 downto 0) := (others => 'X');
 
-    procedure CheckResp(
-        Command : std_logic_vector(2 downto 0);
-        Data    : std_logic_vector(7 downto 0) := NoData_c;
-        Ack     : std_logic := 'X';
-        ArbLost : std_logic := '0';
-        SeqErr  : std_logic := '0';
-        Msg     : string    := ""
-    ) is
+    procedure CheckResp (
+            Command : std_logic_vector(2 downto 0);
+            Data    : std_logic_vector(7 downto 0) := NoData_c;
+            Ack     : std_logic                    := 'X';
+            ArbLost : std_logic                    := '0';
+            SeqErr  : std_logic                    := '0';
+            Msg     : string                       := "") is
     begin
         wait until rising_edge(Clk) and Resp_Valid = '1';
         check_equal(Resp_Command, Command, "Wrong Resp_Command - " & Msg);
@@ -147,18 +145,18 @@ architecture sim of olo_intf_i2c_master_tb is
         check_equal(Resp_SeqErr, SeqErr, "Wrong Resp_SeqErr - " & Msg);
     end procedure;
 
-
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 50 ms);
-    p_control : process
-        variable StartTime_v    : time;
-        variable Data1_v        : std_logic_vector(7 downto 0);
-        variable Data2_v        : std_logic_vector(7 downto 0);
+
+    p_control : process is
+        variable StartTime_v : time;
+        variable Data1_v     : std_logic_vector(7 downto 0);
+        variable Data2_v     : std_logic_vector(7 downto 0);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -168,14 +166,12 @@ begin
 
             -- Reset
             wait until rising_edge(Clk);
-            Rst <= '1';
+            Rst         <= '1';
             wait for 1 us;
             wait until rising_edge(Clk);
-            Rst <= '0';
+            Rst         <= '0';
             wait until rising_edge(Clk);
             StartTime_v := now;
-            
-
 
             -- *** Basics ***
             if run("ResetValues") then
@@ -334,8 +330,8 @@ begin
                 CheckResp(CMD_REC, Data => X"46");
                 CheckResp(CMD_STOP);
                 WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");  
-            end if;              
+                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+            end if;
 
             -- *** Test delayed command ***
             if run("CmdDelayed") then
@@ -398,7 +394,6 @@ begin
                 CheckResp(CMD_STOP);
                 WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
             end if;
-
 
             -- *** Test Arbitration ***
             if run("MultiMaster-SameWrite") then
@@ -468,11 +463,11 @@ begin
                 CheckResp(CMD_START);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
                 CheckResp(CMD_SEND, Ack => '1');
-                CheckResp(CMD_STOP, ArbLost => '1'); 
+                CheckResp(CMD_STOP, ArbLost => '1');
                 WaitForValueStdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
                 CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
- 
+
             if run("MultiMaster-ArbLostRepStartContinue") then
                 -- Arbitration lost during repeated start (other master continues writing)
                 -- I2C Slave
@@ -496,7 +491,7 @@ begin
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
                 CheckResp(CMD_SEND, Ack => '1');
                 CheckResp(CMD_REPSTART, ArbLost => '1');
-                CheckResp(CMD_STOP, SeqErr => '1'); 
+                CheckResp(CMD_STOP, SeqErr => '1');
                 WaitForValueStdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
                 CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
@@ -522,7 +517,7 @@ begin
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
                 CheckResp(CMD_SEND, Ack => '1');
                 CheckResp(CMD_REPSTART, ArbLost => '1');
-                CheckResp(CMD_STOP, SeqErr => '1'); 
+                CheckResp(CMD_STOP, SeqErr => '1');
                 WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
                 CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
@@ -601,7 +596,7 @@ begin
                 -- I2C Slave
                 i2c_expect_start(net, i2c_slave, msg => "start slave");
                 i2c_force_bus_release(net, i2c_slave); -- return to idle state
-                -- data not checked because its not relevant               
+                -- data not checked because its not relevant
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"E3", true);
@@ -628,7 +623,7 @@ begin
                 -- I2C Slave
                 i2c_expect_start(net, i2c_slave, msg => "start slave");
                 i2c_force_bus_release(net, i2c_slave); -- return to idle state
-                -- data not checked because its not relevant               
+                -- data not checked because its not relevant
                 -- Commands
                 PushCommand(CMD_START);
                 PushCommand(CMD_SEND, true, X"E3", true);
@@ -662,7 +657,7 @@ begin
                 wait for BusBusyTimeout_c * 1.1 * (1 sec);
                 check_equal(Status_BusBusy, '0', "Status_BusBusy 0 end");
             end if;
-         
+
             -- Wait for idle
             wait_until_idle(net, as_sync(i2c_slave));
             wait_until_idle(net, as_sync(i2c_master));
@@ -673,47 +668,46 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5*Clk_Period_c;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_intf_i2c_master
         generic map (
             ClkFrequency_g      => Clk_Frequency_c,
             I2cFrequency_g      => real(BusFrequency_g),
             BusBusyTimeout_g    => BusBusyTimeout_c,
-            CmdTimeout_g        => CmdTimeout_c,      
+            CmdTimeout_g        => CmdTimeout_c,
             InternalTriState_g  => InternalTriState_g,
             DisableAsserts_g    => true
         )
         port map (
             -- Control Signals
-            Clk            => Clk,     
-            Rst            => Rst,   
+            Clk             => Clk,
+            Rst             => Rst,
             -- Command Interface
-            Cmd_Ready      => Cmd_Ready,
-            Cmd_Valid      => Cmd_Valid,
-            Cmd_Command    => Cmd_Command,
-            Cmd_Data       => Cmd_Data,
-            Cmd_Ack        => Cmd_Ack,
+            Cmd_Ready       => Cmd_Ready,
+            Cmd_Valid       => Cmd_Valid,
+            Cmd_Command     => Cmd_Command,
+            Cmd_Data        => Cmd_Data,
+            Cmd_Ack         => Cmd_Ack,
             -- Response Interface
-            Resp_Valid     => Resp_Valid,
-            Resp_Command   => Resp_Command,
-            Resp_Data      => Resp_Data,
-            Resp_Ack       => Resp_Ack,
-            Resp_ArbLost   => Resp_ArbLost,
-            Resp_SeqErr    => Resp_SeqErr,
+            Resp_Valid      => Resp_Valid,
+            Resp_Command    => Resp_Command,
+            Resp_Data       => Resp_Data,
+            Resp_Ack        => Resp_Ack,
+            Resp_ArbLost    => Resp_ArbLost,
+            Resp_SeqErr     => Resp_SeqErr,
             -- Status Interface
-            Status_BusBusy  => Status_BusBusy,            
-            Status_CmdTo    => Status_CmdTo,           
-            -- I2c Interface with internal Tri-State 
-            I2c_Scl         => I2c_Scl,          
-            I2c_Sda         => I2c_Sda,         
+            Status_BusBusy  => Status_BusBusy,
+            Status_CmdTo    => Status_CmdTo,
+            -- I2c Interface with internal Tri-State
+            I2c_Scl         => I2c_Scl,
+            I2c_Sda         => I2c_Sda,
             -- I2c Interface with external Tri-State
             I2c_Scl_i       => I2c_Scl_i,
             I2c_Scl_o       => I2c_Scl_o,
@@ -725,15 +719,15 @@ begin
 
     g_external_tristate : if InternalTriState_g = false generate
         -- Internal Tri-State
-        I2c_Scl <= 'Z' when I2c_Scl_t = '1' else I2c_Scl_o;
-        I2c_Sda <= 'Z' when I2c_Sda_t = '1' else I2c_Sda_o;
+        I2c_Scl   <= 'Z' when I2c_Scl_t = '1' else I2c_Scl_o;
+        I2c_Sda   <= 'Z' when I2c_Sda_t = '1' else I2c_Sda_o;
         I2c_Scl_i <= to01X(I2c_Scl);
         I2c_Sda_i <= to01X(I2c_Sda);
     end generate;
 
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Verification Components
-    ------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     vc_slave : entity work.olo_test_i2c_vc
         generic map (
             instance => i2c_slave
@@ -746,31 +740,31 @@ begin
         );
 
     vc_master : entity work.olo_test_i2c_vc
-    generic map (
-        instance => i2c_master
-    )
-    port map (
-        Clk   => Clk,
-        Rst   => Rst,
-        Scl   => I2c_Scl,
-        Sda   => I2c_Sda
-    );
+        generic map (
+            instance => i2c_master
+        )
+        port map (
+            Clk   => Clk,
+            Rst   => Rst,
+            Scl   => I2c_Scl,
+            Sda   => I2c_Sda
+        );
 
-    vc_cm : process
-        variable msg : msg_t;
+    vc_cm : process is
+        variable msg      : msg_t;
         variable msg_type : msg_type_t;
-        variable Command : std_logic_vector(2 downto 0);
-        variable SetData : boolean;
-        variable Data : std_logic_vector(7 downto 0);
-        variable SetAck : boolean;
-        variable Ack : std_logic;
-        variable Delay : time;
+        variable Command  : std_logic_vector(2 downto 0);
+        variable SetData  : boolean;
+        variable Data     : std_logic_vector(7 downto 0);
+        variable SetAck   : boolean;
+        variable Ack      : std_logic;
+        variable Delay    : time;
     begin
         -- Initialize
-        Cmd_Valid      <= '0';
-        Cmd_Command    <= (others => 'X');
-        Cmd_Data       <= (others => 'X');
-        Cmd_Ack        <= 'X';
+        Cmd_Valid   <= '0';
+        Cmd_Command <= (others => 'X');
+        Cmd_Data    <= (others => 'X');
+        Cmd_Ack     <= 'X';
         -- loop messages
         loop
             -- wait until message available
@@ -778,7 +772,7 @@ begin
                 wait until not is_empty(CmdQueue) and rising_edge(Clk);
             end if;
             -- get message
-            msg := pop(CmdQueue);
+            msg      := pop(CmdQueue);
             msg_type := message_type(msg);
             -- process message
             if msg_type = CmdMsg then
@@ -795,8 +789,8 @@ begin
                     wait for Delay;
                     wait until rising_edge(Clk);
                 end if;
-                Cmd_Valid      <= '1';
-                Cmd_Command    <= Command;
+                Cmd_Valid   <= '1';
+                Cmd_Command <= Command;
                 if SetData then
                     Cmd_Data <= Data;
                 end if;
@@ -804,16 +798,14 @@ begin
                     Cmd_Ack <= Ack;
                 end if;
                 wait until rising_edge(Clk) and Cmd_Ready = '1';
-                Cmd_Valid      <= '0';
-                Cmd_Command    <= (others => 'X');
-                Cmd_Data       <= (others => 'X');
-                Cmd_Ack        <= 'X';
+                Cmd_Valid   <= '0';
+                Cmd_Command <= (others => 'X');
+                Cmd_Data    <= (others => 'X');
+                Cmd_Ack     <= 'X';
             else
                 error("Unexpected message type in vc_cmd");
             end if;
         end loop;
     end process;
 
-
-
-end sim;
+end architecture;

@@ -1,66 +1,67 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
     context vunit_lib.com_context;
-	context vunit_lib.vc_context;
+    context vunit_lib.vc_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_strobe_gen_tb is
     generic (
         runner_cfg      : string;
-        FreqStrobeHz_g  : string      := "10.0e6"
+        FreqStrobeHz_g  : string := "10.0e6"
     );
-end entity olo_base_strobe_gen_tb;
+end entity;
 
 architecture sim of olo_base_strobe_gen_tb is
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Constants
-    -------------------------------------------------------------------------	
-    constant FreqClkHz_c        : real := 100.0e6;
-    constant FreqStrobeHz_c    : real := fromString(FreqStrobeHz_g);
+    -----------------------------------------------------------------------------------------------
+    constant FreqClkHz_c    : real := 100.0e6;
+    constant FreqStrobeHz_c : real := fromString(FreqStrobeHz_g);
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Defnitions
-    -------------------------------------------------------------------------
-    constant Clk_Period_c      : time    := (1 sec) / FreqClkHz_c;
-    constant Strobe_Period_c   : time    := (1 sec) / FreqStrobeHz_c;
+    -----------------------------------------------------------------------------------------------
+    constant Clk_Period_c    : time    := (1 sec) / FreqClkHz_c;
+    constant Strobe_Period_c : time    := (1 sec) / FreqStrobeHz_c;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Interface Signals
-    -------------------------------------------------------------------------
-    signal Clk         : std_logic                                      := '0';                              
-    signal Rst         : std_logic                                      := '0';    
-    signal In_Sync     : std_logic                                      := '0';                              
-    signal Out_Valid   : std_logic                                      := '0';                              
-    signal Out_Ready   : std_logic                                      := '1';                       
+    -----------------------------------------------------------------------------------------------
+    signal Clk       : std_logic                                      := '0';
+    signal Rst       : std_logic                                      := '0';
+    signal In_Sync   : std_logic                                      := '0';
+    signal Out_Valid : std_logic                                      := '0';
+    signal Out_Ready : std_logic                                      := '1';
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
+
+    p_control : process is
         variable LastStrobe_v   : time;
         variable StrobePeriod_v : time;
     begin
@@ -103,17 +104,17 @@ begin
                 wait until rising_edge(Clk) and Out_Valid = '1';
                 wait for Strobe_Period_c / 2;
                 wait until rising_edge(Clk);
-                In_Sync <= '1';
+                In_Sync        <= '1';
                 wait until rising_edge(Clk);
-                In_Sync <= '0';
+                In_Sync        <= '0';
                 wait until rising_edge(Clk);
                 check_equal(Out_Valid, '1', "assertion");
-                LastStrobe_v := now;
+                LastStrobe_v   := now;
                 wait until rising_edge(Clk);
                 check_equal(Out_Valid, '0', "deassertion");
                 wait until rising_edge(Clk) and Out_Valid = '1';
                 StrobePeriod_v := now - LastStrobe_v;
-                check(abs(StrobePeriod_v-Strobe_Period_c) < 0.5 * Clk_Period_c, "period");              
+                check(abs(StrobePeriod_v-Strobe_Period_c) < 0.5 * Clk_Period_c, "period");
             end if;
 
             -- ReadyLow
@@ -139,7 +140,7 @@ begin
                     wait until rising_edge(Clk);
                     check_equal(Out_Valid, '0', "deassertion");
                 end loop;
-            end if;                
+            end if;
 
             wait for 1 us;
 
@@ -148,26 +149,25 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Clock
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5*Clk_Period_c;
 
-
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- DUT
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_strobe_gen
         generic map (
             FreqClkHz_g     => FreqClkHz_c,
             FreqStrobeHz_g  => FreqStrobeHz_c
         )
         port map (
-            Clk         => Clk,     
-            Rst         => Rst,    
-            In_Sync     => In_Sync,                                   
-            Out_Valid   => Out_Valid,  
+            Clk         => Clk,
+            Rst         => Rst,
+            In_Sync     => In_Sync,
+            Out_Valid   => Out_Valid,
             Out_Ready   => Out_Ready
-        ); 
+        );
 
-end sim;
+end architecture;
