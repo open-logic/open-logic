@@ -130,7 +130,7 @@ architecture rtl of olo_axi_master_full is
     type ReadDataFsm_t is (Idle_s, Transfer_s, Wait_s);
 
     -- *** Functions ***
-    function AlignedAddr_f (Addr : in unsigned(AxiAddrWidth_g-1 downto 0))
+    function alignedAddr (Addr : in unsigned(AxiAddrWidth_g-1 downto 0))
     return unsigned is
         variable Addr_v : unsigned(Addr'range) := (others => '0');
     begin
@@ -139,7 +139,7 @@ architecture rtl of olo_axi_master_full is
     end function;
 
     -- *** Two Process Record ***
-    type two_process_r is record
+    type TwoProcess_r is record
         -- *** Write Related Registers ***
         WrCmdFsm        : WriteCmdFsm_t;
         WrLastAddr      : unsigned(AxiAddrWidth_g - 1 downto 0);
@@ -191,7 +191,8 @@ architecture rtl of olo_axi_master_full is
         RdAlignReg      : std_logic_vector(AxiDataWidth_g * 2 - 1 downto 0);
         RdAlignLast     : std_logic;
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_r;
 
     -- *** Instantiation Signals ***
     signal WrPl_Data     : std_logic_vector(Wr_Data'range);
@@ -238,8 +239,11 @@ begin
         severity failure;
 
     -- *** Combinatorial Process ***
-    p_comb : process (r, CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat, AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data, WrWconv_Rdy, WrPl_Vld, WrData_Vld, WrData_Data, WrData_Last, WrData_We, RdPl_Rdy) is
-        variable v              : two_process_r;
+    p_comb : process (r,
+                      CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat,
+                      AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data,
+                      WrWconv_Rdy, WrPl_Vld, WrData_Vld, WrData_Data, WrData_Last, WrData_We, RdPl_Rdy) is
+        variable v              : TwoProcess_r;
         variable WriteBe_v      : std_logic_vector(AxiBytes_c - 1 downto 0);
         variable RdAlignReady_v : std_logic;
         variable RdLowIdxInt_v  : integer range 0 to AxiBytes_c;
@@ -254,6 +258,7 @@ begin
             -- *** Command FSM ***
             v.WrStartTf    := '0';
             v.AxiWrCmd_Vld := '0';
+
             case r.WrCmdFsm is
 
                 when Idle_s =>
@@ -264,7 +269,7 @@ begin
                     else
                         v.WrDataWordsCmd := resize(unsigned(CmdWr_Size(CmdWr_Size'high downto log2(DataBytes_c))) + 1, UserTransactionSizeBits_g);
                     end if;
-                    v.AxiWrCmd_Addr   := std_logic_vector(AlignedAddr_f(unsigned(CmdWr_Addr)));
+                    v.AxiWrCmd_Addr   := std_logic_vector(alignedAddr(unsigned(CmdWr_Addr)));
                     v.WrShift         := unsigned(CmdWr_Addr(v.WrShift'range));
                     v.AxiWrCmd_LowLat := CmdWr_LowLat;
                     if CmdWr_Valid = '1' then
@@ -278,7 +283,8 @@ begin
                         v.WrStartTf     := '1';
                         v.WrCmdFsm      := Idle_s;
                         v.CmdWr_Ready   := '1';
-                        v.AxiWrCmd_Size := std_logic_vector(resize(shift_right(AlignedAddr_f(r.WrLastAddr) - unsigned(r.AxiWrCmd_Addr), log2(AxiBytes_c)) + 1, UserTransactionSizeBits_g));
+                        v.AxiWrCmd_Size := std_logic_vector(resize(shift_right(alignedAddr(r.WrLastAddr) - unsigned(r.AxiWrCmd_Addr), log2(AxiBytes_c)) + 1,
+                                                                   UserTransactionSizeBits_g));
                         -- Calculate byte enables for last word
                         for byte in 0 to AxiBytes_c - 1 loop
                             if r.WrLastAddr(log2(AxiBytes_c) - 1 downto 0) >= byte then
@@ -298,8 +304,8 @@ begin
             -- *** With Conversion FSM ***
             WrWconvEna   <= '0';
             WrWconv_Last <= '0';
-            case r.WrWconvFsm is
 
+            case r.WrWconvFsm is
                 -- Latch values that change for the next command that may be interpreted while the current one is running
                 when Idle_s =>
                     v.WrWordsDone   := to_unsigned(1, v.WrWordsDone'length);
@@ -324,20 +330,18 @@ begin
                 -- coverage off
                 when others => null; -- unreachable code
                 -- coverage on
-
             end case;
 
             -- *** Alignment FSM ***
             -- Initial values
             WrDataEna <= '0';
-            -- v.WrAlignVld := '0';
             -- Word- to Byte-Enable conversion
             for i in 0 to AxiBytes_c - 1 loop
                 WriteBe_v(i) := WrData_We(i / UserDataWidth_g);
             end loop;
+
             -- FSM
             case r.WrAlignFsm is
-
                 -- Latch values that change for the next command that may be interpreted while the current one is running
                 when Idle_s =>
                     v.WrAlignReg     := (others => '0');
@@ -388,9 +392,10 @@ begin
                     end if;
 
                 -- coverage off
-                when others => null;    -- unreachable code
+                when others => null; -- unreachable code
                 -- coverage on
             end case;
+
         end if;
 
         -- *** Read Related Code ***
@@ -399,6 +404,7 @@ begin
             -- *** Variables ***
             RdLowIdxInt_v  := to_integer(r.RdAlignLowIdx);
             RdAlignReady_v := r.RdDataEna;
+
             -- Vivado workaround
             for i in 0 to AxiBytes_c loop
                 if i = RdLowIdxInt_v then
@@ -415,13 +421,14 @@ begin
             -- *** Command FSM ***
             v.RdStartTf    := '0';
             v.AxiRdCmd_Vld := '0';
-            case r.RdCmdFsm is
 
+            case r.RdCmdFsm is
+                -- Move data from the FIFO to AXI
                 when Idle_s =>
                     v.CmdRd_Ready     := '1';
                     v.RdLastAddr      := unsigned(CmdRd_Addr) + unsigned(CmdRd_Size) - 1;
                     v.RdFirstAddrOffs := unsigned(CmdRd_Addr(v.RdFirstAddrOffs'range));
-                    v.AxiRdCmd_Addr   := std_logic_vector(AlignedAddr_f(unsigned(CmdRd_Addr)));
+                    v.AxiRdCmd_Addr   := std_logic_vector(alignedAddr(unsigned(CmdRd_Addr)));
                     v.AxiRdCmd_LowLat := CmdRd_LowLat;
                     v.RdShift         := unsigned(CmdRd_Addr(v.RdShift'range));
                     v.RdLowIdx        := to_unsigned(AxiBytes_c, v.RdLowIdx'length) - unsigned(CmdRd_Addr(v.RdShift'range));
@@ -430,13 +437,14 @@ begin
                         v.RdCmdFsm    := Apply_s;
                     end if;
 
+                -- Send AXI command when core is ready
                 when Apply_s =>
-                    -- AXI command can be sent early
-                    if (AxiRdCmd_Rdy = '1') then
+                    if AxiRdCmd_Rdy = '1' then
                         v.AxiRdCmd_Vld  := '1';
                         v.RdCmdFsm      := WaitDataFsm_s;
                         v.RdStartTf     := '1';
-                        v.AxiRdCmd_Size := std_logic_vector(resize(shift_right(AlignedAddr_f(r.RdLastAddr) - unsigned(r.AxiRdCmd_Addr), log2(AxiBytes_c)) + 1, UserTransactionSizeBits_g));
+                        v.AxiRdCmd_Size := std_logic_vector(resize(shift_right(alignedAddr(r.RdLastAddr) - unsigned(r.AxiRdCmd_Addr), log2(AxiBytes_c)) + 1,
+                                                                   UserTransactionSizeBits_g));
                         -- Calculate byte enables for last byte
                         for byte in 0 to AxiBytes_c - 1 loop
                             if r.RdLastAddr(log2(AxiBytes_c) - 1 downto 0) >= byte then
@@ -472,8 +480,8 @@ begin
             -- *** Data FSM ***
             v.RdDataEna := '0';
             RdDatBe_v   := (others => '1');
-            case r.RdDataFsm is
 
+            case r.RdDataFsm is
                 when Idle_s =>
                     v.RdDatFirstBe  := r.RdFirstBe;
                     v.RdDatLastBe   := r.RdLastBe;
@@ -535,8 +543,8 @@ begin
                 v.RdAlignLast                                                                 := AxiRdDat_Last;
             end if;
 
-            -- Send data to FIFO
-            RdPl_Last <= r.RdAlignLast and not (reduceOr(r.RdAlignByteVld(r.RdAlignByteVld'high downto DataBytes_c))); -- assert when no more data is available after this beat
+            -- Send data to FIFO (assert Last when no more data is available after this beat)
+            RdPl_Last <= r.RdAlignLast and not (reduceOr(r.RdAlignByteVld(r.RdAlignByteVld'high downto DataBytes_c)));
             RdPl_Data <= r.RdAlignReg(UserDataWidth_g - 1 downto 0);
 
         end if;
@@ -585,6 +593,7 @@ begin
     -- AXI Master Interface
     AxiWrDat_Data <= r.WrAlignReg(AxiWrDat_Data'range);
     AxiWrDat_Be   <= r.WrAlignBe(AxiWrDat_Be'range);
+
     i_axi : entity work.olo_axi_master_simple
         generic map (
             AxiAddrWidth_g              => AxiAddrWidth_g,
@@ -669,9 +678,9 @@ begin
     -- *** Write Releated Code ***
     g_write : if ImplWrite_g generate
 
-        -- Write Data FIFO
+        -- Write Data pipeline stage (for improved timing)
         WrPl_Rdy <= WrWconv_Rdy and WrWconvEna;
-        -- Read Data pipeline stage (for improved timing)
+
         i_pl_wr_data : entity work.olo_base_pl_stage
             generic map (
                 Width_g        => UserDataWidth_g
@@ -690,6 +699,7 @@ begin
         -- Write Data With Conversion
         WrWconv_Vld <= WrWconvEna and WrPl_Vld;
         WrData_Rdy  <= AxiWrDat_Rdy and WrDataEna;
+
         i_wc_wr : entity work.olo_base_wconv_n2xn
             generic map (
                 InWidth_g   => UserDataWidth_g,
@@ -708,7 +718,9 @@ begin
                 Out_Last    => WrData_Last,
                 Out_WordEna => WrData_We
             );
+
     end generate;
+
     g_nwrite : if not ImplWrite_g generate
         Wr_Ready <= '0';
     end generate;
@@ -735,7 +747,9 @@ begin
             );
         Rd_Last <= OutData(UserDataWidth_g);
         Rd_Data <= OutData(UserDataWidth_g-1 downto 0);
+
     end generate;
+
     g_nread : if not ImplRead_g generate
         Rd_Valid <= '0';
         Rd_Data  <= (others => '0');
