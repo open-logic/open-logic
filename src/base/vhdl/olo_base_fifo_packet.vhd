@@ -17,6 +17,27 @@
 -- Doc: Inefficient for 1 word packets (1 idle cycle after each packet)
 -- Handle input packet larger than FIFO
 -- Add status
+
+-- Tests
+-- Single packet N word
+-- Multi packet N word
+-- Wraparound N word
+-- Single packet 1 word
+-- Multi packet 1 word
+-- Wraparound 1 word
+-- Drop input N word (with / without wraparound)
+-- Repeat output N word (with / without wraparound)
+-- Skip output N word (with / without wraparound)
+-- Repeat/Skip output N word (with / without wraparound)
+-- Drop input 1 word (with / without wraparound)
+-- Repeat output 1 word (with / without wraparound)
+-- Skip output 1 word (with / without wraparound)
+-- Repeat/Skip output 1 word (with / without wraparound)
+-- Random packet sizes, random skip/repeat/drop 
+--
+-- Generic: Stall Type: In Limit, Out Limit, Random
+
+
 ------------------------------------------------------------------------------
 -- Libraries
 ------------------------------------------------------------------------------
@@ -38,7 +59,7 @@ entity olo_base_fifo_packet is
         RamStyle_g          : string    := "auto";       
         RamBehavior_g       : string    := "RBW";
         SmallRamStyle_g     : string    := "auto";
-        SmallRamBehavior_g  : string := "same";
+        SmallRamBehavior_g  : string    := "same";
         MaxPackets_g        : positive  := 16
     );
     port (    
@@ -228,7 +249,7 @@ begin
             when Last_s =>
                 -- Assert last in this state (combinatorial)
                 Out_Last <= '1';
-                
+
                 if Out_Ready = '1' then
                     -- Increment Address
                     if v.RdAddr = Depth_g - 1 then
