@@ -19,12 +19,6 @@
 -- Add status
 
 -- Tests
--- Single packet N word
--- Multi packet N word
--- Wraparound N word
--- Single packet 1 word
--- Multi packet 1 word
--- Wraparound 1 word
 -- Drop input N word (with / without wraparound)
 -- Repeat output N word (with / without wraparound)
 -- Skip output N word (with / without wraparound)
@@ -34,6 +28,12 @@
 -- Skip output 1 word (with / without wraparound)
 -- Repeat/Skip output 1 word (with / without wraparound)
 -- Random packet sizes, random skip/repeat/drop 
+-- MaxPackets_g = 1
+-- Hit Max Packets
+-- Packet larger than FIFO
+-- Assert drop between handshaking
+-- Assert repeat between handshaking
+-- Assert skip between handshaking
 --
 -- Generic: Stall Type: In Limit, Out Limit, Random
 
@@ -93,7 +93,9 @@ architecture rtl of olo_base_fifo_packet is
     constant SmallRamStyle_c    : string := choose(SmallRamStyle_g = "same", RamStyle_g, SmallRamStyle_g);
     constant SmallRamBehavior_c : string := choose(SmallRamBehavior_g = "same", RamBehavior_g, SmallRamBehavior_g);
 
-    subtype Addr_r is integer range log2ceil(Depth_g) - 1 downto 0;
+    subtype Addr_r is integer range log2ceil(Depth_g) downto 0; -- one additional bit to differentiate between full/empty 
+    subtype AddrApp_r is integer range log2ceil(Depth_g) - 1 downto 0; -- one additional bit to differentiate between full/empty
+
 
     type RdFsm_t is (Fetch_s, Data_s, Last_s);
 
@@ -144,18 +146,18 @@ begin
         FifoInValid <= '0';
 
         -- Implement getting free aftter Full
-        if r.WrAddr < r.RdPacketStart then
-            v.Full := '1';
+        if r.WrAddr /= r.RdPacketStart then
+            v.Full := '0';
         end if;
 
         if In_Valid = '1' and In_Ready_v = '1' then
             -- Handle FIFO becomes Full
-            if r.WrAddr = r.RdPacketStart-1 then
+            if r.WrAddr(AddrApp_r) = r.RdPacketStart(AddrApp_r)-1 then
                 v.Full := '1';
             end if;
 
             -- Increment Address
-            if r.WrAddr = Depth_g - 1 then
+            if r.WrAddr = Depth_g*2 - 1 then
                 v.WrAddr := (others => '0');
             else
                 v.WrAddr := r.WrAddr + 1;
@@ -205,6 +207,9 @@ begin
             when Fetch_s =>
                 FifoOutRdy <= '1';
 
+                -- Set start address after completion of a packet
+                v.RdPacketStart := r.RdAddr;
+
                 -- Repeat packet
                 if r.RdRepeat = '1' then
                     v.RdFsm := Data_s;
@@ -218,8 +223,7 @@ begin
                         v.RdFsm := Last_s;
                     else
                         v.RdFsm := Data_s;
-                    end if;
-                    v.RdPacketStart := r.RdAddr;
+                    end if; 
                     v.RdPacketEnd := unsigned(RdPacketEnd);
                     v.RdValid := '1';
                 end if;
@@ -228,7 +232,7 @@ begin
                 
                 -- Transaction
                 if Out_Ready = '1' then
-                    if v.RdAddr = Depth_g - 1 then
+                    if v.RdAddr = Depth_g*2 - 1 then
                         v.RdAddr := (others => '0');
                     else
                         v.RdAddr := v.RdAddr + 1;
@@ -252,7 +256,7 @@ begin
 
                 if Out_Ready = '1' then
                     -- Increment Address
-                    if v.RdAddr = Depth_g - 1 then
+                    if v.RdAddr = Depth_g*2 - 1 then
                         v.RdAddr := (others => '0');
                     else
                         v.RdAddr := v.RdAddr + 1;
@@ -308,10 +312,10 @@ begin
         )
         port map(
             Clk         => Clk,
-            Wr_Addr     => WrAddrStdlv,
+            Wr_Addr     => WrAddrStdlv(AddrApp_r),  -- Additional bit for full/empty differentiation is stripped
             Wr_Ena      => RamWrEna,
             Wr_Data     => In_Data,
-            Rd_Addr     => RamRdAddr,
+            Rd_Addr     => RamRdAddr(AddrApp_r), -- Additional bit for full/empty differentiation is stripped
             Rd_Data     => Out_Data
         );
 
@@ -319,10 +323,10 @@ begin
     -- FIFO transfer packet ends
     i_pktend_fifo : entity work.olo_base_fifo_sync
         generic map ( 
-            Width_g         => log2ceil(Depth_g),                
+            Width_g         => log2ceil(Depth_g)+1,                
             Depth_g         => MaxPackets_g,                   
-            RamStyle_g      => SmallRamStyle_g,    
-            RamBehavior_g   => SmallRamBehavior_g,
+            RamStyle_g      => SmallRamStyle_c,    
+            RamBehavior_g   => SmallRamBehavior_c,
             ReadyRstState_g => '0'
         )
         port map (    
