@@ -18,6 +18,11 @@ Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 
 Maintainer: [obruendl](oliver.bruendler@gmx.ch)
 
+If you appreciate the project, consider **supporting it with a small donation**. If you're part of a commercial company that prefers purchasing services over making voluntary donations, that's no problem. You can also **purchase offerings** such as **workshops** and **priority support**.
+<iframe src="https://github.com/sponsors/open-logic/button" title="Sponsor open-logic" height="32" width="114" style="border: 0; border-radius: 6px;"></iframe>
+
+
+
 ## Structure
 
 *Open Logic* is split into the following areas. You might use all of them or only the ones you need.
