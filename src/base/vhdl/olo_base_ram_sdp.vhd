@@ -80,7 +80,7 @@ begin
 
     -- Assertions
     assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR" 
-        report "olo_base_ram_sdp: RamBehavior_g must Be RBW or WBR" 
+        report "olo_base_ram_sdp: RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g
         severity error;
     assert (Width_g mod 8 = 0) or (not UseByteEnable_g) 
         report "olo_base_ram_sdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled" 
