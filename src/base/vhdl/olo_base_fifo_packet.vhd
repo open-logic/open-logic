@@ -19,11 +19,9 @@
 -- Add status
 
 -- Tests
--- Drop input N word (with / without wraparound)
 -- Repeat output N word (with / without wraparound)
 -- Skip output N word (with / without wraparound)
 -- Repeat/Skip output N word (with / without wraparound)
--- Drop input 1 word (with / without wraparound)
 -- Repeat output 1 word (with / without wraparound)
 -- Skip output 1 word (with / without wraparound)
 -- Repeat/Skip output 1 word (with / without wraparound)

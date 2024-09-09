@@ -52,6 +52,7 @@ architecture sim of olo_base_fifo_packet_tb is
     -- *** Verification Compnents ***
 	constant axisMaster : axi_stream_master_t := new_axi_stream_master (
 		data_length => Width_c,
+        user_length => 1,
 		stall_config => new_stall_config(0.0, 0, 0)
 	);
 	constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
@@ -61,16 +62,26 @@ architecture sim of olo_base_fifo_packet_tb is
 
     procedure PushPacket(   signal  net         : inout network_t;
                                     size        : integer;
-                                    startVal    : integer := 1)
+                                    startVal    : integer := 1;
+                                    dropAt      : integer := -1)
     is
         variable tlast : std_logic := '0';
+        variable drop  : std_logic := '0';
+        variable tuser : std_logic_vector(0 downto 0);
     begin
+        check(dropAt < size, "PushPacket: dropAt must be smaller than size");
         for i in 0 to size-1 loop
             if i = size-1 then
                 tlast := '1';
             end if;
+            if dropAt = i then
+                drop := '1';
+            else
+                drop := '0';
+            end if;
+            tuser(0) := drop;
             wait for InDelay;
-            push_axi_stream(net, axisMaster, toUslv(startVal + i, Width_c), tlast => tlast);      
+            push_axi_stream(net, axisMaster, toUslv(startVal + i, Width_c), tlast => tlast, tuser => tuser);      
         end loop;
     end procedure;
 
@@ -215,7 +226,64 @@ begin
                 TestPacket(net, Depth_c, 1);
                 TestPacket(net, 1, 16#100#);
                 TestPacket(net, 10, 16#200#);
-            end if;            
+            end if;     
+
+            -- *** Drop Packet Test (Input Side) ***
+            
+            if run("DropPacketMiddle-CenterWord") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, 3, 16, dropAt => 1);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("DropPacketMiddle-FirstWord") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, 3, 16, dropAt => 0);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("DropPacketMiddle-LastWord") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, 3, 16, dropAt => 2);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("DropPacketFirstPacket") then
+                PushPacket(net, 3, 1, dropAt => 0);
+                TestPacket(net, 3, 16);
+            end if;
+
+            if run("DropPacketMiddleSize1") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, 1, 16, dropAt => 0);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("DropPacketFirstSize1") then
+                PushPacket(net, 1, 1, dropAt => 0);
+                TestPacket(net, 3, 16);
+            end if;
+
+            if run("DropPacket-ContainingWraparound-SplBeforeWrap") then
+                TestPacket(net, Depth_c-5, 1);
+                PushPacket(net, 10, 16#100#, dropAt => 1);
+                TestPacket(net, 12, 16#200#);
+            end if;
+
+            if run("DropPacket-ContainingWraparound-SplAfterWrap") then
+                TestPacket(net, Depth_c-5, 1);
+                PushPacket(net, 10, 16#100#, dropAt => 8);
+                TestPacket(net, 12, 16#200#);
+            end if;
+
+            if run("DropPacket-AfterWraparound") then
+                TestPacket(net, Depth_c, 2);
+                PushPacket(net, 2, 16#100#, dropAt => 1);
+                TestPacket(net, 10, 16#200#);
+            end if;
+
+
+
 
 
             wait for 1 us;
@@ -270,11 +338,12 @@ begin
 	    master => axisMaster
 	)
 	port map (
-	    aclk   => Clk,
-	    tvalid => In_Valid,
-        tready => In_Ready,
-	    tdata  => In_Data,
-        tlast  => In_Last
+	    aclk        => Clk,
+	    tvalid      => In_Valid,
+        tready      => In_Ready,
+	    tdata       => In_Data,
+        tlast       => In_Last,
+        tuser(0)    => In_Drop
 	);
   
 	vc_response : entity vunit_lib.axi_stream_slave
