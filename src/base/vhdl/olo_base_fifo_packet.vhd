@@ -17,14 +17,13 @@
 -- Doc: Inefficient for 1 word packets (1 idle cycle after each packet)
 -- Handle input packet larger than FIFO
 -- Add status
+-- Assert Depth must be power of two
 
 -- Tests
--- Repeat output N word (with / without wraparound)
+-- Drop with multiple packets stored before first sent out
 -- Skip output N word (with / without wraparound)
--- Repeat/Skip output N word (with / without wraparound)
--- Repeat output 1 word (with / without wraparound)
 -- Skip output 1 word (with / without wraparound)
--- Repeat/Skip output 1 word (with / without wraparound)
+-- Skip + Drop
 -- Random packet sizes, random skip/repeat/drop 
 -- MaxPackets_g = 1
 -- Hit Max Packets
@@ -32,6 +31,7 @@
 -- Assert drop between handshaking
 -- Assert repeat between handshaking
 -- Assert skip between handshaking
+-- Check "is dropped"
 --
 -- Generic: Stall Type: In Limit, Out Limit, Random
 
@@ -203,20 +203,26 @@ begin
         -- FSM
         case r.RdFsm is
             when Fetch_s =>
-                FifoOutRdy <= '1';
+                
 
                 -- Set start address after completion of a packet
                 v.RdPacketStart := r.RdAddr;
 
                 -- Repeat packet
                 if r.RdRepeat = '1' then
-                    v.RdFsm := Data_s;
+                    if r.RdPacketEnd = r.RdPacketStart then
+                        v.RdFsm := Last_s;
+                    else
+                        v.RdFsm := Data_s;
+                    end if;
                     v.RdRepeat := '0';
                     v.RdAddr := r.RdPacketStart;
+                    v.RdPacketStart := r.RdPacketStart; -- Revert start address
                     v.RdValid := '1';
 
                 -- Read next packet info
                 elsif RdPacketEndValid = '1' then
+                    FifoOutRdy <= '1';
                     if unsigned(RdPacketEnd) = r.RdAddr then
                         v.RdFsm := Last_s;
                     else

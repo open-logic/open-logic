@@ -59,6 +59,10 @@ architecture sim of olo_base_fifo_packet_tb is
 		data_length => Width_c,
 		stall_config => new_stall_config(0.0, 0, 0)
 	);
+    constant axisNextRepeatMaster : axi_stream_master_t := new_axi_stream_master (
+        data_length => 2,
+        stall_config => new_stall_config(0.0, 0, 0)
+    );
 
     procedure PushPacket(   signal  net         : inout network_t;
                                     size        : integer;
@@ -87,11 +91,25 @@ architecture sim of olo_base_fifo_packet_tb is
 
     procedure CheckPacket(  signal  net         : inout network_t;
                                     size        : integer;
-                                    startVal    : integer := 1)
+                                    startVal    : integer := 1;
+                                    nextAt      : integer := -1;
+                                    repeatAt    : integer := -1)
     is
         variable tlast : std_logic := '0';
+        variable next_v, repeat_v : std_logic := '0';
     begin
         for i in 0 to size-1 loop
+            -- Next/Repeat
+            next_v := '0';
+            repeat_v := '0';
+            if nextAt = i then
+                next_v := '1';
+            end if;
+            if repeatAt = i then
+                repeat_v := '1';
+            end if;
+            push_axi_stream(net, axisNextRepeatMaster, repeat_v & next_v);
+            -- Data
             if i = size-1 then
                 tlast := '1';
             end if;
@@ -230,22 +248,13 @@ begin
 
             -- *** Drop Packet Test (Input Side) ***
             
-            if run("DropPacketMiddle-CenterWord") then
-                TestPacket(net, 3, 1);
-                PushPacket(net, 3, 16, dropAt => 1);
-                TestPacket(net, 3, 32);
-            end if;
-
-            if run("DropPacketMiddle-FirstWord") then
-                TestPacket(net, 3, 1);
-                PushPacket(net, 3, 16, dropAt => 0);
-                TestPacket(net, 3, 32);
-            end if;
-
-            if run("DropPacketMiddle-LastWord") then
-                TestPacket(net, 3, 1);
-                PushPacket(net, 3, 16, dropAt => 2);
-                TestPacket(net, 3, 32);
+            if run("DropPacketMiddle") then
+                for dropWord in 0 to 2 loop
+                    TestPacket(net, 3, 1);
+                    PushPacket(net, 3, 16, dropAt => dropWord);
+                    TestPacket(net, 3, 32);
+                    wait for 1 us;
+                end loop;
             end if;
 
             if run("DropPacketFirstPacket") then
@@ -282,6 +291,74 @@ begin
                 TestPacket(net, 10, 16#200#);
             end if;
 
+            -- *** Repeat Packet Test (Output Side) ***
+
+            if run("RepeatPacketMiddle") then
+                for repeatWord in 0 to 2 loop
+                    TestPacket(net, 3, 1);
+                    PushPacket(net, 3, 16);
+                    CheckPacket(net, 3, 16, repeatAt => repeatWord);
+                    CheckPacket(net, 3, 16);
+                    TestPacket(net, 3, 32);
+                    wait for 1 us;
+                end loop;
+            end if;
+
+            if run("RepeatPacketFirstPacket") then
+                PushPacket(net, 3, 1);
+                CheckPacket(net, 3, 1, repeatAt => 0);
+                CheckPacket(net, 3, 1);
+            end if;
+
+            if run("RepeatPacketMiddleSize1") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, 1, 16);
+                CheckPacket(net, 1, 16, repeatAt => 0);
+                CheckPacket(net, 1, 16);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("RepeatPacketFirstSize1") then
+                PushPacket(net, 1, 1);
+                CheckPacket(net, 1, 1, repeatAt => 0);
+                CheckPacket(net, 1, 1);
+            end if;
+
+            if run("RepeatPacketMuti") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, 3, 16);
+                for repeatWord in 0 to 2 loop
+                    CheckPacket(net, 3, 16, repeatAt => repeatWord);
+                end loop;
+                CheckPacket(net, 3, 16);
+                TestPacket(net, 3, 32);                
+            end if;
+
+            if run("RepeatPacketMultiFirstSize1") then
+                PushPacket(net, 1, 1);
+                CheckPacket(net, 1, 1, repeatAt => 0);
+                CheckPacket(net, 1, 1, repeatAt => 0);
+                CheckPacket(net, 1, 1, repeatAt => 0);
+                CheckPacket(net, 1, 1);
+                TestPacket(net, 3, 16);
+            end if;
+
+            if run("RepeatPacket-ContainingWraparound-SplBeforeWrap") then
+                TestPacket(net, Depth_c-5, 1);
+                PushPacket(net, 10, 16#100#);
+                CheckPacket(net, 10, 16#100#, repeatAt => 2);
+                CheckPacket(net, 10, 16#100#);
+                TestPacket(net, 3, 16#200#);
+            end if;
+
+            if run("RepeatPacket-ContainingWraparound-SplAfterWrap") then
+                TestPacket(net, Depth_c-5, 1);
+                PushPacket(net, 10, 16#100#);
+                CheckPacket(net, 10, 16#100#, repeatAt => 8);
+                CheckPacket(net, 10, 16#100#);
+                TestPacket(net, 3, 16#200#);
+            end if;
+
 
 
 
@@ -289,6 +366,7 @@ begin
             wait for 1 us;
             wait_until_idle(net, as_sync(axisMaster));
             wait_until_idle(net, as_sync(axisSlave));
+            wait_until_idle(net, as_sync(axisNextRepeatMaster));
 
         end loop;
         -- TB done
@@ -357,5 +435,23 @@ begin
 	    tdata  => Out_Data,
         tlast  => Out_Last 
 	);
+
+    b_nr : block
+        signal Ready : std_logic;
+    begin
+        Ready <= Out_Ready and Out_Valid;
+        vc_next_repeat : entity vunit_lib.axi_stream_master
+        generic map (
+            master => axisNextRepeatMaster
+        )
+        port map (
+            aclk        => Clk,
+            tvalid      => open,
+            tready      => Ready,
+            tdata(0)    => Out_Next,
+            tdata(1)    => Out_Repeat
+        );
+    end block;
+  
 
 end sim;
