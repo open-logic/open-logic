@@ -39,15 +39,19 @@ architecture sim of olo_base_fifo_packet_tb is
     constant Width_c  : integer := 16;
     constant Depth_c  : integer := 32;
     constant MaxPackets_c : integer := 4;
+    
 
     -------------------------------------------------------------------------
     -- TB Defnitions
     -------------------------------------------------------------------------
     constant ClockFrequency_c : real    := 100.0e6;
     constant ClockPeriod_c    : time    := (1 sec) / ClockFrequency_c;
+    constant CaseDelay_c      : time := ClockPeriod_c*20;
 
     shared variable InDelay : time := 0 ns;
     shared variable OutDelay : time := 0 ns;
+
+    signal InDropNoHs : std_logic := '0';
 
     -- *** Verification Compnents ***
 	constant axisMaster : axi_stream_master_t := new_axi_stream_master (
@@ -63,18 +67,31 @@ architecture sim of olo_base_fifo_packet_tb is
         data_length => 2,
         stall_config => new_stall_config(0.0, 0, 0)
     );
+    constant axisIsdropedSlave : axi_stream_slave_t := new_axi_stream_slave (
+		data_length => 1,
+		stall_config => new_stall_config(0.0, 0, 0)
+	);
 
     procedure PushPacket(   signal  net         : inout network_t;
                                     size        : integer;
                                     startVal    : integer := 1;
-                                    dropAt      : integer := -1)
+                                    dropAt      : integer := integer'high;
+                                    isDroppedAt : integer := integer'high)
     is
         variable tlast : std_logic := '0';
         variable drop  : std_logic := '0';
+        variable isDropped : std_logic_vector(0 downto 0);
         variable tuser : std_logic_vector(0 downto 0);
     begin
-        check(dropAt < size, "PushPacket: dropAt must be smaller than size");
         for i in 0 to size-1 loop
+            -- Expect isdropped
+            if isDroppedAt <= i or dropAt <= i then
+                isDropped := "1";
+            else
+                isDropped := "0";
+            end if;
+            check_axi_stream(net, axisIsdropedSlave, isDropped, blocking => false, msg => "isDropped");
+            -- Push Data
             if i = size-1 then
                 tlast := '1';
             end if;
@@ -137,6 +154,7 @@ architecture sim of olo_base_fifo_packet_tb is
     signal In_Data       : std_logic_vector(Width_c - 1 downto 0);
     signal In_Last       : std_logic                                    := '0';
     signal In_Drop       : std_logic                                    := '0';
+    signal In_DropApp    : std_logic                                    := '0';
     signal In_IsDropped  : std_logic;
     signal Out_Valid     : std_logic;
     signal Out_Ready     : std_logic                                    := '0';
@@ -161,7 +179,7 @@ begin
             -- Reset
             wait until rising_edge(Clk);
             Rst <= '1';
-            wait for 1 us;
+            wait for ClockPeriod_c*3;
             wait until rising_edge(Clk);
             Rst <= '0';
             wait until rising_edge(Clk);
@@ -255,7 +273,7 @@ begin
                     TestPacket(net, 3, 1);
                     PushPacket(net, 3, 16, dropAt => dropWord);
                     TestPacket(net, 3, 32);
-                    wait for 1 us;
+                    wait for CaseDelay_c;
                 end loop;
             end if;
 
@@ -307,7 +325,7 @@ begin
                     CheckPacket(net, 3, 1);
                     CheckPacket(net, 3, 16);
                     CheckPacket(net, 3, 48);
-                    wait for 1 us;
+                    wait for CaseDelay_c;
                 end loop;
             end if;
 
@@ -320,7 +338,7 @@ begin
                     CheckPacket(net, 3, 16, repeatAt => repeatWord);
                     CheckPacket(net, 3, 16);
                     TestPacket(net, 3, 32);
-                    wait for 1 us;
+                    wait for CaseDelay_c;
                 end loop;
             end if;
 
@@ -388,7 +406,7 @@ begin
                     PushPacket(net, 3, 16);
                     CheckPacket(net, nextWord+1, 16, nextAt => nextWord);
                     TestPacket(net, 3, 32);
-                    wait for 1 us;
+                    wait for CaseDelay_c;
                 end loop;
             end if;
 
@@ -445,7 +463,7 @@ begin
                     CheckPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => nextWord);
                     CheckPacket(net, 3, 16);
                     TestPacket(net, 3, 32);
-                    wait for 1 us;
+                    wait for CaseDelay_c;
                 end loop;
             end if;
 
@@ -456,7 +474,7 @@ begin
                     CheckPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => 0);
                     CheckPacket(net, 3, 16);
                     TestPacket(net, 3, 32);
-                    wait for 1 us;
+                    wait for CaseDelay_c;
                 end loop;
             end if;
 
@@ -512,12 +530,12 @@ begin
        
             if run("OversizedPacket-Middle") then
                 TestPacket(net, 3, 1);
-                PushPacket(net, Depth_c+1, 16); -- Ignored because oversized
+                PushPacket(net, Depth_c+1, 16, isDroppedAt => Depth_c); -- Ignored because oversized
                 TestPacket(net, 3, 32);
             end if;
 
             if run("OversizedPacket-First") then
-                PushPacket(net, Depth_c+1, 1); -- Ignored because oversized
+                PushPacket(net, Depth_c+1, 1, isDroppedAt => Depth_c); -- Ignored because oversized
                 TestPacket(net, 3, 16);
             end if;
 
@@ -529,18 +547,36 @@ begin
 
             if run("OversizedPacket-Multi") then
                 TestPacket(net, 3, 1);
-                PushPacket(net, Depth_c+1, 16); -- Ignored because oversized
-                PushPacket(net, Depth_c+10, 32); -- Ignored because oversized
+                PushPacket(net, Depth_c+1, 16, isDroppedAt => Depth_c); -- Ignored because oversized
+                PushPacket(net, Depth_c+10, 32, isDroppedAt => Depth_c); -- Ignored because oversized
                 TestPacket(net, 3, 48);
             end if;
 
+            if run("AssertDrop-NotValid") then
+                InDelay := 10*ClockPeriod_c;
+                InDropNoHs <= '1';
+                for i in 0 to 2 loop
+                    TestPacket(net, 3, 16*i);
+                end loop;
+            end if;
 
+            if run("AssertDrop-NotReady") then
+                OutDelay := 10*ClockPeriod_c;
+                InDropNoHs <= '1';
+                for i in 0 to 3 loop
+                    PushPacket(net, Depth_c/2, 16*i);
+                end loop;
+                for i in 0 to 3 loop
+                    CheckPacket(net, Depth_c/2, 16*i);
+                end loop;
+            end if;
 
-
-            wait for 1 us;
+            -- End case condition
+            wait for CaseDelay_c;
             wait_until_idle(net, as_sync(axisMaster));
             wait_until_idle(net, as_sync(axisSlave));
             wait_until_idle(net, as_sync(axisNextRepeatMaster));
+            wait_until_idle(net, as_sync(axisIsdropedSlave));
 
         end loop;
         -- TB done
@@ -555,6 +591,8 @@ begin
     -------------------------------------------------------------------------
     -- DUT
     -------------------------------------------------------------------------
+    In_DropApp <= In_Drop when InDropNoHs = '0' else 
+                  In_Drop when In_Valid = '1' and In_Ready = '1' else '1';
     i_dut : entity olo.olo_base_fifo_packet
         generic map ( 
             Width_g             => Width_c,                
@@ -572,7 +610,7 @@ begin
             In_Ready      => In_Ready,
             In_Data       => In_Data,
             In_Last       => In_Last,
-            In_Drop       => In_Drop,
+            In_Drop       => In_DropApp,
             In_IsDropped  => In_IsDropped,
             Out_Valid     => Out_Valid,
             Out_Ready     => Out_Ready,
@@ -624,6 +662,21 @@ begin
             tready      => Ready,
             tdata(0)    => Out_Next,
             tdata(1)    => Out_Repeat
+        );
+    end block;
+
+    b_id : block
+        signal Valid : std_logic;
+    begin
+        Valid <= In_Valid and In_Ready;
+        vc_isdropped : entity vunit_lib.axi_stream_slave
+        generic map (
+            slave => axisIsdropedSlave
+        )
+        port map (
+            aclk   => Clk,
+            tvalid => Valid,
+            tdata(0)  => In_IsDropped
         );
     end block;
   

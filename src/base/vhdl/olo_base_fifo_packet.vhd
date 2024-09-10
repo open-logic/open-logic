@@ -22,10 +22,8 @@
 -- Tests
 -- Random packet sizes, random skip/repeat/drop 
 -- MaxPackets_g = 1
--- Assert drop between handshaking
--- Assert repeat between handshaking
--- Assert skip between handshaking
--- Check "is dropped"
+-- Assert Repeat between handshaking
+-- Assert Next between handshaking
 --
 -- Generic: Stall Type: In Limit, Out Limit, Random
 
@@ -93,8 +91,8 @@ architecture rtl of olo_base_fifo_packet is
 
     type two_process_r is record
         -- Write Side
-        WrAddr          : unsigned(Addr_r);
-        WrPacketStart   : unsigned(Addr_r);
+        WrAddr          : unsigned(Addr_r); -- Shifted by Depth_g to Read pointer
+        WrPacketStart   : unsigned(Addr_r); -- Shifted by Depth_g to Read pointer
         WrSize          : unsigned(Addr_r);
         DropLatch       : std_logic;
         Full            : std_logic;
@@ -106,6 +104,8 @@ architecture rtl of olo_base_fifo_packet is
         RdFsm           : RdFsm_t;
         RdRepeat        : std_logic;
     end record;
+    -- Write address have the MSB (unused for RAM adressing) inverted. This leads to ReadAddr = WriteAddr indicating
+    -- .. the full condition (and not the empty condition).
 
     signal r, r_next : two_process_r;
 
@@ -129,7 +129,6 @@ begin
         -- hold variables stable
         v := r;
 
-
         -- *** Write side ***
 
         -- Default Values
@@ -145,7 +144,7 @@ begin
 
         if In_Valid = '1' and In_Ready_v = '1' then
             -- Handle FIFO becomes Full
-            if r.WrAddr(AddrApp_r) = r.RdPacketStart(AddrApp_r)-1 then
+            if r.WrAddr = r.RdPacketStart-1 then
                 v.Full := '1';
             end if;
 
@@ -157,7 +156,6 @@ begin
             end if;
 
             -- Handle packet drop
-            InDrop_v := r.DropLatch;
             if In_Drop = '1' then
                 InDrop_v := '1';
                 v.DropLatch := '1';
@@ -169,7 +167,6 @@ begin
             else
                 v.WrSize := r.WrSize + 1;
             end if;
-
 
             -- Handle end of packet
             if In_Last = '1' then
@@ -191,10 +188,15 @@ begin
 
         end if;
 
+        -- Avoid blocking due to Full detection for oversized packets
+        if r.DropLatch = '1' then
+            v.WrAddr := r.WrPacketStart;  
+            v.Full := '0';
+        end if;
+
         -- Output
         In_IsDropped <= InDrop_v;
         In_Ready <= In_Ready_v;
-        In_IsDropped <= '0';
 
         -- *** Status ***
 
@@ -307,8 +309,8 @@ begin
         if rising_edge(Clk) then
             r <= r_next;
             if Rst = '1' then
-                r.WrAddr        <= (others => '0');
-                r.WrPacketStart <= (others => '0');
+                r.WrAddr        <= to_unsigned(Depth_g, r.WrAddr'length);
+                r.WrPacketStart <= to_unsigned(Depth_g, r.WrPacketStart'length);
                 r.WrSize        <= to_unsigned(1, r.WrSize'length);
                 r.DropLatch     <= '0';
                 r.Full          <= '0';
@@ -321,8 +323,11 @@ begin
         end if;
     end process;
 
+    -- Fix the "shift by depth" between Write/Read address pointers for full/empty detection
+    WrAddrStdlv(AddrApp_r) <= std_logic_vector(r.WrAddr(Addrapp_r));
+    WrAddrStdlv(WrAddrStdlv'high) <= not r.WrAddr(r.WrAddr'high);
+
     -- Main RAM
-    WrAddrStdlv <= std_logic_vector(r.WrAddr);
     i_ram : entity work.olo_base_ram_sdp
         generic map (
             Depth_g         => Depth_g,
