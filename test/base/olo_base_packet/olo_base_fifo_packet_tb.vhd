@@ -211,8 +211,9 @@ begin
             end if;
 
             if run("WraparoundBetweenPackets") then
-                TestPacket(net, Depth_c, 1);
-                TestPacket(net, 10, 16#100#);
+                TestPacket(net, Depth_c-5, 1);
+                TestPAcket(net, 5, 16#100#);
+                TestPacket(net, 10, 16#200#);
             end if;
 
 
@@ -241,9 +242,10 @@ begin
             end if;
 
             if run("WraparoundBeforeSize1") then
-                TestPacket(net, Depth_c, 1);
-                TestPacket(net, 1, 16#100#);
-                TestPacket(net, 10, 16#200#);
+                TestPacket(net, Depth_c-10, 1);
+                TestPacket(net, 10, 16#100#);
+                TestPacket(net, 1, 16#200#);
+                TestPacket(net, 10, 16#300#);
             end if;     
 
             -- *** Drop Packet Test (Input Side) ***
@@ -286,9 +288,10 @@ begin
             end if;
 
             if run("DropPacket-AfterWraparound") then
-                TestPacket(net, Depth_c, 2);
-                PushPacket(net, 2, 16#100#, dropAt => 1);
-                TestPacket(net, 10, 16#200#);
+                TestPacket(net, Depth_c-10, 2);
+                TestPacket(net, 10, 16#100#);
+                PushPacket(net, 2, 16#200#, dropAt => 1);
+                TestPacket(net, 10, 16#300#);
             end if;
 
             if run("DropPacketMiddle-PushAllFirst") then
@@ -507,16 +510,29 @@ begin
                 end loop;
             end if;
        
---
-            --if run("RepeatPacket-ContainingWraparound-SplAfterWrap") then
-            --    TestPacket(net, Depth_c-5, 1);
-            --    PushPacket(net, 10, 16#100#);
-            --    CheckPacket(net, 10, 16#100#, repeatAt => 8);
-            --    CheckPacket(net, 10, 16#100#);
-            --    TestPacket(net, 3, 16#200#);
-            --end if; 
+            if run("OversizedPacket-Middle") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, Depth_c+1, 16); -- Ignored because oversized
+                TestPacket(net, 3, 32);
+            end if;
 
-            -- Multi with Wrap
+            if run("OversizedPacket-First") then
+                PushPacket(net, Depth_c+1, 1); -- Ignored because oversized
+                TestPacket(net, 3, 16);
+            end if;
+
+            if run("MaxSizedPacket-Middle") then
+                TestPacket(net, 3, 1);
+                TestPacket(net, Depth_c, 16);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("OversizedPacket-Multi") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, Depth_c+1, 16); -- Ignored because oversized
+                PushPacket(net, Depth_c+10, 32); -- Ignored because oversized
+                TestPacket(net, 3, 48);
+            end if;
 
 
 

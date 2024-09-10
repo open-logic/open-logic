@@ -17,12 +17,11 @@
 -- Doc: Inefficient for 1 word packets (1 idle cycle after each packet)
 -- Handle input packet larger than FIFO
 -- Add status
--- Assert Depth must be power of two
+-- Assert/Doc Depth must be power of two
 
 -- Tests
 -- Random packet sizes, random skip/repeat/drop 
 -- MaxPackets_g = 1
--- Packet larger than FIFO
 -- Assert drop between handshaking
 -- Assert repeat between handshaking
 -- Assert skip between handshaking
@@ -96,6 +95,7 @@ architecture rtl of olo_base_fifo_packet is
         -- Write Side
         WrAddr          : unsigned(Addr_r);
         WrPacketStart   : unsigned(Addr_r);
+        WrSize          : unsigned(Addr_r);
         DropLatch       : std_logic;
         Full            : std_logic;
         -- Read Side
@@ -157,9 +157,17 @@ begin
             end if;
 
             -- Handle packet drop
-            InDrop_v := r.DropLatch or In_Drop;
+            InDrop_v := r.DropLatch;
             if In_Drop = '1' then
+                InDrop_v := '1';
                 v.DropLatch := '1';
+            end if;
+
+            -- Detect packets larger than allowed
+            if r.WrSize = Depth_g then
+                v.DropLatch := '1';
+            else
+                v.WrSize := r.WrSize + 1;
             end if;
 
 
@@ -167,13 +175,15 @@ begin
             if In_Last = '1' then
                 -- Packet dropped
                 if InDrop_v = '1' then
-                    v.WrAddr := r.WrPacketStart;
-                    v.DropLatch := '0';
+                    v.WrAddr := r.WrPacketStart;                
                 -- Packet stored
                 else
                     v.WrPacketStart := r.WrAddr + 1;
                     FifoInValid <= '1';
                 end if;
+                -- Reset signals for all packet ends
+                v.DropLatch := '0';
+                v.WrSize := to_unsigned(1, r.WrSize'length);
             end if;
 
             -- Write to RAM
@@ -299,6 +309,7 @@ begin
             if Rst = '1' then
                 r.WrAddr        <= (others => '0');
                 r.WrPacketStart <= (others => '0');
+                r.WrSize        <= to_unsigned(1, r.WrSize'length);
                 r.DropLatch     <= '0';
                 r.Full          <= '0';
                 r.RdAddr        <= (others => '0');
