@@ -291,6 +291,23 @@ begin
                 TestPacket(net, 10, 16#200#);
             end if;
 
+            if run("DropPacketMiddle-PushAllFirst") then
+                for dropWord in 0 to 2 loop
+                    -- Push
+                    PushPacket(net, 3, 1);
+                    PushPacket(net, 3, 16);
+                    PushPacket(net, 3, 32, dropAt => dropWord);
+                    PushPacket(net, 3, 48);
+                    -- Wait before read
+                    wait for 1 us;
+                    -- Check
+                    CheckPacket(net, 3, 1);
+                    CheckPacket(net, 3, 16);
+                    CheckPacket(net, 3, 48);
+                    wait for 1 us;
+                end loop;
+            end if;
+
             -- *** Repeat Packet Test (Output Side) ***
 
             if run("RepeatPacketMiddle") then
@@ -359,6 +376,147 @@ begin
                 TestPacket(net, 3, 16#200#);
             end if;
 
+            -- *** Next Packet Test (Output Side) ***
+
+
+            if run("NextPacketMiddle") then
+                for nextWord in 0 to 2 loop
+                    TestPacket(net, 3, 1);
+                    PushPacket(net, 3, 16);
+                    CheckPacket(net, nextWord+1, 16, nextAt => nextWord);
+                    TestPacket(net, 3, 32);
+                    wait for 1 us;
+                end loop;
+            end if;
+
+            if run("NextPacketFirstPacket") then
+                PushPacket(net, 3, 1);
+                CheckPacket(net, 1, 1, nextAt => 0);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("NextPacketMiddleSize1") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, 1, 16);
+                CheckPacket(net, 1, 16, nextAt => 0);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("NextPacketMulti") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, 3, 16);
+                CheckPacket(net, 1, 16, nextAt => 0);
+                PushPacket(net, 3, 32);
+                CheckPacket(net, 2, 32, nextAt => 1);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("NextPacket-ContainingWraparound-SplBeforeWrap") then
+                TestPacket(net, Depth_c-5, 1);
+                PushPacket(net, 10, 16#100#);
+                CheckPacket(net, 3, 16#100#, nextAt => 2);
+                TestPacket(net, 3, 16#200#);
+            end if;
+
+            if run("NextPacket-ContainingWraparound-SplAfterWrap") then
+                TestPacket(net, Depth_c-5, 1);
+                PushPacket(net, 10, 16#100#);
+                CheckPacket(net, 8, 16#100#, nextAt => 7);
+                TestPacket(net, 3, 16#200#);
+            end if;
+
+            if run("NextPacket-ContainingWraparound-Multi") then
+                TestPacket(net, Depth_c-15, 1);
+                for pkt in 1 to 3 loop
+                    PushPacket(net, 10, 16#100#*pkt);
+                    CheckPacket(net, 1, 16#100#*pkt, nextAt => 0);
+                end loop;
+                TestPacket(net, 3, 16#800#);
+            end if;
+            
+            -- *** Next/Repeat Packet Test (Output Side) ***
+            if run("NextRepeatPacketMiddle-SameWord") then
+                for nextWord in 0 to 2 loop
+                    TestPacket(net, 3, 1);
+                    PushPacket(net, 3, 16);
+                    CheckPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => nextWord);
+                    CheckPacket(net, 3, 16);
+                    TestPacket(net, 3, 32);
+                    wait for 1 us;
+                end loop;
+            end if;
+
+            if run("NextRepeatPacketMiddle-RepeatBefore") then
+                for nextWord in 1 to 2 loop
+                    TestPacket(net, 3, 1);
+                    PushPacket(net, 3, 16);
+                    CheckPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => 0);
+                    CheckPacket(net, 3, 16);
+                    TestPacket(net, 3, 32);
+                    wait for 1 us;
+                end loop;
+            end if;
+
+            if run("NextRepeatPacketFirstPacket") then
+                PushPacket(net, 3, 1);
+                CheckPacket(net, 1, 1, nextAt => 0, repeatAt => 0);
+                CheckPacket(net, 3, 1);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("NextRepeatPacketMiddleSize1") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, 1, 16);
+                CheckPacket(net, 1, 16, nextAt => 0, repeatAt => 0);
+                CheckPacket(net, 1, 16);
+                TestPacket(net, 3, 32);
+            end if;
+
+            if run("NextRepeatPacketMulti") then
+                TestPacket(net, 3, 1);
+                PushPacket(net, 3, 16);
+                CheckPacket(net, 1, 16, nextAt => 0, repeatAt => 0);
+                CheckPacket(net, 2, 16, nextAt => 1, repeatAt => 1);
+                CheckPacket(net, 3, 16);
+                TestPacket(net, 3, 32);
+            end if;
+
+
+            if run("NextRepeatPacket-ContainingWraparound") then
+                TestPacket(net, Depth_c-15, 1);
+                PushPacket(net, 10, 16#100#);
+                for pkt in 1 to 3 loop                    
+                    CheckPacket(net, pkt+1, 16#100#, nextAt => pkt, repeatAt => 1);
+                end loop;
+                CheckPacket(net, 4, 16#100#, nextAt => 3); 
+                TestPacket(net, 3, 16#800#);
+            end if;
+
+            -- *** Corner Cases ***
+            if run("MaxPackets") then
+                for pkt in 0 to MaxPackets_c+4 loop
+                    PushPacket(net, 3, 16*pkt);
+                end loop;
+                OutDelay := 100*ClockPeriod_c;
+                for pkt in 0 to MaxPackets_c+4 loop
+                    CheckPacket(net, 3, 16*pkt);
+                    -- Remove delay after second packet
+                    if pkt = 1 then
+                        OutDelay := 0 ns;
+                    end if;
+                end loop;
+            end if;
+       
+--
+            --if run("RepeatPacket-ContainingWraparound-SplAfterWrap") then
+            --    TestPacket(net, Depth_c-5, 1);
+            --    PushPacket(net, 10, 16#100#);
+            --    CheckPacket(net, 10, 16#100#, repeatAt => 8);
+            --    CheckPacket(net, 10, 16#100#);
+            --    TestPacket(net, 3, 16#200#);
+            --end if; 
+
+            -- Multi with Wrap
 
 
 

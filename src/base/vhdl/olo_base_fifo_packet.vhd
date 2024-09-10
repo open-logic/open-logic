@@ -20,13 +20,8 @@
 -- Assert Depth must be power of two
 
 -- Tests
--- Drop with multiple packets stored before first sent out
--- Skip output N word (with / without wraparound)
--- Skip output 1 word (with / without wraparound)
--- Skip + Drop
 -- Random packet sizes, random skip/repeat/drop 
 -- MaxPackets_g = 1
--- Hit Max Packets
 -- Packet larger than FIFO
 -- Assert drop between handshaking
 -- Assert repeat between handshaking
@@ -242,9 +237,17 @@ begin
                         v.RdAddr := v.RdAddr + 1;
                     end if;
 
-                    -- Handle end of packet
-                    if r.RdAddr = r.RdPacketEnd - 1 or Out_Next = '1' then
+                    -- Handle normal end of packet
+                    if r.RdAddr = r.RdPacketEnd - 1 then
                         v.RdFsm := Last_s;
+                    end if;
+
+                    -- Handle abortion of packet
+                    if Out_Next = '1' then
+                        Out_Last <= '1';
+                        v.RdValid := '0';
+                        v.RdFsm := Fetch_s;       
+                        v.RdAddr := r.RdPacketEnd + 1;           
                     end if;
 
                     -- Detect Repetition
@@ -265,6 +268,8 @@ begin
                     else
                         v.RdAddr := v.RdAddr + 1;
                     end if;
+
+                    -- Abort is not handled separately because it does not have any effect on the last word of a packet
 
                     -- Detect Repetition
                     if Out_Repeat = '1' then
