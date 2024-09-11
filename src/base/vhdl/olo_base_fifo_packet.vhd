@@ -11,15 +11,8 @@
 -- Doc: Inefficient for 1 word packets (1 idle cycle after each packet)
 -- Add status (known free space, packets level, empty, full-data, full-packets)
 -- Doc Depth must be power of two
-
-
--- New "Manual Signals" TB (not using AXI-Stream VCs)
--- Assert Repeat between handshaking
--- Assert Next between handshakingss
--- Allow "drop" between handshaking (only after first HS?)
--- Allow "next" between handshaking (only after first HS?)
--- Allow "repeat" between handshaking (also after last but before next HS)
-
+-- Doc: Drop - From first VALID to last word
+-- Doc: Next/Repeat - From first VALID to last word
 
 
 ------------------------------------------------------------------------------
@@ -88,6 +81,7 @@ architecture rtl of olo_base_fifo_packet is
         WrAddr          : unsigned(Addr_r); -- Shifted by Depth_g to Read pointer
         WrPacketStart   : unsigned(Addr_r); -- Shifted by Depth_g to Read pointer
         WrSize          : unsigned(Addr_r);
+        WrPacketActive  : std_logic;
         DropLatch       : std_logic;
         Full            : std_logic;
         -- Read Side
@@ -97,6 +91,7 @@ architecture rtl of olo_base_fifo_packet is
         RdValid         : std_logic;
         RdFsm           : RdFsm_t;
         RdRepeat        : std_logic;
+        NextLatch       : std_logic;
     end record;
     -- Write address have the MSB (unused for RAM adressing) inverted. This leads to ReadAddr = WriteAddr indicating
     -- .. the full condition (and not the empty condition).
@@ -122,6 +117,7 @@ begin
         variable v : two_process_r;
         variable In_Ready_v : std_logic;
         variable InDrop_v : std_logic;
+        variable OutLast_v : std_logic;
     begin
         -- hold variables stable
         v := r;
@@ -139,7 +135,15 @@ begin
             v.Full := '0';
         end if;
 
+        -- Handle packet drop between samples
+        if In_Drop = '1' and (r.WrPacketActive = '1' or In_Valid = '1') then
+            v.DropLatch := '1';
+        end if;
+
         if In_Valid = '1' and In_Ready_v = '1' then
+            -- Packet Active
+            v.WrPacketActive := '1';
+
             -- Handle FIFO becomes Full
             if r.WrAddr = r.RdPacketStart-1 then
                 v.Full := '1';
@@ -152,7 +156,7 @@ begin
                 v.WrAddr := r.WrAddr + 1;
             end if;
 
-            -- Handle packet drop
+            -- Handle packet drop on sample
             if In_Drop = '1' then
                 InDrop_v := '1';
                 v.DropLatch := '1';
@@ -178,6 +182,7 @@ begin
                 -- Reset signals for all packet ends
                 v.DropLatch := '0';
                 v.WrSize := to_unsigned(1, r.WrSize'length);
+                v.WrPacketActive := '0';
             end if;
 
             -- Write to RAM
@@ -201,8 +206,7 @@ begin
     
         -- Default Values
         FifoOutRdy <= '0';
-        Out_Last <= '0';
-
+        OutLast_v := '0';
 
         -- FSM
         case r.RdFsm is
@@ -213,7 +217,7 @@ begin
                 v.RdPacketStart := r.RdAddr;
 
                 -- Repeat packet
-                if r.RdRepeat = '1' then
+                if r.RdRepeat = '1' then 
                     if r.RdPacketEnd = r.RdPacketStart then
                         v.RdFsm := Last_s;
                     else
@@ -227,6 +231,7 @@ begin
                 -- Read next packet info
                 elsif RdPacketEndValid = '1' then
                     FifoOutRdy <= '1';
+                    v.RdRepeat := '0';
                     if unsigned(RdPacketEnd) = r.RdAddr then
                         v.RdFsm := Last_s;
                     else
@@ -234,6 +239,7 @@ begin
                     end if; 
                     v.RdPacketEnd := unsigned(RdPacketEnd);
                     v.RdValid := '1';
+                
                 end if;
                 
             when Data_s =>
@@ -252,23 +258,18 @@ begin
                     end if;
 
                     -- Handle abortion of packet
-                    if Out_Next = '1' then
-                        Out_Last <= '1';
+                    if Out_Next = '1' or r.NextLatch = '1' then
+                        OutLast_v := '1';
                         v.RdValid := '0';
                         v.RdFsm := Fetch_s;       
                         v.RdAddr := r.RdPacketEnd + 1;           
-                    end if;
-
-                    -- Detect Repetition
-                    if Out_Repeat = '1' then
-                        v.RdRepeat := '1';
                     end if;
 
                 end if;
 
             when Last_s =>
                 -- Assert last in this state (combinatorial)
-                Out_Last <= '1';
+                OutLast_v := '1';
 
                 if Out_Ready = '1' then
                     -- Increment Address
@@ -280,21 +281,32 @@ begin
 
                     -- Abort is not handled separately because it does not have any effect on the last word of a packet
 
-                    -- Detect Repetition
-                    if Out_Repeat = '1' then
-                        v.RdRepeat := '1';
-                    end if;
-
                     -- To to idle cycle for fetch after packet completed
                     v.RdValid := '0';
                     v.RdFsm := Fetch_s;
                 end if;
 
-            when others => null;
+            -- coverage off
+            when others => null; -- unreacable code
+            -- coverage on
 
         end case;
         RamRdAddr <= std_logic_vector(v.RdAddr);
         Out_Valid <= r.RdValid;
+        Out_Last <= OutLast_v;
+
+        -- Latch Next between samples
+        if r.RdValid = '1' and Out_Ready = '1' and OutLast_v = '1' then
+            v.NextLatch := '0';
+        elsif r.RdValid = '1' and Out_Next = '1' then
+            v.NextLatch := '1';
+        end if;  
+
+        -- Latch Repeat between samples
+        -- Clearing is done in FSM
+        if Out_Repeat = '1' and r.RdValid = '1' then
+            v.RdRepeat := '1';
+        end if;
 
         -- Assign signal
         r_next <= v;
@@ -306,16 +318,18 @@ begin
         if rising_edge(Clk) then
             r <= r_next;
             if Rst = '1' then
-                r.WrAddr        <= to_unsigned(Depth_g, r.WrAddr'length);
-                r.WrPacketStart <= to_unsigned(Depth_g, r.WrPacketStart'length);
-                r.WrSize        <= to_unsigned(1, r.WrSize'length);
-                r.DropLatch     <= '0';
-                r.Full          <= '0';
-                r.RdAddr        <= (others => '0');
-                r.RdPacketStart <= (others => '0');
-                r.RdFsm         <= Fetch_s; 
-                r.RdRepeat      <= '0';
-                r.RdValid       <= '0';
+                r.WrAddr            <= to_unsigned(Depth_g, r.WrAddr'length);
+                r.WrPacketStart     <= to_unsigned(Depth_g, r.WrPacketStart'length);
+                r.WrSize            <= to_unsigned(1, r.WrSize'length);
+                r.WrPacketActive    <= '0';
+                r.DropLatch         <= '0';
+                r.Full              <= '0';
+                r.RdAddr            <= (others => '0');
+                r.RdPacketStart     <= (others => '0');
+                r.RdFsm             <= Fetch_s; 
+                r.RdRepeat          <= '0';
+                r.RdValid           <= '0';
+                r.NextLatch         <= '0';
             end if;
         end if;
     end process;

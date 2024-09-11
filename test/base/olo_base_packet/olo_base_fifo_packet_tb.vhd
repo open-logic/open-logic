@@ -56,8 +56,6 @@ architecture sim of olo_base_fifo_packet_tb is
     shared variable InDelay : time := 0 ns;
     shared variable OutDelay : time := 0 ns;
 
-    signal InDropNoHs : std_logic := '0';
-
     -- *** Verification Compnents ***
 	constant axisMaster : axi_stream_master_t := new_axi_stream_master (
 		data_length => Width_c,
@@ -247,8 +245,16 @@ begin
 
             if run("WraparoundBetweenPackets") then
                 TestPacket(net, Depth_c-5, 1);
-                TestPAcket(net, 5, 16#100#);
+                TestPacket(net, 5, 16#100#);
                 TestPacket(net, 10, 16#200#);
+            end if;
+            
+            -- Required to accomplish full coverage
+            if run("RdAddrWraparoundInLast") then 
+                TestPacket(net, Depth_c-5, 1);
+                TestPacket(net, Depth_c-5, 16#100#);
+                TestPacket(net, 10, 16#200#);
+                TestPacket(net, 10, 16#300#);
             end if;
 
 
@@ -624,27 +630,6 @@ begin
             end if;
 
 
-            -- Move to separate TB
-
-            --if run("AssertDrop-NotValid") then
-            --    InDelay := 10*ClockPeriod_c;
-            --    InDropNoHs <= '1';
-            --    for i in 0 to 2 loop
-            --        TestPacket(net, 3, 16*i);
-            --    end loop;
-            --end if;
---
-            --if run("AssertDrop-NotReady") then
-            --    OutDelay := 10*ClockPeriod_c;
-            --    InDropNoHs <= '1';
-            --    for i in 0 to 3 loop
-            --        PushPacket(net, Depth_c/2, 16*i);
-            --    end loop;
-            --    for i in 0 to 3 loop
-            --        CheckPacket(net, Depth_c/2, 16*i);
-            --    end loop;
-            --end if;
-
             -- End case condition
             wait for CaseDelay_c;
             wait_until_idle(net, as_sync(axisMaster));
@@ -722,6 +707,8 @@ begin
 
     b_nr : block
         signal Ready : std_logic;
+        signal NextLocal : std_logic;
+        signal RepeatLocal : std_logic;
     begin
         Ready <= Out_Ready and Out_Valid;
         vc_next_repeat : entity vunit_lib.axi_stream_master
@@ -732,9 +719,12 @@ begin
             aclk        => Clk,
             tvalid      => open,
             tready      => Ready,
-            tdata(0)    => Out_Next,
-            tdata(1)    => Out_Repeat
+            tdata(0)    => NextLocal,
+            tdata(1)    => RepeatLocal
         );
+        -- Supporess Next/Repeat before full handshaking (tested in olo_base_fifo_packet_tb)
+        Out_Next <= NextLocal and Out_Ready and Out_Valid;
+        Out_Repeat <= RepeatLocal and Out_Ready and Out_Valid;
     end block;
 
     b_id : block
