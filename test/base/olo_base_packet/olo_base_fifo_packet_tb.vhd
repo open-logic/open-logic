@@ -31,6 +31,7 @@ library olo;
 entity olo_base_fifo_packet_tb is
     generic (
         RandomStall_g   : boolean := true;
+        RandomPackets_g : integer := 100;
         runner_cfg      : string
     );
 end entity olo_base_fifo_packet_tb;
@@ -255,6 +256,14 @@ begin
                 TestPacket(net, Depth_c-5, 16#100#);
                 TestPacket(net, 10, 16#200#);
                 TestPacket(net, 10, 16#300#);
+            end if;
+
+            -- Required to accomplish full coverage
+            if run("RdAddrWraparoundInData") then 
+                TestPacket(net, Depth_c-5, 1);
+                TestPacket(net, Depth_c-5, 16#100#);
+                TestPacket(net, 20, 16#200#);
+                TestPacket(net, 3, 16#300#);
             end if;
 
 
@@ -577,7 +586,7 @@ begin
 
             -- *** Constrained Random Test ***
             if run("Random") then
-                for pkt in 0 to 99 loop
+                for pkt in 0 to RandomPackets_g-1 loop
                     -- Input Side
                     PacketSize_v := rv.RandInt(1, Depth_c+5);
                     info("PacketSize [" & integer'image(pkt) & "] = " & integer'image(PacketSize_v));

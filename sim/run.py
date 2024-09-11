@@ -266,6 +266,13 @@ for Cycles in [3, 5]:
         for AsyncOutput in [True, False]:
             named_config(tb, {'RstPulseCycles_g': Cycles, 'RstInPolarity_g': Polarity, 'AsyncResetOutput_g': AsyncOutput})
 
+#fifo_packet
+fifo_packet_tb = 'olo_base_fifo_packet_tb'
+tb = olo_tb.test_bench(fifo_packet_tb)
+#Choose settings for short runtim
+named_config(tb, {'RandomPackets_g': 1})
+#fifo_packet_hs_tb does not have generics
+
 ########################################################################################################################
 # olo_axi TBs
 ########################################################################################################################

@@ -7,12 +7,21 @@
 ------------------------------------------------------------------------------
 -- Description
 ------------------------------------------------------------------------------
--- This is a synchronous packet FIFO.ff
+--- This is a synchronous packet FIFO. In contrast to a normal FIFO, it allows
+--- dropping and repeating packets as well as detecting how many packets
+--- there are in the FIFO.
+--- The FIFO works in store-and-forward mode.
+--- The FIFO assumes that all packets fit into the FIFO. Cut-through operation
+--- as required to handle packets bigger than the FIFO is not iplemented.
+
+
 -- Doc: Inefficient for 1 word packets (1 idle cycle after each packet)
 -- Add status (known free space, packets level, empty, full-data, full-packets)
 -- Doc Depth must be power of two
 -- Doc: Drop - From first VALID to last word
 -- Doc: Next/Repeat - From first VALID to last word
+
+-- Impl: Status: Confirmed Free Space, Packet Level
 
 
 ------------------------------------------------------------------------------
