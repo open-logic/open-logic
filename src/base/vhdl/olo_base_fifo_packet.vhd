@@ -7,25 +7,19 @@
 ------------------------------------------------------------------------------
 -- Description
 ------------------------------------------------------------------------------
--- This is a synchronous packet FIFO. In contrast to a normal FIFO, it allows
--- dropping and repeating packets as well as detecting how many packets
--- there are in the FIFO.
--- The FIFO works in store-and-forward mode.
--- The FIFO assumes that all packets fit into the FIFO. Cut-through operation
--- as required to handle packets bigger than the FIFO is not iplemented.
-
+-- This is a synchronous packet FIFO.ff
 -- Doc: Inefficient for 1 word packets (1 idle cycle after each packet)
--- Handle input packet larger than FIFO
--- Add status
--- Assert/Doc Depth must be power of two
+-- Add status (known free space, packets level, empty, full-data, full-packets)
+-- Doc Depth must be power of two
 
--- Tests
--- Random packet sizes, random skip/repeat/drop 
--- MaxPackets_g = 1
+
+-- New "Manual Signals" TB (not using AXI-Stream VCs)
 -- Assert Repeat between handshaking
--- Assert Next between handshaking
---
--- Generic: Stall Type: In Limit, Out Limit, Random
+-- Assert Next between handshakingss
+-- Allow "drop" between handshaking (only after first HS?)
+-- Allow "next" between handshaking (only after first HS?)
+-- Allow "repeat" between handshaking (also after last but before next HS)
+
 
 
 ------------------------------------------------------------------------------
@@ -50,7 +44,7 @@ entity olo_base_fifo_packet is
         RamBehavior_g       : string    := "RBW";
         SmallRamStyle_g     : string    := "auto";
         SmallRamBehavior_g  : string    := "same";
-        MaxPackets_g        : positive  := 16
+        MaxPackets_g        : positive range 2 to positive'high  := 16
     );
     port (    
         -- Control Ports
@@ -119,6 +113,9 @@ architecture rtl of olo_base_fifo_packet is
     signal WrAddrStdlv : std_logic_vector(Addr_r);
 
 begin
+
+    assert log2(Depth_g) = log2ceil(Depth_g) report "olo_base_fifo_packet: only power of two Depth_g is allowed" severity error;
+
 
     p_comb : process(In_Valid, In_Data, In_Last, In_Drop, Out_Ready, Out_Next, Out_Repeat, Rst, r,
                      FifoInReady, RdPacketEnd, RdPacketEndValid)

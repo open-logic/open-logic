@@ -12,10 +12,13 @@ library ieee;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
-    library vunit_lib;
+library vunit_lib;
 	context vunit_lib.vunit_context;
     context vunit_lib.com_context;
 	context vunit_lib.vc_context;
+
+library osvvm;
+    use osvvm.RandomPkg.all;
 
 library olo;
     use olo.olo_base_pkg_math.all;
@@ -27,6 +30,7 @@ library olo;
 -- vunit: run_all_in_same_sim
 entity olo_base_fifo_packet_tb is
     generic (
+        RandomStall_g   : boolean := true;
         runner_cfg      : string
     );
 end entity olo_base_fifo_packet_tb;
@@ -47,6 +51,7 @@ architecture sim of olo_base_fifo_packet_tb is
     constant ClockFrequency_c : real    := 100.0e6;
     constant ClockPeriod_c    : time    := (1 sec) / ClockFrequency_c;
     constant CaseDelay_c      : time := ClockPeriod_c*20;
+    shared variable rv        : RandomPType;
 
     shared variable InDelay : time := 0 ns;
     shared variable OutDelay : time := 0 ns;
@@ -57,11 +62,11 @@ architecture sim of olo_base_fifo_packet_tb is
 	constant axisMaster : axi_stream_master_t := new_axi_stream_master (
 		data_length => Width_c,
         user_length => 1,
-		stall_config => new_stall_config(0.0, 0, 0)
+		stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
 	);
 	constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
 		data_length => Width_c,
-		stall_config => new_stall_config(0.0, 0, 0)
+		stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
 	);
     constant axisNextRepeatMaster : axi_stream_master_t := new_axi_stream_master (
         data_length => 2,
@@ -91,6 +96,7 @@ architecture sim of olo_base_fifo_packet_tb is
                 isDropped := "0";
             end if;
             check_axi_stream(net, axisIsdropedSlave, isDropped, blocking => false, msg => "isDropped");
+
             -- Push Data
             if i = size-1 then
                 tlast := '1';
@@ -101,7 +107,9 @@ architecture sim of olo_base_fifo_packet_tb is
                 drop := '0';
             end if;
             tuser(0) := drop;
-            wait for InDelay;
+            if InDelay > 0 ns then
+                wait for InDelay;
+            end if;
             push_axi_stream(net, axisMaster, toUslv(startVal + i, Width_c), tlast => tlast, tuser => tuser);      
         end loop;
     end procedure;
@@ -130,7 +138,9 @@ architecture sim of olo_base_fifo_packet_tb is
             if i = size-1 then
                 tlast := '1';
             end if;
-            wait for OutDelay;
+            if OutDelay > 0 ns then
+                wait for OutDelay;
+            end if;
             check_axi_stream(net, axisSlave, toUslv(startVal + i, Width_c), tlast => tlast, blocking => false);
         end loop;
     end procedure;
@@ -154,7 +164,6 @@ architecture sim of olo_base_fifo_packet_tb is
     signal In_Data       : std_logic_vector(Width_c - 1 downto 0);
     signal In_Last       : std_logic                                    := '0';
     signal In_Drop       : std_logic                                    := '0';
-    signal In_DropApp    : std_logic                                    := '0';
     signal In_IsDropped  : std_logic;
     signal Out_Valid     : std_logic;
     signal Out_Ready     : std_logic                                    := '0';
@@ -169,8 +178,16 @@ begin
     -- TB Control
     -------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
-    test_runner_watchdog(runner, 10 ms);
+    test_runner_watchdog(runner, 100 ms);
     p_control : process
+        variable PacketSize_v   : integer;
+        variable DropAt_v       : integer;
+        variable IsDroppedAt_v  : integer;
+        variable NextAt_v       : integer;
+        variable RepeatAt_v     : integer;
+        variable PktDropped_v   : boolean;
+        variable Repetitions_v  : integer;
+        variable ReadSize_v     : integer;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -552,24 +569,81 @@ begin
                 TestPacket(net, 3, 48);
             end if;
 
-            if run("AssertDrop-NotValid") then
-                InDelay := 10*ClockPeriod_c;
-                InDropNoHs <= '1';
-                for i in 0 to 2 loop
-                    TestPacket(net, 3, 16*i);
+            -- *** Constrained Random Test ***
+            if run("Random") then
+                for pkt in 0 to 99 loop
+                    -- Input Side
+                    PacketSize_v := rv.RandInt(1, Depth_c+5);
+                    info("PacketSize [" & integer'image(pkt) & "] = " & integer'image(PacketSize_v));
+                    -- Drop 10% of packets at input
+                    if rv.RandInt(0, 99) < 10 then
+                        DropAt_v := rv.RandInt(0, PacketSize_v-1);
+                    else
+                        DropAt_v := PacketSize_v+1; -- Don't drop
+                    end if; 
+                    IsDroppedAt_v := choose(PacketSize_v>Depth_c, Depth_c, PacketSize_v+1);
+                    PktDropped_v := (IsDroppedAt_v <= PacketSize_v) or (DropAt_v <= PacketSize_v);
+                    PushPacket(net, PacketSize_v, 16#100#*pkt, dropAt => DropAt_v, isDroppedAt => IsDroppedAt_v);
+                    
+
+                    -- Output Side
+                    if not PktDropped_v then
+                        -- Repeat 10% of the packets 
+                        if rv.RandInt(0, 99) < 10 then
+                            -- Repeat between 2 and 5 times
+                            Repetitions_v := rv.RandInt(2, 5);
+                        else
+                            Repetitions_v := 1;
+                        end if;
+
+                        -- Repeated readouts
+                        for i in 1 to Repetitions_v loop
+                            -- Skip 10% of the packets prematurely
+                            ReadSize_v := PacketSize_v;
+                            if rv.RandInt(0, 99) < 10 then
+                                NextAt_v := rv.RandInt(0, PacketSize_v-1);
+                                ReadSize_v := NextAt_v+1;
+                            else
+                                NextAt_v := PacketSize_v+1; -- Don't skip
+                            end if;
+                            -- Random Repetition position
+                            if i < Repetitions_v then
+                                RepeatAt_v := rv.RandInt(0, minimum(ReadSize_v-1, NextAt_v));
+                            else
+                                RepeatAt_v := PacketSize_v+1; -- Don't repeat
+                            end if;
+                            CheckPacket(net, ReadSize_v, 16#100#*pkt, repeatAt => RepeatAt_v, nextAt => NextAt_v);
+        
+                        end loop;
+                        
+                    end if;
+
+                    
+                    -- 
                 end loop;
             end if;
 
-            if run("AssertDrop-NotReady") then
-                OutDelay := 10*ClockPeriod_c;
-                InDropNoHs <= '1';
-                for i in 0 to 3 loop
-                    PushPacket(net, Depth_c/2, 16*i);
-                end loop;
-                for i in 0 to 3 loop
-                    CheckPacket(net, Depth_c/2, 16*i);
-                end loop;
-            end if;
+
+            -- Move to separate TB
+
+            --if run("AssertDrop-NotValid") then
+            --    InDelay := 10*ClockPeriod_c;
+            --    InDropNoHs <= '1';
+            --    for i in 0 to 2 loop
+            --        TestPacket(net, 3, 16*i);
+            --    end loop;
+            --end if;
+--
+            --if run("AssertDrop-NotReady") then
+            --    OutDelay := 10*ClockPeriod_c;
+            --    InDropNoHs <= '1';
+            --    for i in 0 to 3 loop
+            --        PushPacket(net, Depth_c/2, 16*i);
+            --    end loop;
+            --    for i in 0 to 3 loop
+            --        CheckPacket(net, Depth_c/2, 16*i);
+            --    end loop;
+            --end if;
 
             -- End case condition
             wait for CaseDelay_c;
@@ -591,8 +665,6 @@ begin
     -------------------------------------------------------------------------
     -- DUT
     -------------------------------------------------------------------------
-    In_DropApp <= In_Drop when InDropNoHs = '0' else 
-                  In_Drop when In_Valid = '1' and In_Ready = '1' else '1';
     i_dut : entity olo.olo_base_fifo_packet
         generic map ( 
             Width_g             => Width_c,                
@@ -610,7 +682,7 @@ begin
             In_Ready      => In_Ready,
             In_Data       => In_Data,
             In_Last       => In_Last,
-            In_Drop       => In_DropApp,
+            In_Drop       => In_Drop,
             In_IsDropped  => In_IsDropped,
             Out_Valid     => Out_Valid,
             Out_Ready     => Out_Ready,
