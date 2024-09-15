@@ -67,6 +67,7 @@ architecture sim of olo_base_fifo_packet_hs_tb is
     signal Out_Last      : std_logic;
     signal Out_Next      : std_logic                                    := '0'; 
     signal Out_Repeat    : std_logic                                    := '0';
+    signal PacketLevel   : std_logic_vector(log2ceil(MaxPackets_c + 1) - 1 downto 0);
 
 begin
 
@@ -129,6 +130,7 @@ begin
                  wait until rising_edge(Clk);
                  In_Drop <= '0';
                  -- Push Packet
+                 check_equal(PacketLevel, 0, "PacketLevel");
                  In_Valid <= '1';
                  In_Data <= x"0001";
                  wait until rising_edge(Clk);
@@ -136,6 +138,8 @@ begin
                  In_Last <= '1';
                  wait until rising_edge(Clk);
                  In_Valid <= '0';
+                 wait until falling_edge(Clk);
+                 check_equal(PacketLevel, 1, "PacketLevel");
                  -- Check Packet
                  Out_Ready <= '1';
                  wait until rising_edge(Clk) and Out_Valid = '1';
@@ -145,7 +149,9 @@ begin
                  check_equal(Out_Data, 2, "Out_Data");
                  check_equal(Out_Last, '1', "Out_Last");
                  wait until rising_edge(Clk);
-                 check_equal(Out_Valid, '0', "Out_Valid");            
+                 check_equal(Out_Valid, '0', "Out_Valid");   
+                 wait until falling_edge(Clk);
+                 check_equal(PacketLevel, 0, "PacketLevel");         
             end if;
 
             if run("Drop-DuringPacket") then -- detected
@@ -162,6 +168,8 @@ begin
                 In_Last <= '1';
                 wait until rising_edge(Clk);
                 In_Valid <= '0';
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 0, "PacketLevel");
                 -- Packet is dropped
                 wait for 20*ClockPeriod_c;
                 check_equal(Out_Valid, '0', "Out_Valid");
@@ -181,6 +189,8 @@ begin
                 In_Last <= '1';
                 wait until rising_edge(Clk);
                 In_Valid <= '0';
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 1, "PacketLevel");   
                 -- Check Packet
                 Out_Ready <= '1';
                 wait until rising_edge(Clk) and Out_Valid = '1';
@@ -190,7 +200,9 @@ begin
                 check_equal(Out_Data, 2, "Out_Data");
                 check_equal(Out_Last, '1', "Out_Last");
                 wait until rising_edge(Clk);
-                check_equal(Out_Valid, '0', "Out_Valid");            
+                check_equal(Out_Valid, '0', "Out_Valid");    
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 0, "PacketLevel");           
            end if;
 
            if run("Next-BeforeReady") then --detected
@@ -202,6 +214,8 @@ begin
                 In_Last <= '1';
                 wait until rising_edge(Clk);
                 In_Valid <= '0';
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 1, "PacketLevel");   
                 -- Check Packet
                 wait until rising_edge(Clk) and Out_Valid = '1';
                 Out_Next <= '1';
@@ -213,7 +227,9 @@ begin
                 check_equal(Out_Data, 1, "Out_Data");
                 check_equal(Out_Last, '1', "Out_Last");
                 wait until rising_edge(Clk);
-                check_equal(Out_Valid, '0', "Out_Valid");            
+                check_equal(Out_Valid, '0', "Out_Valid");      
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 0, "PacketLevel");         
             end if;
 
             if run("Next-DuringPacket") then  --detected
@@ -227,6 +243,8 @@ begin
                 In_Last <= '1';
                 wait until rising_edge(Clk);
                 In_Valid <= '0';
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 1, "PacketLevel");   
                 -- Check Packet
                 Out_Ready <= '1';
                 wait until rising_edge(Clk) and Out_Valid = '1';
@@ -244,7 +262,9 @@ begin
                 check_equal(Out_Data, 2, "Out_Data");
                 check_equal(Out_Last, '1', "Out_Last");
                 wait until rising_edge(Clk);
-                check_equal(Out_Valid, '0', "Out_Valid");            
+                check_equal(Out_Valid, '0', "Out_Valid");    
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 0, "PacketLevel");           
             end if;
 
             -- *** Out_Repeat operation between samples ***
@@ -261,6 +281,8 @@ begin
                 In_Last <= '1';
                 wait until rising_edge(Clk);
                 In_Valid <= '0';
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 1, "PacketLevel");   
                 -- Check Packet
                 Out_Ready <= '1';
                 wait until rising_edge(Clk) and Out_Valid = '1';
@@ -270,7 +292,9 @@ begin
                 check_equal(Out_Data, 2, "Out_Data");
                 check_equal(Out_Last, '1', "Out_Last");
                 wait until rising_edge(Clk);
-                check_equal(Out_Valid, '0', "Out_Valid");            
+                check_equal(Out_Valid, '0', "Out_Valid");       
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 0, "PacketLevel");        
             end if;
 
             if run("Repeat-BeforeReady") then --detected
@@ -282,6 +306,8 @@ begin
                 In_Last <= '1';
                 wait until rising_edge(Clk);
                 In_Valid <= '0';
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 1, "PacketLevel");   
                 -- Check Packet
                 wait until rising_edge(Clk) and Out_Valid = '1';
                 Out_Repeat <= '1';
@@ -298,9 +324,13 @@ begin
                     wait until rising_edge(Clk) and Out_Valid = '1';
                     check_equal(Out_Data, 2, "Out_Data");
                     check_equal(Out_Last, '1', "Out_Last");
+                    wait until falling_edge(Clk);
+                    check_equal(PacketLevel, 1-i, "PacketLevel");   
                 end loop;
                 wait until rising_edge(Clk);
-                check_equal(Out_Valid, '0', "Out_Valid");              
+                check_equal(Out_Valid, '0', "Out_Valid");    
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 0, "PacketLevel");             
             end if;
 
             if run("Repeat-DuringPacket") then   
@@ -314,6 +344,8 @@ begin
                 In_Last <= '1';
                 wait until rising_edge(Clk);
                 In_Valid <= '0';
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 1, "PacketLevel");   
                 -- Check Packet 1
                 Out_Ready <= '1';
                 wait until rising_edge(Clk) and Out_Valid = '1';
@@ -333,9 +365,13 @@ begin
                 wait until rising_edge(Clk) and Out_Valid = '1';
                 check_equal(Out_Data, 3, "Out_Data");
                 check_equal(Out_Last, '1', "Out_Last");
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 1, "PacketLevel");   
                 -- Valid low pulse between packets
                 wait until rising_edge(Clk);                
                 check_equal(Out_Valid, '0', "Out_Valid"); 
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 1, "PacketLevel");   
                 -- Check Packet 2     
                 wait until rising_edge(Clk) and Out_Valid = '1';
                 check_equal(Out_Data, 1, "Out_Data");
@@ -350,6 +386,8 @@ begin
                 check_equal(Out_Valid, '0', "Out_Valid");     
                 wait until rising_edge(Clk);  
                 check_equal(Out_Valid, '0', "Out_Valid");    
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 0, "PacketLevel");   
             end if;
 
             if run("Repeat-BetweenPackets") then --ignored
@@ -363,6 +401,8 @@ begin
                 wait until rising_edge(Clk);
                 In_Valid <= '0';
                 In_Last <= '0';
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 1, "PacketLevel");   
                 -- Check Packet
                 Out_Ready <= '1';
                 wait until rising_edge(Clk) and Out_Valid = '1';
@@ -373,6 +413,8 @@ begin
                 check_equal(Out_Last, '1', "Out_Last");
                 wait until rising_edge(Clk);
                 check_equal(Out_Valid, '0', "Out_Valid");   
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 0, "PacketLevel");   
                 -- Repeat Before Packet
                 Out_Repeat <= '1';
                 wait until rising_edge(Clk);
@@ -386,6 +428,8 @@ begin
                 In_Last <= '1';
                 wait until rising_edge(Clk);
                 In_Valid <= '0';
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 1, "PacketLevel");   
                 -- Check Packet
                 Out_Ready <= '1';
                 wait until rising_edge(Clk) and Out_Valid = '1';
@@ -395,7 +439,9 @@ begin
                 check_equal(Out_Data, 6, "Out_Data");
                 check_equal(Out_Last, '1', "Out_Last");
                 wait until rising_edge(Clk);
-                check_equal(Out_Valid, '0', "Out_Valid");         
+                check_equal(Out_Valid, '0', "Out_Valid");  
+                wait until falling_edge(Clk);
+                check_equal(PacketLevel, 0, "PacketLevel");          
             end if;
 
             -- End case condition
@@ -438,7 +484,8 @@ begin
             Out_Data      => Out_Data,
             Out_Last      => Out_Last,
             Out_Next      => Out_Next,
-            Out_Repeat    => Out_Repeat
+            Out_Repeat    => Out_Repeat,
+            PacketLevel   => PacketLevel
         );
   
 

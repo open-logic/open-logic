@@ -30,7 +30,7 @@ library olo;
 -- vunit: run_all_in_same_sim
 entity olo_base_fifo_packet_tb is
     generic (
-        RandomStall_g   : boolean := true;
+        RandomStall_g   : boolean := false;
         RandomPackets_g : integer := 100;
         runner_cfg      : string
     );
@@ -80,7 +80,8 @@ architecture sim of olo_base_fifo_packet_tb is
                                     size        : integer;
                                     startVal    : integer := 1;
                                     dropAt      : integer := integer'high;
-                                    isDroppedAt : integer := integer'high)
+                                    isDroppedAt : integer := integer'high;
+                                    blocking    : boolean := false)
     is
         variable tlast : std_logic := '0';
         variable drop  : std_logic := '0';
@@ -109,15 +110,19 @@ architecture sim of olo_base_fifo_packet_tb is
             if InDelay > 0 ns then
                 wait for InDelay;
             end if;
-            push_axi_stream(net, axisMaster, toUslv(startVal + i, Width_c), tlast => tlast, tuser => tuser);      
+            push_axi_stream(net, axisMaster, toUslv(startVal + i, Width_c), tlast => tlast, tuser => tuser);    
         end loop;
+        if blocking then
+            wait_until_idle(net, as_sync(axisMaster));
+        end if;  
     end procedure;
 
     procedure CheckPacket(  signal  net         : inout network_t;
                                     size        : integer;
                                     startVal    : integer := 1;
                                     nextAt      : integer := -1;
-                                    repeatAt    : integer := -1)
+                                    repeatAt    : integer := -1;
+                                    blocking    : boolean := false)
     is
         variable tlast : std_logic := '0';
         variable next_v, repeat_v : std_logic := '0';
@@ -142,6 +147,9 @@ architecture sim of olo_base_fifo_packet_tb is
             end if;
             check_axi_stream(net, axisSlave, toUslv(startVal + i, Width_c), tlast => tlast, blocking => false);
         end loop;
+        if blocking then
+            wait_until_idle(net, as_sync(axisSlave));
+        end if;
     end procedure;
 
     procedure TestPacket(   signal  net         : inout network_t;
@@ -164,6 +172,7 @@ architecture sim of olo_base_fifo_packet_tb is
     signal In_Last       : std_logic                                    := '0';
     signal In_Drop       : std_logic                                    := '0';
     signal In_IsDropped  : std_logic;
+    signal PacketLevel   : std_logic_vector(log2ceil(MaxPackets_c + 1) - 1 downto 0);
     signal Out_Valid     : std_logic;
     signal Out_Ready     : std_logic                                    := '0';
     signal Out_Data      : std_logic_vector(Width_c - 1 downto 0);
@@ -177,7 +186,7 @@ begin
     -- TB Control
     -------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
-    test_runner_watchdog(runner, 100 ms);
+    test_runner_watchdog(runner, 20 ms);
     p_control : process
         variable PacketSize_v   : integer;
         variable DropAt_v       : integer;
@@ -187,6 +196,7 @@ begin
         variable PktDropped_v   : boolean;
         variable Repetitions_v  : integer;
         variable ReadSize_v     : integer;
+        variable Level_v        : integer;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -546,16 +556,26 @@ begin
             end if;
 
             -- *** Corner Cases ***
-            if run("MaxPackets") then
-                for pkt in 0 to MaxPackets_c+4 loop
-                    PushPacket(net, 3, 16*pkt);
+            if run("MaxPacketsAndPacketLevel") then
+                check_equal(PacketLevel, 0, "PacketLevel empty");
+                for pkt in 0 to MaxPackets_c-1 loop
+                    PushPacket(net, 3, 16*pkt, blocking => true);
+                    wait until rising_edge(Clk);
+                    check_equal(PacketLevel, pkt+1, "PacketLevel 0");
                 end loop;
-                OutDelay := 100*ClockPeriod_c;
-                for pkt in 0 to MaxPackets_c+4 loop
-                    CheckPacket(net, 3, 16*pkt);
-                    -- Remove delay after second packet
-                    if pkt = 1 then
-                        OutDelay := 0 ns;
+                -- These packets are added on the go when readout starts
+                for pkt in 0 to 3 loop
+                    PushPacket(net, 3, 16*(pkt+MaxPackets_c));
+                end loop;
+                check_equal(PacketLevel, MaxPackets_c, "PacketLevel 1");
+
+                for pkt in 0 to MaxPackets_c+3 loop
+                    CheckPacket(net, 3, 16*pkt, blocking => true);
+                    Level_v := minimum(MaxPackets_c+3 - pkt, MaxPackets_c-1);  ---1 packet is readout
+                    -- Only works with non-random input timing
+                    if not RandomStall_g then
+                        wait until rising_edge(Clk);
+                        check_equal(PacketLevel, Level_v, "PacketLevel 2");
                     end if;
                 end loop;
             end if;
@@ -589,7 +609,7 @@ begin
                 for pkt in 0 to RandomPackets_g-1 loop
                     -- Input Side
                     PacketSize_v := rv.RandInt(1, Depth_c+5);
-                    info("PacketSize [" & integer'image(pkt) & "] = " & integer'image(PacketSize_v));
+
                     -- Drop 10% of packets at input
                     if rv.RandInt(0, 99) < 10 then
                         DropAt_v := rv.RandInt(0, PacketSize_v-1);
@@ -641,7 +661,10 @@ begin
 
             -- End case condition
             wait for CaseDelay_c;
-            wait_until_idle(net, as_sync(axisMaster));
+            -- Due to a VUNit bug wait_until_idle does not work correctly here
+            if In_Valid = '1' then
+                wait until In_Valid = '0';
+            end if;
             wait_until_idle(net, as_sync(axisSlave));
             wait_until_idle(net, as_sync(axisNextRepeatMaster));
             wait_until_idle(net, as_sync(axisIsdropedSlave));
@@ -683,7 +706,8 @@ begin
             Out_Data      => Out_Data,
             Out_Last      => Out_Last,
             Out_Next      => Out_Next,
-            Out_Repeat    => Out_Repeat
+            Out_Repeat    => Out_Repeat,
+            PacketLevel   => PacketLevel
         );
 
 	------------------------------------------------------------

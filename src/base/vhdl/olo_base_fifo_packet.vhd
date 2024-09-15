@@ -22,6 +22,7 @@
 -- Doc: Next/Repeat - From first VALID to last word
 
 -- Impl: Status: Confirmed Free Space, Packet Level
+-- Impl: Test status on next/drop/repeat
 
 
 ------------------------------------------------------------------------------
@@ -46,7 +47,7 @@ entity olo_base_fifo_packet is
         RamBehavior_g       : string    := "RBW";
         SmallRamStyle_g     : string    := "auto";
         SmallRamBehavior_g  : string    := "same";
-        MaxPackets_g        : positive range 2 to positive'high  := 16
+        MaxPackets_g        : positive range 2 to positive'high  := 17
     );
     port (    
         -- Control Ports
@@ -65,7 +66,9 @@ entity olo_base_fifo_packet is
           Out_Data      : out std_logic_vector(Width_g - 1 downto 0);
           Out_Last      : out std_logic;
           Out_Next      : in  std_logic                                             := '0'; 
-          Out_Repeat    : in  std_logic                                             := '0'   
+          Out_Repeat    : in  std_logic                                             := '0';
+          -- Status
+          PacketLevel   : out std_logic_vector(log2ceil(MaxPackets_g + 1) - 1 downto 0)
           
     );
 end entity;
@@ -101,6 +104,8 @@ architecture rtl of olo_base_fifo_packet is
         RdFsm           : RdFsm_t;
         RdRepeat        : std_logic;
         NextLatch       : std_logic;
+        -- Status
+        PacketLevel     : unsigned(log2ceil(MaxPackets_g + 1)-1 downto 0);
     end record;
     -- Write address have the MSB (unused for RAM adressing) inverted. This leads to ReadAddr = WriteAddr indicating
     -- .. the full condition (and not the empty condition).
@@ -224,6 +229,7 @@ begin
 
                 -- Set start address after completion of a packet
                 v.RdPacketStart := r.RdAddr;
+                
 
                 -- Repeat packet
                 if r.RdRepeat = '1' then 
@@ -234,8 +240,9 @@ begin
                     end if;
                     v.RdRepeat := '0';
                     v.RdAddr := r.RdPacketStart;
-                    v.RdPacketStart := r.RdPacketStart; -- Revert start address
                     v.RdValid := '1';
+                    -- Revert signals for repeated packets
+                    v.RdPacketStart := r.RdPacketStart;
 
                 -- Read next packet info
                 elsif RdPacketEndValid = '1' then
@@ -311,6 +318,16 @@ begin
             v.NextLatch := '1';
         end if;  
 
+        -- Handle Packet Level
+        if In_Valid = '1' and In_Ready_v = '1' and In_Last = '1' and InDrop_v = '0' then
+            v.PacketLevel := r.PacketLevel + 1;
+        end if;
+        if r.RdValid = '1' and Out_Ready = '1' and OutLast_v = '1' and r.RdRepeat = '0' and Out_Repeat = '0' then
+            v.PacketLevel := v.PacketLevel - 1;
+        end if;
+        PacketLevel <= std_logic_vector(r.PacketLevel);
+
+
         -- Latch Repeat between samples
         -- Clearing is done in FSM
         if Out_Repeat = '1' and r.RdValid = '1' then
@@ -339,6 +356,7 @@ begin
                 r.RdRepeat          <= '0';
                 r.RdValid           <= '0';
                 r.NextLatch         <= '0';
+                r.PacketLevel       <= (others => '0');
             end if;
         end if;
     end process;
@@ -369,7 +387,7 @@ begin
     i_pktend_fifo : entity work.olo_base_fifo_sync
         generic map ( 
             Width_g         => log2ceil(Depth_g)+1,                
-            Depth_g         => MaxPackets_g,                   
+            Depth_g         => MaxPackets_g-1,     -- One packet is currently read out (not in the FIFO anymore)         
             RamStyle_g      => SmallRamStyle_c,    
             RamBehavior_g   => SmallRamBehavior_c,
             ReadyRstState_g => '0'
@@ -382,7 +400,7 @@ begin
             In_Ready      => FifoInReady,
             Out_Data      => RdPacketEnd,
             Out_Valid     => RdPacketEndValid,
-            Out_Ready     => FifoOutRdy      
+            Out_Ready     => FifoOutRdy   
         );
 
 
