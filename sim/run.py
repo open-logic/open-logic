@@ -270,8 +270,8 @@ for Cycles in [3, 5]:
 fifo_packet_tb = 'olo_base_fifo_packet_tb'
 tb = olo_tb.test_bench(fifo_packet_tb)
 #Choose settings for short runtim
-named_config(tb, {'RandomPackets_g': 1, 'RandomStall_g': True})
-named_config(tb, {'RandomPackets_g': 1, 'RandomStall_g': False}) #Some checks require non-random stall
+named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': True})
+named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': False}) #Some checks require non-random stall
 #fifo_packet_hs_tb does not have generics
 
 ########################################################################################################################

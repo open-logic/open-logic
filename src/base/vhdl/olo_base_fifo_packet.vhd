@@ -21,8 +21,6 @@
 -- Doc: Drop - From first VALID to last word
 -- Doc: Next/Repeat - From first VALID to last word
 
--- Impl: Status: Confirmed Free Space, Packet Level
--- Impl: Test status on next/drop/repeat
 
 
 ------------------------------------------------------------------------------
@@ -64,11 +62,13 @@ entity olo_base_fifo_packet is
           Out_Valid     : out std_logic;
           Out_Ready     : in  std_logic                                             := '1';
           Out_Data      : out std_logic_vector(Width_g - 1 downto 0);
+          Out_Size      : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
           Out_Last      : out std_logic;
           Out_Next      : in  std_logic                                             := '0'; 
           Out_Repeat    : in  std_logic                                             := '0';
           -- Status
-          PacketLevel   : out std_logic_vector(log2ceil(MaxPackets_g + 1) - 1 downto 0)
+          PacketLevel   : out std_logic_vector(log2ceil(MaxPackets_g + 1) - 1 downto 0);
+          FreeWords     : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0)
           
     );
 end entity;
@@ -103,6 +103,7 @@ architecture rtl of olo_base_fifo_packet is
         RdValid         : std_logic;
         RdFsm           : RdFsm_t;
         RdRepeat        : std_logic;
+        RdSize          : unsigned(log2ceil(Depth_g + 1) - 1 downto 0);
         NextLatch       : std_logic;
         -- Status
         PacketLevel     : unsigned(log2ceil(MaxPackets_g + 1)-1 downto 0);
@@ -255,6 +256,7 @@ begin
                     end if; 
                     v.RdPacketEnd := unsigned(RdPacketEnd);
                     v.RdValid := '1';
+                    v.RdSize := unsigned(RdPacketEnd) - r.RdAddr + 1;
                 
                 end if;
                 
@@ -310,6 +312,7 @@ begin
         RamRdAddr <= std_logic_vector(v.RdAddr);
         Out_Valid <= r.RdValid;
         Out_Last <= OutLast_v;
+        Out_Size <= std_logic_vector(r.RdSize);
 
         -- Latch Next between samples
         if r.RdValid = '1' and Out_Ready = '1' and OutLast_v = '1' then
@@ -327,6 +330,8 @@ begin
         end if;
         PacketLevel <= std_logic_vector(r.PacketLevel);
 
+        -- Handle Free Space
+        FreeWords <= std_logic_vector(r.RdPacketStart(FreeWords'range) - r.WrAddr(FreeWords'range));
 
         -- Latch Repeat between samples
         -- Clearing is done in FSM

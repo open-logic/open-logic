@@ -65,6 +65,7 @@ architecture sim of olo_base_fifo_packet_tb is
 	);
 	constant axisSlave : axi_stream_slave_t := new_axi_stream_slave (
 		data_length => Width_c,
+        user_length => log2ceil(Depth_c+1),
 		stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
 	);
     constant axisNextRepeatMaster : axi_stream_master_t := new_axi_stream_master (
@@ -122,10 +123,12 @@ architecture sim of olo_base_fifo_packet_tb is
                                     startVal    : integer := 1;
                                     nextAt      : integer := -1;
                                     repeatAt    : integer := -1;
+                                    pktSize     : integer := -1; -- if not specified "size" is used
                                     blocking    : boolean := false)
     is
         variable tlast : std_logic := '0';
         variable next_v, repeat_v : std_logic := '0';
+        variable size_v : std_logic_vector(log2ceil(Depth_c+1) - 1 downto 0);
     begin
         for i in 0 to size-1 loop
             -- Next/Repeat
@@ -145,7 +148,12 @@ architecture sim of olo_base_fifo_packet_tb is
             if OutDelay > 0 ns then
                 wait for OutDelay;
             end if;
-            check_axi_stream(net, axisSlave, toUslv(startVal + i, Width_c), tlast => tlast, blocking => false);
+            if pktsize = -1 then
+                size_v := toUslv(size, size_v'length);
+            else
+                size_v := toUslv(pktSize, size_v'length);
+            end if;
+            check_axi_stream(net, axisSlave, toUslv(startVal + i, Width_c), tlast => tlast, tuser => size_v, blocking => false);
         end loop;
         if blocking then
             wait_until_idle(net, as_sync(axisSlave));
@@ -176,6 +184,7 @@ architecture sim of olo_base_fifo_packet_tb is
     signal Out_Valid     : std_logic;
     signal Out_Ready     : std_logic                                    := '0';
     signal Out_Data      : std_logic_vector(Width_c - 1 downto 0);
+    signal Out_Size      : std_logic_vector(log2ceil(Depth_c + 1) - 1 downto 0);
     signal Out_Last      : std_logic;
     signal Out_Next      : std_logic                                    := '0'; 
     signal Out_Repeat    : std_logic                                    := '0';
@@ -446,7 +455,7 @@ begin
                 for nextWord in 0 to 2 loop
                     TestPacket(net, 3, 1);
                     PushPacket(net, 3, 16);
-                    CheckPacket(net, nextWord+1, 16, nextAt => nextWord);
+                    CheckPacket(net, nextWord+1, 16, nextAt => nextWord, pktSize => 3);
                     TestPacket(net, 3, 32);
                     wait for CaseDelay_c;
                 end loop;
@@ -454,7 +463,7 @@ begin
 
             if run("NextPacketFirstPacket") then
                 PushPacket(net, 3, 1);
-                CheckPacket(net, 1, 1, nextAt => 0);
+                CheckPacket(net, 1, 1, nextAt => 0, pktSize => 3);
                 TestPacket(net, 3, 32);
             end if;
 
@@ -468,23 +477,23 @@ begin
             if run("NextPacketMulti") then
                 TestPacket(net, 3, 1);
                 PushPacket(net, 3, 16);
-                CheckPacket(net, 1, 16, nextAt => 0);
+                CheckPacket(net, 1, 16, nextAt => 0, pktSize => 3);
                 PushPacket(net, 3, 32);
-                CheckPacket(net, 2, 32, nextAt => 1);
+                CheckPacket(net, 2, 32, nextAt => 1, pktSize => 3);
                 TestPacket(net, 3, 32);
             end if;
 
             if run("NextPacket-ContainingWraparound-SplBeforeWrap") then
                 TestPacket(net, Depth_c-5, 1);
                 PushPacket(net, 10, 16#100#);
-                CheckPacket(net, 3, 16#100#, nextAt => 2);
+                CheckPacket(net, 3, 16#100#, nextAt => 2, pktSize => 10);
                 TestPacket(net, 3, 16#200#);
             end if;
 
             if run("NextPacket-ContainingWraparound-SplAfterWrap") then
                 TestPacket(net, Depth_c-5, 1);
                 PushPacket(net, 10, 16#100#);
-                CheckPacket(net, 8, 16#100#, nextAt => 7);
+                CheckPacket(net, 8, 16#100#, nextAt => 7, pktSize => 10);
                 TestPacket(net, 3, 16#200#);
             end if;
 
@@ -492,7 +501,7 @@ begin
                 TestPacket(net, Depth_c-15, 1);
                 for pkt in 1 to 3 loop
                     PushPacket(net, 10, 16#100#*pkt);
-                    CheckPacket(net, 1, 16#100#*pkt, nextAt => 0);
+                    CheckPacket(net, 1, 16#100#*pkt, nextAt => 0, pktSize => 10);
                 end loop;
                 TestPacket(net, 3, 16#800#);
             end if;
@@ -502,7 +511,7 @@ begin
                 for nextWord in 0 to 2 loop
                     TestPacket(net, 3, 1);
                     PushPacket(net, 3, 16);
-                    CheckPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => nextWord);
+                    CheckPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => nextWord, pktSize => 3);
                     CheckPacket(net, 3, 16);
                     TestPacket(net, 3, 32);
                     wait for CaseDelay_c;
@@ -513,7 +522,7 @@ begin
                 for nextWord in 1 to 2 loop
                     TestPacket(net, 3, 1);
                     PushPacket(net, 3, 16);
-                    CheckPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => 0);
+                    CheckPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => 0, pktSize => 3);
                     CheckPacket(net, 3, 16);
                     TestPacket(net, 3, 32);
                     wait for CaseDelay_c;
@@ -522,7 +531,7 @@ begin
 
             if run("NextRepeatPacketFirstPacket") then
                 PushPacket(net, 3, 1);
-                CheckPacket(net, 1, 1, nextAt => 0, repeatAt => 0);
+                CheckPacket(net, 1, 1, nextAt => 0, repeatAt => 0, pktSize => 3);
                 CheckPacket(net, 3, 1);
                 TestPacket(net, 3, 32);
             end if;
@@ -538,8 +547,8 @@ begin
             if run("NextRepeatPacketMulti") then
                 TestPacket(net, 3, 1);
                 PushPacket(net, 3, 16);
-                CheckPacket(net, 1, 16, nextAt => 0, repeatAt => 0);
-                CheckPacket(net, 2, 16, nextAt => 1, repeatAt => 1);
+                CheckPacket(net, 1, 16, nextAt => 0, repeatAt => 0, pktSize => 3);
+                CheckPacket(net, 2, 16, nextAt => 1, repeatAt => 1, pktSize => 3);
                 CheckPacket(net, 3, 16);
                 TestPacket(net, 3, 32);
             end if;
@@ -549,9 +558,9 @@ begin
                 TestPacket(net, Depth_c-15, 1);
                 PushPacket(net, 10, 16#100#);
                 for pkt in 1 to 3 loop                    
-                    CheckPacket(net, pkt+1, 16#100#, nextAt => pkt, repeatAt => 1);
+                    CheckPacket(net, pkt+1, 16#100#, nextAt => pkt, repeatAt => 1, pktSize => 10);
                 end loop;
-                CheckPacket(net, 4, 16#100#, nextAt => 3); 
+                CheckPacket(net, 4, 16#100#, nextAt => 3, pktSize => 10); 
                 TestPacket(net, 3, 16#800#);
             end if;
 
@@ -647,7 +656,7 @@ begin
                             else
                                 RepeatAt_v := PacketSize_v+1; -- Don't repeat
                             end if;
-                            CheckPacket(net, ReadSize_v, 16#100#*pkt, repeatAt => RepeatAt_v, nextAt => NextAt_v);
+                            CheckPacket(net, ReadSize_v, 16#100#*pkt, repeatAt => RepeatAt_v, nextAt => NextAt_v, pktSize => PacketSize_v);
         
                         end loop;
                         
@@ -704,6 +713,7 @@ begin
             Out_Valid     => Out_Valid,
             Out_Ready     => Out_Ready,
             Out_Data      => Out_Data,
+            Out_Size      => Out_Size,
             Out_Last      => Out_Last,
             Out_Next      => Out_Next,
             Out_Repeat    => Out_Repeat,
@@ -735,7 +745,8 @@ begin
 	    tvalid => Out_Valid,
         tready => Out_Ready,
 	    tdata  => Out_Data,
-        tlast  => Out_Last 
+        tlast  => Out_Last,
+        tuser  => Out_Size
 	);
 
     b_nr : block
