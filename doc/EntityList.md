@@ -44,10 +44,11 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 
 ### FIFO Implementations (olo_base_fifo_\<...\>)
 
-| Entity                                               | Description                                        |
-| ---------------------------------------------------- | -------------------------------------------------- |
-| [olo_base_fifo_sync](./base/olo_base_fifo_sync.md)   | Synchronous FIFO (single clock)                    |
-| [olo_base_fifo_async](./base/olo_base_fifo_async.md) | Asynchronous FIFO (separate write and read clocks) |
+| Entity                                                 | Description                                                  |
+| ------------------------------------------------------ | ------------------------------------------------------------ |
+| [olo_base_fifo_sync](./base/olo_base_fifo_sync.md)     | Synchronous FIFO (single clock)                              |
+| [olo_base_fifo_async](./base/olo_base_fifo_async.md)   | Asynchronous FIFO (separate write and read clocks)           |
+| [olo_base_fifo_packet](./base/olo_base_fifo_packet.md) | Packet FIFO (store and forward) with the ability to drop packets on the write side and skip or repeat packets on the read side |
 
 ### Width Conversions (olo_base_wconv_\<...\>)
 

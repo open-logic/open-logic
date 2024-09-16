@@ -181,6 +181,7 @@ architecture sim of olo_base_fifo_packet_tb is
     signal In_Drop       : std_logic                                    := '0';
     signal In_IsDropped  : std_logic;
     signal PacketLevel   : std_logic_vector(log2ceil(MaxPackets_c + 1) - 1 downto 0);
+    signal FreeWords     : std_logic_vector(log2ceil(Depth_c + 1) - 1 downto 0);
     signal Out_Valid     : std_logic;
     signal Out_Ready     : std_logic                                    := '0';
     signal Out_Data      : std_logic_vector(Width_c - 1 downto 0);
@@ -717,7 +718,8 @@ begin
             Out_Last      => Out_Last,
             Out_Next      => Out_Next,
             Out_Repeat    => Out_Repeat,
-            PacketLevel   => PacketLevel
+            PacketLevel   => PacketLevel,
+            FreeWords     => FreeWords
         );
 
 	------------------------------------------------------------
