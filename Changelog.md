@@ -2,6 +2,52 @@
 
 # Changelog
 
+## 2.2.0 
+
+04-Sep-2024
+
+### Added Features
+
+- Support for NVC Simulator
+  - NVC simulator can be started passing the argument "--nvc" to the run.py
+  - Added NVC simulator to CI scripts
+  - Co-authored by nickg
+- Questa integration
+  * Script to automatically compile all *Open Logic* features in *Questa*
+  * *Questa* tutorial (VHDL and Verilog)
+- Addition of *to01()* functions to *olo_base_pkg_logic*
+- *olo_intf_spi_slave*
+  - SPI slave
+- *olo_base_cc_handshake*
+  - Clock crossing with fully Read/Valid handshake but without need for distributed RAM (in contrast to *olo_base_fifo_async*)
+
+### Backward Compatible Changes
+
+- Various documentation improvements
+  - Clarification regarding omission of ID signals in *olo_axi_master_...* (#50, contributed by [kuriousd](https://github.com/kuriousd) )
+  - Remove duplicated *Ready* signal from figures in Conventions (#54, reported by [tasgomes](https://github.com/tasgomes) )
+- Various optimizations on the CI/CD infrastructure
+- Reduction of the latency of *olo_base_cc_pulse* by one clock cycle
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- None
+
+## Credits
+
+### Reporters
+
+- [tasgomes](https://github.com/tasgomes) 
+
+### Contributors
+
+- [nickg](https://github.com/nickg) 
+- [kuriousd](https://github.com/kuriousd) 
+
 ## 2.1.0 
 
 30-Jul-2024

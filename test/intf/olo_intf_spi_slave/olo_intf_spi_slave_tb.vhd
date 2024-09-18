@@ -72,6 +72,7 @@ architecture sim of olo_intf_spi_slave_tb is
     signal Spi_Mosi        : std_logic := '0';  
     signal Spi_Cs_n        : std_logic := '1'; 
     signal Spi_Miso        : std_logic;
+    signal Spi_Miso_con    : std_logic;
     signal Spi_Miso_o      : std_logic;
     signal Spi_Miso_t      : std_logic;
 
@@ -473,13 +474,16 @@ begin
             Spi_Mosi        => Spi_Mosi,  
             Spi_Cs_n        => Spi_Cs_n, 
             -- Miso with internal Tristate
-            Spi_Miso        => Spi_Miso,
+            Spi_Miso        => Spi_Miso_con,
             -- Miso with external Tristate
             Spi_Miso_o      => Spi_Miso_o,
             Spi_Miso_t      => Spi_Miso_t
         );
     g_tristate : if not InternalTriState_g generate
         Spi_Miso <= 'Z' when Spi_Miso_t = '1' else Spi_Miso_o;
+    end generate;
+    g_IntTristate : if InternalTriState_g generate
+        Spi_Miso <= Spi_Miso_con;
     end generate;
 
     ------------------------------------------------------------

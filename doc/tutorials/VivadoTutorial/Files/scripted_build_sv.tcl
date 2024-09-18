@@ -1,5 +1,5 @@
 #Create Project
-create_project tutorial_prj ./tutorial_prj -part xc7z010clg400-1
+create_project tutorial_prj_sv ./tutorial_prj_sv -part xc7z010clg400-1
 set_property target_language Verilog [current_project]
 
 #Add OLO

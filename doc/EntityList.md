@@ -22,16 +22,17 @@ Packages with type declarations and functions used in *Open Logic* internally or
 
 Clock crossings are a key topic and they all follow the same [clock crossing principles](./base/clock_crossing_principles.md). 
 
-| Entity                                               | Description                                                  |
-| ---------------------------------------------------- | ------------------------------------------------------------ |
-| [olo_base_cc_reset](./base/olo_base_cc_reset.md)     | Synchronization of resets between two clock domains (bi-directional) |
-| [olo_base_cc_bits](./base/olo_base_cc_bits.md)       | Transfer a group of individual single bit signals from one clock domain to another clock domain |
-| [olo_base_cc_pulse](./base/olo_base_cc_pulse.md)     | Transfer single-cycle pulses from one clock domain to another clock domain |
-| [olo_base_cc_simple](./base/olo_base_cc_simple.md)   | Transfer selectively valid data from one clock domain to another clock domain (data/valid pair) |
-| [olo_base_cc_status](./base/olo_base_cc_status.md)   | Transfer status and configuration information from one clock domain to another clock domain. The update rate is relatively low but consistency is guaranteed |
-| [olo_base_cc_n2xn](./base/olo_base_cc_n2xn.md)       | Transfer data from a slower clock to a faster phase aligned clock (output clock frequency is an exact integer multiple of the input clock frequency and the clocks are phase aligned). |
-| [olo_base_cc_xn2n](./base/olo_base_cc_xn2n.md)       | Transfer data from a faster clock to a slower phase aligned clock (input clock frequency is an exact integer multiple of the output clock frequency and the clocks are phase aligned). |
-| [olo_base_fifo_async](./base/olo_base_fifo_async.md) | Asynchronous FIFO (separate write and read clocks)<br />This is not a pure clock-crossing entity but it can be used as such. |
+| Entity                                                   | Description                                                  |
+| -------------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_base_cc_reset](./base/olo_base_cc_reset.md)         | Synchronization of resets between two clock domains (bi-directional) |
+| [olo_base_cc_bits](./base/olo_base_cc_bits.md)           | Transfer a group of individual single bit signals from one clock domain to another clock domain |
+| [olo_base_cc_pulse](./base/olo_base_cc_pulse.md)         | Transfer single-cycle pulses from one clock domain to another clock domain |
+| [olo_base_cc_simple](./base/olo_base_cc_simple.md)       | Transfer selectively valid data from one clock domain to another clock domain (data/valid pair) |
+| [olo_base_cc_status](./base/olo_base_cc_status.md)       | Transfer status and configuration information from one clock domain to another clock domain. The update rate is relatively low but consistency is guaranteed |
+| [olo_base_cc_n2xn](./base/olo_base_cc_n2xn.md)           | Transfer data from a slower clock to a faster phase aligned clock (output clock frequency is an exact integer multiple of the input clock frequency and the clocks are phase aligned). |
+| [olo_base_cc_xn2n](./base/olo_base_cc_xn2n.md)           | Transfer data from a faster clock to a slower phase aligned clock (input clock frequency is an exact integer multiple of the output clock frequency and the clocks are phase aligned). |
+| [olo_base_cc_handshake](./base/olo_base_cc_handshake.md) | Transfer data from one clock domain to another clock domain using the standard *Valid*/*Ready* handshaking.<br />For technologies with distributed RAM (LUT can be used as small RAM), [olo_base_fifo_async](./base/olo_base_fifo_async.md) in most cases is preferred over this entity. |
+| [olo_base_fifo_async](./base/olo_base_fifo_async.md)     | Asynchronous FIFO (separate write and read clocks)<br />This is not a pure clock-crossing entity but it can be used as such. |
 
 ### RAM Implementations (olo_base_ram_\<...\>)
 

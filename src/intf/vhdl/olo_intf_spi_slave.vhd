@@ -279,7 +279,6 @@ begin
     g_extTristate : if not InternalTriState_g generate
         Spi_Miso_o <= r.SpiMisoData;
         Spi_Miso_t <= r.SpiMisoTristate;
-        Spi_Miso <= 'Z'; -- workaround for simulations (U overrides Z)
     end generate;
 
     --------------------------------------------------------------------------

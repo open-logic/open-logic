@@ -1,11 +1,12 @@
 CAPI=2:
 
-name : open-logic:open-logic:intf:2.1.0
+name : open-logic:open-logic:intf:2.2.0
 description : Interfaces (e.g. I2C, synchronizer, SPI, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#intf
 
 filesets:
   rtl:
     files:
+      - vhdl/olo_intf_spi_slave.vhd
       - vhdl/olo_intf_i2c_master.vhd
       - vhdl/olo_intf_debounce.vhd
       - vhdl/olo_intf_clk_meas.vhd
@@ -14,7 +15,7 @@ filesets:
     file_type : vhdlSource
     logical_name : olo
     depend :
-      - "^open-logic:open-logic:base:2.1.0"
+      - "^open-logic:open-logic:base:2.2.0"
 
 
 targets:
@@ -26,5 +27,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 2.1.0
+  version : 2.2.0
   
