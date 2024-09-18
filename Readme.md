@@ -49,6 +49,8 @@ It's suggested that you compile ALL files of the areas you need (plus their depe
   * [Efinity Tutorial](./doc/tutorials/EfinityTutorial.md) - for VHDL and System Verilog
   * [Questa Tutorial](./doc/tutorials/QuestasimTutorial.md) - for VHDL and System Verilog
 
+* [Instructions for Contributors](./Contributing.md)
+
 ## Project Philosophy
 
 *Open Logic* is not the first open source VHDL library - so you might ask yourself what makes it different and why you should use this one. The project follows the philosophy below - the decision whether this matches what you are looking for is yours.
@@ -87,11 +89,7 @@ Thanks to the *pure VHDL* philosophy, *Open Logic* simulates fast and is fully s
 
 ## How to Contribute
 
-Of course you are more than welcome to contribute to the project.
-
-The easiest way of doing so, is by simply using *Open Logic* - and report any issues you find. That may be an idea for a new feature, a bug or simply unclear documentation. Any feedback is appreciated and will help improving the usability of *Open Logic*.
-
-If you want to contribute code, ideally you fork to your own GitHub account and hand in your changes as Pull-Request. You are welcome to discuss your ideas beforehand with (ideally as an issue in GitHub) - this might shorten the path to get your code accepted in *Open Logic*.
+See [Contributing](./Contributing.md).
 
 ## Origin of the Project
 
