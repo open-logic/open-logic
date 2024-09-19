@@ -167,6 +167,8 @@ begin
                     v.ShiftReg := Tx_Data;
                     v.Tx_Ready := '0';
                     v.DataLatched := '1';
+                    -- Apply output data immediately after data was latched
+                    v.SpiMisoData := Tx_Data(TxIdx_c);
                 end if;
                 -- For CPHA=0, data bust be valid on falling edge of CS immediately
                 if SpiCPHA_g = 0 and not r.IsConsecutive then
@@ -202,6 +204,8 @@ begin
                     end if;
                     -- Last bit
                     if r.BitCnt = TransWidth_g - 1 then
+                        -- Suppress needless MISO toggle at the end of a transaction
+                        v.SpiMisoData := r.SpiMisoData;
                         -- Output Rx Data
                         v.RxOutput := '1'; -- Done in next cycle to await shift register update
                         -- Transaction completed successfully
