@@ -248,7 +248,17 @@ begin
 
         attribute preserve : boolean;
         attribute preserve of VldReg : signal is true;
-        attribute preserve of DataReg : signal is true;         
+        attribute preserve of DataReg : signal is true;     
+        
+        -- Synchthesis attributes for Synopsis (Lattice, Actel)
+        attribute syn_keep : boolean;
+        attribute syn_keep of VldReg : signal is true;
+        attribute syn_keep of DataReg : signal is true;   
+
+        attribute syn_preserve : boolean;
+        attribute syn_preserve of VldReg : signal is true;
+        attribute syn_preserve of DataReg : signal is true;     
+
     begin
         
         p_stg : process(Clk)

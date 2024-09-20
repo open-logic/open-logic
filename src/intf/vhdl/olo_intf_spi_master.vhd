@@ -106,7 +106,7 @@ architecture rtl of olo_intf_spi_master is
     attribute dont_touch : string;
     attribute dont_touch of SpiMiso_i : signal is "TRUE";
 
-    -- Synthesis attributes for Efnix (Efinity)
+    -- Efinix RAM implementation attributes, also Lattice, Actel
     attribute syn_keep : boolean;
     attribute syn_keep of SpiMiso_i : signal is true;
     

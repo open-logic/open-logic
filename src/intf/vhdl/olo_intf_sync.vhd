@@ -70,6 +70,15 @@ architecture struct of olo_intf_sync is
     attribute preserve of Reg0 : signal is true;
     attribute preserve of Reg1 : signal is true;   
 
+    -- Synthesis attributes for Synopsys (Lattice, Actel)
+    attribute syn_keep : boolean;
+    attribute syn_keep of Reg0 : signal is true;
+    attribute syn_keep of Reg1 : signal is true;   
+
+    attribute syn_preserve : boolean;
+    attribute syn_preserve of Reg0 : signal is true;
+    attribute syn_preserve of Reg1 : signal is true;  
+
 begin
 
     -- Synchronizer process

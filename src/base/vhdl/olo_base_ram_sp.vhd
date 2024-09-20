@@ -69,7 +69,7 @@ architecture rtl of olo_base_ram_sp is
     attribute ramstyle : string;
     attribute ramstyle of mem : variable is RamStyle_g;
 
-    -- Efinix RAM implementation attributes
+    -- Efinix RAM implementation attributes -- Efinix RAM implementation attributes, also Lattice, Actel
     attribute syn_ramstyle : string;
     attribute syn_ramstyle of mem : variable is RamStyle_g;
 
