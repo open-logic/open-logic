@@ -20,6 +20,10 @@ An [Introduction Video](https://www.youtube.com/watch?v=hh3bS1SiIQs&t=6s) to ope
 
 Maintainer: [obruendl](oliver.bruendler@gmx.ch)
 
+If you appreciate the project, consider **supporting it with a small donation**. If you're part of a commercial company that prefers purchasing services over making voluntary donations, that's no problem. You can also **purchase offerings** such as **workshops** and **priority support**. Click the button below to visit the sponsors page.
+
+[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/open-logic)
+
 ## Structure
 
 *Open Logic* is split into the following areas. You might use all of them or only the ones you need.
