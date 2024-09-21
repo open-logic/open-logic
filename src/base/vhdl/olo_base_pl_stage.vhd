@@ -236,11 +236,6 @@ begin
         attribute syn_srlstyle of VldReg : signal is "registers";
         attribute syn_srlstyle of DataReg : signal is "registers";
 
-        -- Synthesis attributes Efinix (Efinity)
-        attribute syn_preserve : boolean;
-        attribute syn_preserve of VldReg : signal is true;
-        attribute syn_preserve of DataReg : signal is true; 
-
         -- Synthesis attributes Altera (Quartus)
         attribute dont_merge : boolean;
         attribute dont_merge of VldReg : signal is true;
@@ -250,7 +245,7 @@ begin
         attribute preserve of VldReg : signal is true;
         attribute preserve of DataReg : signal is true;     
         
-        -- Synchthesis attributes for Synopsis (Lattice, Actel)
+        -- Synchthesis attributes for Synopsis (Lattice, Actel, Efinity)
         attribute syn_keep : boolean;
         attribute syn_keep of VldReg : signal is true;
         attribute syn_keep of DataReg : signal is true;   
