@@ -395,6 +395,17 @@ for CPHA in [0, 1]:
     named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g': int(clkFreq/8),
                       'ConsecutiveTransactions_g': True})
 
+uart_tb = 'olo_intf_uart_tb'
+tb = olo_tb.test_bench(uart_tb)
+for BaudRate in [115200, 10000000]:
+    named_config(tb, {'BaudRate_g' : BaudRate})
+for DataBits in [8, 9]:
+    for Parity in ["none", "even", "odd"]:
+        named_config(tb, {'DataBits_g': DataBits, 'Parity_g' : Parity})
+for StopBits in ["1", "1.5", "2"]:
+    named_config(tb, {'StopBits_g' : StopBits})
+
+
 
 ########################################################################################################################
 # Execution
