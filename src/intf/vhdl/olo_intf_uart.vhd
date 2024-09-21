@@ -26,7 +26,7 @@ library work;
 ------------------------------------------------------------------------------
 entity olo_intf_uart is
     generic (
-        ClkFreq_g       : real := 100.0e6;
+        ClkFreq_g       : real;
         BaudRate_g      : real                      := 115.2e3;
         DataBits_g      : positive range 7 to 9     := 8;
         StopBits_g      : string                    := "1";
