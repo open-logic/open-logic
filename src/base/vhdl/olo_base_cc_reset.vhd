@@ -83,7 +83,7 @@ architecture struct of olo_base_cc_reset is
    attribute preserve of RstRqstA2B : signal is true;
    attribute preserve of RstAckA2B : signal is true;   
 
-   -- Synchthesis attributes for Synopsis (Lattice, Actel)
+   -- Synchthesis attributes for Synopsis (Lattice, Microchip)
    attribute syn_keep : boolean;
    attribute syn_keep of RstRqstB2A : signal is true;
    attribute syn_keep of RstAckB2A : signal is true;   
