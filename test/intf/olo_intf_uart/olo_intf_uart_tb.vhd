@@ -43,7 +43,7 @@ architecture sim of olo_intf_uart_tb is
     -------------------------------------------------------------------------
     -- TB Defnitions
     -------------------------------------------------------------------------
-    constant Clk_Frequency_c   : real    := 100.0e6;
+    constant Clk_Frequency_c   : real    := 105.0e6;
     constant Clk_Period_c      : time    := (1 sec) / Clk_Frequency_c;
     constant TotalBits_c       : integer := choose(Parity_g = "none", DataBits_g, DataBits_g+1);
  

@@ -322,8 +322,9 @@ begin
     --------------------------------------------------------------------------
     i_strb_tx : entity work.olo_base_strobe_gen
         generic map (
-            FreqClkHz_g    => ClkFreq_g,
-            FreqStrobeHz_g => BaudRate_g*2.0 -- 2x baud rate
+            FreqClkHz_g      => ClkFreq_g,
+            FractionalMode_g => true,
+            FreqStrobeHz_g   => BaudRate_g*2.0 -- 2x baud rate
         )
         port map (
             Clk         => Clk,
@@ -334,8 +335,9 @@ begin
 
     i_strb_rx : entity work.olo_base_strobe_gen
         generic map (
-            FreqClkHz_g    => ClkFreq_g,
-            FreqStrobeHz_g => BaudRate_g*2.0 -- 2x baud rate
+            FreqClkHz_g      => ClkFreq_g,
+            FractionalMode_g => true,
+            FreqStrobeHz_g   => BaudRate_g*2.0 -- 2x baud rate
         )
         port map (
             Clk         => Clk,
