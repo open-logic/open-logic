@@ -234,7 +234,8 @@ arb_rr_tb = 'olo_base_arb_rr_tb'
 strobe_gen_tb = 'olo_base_strobe_gen_tb'
 tb = olo_tb.test_bench(strobe_gen_tb)
 for Freq in ["10.0e6", "13.2e6"]:
-    named_config(tb, {'FreqStrobeHz_g': Freq})
+    for FMode in [False, True]:
+        named_config(tb, {'FreqStrobeHz_g': Freq, 'FractionalMode_g' : FMode})
 
 #strobe divider
 strobe_div_tbs = ['olo_base_strobe_div_tb', 'olo_base_strobe_div_backpressonly_tb']
