@@ -19,13 +19,17 @@ library ieee;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
+library work;
+    use work.olo_base_pkg_math.all;
+
 ------------------------------------------------------------------------------
 -- Entity Declaration
 ------------------------------------------------------------------------------
 entity olo_base_strobe_gen is
     generic(
-        FreqClkHz_g    : real; 
-        FreqStrobeHz_g : real
+        FreqClkHz_g      : real; 
+        FreqStrobeHz_g   : real;
+        FractionalMode_g : boolean := false
     ); 
     port (   
         Clk         : in  std_logic;  
@@ -40,24 +44,37 @@ end entity;
 -- Architecture Declaration
 ------------------------------------------------------------------------------
 architecture rtl of olo_base_strobe_gen is
-    constant Ratio_c : integer                      := integer(round(FreqClkHz_g / FreqStrobeHz_g));
-    signal Count     : integer range 0 to Ratio_c-1 := 0;
+    constant PeriodCountsFractional_c : integer                      := integer(round(FreqClkHz_g*100.0 / FreqStrobeHz_g));
+    constant PeriodCountsInteger_c    : integer                      := integer(round(FreqClkHz_g / FreqStrobeHz_g));
+    constant PeriodCounts_c           : integer                      := choose(FractionalMode_g, PeriodCountsFractional_c, PeriodCountsInteger_c);
+    constant Increment_c              : integer                      := choose(FractionalMode_g, 100, 1);
+    constant WrapBorder              : integer                       := PeriodCounts_c - Increment_c;
+    signal Count     : integer range 0 to PeriodCounts_c-1 := 0;
     signal SyncLast  : std_logic                    := '0';
 begin
 
     p_strobe : process(Clk)
     begin
         if rising_edge(Clk) then
-            -- Normal Operation
-            if (Count = Ratio_c - 1) or ((In_Sync = '1') and (SyncLast = '0')) then
+            -- Sync
+            if (In_Sync = '1') and (SyncLast = '0') then
+                Count <= 0;
                 Out_Valid   <= '1';
-                Count       <= 0;
+            -- Wraparound
+            elsif Count >= WrapBorder then
+                Out_Valid   <= '1';
+                if FractionalMode_g then
+                    Count   <= Count - WrapBorder;
+                else
+                    Count   <= 0;
+                end if;
+            -- Increment
             else
                 -- Keep Out_Valid asserted until Out_Ready is asserted as well
                 if Out_Ready = '1' then
                     Out_Valid <= '0';
                 end if;
-                Count  <= Count + 1;
+                Count  <= Count + Increment_c;
             end if;
             SyncLast <= In_Sync;
 
