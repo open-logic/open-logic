@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --  Copyright (c) 2024 by Oliver Bründler, Switzerland
---	All rights reserved.
+--  All rights reserved.
 --  Authors: Oliver Bruendler, Franz Herzog
 ------------------------------------------------------------------------------
 
@@ -37,9 +37,9 @@ entity olo_intf_uart is
         Clk             : in  std_logic; 
         Rst             : in  std_logic;
         -- Tx Data
-        Tx_Valid        : in  std_logic                                     := '1';
+        Tx_Valid        : in  std_logic                                     := '0';
         Tx_Ready        : out std_logic;
-        Tx_Data         : in  std_logic_vector(DataBits_g - 1 downto 0);
+        Tx_Data         : in  std_logic_vector(DataBits_g - 1 downto 0)     := (others => '0');
         -- Rx Data
         Rx_Valid        : out std_logic;
         Rx_Data         : out std_logic_vector(DataBits_g - 1 downto 0);
