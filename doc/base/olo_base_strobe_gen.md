@@ -18,7 +18,7 @@ In the most simple use-case, single cycle pulses are generated free-running at a
 
 ![simple-operation](./misc/olo_base_strobe_generator_simple.png)
 
-Alternatively the strobe phase can be synchronized to *In_Sync*. In this case, the event is synchronized to the rising edge of the *In_Sync* input.
+Additionally the strobe phase can be synchronized to *In_Sync*. In this case, the event is synchronized to the rising edge of the *In_Sync* input.
 
 ![simple-operation](./misc/olo_base_strobe_generator_sync.png)
 
@@ -28,12 +28,21 @@ If the *Out_Ready* signal is connected, *Out_Valid* stays asserted until *Out_Re
 
 However, *Out_Ready* and *In_Sync* are optional signals and can be left unconnected in the standard-case where just a pulse with a known frequency is required.
 
+The strobe generator by default works in *aequidistant mode*: It produces *Out_Valid* pulses that are always the same number of clock-cycles apart from each other. This has the down-side of the output strobe period being off by up to half a clock period - which finally leads to a slightly shifted frequency.
+
+Alternatively the strobe generator can be used in *fractional mode* (by setting *FractionalMode_g=true*). In this mode, the strobe generator does vary the time between *Out_Valid* pulses by one clock cycle to meet the *FreqStrobeHz_g* with less than 1% of error *on average* (over a long time).
+
+Use *fractional mode* if *FreqStrobeHz_g* is relatively close to *FreqClkHz_g* and the exact strobe frequency is important.
+
+Use *aequidistant mode* if a constant number of clock cycles between *Out_Valid* pulses is required. 
+
 ## Generics
 
-| Name           | Type | Default | Description                       |
-| :------------- | :--- | ------- | :-------------------------------- |
-| FreqClkHz_g    | real | -       | Clock frequency in Hz             |
-| FreqStrobeHz_g | real | -       | Pulse frequency to generate in Hz |
+| Name             | Type    | Default | Description                                        |
+| :--------------- | :------ | ------- | :------------------------------------------------- |
+| FreqClkHz_g      | real    | -       | Clock frequency in Hz                              |
+| FreqStrobeHz_g   | real    | -       | Pulse frequency to generate in Hz                  |
+| FractionalMode_g | boolean | false   | true: Fractional mode <br>false: Aequidistant mode |
 
 ## Interfaces
 
