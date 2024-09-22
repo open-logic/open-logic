@@ -139,6 +139,10 @@ begin
         report "olo_intf_uart - Parity_g must be none, even or odd" 
         severity error;
 
+    assert BaudRate_g <= ClkFreq_g / 10.0
+        report "olo_intf_uart - BaudRate_g must be <= ClkFreq_g / 10.0"
+        severity error;
+
     --------------------------------------------------------------------------
     -- Combinatorial Proccess
     --------------------------------------------------------------------------
