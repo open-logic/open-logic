@@ -28,8 +28,8 @@ library olo;
 -- vunit: run_all_in_same_sim
 entity olo_base_cam_tb is
     generic (
-        Addresses_g     : positive := 8;
-        ContentWidth_g  : positive := 16;
+        Addresses_g     : positive range 8 to 16    := 8;
+        ContentWidth_g  : positive range 10 to 256  := 10;
         RamBlockWidth_g : positive := 10;
         RamBlockDepth_g : positive := 512; --9 addr bits
         runner_cfg      : string
@@ -198,7 +198,7 @@ begin
                 -- Clear
                 PushConfigIn(net, Addr => 16#3#, Cmd => CMD_CLEAR_ADDR);
                 ExpectConfigOut(net, Content => 16#12#, Blocking => true, Msg => "clear");
-                ReadCam(net, Content => 16#12#, Found => false);
+                ReadCam(net, Content => 16#12#, Found => false, Msg => "cleared");
             end if;
 
             if run("TwoEntries-SingleRead") then

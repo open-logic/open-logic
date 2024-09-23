@@ -22,8 +22,9 @@ package olo_base_cam_pkg is
     constant CMD_CLEAR_ADDR     : std_logic_vector(1 downto 0) := "11";  -- Returns contente before clear
 end package;
 
--- Make RAM SP
--- Implement TDP mode
+-- Implement TDP mode (make tests safe + Add config while read test)
+-- Small RAM style - same
+-- Timing check
 
 
 ------------------------------------------------------------------------------
@@ -37,10 +38,8 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_cam_pkg.all;
+    use work.olo_base_pkg_logic.all;
 
--- Test Addresses non power of 2
--- Test Content non power of 2
--- Test Content smaller than RAM address
 -- Remove ContentWidth and Adresses generic default values
 
 ------------------------------------------------------------------------------
@@ -48,7 +47,7 @@ library work;
 ------------------------------------------------------------------------------
 entity olo_base_cam is
     generic (
-        Addresses_g     : positive  := 128;                                         
+        Addresses_g     : positive  := 1024;                                         
         ContentWidth_g  : positive  := 32;    
         RamStyle_g      : string    := "auto";  
         RamBehavior_g   : string    := "RBW";
@@ -261,6 +260,8 @@ begin
                 if r.ConfigCmd = CMD_CLEAR_ADDR then
                     v.ConfigRamWrData := (others => '0');
                     v.ConfigRamWr := '1';
+                    v.ConfigContent := (others => '0');
+                    v.ConfigContent(ContentWidth_g-1 downto 0) := r.ConfigRamContent;
                 end if;
 
 
@@ -270,11 +271,10 @@ begin
                 SetMask_v := (others => '0');
                 case r.ConfigCmd is
                     when CMD_WRITE =>
-                        SetMask_v(fromUslv(to_01(r.ConfigAddr))) := '1';
+                        SetMask_v(fromUslv(to01(r.ConfigAddr))) := '1';
                     when CMD_CLEAR_ADDR =>
-                        ClearMask_v(fromUslv(to_01(r.ConfigAddr))) := '0';
-                        v.ConfigContent := (others => '0');
-                        v.ConfigContent(ContentWidth_g-1 downto 0) := r.ConfigRamContent;
+                        ClearMask_v(fromUslv(to01(r.ConfigAddr))) := '0';
+   
                     -- coverage off
                     when others => null; -- unreachable
                     -- coverage on
@@ -336,7 +336,7 @@ begin
     b_ram : block
         signal RdData : std_logic_vector(ContentWidth_g downto 0);
     begin
-        i_normal_ram : entity work.olo_base_ram_sdp
+        i_normal_ram : entity work.olo_base_ram_sp
             generic map (
                 Depth_g         => Addresses_g,
                 Width_g         => ContentWidth_g+1,
@@ -345,11 +345,10 @@ begin
             )
             port map (   
                 Clk         => Clk,
-                Wr_Addr     => r.ConfigAddr,
-                Wr_Ena      => r.ConfigRamWr,
-                Wr_Data     => r.ConfigRamWrData,
-                Rd_Addr     => r.ConfigAddr,
-                Rd_Data     => RdData
+                Addr        => r.ConfigAddr,
+                WrEna       => r.ConfigRamWr,
+                WrData      => r.ConfigRamWrData,
+                RdData      => RdData
             );  
             
         RamRdContent <= RdData(ContentWidth_g-1 downto 0);
@@ -361,8 +360,8 @@ begin
         signal WrAddr   : std_logic_vector(BlockAddrBits_c-1 downto 0);
     begin
         -- Input assembly
-        RdAddr_0 <= to_01(r.ContentExtended_0((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
-        WrAddr <= to_01(r.ConfigContent((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
+        RdAddr_0 <= to01(r.ContentExtended_0((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
+        WrAddr <= to01(r.ConfigContent((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
 
         -- Instance
         i_ram : entity work.olo_base_ram_sdp
