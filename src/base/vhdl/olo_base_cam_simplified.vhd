@@ -16,12 +16,13 @@ library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
-package olo_base_cam_pkg is
+package olo_base_cam_simplified_pkg is
     constant CMD_WRITE          : std_logic_vector(1 downto 0) := "00";  -- Returns the content before write if it was occupied
     constant CMD_READ           : std_logic_vector(1 downto 0) := "01";  -- Returns the content
     constant CMD_CLEAR_ADDR     : std_logic_vector(1 downto 0) := "11";  -- Returns contente before clear
 end package;
 
+-- Split to "CAM" and "CAM Simplified"
 -- Implement TDP mode (make tests safe + Add config while read test)
 -- Small RAM style - same
 -- Timing check
@@ -37,7 +38,7 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
-    use work.olo_base_cam_pkg.all;
+    use work.olo_base_cam_simplified_pkg.all;
     use work.olo_base_pkg_logic.all;
 
 -- Remove ContentWidth and Adresses generic default values
@@ -45,7 +46,7 @@ library work;
 ------------------------------------------------------------------------------
 -- Entity
 ------------------------------------------------------------------------------
-entity olo_base_cam is
+entity olo_base_cam_simplified is
     generic (
         Addresses_g     : positive  := 1024;                                         
         ContentWidth_g  : positive  := 32;    
@@ -91,7 +92,7 @@ end entity;
 ------------------------------------------------------------------------------
 -- Architecture
 ------------------------------------------------------------------------------
-architecture rtl of olo_base_cam is
+architecture rtl of olo_base_cam_simplified is
     -- *** Constants ***
     constant BlockAddrBits_c    : positive := log2ceil(RamBlockDepth_g);
     constant BlocksParallel_c   : positive := integer(ceil(real(ContentWidth_g) / real(BlockAddrBits_c)));
@@ -143,7 +144,7 @@ begin
     -- Assertions
     --------------------------------------------------------------------------   
     assert isPower2(RamBlockDepth_g)
-        report "olo_base_cam - RamBlockDepth_g must be a power of 2"
+        report "olo_base_cam_simplified - RamBlockDepth_g must be a power of 2"
         severity error;
 
     --------------------------------------------------------------------------

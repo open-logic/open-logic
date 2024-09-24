@@ -20,13 +20,13 @@ library vunit_lib;
 library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
-    use olo.olo_base_cam_pkg.all;
+    use olo.olo_base_cam_simplified_pkg.all;
 
 ------------------------------------------------------------------------------
 -- Entity
 ------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_base_cam_tb is
+entity olo_base_cam_simplified_tb is
     generic (
         Addresses_g     : positive range 8 to 16    := 8;
         ContentWidth_g  : positive range 10 to 256  := 10;
@@ -34,9 +34,9 @@ entity olo_base_cam_tb is
         RamBlockDepth_g : positive := 512; --9 addr bits
         runner_cfg      : string
     );
-end entity olo_base_cam_tb;
+end entity olo_base_cam_simplified_tb;
 
-architecture sim of olo_base_cam_tb is
+architecture sim of olo_base_cam_simplified_tb is
 
     -------------------------------------------------------------------------
     -- Constants
@@ -286,7 +286,7 @@ begin
     -------------------------------------------------------------------------
     -- DUT
     -------------------------------------------------------------------------
-    i_dut : entity olo.olo_base_cam
+    i_dut : entity olo.olo_base_cam_simplified
         generic map (
             Addresses_g     => Addresses_g,                                    
             ContentWidth_g  => ContentWidth_g,    
