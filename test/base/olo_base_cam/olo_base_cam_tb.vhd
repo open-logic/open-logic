@@ -27,13 +27,18 @@ library olo;
 -- vunit: run_all_in_same_sim
 entity olo_base_cam_tb is
     generic (
-        Addresses_g         : positive range 8 to 16    := 8;
-        ContentWidth_g      : positive range 10 to 256  := 10;
-        RamBlockWidth_g     : positive                  := 10;
-        RamBlockDepth_g     : positive                  := 512; --9 addr bits
-        ReadPriority_g      : boolean                   := false;
-        StrictOrdering_g    : boolean                   := false;
-        runner_cfg          : string
+        Addresses_g             : positive range 8 to 16    := 8;
+        ContentWidth_g          : positive range 10 to 256  := 10;
+        RamBehavior_g           : string                    := "RBW";
+        RamBlockWidth_g         : positive                  := 32;
+        RamBlockDepth_g         : positive                  := 512; --9 addr bits
+        ReadPriority_g          : boolean                   := false;
+        StrictOrdering_g        : boolean                   := false;
+        UseAddrOut_g            : boolean                   := true;
+        RegisterInput_g         : boolean                   := true;
+        Register1Hot_g          : boolean                   := true;
+        OneHotDecodeLatency_g   : natural                   := 1;
+        runner_cfg              : string
     );
 end entity olo_base_cam_tb;
 
@@ -103,7 +108,9 @@ architecture sim of olo_base_cam_tb is
         end if;
         push_axi_stream(net, camRdMaster, toUslv(Content, ContentWidth_g));
         check_axi_stream(net, cam1HotSlave, AddrOneHot_v, blocking => false, msg => "one hot - " & Msg);
-        check_axi_stream(net, camAddrSlave, Addr_v, tuser => Found_v, blocking => false, msg => "addr - " & Msg);
+        if UseAddrOut_g then
+            check_axi_stream(net, camAddrSlave, Addr_v, tuser => Found_v, blocking => false, msg => "addr - " & Msg);
+        end if;
         if Blocking then
             wait_until_idle(net, as_sync(camRdMaster));
             wait_until_idle(net, as_sync(cam1HotSlave));
@@ -268,7 +275,7 @@ begin
                 wait until rising_edge(Clk);
                 PushConfigIn(net, Content => 16#13#, Addr => 16#04#, Write => true);
                 wait until rising_edge(Clk);
-                if StrictOrdering_g then
+                if StrictOrdering_g or RamBehavior_g = "WBR" then
                     -- In this case the data is already written
                     ReadCam(net, Content => 16#13#, Addr => 16#04#, Blocking => true, Msg => "written");
                 else
@@ -278,7 +285,7 @@ begin
                 -- Produce Read immediately after clear
                 PushConfigIn(net, Content => 16#13#, Addr => 16#04#, Clear => true);
                 wait until rising_edge(Clk);
-                if StrictOrdering_g then
+                if StrictOrdering_g or RamBehavior_g = "WBR" then
                     -- In this case the data is already cleared
                     ReadCam(net, Content => 16#13#, Found => false, Blocking => true, Msg => "cleared");
                 else
@@ -312,12 +319,16 @@ begin
     -------------------------------------------------------------------------
     i_dut : entity olo.olo_base_cam
         generic map (
-            Addresses_g         => Addresses_g,                                         
-            ContentWidth_g      => ContentWidth_g,    
-            RamBlockWidth_g     => RamBlockWidth_g, 
-            RamBlockDepth_g     => RamBlockDepth_g,
-            ReadPriority_g      => ReadPriority_g,
-            StrictOrdering_g    => StrictOrdering_g
+            Addresses_g             => Addresses_g,                                         
+            ContentWidth_g          => ContentWidth_g,    
+            RamBlockWidth_g         => RamBlockWidth_g, 
+            RamBlockDepth_g         => RamBlockDepth_g,
+            ReadPriority_g          => ReadPriority_g,
+            StrictOrdering_g        => StrictOrdering_g,
+            RegisterInput_g         => RegisterInput_g,
+            Register1Hot_g          => Register1Hot_g,
+            OneHotDecodeLatency_g   => OneHotDecodeLatency_g,
+            RamBehavior_g           => RamBehavior_g
         )
         port map (
             Clk                 => Clk,

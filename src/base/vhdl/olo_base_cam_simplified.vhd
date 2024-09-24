@@ -22,10 +22,8 @@ package olo_base_cam_simplified_pkg is
     constant CMD_CLEAR_ADDR     : std_logic_vector(1 downto 0) := "11";  -- Returns contente before clear
 end package;
 
--- Split to "CAM" and "CAM Simplified"
--- Implement TDP mode (make tests safe + Add config while read test)
--- Small RAM style - same
--- Timing check
+-- Clear after reset before enabling
+-- Read normal RAM, Clear address, Clear content, ClearAll
 
 
 ------------------------------------------------------------------------------
