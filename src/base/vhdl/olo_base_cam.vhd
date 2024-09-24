@@ -10,12 +10,12 @@
 -- This components implements a content addressable memory.
 
 -- TODO:
--- Configurable latencies (read 1 hot, decode)
--- Convert to pipes
+-- Change latencies (read directly, deode configurable)
 -- TDP mode for reading and writing at the same time?
 -- Timing check
 -- Remove ContentWidth and Adresses generic default values
--- Test: Valid directly after write, invalid directly after remove
+
+-- RunPy: Content < addrbits, Width > Addr
 
 ------------------------------------------------------------------------------
 -- Libraries
@@ -34,31 +34,41 @@ library work;
 ------------------------------------------------------------------------------
 entity olo_base_cam is
     generic (
-        Addresses_g     : positive  := 1024;                                         
-        ContentWidth_g  : positive  := 32;    
-        RamStyle_g      : string    := "auto";  
-        RamBehavior_g   : string    := "RBW";
-        RamBlockWidth_g : positive  := 32; 
-        RamBlockDepth_g : positive  := 512
+        Addresses_g             : positive  := 1024;                                         
+        ContentWidth_g          : positive  := 32;    
+        RamStyle_g              : string    := "auto";  
+        RamBehavior_g           : string    := "RBW";
+        RamBlockWidth_g         : positive  := 32; 
+        RamBlockDepth_g         : positive  := 512;
+        ReadPriority_g          : boolean   := false;
+        StrictOrdering_g        : boolean   := true;
+        RegisterInput_g         : boolean   := true;
+        RegisterOneHot_g        : boolean   := true;
+        OneHotDecodeLatency_g   : natural range 0 to 2 := 1
     );  
     port (   
         -- Control Signals
         Clk                     : in  std_logic;
         Rst                     : in  std_logic;
 
-        -- CAM request Signals
-        CamIn_Valid             : in  std_logic                                                 := '1';
-        CamIn_Ready             : out std_logic;
-        CamIn_Content           : in  std_logic_vector(ContentWidth_g - 1 downto 0);
-        CamIn_Addr              : in  std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
-        CamIn_Add               : in  std_logic;
-        CamIn_Remove            : in  std_logic                                                 := '0';
+        -- CAM read request
+        CamRd_Valid             : in  std_logic                                                 := '1';
+        CamRd_Ready             : out std_logic;
+        CamRd_Content           : in  std_logic_vector(ContentWidth_g-1 downto 0);
 
-        -- CAM one hot response
+        -- Cam write
+        CamWr_Valid             : in  std_logic;
+        CamWr_Ready             : out std_logic;
+        CamWr_Content           : in  std_logic_vector(ContentWidth_g-1 downto 0);
+        CamWr_Addr              : in  std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
+        CamWr_Write             : in  std_logic;
+        CamWr_Clear             : in  std_logic;
+
+        -- CAM one hot read response
         Cam1Hot_Valid           : out std_logic;
         Cam1Hot_Match           : out std_logic_vector(Addresses_g-1 downto 0);
 
-        -- CAM binary response
+        -- CAM binary read response
         CamAddr_Valid           : out std_logic;
         CamAddr_Found           : out std_logic;
         CamAddr_Addr            : out std_logic_vector(log2ceil(Addresses_g)-1 downto 0)        
@@ -76,35 +86,37 @@ architecture rtl of olo_base_cam is
 
     -- *** Two Process Method ***
     type two_process_r is record
-        -- General
-        CamIn_Ready             : std_logic;
         -- Stage 0
-        CamValid_0              : std_logic;    
         Content_0               : std_logic_vector(ContentWidth_g - 1 downto 0);
         Addr_0                  : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
-        Add_0                   : std_logic;
-        Remove_0                : std_logic;
+        Write_0                 : std_logic;
+        Clear_0                 : std_logic;
+        Read_0                  : std_logic;
         -- Stage 1
-        CamValid_1              : std_logic;
-        Addr_1                  : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
         Content_1               : std_logic_vector(ContentWidth_g - 1 downto 0);
-        Add_1                   : std_logic;
-        Remove_1                : std_logic;
+        Addr_1                  : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
+        Write_1                 : std_logic;
+        Clear_1                 : std_logic;
+        Read_1                  : std_logic;
         -- Stage 2
-        CamValid_2              : std_logic;
         AddrOneHot_2            : std_logic_vector(Addresses_g-1 downto 0);
+        Read_2                  : std_logic;
         -- Stage 3
-        CamValid_3              : std_logic;
+        Read_3                  : std_logic;
         AddrBin_3               : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
         Found_3                 : std_logic;
+        -- Stage 4
+        Read_4                  : std_logic;
+        AddrBin_4               : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
+        Found_4                 : std_logic;
     end record;
     signal r, r_next : two_process_r;
 
     -- *** Instantiation Signals ***
     type Addr_t is array (natural range <>) of std_logic_vector(Addresses_g-1 downto 0);
-    signal AddrOneHot_1 : Addr_t(0 to BlocksParallel_c-1);
-    signal WriteOneHot_1 : Addr_t(0 to BlocksParallel_c-1);
-    signal WrMem_1 : std_logic;
+    signal AddrOneHot_1     : Addr_t(0 to BlocksParallel_c-1);
+    signal WriteOneHot_1    : Addr_t(0 to BlocksParallel_c-1);
+    signal WrMem_1          : std_logic;
 
     
 begin
@@ -119,39 +131,75 @@ begin
     --------------------------------------------------------------------------
     -- Combinatorial Proccess
     --------------------------------------------------------------------------
-    p_cob : process (CamIn_Valid, CamIn_Content, CamIn_Addr, CamIn_Add, CamIn_Remove,
-                     AddrOneHot_1, r)
+    p_cob : process (CamRd_Valid, CamRd_Content, CamWr_Valid, CamWr_Content, CamWr_Addr, CamWr_Write, CamWr_Clear, 
+                     AddrOneHot_1, Rst, r)
         variable v : two_process_r;
         variable ClearMask_v, SetMask_v : std_logic_vector(Addresses_g-1 downto 0);
+        variable InRdReady_v, InWrReady_v : std_logic;
+        variable OneHot_v : std_logic_vector(Addresses_g-1 downto 0);
     begin
         -- *** Hold variables stable *** 
         v := r;
 
+        -- *** Input Ready Handling ***
+        if ReadPriority_g then
+            InRdReady_v     := '1';
+            InWrReady_v     := not CamRd_Valid;
+        else
+            InWrReady_v     := '1';
+            InRdReady_v     := not CamWr_Valid; 
+        end if;
+        -- For Write and Rad with strict ordering, wait until write is done
+        if r.Write_0 = '1' or r.Clear_0 = '1' then
+            InWrReady_v := '0';
+            if StrictOrdering_g then
+                InRdReady_v := '0';
+            end if;
+        end if;
+        -- Handle Reset
+        if Rst = '1' then
+            InRdReady_v     := '0';
+            InWrReady_v     := '0';
+        end if;
+        CamRd_Ready <= InRdReady_v;
+        CamWr_Ready <= InWrReady_v;
+
 
         -- *** Stage 0 ***
-        -- Modifications of the table take one additional cycle to write back the updated entry
-        if (CamIn_Add = '1' or CamIn_Remove = '1') and CamIn_Valid = '1' and r.CamIn_Ready = '1' then
-            v.CamIn_Ready := '0';
-        else
-            v.CamIn_Ready := '1';
+        v.Addr_0    := CamWr_Addr;
+        v.Write_0   := '0';
+        v.Clear_0   := '0';
+        v.Read_0    := '0';
+        if InWrReady_v = '1' and CamWr_Valid = '1' then
+            v.Content_0     := CamWr_Content;
+            v.Write_0       := CamWr_Write;
+            v.Clear_0       := CamWr_Clear;
+        elsif InRdReady_v = '1' and CamRd_Valid = '1' then
+            v.Content_0     := CamRd_Content;
+            v.Read_0        := '1';
         end if;
-        v.CamValid_0 := CamIn_Valid and r.CamIn_Ready;
-        v.Content_0 := CamIn_Content;
-        v.Addr_0 := CamIn_Addr;
-        v.Add_0 := CamIn_Add;
-        v.Remove_0 := CamIn_Remove;
-
+        
         
         -- *** Stage 1 ***
-        -- Wait for RAM to respond
-        v.CamValid_1 := r.CamValid_0;
-        v.Addr_1 := r.Addr_0;
-        v.Content_1 := r.Content_0;
-        v.Add_1 := r.Add_0;
-        v.Remove_1 := r.Remove_0;
+        if RegisterInput_g then
+            -- Wait for RAM to respond
+            v.Content_1 := r.Content_0;
+            v.Addr_1    := r.Addr_0;
+            v.Write_1   := r.Write_0;
+            v.Clear_1   := r.Clear_0;
+            v.Read_1    := r.Read_0;
+        else
+            -- Skip one register state
+            v.Content_1 := v.Content_0;
+            v.Addr_1    := v.Addr_0;
+            v.Write_1   := v.Write_0;
+            v.Clear_1   := v.Clear_0;
+            v.Read_1    := v.Read_0;
+        end if;
+
 
         -- *** Stage 2 ***
-        v.CamValid_2 := r.CamValid_1;
+        v.Read_2 := r.Read_1;
         -- Find one hot matching address
         v.AddrOneHot_2 := AddrOneHot_1(0);
         for i in 1 to BlocksParallel_c-1 loop
@@ -160,44 +208,64 @@ begin
         -- Modify CAM content if required
         ClearMask_v := (others => '1');
         SetMask_v := (others => '0');
-        if r.Add_1 = '1' then
+        if r.Write_1 = '1' then
             SetMask_v(fromUslv(to01(r.Addr_1))) := '1';
         end if;
-        if r.Remove_1 = '1' then
+        if r.Clear_1 = '1' then
             ClearMask_v(fromUslv(to01(r.Addr_1))) := '0';
         end if;
         for i in 0 to BlocksParallel_c-1 loop
             WriteOneHot_1(i) <= (AddrOneHot_1(i) and ClearMask_v) or SetMask_v;
         end loop;
-        WrMem_1 <= r.CamValid_1 and (r.Add_1 or r.Remove_1);
+        WrMem_1 <= r.Write_1 or r.Clear_1;
+        -- One hot output
+        if RegisterOneHot_g then
+            Cam1Hot_Valid   <= r.Read_2;
+            OneHot_v        := r.AddrOneHot_2;
+            v.Read_3        := r.Read_2;
+        else
+            Cam1Hot_Valid   <= v.Read_2;
+            OneHot_v        := v.AddrOneHot_2;
+            v.Read_3        := v.Read_2;
+        end if;
+        Cam1Hot_Match <= OneHot_v;
 
         -- *** Stage 3 ***
-        v.CamValid_3 := r.CamValid_2;
+        --v.Read_3 := r.Read_2;
         -- Convert one hot to binary
         v.Found_3 := '0';
         v.AddrBin_3 := (others => '0');
         for i in 0 to Addresses_g-1 loop
-            if r.AddrOneHot_2(i) = '1' then
+            if OneHot_v(i) = '1' then
                 v.Found_3 := '1';
                 v.AddrBin_3 := toUslv(i, v.AddrBin_3'length);
                 exit;
             end if;
         end loop;
 
+        -- *** Stage 4 ***
+        v.Read_4    := r.Read_3;
+        v.AddrBin_4 := r.AddrBin_3;
+        v.Found_4   := r.Found_3;
+
+        -- Address output
+        if OneHotDecodeLatency_g = 1 then
+            CamAddr_Valid   <= r.Read_3;
+            CamAddr_Found   <= r.Found_3;
+            CamAddr_Addr    <= r.AddrBin_3;
+        elsif OneHotDecodeLatency_g = 0 then
+            CamAddr_Valid   <= v.Read_3;
+            CamAddr_Found   <= v.Found_3;
+            CamAddr_Addr    <= v.AddrBin_3; 
+        elsif OneHotDecodeLatency_g = 2 then
+            CamAddr_Valid   <= r.Read_4;
+            CamAddr_Found   <= r.Found_4;
+            CamAddr_Addr    <= r.AddrBin_4;                        
+        end if;          
+
         -- *** Assign to signal ***
         r_next <= v;
     end process;
-
-    --------------------------------------------------------------------------
-    -- Outputs
-    --------------------------------------------------------------------------
-    CamIn_Ready     <= r.CamIn_Ready;
-    Cam1Hot_Valid   <= r.CamValid_2;
-    Cam1Hot_Match   <= r.AddrOneHot_2;
-    CamAddr_Valid   <= r.CamValid_3;
-    CamAddr_Found   <= r.Found_3;
-    CamAddr_Addr    <= r.AddrBin_3;
-
 
     --------------------------------------------------------------------------
     -- Sequential Proccess
@@ -207,11 +275,15 @@ begin
         if rising_edge(Clk) then
             r <= r_next;
             if Rst = '1' then
-                r.CamIn_Ready       <= '0';
-                r.CamValid_0        <= '0';
-                r.CamValid_1        <= '0';
-                r.CamValid_2        <= '0';
-                r.CamValid_3        <= '0';
+                r.Write_0   <= '0';
+                r.Clear_0   <= '0';
+                r.Read_0    <= '0';
+                r.Write_1   <= '0';
+                r.Clear_1   <= '0';
+                r.Read_1    <= '0';
+                r.Read_2    <= '0';
+                r.Read_3    <= '0';
+                r.Read_4    <= '0';
             end if;
         end if;
     end process;
@@ -227,7 +299,8 @@ begin
         signal WrAddr_1           : std_logic_vector(BlockAddrBits_c-1 downto 0);
     begin
         -- Input assembly
-        ContentExtended_0(ContentWidth_g-1 downto 0) <= r.Content_0;
+        ContentExtended_0(ContentWidth_g-1 downto 0) <= r.Content_0 when RegisterInput_g else
+                                                        CamRd_Content;  
         RdAddr_0 <= to01(ContentExtended_0((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
         ContentExtended_1(ContentWidth_g-1 downto 0) <= r.Content_1;
         WrAddr_1 <= to01(ContentExtended_1((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
@@ -249,8 +322,6 @@ begin
                 Rd_Data     => AddrOneHot_1(i)
             );   
     end generate;
-
-    
   
 
 end architecture;
