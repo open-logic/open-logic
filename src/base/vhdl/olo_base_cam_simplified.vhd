@@ -22,7 +22,7 @@ package olo_base_cam_simplified_pkg is
     constant CMD_CLEAR_ADDR     : std_logic_vector(1 downto 0) := "11";  -- Returns contente before clear
 end package;
 
--- Clear after reset before enabling
+-- Clear after reset before enabling (this requires normal ram to be set before write and cleared after clear)
 -- Read normal RAM, Clear address, Clear content, ClearAll
 
 

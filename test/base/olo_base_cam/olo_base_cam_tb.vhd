@@ -96,13 +96,20 @@ architecture sim of olo_base_cam_tb is
                         Addr        : integer := 0;
                         Found       : boolean := true;
                         Blocking    : boolean := false;
+                        OneHot      : std_logic_vector := "X";
                         Msg         : string := "") is
         variable Addr_v         : std_logic_vector(log2ceil(Addresses_g)-1 downto 0) := (others => '0');
         variable AddrOneHot_v   : std_logic_vector(Addresses_g-1 downto 0) := (others => '0');
         variable Found_v        : std_logic_vector(0 downto 0) := "0";
     begin
         if Found then
-            AddrOneHot_v(Addr) := '1';
+            -- Normally only one bit is set
+            if OneHot = "X" then
+                AddrOneHot_v(Addr) := '1';
+            -- But the user can check for a specific patter
+            else
+                AddrOneHot_v(OneHot'range) := OneHot;
+            end if;
             Addr_v := toUslv(Addr, log2ceil(Addresses_g));
             Found_v := "1";
         end if;
@@ -293,6 +300,53 @@ begin
                     ReadCam(net, Content => 16#13#, Addr => 16#04#, Blocking => true, Msg => "not cleared");
                 end if;        
             end if;
+
+            if run("ClearTwice") then
+                -- Configure
+                PushConfigIn(net, Content => 16#13#, Addr => 16#04#, Write => true);
+                PushConfigIn(net, Content => 16#14#, Addr => 16#05#, Write => true);
+                -- Clear Once
+                PushConfigIn(net, Content => 16#13#, Addr => 16#04#, Clear => true, Blocking => true);
+                wait for 3*ClkPeriod_c;
+                ReadCam(net, Content => 16#13#, Found => false);
+                ReadCam(net, Content => 16#14#, Addr => 16#05#, Blocking => true);
+                -- Clear Twice
+                PushConfigIn(net, Content => 16#13#, Addr => 16#04#, Clear => true, Blocking => true);
+                wait for 3*ClkPeriod_c;
+                ReadCam(net, Content => 16#13#, Found => false);
+                ReadCam(net, Content => 16#14#, Addr => 16#05#, Blocking => true);
+                -- Cleanup
+                PushConfigIn(net, Content => 16#14#, Addr => 16#05#, Clear => true);
+            end if;
+
+            if run("SameContent-TwoAddresses") then
+                -- Configure
+                PushConfigIn(net, Content => 16#13#, Addr => 16#04#, Write => true);
+                PushConfigIn(net, Content => 16#14#, Addr => 16#05#, Write => true);
+                PushConfigIn(net, Content => 16#13#, Addr => 16#06#, Write => true, Blocking => true);
+                wait for 3*ClkPeriod_c;
+                -- Read
+                ReadCam(net, Content => 16#14#, Addr => 16#05#, Msg => "Single Entry 1");
+                OneHot_v := (4 => '1', 6 => '1', others => '0');
+                ReadCam(net, Content => 16#13#, Addr => 16#04#, OneHot => OneHot_v, Blocking => true, Msg => "First entry for double address");
+                -- Clear one entry
+                PushConfigIn(net, Content => 16#13#, Addr => 16#04#, Clear => true, Blocking => true);
+                wait for 3*ClkPeriod_c;
+                -- Read
+                ReadCam(net, Content => 16#14#, Addr => 16#05#,  Msg => "Single Entry 2");
+                ReadCam(net, Content => 16#13#, Addr => 16#06#, Blocking => true, Msg => "Second entry for double address");
+                -- Clear second entry
+                PushConfigIn(net, Content => 16#13#, Addr => 16#06#, Clear => true, Blocking => true);
+                wait for 3*ClkPeriod_c;    
+                -- Read
+                ReadCam(net, Content => 16#14#, Addr => 16#05#,  Msg => "Single Entry 3");
+                ReadCam(net, Content => 16#13#, Found => false, Blocking => true, Msg => "Both deleted");         
+                -- Clear second entry
+                PushConfigIn(net, Content => 16#14#, Addr => 16#05#, Clear => true);
+            end if;
+
+            
+            -- Clear all
 
 
 

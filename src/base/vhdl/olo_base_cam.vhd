@@ -27,8 +27,8 @@ library work;
 entity olo_base_cam is
     generic (
         -- Basic Configuration
-        Addresses_g             : positive  := 1024;                                         
-        ContentWidth_g          : positive  := 32;    
+        Addresses_g             : positive;                                         
+        ContentWidth_g          : positive;    
         RamStyle_g              : string    := "auto";  
         RamBehavior_g           : string    := "RBW";
         RamBlockWidth_g         : positive  := 32; 
@@ -40,7 +40,7 @@ entity olo_base_cam is
         UseAddrOut_g            : boolean   := true;
         RegisterInput_g         : boolean   := true;
         Register1Hot_g          : boolean   := true;
-        OneHotDecodeLatency_g   : natural   := 3
+        OneHotDecodeLatency_g   : natural   := 1
     );  
     port (   
         -- Control Signals
@@ -113,6 +113,7 @@ architecture rtl of olo_base_cam is
 
     -- *** Instantiation Signals ***
     type HoneHot_t is array (natural range <>) of std_logic_vector(Addresses_g-1 downto 0);
+    signal ReadContent_0    : std_logic_vector(ContentWidth_g-1 downto 0);
     signal AddrOneHot_1     : HoneHot_t(0 to BlocksParallel_c-1);
     signal WriteOneHot_1    : HoneHot_t(0 to BlocksParallel_c-1);
     signal WrMem_1          : std_logic;
@@ -177,6 +178,11 @@ begin
         elsif InRdReady_v = '1' and CamRd_Valid = '1' then
             v.Content_0     := CamRd_Content;
             v.Read_0        := '1';
+        end if;
+        if RegisterInput_g then
+            ReadContent_0 <= r.Content_0;
+        else
+            ReadContent_0 <= v.Content_0;
         end if;
         
         
@@ -302,8 +308,7 @@ begin
         signal WrAddr_1           : std_logic_vector(BlockAddrBits_c-1 downto 0);
     begin
         -- Input assembly
-        ContentExtended_0(ContentWidth_g-1 downto 0) <= r.Content_0 when RegisterInput_g else
-                                                        CamRd_Content;  
+        ContentExtended_0(ContentWidth_g-1 downto 0) <= ReadContent_0;  
         RdAddr_0 <= to01(ContentExtended_0((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
         ContentExtended_1(ContentWidth_g-1 downto 0) <= r.Content_1;
         WrAddr_1 <= to01(ContentExtended_1((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
