@@ -296,6 +296,10 @@ named_config(tb, {'RegisterInput_g': True, 'Register1Hot_g': False, 'OneHotDecod
 #Omit AddrOut
 named_config(tb, {'UseAddrOut_g': True})
 named_config(tb, {'UseAddrOut_g': False})
+#Clear after reset with different input latency configs
+for ClearAfterReset in [False, True]:
+    for InReg in [False, True]:
+        named_config(tb, {'ClearAfterReset_g': ClearAfterReset, 'RegisterInput_g': InReg})
 
 
 ########################################################################################################################

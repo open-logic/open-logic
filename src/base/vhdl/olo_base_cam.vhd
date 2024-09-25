@@ -32,7 +32,8 @@ entity olo_base_cam is
         RamStyle_g              : string    := "auto";  
         RamBehavior_g           : string    := "RBW";
         RamBlockWidth_g         : positive  := 32; 
-        RamBlockDepth_g         : positive  := 512;      
+        RamBlockDepth_g         : positive  := 512;     
+        ClearAfterReset_g       : boolean   := true; 
         -- Read/Write interleaving
         ReadPriority_g          : boolean   := false;
         StrictOrdering_g        : boolean   := true;
@@ -94,7 +95,7 @@ architecture rtl of olo_base_cam is
         ClearAll_0              : std_logic;
         Read_0                  : std_logic;
         -- Stage 1
-        Content_1               : std_logic_vector(ContentWidth_g - 1 downto 0);
+        ContentExtended_1       : std_logic_vector(TotalAddrBits_c - 1 downto 0);
         Addr_1                  : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
         Write_1                 : std_logic;
         Clear_1                 : std_logic;
@@ -111,6 +112,10 @@ architecture rtl of olo_base_cam is
         Read_N                  : std_logic_vector(4 to 4+OneHotDecodeLatency_g-2);
         AddrBin_N               : Addr_t(4 to 4+OneHotDecodeLatency_g-2);
         Found_N                 : std_logic_vector(4 to 4+OneHotDecodeLatency_g-2); 
+        -- Clear after reset
+        RstClearDone            : std_logic;
+        RstClearCounter         : unsigned(BlockAddrBits_c-1 downto 0);
+        RstClearWr             : std_logic;
     end record;
     signal r, r_next : two_process_r;
 
@@ -161,7 +166,7 @@ begin
             end if;
         end if;
         -- Handle Reset
-        if Rst = '1' then
+        if Rst = '1' or (ClearAfterReset_g and r.RstClearDone = '0') then
             InRdReady_v     := '0';
             InWrReady_v     := '0';
         end if;
@@ -194,7 +199,8 @@ begin
         -- *** Stage 1 ***
         if RegisterInput_g then
             -- Wait for RAM to respond
-            v.Content_1     := r.Content_0;
+            v.ContentExtended_1 := (others => '0');
+            v.ContentExtended_1(ContentWidth_g-1 downto 0) := r.Content_0;
             v.Addr_1        := r.Addr_0;
             v.Write_1       := r.Write_0;
             v.Clear_1       := r.Clear_0;
@@ -202,7 +208,8 @@ begin
             v.ClearAll_1    := r.ClearAll_0;
         else
             -- Skip one register state
-            v.Content_1     := v.Content_0;
+            v.ContentExtended_1     := (others => '0');
+            v.ContentExtended_1(ContentWidth_g-1 downto 0) := v.Content_0;
             v.Addr_1        := v.Addr_0;
             v.Write_1       := v.Write_0;
             v.Clear_1       := v.Clear_0;
@@ -238,7 +245,7 @@ begin
         for i in 0 to BlocksParallel_c-1 loop
             WriteOneHot_1(i) <= (AddrOneHot_1(i) and ClearMask_v) or SetMask_v;
         end loop;
-        WrMem_1 <= r.Write_1 or r.Clear_1 or r.ClearAll_1;
+        WrMem_1 <= r.Write_1 or r.Clear_1 or r.ClearAll_1 or r.RstClearWr;
         -- One hot output
         if Register1Hot_g then
             Cam1Hot_Valid   <= r.Read_2;
@@ -287,6 +294,33 @@ begin
             CamAddr_Addr  <= (others => '0');
         end if;
 
+        -- *** Clear after reset ***
+        v.RstClearWr := '0';
+        if ClearAfterReset_g then
+            -- Increment Counter
+            if r.RstClearDone = '0' then
+                if r.RstClearCounter = 2**BlockAddrBits_c-1 then
+                    v.RstClearDone := '1';
+                else
+                    v.RstClearCounter := r.RstClearCounter + 1;
+                end if;
+            else
+                v.RstClearDone := '1';
+            end if;
+            -- Control clearing signal
+            if r.RstClearDone = '0' then
+                -- Deasserting ready signals is done further up where the ready signals are assigned
+                -- Clear CAM
+                v.RstClearWr := '1'; -- Assignment to memory write done further up in code
+                for i in 0 to BlocksParallel_c-1 loop
+                    v.ContentExtended_1((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c) := std_logic_vector(r.RstClearCounter);
+                end loop;
+            end if;
+            if r.RstClearWr = '1' then
+                WriteOneHot_1 <= (others => (others => '0'));
+            end if;
+        end if;
+
         -- *** Assign to signal ***
         r_next <= v;
     end process;
@@ -299,17 +333,19 @@ begin
         if rising_edge(Clk) then
             r <= r_next;
             if Rst = '1' then
-                r.Write_0       <= '0';
-                r.Clear_0       <= '0';
-                r.ClearAll_0    <= '0';
-                r.Read_0        <= '0';
-                r.Write_1       <= '0';
-                r.Clear_1       <= '0';
-                r.ClearAll_1    <= '0';
-                r.Read_1        <= '0';
-                r.Read_2        <= '0';
-                r.Read_3        <= '0';
-                r.Read_N        <= (others => '0');
+                r.Write_0           <= '0';
+                r.Clear_0           <= '0';
+                r.ClearAll_0        <= '0';
+                r.Read_0            <= '0';
+                r.Write_1           <= '0';
+                r.Clear_1           <= '0';
+                r.ClearAll_1        <= '0';
+                r.Read_1            <= '0';
+                r.Read_2            <= '0';
+                r.Read_3            <= '0';
+                r.Read_N            <= (others => '0');
+                r.RstClearDone      <= '0';
+                r.RstClearCounter   <= (others => '0');
             end if;
         end if;
     end process;
@@ -320,15 +356,13 @@ begin
     -- CAM memory array
     g_addr : for i in 0 to BlocksParallel_c-1 generate
         signal ContentExtended_0  : std_logic_vector(TotalAddrBits_c-1 downto 0) := (others => '0');
-        signal ContentExtended_1  : std_logic_vector(TotalAddrBits_c-1 downto 0) := (others => '0');
         signal RdAddr_0           : std_logic_vector(BlockAddrBits_c-1 downto 0);
         signal WrAddr_1           : std_logic_vector(BlockAddrBits_c-1 downto 0);
     begin
         -- Input assembly
         ContentExtended_0(ContentWidth_g-1 downto 0) <= ReadContent_0;  
         RdAddr_0 <= to01(ContentExtended_0((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
-        ContentExtended_1(ContentWidth_g-1 downto 0) <= r.Content_1;
-        WrAddr_1 <= to01(ContentExtended_1((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
+        WrAddr_1 <= to01(r.ContentExtended_1((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
 
         -- Instance
         i_ram : entity work.olo_base_ram_sdp

@@ -32,6 +32,7 @@ entity olo_base_cam_tb is
         RamBehavior_g           : string                    := "RBW";
         RamBlockWidth_g         : positive                  := 32;
         RamBlockDepth_g         : positive                  := 512; --9 addr bits
+        ClearAfterReset_g       : boolean                   := true; 
         ReadPriority_g          : boolean                   := false;
         StrictOrdering_g        : boolean                   := false;
         UseAddrOut_g            : boolean                   := true;
@@ -172,6 +173,9 @@ begin
             wait until rising_edge(Clk);
             Rst <= '0';
             wait until rising_edge(Clk);
+            if ClearAfterReset_g then
+                wait until rising_edge(Clk) and CamRd_Ready = '1' and CamWr_Ready = '1';
+            end if;
 
             -- Reset Values
             if run("ResetValues") then
@@ -183,8 +187,19 @@ begin
                 check_equal(Cam1Hot_Valid, '0', "Cam1Hot_Valid first");
                 check_equal(CamAddr_Valid, '0', "CamAddr_Valid first");
                 Rst <= '0';
-                -- second cycle after reset
-                wait until rising_edge(Clk);
+                -- wait until reset done
+                if ClearAfterReset_g then
+                    for i in 0 to RamBlockDepth_g-1 loop
+                        wait until rising_edge(Clk);
+                        check_equal(CamRd_Ready, '0', "CamRd_Ready clearing");
+                        check_equal(CamWr_Ready, '0', "CamWr_Ready clearing");
+                        check_equal(Cam1Hot_Valid, '0', "Cam1Hot_Valid clearing");
+                        check_equal(CamAddr_Valid, '0', "CamAddr_Valid clearing");
+                    end loop;
+                    wait until rising_edge(Clk);
+                else
+                    wait until rising_edge(Clk);
+                end if;
                 check_equal(CamRd_Ready, '1', "CamRd_Ready second");
                 check_equal(CamWr_Ready, '1', "CamWr_Ready second");
                 check_equal(Cam1Hot_Valid, '0', "Cam1Hot_Valid second");
@@ -366,8 +381,30 @@ begin
                 PushConfigIn(net, Content => 16#14#, Addr => 16#05#, Clear => true);
             end if;
 
-
-
+            if run("ClearAfterReset") then
+                -- Configure
+                PushConfigIn(net, Content => 16#000#, Addr => 16#04#, Write => true);
+                PushConfigIn(net, Content => 16#100#, Addr => 16#05#, Write => true);
+                PushConfigIn(net, Content => 16#082#, Addr => 16#06#, Write => true, Blocking => true);
+                wait for 3*ClkPeriod_c;
+                -- ClearAll
+                wait until rising_edge(Clk);
+                Rst <= '1';
+                wait until rising_edge(Clk);
+                Rst <= '0';
+                -- Read 
+                if ClearAfterReset_g then
+                    -- All data cleared
+                    ReadCam(net, Content => 16#000#, Found => false, Msg => "Deleted 1"); 
+                    ReadCam(net, Content => 16#100#, Found => false, Msg => "Deleted 2"); 
+                    ReadCam(net, Content => 16#082#, Found => false, Blocking => true, Msg => "Deleted 3"); 
+                else
+                    -- Data not cleared
+                    ReadCam(net, Content => 16#000#, Addr => 16#04#, Msg => "Found 1"); 
+                    ReadCam(net, Content => 16#100#, Addr => 16#05#, Msg => "Found 2"); 
+                    ReadCam(net, Content => 16#082#, Addr => 16#06#, Blocking => true, Msg => "Found 3");   
+                end if;                
+            end if;
 
 
             wait for 1 us;
@@ -396,6 +433,7 @@ begin
             ContentWidth_g          => ContentWidth_g,    
             RamBlockWidth_g         => RamBlockWidth_g, 
             RamBlockDepth_g         => RamBlockDepth_g,
+            ClearAfterReset_g       => ClearAfterReset_g,
             ReadPriority_g          => ReadPriority_g,
             StrictOrdering_g        => StrictOrdering_g,
             RegisterInput_g         => RegisterInput_g,
