@@ -35,8 +35,8 @@ entity olo_base_cam is
         RamBlockDepth_g         : positive  := 512;     
         ClearAfterReset_g       : boolean   := true; 
         -- Read/Write interleaving
-        ReadPriority_g          : boolean   := false;
-        StrictOrdering_g        : boolean   := true;
+        ReadPriority_g          : boolean   := true;
+        StrictOrdering_g        : boolean   := false;
         -- Pipelineing
         UseAddrOut_g            : boolean   := true;
         RegisterInput_g         : boolean   := true;
@@ -49,27 +49,27 @@ entity olo_base_cam is
         Rst                     : in  std_logic;
 
         -- CAM read request
-        CamRd_Valid             : in  std_logic                                                 := '1';
-        CamRd_Ready             : out std_logic;
-        CamRd_Content           : in  std_logic_vector(ContentWidth_g-1 downto 0);
+        Rd_Valid                : in  std_logic                                                 := '1';
+        Rd_Ready                : out std_logic;
+        Rd_Content              : in  std_logic_vector(ContentWidth_g-1 downto 0);
 
         -- Cam write
-        CamWr_Valid             : in  std_logic;
-        CamWr_Ready             : out std_logic;
-        CamWr_Content           : in  std_logic_vector(ContentWidth_g-1 downto 0);
-        CamWr_Addr              : in  std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
-        CamWr_Write             : in  std_logic;
-        CamWr_Clear             : in  std_logic                                                 := '0';
-        CamWr_ClearAll          : in  std_logic                                                 := '0';
+        Wr_Valid                : in  std_logic;
+        Wr_Ready                : out std_logic;
+        Wr_Content              : in  std_logic_vector(ContentWidth_g-1 downto 0);
+        Wr_Addr                 : in  std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
+        Wr_Write                : in  std_logic;
+        Wr_Clear                : in  std_logic                                                 := '0';
+        Wr_ClearAll             : in  std_logic                                                 := '0';
 
         -- CAM one hot read response
-        Cam1Hot_Valid           : out std_logic;
-        Cam1Hot_Match           : out std_logic_vector(Addresses_g-1 downto 0);
+        OneHot_Valid            : out std_logic;
+        OneHot_Match            : out std_logic_vector(Addresses_g-1 downto 0);
 
         -- CAM binary read response
-        CamAddr_Valid           : out std_logic;
-        CamAddr_Found           : out std_logic;
-        CamAddr_Addr            : out std_logic_vector(log2ceil(Addresses_g)-1 downto 0)        
+        Addr_Valid              : out std_logic;
+        Addr_Found              : out std_logic;
+        Addr_Addr               : out std_logic_vector(log2ceil(Addresses_g)-1 downto 0)        
     );         
 end entity;
 
@@ -115,7 +115,7 @@ architecture rtl of olo_base_cam is
         -- Clear after reset
         RstClearDone            : std_logic;
         RstClearCounter         : unsigned(BlockAddrBits_c-1 downto 0);
-        RstClearWr             : std_logic;
+        RstClearWr              : std_logic;
     end record;
     signal r, r_next : two_process_r;
 
@@ -139,7 +139,7 @@ begin
     --------------------------------------------------------------------------
     -- Combinatorial Proccess
     --------------------------------------------------------------------------
-    p_cob : process (CamRd_Valid, CamRd_Content, CamWr_Valid, CamWr_Content, CamWr_Addr, CamWr_Write, CamWr_Clear, 
+    p_cob : process (Rd_Valid, Rd_Content, Wr_Valid, Wr_Content, Wr_Addr, Wr_Write, Wr_Clear, 
                      AddrOneHot_1, Rst, r)
         variable v : two_process_r;
         variable ClearMask_v, SetMask_v : std_logic_vector(Addresses_g-1 downto 0);
@@ -152,10 +152,10 @@ begin
         -- *** Input Ready Handling ***
         if ReadPriority_g then
             InRdReady_v     := '1';
-            InWrReady_v     := not CamRd_Valid;
+            InWrReady_v     := not Rd_Valid;
         else
             InWrReady_v     := '1';
-            InRdReady_v     := not CamWr_Valid; 
+            InRdReady_v     := not Wr_Valid; 
         end if;
         -- For Write and Rad with strict ordering, wait until write is done
         if r.Write_0 = '1' or r.Clear_0 = '1' then
@@ -170,23 +170,23 @@ begin
             InRdReady_v     := '0';
             InWrReady_v     := '0';
         end if;
-        CamRd_Ready <= InRdReady_v;
-        CamWr_Ready <= InWrReady_v;
+        Rd_Ready <= InRdReady_v;
+        Wr_Ready <= InWrReady_v;
 
 
         -- *** Stage 0 ***
-        v.Addr_0        := CamWr_Addr;
+        v.Addr_0        := Wr_Addr;
         v.Write_0       := '0';
         v.Clear_0       := '0';
         v.Read_0        := '0';
         v.ClearAll_0    := '0';
-        if InWrReady_v = '1' and CamWr_Valid = '1' then
-            v.Content_0     := CamWr_Content;
-            v.Write_0       := CamWr_Write;
-            v.Clear_0       := CamWr_Clear;
-            v.ClearAll_0    := CamWr_ClearAll;
-        elsif InRdReady_v = '1' and CamRd_Valid = '1' then
-            v.Content_0     := CamRd_Content;
+        if InWrReady_v = '1' and Wr_Valid = '1' then
+            v.Content_0     := Wr_Content;
+            v.Write_0       := Wr_Write;
+            v.Clear_0       := Wr_Clear;
+            v.ClearAll_0    := Wr_ClearAll;
+        elsif InRdReady_v = '1' and Rd_Valid = '1' then
+            v.Content_0     := Rd_Content;
             v.Read_0        := '1';
         end if;
         if RegisterInput_g then
@@ -248,15 +248,15 @@ begin
         WrMem_1 <= r.Write_1 or r.Clear_1 or r.ClearAll_1 or r.RstClearWr;
         -- One hot output
         if Register1Hot_g then
-            Cam1Hot_Valid   <= r.Read_2;
+            OneHot_Valid     <= r.Read_2;
             OneHot_v        := r.AddrOneHot_2;
             v.Read_3        := r.Read_2;
         else
-            Cam1Hot_Valid   <= v.Read_2;
+            OneHot_Valid    <= v.Read_2;
             OneHot_v        := v.AddrOneHot_2;
             v.Read_3        := v.Read_2;
         end if;
-        Cam1Hot_Match <= OneHot_v;
+        OneHot_Match <= OneHot_v;
 
         -- *** Stage 3 ***
         if UseAddrOut_g then
@@ -273,25 +273,25 @@ begin
 
             -- Address output
             if OneHotDecodeLatency_g = 0 then
-                CamAddr_Valid   <= v.Read_3;
-                CamAddr_Found   <= v.Found_3;
-                CamAddr_Addr    <= v.AddrBin_3; 
+                Addr_Valid   <= v.Read_3;
+                Addr_Found   <= v.Found_3;
+                Addr_Addr    <= v.AddrBin_3; 
             elsif OneHotDecodeLatency_g = 1 then
-                CamAddr_Valid   <= r.Read_3;
-                CamAddr_Found   <= r.Found_3;
-                CamAddr_Addr    <= r.AddrBin_3;
+                Addr_Valid   <= r.Read_3;
+                Addr_Found   <= r.Found_3;
+                Addr_Addr    <= r.AddrBin_3;
             else
-                v.Read_N        := r.Read_3     & r.Read_N      (r.Read_N'left      to r.Read_N'right-1);
-                v.AddrBin_N     := r.AddrBin_3  & r.Addrbin_N   (r.Addrbin_N'left   to r.Addrbin_N'right-1);
-                v.Found_N       := r.Found_3    & r.Found_N     (r.Found_N'left     to r.Found_N'right-1);
-                CamAddr_Valid   <= r.Read_N(r.Read_N'right);
-                CamAddr_Found   <= r.Found_N(r.Found_N'right);
-                CamAddr_Addr    <= r.AddrBin_N(r.AddrBin_N'right);                       
+                v.Read_N     := r.Read_3     & r.Read_N      (r.Read_N'left      to r.Read_N'right-1);
+                v.AddrBin_N  := r.AddrBin_3  & r.Addrbin_N   (r.Addrbin_N'left   to r.Addrbin_N'right-1);
+                v.Found_N    := r.Found_3    & r.Found_N     (r.Found_N'left     to r.Found_N'right-1);
+                Addr_Valid   <= r.Read_N(r.Read_N'right);
+                Addr_Found   <= r.Found_N(r.Found_N'right);
+                Addr_Addr    <= r.AddrBin_N(r.AddrBin_N'right);                       
             end if;  
         else
-            CamAddr_Valid <= '0';   
-            CamAddr_Found <= '0';
-            CamAddr_Addr  <= (others => '0');
+            Addr_Valid <= '0';   
+            Addr_Found <= '0';
+            Addr_Addr  <= (others => '0');
         end if;
 
         -- *** Clear after reset ***

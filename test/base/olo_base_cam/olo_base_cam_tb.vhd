@@ -136,21 +136,21 @@ architecture sim of olo_base_cam_tb is
     -------------------------------------------------------------------------
     signal Clk                      : std_logic := '0';
     signal Rst                      : std_logic := '0';
-    signal CamRd_Valid             : std_logic := '1';
-    signal CamRd_Ready             : std_logic;
-    signal CamRd_Content           : std_logic_vector(ContentWidth_g-1 downto 0);
-    signal CamWr_Valid             : std_logic;
-    signal CamWr_Ready             : std_logic;
-    signal CamWr_Content           : std_logic_vector(ContentWidth_g-1 downto 0);
-    signal CamWr_Addr              : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
-    signal CamWr_Write             : std_logic;
-    signal CamWr_Clear             : std_logic;
-    signal CamWr_ClearAll          : std_logic;
-    signal Cam1Hot_Valid           : std_logic;
-    signal Cam1Hot_Match           : std_logic_vector(Addresses_g-1 downto 0);
-    signal CamAddr_Valid           : std_logic;
-    signal CamAddr_Found           : std_logic;
-    signal CamAddr_Addr            : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
+    signal Rd_Valid             : std_logic := '1';
+    signal Rd_Ready             : std_logic;
+    signal Rd_Content           : std_logic_vector(ContentWidth_g-1 downto 0);
+    signal Wr_Valid             : std_logic;
+    signal Wr_Ready             : std_logic;
+    signal Wr_Content           : std_logic_vector(ContentWidth_g-1 downto 0);
+    signal Wr_Addr              : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
+    signal Wr_Write             : std_logic;
+    signal Wr_Clear             : std_logic;
+    signal Wr_ClearAll          : std_logic;
+    signal OneHot_Valid           : std_logic;
+    signal OneHot_Match           : std_logic_vector(Addresses_g-1 downto 0);
+    signal Addr_Valid           : std_logic;
+    signal Addr_Found           : std_logic;
+    signal Addr_Addr            : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
 
 begin
 
@@ -174,7 +174,7 @@ begin
             Rst <= '0';
             wait until rising_edge(Clk);
             if ClearAfterReset_g then
-                wait until rising_edge(Clk) and CamRd_Ready = '1' and CamWr_Ready = '1';
+                wait until rising_edge(Clk) and Rd_Ready = '1' and Wr_Ready = '1';
             end if;
 
             -- Reset Values
@@ -182,28 +182,28 @@ begin
                 -- first cycle after reset
                 Rst <= '1';
                 wait until rising_edge(Clk);
-                check_equal(CamRd_Ready, '0', "CamRd_Ready first");
-                check_equal(CamWr_Ready, '0', "CamWr_Ready first");
-                check_equal(Cam1Hot_Valid, '0', "Cam1Hot_Valid first");
-                check_equal(CamAddr_Valid, '0', "CamAddr_Valid first");
+                check_equal(Rd_Ready, '0', "Rd_Ready first");
+                check_equal(Wr_Ready, '0', "Wr_Ready first");
+                check_equal(OneHot_Valid, '0', "OneHot_Valid first");
+                check_equal(Addr_Valid, '0', "Addr_Valid first");
                 Rst <= '0';
                 -- wait until reset done
                 if ClearAfterReset_g then
                     for i in 0 to RamBlockDepth_g-1 loop
                         wait until rising_edge(Clk);
-                        check_equal(CamRd_Ready, '0', "CamRd_Ready clearing");
-                        check_equal(CamWr_Ready, '0', "CamWr_Ready clearing");
-                        check_equal(Cam1Hot_Valid, '0', "Cam1Hot_Valid clearing");
-                        check_equal(CamAddr_Valid, '0', "CamAddr_Valid clearing");
+                        check_equal(Rd_Ready, '0', "Rd_Ready clearing");
+                        check_equal(Wr_Ready, '0', "Wr_Ready clearing");
+                        check_equal(OneHot_Valid, '0', "OneHot_Valid clearing");
+                        check_equal(Addr_Valid, '0', "Addr_Valid clearing");
                     end loop;
                     wait until rising_edge(Clk);
                 else
                     wait until rising_edge(Clk);
                 end if;
-                check_equal(CamRd_Ready, '1', "CamRd_Ready second");
-                check_equal(CamWr_Ready, '1', "CamWr_Ready second");
-                check_equal(Cam1Hot_Valid, '0', "Cam1Hot_Valid second");
-                check_equal(CamAddr_Valid, '0', "CamAddr_Valid second");
+                check_equal(Rd_Ready, '1', "Rd_Ready second");
+                check_equal(Wr_Ready, '1', "Wr_Ready second");
+                check_equal(OneHot_Valid, '0', "OneHot_Valid second");
+                check_equal(Addr_Valid, '0', "Addr_Valid second");
             end if;
 
             -- Basic Tests
@@ -277,14 +277,14 @@ begin
                     PushConfigIn(net, Content => i, Addr => 4+i, Write => true);
                     ReadCam(net, Content => 8+i, Found => false);
                 end loop;
-                wait until rising_edge(Clk) and CamRd_Valid = '1' and CamWr_Valid = '1';
+                wait until rising_edge(Clk) and Rd_Valid = '1' and Wr_Valid = '1';
                 -- Wait for priorizied access to complete and check if the other access is still executing
                 if ReadPriority_g then
-                    wait until rising_edge(Clk) and CamRd_Valid = '0';
-                    check_equal(CamWr_Valid, '1', "Write not still executing");
+                    wait until rising_edge(Clk) and Rd_Valid = '0';
+                    check_equal(Wr_Valid, '1', "Write not still executing");
                 else
-                    wait until rising_edge(Clk) and CamWr_Valid = '0';
-                    check_equal(CamRd_Valid, '1', "Read not still executing");
+                    wait until rising_edge(Clk) and Wr_Valid = '0';
+                    check_equal(Rd_Valid, '1', "Read not still executing");
                 end if;
                 wait_until_idle(net, as_sync(camRdMaster));
                 wait_until_idle(net, as_sync(cam1HotSlave));
@@ -444,21 +444,21 @@ begin
         port map (
             Clk                 => Clk,
             Rst                 => Rst,
-            CamRd_Valid         => CamRd_Valid,
-            CamRd_Ready         => CamRd_Ready,
-            CamRd_Content       => CamRd_Content,
-            CamWr_Valid         => CamWr_Valid,
-            CamWr_Ready         => CamWr_Ready,
-            CamWr_Content       => CamWr_Content,
-            CamWr_Addr          => CamWr_Addr,
-            CamWr_Write         => CamWr_Write,
-            CamWr_Clear         => CamWr_Clear,
-            CamWr_ClearAll      => CamWr_ClearAll,
-            Cam1Hot_Valid       => Cam1Hot_Valid,
-            Cam1Hot_Match       => Cam1Hot_Match,
-            CamAddr_Valid       => CamAddr_Valid,
-            CamAddr_Found       => CamAddr_Found,
-            CamAddr_Addr        => CamAddr_Addr
+            Rd_Valid         => Rd_Valid,
+            Rd_Ready         => Rd_Ready,
+            Rd_Content       => Rd_Content,
+            Wr_Valid         => Wr_Valid,
+            Wr_Ready         => Wr_Ready,
+            Wr_Content       => Wr_Content,
+            Wr_Addr          => Wr_Addr,
+            Wr_Write         => Wr_Write,
+            Wr_Clear         => Wr_Clear,
+            Wr_ClearAll      => Wr_ClearAll,
+            OneHot_Valid       => OneHot_Valid,
+            OneHot_Match       => OneHot_Match,
+            Addr_Valid       => Addr_Valid,
+            Addr_Found       => Addr_Found,
+            Addr_Addr        => Addr_Addr
         );
 
 	------------------------------------------------------------
@@ -470,9 +470,9 @@ begin
         )
         port map (
             aclk   => Clk,
-            tvalid => CamRd_Valid,
-            tready => CamRd_Ready,
-            tdata  => CamRd_Content
+            tvalid => Rd_Valid,
+            tready => Rd_Ready,
+            tdata  => Rd_Content
         );
 
     vc_camout_onehot : entity vunit_lib.axi_stream_slave
@@ -481,8 +481,8 @@ begin
         )
         port map (
             aclk   => Clk,
-            tvalid => Cam1Hot_Valid,
-            tdata  => Cam1Hot_Match
+            tvalid => OneHot_Valid,
+            tdata  => OneHot_Match
         );
 
     vc_camout_addr : entity vunit_lib.axi_stream_slave
@@ -491,9 +491,9 @@ begin
         )
         port map (
             aclk        => Clk,
-            tvalid      => CamAddr_Valid,
-            tdata       => CamAddr_Addr,
-            tuser(0)    => CamAddr_Found
+            tvalid      => Addr_Valid,
+            tdata       => Addr_Addr,
+            tuser(0)    => Addr_Found
         );
 
     b_coonfigin : block
@@ -505,15 +505,15 @@ begin
             )
             port map (
                 aclk   => Clk,
-                tvalid => CamWr_Valid,
-                tready => CamWr_Ready,
+                tvalid => Wr_Valid,
+                tready => Wr_Ready,
                 tdata  => Data
             );
-            CamWr_Addr <= Data(WrAddr_r);
-            CamWr_Content <= Data(WrContent_r);
-            CamWr_Write <= Data(WrWrite_c);
-            CamWr_Clear <= Data(WrClear_c);
-            CamWr_ClearAll <= Data(WrClearAll_c);
+            Wr_Addr <= Data(WrAddr_r);
+            Wr_Content <= Data(WrContent_r);
+            Wr_Write <= Data(WrWrite_c);
+            Wr_Clear <= Data(WrClear_c);
+            Wr_ClearAll <= Data(WrClearAll_c);
     end block;
 
 
