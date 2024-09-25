@@ -67,7 +67,8 @@ architecture sim of olo_base_cam_tb is
     subtype WrContent_r is natural range WrAddr_r'left+ContentWidth_g downto WrAddr_r'left+1;
     constant WrWrite_c : natural := WrContent_r'left+1;
     constant WrClear_c : natural := WrWrite_c+1;
-    constant ConfigInStrWidth_c : natural := WrClear_c+1;
+    constant WrClearAll_c : natural := WrClear_c+1;
+    constant ConfigInStrWidth_c : natural := WrClearAll_c+1;
     constant camWrMaster : axi_stream_master_t := new_axi_stream_master (
         data_length => ConfigInStrWidth_c
     );
@@ -78,6 +79,7 @@ architecture sim of olo_base_cam_tb is
                             Addr        : integer := 0; 
                             Write       : boolean := false;
                             Clear       : boolean := false;
+                            ClearAll    : boolean := false;
                             Blocking    : boolean := false) is
         variable Data_v : std_logic_vector(ConfigInStrWidth_c - 1 downto 0);        
     begin
@@ -85,6 +87,7 @@ architecture sim of olo_base_cam_tb is
         Data_v(WrContent_r) := toUslv(Content, ContentWidth_g);
         Data_v(WrWrite_c) := choose(Write, '1', '0');
         Data_v(WrClear_c) := choose(Clear, '1', '0');
+        Data_v(WrClearAll_c) := choose(ClearAll, '1', '0');
         push_axi_stream(net, camWrMaster, Data_v);
         if Blocking then
             wait_until_idle(net, as_sync(camWrMaster));
@@ -141,6 +144,7 @@ architecture sim of olo_base_cam_tb is
     signal CamWr_Addr              : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
     signal CamWr_Write             : std_logic;
     signal CamWr_Clear             : std_logic;
+    signal CamWr_ClearAll          : std_logic;
     signal Cam1Hot_Valid           : std_logic;
     signal Cam1Hot_Match           : std_logic_vector(Addresses_g-1 downto 0);
     signal CamAddr_Valid           : std_logic;
@@ -346,7 +350,22 @@ begin
             end if;
 
             
-            -- Clear all
+            if run("ClearAll") then
+                -- Configure
+                PushConfigIn(net, Content => 16#13#, Addr => 16#04#, Write => true);
+                PushConfigIn(net, Content => 16#14#, Addr => 16#05#, Write => true);
+                PushConfigIn(net, Content => 16#13#, Addr => 16#06#, Write => true, Blocking => true);
+                wait for 3*ClkPeriod_c;
+                -- ClearAll
+                PushConfigIn(net, Content => 16#13#, ClearAll => true, Blocking => true);
+                wait for 3*ClkPeriod_c;
+                -- Read
+                ReadCam(net, Content => 16#14#, Addr => 16#05#,  Msg => "Single Entry 2");
+                ReadCam(net, Content => 16#13#, Found => false, Blocking => true, Msg => "Both deleted"); 
+                -- Clear single entry
+                PushConfigIn(net, Content => 16#14#, Addr => 16#05#, Clear => true);
+            end if;
+
 
 
 
@@ -396,6 +415,7 @@ begin
             CamWr_Addr          => CamWr_Addr,
             CamWr_Write         => CamWr_Write,
             CamWr_Clear         => CamWr_Clear,
+            CamWr_ClearAll      => CamWr_ClearAll,
             Cam1Hot_Valid       => Cam1Hot_Valid,
             Cam1Hot_Match       => Cam1Hot_Match,
             CamAddr_Valid       => CamAddr_Valid,
@@ -455,6 +475,7 @@ begin
             CamWr_Content <= Data(WrContent_r);
             CamWr_Write <= Data(WrWrite_c);
             CamWr_Clear <= Data(WrClear_c);
+            CamWr_ClearAll <= Data(WrClearAll_c);
     end block;
 
 

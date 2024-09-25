@@ -59,6 +59,7 @@ entity olo_base_cam is
         CamWr_Addr              : in  std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
         CamWr_Write             : in  std_logic;
         CamWr_Clear             : in  std_logic                                                 := '0';
+        CamWr_ClearAll          : in  std_logic                                                 := '0';
 
         -- CAM one hot read response
         Cam1Hot_Valid           : out std_logic;
@@ -90,12 +91,14 @@ architecture rtl of olo_base_cam is
         Addr_0                  : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
         Write_0                 : std_logic;
         Clear_0                 : std_logic;
+        ClearAll_0              : std_logic;
         Read_0                  : std_logic;
         -- Stage 1
         Content_1               : std_logic_vector(ContentWidth_g - 1 downto 0);
         Addr_1                  : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
         Write_1                 : std_logic;
         Clear_1                 : std_logic;
+        ClearAll_1              : std_logic;
         Read_1                  : std_logic;
         -- Stage 2
         AddrOneHot_2            : std_logic_vector(Addresses_g-1 downto 0);
@@ -167,14 +170,16 @@ begin
 
 
         -- *** Stage 0 ***
-        v.Addr_0    := CamWr_Addr;
-        v.Write_0   := '0';
-        v.Clear_0   := '0';
-        v.Read_0    := '0';
+        v.Addr_0        := CamWr_Addr;
+        v.Write_0       := '0';
+        v.Clear_0       := '0';
+        v.Read_0        := '0';
+        v.ClearAll_0    := '0';
         if InWrReady_v = '1' and CamWr_Valid = '1' then
             v.Content_0     := CamWr_Content;
             v.Write_0       := CamWr_Write;
             v.Clear_0       := CamWr_Clear;
+            v.ClearAll_0    := CamWr_ClearAll;
         elsif InRdReady_v = '1' and CamRd_Valid = '1' then
             v.Content_0     := CamRd_Content;
             v.Read_0        := '1';
@@ -189,18 +194,20 @@ begin
         -- *** Stage 1 ***
         if RegisterInput_g then
             -- Wait for RAM to respond
-            v.Content_1 := r.Content_0;
-            v.Addr_1    := r.Addr_0;
-            v.Write_1   := r.Write_0;
-            v.Clear_1   := r.Clear_0;
-            v.Read_1    := r.Read_0;
+            v.Content_1     := r.Content_0;
+            v.Addr_1        := r.Addr_0;
+            v.Write_1       := r.Write_0;
+            v.Clear_1       := r.Clear_0;
+            v.Read_1        := r.Read_0;
+            v.ClearAll_1    := r.ClearAll_0;
         else
             -- Skip one register state
-            v.Content_1 := v.Content_0;
-            v.Addr_1    := v.Addr_0;
-            v.Write_1   := v.Write_0;
-            v.Clear_1   := v.Clear_0;
-            v.Read_1    := v.Read_0;
+            v.Content_1     := v.Content_0;
+            v.Addr_1        := v.Addr_0;
+            v.Write_1       := v.Write_0;
+            v.Clear_1       := v.Clear_0;
+            v.Read_1        := v.Read_0;
+            v.ClearAll_1    := v.ClearAll_0;
         end if;
 
 
@@ -215,15 +222,23 @@ begin
         ClearMask_v := (others => '1');
         SetMask_v := (others => '0');
         if r.Write_1 = '1' then
+            -- Write new CAM entry
             SetMask_v(fromUslv(to01(r.Addr_1))) := '1';
         end if;
         if r.Clear_1 = '1' then
+            -- Clear single CAM entry
             ClearMask_v(fromUslv(to01(r.Addr_1))) := '0';
         end if;
+        if r.ClearAll_1 = '1' then
+            -- Clear all CAM entries - this overrides the single clear mask
+            -- Note: ClearAll is somewhat timing suboptimal and shall only be used if this is tolerable
+            ClearMask_v := not v.AddrOneHot_2;
+        end if;
+
         for i in 0 to BlocksParallel_c-1 loop
             WriteOneHot_1(i) <= (AddrOneHot_1(i) and ClearMask_v) or SetMask_v;
         end loop;
-        WrMem_1 <= r.Write_1 or r.Clear_1;
+        WrMem_1 <= r.Write_1 or r.Clear_1 or r.ClearAll_1;
         -- One hot output
         if Register1Hot_g then
             Cam1Hot_Valid   <= r.Read_2;
@@ -284,15 +299,17 @@ begin
         if rising_edge(Clk) then
             r <= r_next;
             if Rst = '1' then
-                r.Write_0   <= '0';
-                r.Clear_0   <= '0';
-                r.Read_0    <= '0';
-                r.Write_1   <= '0';
-                r.Clear_1   <= '0';
-                r.Read_1    <= '0';
-                r.Read_2    <= '0';
-                r.Read_3    <= '0';
-                r.Read_N    <= (others => '0');
+                r.Write_0       <= '0';
+                r.Clear_0       <= '0';
+                r.ClearAll_0    <= '0';
+                r.Read_0        <= '0';
+                r.Write_1       <= '0';
+                r.Clear_1       <= '0';
+                r.ClearAll_1    <= '0';
+                r.Read_1        <= '0';
+                r.Read_2        <= '0';
+                r.Read_3        <= '0';
+                r.Read_N        <= (others => '0');
             end if;
         end if;
     end process;
