@@ -196,6 +196,12 @@ If read-throughput is in focus, of course reads shall never be stalled due to wr
 
 ### Reset Behavior
 
+The fact that RAM contents are not reset when reset signals are asserted is well known. For RAMs this is not too severe because one can easily iterate through all addresses to clear the RAMs. 
+
+For CAMs the situation is more difficult because often the width of the contents are relatively high (this is a good reason to use a CAM instead of a RAM) and hence iterating through e.g. all possible 64-bit values of a CAM content to clear the memory is not practicable. However, in the internal structure it is possible to iterate through each RAM block separately.
+
+*olo_base_cam* implements clearing of the RAM contents after reset if *ClearAfterReset_g=true*. It is strongly recommended to leave this setting enabled unless the initial delay of *RamBlockDepth_g* clock cycles (required for the clearing) before *Rd_Ready* and *Wr_Ready* going high is really not tolerable.
+
 
 
 
