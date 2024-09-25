@@ -21,6 +21,7 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
+
 ------------------------------------------------------------------------------
 -- Entity
 ------------------------------------------------------------------------------
@@ -40,7 +41,7 @@ entity olo_base_cam is
         -- Pipelineing
         UseAddrOut_g            : boolean   := true;
         RegisterInput_g         : boolean   := true;
-        Register1Hot_g          : boolean   := true;
+        RegisterOneHot_g        : boolean   := true;
         OneHotDecodeLatency_g   : natural   := 1
     );  
     port (   
@@ -49,7 +50,7 @@ entity olo_base_cam is
         Rst                     : in  std_logic;
 
         -- CAM read request
-        Rd_Valid                : in  std_logic                                                 := '1';
+        Rd_Valid                : in  std_logic;
         Rd_Ready                : out std_logic;
         Rd_Content              : in  std_logic_vector(ContentWidth_g-1 downto 0);
 
@@ -158,11 +159,14 @@ begin
             InRdReady_v     := not Wr_Valid; 
         end if;
         -- For Write and Rad with strict ordering, wait until write is done
-        if r.Write_0 = '1' or r.Clear_0 = '1' then
+        if r.Write_0 = '1' or r.Clear_0 = '1' or r.ClearAll_0 = '1' then
             InWrReady_v := '0';
             if StrictOrdering_g and RamBehavior_g = "RBW" then
                 -- If the ordering is not strict or the ram writes befor read, we camm continue reading immediately
                 InRdReady_v := '0';
+            else
+                -- If ordering is not strict, we can always take a read after a write (because WrReady is low)
+                InRdReady_v := '1';
             end if;
         end if;
         -- Handle Reset
@@ -247,7 +251,7 @@ begin
         end loop;
         WrMem_1 <= r.Write_1 or r.Clear_1 or r.ClearAll_1 or r.RstClearWr;
         -- One hot output
-        if Register1Hot_g then
+        if RegisterOneHot_g then
             OneHot_Valid     <= r.Read_2;
             OneHot_v        := r.AddrOneHot_2;
             v.Read_3        := r.Read_2;

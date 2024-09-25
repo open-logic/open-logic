@@ -37,7 +37,7 @@ entity olo_base_cam_tb is
         StrictOrdering_g        : boolean                   := false;
         UseAddrOut_g            : boolean                   := true;
         RegisterInput_g         : boolean                   := true;
-        Register1Hot_g          : boolean                   := true;
+        RegisterOneHot_g          : boolean                   := true;
         OneHotDecodeLatency_g   : natural                   := 1;
         runner_cfg              : string
     );
@@ -272,19 +272,26 @@ begin
             end if;
 
             if run("Read-Write-Priority") then
+                -- Initialize CAM
+                for i in 0 to 3 loop
+                    PushConfigIn(net, Content => 8+i, Addr => 2*i, Write => true, Blocking => true);    
+                end loop;        
+                wait for 3*ClkPeriod_c;    
                 -- Queue up reads and writes
                 for i in 0 to 3 loop
                     PushConfigIn(net, Content => i, Addr => 4+i, Write => true);
-                    ReadCam(net, Content => 8+i, Found => false);
+                    ReadCam(net, Content => 8+i, Addr => i*2, Found => true);
                 end loop;
                 wait until rising_edge(Clk) and Rd_Valid = '1' and Wr_Valid = '1';
                 -- Wait for priorizied access to complete and check if the other access is still executing
                 if ReadPriority_g then
                     wait until rising_edge(Clk) and Rd_Valid = '0';
                     check_equal(Wr_Valid, '1', "Write not still executing");
-                else
+                elsif StrictOrdering_g and RamBehavior_g = "RBW" then
                     wait until rising_edge(Clk) and Wr_Valid = '0';
                     check_equal(Rd_Valid, '1', "Read not still executing");
+                else
+                    -- With non-strict ordering reads can be executed interleaved
                 end if;
                 wait_until_idle(net, as_sync(camRdMaster));
                 wait_until_idle(net, as_sync(cam1HotSlave));
@@ -437,7 +444,7 @@ begin
             ReadPriority_g          => ReadPriority_g,
             StrictOrdering_g        => StrictOrdering_g,
             RegisterInput_g         => RegisterInput_g,
-            Register1Hot_g          => Register1Hot_g,
+            RegisterOneHot_g          => RegisterOneHot_g,
             OneHotDecodeLatency_g   => OneHotDecodeLatency_g,
             RamBehavior_g           => RamBehavior_g
         )

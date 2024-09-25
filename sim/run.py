@@ -290,9 +290,9 @@ for ReadPriority in [False, True]:
         for RamBehav in ["RBW", "WBR"]:
             named_config(tb, {'ReadPriority_g': ReadPriority, 'StrictOrdering_g': StrictOrdering, 'RamBehavior_g' : RamBehav})
 #Latency / Throughput / Balacned configs
-named_config(tb, {'RegisterInput_g': True, 'Register1Hot_g': True, 'OneHotDecodeLatency_g': 4})
-named_config(tb, {'RegisterInput_g': False, 'Register1Hot_g': False, 'OneHotDecodeLatency_g': 0})
-named_config(tb, {'RegisterInput_g': True, 'Register1Hot_g': False, 'OneHotDecodeLatency_g': 1})
+named_config(tb, {'RegisterInput_g': True, 'RegisterOneHot_g': True, 'OneHotDecodeLatency_g': 4})
+named_config(tb, {'RegisterInput_g': False, 'RegisterOneHot_g': False, 'OneHotDecodeLatency_g': 0})
+named_config(tb, {'RegisterInput_g': True, 'RegisterOneHot_g': False, 'OneHotDecodeLatency_g': 1})
 #Omit AddrOut
 named_config(tb, {'UseAddrOut_g': True})
 named_config(tb, {'UseAddrOut_g': False})
@@ -300,7 +300,6 @@ named_config(tb, {'UseAddrOut_g': False})
 for ClearAfterReset in [False, True]:
     for InReg in [False, True]:
         named_config(tb, {'ClearAfterReset_g': ClearAfterReset, 'RegisterInput_g': InReg})
-
 
 ########################################################################################################################
 # olo_axi TBs
