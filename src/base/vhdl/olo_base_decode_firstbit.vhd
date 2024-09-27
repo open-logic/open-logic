@@ -184,8 +184,12 @@ begin
         end loop;
 
         -- Optional Output Register
-        v.FirstBit  := r.Addr(Stages_c-1)(0);
         v.FoundOut  := r.Found(Stages_c-1)(0);
+        if v.FoundOUt = '1' then
+            v.FirstBit  := r.Addr(Stages_c-1)(0);
+        else
+            v.FirstBit  := (others => '0'); -- Output zero if not found, simplifies testing in many cases
+        end if;     
         v.ValidOut  := r.Valid(Stages_c-1);
         if OutReg_g then
             Out_FirstBit    <= r.FirstBit;

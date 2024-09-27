@@ -275,6 +275,32 @@ named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': True})
 named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': False}) #Some checks require non-random stall
 #fifo_packet_hs_tb does not have generics
 
+#cam
+cam_tb = 'olo_base_cam_tb'
+tb = olo_tb.test_bench(cam_tb)
+#Content smaller or bitter than RAM AddrBits
+named_config(tb, {'ContentWidth_g': 10, 'RamBlockDepth_g': 512})
+named_config(tb, {'ContentWidth_g': 10, 'RamBlockDepth_g': 4096})
+#Test different RAM configs
+named_config(tb, {'RamBlockWidth_g': 32, 'RamBlockDepth_g': 512})
+named_config(tb, {'RamBlockWidth_g': 4, 'RamBlockDepth_g': 64})
+#Read/Write Interleaving
+for ReadPriority in [False, True]:
+    for StrictOrdering in [False, True]:
+        for RamBehav in ["RBW", "WBR"]:
+            named_config(tb, {'ReadPriority_g': ReadPriority, 'StrictOrdering_g': StrictOrdering, 'RamBehavior_g' : RamBehav})
+#Latency / Throughput / Balacned configs
+named_config(tb, {'RegisterInput_g': True, 'RegisterMatch_g': True, 'FirstBitDecLatency_g': 2, 'Addresses_g': 128})
+named_config(tb, {'RegisterInput_g': False, 'RegisterMatch_g': False, 'FirstBitDecLatency_g': 0})
+named_config(tb, {'RegisterInput_g': True, 'RegisterMatch_g': False, 'FirstBitDecLatency_g': 1})
+#Omit AddrOut
+named_config(tb, {'UseAddrOut_g': True})
+named_config(tb, {'UseAddrOut_g': False})
+#Clear after reset with different input latency configs
+for ClearAfterReset in [False, True]:
+    for InReg in [False, True]:
+        named_config(tb, {'ClearAfterReset_g': ClearAfterReset, 'RegisterInput_g': InReg})
+
 #first bit decoder
 decode_firstbit_tb = 'olo_base_decode_firstbit_tb'
 tb = olo_tb.test_bench(decode_firstbit_tb)

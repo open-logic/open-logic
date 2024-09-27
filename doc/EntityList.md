@@ -86,6 +86,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_strobe_gen](./base/olo_base_strobe_gen.md)         | Strobe generator. Generate pulses at a fixed frequency       |
 | [olo_base_strobe_div](./base/olo_base_strobe_div.md)         | Strobe divider. Only forward every N'th pulse (divide event frequency). <br />Can also be used to convert single-cycle pulses to acknowledged events (pulse stays active until acknowledged). |
 | [olo_base_reset_gen](./base/olo_base_reset_gen.md)           | Reset generator - Generates reset pulses of specified duration after configuration and upon request |
+| [olo_base_cam](./base/olo_base_cam.md)                       | Content addressable memory                                   |
 | [olo_base_flowctrl_handler](./base/olo_base_flowctrl_handler.md) | Implements full flow-control (including Ready/back-pressure) around processing entities that do not support Ready/back-pressure natively. |
 | [olo_base_decode_firstbit](./base/olo_base_decode_firstbit.md) | Implements a first-bit decoder (finds the index of the first bit set in a vector). Allows pipelining for operating on very wide vectors at high clock frequencies. |
 
