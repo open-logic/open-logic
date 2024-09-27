@@ -71,3 +71,14 @@ If you want to support the project but you do not have specific features in mind
 
 ### License
 By contributing, you agree that your contributions will be licensed under the [License.txt](./License.txt) file in the root directory.
+
+
+### Copyright
+Any contribution must give the copyright to Oliver Bründler. This is necessary to manage the project freely. Copyright is given by adding the copyright notice to the beginning of each file.
+
+```
+Copyright (c) 2024 by Oliver Bründler
+All rights reserved.
+```
+
+Of course the year must be adjusted to the year of the contribution and could also be a span like `2024-2025`.

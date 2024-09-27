@@ -44,10 +44,11 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 
 ### FIFO Implementations (olo_base_fifo_\<...\>)
 
-| Entity                                               | Description                                        |
-| ---------------------------------------------------- | -------------------------------------------------- |
-| [olo_base_fifo_sync](./base/olo_base_fifo_sync.md)   | Synchronous FIFO (single clock)                    |
-| [olo_base_fifo_async](./base/olo_base_fifo_async.md) | Asynchronous FIFO (separate write and read clocks) |
+| Entity                                                 | Description                                                  |
+| ------------------------------------------------------ | ------------------------------------------------------------ |
+| [olo_base_fifo_sync](./base/olo_base_fifo_sync.md)     | Synchronous FIFO (single clock)                              |
+| [olo_base_fifo_async](./base/olo_base_fifo_async.md)   | Asynchronous FIFO (separate write and read clocks)           |
+| [olo_base_fifo_packet](./base/olo_base_fifo_packet.md) | Packet FIFO (store and forward) with the ability to drop packets on the write side and skip or repeat packets on the read side |
 
 ### Width Conversions (olo_base_wconv_\<...\>)
 
@@ -85,7 +86,9 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_strobe_gen](./base/olo_base_strobe_gen.md)         | Strobe generator. Generate pulses at a fixed frequency       |
 | [olo_base_strobe_div](./base/olo_base_strobe_div.md)         | Strobe divider. Only forward every N'th pulse (divide event frequency). <br />Can also be used to convert single-cycle pulses to acknowledged events (pulse stays active until acknowledged). |
 | [olo_base_reset_gen](./base/olo_base_reset_gen.md)           | Reset generator - Generates reset pulses of specified duration after configuration and upon request |
-| [olo_base_flowctrl_handler](./base/olo_base_flowctrl_handler.md) | Inplements full flow-control (including Ready/back-pressure) around processing entities that do not support Ready/back-pressure natively. |
+| [olo_base_cam](./base/olo_base_cam.md)                       | Content addressable memory                                   |
+| [olo_base_flowctrl_handler](./base/olo_base_flowctrl_handler.md) | Implements full flow-control (including Ready/back-pressure) around processing entities that do not support Ready/back-pressure natively. |
+| [olo_base_decode_firstbit](./base/olo_base_decode_firstbit.md) | Implements a first-bit decoder (finds the index of the first bit set in a vector). Allows pipelining for operating on very wide vectors at high clock frequencies. |
 
 ## axi
 
@@ -112,6 +115,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_intf_i2c_master](./intf/olo_intf_i2c_master.md) | I2C Master - Supports the full standard including arbitration (multi-master I2C) and clock stretching. |
 | [olo_intf_spi_master](./intf/olo_intf_spi_master.md) | SPI Master - Supports handling multiple slaves and variable width transactions as well as all clock phases and poloarities and LSB/MSB first. |
 | [olo_intf_spi_slave](./intf/olo_intf_spi_slave.md)   | SPI Slave - Supports all clock phases and poloarities and LSB/MSB first. |
+| [olo_intf_uart](./intf/olo_intf_uart.md)             | UART                                                         |
 | [olo_intf_debounce](./intf/olo_intf_debounce.md)     | Debouncer (for bouncing signals from buttons and switches) - Includes double-stage synchronizers. |
 | [olo_intf_clk_meas](./intf/olo_intf_clk_meas.md)     | Measure the frequency of a clock.                            |
 

@@ -1,0 +1,10 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p.....'},
+  {name: 'Out_Valid',    wave: '01..01'},
+  {name: 'Out_Ready',    wave: '1.....'},
+  {name: 'Out_Last',     wave: '0..10.'},
+  {name: 'Out_Data',     wave: 'x444x5', data:["1","2", "3"]},
+  {name: 'Out_Size',     wave: '04..x5', data:["4"]},
+  {name: 'Out_Next',     wave: '0..10.'},
+  {name: 'Out_Repeat',   wave: '0.....'},
+]}

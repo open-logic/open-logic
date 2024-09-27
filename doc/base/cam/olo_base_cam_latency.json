@@ -1,0 +1,14 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p.........', period: 2},
+  {name: 'Rd_Valid',   	 wave: '010.......', period: 2},
+  {name: 'Rd_Ready',   	 wave: '1.........', period: 2},
+  {name: 'Rd_Content',   wave: 'x4x.......', period: 2},
+  {name: 'OneHot_Valid', wave: '0.10......', period: 2},
+  {name: 'OneHot_Match', wave: 'x.4x......', period: 2},
+  {name: 'Addr_Valid',   wave: '0.10......', period: 2},
+  {name: 'Addr_Found',   wave: 'x.1x......', period: 2},
+  {name: 'Addr_Addr',    wave: 'x.4x......', period: 2},
+
+
+
+]}
