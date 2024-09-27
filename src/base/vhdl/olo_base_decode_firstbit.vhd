@@ -30,7 +30,7 @@ entity olo_base_decode_firstbit is
         InWidth_g       : positive;
         InReg_g         : boolean   := true;
         OutReg_g        : boolean   := true;
-        PlRegs_g        : natural   := 2
+        PlRegs_g        : natural   := 1
     );
     port (   
         -- Clock and Reset
@@ -89,7 +89,7 @@ begin
     -- Assertions
     -------------------------------------------------------------------------- 
     assert PlRegs_g < BinBits_c/2
-        report "olo_base_decode_firstbit - PlRegs_g must be smaller thanto ceil(log2(InWidth_g))/2"
+        report "olo_base_decode_firstbit - PlRegs_g must be smaller than ceil(log2(InWidth_g))/2"
         severity error;
 
     --------------------------------------------------------------------------
