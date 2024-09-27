@@ -301,6 +301,17 @@ for ClearAfterReset in [False, True]:
     for InReg in [False, True]:
         named_config(tb, {'ClearAfterReset_g': ClearAfterReset, 'RegisterInput_g': InReg})
 
+#first bit decoder
+decode_firstbit_tb = 'olo_base_decode_firstbit_tb'
+tb = olo_tb.test_bench(decode_firstbit_tb)
+for InReg in [True, False]:
+    for OutReg in [True, False]:
+        for PlRegs in [0, 2]:
+            named_config(tb, {'InWidth_g': 64, 'InReg_g': InReg, 'OutReg_g': OutReg, 'PlRegs_g': PlRegs})
+for InWidth in [1024, 783]:
+    for PlRegs in [0, 2]:
+        named_config(tb, {'InWidth_g': InWidth, 'PlRegs_g': PlRegs})
+
 ########################################################################################################################
 # olo_axi TBs
 ########################################################################################################################
