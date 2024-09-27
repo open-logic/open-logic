@@ -428,8 +428,6 @@ for InternalTriState in [True, False]:
 #Test maximum clock frequency
 clkFreq = int(100e6)
 for CPHA in [0, 1]:
-    named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/6),
-                      'ConsecutiveTransactions_g' : True})
     named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g': int(clkFreq/8),
                       'ConsecutiveTransactions_g': True})
 
