@@ -30,7 +30,7 @@ entity olo_base_decode_firstbit is
         InWidth_g       : positive;
         InReg_g         : boolean   := true;
         OutReg_g        : boolean   := true;
-        Stages_g        : natural   := 2
+        PlRegs_g        : natural   := 2
     );
     port (   
         -- Clock and Reset
@@ -43,7 +43,7 @@ entity olo_base_decode_firstbit is
         
         -- Output
         Out_FirstBit    : out std_logic_vector(log2ceil(InWidth_g)-1 downto 0);
-        Out_OneFound    : out std_logic;
+        Out_Found       : out std_logic;
         Out_Valid       : out std_logic
     );
 end entity;
@@ -54,27 +54,31 @@ end entity;
 architecture rtl of olo_base_decode_firstbit is
 
     -- *** Constants ***
+    constant Stages_c           : natural := PlRegs_g+1;
     constant BinBits_c          : natural := log2ceil(InWidth_g);
-    constant AddrBitsStageN_c   : natural := BinBits_c/Stages_g;
-    constant AddrBitsStage1_c   : natural := BinBits_c - AddrBitsStageN_c*(Stages_g-1);
-    constant ParallelStage1_c   : natural := InWidth_g/2**AddrBitsStage1_c;
+    constant InWidthPow2_c      : natural := 2**BinBits_c;
+    constant AddrBitsStageN_c   : natural := BinBits_c/Stages_c;
+    constant AddrBitsStage1_c   : natural := BinBits_c - AddrBitsStageN_c*(Stages_c-1);
+    constant ParallelStage1_c   : natural := InWidthPow2_c/2**AddrBitsStage1_c;
 
     -- *** Types ***
     type BinStage_t is array (0 to ParallelStage1_c-1) of std_logic_vector(BinBits_c-1 downto 0);
-    type BinAll_t is array(0 to Stages_g-1) of BinStage_t;
+    type BinAll_t is array(0 to Stages_c-1) of BinStage_t;
+    type Found_t is array(0 to Stages_c-1) of std_logic_vector(ParallelStage1_c-1 downto 0);
 
 
     -- *** Two Process Method ***
     type two_process_r is record
         -- Input Registers
-        DataIn                  : std_logic_vector(InWidth_g-1 downto 0);
+        DataIn                  : std_logic_vector(In_Data'range);
         ValidIn                 : std_logic;                 
         -- Pipeline Registers
-        Addr                    : BinAll_t
-        Valid                   : std_logic_vector(Stages_g-1 downto 0);
+        Addr                    : BinAll_t;
+        Found                   : Found_t;
+        Valid                   : std_logic_vector(Stages_c-1 downto 0);
         -- Output Registers
-        FirstBit                : log2ceil(log2ceil(InWidth_g)-1 downto 0);
-        OneFound                : std_logic;
+        FirstBit                : std_logic_vector(Out_FirstBit'range);
+        FoundOut                : std_logic;
         ValidOut                : std_logic;
     end record;
     signal r, r_next : two_process_r;
@@ -84,21 +88,24 @@ begin
     --------------------------------------------------------------------------
     -- Assertions
     -------------------------------------------------------------------------- 
-    assert PipelineReg_g <= BinBits_c/4
-        report "olo_base_decode_firstbit - PipelineReg_g must be smaller or equal to ceil(log2(InWidth_g))/4"
+    assert PlRegs_g < BinBits_c/2
+        report "olo_base_decode_firstbit - PlRegs_g must be smaller thanto ceil(log2(InWidth_g))/2"
         severity error;
 
     --------------------------------------------------------------------------
     -- Combinatorial Process
     -------------------------------------------------------------------------- 
-    p_comb : process
+    p_comb : process(r, In_Data, In_Valid)
         variable v  : two_process_r;
         variable DataIn_v           : std_logic_vector(2**BinBits_c-1 downto 0);
         variable InValid_v          : std_logic;
         variable AddrBits_v         : natural;
-        variable AddrBitsDone_v     : natural;
-        variable AddrBitsRemain_v   : natural;
+        variable AddrLowIdx_v       : natural;
+        variable AddrHighIdx_v      : natural;
         variable Parallelism_v      : natural;
+        variable AddrBitsRemain_v   : natural;
+        variable StartIdx_v         : natural;
+        variable InBitsPerInst_v    : natural;
     begin
         -- *** Hold Variables Stble ***
         v := r;
@@ -116,32 +123,97 @@ begin
         end if;
 
         -- *** Calculate Address ***
+        AddrLowIdx_v := 0;
         AddrBitsRemain_v := BinBits_c;
-        for stg in 0 to Stages_g-1 loop
-            -- Calculate Parallelism
+        for stg in 0 to Stages_c-1 loop
+            -- Valid handling
+            if stg = 0 then
+                v.Valid(stg) := InValid_v;
+            else
+                v.Valid(stg) := r.Valid(stg-1);
+            end if;
+
+            -- Calculate Parallelism & Index
             if stg = 0 then
                 AddrBits_v := AddrBitsStage1_c;
             else
                 AddrBits_v := AddrBitsStageN_c;
             end if;
+            AddrHighIdx_v := AddrLowIdx_v + AddrBits_v - 1;
             AddrBitsRemain_v := AddrBitsRemain_v - AddrBits_v;
-            AddrBitsDone_v := BinBits_c - AddrBitsRemain_v;
-            Parallelism_v := 2**(AddrBitsRemain_v);
+            Parallelism_v := 2**AddrBitsRemain_v;
 
-            -- Calculate address
-            for i in 0 to Parallelism_v-1 loop
-                -- Find first bit only for first stage
+            -- Calculate Address
+            InBitsPerInst_v := 2**AddrBits_v;
+            StartIdx_v := 0;
 
-            end loop;
+            -- First stage does only detect the lowerst bit set
+            if stg = 0 then
+                for inst in 0 to Parallelism_v-1 loop
+                    -- First bit detection
+                    v.Found(0)(inst) := '0';
+                    for bit in 0 to InBitsPerInst_v-1 loop
+                        if DataIn_v(StartIdx_v+bit) = '1' then
+                            v.Addr(0)(inst) := toUslv(bit, BinBits_c);
+                            v.Found(0)(inst) := '1';
+                            exit;
+                        end if;
+                    end loop;
+                    StartIdx_v := StartIdx_v + InBitsPerInst_v;
+                end loop;
+            -- All other stages detect lowest found index, select the corresponding address anad extend it
+            else
+                for inst in 0 to Parallelism_v-1 loop
+                    -- First bit detection
+                    v.Found(stg)(inst) := '0';
+                    for bit in 0 to InBitsPerInst_v-1 loop
+                        if r.Found(stg-1)(StartIdx_v+bit) = '1' then
+                            v.Addr(stg)(inst) := r.Addr(stg-1)(StartIdx_v+bit);
+                            v.Addr(stg)(inst)(AddrHighIdx_v downto AddrLowIdx_v) := toUslv(bit, AddrBits_v);
+                            v.Found(stg)(inst) := '1';
+                            exit;
+                        end if;
+                    end loop;
+                    StartIdx_v := StartIdx_v + InBitsPerInst_v;
+                end loop;
+            end if;
 
-
-
+            -- Increment Addre Index
+            AddrLowIdx_v := AddrLowIdx_v + AddrBits_v;
 
         end loop;
+
+        -- Optional Output Register
+        v.FirstBit  := r.Addr(Stages_c-1)(0);
+        v.FoundOut  := r.Found(Stages_c-1)(0);
+        v.ValidOut  := r.Valid(Stages_c-1);
+        if OutReg_g then
+            Out_FirstBit    <= r.FirstBit;
+            Out_Found       <= r.FoundOut;
+            Out_Valid       <= r.ValidOut;
+        else
+            Out_FirstBit    <= v.FirstBit;
+            Out_Found       <= v.FoundOut;
+            Out_Valid       <= v.ValidOut;
+        end if;
 
         -- *** Assign to signal ***
         r_next <= v;
     end process;
 
+    --------------------------------------------------------------------------
+    -- Sequential Proccess
+    --------------------------------------------------------------------------
+    p_seq : process(Clk)
+    begin
+        if rising_edge(Clk) then
+            r <= r_next;
+            if Rst = '1' then
+                r.ValidIn   <= '0';
+                r.Valid     <= (others => '0');
+                r.ValidOut  <= '0';
+            end if;
+        end if;
+    end process;
 
 end architecture;
