@@ -27,7 +27,7 @@ library olo;
 -- vunit: run_all_in_same_sim
 entity olo_base_cam_tb is
     generic (
-        Addresses_g             : positive range 8 to 16    := 8;
+        Addresses_g             : positive range 8 to 1024  := 8;
         ContentWidth_g          : positive range 10 to 256  := 10;
         RamBehavior_g           : string                    := "RBW";
         RamBlockWidth_g         : positive                  := 32;
@@ -37,8 +37,8 @@ entity olo_base_cam_tb is
         StrictOrdering_g        : boolean                   := false;
         UseAddrOut_g            : boolean                   := true;
         RegisterInput_g         : boolean                   := true;
-        RegisterOneHot_g          : boolean                   := true;
-        OneHotDecodeLatency_g   : natural                   := 1;
+        RegisterMatch_g         : boolean                   := true;
+        FirstBitDecLatency_g    : natural                   := 1;
         runner_cfg              : string
     );
 end entity olo_base_cam_tb;
@@ -84,11 +84,11 @@ architecture sim of olo_base_cam_tb is
                             Blocking    : boolean := false) is
         variable Data_v : std_logic_vector(ConfigInStrWidth_c - 1 downto 0);        
     begin
-        Data_v(WrAddr_r) := toUslv(Addr, log2ceil(Addresses_g));
-        Data_v(WrContent_r) := toUslv(Content, ContentWidth_g);
-        Data_v(WrWrite_c) := choose(Write, '1', '0');
-        Data_v(WrClear_c) := choose(Clear, '1', '0');
-        Data_v(WrClearAll_c) := choose(ClearAll, '1', '0');
+        Data_v(WrAddr_r)        := toUslv(Addr, log2ceil(Addresses_g));
+        Data_v(WrContent_r)     := toUslv(Content, ContentWidth_g);
+        Data_v(WrWrite_c)       := choose(Write, '1', '0');
+        Data_v(WrClear_c)       := choose(Clear, '1', '0');
+        Data_v(WrClearAll_c)    := choose(ClearAll, '1', '0');
         push_axi_stream(net, camWrMaster, Data_v);
         if Blocking then
             wait_until_idle(net, as_sync(camWrMaster));
@@ -134,8 +134,8 @@ architecture sim of olo_base_cam_tb is
     -------------------------------------------------------------------------
     -- Interface Signals
     -------------------------------------------------------------------------
-    signal Clk                      : std_logic := '0';
-    signal Rst                      : std_logic := '0';
+    signal Clk                  : std_logic := '0';
+    signal Rst                  : std_logic := '0';
     signal Rd_Valid             : std_logic := '1';
     signal Rd_Ready             : std_logic;
     signal Rd_Content           : std_logic_vector(ContentWidth_g-1 downto 0);
@@ -146,8 +146,8 @@ architecture sim of olo_base_cam_tb is
     signal Wr_Write             : std_logic;
     signal Wr_Clear             : std_logic;
     signal Wr_ClearAll          : std_logic;
-    signal OneHot_Valid           : std_logic;
-    signal OneHot_Match           : std_logic_vector(Addresses_g-1 downto 0);
+    signal Match_Valid          : std_logic;
+    signal Match_Match          : std_logic_vector(Addresses_g-1 downto 0);
     signal Addr_Valid           : std_logic;
     signal Addr_Found           : std_logic;
     signal Addr_Addr            : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
@@ -184,7 +184,7 @@ begin
                 wait until rising_edge(Clk);
                 check_equal(Rd_Ready, '0', "Rd_Ready first");
                 check_equal(Wr_Ready, '0', "Wr_Ready first");
-                check_equal(OneHot_Valid, '0', "OneHot_Valid first");
+                check_equal(Match_Valid, '0', "Match_Valid first");
                 check_equal(Addr_Valid, '0', "Addr_Valid first");
                 Rst <= '0';
                 -- wait until reset done
@@ -193,7 +193,7 @@ begin
                         wait until rising_edge(Clk);
                         check_equal(Rd_Ready, '0', "Rd_Ready clearing");
                         check_equal(Wr_Ready, '0', "Wr_Ready clearing");
-                        check_equal(OneHot_Valid, '0', "OneHot_Valid clearing");
+                        check_equal(Match_Valid, '0', "Match_Valid clearing");
                         check_equal(Addr_Valid, '0', "Addr_Valid clearing");
                     end loop;
                     wait until rising_edge(Clk);
@@ -202,7 +202,7 @@ begin
                 end if;
                 check_equal(Rd_Ready, '1', "Rd_Ready second");
                 check_equal(Wr_Ready, '1', "Wr_Ready second");
-                check_equal(OneHot_Valid, '0', "OneHot_Valid second");
+                check_equal(Match_Valid, '0', "Match_Valid second");
                 check_equal(Addr_Valid, '0', "Addr_Valid second");
             end if;
 
@@ -444,13 +444,13 @@ begin
             ReadPriority_g          => ReadPriority_g,
             StrictOrdering_g        => StrictOrdering_g,
             RegisterInput_g         => RegisterInput_g,
-            RegisterOneHot_g          => RegisterOneHot_g,
-            OneHotDecodeLatency_g   => OneHotDecodeLatency_g,
+            RegisterMatch_g         => RegisterMatch_g,
+            FirstBitDecLatency_g    => FirstBitDecLatency_g,
             RamBehavior_g           => RamBehavior_g
         )
         port map (
-            Clk                 => Clk,
-            Rst                 => Rst,
+            Clk              => Clk,
+            Rst              => Rst,
             Rd_Valid         => Rd_Valid,
             Rd_Ready         => Rd_Ready,
             Rd_Content       => Rd_Content,
@@ -461,8 +461,8 @@ begin
             Wr_Write         => Wr_Write,
             Wr_Clear         => Wr_Clear,
             Wr_ClearAll      => Wr_ClearAll,
-            OneHot_Valid       => OneHot_Valid,
-            OneHot_Match       => OneHot_Match,
+            Match_Valid      => Match_Valid,
+            Match_Match      => Match_Match,
             Addr_Valid       => Addr_Valid,
             Addr_Found       => Addr_Found,
             Addr_Addr        => Addr_Addr
@@ -488,8 +488,8 @@ begin
         )
         port map (
             aclk   => Clk,
-            tvalid => OneHot_Valid,
-            tdata  => OneHot_Match
+            tvalid => Match_Valid,
+            tdata  => Match_Match
         );
 
     vc_camout_addr : entity vunit_lib.axi_stream_slave
@@ -516,10 +516,10 @@ begin
                 tready => Wr_Ready,
                 tdata  => Data
             );
-            Wr_Addr <= Data(WrAddr_r);
-            Wr_Content <= Data(WrContent_r);
-            Wr_Write <= Data(WrWrite_c);
-            Wr_Clear <= Data(WrClear_c);
+            Wr_Addr     <= Data(WrAddr_r);
+            Wr_Content  <= Data(WrContent_r);
+            Wr_Write    <= Data(WrWrite_c);
+            Wr_Clear    <= Data(WrClear_c);
             Wr_ClearAll <= Data(WrClearAll_c);
     end block;
 

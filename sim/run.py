@@ -290,9 +290,9 @@ for ReadPriority in [False, True]:
         for RamBehav in ["RBW", "WBR"]:
             named_config(tb, {'ReadPriority_g': ReadPriority, 'StrictOrdering_g': StrictOrdering, 'RamBehavior_g' : RamBehav})
 #Latency / Throughput / Balacned configs
-named_config(tb, {'RegisterInput_g': True, 'RegisterOneHot_g': True, 'OneHotDecodeLatency_g': 4})
-named_config(tb, {'RegisterInput_g': False, 'RegisterOneHot_g': False, 'OneHotDecodeLatency_g': 0})
-named_config(tb, {'RegisterInput_g': True, 'RegisterOneHot_g': False, 'OneHotDecodeLatency_g': 1})
+named_config(tb, {'RegisterInput_g': True, 'RegisterMatch_g': True, 'FirstBitDecLatency_g': 2, 'Addresses_g': 128})
+named_config(tb, {'RegisterInput_g': False, 'RegisterMatch_g': False, 'FirstBitDecLatency_g': 0})
+named_config(tb, {'RegisterInput_g': True, 'RegisterMatch_g': False, 'FirstBitDecLatency_g': 1})
 #Omit AddrOut
 named_config(tb, {'UseAddrOut_g': True})
 named_config(tb, {'UseAddrOut_g': False})

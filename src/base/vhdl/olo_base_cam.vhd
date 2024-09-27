@@ -41,8 +41,8 @@ entity olo_base_cam is
         -- Pipelineing
         UseAddrOut_g            : boolean   := true;
         RegisterInput_g         : boolean   := true;
-        RegisterOneHot_g        : boolean   := true;
-        OneHotDecodeLatency_g   : natural   := 1
+        RegisterMatch_g         : boolean   := true;
+        FirstBitDecLatency_g    : natural   := 1
     );  
     port (   
         -- Control Signals
@@ -64,8 +64,8 @@ entity olo_base_cam is
         Wr_ClearAll             : in  std_logic                                                 := '0';
 
         -- CAM one hot read response
-        OneHot_Valid            : out std_logic;
-        OneHot_Match            : out std_logic_vector(Addresses_g-1 downto 0);
+        Match_Valid             : out std_logic;
+        Match_Match             : out std_logic_vector(Addresses_g-1 downto 0);
 
         -- CAM binary read response
         Addr_Valid              : out std_logic;
@@ -103,16 +103,8 @@ architecture rtl of olo_base_cam is
         ClearAll_1              : std_logic;
         Read_1                  : std_logic;
         -- Stage 2
-        AddrOneHot_2            : std_logic_vector(Addresses_g-1 downto 0);
+        Match_2                 : std_logic_vector(Addresses_g-1 downto 0);
         Read_2                  : std_logic;
-        -- Stage 3
-        Read_3                  : std_logic;
-        AddrBin_3               : std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
-        Found_3                 : std_logic;
-        -- Stage 4+
-        Read_N                  : std_logic_vector(4 to 4+OneHotDecodeLatency_g-2);
-        AddrBin_N               : Addr_t(4 to 4+OneHotDecodeLatency_g-2);
-        Found_N                 : std_logic_vector(4 to 4+OneHotDecodeLatency_g-2); 
         -- Clear after reset
         RstClearDone            : std_logic;
         RstClearCounter         : unsigned(BlockAddrBits_c-1 downto 0);
@@ -121,12 +113,13 @@ architecture rtl of olo_base_cam is
     signal r, r_next : two_process_r;
 
     -- *** Instantiation Signals ***
-    type HoneHot_t is array (natural range <>) of std_logic_vector(Addresses_g-1 downto 0);
+    type RamData_t is array (natural range <>) of std_logic_vector(Addresses_g-1 downto 0);
     signal ReadContent_0    : std_logic_vector(ContentWidth_g-1 downto 0);
-    signal AddrOneHot_1     : HoneHot_t(0 to BlocksParallel_c-1);
-    signal WriteOneHot_1    : HoneHot_t(0 to BlocksParallel_c-1);
+    signal RamRead_1        : RamData_t(0 to BlocksParallel_c-1);
+    signal RamWrite_1       : RamData_t(0 to BlocksParallel_c-1);
     signal WrMem_1          : std_logic;
-
+    signal MatchInt         : std_logic_vector(Addresses_g-1 downto 0);
+    signal MatchValid       : std_logic;
     
 begin
 
@@ -141,11 +134,10 @@ begin
     -- Combinatorial Proccess
     --------------------------------------------------------------------------
     p_cob : process (Rd_Valid, Rd_Content, Wr_Valid, Wr_Content, Wr_Addr, Wr_Write, Wr_Clear, 
-                     AddrOneHot_1, Rst, r)
+                     RamRead_1, Rst, r)
         variable v : two_process_r;
         variable ClearMask_v, SetMask_v : std_logic_vector(Addresses_g-1 downto 0);
         variable InRdReady_v, InWrReady_v : std_logic;
-        variable OneHot_v : std_logic_vector(Addresses_g-1 downto 0);
     begin
         -- *** Hold variables stable *** 
         v := r;
@@ -225,9 +217,9 @@ begin
         -- *** Stage 2 ***
         v.Read_2 := r.Read_1;
         -- Find one hot matching address
-        v.AddrOneHot_2 := AddrOneHot_1(0);
+        v.Match_2 := RamRead_1(0);
         for i in 1 to BlocksParallel_c-1 loop
-            v.AddrOneHot_2 := v.AddrOneHot_2 and AddrOneHot_1(i);
+            v.Match_2 := v.Match_2 and RamRead_1(i);
         end loop;
         -- Modify CAM content if required
         ClearMask_v := (others => '1');
@@ -243,59 +235,20 @@ begin
         if r.ClearAll_1 = '1' then
             -- Clear all CAM entries - this overrides the single clear mask
             -- Note: ClearAll is somewhat timing suboptimal and shall only be used if this is tolerable
-            ClearMask_v := not v.AddrOneHot_2;
+            ClearMask_v := not v.Match_2;
         end if;
 
         for i in 0 to BlocksParallel_c-1 loop
-            WriteOneHot_1(i) <= (AddrOneHot_1(i) and ClearMask_v) or SetMask_v;
+            RamWrite_1(i) <= (RamRead_1(i) and ClearMask_v) or SetMask_v;
         end loop;
         WrMem_1 <= r.Write_1 or r.Clear_1 or r.ClearAll_1 or r.RstClearWr;
         -- One hot output
-        if RegisterOneHot_g then
-            OneHot_Valid     <= r.Read_2;
-            OneHot_v        := r.AddrOneHot_2;
-            v.Read_3        := r.Read_2;
+        if RegisterMatch_g then
+            MatchValid     <= r.Read_2;
+            MatchInt       <= r.Match_2;
         else
-            OneHot_Valid    <= v.Read_2;
-            OneHot_v        := v.AddrOneHot_2;
-            v.Read_3        := v.Read_2;
-        end if;
-        OneHot_Match <= OneHot_v;
-
-        -- *** Stage 3 ***
-        if UseAddrOut_g then
-            -- Convert one hot to binary
-            v.Found_3 := '0';
-            v.AddrBin_3 := (others => '0');
-            for i in 0 to Addresses_g-1 loop
-                if OneHot_v(i) = '1' then
-                    v.Found_3 := '1';
-                    v.AddrBin_3 := toUslv(i, v.AddrBin_3'length);
-                    exit;
-                end if;
-            end loop;
-
-            -- Address output
-            if OneHotDecodeLatency_g = 0 then
-                Addr_Valid   <= v.Read_3;
-                Addr_Found   <= v.Found_3;
-                Addr_Addr    <= v.AddrBin_3; 
-            elsif OneHotDecodeLatency_g = 1 then
-                Addr_Valid   <= r.Read_3;
-                Addr_Found   <= r.Found_3;
-                Addr_Addr    <= r.AddrBin_3;
-            else
-                v.Read_N     := r.Read_3     & r.Read_N      (r.Read_N'left      to r.Read_N'right-1);
-                v.AddrBin_N  := r.AddrBin_3  & r.Addrbin_N   (r.Addrbin_N'left   to r.Addrbin_N'right-1);
-                v.Found_N    := r.Found_3    & r.Found_N     (r.Found_N'left     to r.Found_N'right-1);
-                Addr_Valid   <= r.Read_N(r.Read_N'right);
-                Addr_Found   <= r.Found_N(r.Found_N'right);
-                Addr_Addr    <= r.AddrBin_N(r.AddrBin_N'right);                       
-            end if;  
-        else
-            Addr_Valid <= '0';   
-            Addr_Found <= '0';
-            Addr_Addr  <= (others => '0');
+            MatchValid    <= v.Read_2;
+            MatchInt      <= v.Match_2;
         end if;
 
         -- *** Clear after reset ***
@@ -321,13 +274,17 @@ begin
                 end loop;
             end if;
             if r.RstClearWr = '1' then
-                WriteOneHot_1 <= (others => (others => '0'));
+                RamWrite_1 <= (others => (others => '0'));
             end if;
         end if;
 
         -- *** Assign to signal ***
         r_next <= v;
     end process;
+
+    -- Output signals
+    Match_Valid <= MatchValid;
+    Match_Match <= MatchInt;
 
     --------------------------------------------------------------------------
     -- Sequential Proccess
@@ -346,8 +303,6 @@ begin
                 r.ClearAll_1        <= '0';
                 r.Read_1            <= '0';
                 r.Read_2            <= '0';
-                r.Read_3            <= '0';
-                r.Read_N            <= (others => '0');
                 r.RstClearDone      <= '0';
                 r.RstClearCounter   <= (others => '0');
             end if;
@@ -380,10 +335,36 @@ begin
                 Clk         => Clk,
                 Wr_Addr     => WrAddr_1,
                 Wr_Ena      => WrMem_1,  
-                Wr_Data     => WriteOneHot_1(i),
+                Wr_Data     => RamWrite_1(i),
                 Rd_Addr     => RdAddr_0,
-                Rd_Data     => AddrOneHot_1(i)
+                Rd_Data     => RamRead_1(i)
             );   
+    end generate;
+
+    -- First bit decoder
+    g_addrout : if UseAddrOut_g generate
+        i_addrout : entity work.olo_base_decode_firstbit
+            generic map (
+                InWidth_g       => Addresses_g,
+                InReg_g         => false,   -- Regiser is in r
+                OutReg_g        => choose(FirstBitDecLatency_g = 0, false, true),
+                PlRegs_g        => choose(FirstBitDecLatency_g = 0, 0, FirstBitDecLatency_g-1)
+            )
+            port map (
+                Clk          => Clk,
+                Rst          => Rst,
+                In_Data      => MatchInt,
+                In_Valid     => MatchValid,
+                Out_FirstBit => Addr_Addr,
+                Out_Found    => Addr_Found,
+                Out_Valid    => Addr_Valid 
+            );
+    end generate;
+    g_naddrout : if not UseAddrOut_g generate
+        -- Dummy signals
+        Addr_Valid <= '0';
+        Addr_Found <= '0';
+        Addr_Addr  <= (others => '0');
     end generate;
   
 
