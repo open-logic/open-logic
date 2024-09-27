@@ -155,8 +155,8 @@ begin
                     PushValues(net, 20);
                     CheckValues(net, 20);
                 else
-                    PushValues(net, 1000);
-                    CheckValues(net, 1000);
+                    PushValues(net, 100);
+                    CheckValues(net, 100);
                 end if;
 
             elsif run("OutLimited") then

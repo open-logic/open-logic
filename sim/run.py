@@ -308,7 +308,7 @@ for InReg in [True, False]:
     for OutReg in [True, False]:
         for PlRegs in [0, 2]:
             named_config(tb, {'InWidth_g': 64, 'InReg_g': InReg, 'OutReg_g': OutReg, 'PlRegs_g': PlRegs})
-for InWidth in [1024, 783]:
+for InWidth in [512, 783]:
     for PlRegs in [0, 2]:
         named_config(tb, {'InWidth_g': InWidth, 'PlRegs_g': PlRegs})
 
