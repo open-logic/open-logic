@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : open-logic:open-logic:base:2.2.0
+name : open-logic:open-logic:base:2.3.0
 description : Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base
 
 filesets:
@@ -11,6 +11,7 @@ filesets:
       - vhdl/olo_base_cc_simple.vhd
       - vhdl/olo_base_ram_sdp.vhd
       - vhdl/olo_base_delay_cfg.vhd
+      - vhdl/olo_base_decode_firstbit.vhd
       - vhdl/olo_base_ram_tdp.vhd
       - vhdl/olo_base_strobe_gen.vhd
       - vhdl/olo_base_wconv_n2xn.vhd
@@ -29,10 +30,12 @@ filesets:
       - vhdl/olo_base_fifo_sync.vhd
       - vhdl/olo_base_cc_pulse.vhd
       - vhdl/olo_base_pkg_logic.vhd
+      - vhdl/olo_base_cam.vhd
       - vhdl/olo_base_cc_status.vhd
       - vhdl/olo_base_reset_gen.vhd
       - vhdl/olo_base_pkg_math.vhd
       - vhdl/olo_base_wconv_xn2n.vhd
+      - vhdl/olo_base_fifo_packet.vhd
       - vhdl/olo_base_pl_stage.vhd
       - vhdl/olo_base_cc_bits.vhd
       - vhdl/olo_base_cc_xn2n.vhd
@@ -49,5 +52,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 2.2.0
+  version : 2.3.0
   
