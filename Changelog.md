@@ -2,6 +2,61 @@
 
 # Changelog
 
+## 2.3.0 
+
+27-Sep-2024
+
+### Added Features
+
+- Implement synthesis attributes for Synplify based tools
+  - Examples of Synplify based toolchains: Lattice ICECube, Microchip
+
+- Setup of Github Sponsors profile for funding the project
+- *olo_base_packet_fifo*
+  - Store and forward packet FIFO
+  - Allows to drop packets while writing them (even after some data was written)
+  - Allows skipping and repeating packets when reading them
+
+- *olo_intf_uart*
+  - UART interface
+
+- *olo_base_decode_firstbit*
+  - Timing optimal first-bit decoder
+
+- *olo_base_cam*
+  - Content addressable memory
+
+- *olo_base_strobe_gen*
+  - Added fractional mode - dynamically extend/shorten period by one clock cycle to meet the requested average strobe frequency.
+
+
+### Backward Compatible Changes
+
+- Various documentation improvements
+- *olo_intf_spi_slave* 
+  - Suppress needless MISO toggling at the end of a transaction (#68, reported by [@betocool-prog](https://github.com/betocool-prog) )
+
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- Fixed documentation of *olo_intf_spi_slave*.
+  - Maximum SCLK frequency is 8x lower than Clk frequency (not 6x)
+
+
+## Credits
+
+### Reporters
+
+- [@betocool-prog](https://github.com/betocool-prog)
+
+### Contributors
+
+- None
+
 ## 2.2.0 
 
 04-Sep-2024

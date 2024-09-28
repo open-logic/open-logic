@@ -73,6 +73,7 @@ architecture rtl of olo_base_ram_tdp is
     attribute ramstyle of mem : variable is RamStyle_g;
 
     -- Efinix RAM implementation attributes
+    -- Same attribute works for Synplify (Lattice, Microchip)
     attribute syn_ramstyle : string;
     attribute syn_ramstyle of mem : variable is RamStyle_g;
 
@@ -80,7 +81,7 @@ begin
 
     -- Assertions
     assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR" 
-        report "olo_base_ram_tdp: RamBehavior_g must Be RBW or WBR" 
+        report "olo_base_ram_tdp: RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g
         severity error;
     assert (Width_g mod 8 = 0) or (not UseByteEnable_g) 
         report "olo_base_ram_tdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled" 

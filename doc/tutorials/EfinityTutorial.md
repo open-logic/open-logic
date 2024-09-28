@@ -309,7 +309,7 @@ If you should want to build the tutorial project without many manual mouse click
   efx_run --prj ./prj_vhdl.xml
   ```
 
-  For Verilog:
+  For Windows:
 
   ```
   efx_run.bat --prj ./prj_vhdl.xml

@@ -16,6 +16,8 @@
 
 Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 
+An [Introduction Video](https://www.youtube.com/watch?v=hh3bS1SiIQs&t=6s) to open logic can be found on youtube. If you are new to Open Logic, this is a good starting point.
+
 Maintainer: [obruendl](oliver.bruendler@gmx.ch)
 
 If you appreciate the project, consider **supporting it with a small donation**. If you're part of a commercial company that prefers purchasing services over making voluntary donations, that's no problem. You can also **purchase offerings** such as **workshops** and **priority support**. Click the button below to visit the sponsors page.
@@ -87,7 +89,7 @@ This goal is self explaining. It is implemented as follows:
 
 ### Pure VHDL
 
-*Open Logic* does not rely on vendor specific code (e.g. primitives) and can be compiled to very FPGA. Code is written with different technologies in mind (e.g. using read-before-write or write-before-read blockRAM, containing synthesis attributes for different tools) and hence works efficiently on all devices available and is known to be portable to future device families. Portability to new device families in general does not need any update on the *Open Logic* library.
+*Open Logic* does not rely on vendor specific code (e.g. primitives) and can be compiled to every FPGA. Code is written with different technologies in mind (e.g. using read-before-write or write-before-read blockRAM, containing synthesis attributes for different tools) and hence works efficiently on all devices available and is known to be portable to future device families. Portability to new device families in general does not need any update on the *Open Logic* library.
 
 Thanks to the *pure VHDL* philosophy, *Open Logic* simulates fast and is fully supported by the open-source GHDL simulator. This is crucial for an open-source project because it allows participating on the development at zero tool-cost.
 

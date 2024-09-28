@@ -234,7 +234,8 @@ arb_rr_tb = 'olo_base_arb_rr_tb'
 strobe_gen_tb = 'olo_base_strobe_gen_tb'
 tb = olo_tb.test_bench(strobe_gen_tb)
 for Freq in ["10.0e6", "13.2e6"]:
-    named_config(tb, {'FreqStrobeHz_g': Freq})
+    for FMode in [False, True]:
+        named_config(tb, {'FreqStrobeHz_g': Freq, 'FractionalMode_g' : FMode})
 
 #strobe divider
 strobe_div_tbs = ['olo_base_strobe_div_tb', 'olo_base_strobe_div_backpressonly_tb']
@@ -265,6 +266,51 @@ for Cycles in [3, 5]:
     for Polarity in [0, 1]:
         for AsyncOutput in [True, False]:
             named_config(tb, {'RstPulseCycles_g': Cycles, 'RstInPolarity_g': Polarity, 'AsyncResetOutput_g': AsyncOutput})
+
+#fifo_packet
+fifo_packet_tb = 'olo_base_fifo_packet_tb'
+tb = olo_tb.test_bench(fifo_packet_tb)
+#Choose settings for short runtim
+named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': True})
+named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': False}) #Some checks require non-random stall
+#fifo_packet_hs_tb does not have generics
+
+#cam
+cam_tb = 'olo_base_cam_tb'
+tb = olo_tb.test_bench(cam_tb)
+#Content smaller or bitter than RAM AddrBits
+named_config(tb, {'ContentWidth_g': 10, 'RamBlockDepth_g': 512})
+named_config(tb, {'ContentWidth_g': 10, 'RamBlockDepth_g': 4096})
+#Test different RAM configs
+named_config(tb, {'RamBlockWidth_g': 32, 'RamBlockDepth_g': 512})
+named_config(tb, {'RamBlockWidth_g': 4, 'RamBlockDepth_g': 64})
+#Read/Write Interleaving
+for ReadPriority in [False, True]:
+    for StrictOrdering in [False, True]:
+        for RamBehav in ["RBW", "WBR"]:
+            named_config(tb, {'ReadPriority_g': ReadPriority, 'StrictOrdering_g': StrictOrdering, 'RamBehavior_g' : RamBehav})
+#Latency / Throughput / Balacned configs
+named_config(tb, {'RegisterInput_g': True, 'RegisterMatch_g': True, 'FirstBitDecLatency_g': 2, 'Addresses_g': 128})
+named_config(tb, {'RegisterInput_g': False, 'RegisterMatch_g': False, 'FirstBitDecLatency_g': 0})
+named_config(tb, {'RegisterInput_g': True, 'RegisterMatch_g': False, 'FirstBitDecLatency_g': 1})
+#Omit AddrOut
+named_config(tb, {'UseAddrOut_g': True})
+named_config(tb, {'UseAddrOut_g': False})
+#Clear after reset with different input latency configs
+for ClearAfterReset in [False, True]:
+    for InReg in [False, True]:
+        named_config(tb, {'ClearAfterReset_g': ClearAfterReset, 'RegisterInput_g': InReg})
+
+#first bit decoder
+decode_firstbit_tb = 'olo_base_decode_firstbit_tb'
+tb = olo_tb.test_bench(decode_firstbit_tb)
+for InReg in [True, False]:
+    for OutReg in [True, False]:
+        for PlRegs in [0, 2]:
+            named_config(tb, {'InWidth_g': 64, 'InReg_g': InReg, 'OutReg_g': OutReg, 'PlRegs_g': PlRegs})
+for InWidth in [512, 783]:
+    for PlRegs in [0, 2]:
+        named_config(tb, {'InWidth_g': InWidth, 'PlRegs_g': PlRegs})
 
 ########################################################################################################################
 # olo_axi TBs
@@ -382,10 +428,19 @@ for InternalTriState in [True, False]:
 #Test maximum clock frequency
 clkFreq = int(100e6)
 for CPHA in [0, 1]:
-    named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g' : int(clkFreq/6),
-                      'ConsecutiveTransactions_g' : True})
     named_config(tb, {'SpiCpha_g': CPHA, 'ClkFrequency_g': clkFreq, 'BusFrequency_g': int(clkFreq/8),
                       'ConsecutiveTransactions_g': True})
+
+uart_tb = 'olo_intf_uart_tb'
+tb = olo_tb.test_bench(uart_tb)
+for BaudRate in [115200, 10000000]:
+    named_config(tb, {'BaudRate_g' : BaudRate})
+for DataBits in [8, 9]:
+    for Parity in ["none", "even", "odd"]:
+        named_config(tb, {'DataBits_g': DataBits, 'Parity_g' : Parity})
+for StopBits in ["1", "1.5", "2"]:
+    named_config(tb, {'StopBits_g' : StopBits})
+
 
 
 ########################################################################################################################

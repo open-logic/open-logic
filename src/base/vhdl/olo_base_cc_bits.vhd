@@ -79,6 +79,19 @@ architecture struct of olo_base_cc_bits is
     attribute preserve of Reg1 : signal is true;   
     attribute preserve of RegIn : signal is true;
 
+    -- Synchthesis attributes for Synopsis (Lattice, Microchip)
+    attribute syn_preserve : boolean;
+    attribute syn_preserve of Reg0 : signal is true;
+    attribute syn_preserve of Reg1 : signal is true;   
+    attribute syn_preserve of RegIn : signal is true;   
+
+    attribute syn_keep : boolean;
+    attribute syn_keep of Reg0 : signal is true;
+    attribute syn_keep of Reg1 : signal is true;   
+    attribute syn_keep of RegIn : signal is true;
+
+
+
     signal In_Clk_Sig : std_logic;
 
     -- Synthesis attributes Xilinx
