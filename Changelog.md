@@ -46,14 +46,13 @@
 - Fixed documentation of *olo_intf_spi_slave*.
   - Maximum SCLK frequency is 8x lower than Clk frequency (not 6x)
 
+### Credits
 
-## Credits
-
-### Reporters
+#### Reporters
 
 - [@betocool-prog](https://github.com/betocool-prog)
 
-### Contributors
+#### Contributors
 
 - None
 
@@ -92,13 +91,13 @@
 
 - None
 
-## Credits
+### Credits
 
-### Reporters
+#### Reporters
 
 - [tasgomes](https://github.com/tasgomes) 
 
-### Contributors
+#### Contributors
 
 - [nickg](https://github.com/nickg) 
 - [kuriousd](https://github.com/kuriousd) 
