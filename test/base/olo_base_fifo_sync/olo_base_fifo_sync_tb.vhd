@@ -47,26 +47,26 @@ architecture sim of olo_base_fifo_sync_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant ClockFrequency_c : real    := 100.0e6;
-    constant ClockPeriod_c    : time    := (1 sec) / ClockFrequency_c;
+    constant ClockFrequency_c : real := 100.0e6;
+    constant ClockPeriod_c    : time := (1 sec) / ClockFrequency_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk       : std_logic                                               := '0';
-    signal Rst       : std_logic                                               := '1';
-    signal In_Data   : std_logic_vector(DataWidth_c - 1 downto 0)              := (others => '0');
-    signal In_Valid  : std_logic                                               := '0';
-    signal In_Ready  : std_logic                                               := '0';
-    signal Out_Data  : std_logic_vector(DataWidth_c - 1 downto 0)              := (others => '0');
-    signal Out_Valid : std_logic                                               := '0';
-    signal Out_Ready : std_logic                                               := '0';
-    signal Full      : std_logic                                               := '0';
-    signal Empty     : std_logic                                               := '0';
-    signal AlmFull   : std_logic                                               := '0';
-    signal AlmEmpty  : std_logic                                               := '0';
-    signal In_Level  : std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0)    := (others => '0');
-    signal Out_Level : std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0)    := (others => '0');
+    signal Clk       : std_logic                                            := '0';
+    signal Rst       : std_logic                                            := '1';
+    signal In_Data   : std_logic_vector(DataWidth_c - 1 downto 0)           := (others => '0');
+    signal In_Valid  : std_logic                                            := '0';
+    signal In_Ready  : std_logic                                            := '0';
+    signal Out_Data  : std_logic_vector(DataWidth_c - 1 downto 0)           := (others => '0');
+    signal Out_Valid : std_logic                                            := '0';
+    signal Out_Ready : std_logic                                            := '0';
+    signal Full      : std_logic                                            := '0';
+    signal Empty     : std_logic                                            := '0';
+    signal AlmFull   : std_logic                                            := '0';
+    signal AlmEmpty  : std_logic                                            := '0';
+    signal In_Level  : std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0) := (others => '0');
+    signal Out_Level : std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0) := (others => '0');
 
 begin
 
@@ -75,7 +75,7 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_fifo_sync
         generic map (
-            width_g             => DataWidth_c,
+            Width_g             => DataWidth_c,
             Depth_g             => Depth_g,
             AlmFullOn_g         => AlmFullOn_g,
             AlmFullLevel_g      => AlmFullLevel_c,
@@ -111,6 +111,7 @@ begin
     -----------------------------------------------------------------------------------------------
     test_runner_watchdog(runner, 10 ms);
 
+    -- vsg_off length_003 -- TB processes can be long ...
     p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
@@ -157,6 +158,7 @@ begin
                 check_equal(Empty, '1', "Empty not high");
                 check_equal(In_Level, 0, "In_Level not 0");
                 check_equal(Out_Level, 0, "Out_Level not 0");
+
                 -- Write 2
                 wait until falling_edge(Clk);
                 In_Data <= X"0002";
@@ -165,6 +167,7 @@ begin
                 check_equal(Empty, '1', "Empty not high");
                 check_equal(In_Level, 1, "In_Level not 0");
                 check_equal(Out_Level, 0, "Out_Level not 0");
+
                 -- Pause 1
                 wait until falling_edge(Clk);
                 In_Data  <= X"0003";
@@ -175,6 +178,7 @@ begin
                 check_equal(Empty, '0', "Empty not low");
                 check_equal(In_Level, 2, "In_Level not 2");
                 check_equal(Out_Level, 1, "Out_Level not 1");
+
                 -- Pause 2
                 wait until falling_edge(Clk);
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
@@ -183,6 +187,7 @@ begin
                 check_equal(Empty, '0', "Empty not low");
                 check_equal(In_Level, 2, "In_Level not 2");
                 check_equal(Out_Level, 2, "Out_Level not 2");
+
                 -- Read ack 1
                 wait until falling_edge(Clk);
                 Out_Ready <= '1';
@@ -192,6 +197,7 @@ begin
                 check_equal(Empty, '0', "Empty not low");
                 check_equal(In_Level, 2, "In_Level not 2");
                 check_equal(Out_Level, 2, "Out_Level not 2");
+
                 -- Read ack 2
                 wait until falling_edge(Clk);
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
@@ -200,6 +206,7 @@ begin
                 check_equal(Empty, '0', "Empty not low");
                 check_equal(In_Level, 2, "In_Level not 2");
                 check_equal(Out_Level, 1, "Out_Level not 1");
+
                 -- empty 1
                 wait until falling_edge(Clk);
                 Out_Ready <= '0';
@@ -208,6 +215,7 @@ begin
                 check_equal(Empty, '1', "Empty not high");
                 check_equal(In_Level, 1, "In_Level not 1");
                 check_equal(Out_Level, 0, "Out_Level not 0");
+
                 -- empty 2
                 wait until falling_edge(Clk);
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
@@ -218,18 +226,21 @@ begin
 
             elsif run("WriteFullFifo") then
                 wait until falling_edge(Clk);
+
                 -- Fill FIFO
                 for i in 0 to Depth_g - 1 loop
                     In_Valid <= '1';
                     In_Data  <= toUslv(i, In_Data'length);
                     wait until falling_edge(Clk);
                 end loop;
+
                 In_Valid <= '0';
                 wait until falling_edge(Clk);
                 wait until falling_edge(Clk);
                 check_equal(Full, '1', "Full not asserted");
                 check_equal(In_Level, Depth_g, "In_Level not Full");
                 check_equal(Out_Level, Depth_g, "Out_Level not Full");
+
                 -- Add more data (not written because full)
                 In_Valid <= '1';
                 In_Data  <= X"ABCD";
@@ -242,12 +253,14 @@ begin
                 check_equal(Full, '1', "Full not asserted");
                 check_equal(In_Level, Depth_g, "In_Level not Full");
                 check_equal(Out_Level, Depth_g, "Out_Level not Full");
+
                 -- Check read
                 for i in 0 to Depth_g - 1 loop
                     Out_Ready <= '1';
                     check_equal(Out_Data, i, "Read wrong data in word " & integer'image(i));
                     wait until falling_edge(Clk);
                 end loop;
+
                 Out_Ready <= '0';
                 wait until falling_edge(Clk);
                 wait until falling_edge(Clk);
@@ -259,11 +272,13 @@ begin
             elsif run("ReadEmptyFifo") then
                 wait until falling_edge(Clk);
                 check_equal(Empty, '1', "Empty not asserted");
+
                 -- read
                 wait until falling_edge(Clk);
                 Out_Ready <= '1';
                 wait until falling_edge(Clk);
                 Out_Ready <= '0';
+
                 -- check correct output
                 wait until falling_edge(Clk);
                 wait until falling_edge(Clk);
@@ -291,6 +306,7 @@ begin
 
             elsif run("AlmostFlags") then
                 wait until falling_edge(Clk);
+
                 -- fill FIFO
                 for i in 0 to Depth_g - 1 loop
                     In_Valid <= '1';
@@ -316,6 +332,7 @@ begin
                         end if;
                     end if;
                 end loop;
+
                 -- flush
                 for i in Depth_g - 1 downto 0 loop
                     Out_Ready <= '1';
@@ -343,41 +360,57 @@ begin
 
             elsif run("DiffDutyCycle") then
                 wait until falling_edge(Clk);
+
+                -- Loop through write duty cycles
                 for wrDel in 0 to 4 loop
+
+                    -- Loop through read duty cycles
                     for rdDel in 0 to 4 loop
                         check_equal(Empty, '1', "Empty not asserted");
+
                         -- Write data
                         for i in 0 to 4 loop
                             In_Valid <= '1';
                             In_Data  <= toUslv(i, In_Data'length);
                             wait until falling_edge(Clk);
+
+                            -- Wrie delay
                             for k in 1 to wrDel loop
                                 In_Valid <= '0';
                                 In_Data  <= X"0000";
                                 wait until falling_edge(Clk);
                             end loop;
+
                         end loop;
+
                         In_Valid <= '0';
+
                         -- Read data
                         for i in 0 to 4 loop
                             Out_Ready <= '1';
                             check_equal(Out_Data, i, "Wrong data");
                             wait until falling_edge(Clk);
+
+                            -- Read delay
                             for k in 1 to rdDel loop
                                 Out_Ready <= '0';
                                 wait until falling_edge(Clk);
                             end loop;
+
                         end loop;
+
                         Out_Ready <= '0';
                         check_equal(Empty, '1', "Empty not asserted");
                     end loop;
+
                 end loop;
+
             end if;
 
         end loop;
 
         -- TB done
         test_runner_cleanup(runner);
-    end process;
+    end process; -- vsg_on
 
 end architecture;

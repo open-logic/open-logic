@@ -45,11 +45,11 @@ architecture sim of olo_base_cc_simple_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant ClkIn_Frequency_c  : real    := 100.0e6;
-    constant ClkIn_Period_c     : time    := (1 sec) / ClkIn_Frequency_c;
-    constant ClkOut_Frequency_c : real    := ClkIn_Frequency_c * ClockRatio_c;
-    constant ClkOut_Period_c    : time    := (1 sec) / ClkOut_Frequency_c;
-    constant MaxRatePeriod_c    : time    := ClkOut_Period_c*5;
+    constant ClkIn_Frequency_c  : real := 100.0e6;
+    constant ClkIn_Period_c     : time := (1 sec) / ClkIn_Frequency_c;
+    constant ClkOut_Frequency_c : real := ClkIn_Frequency_c * ClockRatio_c;
+    constant ClkOut_Period_c    : time := (1 sec) / ClkOut_Frequency_c;
+    constant MaxRatePeriod_c    : time := ClkOut_Period_c*5;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
@@ -68,7 +68,7 @@ architecture sim of olo_base_cc_simple_tb is
     -----------------------------------------------------------------------------------------------
     -- Verification Components
     -----------------------------------------------------------------------------------------------
-    constant slave_axi_stream : axi_stream_slave_t := new_axi_stream_slave (
+    constant AxisSlave_c : axi_stream_slave_t := new_axi_stream_slave (
         data_length => DataWidth_c,
         stall_config => new_stall_config(0.0, 0, 0)
     );
@@ -97,16 +97,6 @@ begin
             Out_Valid   => Out_Valid
         );
 
-    vc_response : entity vunit_lib.axi_stream_slave
-        generic map (
-            slave => slave_axi_stream
-        )
-        port map (
-            aclk   => Out_Clk,
-            tvalid => Out_Valid,
-            tdata  => Out_Data
-        );
-
     -----------------------------------------------------------------------------------------------
     -- Clock
     -----------------------------------------------------------------------------------------------
@@ -120,8 +110,8 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        variable zero  : std_logic := '0';
-        variable stdlv : std_logic_vector(In_Data'range);
+        variable Zero_v  : std_logic := '0';
+        variable Stdlv_v : std_logic_vector(In_Data'range);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -190,21 +180,37 @@ begin
                 CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 2");
 
             elsif run("MaxRate") then
+
                 for i in 1 to 10 loop
                     wait until rising_edge(In_Clk);
-                    stdlv    := std_logic_vector(to_unsigned(i, In_Data'length));
-                    In_Data  <= stdlv;
+                    Stdlv_v  := std_logic_vector(to_unsigned(i, In_Data'length));
+                    In_Data  <= Stdlv_v;
                     In_Valid <= '1';
-                    check_axi_stream(net, slave_axi_stream, stdlv, blocking => false);
+                    check_axi_stream(net, AxisSlave_c, Stdlv_v, blocking => false);
                     wait until rising_edge(In_Clk);
                     In_Valid <= '0';
                     wait for MaxRatePeriod_c-ClkOut_Period_c;
                 end loop;
-                wait_until_idle(net, as_sync(slave_axi_stream));
+
+                wait_until_idle(net, as_sync(AxisSlave_c));
             end if;
         end loop;
+
         -- TB done
         test_runner_cleanup(runner);
     end process;
+
+    -----------------------------------------------------------------------------------------------
+    -- Verification Components
+    -----------------------------------------------------------------------------------------------
+    vc_response : entity vunit_lib.axi_stream_slave
+        generic map (
+            slave => AxisSlave_c
+        )
+        port map (
+            AClk   => Out_Clk,
+            TValid => Out_Valid,
+            TData  => Out_Data
+        );
 
 end architecture;

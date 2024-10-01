@@ -41,13 +41,13 @@ architecture sim of olo_base_ram_sdp_tb is
     constant BeWidth_c     : integer := Width_g/8;
     constant BeSigWidth_c  : integer := maximum(BeWidth_c, 2); -- Must be at least 2 bits to avoid compile errors with GHDL.
     -- .. GHDL checks ranges also on code in a not executed if-clause.
-    constant ClkPeriod_c   : time    := 10 ns;
-    constant RdClkPeriod_c : time    := 33.3 ns;
+    constant ClkPeriod_c   : time := 10 ns;
+    constant RdClkPeriod_c : time := 33.3 ns;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    procedure Write (
+    procedure write (
             address       : natural;
             data          : natural;
             signal Clk    : in std_logic;
@@ -56,16 +56,16 @@ architecture sim of olo_base_ram_sdp_tb is
             signal WrEna  : out std_logic) is
     begin
         wait until rising_edge(Clk);
-        Addr <= toUslv(address, Addr'length);
+        Addr   <= toUslv(address, Addr'length);
         WrData <= toUslv(data, WrData'length);
-        WrEna <= '1';
+        WrEna  <= '1';
         wait until rising_edge(Clk);
-        WrEna <= '0';
-        Addr <= toUslv(0, Addr'length);
+        WrEna  <= '0';
+        Addr   <= toUslv(0, Addr'length);
         WrData <= toUslv(0, WrData'length);
     end procedure;
 
-    procedure Check (
+    procedure check (
             address       : natural;
             data          : natural;
             signal Clk    : in std_logic;
@@ -77,23 +77,26 @@ architecture sim of olo_base_ram_sdp_tb is
         Addr <= toUslv(address, Addr'length);
         wait until rising_edge(Clk); -- Address sampled
         Addr <= toUslv(0, Addr'length);
+
+        -- Wait for read data to arrive
         for i in 1 to RdLatency_g loop
             wait until rising_edge(Clk);
         end loop;
+
         check_equal(RdData, toUslv(data, RdData'length), message);
     end procedure;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk     : std_logic                                          := '0';
+    signal Clk     : std_logic                                 := '0';
     signal Wr_Addr : std_logic_vector(7 downto 0);
-    signal Wr_Ena  : std_logic                                          := '1';
-    signal Wr_Be   : std_logic_vector(BeSigWidth_c-1 downto 0)          := (others => '1');
+    signal Wr_Ena  : std_logic                                 := '1';
+    signal Wr_Be   : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
     signal Wr_Data : std_logic_vector(Width_g - 1 downto 0);
-    signal Rd_Clk  : std_logic                                          := '0';
+    signal Rd_Clk  : std_logic                                 := '0';
     signal Rd_Addr : std_logic_vector(7 downto 0);
-    signal Rd_Ena  : std_logic                                          := '1';
+    signal Rd_Ena  : std_logic                                 := '1';
     signal Rd_Data : std_logic_vector(Width_g - 1 downto 0);
 
 begin
@@ -126,6 +129,7 @@ begin
     -- Clock
     -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5 * ClkPeriod_c;
+
     g_async : if IsAsync_g generate
         Rd_Clk <= not Rd_Clk after 0.5 * RdClkPeriod_c;
     end generate;
@@ -146,24 +150,24 @@ begin
             wait for 1 us;
             wait until rising_edge(Clk);
 
-            -- Write 3 Values, Read back
+            -- write 3 Values, Read back
             if run("Basic") then
                 if UseByteEnable_g then
                     Wr_Be <= (others => '1'); -- BE not checked -> all ones
                 end if;
-                Write(1, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena);
-                Write(2, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
-                Write(3, 7, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                write(1, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                write(2, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                write(3, 7, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                 if IsAsync_g then
-                    Check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 1=5");
-                    Check(2, 6, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 2=6");
-                    Check(3, 7, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 3=7");
-                    Check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: re-read 1=5");
+                    check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 1=5");
+                    check(2, 6, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 2=6");
+                    check(3, 7, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 3=7");
+                    check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: re-read 1=5");
                 else
-                    Check(1, 5, Clk, Rd_Addr, Rd_Data, "3vrb: 1=5");
-                    Check(2, 6, Clk, Rd_Addr, Rd_Data, "3vrb: 2=6");
-                    Check(3, 7, Clk, Rd_Addr, Rd_Data, "3vrb: 3=7");
-                    Check(1, 5, Clk, Rd_Addr, Rd_Data, "3vrb: re-read 1=5");
+                    check(1, 5, Clk, Rd_Addr, Rd_Data, "3vrb: 1=5");
+                    check(2, 6, Clk, Rd_Addr, Rd_Data, "3vrb: 2=6");
+                    check(3, 7, Clk, Rd_Addr, Rd_Data, "3vrb: 3=7");
+                    check(1, 5, Clk, Rd_Addr, Rd_Data, "3vrb: re-read 1=5");
                 end if;
                 Wr_Be <= (others => '0');
             end if;
@@ -171,55 +175,55 @@ begin
             -- No read enable
             if run("NoRdEna") then
                 Wr_Be <= (others => '1');
-                Write(0, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena); -- Addr0 must be used because Check always returns to zero
-                Write(1, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                write(0, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena); -- Addr0 must be used because check always returns to zero
+                write(1, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                 if IsAsync_g then
-                    Check(0, 5, Rd_Clk, Rd_Addr, Rd_Data, "No update with Rd_Ena = '1'");
+                    check(0, 5, Rd_Clk, Rd_Addr, Rd_Data, "No update with Rd_Ena = '1'");
                     Rd_Ena <= '0';
-                    Check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "Unexpected Update with Rd_Ena = '0'");
+                    check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "Unexpected Update with Rd_Ena = '0'");
                 else
-                    Check(0, 5, Clk, Rd_Addr, Rd_Data, "No update with Rd_Ena = '1'");
+                    check(0, 5, Clk, Rd_Addr, Rd_Data, "No update with Rd_Ena = '1'");
                     Rd_Ena <= '0';
-                    Check(1, 5, Clk, Rd_Addr, Rd_Data, "Unexpected Update with Rd_Ena = '0'");
+                    check(1, 5, Clk, Rd_Addr, Rd_Data, "Unexpected Update with Rd_Ena = '0'");
                 end if;
             end if;
             Rd_Ena <= '1';
 
-            -- Check byte enables
+            -- check byte enables
             if run("ByteEnable") then
                 if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then
                     -- Byte 0 test
                     Wr_Be    <= (others => '1');
-                    Write(1, 0, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                    write(1, 0, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                     Wr_Be    <= (others => '0');
                     Wr_Be(0) <= '1';
-                    Write(1, 16#ABCD#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                    write(1, 16#ABCD#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                     if IsAsync_g then
-                        Check(1, 16#00CD#, Rd_Clk, Rd_Addr, Rd_Data, "BE[0]");
+                        check(1, 16#00CD#, Rd_Clk, Rd_Addr, Rd_Data, "BE[0]");
                     else
-                        Check(1, 16#00CD#, Clk, Rd_Addr, Rd_Data, "BE[0]");
+                        check(1, 16#00CD#, Clk, Rd_Addr, Rd_Data, "BE[0]");
                     end if;
                     -- Byte 1 test
                     Wr_Be    <= (others => '0');
                     Wr_Be(1) <= '1';
-                    Write(1, 16#1234#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                    write(1, 16#1234#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                     if IsAsync_g then
-                        Check(1, 16#12CD#, Rd_Clk, Rd_Addr, Rd_Data, "BE[0]");
+                        check(1, 16#12CD#, Rd_Clk, Rd_Addr, Rd_Data, "BE[0]");
                     else
-                        Check(1, 16#12CD#, Clk, Rd_Addr, Rd_Data, "BE[0]");
+                        check(1, 16#12CD#, Clk, Rd_Addr, Rd_Data, "BE[0]");
                     end if;
                 end if;
             end if;
 
             -- Read while write
-            if run("ReadDuringWrite") then
+            if run("ReadDuringwrite") then
                 -- Only makes sense in Sync CAse
                 if not IsAsync_g then
                     -- Initialize
                     Wr_Be   <= (others => '1');
-                    Write(1, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena);
-                    Write(2, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
-                    Write(3, 7, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                    write(1, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                    write(2, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                    write(3, 7, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                     wait until rising_edge(Clk);
                     Wr_Ena  <= '1';
                     Wr_Addr <= toUslv(1, Wr_Addr'length);
@@ -276,13 +280,14 @@ begin
                     Wr_Data <= toUslv(5, Wr_Data'length);
                     wait until rising_edge(Clk);
                     Wr_Ena  <= '0';
-                    Check(1, 1, Clk, Rd_Addr, Rd_Data, "rw: 1=1");
-                    Check(2, 2, Clk, Rd_Addr, Rd_Data, "rw: 2=2");
-                    Check(3, 3, Clk, Rd_Addr, Rd_Data, "rw: 3=3");
+                    check(1, 1, Clk, Rd_Addr, Rd_Data, "rw: 1=1");
+                    check(2, 2, Clk, Rd_Addr, Rd_Data, "rw: 2=2");
+                    check(3, 3, Clk, Rd_Addr, Rd_Data, "rw: 3=3");
                 end if;
             end if;
 
         end loop;
+
         -- TB done
         test_runner_cleanup(runner);
     end process;

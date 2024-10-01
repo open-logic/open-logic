@@ -22,7 +22,7 @@ library olo;
     use olo.olo_base_pkg_logic.all;
 
 library osvvm;
-    use osvvm.RandomPkg.all;
+    use osvvm.randompkg.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -51,58 +51,62 @@ architecture sim of olo_base_dyn_sft_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant Clk_Frequency_c : real    := 100.0e6;
-    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
+    constant Clk_Frequency_c : real := 100.0e6;
+    constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
+
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    shared variable Random   : RandomPType;
+    shared variable Random_v : RandomPType;
 
     -- *** Verification Compnents ***
-    constant axisMaster : axi_stream_master_t := new_axi_stream_master (
+    constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master (
         data_length => DataWidth_c,
         user_length => ShiftBits_c,
         stall_config => new_stall_config(0.5, 0, 10)
     );
-    constant axisSlave  : axi_stream_slave_t := new_axi_stream_slave (
+    constant AxisSlave_c  : axi_stream_slave_t  := new_axi_stream_slave (
         data_length => DataWidth_c,
         stall_config => new_stall_config(0.0, 0, 0)
     );
 
     -- *** Procedures ***
-    procedure TestShift (
+    procedure testShift (
             signal net : inout network_t;
             value      : in integer;
             shift      : in integer) is
         variable OutValue_v   : integer;
         variable InUnsigned_v : integer;
     begin
-        push_axi_stream(net, axisMaster, toSslv(value, DataWidth_c), tuser => toUslv(shift, ShiftBits_c));
+        push_axi_stream(net, AxisMaster_c, toSslv(value, DataWidth_c), tuser => toUslv(shift, ShiftBits_c));
         if Direction_g = "LEFT" then
             OutValue_v := (value * 2**shift) mod 2**DataWidth_c;
         elsif Direction_g = "RIGHT" then
             if SignExtend_g = true then
-                OutValue_v := integer(floor(real(value) / real(2**shift))); -- Workaround for GHDL having rounded up the result of an integer division (instead of down)
+                -- Workaround for GHDL having rounded up the result of an integer division (instead of down)
+                OutValue_v := integer(floor(real(value) / real(2**shift)));
             else
                 InUnsigned_v := fromUslv(toSslv(value, DataWidth_c));
-                OutValue_v := (InUnsigned_v / 2**shift);
+                OutValue_v   := (InUnsigned_v / 2**shift);
             end if;
         else
             check_failed("Illegal Direction_g");
         end if;
-        check_axi_stream(net, axisSlave, toSslv(OutValue_v, DataWidth_c), blocking => false, msg => "Wrong Data - input: " & integer'image(value) & " shift: " & integer'image(shift));
+        check_axi_stream(net, AxisSlave_c, toSslv(OutValue_v, DataWidth_c),
+                         blocking => false,
+                         msg      => "Wrong Data - input: " & integer'image(value) & " shift: " & integer'image(shift));
     end procedure;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk       : std_logic                                      := '0';
-    signal Rst       : std_logic                                      := '0';
-    signal In_Valid  : std_logic                                      := '0';
-    signal In_Data   : std_logic_vector(DataWidth_c-1 downto 0)       := (others => '0');
-    signal In_Shift  : std_logic_vector(ShiftBits_c-1 downto 0)       := (others => '0');
-    signal Out_Valid : std_logic                                      := '0';
-    signal Out_Data  : std_logic_vector(DataWidth_c-1 downto 0)       := (others => '0');
+    signal Clk       : std_logic                                := '0';
+    signal Rst       : std_logic                                := '0';
+    signal In_Valid  : std_logic                                := '0';
+    signal In_Data   : std_logic_vector(DataWidth_c-1 downto 0) := (others => '0');
+    signal In_Shift  : std_logic_vector(ShiftBits_c-1 downto 0) := (others => '0');
+    signal Out_Valid : std_logic                                := '0';
+    signal Out_Data  : std_logic_vector(DataWidth_c-1 downto 0) := (others => '0');
 
 begin
 
@@ -115,7 +119,7 @@ begin
     p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
-        Random.InitSeed(Random'instance_name);
+        Random_v.InitSeed(Random_v'instance_name);
 
         while test_suite loop
 
@@ -129,23 +133,30 @@ begin
 
             -- Loop through shifts
             if run("AllShifts") then
+
+                -- Loop through all possible shifts
                 for shift in 0 to MaxShift_g loop
-                    TestShift(net, Random.RandInt(ValueLow_c, ValueHigh_c), shift);
+                    testShift(net, Random_v.RandInt(ValueLow_c, ValueHigh_c), shift);
                 end loop;
+
             end if;
 
-            -- Test random data
-            if run("RandomData") then
+            -- Test Random_v data
+            if run("Random_vData") then
+
+                -- Loop through random data
                 for i in 0 to 100 loop
-                    TestShift(net, Random.RandInt(ValueLow_c, ValueHigh_c), Random.RandInt(0, MaxShift_g));
+                    testShift(net, Random_v.RandInt(ValueLow_c, ValueHigh_c), Random_v.RandInt(0, MaxShift_g));
                 end loop;
+
             end if;
 
             wait for 1 us;
-            wait_until_idle(net, as_sync(axisMaster));
-            wait_until_idle(net, as_sync(axisSlave));
+            wait_until_idle(net, as_sync(AxisMaster_c));
+            wait_until_idle(net, as_sync(AxisSlave_c));
 
         end loop;
+
         -- TB done
         test_runner_cleanup(runner);
     end process;
@@ -181,24 +192,24 @@ begin
     -----------------------------------------------------------------------------------------------
     vc_stimuli : entity vunit_lib.axi_stream_master
         generic map (
-            master => axisMaster
+            master => AxisMaster_c
         )
         port map (
-            aclk   => Clk,
-            tvalid => In_Valid,
-            tready => '1',
-            tuser  => In_Shift,
-            tdata  => In_Data
+            AClk   => Clk,
+            TValid => In_Valid,
+            TReady => '1',
+            TUser  => In_Shift,
+            TData  => In_Data
         );
 
     vc_response : entity vunit_lib.axi_stream_slave
         generic map (
-            slave => axisSlave
+            slave => AxisSlave_c
         )
         port map (
-            aclk   => Clk,
-            tvalid => Out_Valid,
-            tdata  => Out_Data
+            AClk   => Clk,
+            TValid => Out_Valid,
+            TData  => Out_Data
         );
 
 end architecture;

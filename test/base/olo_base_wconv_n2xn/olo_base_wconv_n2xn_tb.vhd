@@ -37,67 +37,73 @@ architecture sim of olo_base_wconv_n2xn_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant InWidth_c   : natural   := 4;
-    constant OutWidth_c  : natural   := InWidth_c*WidthRatio_g;
-    constant ClkPeriod_c : time      := 10 ns;
+    constant InWidth_c   : natural := 4;
+    constant OutWidth_c  : natural := InWidth_c*WidthRatio_g;
+    constant ClkPeriod_c : time    := 10 ns;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    shared variable WordDelay : time := 0 ns;
+    shared variable WordDelay_v : time := 0 ns;
 
     -- *** Verification Compnents ***
-    constant axisMaster : axi_stream_master_t := new_axi_stream_master (
+    constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master (
         data_length => InWidth_c,
         stall_config => new_stall_config(0.0, 0, 0)
     );
-    constant axisSlave  : axi_stream_slave_t := new_axi_stream_slave (
+    constant AxisSlave_c  : axi_stream_slave_t  := new_axi_stream_slave (
         data_length => OutWidth_c,
         user_length => WidthRatio_g,
         stall_config => new_stall_config(0.0, 0, 0)
     );
 
-    function CounterValue (start : integer) return std_logic_vector is
-        variable x : std_logic_vector(OutWidth_c-1 downto 0);
+    function counterValue (start : integer) return std_logic_vector is
+        variable Value_v : std_logic_vector(OutWidth_c-1 downto 0);
     begin
+
+        -- Iterate through wider vector
         for i in 0 to WidthRatio_g-1 loop
-            x(4*i+3 downto 4*i) := toUslv(start+i, 4);
+            Value_v(4*i+3 downto 4*i) := toUslv(start+i, 4);
         end loop;
-        return x;
+
+        return Value_v;
     end function;
 
-    procedure PushCounterValue (
+    procedure pushCounterValue (
             signal  net : inout network_t;
             start       : integer;
             count       : integer;
             last        : std_logic) is
-        variable lastCheck : std_logic := '0';
+        variable LastCheck_v : std_logic := '0';
     begin
+
+        -- Iterate through samples
         for i in 0 to count-1 loop
             if i = count-1 then
-                lastCheck := last;
+                LastCheck_v := last;
             end if;
-            if WordDelay > 0 ns then
-                wait for WordDelay;
+            if WordDelay_v > 0 ns then
+                wait for WordDelay_v;
             end if;
-            push_axi_stream(net, axisMaster, toUslv(start+i, 4), tlast => lastCheck);
+            push_axi_stream(net, AxisMaster_c, toUslv(start+i, 4), tlast => LastCheck_v);
         end loop;
+
     end procedure;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk         : std_logic                                                  := '0';
-    signal Rst         : std_logic                                                  := '1';
-    signal In_Valid    : std_logic                                                  := '0';
-    signal In_Ready    : std_logic                                                  := '0';
-    signal In_Data     : std_logic_vector(InWidth_c - 1 downto 0)                   := (others => '0');
-    signal In_Last     : std_logic                                                  := '0';
-    signal Out_WordEna : std_logic_vector(WidthRatio_g - 1 downto 0)                := (others => '0');
-    signal Out_Valid   : std_logic                                                  := '0';
-    signal Out_Ready   : std_logic                                                  := '0';
-    signal Out_Data    : std_logic_vector(OutWidth_c - 1 downto 0)                  := (others => '0');
-    signal Out_Last    : std_logic                                                  := '0';
+    signal Clk         : std_logic                                   := '0';
+    signal Rst         : std_logic                                   := '1';
+    signal In_Valid    : std_logic                                   := '0';
+    signal In_Ready    : std_logic                                   := '0';
+    signal In_Data     : std_logic_vector(InWidth_c - 1 downto 0)    := (others => '0');
+    signal In_Last     : std_logic                                   := '0';
+    signal Out_WordEna : std_logic_vector(WidthRatio_g - 1 downto 0) := (others => '0');
+    signal Out_Valid   : std_logic                                   := '0';
+    signal Out_Ready   : std_logic                                   := '0';
+    signal Out_Data    : std_logic_vector(OutWidth_c - 1 downto 0)   := (others => '0');
+    signal Out_Last    : std_logic                                   := '0';
 
 begin
 
@@ -108,17 +114,17 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        variable data         : std_logic_vector(Out_Data'range);
-        variable last         : std_logic;
-        variable wordEna      : std_logic_vector(Out_WordEna'range);
-        variable tkeep, tstrb : std_logic_vector(OutWidth_c/8-1 downto 0);
-        variable tdest, tid   : std_logic_vector(-1 downto 0);
+        variable Data_v           : std_logic_vector(Out_Data'range);
+        variable Last_v           : std_logic;
+        variable WordEna_v        : std_logic_vector(Out_WordEna'range);
+        variable TKeep_v, TStrb_v : std_logic_vector(OutWidth_c/8-1 downto 0);
+        variable TDest_v, TId_v   : std_logic_vector(-1 downto 0);
     begin
         test_runner_setup(runner, runner_cfg);
 
         while test_suite loop
 
-            WordDelay := 0 ns;
+            WordDelay_v := 0 ns;
 
             -- Reset
             wait until rising_edge(Clk);
@@ -131,59 +137,62 @@ begin
             -- Single Word
             if run("Basic") then
                 -- Without last
-                PushCounterValue(net, start => 1, count => WidthRatio_g, last => '0');
-                check_axi_stream(net, axisSlave, CounterValue(1), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data a");
+                pushCounterValue(net, start => 1, count => WidthRatio_g, last => '0');
+                check_axi_stream(net, AxisSlave_c, counterValue(1), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data a");
                 -- With last
-                PushCounterValue(net, start => 3, count => WidthRatio_g, last => '1');
-                check_axi_stream(net, axisSlave, CounterValue(3), tlast => '1', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data b");
+                pushCounterValue(net, start => 3, count => WidthRatio_g, last => '1');
+                check_axi_stream(net, AxisSlave_c, counterValue(3), tlast => '1', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data b");
             end if;
 
             if run("FullThrottle") then
-                PushCounterValue(net, start => 3, count => WidthRatio_g, last => '0');
-                PushCounterValue(net, start => 4, count => WidthRatio_g, last => '1');
-                PushCounterValue(net, start => 5, count => WidthRatio_g, last => '0');
-                check_axi_stream(net, axisSlave, CounterValue(3), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data a");
-                check_axi_stream(net, axisSlave, CounterValue(4), tlast => '1', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data b");
-                check_axi_stream(net, axisSlave, CounterValue(5), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data c");
+                pushCounterValue(net, start => 3, count => WidthRatio_g, last => '0');
+                pushCounterValue(net, start => 4, count => WidthRatio_g, last => '1');
+                pushCounterValue(net, start => 5, count => WidthRatio_g, last => '0');
+                check_axi_stream(net, AxisSlave_c, counterValue(3), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data a");
+                check_axi_stream(net, AxisSlave_c, counterValue(4), tlast => '1', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data b");
+                check_axi_stream(net, AxisSlave_c, counterValue(5), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data c");
             end if;
 
             if run("OutLimited") then
-                PushCounterValue(net, start => 3, count => WidthRatio_g, last => '0');
-                PushCounterValue(net, start => 4, count => WidthRatio_g, last => '1');
-                PushCounterValue(net, start => 5, count => WidthRatio_g, last => '0');
+                pushCounterValue(net, start => 3, count => WidthRatio_g, last => '0');
+                pushCounterValue(net, start => 4, count => WidthRatio_g, last => '1');
+                pushCounterValue(net, start => 5, count => WidthRatio_g, last => '0');
                 wait for 200 ns;
-                check_axi_stream(net, axisSlave, CounterValue(3), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data a");
+                check_axi_stream(net, AxisSlave_c, counterValue(3), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data a");
                 wait for 200 ns;
-                check_axi_stream(net, axisSlave, CounterValue(4), tlast => '1', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data b");
+                check_axi_stream(net, AxisSlave_c, counterValue(4), tlast => '1', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data b");
                 wait for 200 ns;
-                check_axi_stream(net, axisSlave, CounterValue(5), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data c");
+                check_axi_stream(net, AxisSlave_c, counterValue(5), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data c");
             end if;
 
             if run("InLimited") then
-                WordDelay := 200 ns;
-                check_axi_stream(net, axisSlave, CounterValue(3), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data a");
-                check_axi_stream(net, axisSlave, CounterValue(4), tlast => '1', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data b");
-                check_axi_stream(net, axisSlave, CounterValue(5), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data c");
-                PushCounterValue(net, start => 3, count => WidthRatio_g, last => '0');
-                PushCounterValue(net, start => 4, count => WidthRatio_g, last => '1');
-                PushCounterValue(net, start => 5, count => WidthRatio_g, last => '0');
+                WordDelay_v := 200 ns;
+                check_axi_stream(net, AxisSlave_c, counterValue(3), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data a");
+                check_axi_stream(net, AxisSlave_c, counterValue(4), tlast => '1', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data b");
+                check_axi_stream(net, AxisSlave_c, counterValue(5), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "data c");
+                pushCounterValue(net, start => 3, count => WidthRatio_g, last => '0');
+                pushCounterValue(net, start => 4, count => WidthRatio_g, last => '1');
+                pushCounterValue(net, start => 5, count => WidthRatio_g, last => '0');
             end if;
 
             if run("PartialWord") then
-                PushCounterValue(net, start => 3, count => WidthRatio_g, last => '0');
-                check_axi_stream(net, axisSlave, CounterValue(3), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "full Word");
-                push_axi_stream(net, axisMaster, toUslv(7, 4), tlast => '1');
-                pop_axi_stream(net, axisSlave, tdata => data, tlast => last, tkeep => tkeep, tstrb => tstrb, tid => tid, tdest => tdest, tuser => wordEna);
-                check_equal(data(3 downto 0), 7, "lastWord data");
-                check_equal(last, '1', "lastWord Last");
-                check_equal(wordEna, 1, "lastWort WordEna");
+                pushCounterValue(net, start => 3, count => WidthRatio_g, last => '0');
+                check_axi_stream(net, AxisSlave_c, counterValue(3), tlast => '0', tuser => onesVector(WidthRatio_g), blocking => false, msg => "full Word");
+                push_axi_stream(net, AxisMaster_c, toUslv(7, 4), tlast => '1');
+                pop_axi_stream(net, AxisSlave_c,
+                    tdata => Data_v, tlast => Last_v,  tkeep => TKeep_v, tstrb => TStrb_v,
+                    tid   => TId_v,  tdest => TDest_v, tuser => WordEna_v);
+                check_equal(Data_v(3 downto 0), 7, "lastWord Data_v");
+                check_equal(Last_v, '1', "lastWord Last");
+                check_equal(WordEna_v, 1, "lastWort WordEna");
             end if;
 
             wait for 1 us;
-            wait_until_idle(net, as_sync(axisMaster));
-            wait_until_idle(net, as_sync(axisSlave));
+            wait_until_idle(net, as_sync(AxisMaster_c));
+            wait_until_idle(net, as_sync(AxisSlave_c));
 
         end loop;
+
         -- TB done
         test_runner_cleanup(runner);
     end process;
@@ -220,27 +229,27 @@ begin
     -----------------------------------------------------------------------------------------------
     vc_stimuli : entity vunit_lib.axi_stream_master
         generic map (
-            master => axisMaster
+            master => AxisMaster_c
         )
         port map (
-            aclk   => Clk,
-            tvalid => In_Valid,
-            tready => In_Ready,
-            tdata  => In_Data,
-            tlast  => In_Last
+            AClk   => Clk,
+            TValid => In_Valid,
+            TReady => In_Ready,
+            TData  => In_Data,
+            TLast  => In_Last
         );
 
     vc_response : entity vunit_lib.axi_stream_slave
         generic map (
-            slave => axisSlave
+            slave => AxisSlave_c
         )
         port map (
-            aclk   => Clk,
-            tvalid => Out_Valid,
-            tready => Out_Ready,
-            tdata  => Out_Data,
-            tlast  => Out_Last,
-            tuser  => Out_WordEna
+            AClk   => Clk,
+            TValid => Out_Valid,
+            TReady => Out_Ready,
+            TData  => Out_Data,
+            TLast  => Out_Last,
+            TUser  => Out_WordEna
 
         );
 

@@ -2632,7 +2632,7 @@ rule:
         # This rule checks for valid prefixes on instantiation labels. The default prefix is inst_.
         exceptions: []
         phase: 7
-        prefixes: ["i_"]
+        prefixes: ["i_", "vc_"]
     iteration_scheme_100:
         # This rule checks that a single space exists after the while keyword.
         number_of_spaces: 1
@@ -3637,6 +3637,8 @@ rule:
         # This rule checks for a blank line below the begin keyword.
         phase: 3
         style: no_blank_line
+        # Conflicts with other rulse (loop_statement_200)
+        disable: true
     process_023:
         # This rule checks for a blank line above the end process keyword.
         disable: true
@@ -4127,11 +4129,15 @@ rule:
         # This rule checks for a blank line below the begin keyword.
         phase: 3
         style: no_blank_line
+        #Conflicting with other rules (loop blank-lines)
+        disable: true
     subprogram_body_204:
         # This rule checks for blank lines above the end keyword.
         phase: 3
         style: no_blank_line
         severity: Warning
+        #Conflicting with other rules (loop blank-lines)
+        disable: true
     subprogram_body_205:
         # This rule checks for a blank line below the end of the function declaration.
         phase: 3

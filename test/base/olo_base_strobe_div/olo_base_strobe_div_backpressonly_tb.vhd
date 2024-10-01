@@ -19,6 +19,7 @@ library vunit_lib;
 
 library olo;
     use olo.olo_base_pkg_math.all;
+
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
@@ -35,21 +36,21 @@ architecture sim of olo_base_strobe_div_backpressonly_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant FreqClkHz_c : real      := 100.0e6;
+    constant FreqClkHz_c : real := 100.0e6;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant Clk_Period_c : time    := (1 sec) / FreqClkHz_c;
+    constant Clk_Period_c : time := (1 sec) / FreqClkHz_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk       : std_logic                                              := '0';
-    signal Rst       : std_logic                                              := '0';
-    signal In_Valid  : std_logic                                              := '0';
-    signal Out_Valid : std_logic                                              := '0';
-    signal Out_Ready : std_logic                                              := '1';
+    signal Clk       : std_logic := '0';
+    signal Rst       : std_logic := '0';
+    signal In_Valid  : std_logic := '0';
+    signal Out_Valid : std_logic := '0';
+    signal Out_Ready : std_logic := '1';
 
 begin
 
@@ -60,7 +61,7 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        variable time1_v : time;
+        variable Time1_v : time;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -98,6 +99,7 @@ begin
                         check_equal(Out_Valid, '0', "Strobe not de-asserted");
                     end if;
                 end loop;
+
             end if;
 
             -- ReadyLow
@@ -126,11 +128,13 @@ begin
                     check_equal(Out_Valid, '0', "Strobe not de-asserted");
                     Out_Ready <= '0';
                 end loop;
+
             end if;
 
             wait for 1 us;
 
         end loop;
+
         -- TB done
         test_runner_cleanup(runner);
     end process;

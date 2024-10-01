@@ -19,6 +19,7 @@ library vunit_lib;
 
 library olo;
     use olo.olo_base_pkg_math.all;
+
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
@@ -41,17 +42,17 @@ architecture sim of olo_base_strobe_gen_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant Clk_Period_c    : time    := (1 sec) / FreqClkHz_c;
-    constant Strobe_Period_c : time    := (1 sec) / FreqStrobeHz_c;
+    constant Clk_Period_c    : time := (1 sec) / FreqClkHz_c;
+    constant Strobe_Period_c : time := (1 sec) / FreqStrobeHz_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk       : std_logic                                      := '0';
-    signal Rst       : std_logic                                      := '0';
-    signal In_Sync   : std_logic                                      := '0';
-    signal Out_Valid : std_logic                                      := '0';
-    signal Out_Ready : std_logic                                      := '1';
+    signal Clk       : std_logic := '0';
+    signal Rst       : std_logic := '0';
+    signal In_Sync   : std_logic := '0';
+    signal Out_Valid : std_logic := '0';
+    signal Out_Ready : std_logic := '1';
 
 begin
 
@@ -81,6 +82,7 @@ begin
             if run("Basic") then
                 -- Generate strobe with Ready always high
                 Out_Ready <= '1';
+
                 for i in 0 to 5 loop
                     -- Strobe
                     wait until rising_edge(Clk) and Out_Valid = '1';
@@ -93,6 +95,7 @@ begin
                     wait until rising_edge(Clk);
                     check_equal(Out_Valid, '0', "deassertion");
                 end loop;
+
             end if;
 
             -- Synchronization
@@ -121,6 +124,7 @@ begin
             if run("ReadyLow") then
                 -- Generate strobe with Ready always high
                 Out_Ready <= '0';
+
                 for i in 0 to 5 loop
                     -- Strobe
                     wait until rising_edge(Clk) and Out_Valid = '1';
@@ -129,10 +133,12 @@ begin
                         check(abs(StrobePeriod_v-Strobe_Period_c) < 0.5 * Clk_Period_c, "period");
                     end if;
                     LastStrobe_v := now;
+
                     for i in 0 to 3 loop
                         wait until rising_edge(Clk);
                         check_equal(Out_Valid, '1', "stay asserted");
                     end loop;
+
                     Out_Ready <= '1';
                     wait until rising_edge(Clk);
                     Out_Ready <= '0';
@@ -140,11 +146,13 @@ begin
                     wait until rising_edge(Clk);
                     check_equal(Out_Valid, '0', "deassertion");
                 end loop;
+
             end if;
 
             wait for 1 us;
 
         end loop;
+
         -- TB done
         test_runner_cleanup(runner);
     end process;

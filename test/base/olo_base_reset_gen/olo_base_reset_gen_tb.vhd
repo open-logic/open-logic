@@ -39,9 +39,9 @@ architecture sim of olo_base_reset_gen_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant Clk_Frequency_c   : real         := 100.0e6;
-    constant Clk_Period_c      : time         := (1 sec) / Clk_Frequency_c;
-    constant RstPolarityStdl_c : std_logic    :=choose(RstInPolarity_g = 1, '1', '0');
+    constant Clk_Frequency_c   : real      := 100.0e6;
+    constant Clk_Period_c      : time      := (1 sec) / Clk_Frequency_c;
+    constant RstPolarityStdl_c : std_logic := choose(RstInPolarity_g = 1, '1', '0');
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
@@ -90,10 +90,12 @@ begin
 
         -- Check reset after power-up
         wait for 1 ns;
+
         for i in 0 to RstPulseCycles_g-1 loop
             check_equal(RstOut, '1', "reset after power-up");
             wait until rising_edge(Clk);
         end loop;
+
         -- Check removal
         wait for 0.1*Clk_Period_c;
         check_equal(RstOut, '0', "reset removal after power-up");
@@ -126,10 +128,12 @@ begin
 
                 -- Check Duration
                 WaitForValueStdl(RstOut, '1', 1 us, "RstOut assertion");
+
                 for i in 0 to RstPulseCycles_g-1 loop
                     check_equal(RstOut, '1', "reset removed early");
                     wait until rising_edge(Clk);
                 end loop;
+
                 wait for 0.1*Clk_Period_c;
                 check_equal(RstOut, '0', "reset removed late");
             end if;

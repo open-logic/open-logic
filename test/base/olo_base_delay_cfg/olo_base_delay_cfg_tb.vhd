@@ -45,45 +45,48 @@ architecture sim of olo_base_delay_cfg_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant Clk_Frequency_c : real    := 100.0e6;
-    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
+    constant Clk_Frequency_c : real := 100.0e6;
+    constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk      : std_logic                                              := '0';
-    signal Rst      : std_logic                                              := '0';
-    signal Delay    : std_logic_vector(log2ceil(MaxDelay_c+1)-1 downto 0)    := (others => '0');
-    signal In_Valid : std_logic                                              := '0';
-    signal In_Data  : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0');
-    signal Out_Data : std_logic_vector(DataWidth_c - 1 downto 0)             := (others => '0');
+    signal Clk      : std_logic                                           := '0';
+    signal Rst      : std_logic                                           := '0';
+    signal Delay    : std_logic_vector(log2ceil(MaxDelay_c+1)-1 downto 0) := (others => '0');
+    signal In_Valid : std_logic                                           := '0';
+    signal In_Data  : std_logic_vector(DataWidth_c - 1 downto 0)          := (others => '0');
+    signal Out_Data : std_logic_vector(DataWidth_c - 1 downto 0)          := (others => '0');
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    shared variable InDelay       : time := 0 ns;
-    shared variable DataCounter   : integer;
-    shared variable StartChecking : integer;
+    shared variable InDelay_v       : time := 0 ns;
+    shared variable DataCounter_v   : integer;
+    shared variable StartChecking_v : integer;
 
     -- *** Verification Compnents ***
-    constant axisMaster : axi_stream_master_t := new_axi_stream_master (
+    constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master (
         data_length => DataWidth_c,
         stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
     );
 
     -- *** Procedures ***
-    procedure PushN (
+    procedure pushSamples (
             signal net : inout network_t;
             count      : integer) is
     begin
         wait for 0.1 ns; -- make sure Delay signal is updated
-        StartChecking := max(DataCounter + 5, fromUslv(Delay)); -- start checking on 5th sample or delay (the bigger, output must be valid)
-        report integer'image(StartChecking);
+        StartChecking_v := max(DataCounter_v + 5, fromUslv(Delay)); -- start checking on 5th sample or delay (the bigger, output must be valid)
+        report integer'image(StartChecking_v);
+
+        -- Iterate through samples
         for i in 0 to count-1 loop
-            wait for InDelay;
-            push_axi_stream(net, axisMaster, toUslv(DataCounter, DataWidth_c));
-            DataCounter := DataCounter + 1;
+            wait for InDelay_v;
+            push_axi_stream(net, AxisMaster_c, toUslv(DataCounter_v, DataWidth_c));
+            DataCounter_v := DataCounter_v + 1;
         end loop;
+
     end procedure;
 
 begin
@@ -100,8 +103,8 @@ begin
 
         while test_suite loop
 
-            InDelay     := 0 ns;
-            DataCounter := 0;
+            InDelay_v     := 0 ns;
+            DataCounter_v := 0;
 
             -- Reset
             wait until rising_edge(Clk);
@@ -115,58 +118,59 @@ begin
                 -- Skip if zero is not supported
                 if SupportZero_g then
                     Delay <= toUslv(0, Delay'length);
-                    PushN(net, 20);
+                    pushSamples(net, 20);
                 end if;
             end if;
 
             if run("FixDelay1") then
                 Delay <= toUslv(1, Delay'length);
-                PushN(net, 20);
+                pushSamples(net, 20);
             end if;
 
             if run("FixDelay2") then
                 Delay <= toUslv(2, Delay'length);
-                PushN(net, 20);
+                pushSamples(net, 20);
             end if;
 
             if run("FixDelay3") then
                 Delay <= toUslv(3, Delay'length);
-                PushN(net, 20);
+                pushSamples(net, 20);
             end if;
 
             if run("FixDelay5") then
                 Delay <= toUslv(5, Delay'length);
-                PushN(net, 20);
+                pushSamples(net, 20);
             end if;
 
             if run("FixDelayMax") then
                 Delay <= toUslv(MaxDelay_c, Delay'length);
-                PushN(net, 40);
+                pushSamples(net, 40);
             end if;
 
             if run("IncreaseDelay") then
                 Delay <= toUslv(5, Delay'length);
-                PushN(net, 40);
-                wait_until_idle(net, as_sync(axisMaster));
+                pushSamples(net, 40);
+                wait_until_idle(net, as_sync(AxisMaster_c));
                 Delay <= toUslv(7, Delay'length);
-                PushN(net, 40);
+                pushSamples(net, 40);
             end if;
 
             if run("DecreaseDelay") then
                 Delay <= toUslv(7, Delay'length);
-                PushN(net, 40);
-                wait_until_idle(net, as_sync(axisMaster));
+                pushSamples(net, 40);
+                wait_until_idle(net, as_sync(AxisMaster_c));
                 Delay <= toUslv(2, Delay'length);
-                PushN(net, 10);
-                wait_until_idle(net, as_sync(axisMaster));
+                pushSamples(net, 10);
+                wait_until_idle(net, as_sync(AxisMaster_c));
                 Delay <= toUslv(1, Delay'length);
-                PushN(net, 10);
+                pushSamples(net, 10);
             end if;
 
-            wait_until_idle(net, as_sync(axisMaster));
+            wait_until_idle(net, as_sync(AxisMaster_c));
             wait for 1 us;
 
         end loop;
+
         -- TB done
         test_runner_cleanup(runner);
     end process;
@@ -200,13 +204,13 @@ begin
     -----------------------------------------------------------------------------------------------
     vc_stimuli : entity vunit_lib.axi_stream_master
         generic map (
-            master => axisMaster
+            master => AxisMaster_c
         )
         port map (
-            aclk   => Clk,
-            tvalid => In_Valid,
-            tready => '1',
-            tdata  => In_Data
+            AClk   => Clk,
+            TValid => In_Valid,
+            TReady => '1',
+            TData  => In_Data
         );
 
     -----------------------------------------------------------------------------------------------
@@ -217,7 +221,7 @@ begin
         if rising_edge(Clk) then
             if In_Valid = '1' then
                 -- Normal operation
-                if unsigned(In_Data) >= StartChecking then
+                if unsigned(In_Data) >= StartChecking_v then
                     check_equal(Out_Data, fromUslv(In_Data)-fromUslv(Delay), "Wrong Value");
                 end if;
             end if;

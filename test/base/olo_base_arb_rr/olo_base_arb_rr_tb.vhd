@@ -43,18 +43,18 @@ architecture sim of olo_base_arb_rr_tb is
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
 
-    signal Clk       : std_logic                             := '0';
-    signal Rst       : std_logic                             := '0';
-    signal Out_Ready : std_logic                             := '0';
-    signal Out_Valid : std_logic                             := '0';
+    signal Clk       : std_logic                              := '0';
+    signal Rst       : std_logic                              := '0';
+    signal Out_Ready : std_logic                              := '0';
+    signal Out_Valid : std_logic                              := '0';
     signal In_Req    : std_logic_vector(Width_c - 1 downto 0) := (others => '0');
     signal Out_Grant : std_logic_vector(Width_c - 1 downto 0) := (others => '0');
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant Clk_Frequency_c : real    := 100.0e6;
-    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
+    constant Clk_Frequency_c : real := 100.0e6;
+    constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
 begin
 
@@ -85,6 +85,7 @@ begin
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
 
+    -- vsg_off length_003
     p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
@@ -172,13 +173,6 @@ begin
 
             if run("ReadyLow") then
 
-                -- Rdy Low
-                -- Revert mask to correct state (all unmasked)
-                -- Out_Ready <= '1';
-                -- wait until rising_edge(Clk);
-                -- In_Req   <= "00001";
-                -- wait until rising_edge(Clk);
-                -- Out_Ready <= '0';
                 -- Start test
                 Out_Ready <= '0';
                 In_Req    <= "10011";
@@ -298,10 +292,13 @@ begin
                 check_equal(Out_Valid, '0', "Valid Wrong, Doc 12");
                 wait for 1 us;
             end if;
-            end loop;
+
+        end loop;
 
         -- TB done
         test_runner_cleanup(runner);
     end process;
+
+-- vsg_on
 
 end architecture;

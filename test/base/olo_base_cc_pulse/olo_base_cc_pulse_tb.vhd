@@ -36,18 +36,18 @@ architecture sim of olo_base_cc_pulse_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-  constant ClockRatio_c : real    := real(ClockRatio_N_g) / real(ClockRatio_D_g);
-  constant NumPulses_c  : integer := 4;
+    constant ClockRatio_c : real    := real(ClockRatio_N_g) / real(ClockRatio_D_g);
+    constant NumPulses_c  : integer := 4;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-  constant ClkIn_Frequency_c    : real    := 100.0e6;
-  constant ClkIn_Period_c       : time    := (1 sec) / ClkIn_Frequency_c;
-  constant ClkOut_Frequency_c   : real    := ClkIn_Frequency_c * ClockRatio_c;
-  constant ClkOut_Period_c      : time    := (1 sec) / ClkOut_Frequency_c;
-  constant SlowerClock_Period_c : time    := (1 sec) / minimum(ClkIn_Frequency_c, ClkOut_Frequency_c);
-  constant MaxReactionTime_c    : time    := 10*SlowerClock_Period_c;
+    constant ClkIn_Frequency_c    : real := 100.0e6;
+    constant ClkIn_Period_c       : time := (1 sec) / ClkIn_Frequency_c;
+    constant ClkOut_Frequency_c   : real := ClkIn_Frequency_c * ClockRatio_c;
+    constant ClkOut_Period_c      : time := (1 sec) / ClkOut_Frequency_c;
+    constant SlowerClock_Period_c : time := (1 sec) / minimum(ClkIn_Frequency_c, ClkOut_Frequency_c);
+    constant MaxReactionTime_c    : time := 10*SlowerClock_Period_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals

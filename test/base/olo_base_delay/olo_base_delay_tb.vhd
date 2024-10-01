@@ -47,36 +47,40 @@ architecture sim of olo_base_delay_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant Clk_Frequency_c : real    := 100.0e6;
-    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
+    constant Clk_Frequency_c : real := 100.0e6;
+    constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
+
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    shared variable InDelay  : time := 0 ns;
+    shared variable InDelay_v : time := 0 ns;
 
     -- *** Verification Compnents ***
-    constant axisMaster : axi_stream_master_t := new_axi_stream_master (
+    constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master (
         data_length => DataWidth_c,
         stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 10)
     );
 
     -- *** Procedures ***
-    procedure Push1000 (signal net : inout network_t) is
+    procedure push100 (signal net : inout network_t) is
     begin
+
+        -- Push 100 samples
         for i in 0 to 99 loop
-            wait for InDelay;
-            push_axi_stream(net, axisMaster, toUslv(i, DataWidth_c));
+            wait for InDelay_v;
+            push_axi_stream(net, AxisMaster_c, toUslv(i, DataWidth_c));
         end loop;
+
     end procedure;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk      : std_logic                                      := '0';
-    signal Rst      : std_logic                                      := '0';
-    signal In_Valid : std_logic                                      := '0';
-    signal In_Data  : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
-    signal Out_Data : std_logic_vector(DataWidth_c - 1 downto 0)     := (others => '0');
+    signal Clk      : std_logic                                  := '0';
+    signal Rst      : std_logic                                  := '0';
+    signal In_Valid : std_logic                                  := '0';
+    signal In_Data  : std_logic_vector(DataWidth_c - 1 downto 0) := (others => '0');
+    signal Out_Data : std_logic_vector(DataWidth_c - 1 downto 0) := (others => '0');
 
 begin
 
@@ -92,7 +96,7 @@ begin
 
         while test_suite loop
 
-            InDelay := 0 ns;
+            InDelay_v := 0 ns;
 
             -- Reset
             wait until rising_edge(Clk);
@@ -103,18 +107,19 @@ begin
             wait until rising_edge(Clk);
 
             if run("FullThrottle") then
-                Push1000(net);
+                push100(net);
             end if;
 
             if run("InLimited") then
-                InDelay := Clk_Period_c*5;
-                Push1000(net);
+                InDelay_v := Clk_Period_c*5;
+                push100(net);
             end if;
 
-            wait_until_idle(net, as_sync(axisMaster));
+            wait_until_idle(net, as_sync(AxisMaster_c));
             wait for 1 us;
 
         end loop;
+
         -- TB done
         test_runner_cleanup(runner);
     end process;
@@ -149,13 +154,13 @@ begin
     -----------------------------------------------------------------------------------------------
     vc_stimuli : entity vunit_lib.axi_stream_master
         generic map (
-            master => axisMaster
+            master => AxisMaster_c
         )
         port map (
-            aclk   => Clk,
-            tvalid => In_Valid,
-            tready => '1',
-            tdata  => In_Data
+            AClk   => Clk,
+            TValid => In_Valid,
+            TReady => '1',
+            TData  => In_Data
         );
 
     -----------------------------------------------------------------------------------------------

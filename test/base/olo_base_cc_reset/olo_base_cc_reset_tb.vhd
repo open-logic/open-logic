@@ -43,22 +43,22 @@ architecture sim of olo_base_cc_reset_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant ClkA_Frequency_c     : real    := 100.0e6;
-    constant ClkA_Period_c        : time    := (1 sec) / ClkA_Frequency_c;
-    constant ClkB_Frequency_c     : real    := ClkA_Frequency_c * ClockRatio_c;
-    constant ClkB_Period_c        : time    := (1 sec) / ClkB_Frequency_c;
-    constant SlowerClock_Period_c : time    := (1 sec) / minimum(ClkA_Frequency_c, ClkB_Frequency_c);
-    constant PropagationTime_c    : time    := 3.01*SlowerClock_Period_c;
-    constant RemovalTime_c        : time    := 10*SlowerClock_Period_c;
+    constant ClkA_Frequency_c     : real := 100.0e6;
+    constant ClkA_Period_c        : time := (1 sec) / ClkA_Frequency_c;
+    constant ClkB_Frequency_c     : real := ClkA_Frequency_c * ClockRatio_c;
+    constant ClkB_Period_c        : time := (1 sec) / ClkB_Frequency_c;
+    constant SlowerClock_Period_c : time := (1 sec) / minimum(ClkA_Frequency_c, ClkB_Frequency_c);
+    constant PropagationTime_c    : time := 3.01*SlowerClock_Period_c;
+    constant RemovalTime_c        : time := 10*SlowerClock_Period_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal A_Clk    : std_logic                                 := '0';
-    signal A_RstIn  : std_logic                                 := '0';
+    signal A_Clk    : std_logic := '0';
+    signal A_RstIn  : std_logic := '0';
     signal A_RstOut : std_logic;
-    signal B_Clk    : std_logic                                  := '0';
-    signal B_RstIn  : std_logic                                  := '0';
+    signal B_Clk    : std_logic := '0';
+    signal B_RstIn  : std_logic := '0';
     signal B_RstOut : std_logic;
 
     -----------------------------------------------------------------------------------------------
@@ -193,12 +193,14 @@ begin
                 wait until rising_edge(A_Clk);
                 WaitForValueStdl(A_RstOut, '1', PropagationTime_c, "assert A 6"); -- Wait until both resets asserted
                 WaitForValueStdl(B_RstOut, '1', PropagationTime_c, "assert B 6"); -- Wait until both resets asserted
+
                 for i in 0 to 9 loop
                     wait until rising_edge(A_Clk);
                     check_equal(A_RstOut, '1', "hold A 6");
                     wait until rising_edge(B_Clk);
                     check_equal(B_RstOut, '1', "hold B 6");
                 end loop;
+
                 wait until rising_edge(B_Clk);
                 B_RstIn <= '0';
                 wait until rising_edge(A_Clk);
@@ -213,14 +215,14 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-    p_rstDetectA : process is
+    p_rst_detect_a : process is
     begin
         wait until A_RstOut = '1' and B_RstOut = '1'; -- chekck that both resets are asserted at the same time
         wait until rising_edge(A_Clk) and A_RstOut = '1'; -- check that the reset gets de-asserted
         LastRstA <= now;
     end process;
 
-    p_rstDetectB : process is
+    p_rst_detect_b : process is
     begin
         wait until A_RstOut = '1' and A_RstOut = '1';
         wait until rising_edge(B_Clk) and B_RstOut = '1';

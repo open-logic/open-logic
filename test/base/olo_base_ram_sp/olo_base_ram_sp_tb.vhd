@@ -40,12 +40,12 @@ architecture sim of olo_base_ram_sp_tb is
     constant BeWidth_c    : integer := Width_g/8;
     constant BeSigWidth_c : integer := maximum(BeWidth_c, 2); -- Must be at least 2 bits to avoid compile errors with GHDL.
     -- .. GHDL checks ranges also on code in a not executed if-clause.
-    constant ClkPeriod_c  : time    := 10 ns;
+    constant ClkPeriod_c  : time := 10 ns;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    procedure Write (
+    procedure write (
             address       : natural;
             data          : natural;
             signal Clk    : in std_logic;
@@ -54,16 +54,16 @@ architecture sim of olo_base_ram_sp_tb is
             signal WrEna  : out std_logic) is
     begin
         wait until rising_edge(Clk);
-        Addr <= toUslv(address, Addr'length);
+        Addr   <= toUslv(address, Addr'length);
         WrData <= toUslv(data, WrData'length);
-        WrEna <= '1';
+        WrEna  <= '1';
         wait until rising_edge(Clk);
-        WrEna <= '0';
-        Addr <= toUslv(0, Addr'length);
+        WrEna  <= '0';
+        Addr   <= toUslv(0, Addr'length);
         WrData <= toUslv(0, WrData'length);
     end procedure;
 
-    procedure Check (
+    procedure check (
             address       : natural;
             data          : natural;
             signal Clk    : in std_logic;
@@ -74,19 +74,22 @@ architecture sim of olo_base_ram_sp_tb is
         wait until rising_edge(Clk);
         Addr <= toUslv(address, Addr'length);
         wait until rising_edge(Clk); -- Address sampled
+
+        -- Wait for read data to arrive
         for i in 1 to RdLatency_g loop
             wait until rising_edge(Clk);
         end loop;
+
         check_equal(RdData, toUslv(data, RdData'length), message);
     end procedure;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk    : std_logic                                  := '0';
-    signal Addr   : std_logic_vector(7 downto 0)               := (others => '0');
-    signal Be     : std_logic_vector(BeSigWidth_c-1 downto 0)     := (others => '0');
-    signal WrEna  : std_logic                                  := '0';
+    signal Clk    : std_logic                                 := '0';
+    signal Addr   : std_logic_vector(7 downto 0)              := (others => '0');
+    signal Be     : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '0');
+    signal WrEna  : std_logic                                 := '0';
     signal WrData : std_logic_vector(Width_g-1 downto 0);
     signal RdData : std_logic_vector(Width_g-1 downto 0);
 
@@ -133,46 +136,46 @@ begin
             wait for 1 us;
             wait until rising_edge(Clk);
 
-            -- Write 3 Values, Read back
+            -- write 3 Values, Read back
             if run("Basic") then
                 if UseByteEnable_g then
                     Be <= (others => '1'); -- BE not checked -> all ones
                 end if;
-                Write(1, 5, Clk, Addr, WrData, WrEna);
-                Write(2, 6, Clk, Addr, WrData, WrEna);
-                Write(3, 7, Clk, Addr, WrData, WrEna);
-                Check(1, 5, Clk, Addr, RdData, "3vrb: 1=5");
-                Check(2, 6, Clk, Addr, RdData, "3vrb: 2=6");
-                Check(3, 7, Clk, Addr, RdData, "3vrb: 3=7");
-                Check(1, 5, Clk, Addr, RdData, "3vrb: re-read 1=5");
+                write(1, 5, Clk, Addr, WrData, WrEna);
+                write(2, 6, Clk, Addr, WrData, WrEna);
+                write(3, 7, Clk, Addr, WrData, WrEna);
+                check(1, 5, Clk, Addr, RdData, "3vrb: 1=5");
+                check(2, 6, Clk, Addr, RdData, "3vrb: 2=6");
+                check(3, 7, Clk, Addr, RdData, "3vrb: 3=7");
+                check(1, 5, Clk, Addr, RdData, "3vrb: re-read 1=5");
                 Be <= (others => '0');
             end if;
 
-            -- Check byte enables
+            -- check byte enables
             if run("ByteEnable") then
                 if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then
                     -- Byte 0 test
                     Be    <= (others => '1');
-                    Write(1, 0, Clk, Addr, WrData, WrEna);
+                    write(1, 0, Clk, Addr, WrData, WrEna);
                     Be    <= (others => '0');
                     Be(0) <= '1';
-                    Write(1, 16#ABCD#, Clk, Addr, WrData, WrEna);
-                    Check(1, 16#00CD#, Clk, Addr, RdData, "BE[0]");
+                    write(1, 16#ABCD#, Clk, Addr, WrData, WrEna);
+                    check(1, 16#00CD#, Clk, Addr, RdData, "BE[0]");
                     -- Byte 1 test
                     Be    <= (others => '0');
                     Be(1) <= '1';
-                    Write(1, 16#1234#, Clk, Addr, WrData, WrEna);
-                    Check(1, 16#12CD#, Clk, Addr, RdData, "BE[1]");
+                    write(1, 16#1234#, Clk, Addr, WrData, WrEna);
+                    check(1, 16#12CD#, Clk, Addr, RdData, "BE[1]");
                 end if;
             end if;
 
             -- Read while write
-            if run("ReadDuringWrite") then
+            if run("ReadDuringwrite") then
                 -- Initialize
                 Be     <= (others => '1');
-                Write(1, 5, Clk, Addr, WrData, WrEna);
-                Write(2, 6, Clk, Addr, WrData, WrEna);
-                Write(3, 7, Clk, Addr, WrData, WrEna);
+                write(1, 5, Clk, Addr, WrData, WrEna);
+                write(2, 6, Clk, Addr, WrData, WrEna);
+                write(3, 7, Clk, Addr, WrData, WrEna);
                 wait until rising_edge(Clk);
                 WrEna  <= '1';
                 Addr   <= toUslv(1, Addr'length);
@@ -224,9 +227,9 @@ begin
                 WrData <= toUslv(5, WrData'length);
                 wait until rising_edge(Clk);
                 WrEna  <= '0';
-                Check(1, 1, Clk, Addr, RdData, "rw: 1=1");
-                Check(2, 2, Clk, Addr, RdData, "rw: 2=2");
-                Check(3, 3, Clk, Addr, RdData, "rw: 3=3");
+                check(1, 1, Clk, Addr, RdData, "rw: 1=1");
+                check(2, 2, Clk, Addr, RdData, "rw: 2=2");
+                check(3, 3, Clk, Addr, RdData, "rw: 3=3");
             end if;
         end loop;
 

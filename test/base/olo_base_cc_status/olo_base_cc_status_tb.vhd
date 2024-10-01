@@ -44,15 +44,14 @@ architecture sim of olo_base_cc_status_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant ClkIn_Frequency_c    : real    := 100.0e6;
-    constant ClkIn_Period_c       : time    := (1 sec) / ClkIn_Frequency_c;
-    constant ClkOut_Frequency_c   : real    := ClkIn_Frequency_c * ClockRatio_c;
-    constant ClkOut_Period_c      : time    := (1 sec) / ClkOut_Frequency_c;
-    constant SlowerClock_Period_c : time    := (1 sec) / minimum(ClkIn_Frequency_c, ClkOut_Frequency_c);
-
-    constant Time_Rst_Assert_c  : time    := 2 * SlowerClock_Period_c;
-    constant Time_Rst_Recover_c : time    := 10 * SlowerClock_Period_c;
-    constant Time_MaxDel_c      : time    := 15 * SlowerClock_Period_c;
+    constant ClkIn_Frequency_c    : real := 100.0e6;
+    constant ClkIn_Period_c       : time := (1 sec) / ClkIn_Frequency_c;
+    constant ClkOut_Frequency_c   : real := ClkIn_Frequency_c * ClockRatio_c;
+    constant ClkOut_Period_c      : time := (1 sec) / ClkOut_Frequency_c;
+    constant SlowerClock_Period_c : time := (1 sec) / minimum(ClkIn_Frequency_c, ClkOut_Frequency_c);
+    constant Time_Rst_Assert_c    : time := 2 * SlowerClock_Period_c;
+    constant Time_Rst_Recover_c   : time := 10 * SlowerClock_Period_c;
+    constant Time_MaxDel_c        : time := 15 * SlowerClock_Period_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals

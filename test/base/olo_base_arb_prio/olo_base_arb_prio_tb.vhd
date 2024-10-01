@@ -43,20 +43,20 @@ architecture sim of olo_base_arb_prio_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk       : std_logic                                 := '0';
-    signal Rst       : std_logic                                 := '0';
-    signal In_Req    : std_logic_vector(Width_c - 1 downto 0)    := (others => '0');
-    signal Out_Grant : std_logic_vector(Width_c - 1 downto 0)     := (others => '0');
+    signal Clk       : std_logic                              := '0';
+    signal Rst       : std_logic                              := '0';
+    signal In_Req    : std_logic_vector(Width_c - 1 downto 0) := (others => '0');
+    signal Out_Grant : std_logic_vector(Width_c - 1 downto 0) := (others => '0');
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
     constant Clk_Frequency_c : real    := 100.0e6;
     constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
-    signal ExpectedGrant     : integer  := 0;
-    signal ExpectedGrantDel  : integer  := 0;
-    signal CheckGrant        : boolean  := false;
-    signal CheckGrantDel     : boolean  := false;
+    signal ExpectedGrant     : integer := 0;
+    signal ExpectedGrantDel  : integer := 0;
+    signal CheckGrant        : boolean := false;
+    signal CheckGrantDel     : boolean := false;
 
 begin
 
@@ -65,7 +65,7 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_arb_prio
         generic map (
-            width_g   => Width_c,
+            Width_g   => Width_c,
             Latency_g => Latency_g
         )
         port map (
