@@ -71,6 +71,7 @@ begin
             B_RstIn     => Out_RstIn,
             B_RstOut    => RstOutI
         );
+
     In_RstOut  <= RstInI;
     Out_RstOut <= RstOutI;
 
@@ -105,7 +106,7 @@ begin
     -- Data receive side (Output)
     Out_Pulse <= ToggleOutLast xor ToggleOut;
 
-    PulseOut_p : process (Out_Clk) is
+    p_pulseout : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
             ToggleOutLast <= ToggleOut;

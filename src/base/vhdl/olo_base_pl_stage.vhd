@@ -68,21 +68,26 @@ architecture rtl of olo_base_pl_stage is
             Out_Data    : out   std_logic_vector(Width_g-1 downto 0)
         );
     end component;
-    -- Signals
+
+    -- Types
     type Data_t is array (natural range <>) of std_logic_vector(Width_g - 1 downto 0);
-    signal data_s  : Data_t(0 to Stages_g);
-    signal valid_s : std_logic_vector(0 to Stages_g);
-    signal ready_s : std_logic_vector(0 to Stages_g);
+
+    -- Signals
+    signal Data  : Data_t(0 to Stages_g);
+    signal Valid : std_logic_vector(0 to Stages_g);
+    signal Ready : std_logic_vector(0 to Stages_g);
 
 begin
 
     -- *** On or more stages required ***
     g_nonzero : if Stages_g > 0 generate
-        valid_s(0) <= In_Valid;
-        In_Ready   <= ready_s(0);
-        data_s(0)  <= In_Data;
+        Valid(0) <= In_Valid;
+        In_Ready <= Ready(0);
+        Data(0)  <= In_Data;
 
         g_stages : for i in 0 to Stages_g - 1 generate
+
+            -- Signle pipeline stage instance
             i_stg : component olo_base_pl_stage_single
                 generic map (
                     Width_g    => Width_g,
@@ -91,18 +96,19 @@ begin
                 port map (
                     Clk       => Clk,
                     Rst       => Rst,
-                    In_Valid  => valid_s(i),
-                    In_Ready  => ready_s(i),
-                    In_Data   => data_s(i),
-                    Out_Valid => valid_s(i + 1),
-                    Out_Ready => ready_s(i + 1),
-                    Out_Data  => data_s(i + 1)
+                    In_Valid  => Valid(i),
+                    In_Ready  => Ready(i),
+                    In_Data   => Data(i),
+                    Out_Valid => Valid(i + 1),
+                    Out_Ready => Ready(i + 1),
+                    Out_Data  => Data(i + 1)
                 );
+
         end generate;
 
-        Out_Valid         <= valid_s(Stages_g);
-        ready_s(Stages_g) <= Out_Ready;
-        Out_Data          <= data_s(Stages_g);
+        Out_Valid       <= Valid(Stages_g);
+        Ready(Stages_g) <= Out_Ready;
+        Out_Data        <= Data(Stages_g);
     end generate;
 
     -- *** Zero stages ***
@@ -152,14 +158,15 @@ end entity;
 architecture rtl of olo_base_pl_stage_single is
 
     -- two process method
-    type tp_r is record
+    type TwoProcess_r is record
         DataMain    : std_logic_vector(Width_g - 1 downto 0);
         DataMainVld : std_logic;
         DataShad    : std_logic_vector(Width_g - 1 downto 0);
         DataShadVld : std_logic;
         In_Ready    : std_logic;
     end record;
-    signal r, r_next : tp_r;
+
+    signal r, r_next : TwoProcess_r;
 
 begin
 
@@ -167,7 +174,7 @@ begin
     g_rdy : if UseReady_g generate
 
         p_comb : process (In_Valid, In_Data, Out_Ready, r) is
-            variable v         : tp_r;
+            variable v         : TwoProcess_r;
             variable IsStuck_v : boolean;
         begin
             -- *** Hold variables stable ***

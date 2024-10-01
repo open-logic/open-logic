@@ -51,26 +51,27 @@ architecture rtl of olo_base_ram_sp is
     -- Constants
     constant BeCount_c : integer := Width_g / 8;
 
-    -- memory array
-    type data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
-    shared variable mem : data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
+    -- Mem_vory array
+    type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
+
+    shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
 
     -- Read registers
-    signal rd_pipe : data_t(1 to RdLatency_g);
+    signal RdPipe : Data_t(1 to RdLatency_g);
 
     -- AMD RAM implementation attribute
     attribute RAM_STYLE : string;
-    attribute RAM_STYLE of mem         : variable is RamStyle_g;
+    attribute RAM_STYLE of Mem_v      : variable is RamStyle_g;
     attribute SHREG_EXTRACT : string;
-    attribute SHREG_EXTRACT of rd_pipe : signal is "no";
+    attribute SHREG_EXTRACT of RdPipe : signal is "no";
 
     -- Altera RAM implementation attribute
     attribute RAMSTYLE : string;
-    attribute RAMSTYLE of mem : variable is RamStyle_g;
+    attribute RAMSTYLE of Mem_v : variable is RamStyle_g;
 
     -- Efinix RAM implementation attributes
     attribute SYN_RAMSTYLE : string;
-    attribute SYN_RAMSTYLE of mem : variable is RamStyle_g;
+    attribute SYN_RAMSTYLE of Mem_v : variable is RamStyle_g;
 
 begin
 
@@ -82,36 +83,40 @@ begin
         report "olo_base_ram_sp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
         severity error;
 
-    ram_p : process (Clk) is
+    -- RAM process
+    p_ram : process (Clk) is
     begin
         if rising_edge(Clk) then
             if RamBehavior_g = "RBW" then
-                rd_pipe(1) <= mem(to_integer(unsigned(Addr)));
+                RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
             end if;
             if WrEna = '1' then
                 -- Write with byte enables
                 if UseByteEnable_g then
+
+                    -- Loop over all bytes
                     for byte in 0 to BeCount_c - 1 loop
                         if Be(byte) = '1' then
-                            mem(to_integer(unsigned(Addr)))(byte * 8 + 7 downto byte * 8) := WrData(byte * 8 + 7 downto byte * 8);
+                            Mem_v(to_integer(unsigned(Addr)))(byte * 8 + 7 downto byte * 8) := WrData(byte * 8 + 7 downto byte * 8);
                         end if;
                     end loop;
+
                 -- Write without byte enables
                 else
-                    mem(to_integer(unsigned(Addr))) := WrData;
+                    Mem_v(to_integer(unsigned(Addr))) := WrData;
                 end if;
             end if;
             if RamBehavior_g = "WBR" then
-                rd_pipe(1) <= mem(to_integer(unsigned(Addr)));
+                RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
             end if;
 
             -- Read-data pipeline registers
-            rd_pipe(2 to RdLatency_g) <= rd_pipe(1 to RdLatency_g-1);
+            RdPipe(2 to RdLatency_g) <= RdPipe(1 to RdLatency_g-1);
         end if;
     end process;
 
     -- Output
-    RdData <= rd_pipe(RdLatency_g);
+    RdData <= RdPipe(RdLatency_g);
 
 end architecture;
 

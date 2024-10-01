@@ -53,12 +53,13 @@ architecture rtl of olo_base_wconv_xn2n is
     constant RatioInt_c  : integer := integer(RatioReal_c);
 
     -- *** Two Process Method ***
-    type two_process_r is record
+    type TwoProcess_r is record
         Data     : std_logic_vector(InWidth_g - 1 downto 0);
         DataVld  : std_logic_vector(RatioInt_c - 1 downto 0);
         DataLast : std_logic_vector(RatioInt_c - 1 downto 0);
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_r;
 
 begin
 
@@ -70,7 +71,7 @@ begin
         severity error;
 
     p_comb : process (r, In_Valid, In_Data, Out_Ready, In_WordEna, In_Last) is
-        variable v         : two_process_r;
+        variable v         : TwoProcess_r;
         variable IsReady_v : std_logic;
     begin
         -- *** hold variables stable ***
@@ -90,6 +91,8 @@ begin
             v.DataVld := In_WordEna;
             -- Assert last to the correct data-word
             v.DataLast := (others => '0');
+
+            -- Loop over all input sub-words and assert last to the correct output word
             for i in RatioInt_c-1 downto 0 loop
                 if In_WordEna(i) = '1' and In_Last = '1' then
                     v.DataLast(i) := '1';

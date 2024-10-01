@@ -44,17 +44,18 @@ end entity;
 architecture rtl of olo_base_strobe_div is
 
     -- *** Two Process Method ***
-    type two_process_r is record
+    type TwoProcess_r is record
         Count    : natural range 0 to MaxRatio_g-1;
         OutValid : std_logic;
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_r;
 
 begin
 
     p_comb : process (r, In_Valid, In_Ratio, Out_Ready) is
         variable OutValid_v : std_logic;
-        variable v          : two_process_r;
+        variable v          : TwoProcess_r;
     begin
         -- *** hold variables stable ***
         v := r;

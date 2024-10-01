@@ -4027,7 +4027,7 @@ rule:
         # This rule checks the signal name has proper case.
         case: regex
         regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
-        case_exceptions: ["r", "rs", "rp", "ra", "r_next", "rs_next", "rp_next", "ra_next", "net"]
+        case_exceptions: ["r", "rs", "rp", "ra", "ri", "ro", "r_next", "rs_next", "rp_next", "ra_next", "ri_next", "ro_next", "net"]
         fixable: false
         phase: 6
         prefix_exceptions: []
@@ -4351,7 +4351,7 @@ rule:
         # This rule checks the variable name has proper case.
         case: regex
         regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
-        case_exceptions: ["v", "vs", "vp", "va"]
+        case_exceptions: ["v", "vs", "vp", "va", "vi", "vo"]
         fixable: false
         phase: 6
         prefix_exceptions: []

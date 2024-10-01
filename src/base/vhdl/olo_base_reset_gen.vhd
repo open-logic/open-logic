@@ -48,14 +48,14 @@ architecture struct of olo_base_reset_gen is
     signal RstSync      : std_logic;
 
     -- Pulse prolongation
-    constant PulseCntMax_c : natural := max(RstPulseCycles_g-4, 0);
+    constant PulseCntMax_c : natural                          := max(RstPulseCycles_g-4, 0);
     signal PulseCnt        : integer range 0 to PulseCntMax_c := 0;
-    signal RstPulse        : std_logic := '1';
+    signal RstPulse        : std_logic                        := '1';
 
 begin
 
     -- Reset Synchronizer
-    RstSync_p : process (Clk, RstIn) is
+    p_rstsync : process (Clk, RstIn) is
     begin
         if RstIn = RstInPolarity_g then
             RstSyncChain <= (others => '1');
@@ -97,6 +97,7 @@ begin
         g_sync : if not AsyncResetOutput_g generate
             RstOut <= RstPulse;
         end generate;
+
     end generate;
 
     g_direct : if RstPulseCycles_g <= 3 generate

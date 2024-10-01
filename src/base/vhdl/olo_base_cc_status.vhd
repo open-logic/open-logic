@@ -98,6 +98,7 @@ begin
             Out_Data    => Out_Data,
             Out_Valid   => VldOut
         );
+
     In_RstOut  <= RstInI;
     Out_RstOut <= RstOutI;
 

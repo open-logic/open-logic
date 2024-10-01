@@ -63,7 +63,7 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_fifo_sync is
 
-    type two_process_r is record
+    type TwoProcess_r is record
         WrLevel : std_logic_vector(In_Level'range);
         RdLevel : std_logic_vector(Out_Level'range);
         RdUp    : std_logic;
@@ -72,7 +72,7 @@ architecture rtl of olo_base_fifo_sync is
         RdAddr  : std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
     end record;
 
-    signal r, r_next : two_process_r;
+    signal r, r_next : TwoProcess_r;
 
     signal RamWr     : std_logic;
     signal RamRdAddr : std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
@@ -80,7 +80,7 @@ architecture rtl of olo_base_fifo_sync is
 begin
 
     p_comb : process (In_Valid, Out_Ready, Rst, r) is
-        variable v : two_process_r;
+        variable v : TwoProcess_r;
     begin
         -- hold variables stable
         v := r;

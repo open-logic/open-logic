@@ -44,10 +44,11 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_arb_prio is
 
-    -- Combinatorial Output
-    signal Grant_I : std_logic_vector(Out_Grant'range);
-    -- Output Registers
+    -- Types
     type Data_t is array (natural range<>) of std_logic_vector(Out_Grant'range);
+
+    -- Signals
+    signal Grant_I : std_logic_vector(Out_Grant'range);
     signal RdPipe  : Data_t(1 to Latency_g);
 
 begin
@@ -87,6 +88,7 @@ begin
         g_nreg : if Latency_g = 0 generate
             Out_Grant <= Grant_I;
         end generate;
+
     end generate;
 
 end architecture;

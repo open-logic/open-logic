@@ -75,26 +75,26 @@ architecture rtl of olo_base_fifo_async is
     constant AddrWidth_c    : positive := log2ceil(Depth_g)+1;
     constant RamAddrWidth_c : positive := log2ceil(Depth_g);
 
-    type two_process_in_r is record
+    type TwoProcessIn_r is record
         WrAddr     : unsigned(AddrWidth_c-1 downto 0); -- One additional bit for full/empty detection
         WrAddrGray : std_logic_vector(AddrWidth_c-1 downto 0);
         RdAddr     : unsigned(AddrWidth_c-1 downto 0);
     end record;
 
-    type two_process_out_r is record
+    type TwoProcessOut_r is record
         RdAddr     : unsigned(AddrWidth_c-1 downto 0); -- One additional bit for full/empty detection
         RdAddrGray : std_logic_vector(AddrWidth_c-1 downto 0);
         WrAddr     : unsigned(AddrWidth_c-1 downto 0);
         OutLevel   : unsigned(AddrWidth_c-1 downto 0);
     end record;
 
-    signal ri, ri_next : two_process_in_r  := (WrAddr         => (others => '0'),
-                                                WrAddrGray     => (others => '0'),
-                                                RdAddr         => (others => '0'));
-    signal ro, ro_next : two_process_out_r := (RdAddr         => (others => '0'),
-                                                RdAddrGray     => (others => '0'),
-                                                WrAddr         => (others => '0'),
-                                                OutLevel       => (others => '0'));
+    signal ri, ri_next : TwoProcessIn_r  := (WrAddr          => (others => '0'),
+                                              WrAddrGray     => (others => '0'),
+                                              RdAddr         => (others => '0'));
+    signal ro, ro_next : TwoProcessOut_r := (RdAddr          => (others => '0'),
+                                              RdAddrGray     => (others => '0'),
+                                              WrAddr         => (others => '0'),
+                                              OutLevel       => (others => '0'));
 
     signal RstInInt   : std_logic;
     signal RstOutInt  : std_logic;
@@ -111,8 +111,8 @@ begin
         severity error;
 
     p_comb : process (In_Valid, Out_Ready, ri, ro, RstInInt, WrAddrGray, RdAddrGray) is
-        variable vi        : two_process_in_r;
-        variable vo        : two_process_out_r;
+        variable vi        : TwoProcessIn_r;
+        variable vo        : TwoProcessOut_r;
         variable InLevel_v : unsigned(log2ceil(Depth_g) downto 0);
     begin
         -- *** hold variables stable ***
@@ -242,6 +242,7 @@ begin
     end process;
 
     RamWrAddr <= std_logic_vector(ri.WrAddr(log2ceil(Depth_g) - 1 downto 0));
+
     i_ram : entity work.olo_base_ram_sdp
         generic map (
             Depth_g         => Depth_g,
@@ -298,6 +299,7 @@ begin
             B_RstIn     => Out_Rst,
             B_RstOut    => RstOutInt
         );
+
     Out_RstOut <= RstOutInt;
     In_RstOut  <= RstInInt;
 

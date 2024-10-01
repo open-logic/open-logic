@@ -70,7 +70,10 @@ begin
 
     -- *** SRL ***
     g_srl : if (Delay_g > 1) and ((Resource_g = "SRL") or ((Resource_g = "AUTO") and (Delay_g < BramThreshold_g))) generate
+        -- local types
         type Srl_t is array (0 to MemTaps_c - 1) of std_logic_vector(Width_g - 1 downto 0);
+
+        -- local signals
         signal SrlSig : Srl_t := (others => (others => '0'));
         attribute SHREG_EXTRACT of SrlSig : signal is "true";
         attribute SRL_STYLE of SrlSig : signal is "srl";
@@ -138,6 +141,7 @@ begin
                 Rd_Ena  => In_Valid,
                 Rd_Data => MemOut
             );
+
     end generate;
 
     -- *** Single Stage ***

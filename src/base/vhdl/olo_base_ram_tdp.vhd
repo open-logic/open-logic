@@ -58,24 +58,25 @@ architecture rtl of olo_base_ram_tdp is
     -- Constants
     constant BeCount_c : integer := Width_g / 8;
 
-    -- memory array
-    type data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
-    shared variable mem : data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
+    -- Mem_vory array
+    type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
+
+    shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
 
     -- Read registers
-    signal a_rd_pipe, b_rd_pipe : data_t(1 to RdLatency_g);
+    signal RdPipeA, RdPipeB : Data_t(1 to RdLatency_g);
 
     -- AMD RAM implementation attribute
     attribute RAM_STYLE : string;
-    attribute RAM_STYLE of mem : variable is RamStyle_g;
+    attribute RAM_STYLE of Mem_v : variable is RamStyle_g;
 
     -- Altera RAM implementation attribute
     attribute RAMSTYLE : string;
-    attribute RAMSTYLE of mem : variable is RamStyle_g;
+    attribute RAMSTYLE of Mem_v : variable is RamStyle_g;
 
     -- Efinix RAM implementation attributes
     attribute SYN_RAMSTYLE : string;
-    attribute SYN_RAMSTYLE of mem : variable is RamStyle_g;
+    attribute SYN_RAMSTYLE of Mem_v : variable is RamStyle_g;
 
 begin
 
@@ -88,64 +89,70 @@ begin
         severity error;
 
     -- Port A
-    porta_p : process (A_Clk) is
+    p_porta : process (A_Clk) is
     begin
         if rising_edge(A_Clk) then
             if RamBehavior_g = "RBW" then
-                a_rd_pipe(1) <= mem(to_integer(unsigned(A_Addr)));
+                RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
             end if;
             if A_WrEna = '1' then
                 -- Write with byte enables
                 if UseByteEnable_g then
+
+                    -- Loop over all bytes
                     for byte in 0 to BeCount_c - 1 loop
                         if A_Be(byte) = '1' then
-                            mem(to_integer(unsigned(A_Addr)))(byte * 8 + 7 downto byte * 8) := A_WrData(byte * 8 + 7 downto byte * 8);
+                            Mem_v(to_integer(unsigned(A_Addr)))(byte * 8 + 7 downto byte * 8) := A_WrData(byte * 8 + 7 downto byte * 8);
                         end if;
                     end loop;
+
                 -- Write without byte enables
                 else
-                    mem(to_integer(unsigned(A_Addr))) := A_WrData;
+                    Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
                 end if;
             end if;
             if RamBehavior_g = "WBR" then
-                a_rd_pipe(1) <= mem(to_integer(unsigned(A_Addr)));
+                RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
             end if;
             -- Read-data pipeline registers
-            a_rd_pipe(2 to RdLatency_g) <= a_rd_pipe(1 to RdLatency_g-1);
+            RdPipeA(2 to RdLatency_g) <= RdPipeA(1 to RdLatency_g-1);
         end if;
     end process;
 
-    A_RdData <= a_rd_pipe(RdLatency_g);
+    A_RdData <= RdPipeA(RdLatency_g);
 
     -- Port B
-    portb_p : process (B_Clk) is
+    p_portb : process (B_Clk) is
     begin
         if rising_edge(B_Clk) then
             if RamBehavior_g = "RBW" then
-                b_rd_pipe(1) <= mem(to_integer(unsigned(B_Addr)));
+                RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
             end if;
             if B_WrEna = '1' then
                 -- Write with byte enables
                 if UseByteEnable_g then
+
+                    -- Loop over all bytes
                     for byte in 0 to BeCount_c - 1 loop
                         if B_Be(byte) = '1' then
-                            mem(to_integer(unsigned(B_Addr)))(byte * 8 + 7 downto byte * 8) := B_WrData(byte * 8 + 7 downto byte * 8);
+                            Mem_v(to_integer(unsigned(B_Addr)))(byte * 8 + 7 downto byte * 8) := B_WrData(byte * 8 + 7 downto byte * 8);
                         end if;
                     end loop;
+
                 -- Write without byte enables
                 else
-                    mem(to_integer(unsigned(B_Addr))) := B_WrData;
+                    Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
                 end if;
             end if;
             if RamBehavior_g = "WBR" then
-                b_rd_pipe(1) <= mem(to_integer(unsigned(B_Addr)));
+                RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
             end if;
             -- Read-data pipeline registers
-            b_rd_pipe(2 to RdLatency_g) <= b_rd_pipe(1 to RdLatency_g-1);
+            RdPipeB(2 to RdLatency_g) <= RdPipeB(1 to RdLatency_g-1);
         end if;
     end process;
 
-    B_RdData <= b_rd_pipe(RdLatency_g);
+    B_RdData <= RdPipeB(RdLatency_g);
 
 end architecture;
 

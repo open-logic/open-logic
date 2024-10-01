@@ -42,10 +42,11 @@ end entity;
 architecture rtl of olo_base_arb_rr is
 
     -- Two Process Method
-    type two_process_r is record
+    type TwoProcess_t is record
         Mask : std_logic_vector(In_Req'range);
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_t;
 
     -- Component connection signals
     signal RequestMasked : std_logic_vector(In_Req'range);
@@ -59,7 +60,7 @@ begin
 
         -- *** Combinatorial Process ***
         p_comb : process (r, In_Req, Out_Ready, GrantMasked, GrantUnmasked) is
-            variable v       : two_process_r;
+            variable v       : TwoProcess_t;
             variable Grant_v : std_logic_vector(Out_Grant'range);
         begin
             -- hold variables stable
@@ -129,6 +130,7 @@ begin
                 In_Req      => In_Req,
                 Out_Grant   => GrantUnmasked
             );
+
     end generate;
 
 end architecture;

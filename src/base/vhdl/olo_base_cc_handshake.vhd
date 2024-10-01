@@ -65,7 +65,7 @@ architecture rtl of olo_base_cc_handshake is
 begin
 
     -- Valid pulse generation
-    p_in: process (In_Clk) is
+    p_in : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
 
@@ -88,7 +88,7 @@ begin
     end process;
 
     In_ReadyI     <= (not InLatched) or InAck when ReadyRstState_g = '1' else
-                 ((not InLatched) or InAck) and (not RstInI); -- Actively pull Ready low during reset if required
+                     ((not InLatched) or InAck) and (not RstInI); -- Actively pull Ready low during reset if required
     InTransaction <= In_Valid and In_ReadyI;
     In_Ready      <= In_ReadyI;
 
@@ -109,6 +109,7 @@ begin
             Out_Data    => Out_Data,
             Out_Valid   => OutTransaction
         );
+
     In_RstOut  <= RstInI;
     Out_RstOut <= RstOutI;
 
@@ -127,7 +128,7 @@ begin
         );
 
     -- Latch data on output side
-    p_out: process (Out_Clk) is
+    p_out : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
 

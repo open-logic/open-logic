@@ -56,7 +56,7 @@ architecture rtl of olo_base_wconv_n2xn is
     constant RatioInt_c  : integer := integer(RatioReal_c);
 
     -- *** Two Process Method ***
-    type two_process_r is record
+    type TwoProcess_r is record
         DataVld     : std_logic_vector(RatioInt_c - 1 downto 0);
         Data        : std_logic_vector(OutWidth_g - 1 downto 0);
         DataLast    : std_logic;
@@ -66,7 +66,8 @@ architecture rtl of olo_base_wconv_n2xn is
         Out_WordEna : std_logic_vector(RatioInt_c - 1 downto 0);
         Cnt         : integer range 0 to RatioInt_c;
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_r;
 
 begin
 
@@ -81,7 +82,7 @@ begin
     g_convert : if OutWidth_g > InWidth_g generate
 
         p_comb : process (r, In_Valid, In_Data, Out_Ready, In_Last) is
-            variable v           : two_process_r;
+            variable v           : TwoProcess_r;
             variable IsStuck_v   : std_logic;
             variable ShiftDone_v : boolean;
         begin

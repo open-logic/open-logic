@@ -50,7 +50,7 @@ end entity;
 -- Architecture Declaration
 ---------------------------------------------------------------------------------------------------
 
-architecture behav of olo_base_prbs is
+architecture rtl of olo_base_prbs is
 
     -- Signals
     signal LfsrReg : std_logic_vector(LfsrWidth_g-1 downto 0);
@@ -83,11 +83,14 @@ begin
             -- Normal Operation
             if Out_Ready = '1' then
                 Lfsr_v := LfsrReg;
+
+                -- Loop over all bits in symbol
                 for bit in 0 to BitsPerSymbol_g-1 loop
                     LfsrMasked_v := Lfsr_v and Polynomial_g;
                     NextBit_v    := reduceXor(LfsrMasked_v);
                     Lfsr_v       := Lfsr_v(LfsrWidth_g-2 downto 0) & NextBit_v;
                 end loop;
+
                 LfsrReg <= Lfsr_v;
             end if;
 

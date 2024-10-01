@@ -50,10 +50,13 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_delay_cfg is
 
+    -- types
     type Srl_t is array (0 to 1) of std_logic_vector(Width_g - 1 downto 0);
-    signal SrlSig     : Srl_t                                     := (others => (others => '0'));
+
+    -- signals
+    signal SrlSig     : Srl_t                                  := (others => (others => '0'));
     signal OutNonzero : std_logic_vector(Width_g - 1 downto 0);
-    signal MemOut     : std_logic_vector(Width_g - 1 downto 0)    := (others => '0');
+    signal MemOut     : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
 
 begin
 
@@ -119,12 +122,14 @@ begin
             -- Normal Operation
             DelayInt_v := fromUslv(Delay);
             if In_Valid = '1' then
+
                 case DelayInt_v is
                     when 1 =>  OutNonzero <= In_Data;
                     when 2 =>  OutNonzero <= SrlSig(0);
                     when 3 =>  OutNonzero <= SrlSig(1);
                     when others => OutNonzero <= MemOut;
                 end case;
+
             end if;
 
             -- Reset

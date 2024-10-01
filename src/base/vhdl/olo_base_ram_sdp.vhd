@@ -55,26 +55,27 @@ architecture rtl of olo_base_ram_sdp is
     -- constants
     constant BeCount_c : integer := Width_g / 8;
 
-    -- memory array
-    type data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
-    shared variable mem : data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
+    -- Memory array
+    type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
+
+    shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
 
     -- Read registers
-    signal rd_pipe : data_t(1 to RdLatency_g);
+    signal RdPipe : Data_t(1 to RdLatency_g);
 
     -- AMD RAM implementation attributes
     attribute RAM_STYLE : string;
-    attribute RAM_STYLE of mem         : variable is RamStyle_g;
+    attribute RAM_STYLE of Mem_v      : variable is RamStyle_g;
     attribute SHREG_EXTRACT : string;
-    attribute SHREG_EXTRACT of rd_pipe : signal is "no";
+    attribute SHREG_EXTRACT of RdPipe : signal is "no";
 
     -- Altera RAM implementation attributes
     attribute RAMSTYLE : string;
-    attribute RAMSTYLE of mem : variable is RamStyle_g;
+    attribute RAMSTYLE of Mem_v : variable is RamStyle_g;
 
     -- Efinix RAM implementation attributes
     attribute SYN_RAMSTYLE : string;
-    attribute SYN_RAMSTYLE of mem : variable is RamStyle_g;
+    attribute SYN_RAMSTYLE of Mem_v : variable is RamStyle_g;
 
 begin
 
@@ -89,35 +90,38 @@ begin
     -- Synchronous Implementation
     g_sync : if not IsAsync_g generate
 
-        ram_p : process (Clk) is
+        p_ram : process (Clk) is
         begin
             if rising_edge(Clk) then
                 if RamBehavior_g = "RBW" then
                     if Rd_Ena = '1' then
-                        rd_pipe(1) <= mem(to_integer(unsigned(Rd_Addr)));
+                        RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
                     end if;
                 end if;
                 if Wr_Ena = '1' then
                     -- Write with byte enables
                     if UseByteEnable_g then
+
+                        -- Loop over all bytes
                         for byte in 0 to BeCount_c - 1 loop
                             if Wr_Be(byte) = '1' then
-                                mem(to_integer(unsigned(Wr_Addr)))(byte * 8 + 7 downto byte * 8) := Wr_Data(byte * 8 + 7 downto byte * 8);
+                                Mem_v(to_integer(unsigned(Wr_Addr)))(byte * 8 + 7 downto byte * 8) := Wr_Data(byte * 8 + 7 downto byte * 8);
                             end if;
                         end loop;
+
                     -- Write without byte enables
                     else
-                        mem(to_integer(unsigned(Wr_Addr))) := Wr_Data;
+                        Mem_v(to_integer(unsigned(Wr_Addr))) := Wr_Data;
                     end if;
                 end if;
                 if RamBehavior_g = "WBR" then
                     if Rd_Ena = '1' then
-                        rd_pipe(1) <= mem(to_integer(unsigned(Rd_Addr)));
+                        RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
                     end if;
                 end if;
 
                 -- Read-data pipeline registers
-                rd_pipe(2 to RdLatency_g) <= rd_pipe(1 to RdLatency_g-1);
+                RdPipe(2 to RdLatency_g) <= RdPipe(1 to RdLatency_g-1);
             end if;
         end process;
 
@@ -126,41 +130,46 @@ begin
     -- Asynchronous implementation
     g_async : if IsAsync_g generate
 
-        write_p : process (Clk) is
+        -- Write side
+        p_write : process (Clk) is
         begin
             if rising_edge(Clk) then
                 if Wr_Ena = '1' then
                     -- Write with byte enables
                     if UseByteEnable_g then
+
+                        -- Loop over all bytes
                         for byte in 0 to BeCount_c - 1 loop
                             if Wr_Be(byte) = '1' then
-                                mem(to_integer(unsigned(Wr_Addr)))(byte * 8 + 7 downto byte * 8) := Wr_Data(byte * 8 + 7 downto byte * 8);
+                                Mem_v(to_integer(unsigned(Wr_Addr)))(byte * 8 + 7 downto byte * 8) := Wr_Data(byte * 8 + 7 downto byte * 8);
                             end if;
                         end loop;
+
                     -- Write without byte enables
                     else
-                        mem(to_integer(unsigned(Wr_Addr))) := Wr_Data;
+                        Mem_v(to_integer(unsigned(Wr_Addr))) := Wr_Data;
                     end if;
                 end if;
             end if;
         end process;
 
-        read_p : process (Rd_Clk) is
+        -- Read side
+        p_read : process (Rd_Clk) is
         begin
             if rising_edge(Rd_Clk) then
                 if Rd_Ena = '1' then
-                    rd_pipe(1) <= mem(to_integer(unsigned(Rd_Addr)));
+                    RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
                 end if;
 
                 -- Read-data pipeline registers
-                rd_pipe(2 to RdLatency_g) <= rd_pipe(1 to RdLatency_g-1);
+                RdPipe(2 to RdLatency_g) <= RdPipe(1 to RdLatency_g-1);
             end if;
         end process;
 
     end generate;
 
     -- Output
-    Rd_Data <= rd_pipe(RdLatency_g);
+    Rd_Data <= RdPipe(RdLatency_g);
 
 end architecture;
 

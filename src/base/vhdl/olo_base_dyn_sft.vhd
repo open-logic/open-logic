@@ -59,12 +59,13 @@ architecture rtl of olo_base_dyn_sft is
     type Shift_t is array (natural range <>) of std_logic_vector(In_Shift'range);
 
     -- Two Process Method
-    type two_process_r is record
+    type TwoProcess_t is record
         Vld   : std_logic_vector(0 to Stages_c);
         Data  : Data_t(0 to Stages_c);
         Shift : Shift_t(0 to Stages_c);
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_t;
 
 begin
 
@@ -78,7 +79,7 @@ begin
 
     -- *** Cobinatorial Process ***
     p_comb : process (r, In_Valid, In_Data, In_Shift) is
-        variable v          : two_process_r;
+        variable v          : TwoProcess_t;
         variable StepSize_v : natural;
         variable Select_v   : natural range 0 to 2**SelBitsPerStage_g - 1;
         variable TempData_v : std_logic_vector(Width_g * 2 - 1 downto 0);

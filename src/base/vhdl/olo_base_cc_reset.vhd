@@ -40,12 +40,12 @@ end entity;
 architecture struct of olo_base_cc_reset is
 
     -- Domain A signals
-    signal RstALatch  : std_logic := '1';
+    signal RstALatch  : std_logic                    := '1';
     signal RstRqstB2A : std_logic_vector(2 downto 0) := (others => '0');
     signal RstAckB2A  : std_logic; -- std_logic_vector(2 downto 0) := (others => '0');
 
     -- Domain B signals
-    signal RstBLatch  : std_logic := '1';
+    signal RstBLatch  : std_logic                    := '1';
     signal RstRqstA2B : std_logic_vector(2 downto 0) := (others => '0');
     signal RstAckA2B  : std_logic; -- std_logic_vector(2 downto 0) := (others => '0');
 
@@ -85,7 +85,7 @@ architecture struct of olo_base_cc_reset is
 begin
 
     -- Domain A
-    ARstSync_p : process (A_Clk, RstBLatch) is
+    p_a_rst_sync : process (A_Clk, RstBLatch) is
     begin
         if RstBLatch = '1' then
             RstRqstB2A <= (others => '1');
@@ -94,7 +94,7 @@ begin
         end if;
     end process;
 
-    ARst_p : process (A_Clk) is
+    p_a_rst : process (A_Clk) is
     begin
         if rising_edge(A_Clk) then
             -- RstAckB2A <= RstAckB2A(RstAckB2A'left - 1 downto 0) & RstRqstA2B(RstRqstA2B'left);
@@ -111,7 +111,7 @@ begin
     A_RstOut <= RstALatch or RstRqstB2A(RstRqstB2A'left);
 
     -- Domain B
-    BRstSync_p : process (B_Clk, RstALatch) is
+    p_b_rst_sync : process (B_Clk, RstALatch) is
     begin
         if RstALatch = '1' then
             RstRqstA2B <= (others => '1');
@@ -120,7 +120,7 @@ begin
         end if;
     end process;
 
-    BRst_p : process (B_Clk) is
+    p_b_rst : process (B_Clk) is
     begin
         if rising_edge(B_Clk) then
             -- RstAckA2B <= RstAckA2B(RstAckA2B'left - 1 downto 0) & RstRqstB2A(RstRqstB2A'left);
@@ -151,6 +151,7 @@ begin
             Out_Rst     => '0',
             Out_Data(0) => RstAckB2A
         );
+
     i_acka2b : entity work.olo_base_cc_bits
         generic map (
             Width_g => 1
