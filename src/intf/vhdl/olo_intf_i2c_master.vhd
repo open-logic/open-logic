@@ -101,12 +101,13 @@ architecture rtl of olo_intf_i2c_master is
     constant CmdTimeoutLimit_c    : integer := integer(ClkFrequency_g * CmdTimeout_g) - 1;
 
     -- *** Types ***
-    type Fsm_t is (BusIdle_s, BusBusy_s, MinIdle_s, Start1_s, Start2_s, WaitCmd_s, WaitLowCenter_s,
-                    Stop1_s, Stop2_s, Stop3_s, RepStart1_s,
-                    DataBit1_s, DataBit2_s, DataBit3_s, DataBit4_s, ArbitLost_s);
+    type Fsm_t is (
+        BusIdle_s, BusBusy_s, MinIdle_s, Start1_s, Start2_s, WaitCmd_s, WaitLowCenter_s,
+        Stop1_s, Stop2_s, Stop3_s, RepStart1_s, DataBit1_s, DataBit2_s, DataBit3_s, DataBit4_s, ArbitLost_s
+    );
 
     -- *** Two Process Method ***
-    type two_process_r is record
+    type TwoProcess_r is record
         Status_BusBusy : std_logic;
         Cmd_Ready      : std_logic;
         SclLast        : std_logic;
@@ -130,7 +131,8 @@ architecture rtl of olo_intf_i2c_master is
         CmdTimeout     : std_logic;
         Status_CmdTo   : std_logic;
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_r;
     attribute DONT_TOUCH : string;
     attribute DONT_TOUCH of r : signal is "true"; -- Required to Fix Vivado 2018.2 Synthesis Bug! Is fixed in Vivado 2019.1 according to Xilinx.
 
@@ -146,7 +148,7 @@ begin
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
     p_comb : process (r, I2cScl_Sync, I2cSda_Sync, Cmd_Valid, Cmd_Command, Cmd_Data, Cmd_Ack) is
-        variable v                     : two_process_r;
+        variable v                     : TwoProcess_r;
         variable SdaRe_v, SdaFe_v      : std_logic;
         variable I2cStart_v, I2cStop_v : std_logic;
     begin
@@ -339,6 +341,7 @@ begin
                         v.Fsm := Stop1_s;
                     -- Else, go to requested command
                     else
+
                         case r.CmdTypeLatch is
                             when CMD_STOP => v.Fsm := Stop1_s;
                             when CMD_REPSTART => v.Fsm := RepStart1_s;
@@ -348,6 +351,7 @@ begin
                             when others => null; -- unreacable code
                             -- coverage on
                         end case;
+
                     end if;
                 end if;
 
@@ -521,8 +525,6 @@ begin
             -- coverage on
         end case;
 
-        -- TODO: FSM Stuck detection timeout!
-
         -- *** Bus Busy ***
         if r.Fsm = BusIdle_s then
             v.Status_BusBusy := '0';
@@ -546,7 +548,9 @@ begin
     Resp_Data      <= r.Resp_Data;
     Resp_SeqErr    <= r.Resp_SeqErr;
     Status_CmdTo   <= r.Status_CmdTo;
-    g_intTristate : if InternalTriState_g generate
+
+    -- Internal Tri-State buffers
+    g_int_tristate : if InternalTriState_g generate
         I2c_Scl   <= 'Z' when r.SclOut = '1' else '0';
         I2c_Sda   <= 'Z' when r.SdaOut = '1' else '0';
         I2c_Scl_o <= '0';
@@ -554,7 +558,9 @@ begin
         I2c_Scl_t <= '1';
         I2c_Sda_t <= '1';
     end generate;
-    g_extTristatte : if not InternalTriState_g generate
+
+    -- External Tri-State buffers
+    g_ext_tristatte : if not InternalTriState_g generate
         I2c_Scl_o <= r.SclOut;
         I2c_Sda_o <= r.SdaOut;
         I2c_Scl_t <= r.SclOut;
@@ -592,7 +598,7 @@ begin
 
     i_sync : entity work.olo_intf_sync
         generic map (
-            width_g     => 2
+            Width_g     => 2
         )
         port map (
             Clk             => Clk,

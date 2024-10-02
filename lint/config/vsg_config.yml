@@ -2367,9 +2367,10 @@ rule:
         phase: 2
     generic_map_600:
         # This rule checks for valid suffixes on generic identifiers in generic maps The default generic suffix is _g.
-        exceptions: ["bus_handle", "master", "slave"]
+        exceptions: []
         phase: 7
-        suffixes: ["_g"]
+        #If the component used does not use the _g suffix, we cant use it in the map
+        suffixes: ["_g", ""]
         severity: Warning
     generic_map_601:
         # This rule checks for valid prefixes on generic identifiers in generic maps The default generic suffix is g_.

@@ -41,9 +41,9 @@ architecture sim of olo_intf_sync_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant Clk_Frequency_c : real    := 100.0e6;
-    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
-    constant Time_MaxDel_c   : time    := 2.1 * Clk_Period_c;
+    constant Clk_Frequency_c : real := 100.0e6;
+    constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
+    constant Time_MaxDel_c   : time := 2.1 * Clk_Period_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals

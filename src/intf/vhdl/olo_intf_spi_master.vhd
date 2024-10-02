@@ -31,8 +31,8 @@ entity olo_intf_spi_master is
         SclkFreq_g      : real                 := 1.0e6;
         MaxTransWidth_g : positive             := 32;
         CsHighTime_g    : real                 := 20.0e-9;
-        SpiCPOL_g       : natural range 0 to 1 := 1;
-        SpiCPHA_g       : natural range 0 to 1 := 1;
+        SpiCpol_g       : natural range 0 to 1 := 1;
+        SpiCpha_g       : natural range 0 to 1 := 1;
         SlaveCnt_g      : positive             := 1;
         LsbFirst_g      : boolean              := false;
         MosiIdleState_g : std_logic            := '0'
@@ -73,10 +73,10 @@ architecture rtl of olo_intf_spi_master is
     constant SclkFreqResult_c : real    := ClkFreq_g/(2.0*real(ClkDivThres_c+1));
 
     -- *** Two Process Method ***
-    type two_process_r is record
+    type TwoProcess_r is record
         State      : State_t;
         StateLast  : State_t;
-        ShiftReg   : std_logic_vector(MaxTransWidth_g - 1 downto 0);
+        shiftReg   : std_logic_vector(MaxTransWidth_g - 1 downto 0);
         RdData     : std_logic_vector(MaxTransWidth_g - 1 downto 0);
         Spi_Cs_n   : std_logic_vector(SlaveCnt_g - 1 downto 0);
         Spi_Sclk   : std_logic;
@@ -89,7 +89,8 @@ architecture rtl of olo_intf_spi_master is
         MosiNext   : std_logic;
         TransWidth : integer range 0 to MaxTransWidth_g;
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_r;
 
     -- Signal required for automatic constraining
     signal SpiMiso_i : std_logic;
@@ -111,9 +112,9 @@ architecture rtl of olo_intf_spi_master is
     attribute SYN_KEEP of SpiMiso_i : signal is true;
 
     -- *** Functions and procedures ***
-    function GetClockLevel (ClkActive : boolean) return std_logic is
+    function getClockLevel (ClkActive : boolean) return std_logic is
     begin
-        if SpiCPOL_g = 0 then
+        if SpiCpol_g = 0 then
             if ClkActive then
                 return '1';
             else
@@ -128,7 +129,7 @@ architecture rtl of olo_intf_spi_master is
         end if;
     end function;
 
-    procedure ShiftReg (
+    procedure shiftReg (
             signal BeforeShift  : in std_logic_vector(MaxTransWidth_g-1 downto 0);
             variable AfterShift : out std_logic_vector(MaxTransWidth_g-1 downto 0);
             signal InputBit     : in std_logic;
@@ -136,8 +137,8 @@ architecture rtl of olo_intf_spi_master is
             TransWidth          : in integer range 0 to MaxTransWidth_g) is
     begin
         if LsbFirst_g then
-            OutputBit  := BeforeShift(0);
-            AfterShift := '0' & BeforeShift(BeforeShift'high downto 1);
+            OutputBit                := BeforeShift(0);
+            AfterShift               := '0' & BeforeShift(BeforeShift'high downto 1);
             AfterShift(TransWidth-1) := InputBit;
         else
             OutputBit  := BeforeShift(TransWidth-1);
@@ -160,7 +161,7 @@ begin
     SpiMiso_i <= Spi_Miso;
 
     p_comb : process (r, Cmd_Valid, Cmd_Data, SpiMiso_i, Cmd_Slave, Cmd_TransWidth) is
-        variable v : two_process_r;
+        variable v : TwoProcess_r;
     begin
         -- *** hold variables stable ***
         v := r;
@@ -173,7 +174,7 @@ begin
             when Idle_s =>
                 -- Start of Transfer
                 if Cmd_Valid = '1' then
-                    v.ShiftReg                                  := Cmd_Data;
+                    v.shiftReg                                  := Cmd_Data;
                     v.Spi_Cs_n(to_integer(unsigned(Cmd_Slave))) := '0';
                     v.State                                     := SftComp_s;
                     v.Busy                                      := '1';
@@ -186,18 +187,18 @@ begin
             when SftComp_s =>
                 v.State := ClkInact_s;
                 -- Compensate shift for CPHA 0
-                if SpiCPHA_g = 0 then
-                    ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
+                if SpiCpha_g = 0 then
+                    shiftReg(r.shiftReg, v.shiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                 end if;
 
             when ClkInact_s =>
-                v.Spi_Sclk := GetClockLevel(false);
+                v.Spi_Sclk := getClockLevel(false);
                 -- Apply/Latch data if required
                 if r.ClkDivCnt = 0 then
-                    if SpiCPHA_g = 0 then
+                    if SpiCpha_g = 0 then
                         v.Spi_Mosi := r.MosiNext;
                     else
-                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
+                        shiftReg(r.shiftReg, v.shiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                     end if;
                 end if;
                 -- Clock period handling
@@ -216,13 +217,13 @@ begin
                 end if;
 
             when ClkAct_s =>
-                v.Spi_Sclk := GetClockLevel(true);
+                v.Spi_Sclk := getClockLevel(true);
                 -- Apply data if required
                 if r.ClkDivCnt = 0 then
-                    if SpiCPHA_g = 1 then
+                    if SpiCpha_g = 1 then
                         v.Spi_Mosi := r.MosiNext;
                     else
-                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
+                        shiftReg(r.shiftReg, v.shiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                     end if;
                 end if;
                 -- Clock period handling
@@ -240,7 +241,7 @@ begin
                     v.State  := Idle_s;
                     v.Busy   := '0';
                     v.Done   := '1';
-                    v.RdData := r.ShiftReg;
+                    v.RdData := r.shiftReg;
                 else
                     v.CsHighCnt := r.CsHighCnt + 1;
                 end if;
@@ -274,7 +275,7 @@ begin
             if Rst = '1' then
                 r.State    <= Idle_s;
                 r.Spi_Cs_n <= (others => '1');
-                r.Spi_Sclk <= GetClockLevel(false);
+                r.Spi_Sclk <= getClockLevel(false);
                 r.Busy     <= '0';
                 r.Done     <= '0';
                 r.Spi_Mosi <= MosiIdleState_g;

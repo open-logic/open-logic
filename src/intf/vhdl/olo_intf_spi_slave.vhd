@@ -26,8 +26,8 @@ library work;
 entity olo_intf_spi_slave is
     generic (
         TransWidth_g                : positive             := 32;
-        SpiCPOL_g                   : natural range 0 to 1 := 0;
-        SpiCPHA_g                   : natural range 0 to 1 := 0;
+        SpiCpol_g                   : natural range 0 to 1 := 0;
+        SpiCpha_g                   : natural range 0 to 1 := 0;
         LsbFirst_g                  : boolean              := false;
         ConsecutiveTransactions_g   : boolean              := false;
         InternalTriState_g          : boolean              := true
@@ -69,7 +69,7 @@ architecture rtl of olo_intf_spi_slave is
     type State_t is (Idle_s, LatchTx_s, WaitSampleEdge_s, WaitInactiveEdge_s, WaitCsHigh_s);
 
     -- *** Two Process Method ***
-    type two_process_r is record
+    type TwoProcess_r is record
         SpiCsnLast      : std_logic;
         SpiSclkLast     : std_logic;
         State           : State_t;
@@ -88,7 +88,8 @@ architecture rtl of olo_intf_spi_slave is
         RxOutput        : std_logic;
         DataLatched     : std_logic;
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_r;
 
     -- *** Instantiation Signals ***
     signal SpiMosi_i : std_logic;
@@ -104,7 +105,7 @@ begin
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
     p_comb : process (r, Tx_Data, Tx_Valid, SpiSclk_i, SpiMosi_i, SpiCsn_i) is
-        variable v                  : two_process_r;
+        variable v                  : TwoProcess_r;
         variable CsnRe_v, CsnFe_v   : std_logic;
         variable SclkRe_v, SclkFe_v : std_logic;
         variable SampleEdge_v       : std_logic;
@@ -139,7 +140,7 @@ begin
         end if;
         v.SpiSclkLast := SpiSclk_i;
         -- Define Clock Edges
-        if SpiCPOL_g = SpiCPHA_g then
+        if SpiCpol_g = SpiCpha_g then
             SampleEdge_v  := SclkRe_v;
             TrasmitEdge_v := SclkFe_v;
         else
@@ -170,7 +171,7 @@ begin
                     v.DataLatched := '1';
                 end if;
                 -- For CPHA=0, data bust be valid on falling edge of CS immediately
-                if SpiCPHA_g = 0 and not r.IsConsecutive then
+                if SpiCpha_g = 0 and not r.IsConsecutive then
                     LeaveState_v := true;
                 -- For CPHA=1, data must be valid latest on transmit edge of SCLK
                 -- Same applies for Consecutive Transactions
@@ -274,10 +275,14 @@ begin
     Resp_Sent     <= r.Resp_Sent;
     Resp_Aborted  <= r.Resp_Aborted;
     Resp_CleanEnd <= r.Resp_CleanEnd;
-    g_intTristate : if InternalTriState_g generate
+
+    -- Inernal Tri-State Buffers
+    g_int_tristate : if InternalTriState_g generate
         Spi_Miso <= r.SpiMisoData when r.SpiMisoTristate = '0' else 'Z';
     end generate;
-    g_extTristate : if not InternalTriState_g generate
+
+    -- External Tri-State Buffers
+    g_ext_tristate : if not InternalTriState_g generate
         Spi_Miso_o <= r.SpiMisoData;
         Spi_Miso_t <= r.SpiMisoTristate;
     end generate;
@@ -303,7 +308,7 @@ begin
     -- Component Instantiation
     -----------------------------------------------------------------------------------------------
     -- SPI Input synchronization
-    blk_sync : block is
+    b_sync : block is
         signal SyncIn, SyncOut : std_logic_vector(2 downto 0);
     begin
         -- Input assembly
@@ -312,7 +317,7 @@ begin
         SyncIn(2) <= Spi_Cs_n;
 
         -- Instance
-        spi_sync : entity work.olo_intf_sync
+        i_sync : entity work.olo_intf_sync
             generic map (
                 Width_g     => 3,
                 RstLevel_g  => '1'

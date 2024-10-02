@@ -22,7 +22,7 @@ library olo;
     use olo.olo_base_pkg_logic.all;
 
 library osvvm;
-    use osvvm.randompkg.all;
+    use osvvm.RandomPkg.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity

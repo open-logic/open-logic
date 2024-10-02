@@ -51,9 +51,9 @@ architecture struct of olo_intf_debounce is
 
     -- Time Constants
     -- Idea is to have a counter in the range 15-31 for each bit
-    constant TargetTickFrequency_c : real := 1.0/(DebounceTime_g/31.0);
-    constant TickCycles_c          : real := ceil(ClkFrequency_g/TargetTickFrequency_c);
-    constant ActualTickFrequency_c : real := ClkFrequency_g/TickCycles_c;
+    constant TargetTickFrequency_c : real    := 1.0/(DebounceTime_g/31.0);
+    constant TickCycles_c          : real    := ceil(ClkFrequency_g/TargetTickFrequency_c);
+    constant ActualTickFrequency_c : real    := ClkFrequency_g/TickCycles_c;
     constant DebounceTicks_c       : integer := integer(ceil(DebounceTime_g*ActualTickFrequency_c));
     constant UseStrobeDiv_c        : boolean := integer(TickCycles_c) >= 2;
 
@@ -64,16 +64,19 @@ architecture struct of olo_intf_debounce is
     signal DataSync : std_logic_vector(DataAsync'range);
     signal Tick     : std_logic;
 
-    -- Two Process Signals
+    -- Types
     subtype Cnt_t is integer range 0 to DebounceTicks_c;
     type Cnt_a is array (0 to Bits_c-1) of Cnt_t;
-    type two_process_r is record
+
+    -- Two process record
+    type TwoProcess_r is record
         StableCnt : Cnt_a;
         LastState : std_logic_vector(Bits_c-1 downto 0);
         IsStable  : std_logic_vector(Bits_c-1 downto 0);
         DataOut   : std_logic_vector(Bits_c-1 downto 0);
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_r;
 
 begin
 
@@ -87,8 +90,8 @@ begin
         severity failure;
 
     -- *** Combinatorial Process ***
-    i_comb : process (r, DataSync, Tick) is
-        variable v : two_process_r;
+    p_comb : process (r, DataSync, Tick) is
+        variable v : TwoProcess_r;
     begin
         -- Hold variables stable
         v := r;
@@ -126,6 +129,8 @@ begin
                 end if;
             end if;
         end loop;
+
+        -- Update last state
         v.LastState := DataSync;
 
         -- Outputs
@@ -136,7 +141,7 @@ begin
     end process;
 
     -- *** Sequential Process ***
-    i_seq : process (Clk) is
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- normal operation
@@ -167,6 +172,7 @@ begin
 
     -- Tick Generator
     g_use_strobe : if UseStrobeDiv_c generate
+
         i_tickgen : entity work.olo_base_strobe_gen
             generic map (
                 FreqClkHz_g    => ClkFrequency_g,
@@ -177,6 +183,7 @@ begin
                 Rst         => Rst,
                 Out_Valid   => Tick
             );
+
     end generate;
 
     g_no_strobe : if not UseStrobeDiv_c generate

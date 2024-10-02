@@ -46,42 +46,42 @@ architecture sim of olo_intf_spi_master_tb is
     -----------------------------------------------------------------------------------------------
     -- Fixed Generics
     -----------------------------------------------------------------------------------------------
-    constant SclkFreq_c      : real                      := real(BusFrequency_g);
-    constant MaxTransWidth_c : positive                  := 32;
-    constant CsHighTime_c    : real                      := 100.0e-9;
-    constant SlaveCnt_c      : positive                  := 2;
-    constant MosiIdleState_c : std_logic                 := '0';
+    constant SclkFreq_c      : real      := real(BusFrequency_g);
+    constant MaxTransWidth_c : positive  := 32;
+    constant CsHighTime_c    : real      := 100.0e-9;
+    constant SlaveCnt_c      : positive  := 2;
+    constant MosiIdleState_c : std_logic := '0';
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant Clk_Frequency_c : real    := 100.0e6;
-    constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;
+    constant Clk_Frequency_c : real := 100.0e6;
+    constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
     -- Contral Sginal
-    signal Clk            : std_logic                                                  := '0';
-    signal Rst            : std_logic                                                  := '0';
-    signal Cmd_Valid      : std_logic                                                  := '0';
+    signal Clk            : std_logic                                                := '0';
+    signal Rst            : std_logic                                                := '0';
+    signal Cmd_Valid      : std_logic                                                := '0';
     signal Cmd_Ready      : std_logic;
-    signal Cmd_Slave      : std_logic_vector(log2ceil(SlaveCnt_c) - 1 downto 0)        := (others => '0');
-    signal Cmd_Data       : std_logic_vector(MaxTransWidth_c - 1 downto 0)             := (others => '0');
-    signal Cmd_TransWidth : std_logic_vector(log2ceil(MaxTransWidth_c+1)-1 downto 0)   := (others => '0');
+    signal Cmd_Slave      : std_logic_vector(log2ceil(SlaveCnt_c) - 1 downto 0)      := (others => '0');
+    signal Cmd_Data       : std_logic_vector(MaxTransWidth_c - 1 downto 0)           := (others => '0');
+    signal Cmd_TransWidth : std_logic_vector(log2ceil(MaxTransWidth_c+1)-1 downto 0) := (others => '0');
     signal Resp_Valid     : std_logic;
     signal Resp_Data      : std_logic_vector(MaxTransWidth_c - 1 downto 0);
     signal Spi_Sclk       : std_logic;
     signal Spi_Mosi       : std_logic;
-    signal Spi_Miso       : std_logic                                                   := '0';
-    signal Spi_Cs_n       : std_logic_vector(SlaveCnt_c - 1 downto 0)                   := (others => '1');
+    signal Spi_Miso       : std_logic                                                := '0';
+    signal Spi_Cs_n       : std_logic_vector(SlaveCnt_c - 1 downto 0)                := (others => '1');
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
 
     -- *** Verification Compnents ***
-    constant slave0 : olo_test_spi_slave_t := new_olo_test_spi_slave(
+    constant Slave0_c : olo_test_spi_slave_t := new_olo_test_spi_slave(
         busFrequency    => SclkFreq_c,
         lsbFirst        => LsbFirst_g,
         maxTransWidth   => MaxTransWidth_c,
@@ -89,7 +89,7 @@ architecture sim of olo_intf_spi_master_tb is
         cpol            => SpiCpol_g
     );
 
-    constant slave1 : olo_test_spi_slave_t := new_olo_test_spi_slave(
+    constant Slave1_c : olo_test_spi_slave_t := new_olo_test_spi_slave(
         busFrequency    => SclkFreq_c,
         lsbFirst        => LsbFirst_g,
         maxTransWidth   => MaxTransWidth_c,
@@ -97,7 +97,7 @@ architecture sim of olo_intf_spi_master_tb is
         cpol            => SpiCpol_g
     );
 
-    procedure SendCommand (
+    procedure sendCommand (
             SlaveIdx              : integer;
             TxData                : std_logic_vector;
             signal Cmd_Slave      : out std_logic_vector;
@@ -107,17 +107,20 @@ architecture sim of olo_intf_spi_master_tb is
     begin
         wait until rising_edge(Clk);
         check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
-        Cmd_Slave <= toUslv(SlaveIdx, Cmd_Slave'length);
-        Cmd_Valid <= '1';
+        Cmd_Slave                      <= toUslv(SlaveIdx, Cmd_Slave'length);
+        Cmd_Valid                      <= '1';
         Cmd_Data(TxData'high downto 0) <= TxData;
-        Cmd_TransWidth <= toUslv(TxData'length, Cmd_TransWidth'length);
+        Cmd_TransWidth                 <= toUslv(TxData'length, Cmd_TransWidth'length);
+
         wait until rising_edge(Clk);
         Cmd_Valid <= '0';
+
         wait until falling_edge(Clk);
         check_equal(Cmd_Ready, '0', "Cmd_Ready not de-asserted");
+
     end procedure;
 
-    procedure CheckResponse (
+    procedure checkResponse (
             RxData : std_logic_vector) is
     begin
         wait until rising_edge(Clk) and Resp_Valid = '1';
@@ -162,65 +165,66 @@ begin
                 -- Cmd_Slave Expectation
                 Tx32_v := X"12345678";
                 Rx32_v := X"DEADBEEF";
-                spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => Tx32_v, data_miso => Rx32_v);
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => Tx32_v, data_miso => Rx32_v);
 
                 -- Send command
-                SendCommand(0, Tx32_v, Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
-                CheckResponse(Rx32_v);
+                sendCommand(0, Tx32_v, Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                checkResponse(Rx32_v);
             end if;
 
             if run("ReducedWidthTransfer") then
                 -- Cmd_Slave Expectation
                 Tx16_v := X"11AA";
                 Rx16_v := X"EE33";
-                spi_slave_push_transaction (net, slave0, 16, data_mosi => Tx16_v, data_miso => Rx16_v);
+                spi_slave_push_transaction (net, Slave0_c, 16, data_mosi => Tx16_v, data_miso => Rx16_v);
 
                 -- Send command
-                SendCommand(0, Tx16_v, Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
-                CheckResponse(Rx16_v);
+                sendCommand(0, Tx16_v, Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                checkResponse(Rx16_v);
             end if;
 
             -- *** Cmd_Slave Selection ***
             if run("SlaveSelection") then
                 -- Cmd_Slave Expectation
-                spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => X"11111111", data_miso => X"22222222");
-                spi_slave_push_transaction (net, slave1, MaxTransWidth_c, data_mosi => X"33333333", data_miso => X"44444444");
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => X"11111111", data_miso => X"22222222");
+                spi_slave_push_transaction (net, Slave1_c, MaxTransWidth_c, data_mosi => X"33333333", data_miso => X"44444444");
 
                 -- Cmd_Slave 1 Transfer
-                SendCommand(1, X"33333333", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
-                CheckResponse(X"44444444");
+                sendCommand(1, X"33333333", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                checkResponse(X"44444444");
 
                 -- Cmd_Slave 0 Transfer
-                SendCommand(0, X"11111111", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
-                CheckResponse(X"22222222");
+                sendCommand(0, X"11111111", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                checkResponse(X"22222222");
             end if;
 
             -- *** Edge Cases ***
             if run("Cmd_ValidWhileBusy") then
                 -- Cmd_Slave Expectation
-                spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => X"AAAAAAAA", data_miso => X"BBBBBBBB");
-                spi_slave_push_transaction (net, slave0, MaxTransWidth_c, data_mosi => X"CCCCCCCC", data_miso => X"DDDDDDDD");
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => X"AAAAAAAA", data_miso => X"BBBBBBBB");
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => X"CCCCCCCC", data_miso => X"DDDDDDDD");
 
                 -- Send command 1 (and start during busy)
-                SendCommand(0, X"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                sendCommand(0, X"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
                 check_equal(Cmd_Ready, '0', "Cmd_Ready not de-asserted");
                 wait until rising_edge(Clk);
                 Cmd_Valid <= '1';
                 wait until rising_edge(Clk);
                 Cmd_Valid <= '0';
-                CheckResponse(X"BBBBBBBB");
+                checkResponse(X"BBBBBBBB");
 
                 -- Send Command 2
-                SendCommand(0, X"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
-                CheckResponse(X"DDDDDDDD");
+                sendCommand(0, X"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                checkResponse(X"DDDDDDDD");
             end if;
 
             -- *** Wait until done ***
-            wait_until_idle(net, as_sync(slave0));
-            wait_until_idle(net, as_sync(slave1));
+            wait_until_idle(net, as_sync(Slave0_c));
+            wait_until_idle(net, as_sync(Slave1_c));
             wait for 10 us;
 
         end loop;
+
         -- TB done
         test_runner_cleanup(runner);
     end process;
@@ -239,8 +243,8 @@ begin
             SclkFreq_g      => SclkFreq_c,
             MaxTransWidth_g => MaxTransWidth_c,
             CsHighTime_g    => CsHighTime_c,
-            SpiCPOL_g       => SpiCPOL_g,
-            SpiCPHA_g       => SpiCPHA_g,
+            SpiCPol_g       => SpiCPOL_g,
+            SpiCPha_g       => SpiCPHA_g,
             SlaveCnt_g      => SlaveCnt_c,
             LsbFirst_g      => LsbFirst_g,
             MosiIdleState_g => MosiIdleState_c
@@ -270,7 +274,7 @@ begin
     -----------------------------------------------------------------------------------------------
     vc_slave0 : entity work.olo_test_spi_slave_vc
         generic map (
-            instance => slave0
+            Instance => Slave0_c
         )
         port map (
             Sclk     => Spi_Sclk,
@@ -281,7 +285,7 @@ begin
 
     vc_slave1 : entity work.olo_test_spi_slave_vc
         generic map (
-            instance => slave1
+            Instance => Slave1_c
         )
         port map (
             Sclk     => Spi_Sclk,

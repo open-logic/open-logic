@@ -169,6 +169,7 @@ begin
                 check_equal(DataOut(0), IdleLevel_c, "Wrong initial value");
                 -- Toggle value
                 DataAsync(0) <= not IdleLevel_c;
+
                 -- bounce phase
                 for i in 0 to  5 loop
                     -- Check value
@@ -183,11 +184,13 @@ begin
                     -- Toggle Signal
                     DataAsync(0) <= not DataAsync(0);
                 end loop;
+
                 -- wait for minimum time
                 wait for MaxDetTime_c;
                 check_equal(DataOut(0), not IdleLevel_c, "Pulse Value wrong");
                 -- End of pulse
                 DataAsync(0) <= IdleLevel_c;
+
                 -- bounce phase
                 for i in 0 to  5 loop
                     -- Check value
@@ -202,6 +205,7 @@ begin
                     -- Toggle Signal
                     DataAsync(0) <= not DataAsync(0);
                 end loop;
+
                 wait for MaxDetTime_c;
                 check_equal(DataOut(0), IdleLevel_c, "Idle Value wrong after pulse");
             end if;
@@ -246,10 +250,12 @@ begin
         test_runner_cleanup(runner);
     end process;
 
+    -- Continuously bounce DataAsync(1) when requested by main process
     p_other : process is
     begin
         wait until rising_edge(Clk);
         if BounceOhter then
+
             loop
                 wait for Time_Debounce_c*0.1;
                 DataAsync(1) <= not  DataAsync(1);
@@ -257,6 +263,7 @@ begin
                     exit;
                 end if;
             end loop;
+
             DataAsync(1) <= IdleLevel_c;
         end if;
     end process;

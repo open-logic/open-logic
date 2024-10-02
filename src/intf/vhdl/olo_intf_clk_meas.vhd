@@ -75,7 +75,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Master Clock Process
     -----------------------------------------------------------------------------------------------
-    p_rstGen : process (Clk) is
+    p_control : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- *** Normal Operation ***
