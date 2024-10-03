@@ -119,7 +119,7 @@ end entity;
 architecture rtl of olo_axi_master_simple is
 
     -- *** Constants ***
-    constant UnusedAddrBits_c : natural                      := log2(AxiDataWidth_g / 8);
+    constant UnusedAddrBits_c : natural := log2(AxiDataWidth_g / 8);
 
     constant BeatsBits_c       : natural := log2ceil(AxiMaxBeats_g + 1);
     subtype Trans_AddrRange_c is natural range CmdWr_Addr'high downto 0;
@@ -129,14 +129,14 @@ architecture rtl of olo_axi_master_simple is
     constant MaxBeatsNoCmd_c   : natural := max(AxiMaxBeats_g * AxiMaxOpenTransactions_g, DataFifoDepth_g);
 
     -- *** Type Definitions ***
-    type WriteTfGen_s is (Idle_s, MaxCalc_s, GenTf_s, WriteTf_s);
-    type ReadTfGen_s is (Idle_s, MaxCalc_s, GenTf_s, WriteTf_s);
-    type AwFsm_s is (Idle_s, Wait_s);
-    type ArFsm_s is (Idle_s, Wait_s);
-    type WFsm_s is (Idle_s, NonLast_s, Last_s);
+    type WriteTfGen_t is (Idle_s, MaxCalc_s, GenTf_s, WriteTf_s);
+    type ReadTfGen_t is (Idle_s, MaxCalc_s, GenTf_s, WriteTf_s);
+    type AwFsm_t is (Idle_s, Wait_s);
+    type ArFsm_t is (Idle_s, Wait_s);
+    type WrFsm_t is (Idle_s, NonLast_s, Last_s);
 
     -- *** Functions ***
-    function AddrMasked_f (Addr : in std_logic_vector) return std_logic_vector is
+    function addrMasked (Addr : in std_logic_vector) return std_logic_vector is
         variable Masked_v : std_logic_vector(Addr'range);
     begin
         Masked_v                                := Addr;
@@ -145,14 +145,14 @@ architecture rtl of olo_axi_master_simple is
     end function;
 
     -- *** Two Process Record ***
-    type two_process_r is record
+    type TwoProcess_r is record
         -- *** Write Related Registers ***
         -- Command Interface
         CmdWr_Ready     : std_logic;
         Wr_Error        : std_logic;
         Wr_Done         : std_logic;
         -- Generate Write Transactions
-        WriteTfGenState : WriteTfGen_s;
+        WriteTfGenState : WriteTfGen_t;
         WrAddr          : unsigned(CmdWr_Addr'range);
         WrBeats         : unsigned(CmdWr_Size'range);
         WrLowLat        : std_logic;
@@ -161,14 +161,14 @@ architecture rtl of olo_axi_master_simple is
         WrTfVld         : std_logic;
         WrTfIsLast      : std_logic;
         -- Execute Aw Commands
-        AwFsm           : AwFsm_s;
+        AwFsm           : AwFsm_t;
         AwFsmRdy        : std_logic;
         AwCmdSent       : std_logic;
         AwCmdSize       : unsigned(BeatsBits_c - 1 downto 0);
         AwCmdSizeMin1   : unsigned(BeatsBits_c - 1 downto 0); -- AwCmdSize-1 for timing optimization reasons
         WDataFifoWrite  : std_logic;
         -- Execute W Data
-        WFsm            : WFsm_s;
+        WFsm            : WrFsm_t;
         WDataFifoRd     : std_logic;
         WDataEna        : std_logic;
         WDataBeats      : unsigned(BeatsBits_c - 1 downto 0);
@@ -189,7 +189,7 @@ architecture rtl of olo_axi_master_simple is
         Rd_Error        : std_logic;
         Rd_Done         : std_logic;
         -- Generate Read Transactions
-        ReadTfGenState  : ReadTfGen_s;
+        ReadTfGenState  : ReadTfGen_t;
         RdAddr          : unsigned(CmdRd_Addr'range);
         RdBeats         : unsigned(CmdRd_Size'range);
         RdLowLat        : std_logic;
@@ -198,7 +198,7 @@ architecture rtl of olo_axi_master_simple is
         RdTfVld         : std_logic;
         RdTfIsLast      : std_logic;
         -- Execute Ar Commands
-        ArFsm           : ArFsm_s;
+        ArFsm           : ArFsm_t;
         ArFsmRdy        : std_logic;
         ArCmdSent       : std_logic;
         ArCmdSize       : unsigned(BeatsBits_c - 1 downto 0);
@@ -214,7 +214,8 @@ architecture rtl of olo_axi_master_simple is
         M_Axi_ArLen     : std_logic_vector(M_Axi_ArLen'range);
         M_Axi_ArValid   : std_logic;
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_r;
 
     -- *** Instantiation Signals ***
     signal WrDataFifoORdy    : std_logic;
@@ -246,11 +247,12 @@ begin
         severity failure;
 
     -- *** Combinatorial Process ***
+    -- vsg_off length_003 -- This process is long but this is accepted because it is proven code from psi_common
     p_comb : process (r, M_Axi_AwReady, M_Axi_BValid, M_Axi_BResp, WrDataFifoORdy, WrDataFifoOVld, WrTransFifoOutVld,
-                     WrTransFifoBeats, WrRespIsLast, WrRespFifoVld, CmdWr_Addr, CmdWr_Size, CmdWr_LowLat, CmdWr_Valid,
-                     Wr_Valid, WrData_Rdy_I, M_Axi_ArReady, RdRespIsLast, RdRespFifoVld, RdRespLast, CmdRd_Addr,
-                     CmdRd_Size, CmdRd_LowLat, CmdRd_Valid, Rd_Ready, RdDat_Vld_I, M_Axi_RResp) is
-        variable v               : two_process_r;
+                      WrTransFifoBeats, WrRespIsLast, WrRespFifoVld, CmdWr_Addr, CmdWr_Size, CmdWr_LowLat, CmdWr_Valid,
+                      Wr_Valid, WrData_Rdy_I, M_Axi_ArReady, RdRespIsLast, RdRespFifoVld, RdRespLast, CmdRd_Addr,
+                      CmdRd_Size, CmdRd_LowLat, CmdRd_Valid, Rd_Ready, RdDat_Vld_I, M_Axi_RResp) is
+        variable v               : TwoProcess_r;
         variable WrMax4kBeats_v  : unsigned(13 - UnusedAddrBits_c downto 0);
         variable RdMax4kBeats_v  : unsigned(13 - UnusedAddrBits_c downto 0);
         variable Stdlv9Bit_v     : std_logic_vector(8 downto 0);
@@ -263,14 +265,16 @@ begin
         -- *** Write Related Code ***
         if ImplWrite_g then
 
-            -- Write Transfer Generation
+            -- Default Value
             WrMax4kBeats_v := (others => '0');
+
+            -- Write Transfer Generation FSM
             case r.WriteTfGenState is
                 when Idle_s =>
                     v.CmdWr_Ready := '1';
                     if (r.CmdWr_Ready = '1') and (CmdWr_Valid = '1') then
                         v.CmdWr_Ready     := '0';
-                        v.WrAddr          := unsigned(AddrMasked_f(CmdWr_Addr));
+                        v.WrAddr          := unsigned(addrMasked(CmdWr_Addr));
                         v.WrBeats         := unsigned(CmdWr_Size);
                         v.WrLowLat        := CmdWr_LowLat;
                         v.WriteTfGenState := MaxCalc_s;
@@ -314,11 +318,14 @@ begin
 
             end case;
 
-            -- AW Command Generation
+            -- ADefault Value
             v.AwCmdSent := '0';
+
+            -- AW generation FSM
             case r.AwFsm is
                 when Idle_s =>
-                    if ((r.WrLowLat = '1') or (r.WrBeatsNoCmd >= signed('0' & r.WrTfBeats))) and (r.WrOpenTrans < AxiMaxOpenTransactions_g) and (r.WrTfVld = '1') then
+                    if ((r.WrLowLat = '1') or (r.WrBeatsNoCmd >= signed('0' & r.WrTfBeats))) and
+                       (r.WrOpenTrans < AxiMaxOpenTransactions_g) and (r.WrTfVld = '1') then
                         v.AwFsmRdy := '1';
                     end if;
                     if (r.AwFsmRdy = '1') and (r.WrTfVld = '1') then
@@ -362,10 +369,12 @@ begin
                 v.WrBeatsNoCmd := r.WrBeatsNoCmd + 1;
             end if;
 
-            -- W Data Generation
+            -- Default Values
             WDataTransfer_v := (r.WDataEna = '1') and (WrDataFifoOVld = '1') and (WrDataFifoORdy = '1');
             v.WDataFifoRd   := '0';
             StartWBurst_v   := false;
+
+            -- W generation FSM
             case r.WFsm is
                 when Idle_s =>
                     if WrTransFifoOutVld = '1' then
@@ -400,6 +409,7 @@ begin
                 -- coverage on
 
             end case;
+
             -- implementation of shared code
             if StartWBurst_v then
                 v.WDataFifoRd := '1';
@@ -414,9 +424,11 @@ begin
                 end if;
             end if;
 
-            -- W Response Generation
+            -- Default values
             v.Wr_Done  := '0';
             v.Wr_Error := '0';
+
+            -- W response FSM
             if M_Axi_BValid = '1' then
                 assert WrRespFifoVld = '1'
                     report "###ERROR###: olo_axi_master_simple internal error --> WrRespFifo Empty"
@@ -440,14 +452,16 @@ begin
         -- *** Read Related Code ***
         if ImplRead_g then
 
-            -- Read Transfer Generation
+            -- Default Values
             RdMax4kBeats_v := (others => '0');
+
+            -- Read generation FSM
             case r.ReadTfGenState is
                 when Idle_s =>
                     v.CmdRd_Ready := '1';
                     if (r.CmdRd_Ready = '1') and (CmdRd_Valid = '1') then
                         v.CmdRd_Ready    := '0';
-                        v.RdAddr         := unsigned(AddrMasked_f(CmdRd_Addr));
+                        v.RdAddr         := unsigned(addrMasked(CmdRd_Addr));
                         v.RdBeats        := unsigned(CmdRd_Size);
                         v.RdLowLat       := CmdRd_LowLat;
                         v.ReadTfGenState := MaxCalc_s;
@@ -491,11 +505,14 @@ begin
 
             end case;
 
-            -- AR Command Generation
+            -- Default Values
             v.ArCmdSent := '0';
+
+            -- AR Generation FSM
             case r.ArFsm is
                 when Idle_s =>
-                    if ((r.RdLowLat = '1') or (r.RdFifoSpaceFree >= signed('0' & r.RdTfBeats))) and (r.RdOpenTrans < AxiMaxOpenTransactions_g) and (r.RdTfVld = '1') then
+                    if ((r.RdLowLat = '1') or (r.RdFifoSpaceFree >= signed('0' & r.RdTfBeats))) and
+                       (r.RdOpenTrans < AxiMaxOpenTransactions_g) and (r.RdTfVld = '1') then
                         v.ArFsmRdy := '1';
                     end if;
                     if (r.ArFsmRdy = '1') and (r.RdTfVld = '1') then
@@ -540,8 +557,11 @@ begin
             end if;
 
             -- *** R Response Generation ***
+            -- Default Values
             v.Rd_Done  := '0';
             v.Rd_Error := '0';
+
+            -- FSM
             if RdRespLast = '1' then
                 assert RdRespFifoVld = '1'
                     report "###ERROR###: olo_axi_master_simple internal error --> RdRespFifo Empty"
@@ -564,7 +584,7 @@ begin
 
         -- *** Update Signal ***
         r_next <= v;
-    end process;
+    end process; -- vsg_on
 
     -- *** Registered Process ***
     p_reg : process (Clk) is
@@ -646,8 +666,11 @@ begin
     -- *** Write FIFOs ***
     g_write : if ImplWrite_g generate
 
-        -- FIFO for data transfer FSM
+        -- *** FIFO for data transfer FSM ***
+        -- Generate Valid
         WrTransFifoInVld <= r.AwFsmRdy and r.WrTfVld;
+
+        -- Instance
         i_fifo_wr_trans : entity work.olo_base_fifo_sync
             generic map (
                 Width_g        => BeatsBits_c,
@@ -665,13 +688,16 @@ begin
                 Out_Ready   => r.WDataFifoRd
             );
 
-        -- Write Data FIFO
+        -- *** Write Data FIFO ***
         b_fifo_wr_data : block is
             signal InData  : std_logic_vector(Wr_Data'length + Wr_Be'length - 1 downto 0);
             signal OutData : std_logic_vector(InData'range);
         begin
+            -- Assemble input
             InData(Wr_Data'high downto Wr_Data'low)                     <= Wr_Data;
             InData(Wr_Data'high + Wr_Be'length downto Wr_Data'high + 1) <= Wr_Be;
+
+            -- Instance
             i_fifo_wr_data : entity work.olo_base_fifo_sync
                 generic map (
                     Width_g         => Wr_Data'length + Wr_Be'length,
@@ -688,13 +714,13 @@ begin
                     Out_Valid   => WrDataFifoOVld,
                     Out_Ready   => WrDataFifoORdy
                 );
-            M_Axi_WData <= OutData(Wr_Data'high downto Wr_Data'low);
-            M_Axi_WStrb <= OutData(Wr_Data'high + Wr_Be'length downto Wr_Data'high + 1);
 
+            -- Disassemble output
+            M_Axi_WData    <= OutData(Wr_Data'high downto Wr_Data'low);
+            M_Axi_WStrb    <= OutData(Wr_Data'high + Wr_Be'length downto Wr_Data'high + 1);
             M_Axi_WValid   <= WrDataFifoOVld and r.WDataEna;
             WrDataFifoORdy <= M_Axi_WReady and r.WDataEna;
-
-            Wr_Ready <= WrData_Rdy_I;
+            Wr_Ready       <= WrData_Rdy_I;
         end block;
 
         -- FIFO for write response FSM
@@ -714,6 +740,7 @@ begin
                 Out_Valid   => WrRespFifoVld,
                 Out_Ready   => M_Axi_BValid
             );
+
     end generate;
 
     -- Tie signals to ground if read not implemented
@@ -761,9 +788,11 @@ begin
             M_Axi_RReady <= M_Axi_RReady_I;
         end block;
 
-        -- FIFO for read response FSM
+        -- Assemble FIFO input
         RdTransFifoInVld <= r.ArFsmRdy and r.RdTfVld;
         RdRespLast       <= M_Axi_RValid and M_Axi_RReady_I and M_Axi_RLast;
+
+        -- FIFO instance
         i_fifo_rd_resp : entity work.olo_base_fifo_sync
             generic map (
                 Width_g        => 1,

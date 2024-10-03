@@ -239,6 +239,8 @@ begin
         severity failure;
 
     -- *** Combinatorial Process ***
+    -- vsg_off length_003 -- The process is long but in this case this is accepted because it is proven existing code
+    --                       from psi_common
     p_comb : process (r,
                       CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat,
                       AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data,
@@ -285,6 +287,7 @@ begin
                         v.CmdWr_Ready   := '1';
                         v.AxiWrCmd_Size := std_logic_vector(resize(shift_right(alignedAddr(r.WrLastAddr) - unsigned(r.AxiWrCmd_Addr), log2(AxiBytes_c)) + 1,
                                                                    UserTransactionSizeBits_g));
+
                         -- Calculate byte enables for last word
                         for byte in 0 to AxiBytes_c - 1 loop
                             if r.WrLastAddr(log2(AxiBytes_c) - 1 downto 0) >= byte then
@@ -293,6 +296,7 @@ begin
                                 v.WrLastBe(byte) := '0';
                             end if;
                         end loop;
+
                     end if;
 
                 -- coverage off
@@ -335,6 +339,7 @@ begin
             -- *** Alignment FSM ***
             -- Initial values
             WrDataEna <= '0';
+
             -- Word- to Byte-Enable conversion
             for i in 0 to AxiBytes_c - 1 loop
                 WriteBe_v(i) := WrData_We(i / UserDataWidth_g);
@@ -445,6 +450,7 @@ begin
                         v.RdStartTf     := '1';
                         v.AxiRdCmd_Size := std_logic_vector(resize(shift_right(alignedAddr(r.RdLastAddr) - unsigned(r.AxiRdCmd_Addr), log2(AxiBytes_c)) + 1,
                                                                    UserTransactionSizeBits_g));
+
                         -- Calculate byte enables for last byte
                         for byte in 0 to AxiBytes_c - 1 loop
                             if r.RdLastAddr(log2(AxiBytes_c) - 1 downto 0) >= byte then
@@ -453,6 +459,7 @@ begin
                                 v.RdLastBe(byte) := '0';
                             end if;
                         end loop;
+
                         -- Calculate byte enables for first byte
                         for byte in 0 to AxiBytes_c - 1 loop
                             if r.RdFirstAddrOffs <= byte then
@@ -461,6 +468,7 @@ begin
                                 v.RdFirstBe(byte) := '0';
                             end if;
                         end loop;
+
                     end if;
 
                 -- Start data FSM before sending next command to avoid owerwriting data before it was latched
@@ -551,7 +559,7 @@ begin
 
         -- *** Update Signal ***
         r_next <= v;
-    end process;
+    end process; -- vsg_on
 
     -- *** Registered Process ***
     p_reg : process (Clk) is
@@ -729,8 +737,10 @@ begin
     g_read : if ImplRead_g generate
         signal InData, OutData : std_logic_vector(UserDataWidth_g downto 0);
     begin
-        -- Read Data pipeline stage (for improved timing)
+        -- Input assembly
         InData <= RdPl_Last & RdPl_Data;
+
+        -- Instance
         i_pl_rd_data : entity work.olo_base_pl_stage
             generic map (
                 Width_g     => UserDataWidth_g+1
@@ -745,6 +755,8 @@ begin
                 Out_Valid   => Rd_Valid,
                 Out_Ready   => Rd_Ready
             );
+
+        -- Output disassembly
         Rd_Last <= OutData(UserDataWidth_g);
         Rd_Data <= OutData(UserDataWidth_g-1 downto 0);
 
