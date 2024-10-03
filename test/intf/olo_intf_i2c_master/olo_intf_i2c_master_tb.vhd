@@ -120,7 +120,7 @@ architecture sim of olo_intf_i2c_master_tb is
         push(Msg_v, SetAck);
         push(Msg_v, Ack);
         push(Msg_v, Delay);
-        push(CmdQueue_c, msg);
+        push(CmdQueue_c, Msg_v);
     end procedure;
 
     constant NoData_c : std_logic_vector(7 downto 0) := (others => 'X');
@@ -401,10 +401,10 @@ begin
                 i2c_expect_rx_byte(net, I2cSlave_c, 16#42#, msg => "data slave");
                 i2c_expect_stop(net, I2cSlave_c, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master, msg => "start master");
-                i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#42#, delay => 100 ns, msg => "data master");
-                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
+                i2c_expect_start(net, I2cMaster_c, msg => "start master");
+                i2c_force_master_mode(net, I2cMaster_c);
+                i2c_push_tx_byte(net, I2cMaster_c, 16#42#, delay => 100 ns, msg => "data master");
+                i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
                 pushCommand(CMD_START);
                 pushCommand(CMD_SEND, true, X"42", true);
@@ -424,10 +424,10 @@ begin
                 i2c_expect_rx_byte(net, I2cSlave_c, 16#87#, msg => "data slave");
                 i2c_expect_stop(net, I2cSlave_c, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master, msg => "start master");
-                i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#87#, delay => 100 ns, msg => "data master");
-                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
+                i2c_expect_start(net, I2cMaster_c, msg => "start master");
+                i2c_force_master_mode(net, I2cMaster_c);
+                i2c_push_tx_byte(net, I2cMaster_c, 16#87#, delay => 100 ns, msg => "data master");
+                i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
                 pushCommand(CMD_START);
                 pushCommand(CMD_SEND, true, X"A3", true);
@@ -449,11 +449,11 @@ begin
                 i2c_expect_rx_byte(net, I2cSlave_c, 16#12#, msg => "byte 1 slave"); -- from VC master
                 i2c_expect_stop(net, I2cSlave_c, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master, msg => "start master");
-                i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#A3#, delay => 100 ns, msg => "byte 0 master");
-                i2c_push_tx_byte(net, i2c_master, 16#12#, delay => 100 ns, msg => "byte 1 master");
-                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
+                i2c_expect_start(net, I2cMaster_c, msg => "start master");
+                i2c_force_master_mode(net, I2cMaster_c);
+                i2c_push_tx_byte(net, I2cMaster_c, 16#A3#, delay => 100 ns, msg => "byte 0 master");
+                i2c_push_tx_byte(net, I2cMaster_c, 16#12#, delay => 100 ns, msg => "byte 1 master");
+                i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
                 pushCommand(CMD_START);
                 pushCommand(CMD_SEND, true, X"A3", true);
@@ -475,11 +475,11 @@ begin
                 i2c_expect_rx_byte(net, I2cSlave_c, 16#12#, msg => "byte 1 slave"); -- from VC master
                 i2c_expect_stop(net, I2cSlave_c, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master, msg => "start master");
-                i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#A3#, delay => 100 ns, msg => "byte 0 master");
-                i2c_push_tx_byte(net, i2c_master, 16#12#, delay => 100 ns, msg => "byte 1 master");
-                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
+                i2c_expect_start(net, I2cMaster_c, msg => "start master");
+                i2c_force_master_mode(net, I2cMaster_c);
+                i2c_push_tx_byte(net, I2cMaster_c, 16#A3#, delay => 100 ns, msg => "byte 0 master");
+                i2c_push_tx_byte(net, I2cMaster_c, 16#12#, delay => 100 ns, msg => "byte 1 master");
+                i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
                 pushCommand(CMD_START);
                 pushCommand(CMD_SEND, true, X"A3", true);
@@ -502,10 +502,10 @@ begin
                 i2c_expect_rx_byte(net, I2cSlave_c, 16#A3#, msg => "data slave"); -- from both masters
                 i2c_expect_stop(net, I2cSlave_c, msg => "stop slave");            -- from VC master
                 -- I2C Master
-                i2c_expect_start(net, i2c_master, msg => "start master");
-                i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#A3#, delay => 100 ns, msg => "data master");
-                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
+                i2c_expect_start(net, I2cMaster_c, msg => "start master");
+                i2c_force_master_mode(net, I2cMaster_c);
+                i2c_push_tx_byte(net, I2cMaster_c, 16#A3#, delay => 100 ns, msg => "data master");
+                i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
                 pushCommand(CMD_START);
                 pushCommand(CMD_SEND, true, X"A3", true);
@@ -528,10 +528,10 @@ begin
                 i2c_expect_rx_byte(net, I2cSlave_c, 16#C3#, msg => "data slave");
                 i2c_expect_stop(net, I2cSlave_c, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master, msg => "start master");
-                i2c_force_master_mode(net, i2c_master);
-                i2c_push_tx_byte(net, i2c_master, 16#C3#, delay => 100 ns, msg => "data master");
-                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
+                i2c_expect_start(net, I2cMaster_c, msg => "start master");
+                i2c_force_master_mode(net, I2cMaster_c);
+                i2c_push_tx_byte(net, I2cMaster_c, 16#C3#, delay => 100 ns, msg => "data master");
+                i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
                 pushCommand(CMD_START);
                 pushCommand(CMD_SEND, true, X"E3", true);
@@ -552,10 +552,10 @@ begin
                 i2c_expect_repeated_start(net, I2cSlave_c, msg => "repstart slave");
                 i2c_expect_stop(net, I2cSlave_c, msg => "stop slave");
                 -- I2C Master
-                i2c_expect_start(net, i2c_master, msg => "start master");
-                i2c_force_master_mode(net, i2c_master);
-                i2c_push_repeated_start(net, i2c_master, delay => 100 ns, msg => "repstart master");
-                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
+                i2c_expect_start(net, I2cMaster_c, msg => "start master");
+                i2c_force_master_mode(net, I2cMaster_c);
+                i2c_push_repeated_start(net, I2cMaster_c, delay => 100 ns, msg => "repstart master");
+                i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
                 pushCommand(CMD_START);
                 pushCommand(CMD_SEND, true, X"E3", true);
@@ -575,8 +575,8 @@ begin
                 i2c_expect_start(net, I2cSlave_c, msg => "start slave");
                 i2c_expect_stop(net, I2cSlave_c, msg => "stop slave");
                 -- I2C Master
-                i2c_push_start(net, i2c_master, delay => 100 ns, msg => "start master");
-                i2c_push_stop(net, i2c_master, delay => 100 ns, msg => "stop master");
+                i2c_push_start(net, I2cMaster_c, delay => 100 ns, msg => "start master");
+                i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
                 pushCommand(CMD_START, delay => 0.25 * Scl_Period_c);
                 pushCommand(CMD_STOP);
@@ -647,8 +647,8 @@ begin
                 -- I2C Slave
                 i2c_expect_start(net, I2cSlave_c, msg => "start slave");
                 -- I2C Master
-                i2c_push_start(net, i2c_master, msg => "start master");
-                i2c_force_bus_release(net, i2c_master);
+                i2c_push_start(net, I2cMaster_c, msg => "start master");
+                i2c_force_bus_release(net, I2cMaster_c);
                 -- Check Status
                 check_equal(Status_BusBusy, '0', "Status_BusBusy 0 start");
                 wait for 2*Scl_Period_c;
@@ -659,7 +659,7 @@ begin
 
             -- Wait for idle
             wait_until_idle(net, as_sync(I2cSlave_c));
-            wait_until_idle(net, as_sync(i2c_master));
+            wait_until_idle(net, as_sync(I2cMaster_c));
             wait for 50 us;
 
         end loop;
@@ -741,7 +741,7 @@ begin
 
     vc_master : entity work.olo_test_i2c_vc
         generic map (
-            Instance => i2c_master
+            Instance => I2cMaster_c
         )
         port map (
             Clk   => Clk,
