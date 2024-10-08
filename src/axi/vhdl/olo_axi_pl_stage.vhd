@@ -154,32 +154,32 @@ begin
 
     -- write address channel
     b_aw : block is
-        subtype AwProt_r is natural range S_AwProt'length-1 downto 0;
-        subtype AwCache_r is natural range S_AwCache'length+AwProt_r'high downto AwProt_r'high+1;
-        constant AwLock_r : natural := AwCache_r'high+1;
-        subtype AwBurst_r is natural range S_AwBurst'length+AwLock_r downto AwLock_r+1;
-        subtype AwSize_r is natural range S_AwSize'length+AwBurst_r'high downto AwBurst_r'high+1;
-        subtype AwLen_r is natural range S_AwLen'length+AwSize_r'high downto AwSize_r'high+1;
-        subtype AwAddr_r is natural range S_AwAddr'length+AwLen_r'high downto AwLen_r'high+1;
-        subtype AwId_r is natural range S_AwId'length+AwAddr_r'high downto AwAddr_r'high+1;
-        subtype AwQos_r is natural range S_AwQos'length+AwId_r'high downto AwId_r'high+1;
-        subtype AwUser_r is natural range S_AwUser'length+AwQos_r'high downto AwQos_r'high+1;
-        subtype AwRegion_r is natural range S_AwRegion'length+AwUser_r'high downto AwUser_r'high+1;
+        subtype  AwProtRng_c   is natural range S_AwProt'length-1                   downto 0;
+        subtype  AwCacheRng_c  is natural range S_AwCache'length+AwProtRng_c'high   downto AwProtRng_c'high+1;
+        constant AwLockIdx_C : natural := AwCacheRng_c'high+1;
+        subtype  AwBurstRng_c  is natural range S_AwBurst'length+AwLockIdx_C          downto AwLockIdx_C+1;
+        subtype  AwSizeRng_c   is natural range S_AwSize'length+AwBurstRng_c'high   downto AwBurstRng_c'high+1;
+        subtype  AwLenRng_c    is natural range S_AwLen'length+AwSizeRng_c'high     downto AwSizeRng_c'high+1;
+        subtype  AwAddrRng_c   is natural range S_AwAddr'length+AwLenRng_c'high     downto AwLenRng_c'high+1;
+        subtype  AwIdRng_c     is natural range S_AwId'length+AwAddrRng_c'high      downto AwAddrRng_c'high+1;
+        subtype  AwQosRng_c    is natural range S_AwQos'length+AwIdRng_c'high       downto AwIdRng_c'high+1;
+        subtype  AwUserRng_c   is natural range S_AwUser'length+AwQosRng_c'high     downto AwQosRng_c'high+1;
+        subtype  AwRegionRng_c is natural range S_AwRegion'length+AwUserRng_c'high  downto AwUserRng_c'high+1;
 
-        signal AwDataIn, AwDataOut : std_logic_vector(AwRegion_r'high downto 0);
+        signal AwDataIn, AwDataOut : std_logic_vector(AwRegionRng_c'high downto 0);
     begin
         -- map signals into one vector
-        AwDataIn(AwProt_r)   <= S_AwProt;
-        AwDataIn(AwCache_r)  <= S_AwCache;
-        AwDataIn(AwLock_r)   <= S_AwLock;
-        AwDataIn(AwBurst_r)  <= S_AwBurst;
-        AwDataIn(AwSize_r)   <= S_AwSize;
-        AwDataIn(AwLen_r)    <= S_AwLen;
-        AwDataIn(AwAddr_r)   <= S_AwAddr;
-        AwDataIn(AwId_r)     <= S_AwId;
-        AwDataIn(AwQos_r)    <= S_AwQos;
-        AwDataIn(AwUser_r)   <= S_AwUser;
-        AwDataIn(AwRegion_r) <= S_AwRegion;
+        AwDataIn(AwProtRng_c)   <= S_AwProt;
+        AwDataIn(AwCacheRng_c)  <= S_AwCache;
+        AwDataIn(AwLockIdx_C)   <= S_AwLock;
+        AwDataIn(AwBurstRng_c)  <= S_AwBurst;
+        AwDataIn(AwSizeRng_c)   <= S_AwSize;
+        AwDataIn(AwLenRng_c)    <= S_AwLen;
+        AwDataIn(AwAddrRng_c)   <= S_AwAddr;
+        AwDataIn(AwIdRng_c)     <= S_AwId;
+        AwDataIn(AwQosRng_c)    <= S_AwQos;
+        AwDataIn(AwUserRng_c)   <= S_AwUser;
+        AwDataIn(AwRegionRng_c) <= S_AwRegion;
 
         -- Pipeline stage
         i_pl : entity work.olo_base_pl_stage
@@ -200,34 +200,34 @@ begin
             );
 
         -- unmap signals from vector
-        M_AwProt   <= AwDataOut(AwProt_r);
-        M_AwCache  <= AwDataOut(AwCache_r);
-        M_AwLock   <= AwDataOut(AwLock_r);
-        M_AwBurst  <= AwDataOut(AwBurst_r);
-        M_AwSize   <= AwDataOut(AwSize_r);
-        M_AwLen    <= AwDataOut(AwLen_r);
-        M_AwAddr   <= AwDataOut(AwAddr_r);
-        M_AwId     <= AwDataOut(AwId_r);
-        M_AwQos    <= AwDataOut(AwQos_r);
-        M_AwUser   <= AwDataOut(AwUser_r);
-        M_AwRegion <= AwDataOut(AwRegion_r);
+        M_AwProt   <= AwDataOut(AwProtRng_c);
+        M_AwCache  <= AwDataOut(AwCacheRng_c);
+        M_AwLock   <= AwDataOut(AwLockIdx_C);
+        M_AwBurst  <= AwDataOut(AwBurstRng_c);
+        M_AwSize   <= AwDataOut(AwSizeRng_c);
+        M_AwLen    <= AwDataOut(AwLenRng_c);
+        M_AwAddr   <= AwDataOut(AwAddrRng_c);
+        M_AwId     <= AwDataOut(AwIdRng_c);
+        M_AwQos    <= AwDataOut(AwQosRng_c);
+        M_AwUser   <= AwDataOut(AwUserRng_c);
+        M_AwRegion <= AwDataOut(AwRegionRng_c);
     end block;
 
     -- write data channel
     b_w : block is
-        subtype WData_r is natural range S_WData'length-1 downto 0;
-        subtype WStrb_r is natural range S_WStrb'length+WData_r'high downto WData_r'high+1;
-        constant WLast_r : natural := WStrb_r'high+1;
-        subtype WUser_r is natural range S_WUser'length+WLast_r downto WLast_r+1;
+        subtype  WDataRng_c is natural range S_WData'length-1              downto 0;
+        subtype  WStrbRng_c is natural range S_WStrb'length+WDataRng_c'high  downto WDataRng_c'high+1;
+        constant WLastIdx_c : natural := WStrbRng_c'high+1;
+        subtype  WUserRng_c is natural range S_WUser'length+WLastIdx_c       downto WLastIdx_c+1;
 
-        signal WDataIn, WDataOut : std_logic_vector(WUser_r'high downto 0);
+        signal WDataIn, WDataOut : std_logic_vector(WUserRng_c'high downto 0);
     begin
 
         -- map signals into one vector
-        WDataIn(WData_r) <= S_WData;
-        WDataIn(WStrb_r) <= S_WStrb;
-        WDataIn(WLast_r) <= S_WLast;
-        WDataIn(WUser_r) <= S_WUser;
+        WDataIn(WDataRng_c) <= S_WData;
+        WDataIn(WStrbRng_c) <= S_WStrb;
+        WDataIn(WLastIdx_c) <= S_WLast;
+        WDataIn(WUserRng_c) <= S_WUser;
 
         -- pipeline stage
         i_pl : entity work.olo_base_pl_stage
@@ -248,24 +248,24 @@ begin
             );
 
         -- unmap signals from vector
-        M_WLast <= WDataOut(WLast_r);
-        M_WStrb <= WDataOut(WStrb_r);
-        M_WData <= WDataOut(WData_r);
-        M_WUser <= WDataOut(WUser_r);
+        M_WLast <= WDataOut(WLastIdx_c);
+        M_WStrb <= WDataOut(WStrbRng_c);
+        M_WData <= WDataOut(WDataRng_c);
+        M_WUser <= WDataOut(WUserRng_c);
     end block;
 
     -- write response channel
     b_b : block is
-        subtype BResp_r is natural range S_BResp'length-1 downto 0;
-        subtype BId_r is natural range S_BId'length+BResp_r'high downto BResp_r'high+1;
-        subtype BUser_r is natural range S_BUser'length+BId_r'high downto BId_r'high+1;
+        subtype BRespRng_c is natural range S_BResp'length-1           downto 0;
+        subtype BIdRng_c   is natural range S_BId'length+BRespRng_c'high downto BRespRng_c'high+1;
+        subtype BuserRng_c is natural range S_BUser'length+BIdRng_c'high downto BIdRng_c'high+1;
 
-        signal BDataIn, BDataOut : std_logic_vector(BUser_r'high downto 0);
+        signal BDataIn, BDataOut : std_logic_vector(BuserRng_c'high downto 0);
     begin
         -- map signals into one vector
-        BDataIn(BId_r)   <= M_BId;
-        BDataIn(BResp_r) <= M_BResp;
-        BDataIn(BUser_r) <= M_BUser;
+        BDataIn(BIdRng_c)   <= M_BId;
+        BDataIn(BRespRng_c) <= M_BResp;
+        BDataIn(BuserRng_c) <= M_BUser;
 
         -- pipeline stage
         i_bch_pl : entity work.olo_base_pl_stage
@@ -286,40 +286,40 @@ begin
             );
 
         -- unmap signals from vector
-        S_BId   <= BDataOut(BId_r);
-        S_BResp <= BDataOut(BResp_r);
-        S_BUser <= BDataOut(BUser_r);
+        S_BId   <= BDataOut(BIdRng_c);
+        S_BResp <= BDataOut(BRespRng_c);
+        S_BUser <= BDataOut(BuserRng_c);
     end block;
 
     -- read address channel
     b_ar : block is
-        subtype ArProt_r is natural range S_ArProt'length-1 downto 0;
-        subtype ArCache_r is natural range S_ArCache'length+ArProt_r'high downto ArProt_r'high+1;
-        constant ArLock_r : natural := ArCache_r'high+1;
-        subtype ArBurst_r is natural range S_ArBurst'length+ArLock_r downto ArLock_r+1;
-        subtype ArSize_r is natural range S_ArSize'length+ArBurst_r'high downto ArBurst_r'high+1;
-        subtype ArLen_r is natural range S_ArLen'length+ArSize_r'high downto ArSize_r'high+1;
-        subtype ArAddr_r is natural range S_ArAddr'length+ArLen_r'high downto ArLen_r'high+1;
-        subtype ArId_r is natural range S_ArId'length+ArAddr_r'high downto ArAddr_r'high+1;
-        subtype ArQos_r is natural range S_ArQos'length+ArId_r'high downto ArId_r'high+1;
-        subtype ArUser_r is natural range S_ArUser'length+ArQos_r'high downto ArQos_r'high+1;
-        subtype ArRegion_r is natural range S_ArRegion'length+ArUser_r'high downto ArUser_r'high+1;
+        subtype  ArProtRng_c   is natural range S_ArProt'length-1                 downto 0;
+        subtype  ArCacheRng_c  is natural range S_ArCache'length+ArProtRng_c'high   downto ArProtRng_c'high+1;
+        constant ArLockIdx_c : natural := ArCacheRng_c'high+1;
+        subtype  ArBurstRng_c  is natural range S_ArBurst'length+ArLockIdx_c        downto ArLockIdx_c+1;
+        subtype  ArSizeRng_c   is natural range S_ArSize'length+ArBurstRng_c'high   downto ArBurstRng_c'high+1;
+        subtype  ArLenRng_c    is natural range S_ArLen'length+ArSizeRng_c'high     downto ArSizeRng_c'high+1;
+        subtype  ArAddrRng_c   is natural range S_ArAddr'length+ArLenRng_c'high     downto ArLenRng_c'high+1;
+        subtype  ArIdRng_c     is natural range S_ArId'length+ArAddrRng_c'high      downto ArAddrRng_c'high+1;
+        subtype  ArQosRng_c    is natural range S_ArQos'length+ArIdRng_c'high       downto ArIdRng_c'high+1;
+        subtype  ArUserRng_c   is natural range S_ArUser'length+ArQosRng_c'high     downto ArQosRng_c'high+1;
+        subtype  ArRegionRng_c is natural range S_ArRegion'length+ArUserRng_c'high  downto ArUserRng_c'high+1;
 
-        signal ArDataIn, ArDataOut : std_logic_vector(ArRegion_r'high downto 0);
+        signal ArDataIn, ArDataOut : std_logic_vector(ArRegionRng_c'high downto 0);
     begin
 
         -- map signals into one vector
-        ArDataIn(ArProt_r)   <= S_ArProt;
-        ArDataIn(ArCache_r)  <= S_ArCache;
-        ArDataIn(ArLock_r)   <= S_ArLock;
-        ArDataIn(ArBurst_r)  <= S_ArBurst;
-        ArDataIn(ArSize_r)   <= S_ArSize;
-        ArDataIn(ArLen_r)    <= S_ArLen;
-        ArDataIn(ArAddr_r)   <= S_ArAddr;
-        ArDataIn(ArId_r)     <= S_ArId;
-        ArDataIn(ArQos_r)    <= S_ArQos;
-        ArDataIn(ArUser_r)   <= S_ArUser;
-        ArDataIn(ArRegion_r) <= S_ArRegion;
+        ArDataIn(ArProtRng_c)   <= S_ArProt;
+        ArDataIn(ArCacheRng_c)  <= S_ArCache;
+        ArDataIn(ArLockIdx_c)   <= S_ArLock;
+        ArDataIn(ArBurstRng_c)  <= S_ArBurst;
+        ArDataIn(ArSizeRng_c)   <= S_ArSize;
+        ArDataIn(ArLenRng_c)    <= S_ArLen;
+        ArDataIn(ArAddrRng_c)   <= S_ArAddr;
+        ArDataIn(ArIdRng_c)     <= S_ArId;
+        ArDataIn(ArQosRng_c)    <= S_ArQos;
+        ArDataIn(ArUserRng_c)   <= S_ArUser;
+        ArDataIn(ArRegionRng_c) <= S_ArRegion;
 
         -- pipeline stage
         i_pl : entity work.olo_base_pl_stage
@@ -340,35 +340,35 @@ begin
             );
 
         -- unmap signals from vector
-        M_ArProt   <= ArDataOut(ArProt_r);
-        M_ArCache  <= ArDataOut(ArCache_r);
-        M_ArLock   <= ArDataOut(ArLock_r);
-        M_ArBurst  <= ArDataOut(ArBurst_r);
-        M_ArSize   <= ArDataOut(ArSize_r);
-        M_ArLen    <= ArDataOut(ArLen_r);
-        M_ArAddr   <= ArDataOut(ArAddr_r);
-        M_ArId     <= ArDataOut(ArId_r);
-        M_ArQos    <= ArDataOut(ArQos_r);
-        M_ArUser   <= ArDataOut(ArUser_r);
-        M_ArRegion <= ArDataOut(ArRegion_r);
+        M_ArProt   <= ArDataOut(ArProtRng_c);
+        M_ArCache  <= ArDataOut(ArCacheRng_c);
+        M_ArLock   <= ArDataOut(ArLockIdx_c);
+        M_ArBurst  <= ArDataOut(ArBurstRng_c);
+        M_ArSize   <= ArDataOut(ArSizeRng_c);
+        M_ArLen    <= ArDataOut(ArLenRng_c);
+        M_ArAddr   <= ArDataOut(ArAddrRng_c);
+        M_ArId     <= ArDataOut(ArIdRng_c);
+        M_ArQos    <= ArDataOut(ArQosRng_c);
+        M_ArUser   <= ArDataOut(ArUserRng_c);
+        M_ArRegion <= ArDataOut(ArRegionRng_c);
     end block;
 
     -- read data channel
     b_r : block is
-        subtype RData_r is natural range S_RData'length-1 downto 0;
-        constant RLast_r : natural := RData_r'high+1;
-        subtype RResp_r is natural range S_RResp'length+RLast_r downto RLast_r+1;
-        subtype RId_r is natural range S_RId'length+RResp_r'high downto RResp_r'high+1;
-        subtype RUser_r is natural range S_RUser'length+RId_r'high downto RId_r'high+1;
+        subtype  RDataRng_c is natural range S_RData'length-1             downto 0;
+        constant RLastIdx_c : natural := RDataRng_c'high+1;
+        subtype  RRespRng_c is natural range S_RResp'length+RLastIdx_c    downto RLastIdx_c+1;
+        subtype  RIdRng_c   is natural range S_RId'length+RRespRng_c'high downto RRespRng_c'high+1;
+        subtype  RUserRng_c is natural range S_RUser'length+RIdRng_c'high downto RIdRng_c'high+1;
 
-        signal RDataIn, RDataOut : std_logic_vector(RUser_r'high downto 0);
+        signal RDataIn, RDataOut : std_logic_vector(RUserRng_c'high downto 0);
     begin
         -- map signals into one vector
-        RDataIn(RData_r) <= M_RData;
-        RDataIn(RResp_r) <= M_RResp;
-        RDataIn(RLast_r) <= M_RLast;
-        RDataIn(RId_r)   <= M_RId;
-        RDataIn(RUser_r) <= M_RUser;
+        RDataIn(RDataRng_c) <= M_RData;
+        RDataIn(RRespRng_c) <= M_RResp;
+        RDataIn(RLastIdx_c) <= M_RLast;
+        RDataIn(RIdRng_c)   <= M_RId;
+        RDataIn(RUserRng_c) <= M_RUser;
 
         -- pipeline stage
         i_rch_pl : entity work.olo_base_pl_stage
@@ -389,11 +389,11 @@ begin
             );
 
         -- unmap signals from vector
-        S_RData <= RDataOut(RData_r);
-        S_RResp <= RDataOut(RResp_r);
-        S_RLast <= RDataOut(RLast_r);
-        S_RId   <= RDataOut(RId_r);
-        S_RUser <= RDataOut(RUser_r);
+        S_RData <= RDataOut(RDataRng_c);
+        S_RResp <= RDataOut(RRespRng_c);
+        S_RLast <= RDataOut(RLastIdx_c);
+        S_RId   <= RDataOut(RIdRng_c);
+        S_RUser <= RDataOut(RUserRng_c);
     end block;
 
 end architecture;
