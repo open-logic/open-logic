@@ -92,6 +92,7 @@ begin
             Out_Data      => LedSig,
             Out_Ready     => RisingEdges(1)
         );
+
     Led <= LedSig;
 
 end architecture;
