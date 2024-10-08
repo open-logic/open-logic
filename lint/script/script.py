@@ -3,9 +3,6 @@ import os
 # Define the directory to search
 DIR = '../..'
 
-#Ignored files
-IGNORED = ['olo_tb_txt_util.vhd']
-
 def find_normal_vhd_files(directory):
     vhd_files = []
     for root, _, files in os.walk(directory):
@@ -18,9 +15,6 @@ def find_normal_vhd_files(directory):
                 continue
             # Skip non VHD files
             if not file.endswith('.vhd'):
-                continue
-            # Skip ignored files
-            if file in IGNORED:
                 continue
             #Append file
             vhd_files.append(os.path.join(root, file))
