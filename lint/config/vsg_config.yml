@@ -2947,6 +2947,7 @@ rule:
         loop_control_statements_ends_group: yes
         phase: 5
         severity: Warning
+        disable: true # Conflicts with constant_101
     package_400:
         # This rule checks the colons are in the same column for all declarations in the package declarative part.
         blank_line_ends_group: yes

@@ -202,7 +202,7 @@ begin
             if run("ReadTimeout") then
                 -- Operate VC
                 push_ar(net, AxiMaster_c, addr => to_unsigned(16, AddrWidth_c));
-                expect_r(net, AxiMaster_c, X"0", resp => xRESP_SLVERR_c, ignoreData => true);
+                expect_r(net, AxiMaster_c, X"0", resp => xRESP_SLVERR_c, ignore_data => true);
             end if;
 
             -- Write Timing
@@ -343,10 +343,10 @@ begin
             Instance => AxiMaster_c
         )
         port map (
-            Clk   => Clk,
-            Rst   => Rst,
-            AxiMs => AxiMs,
-            AxiSm => AxiSm
+            Clk    => Clk,
+            Rst    => Rst,
+            Axi_Ms => AxiMs,
+            Axi_Sm => AxiSm
         );
 
 end architecture;

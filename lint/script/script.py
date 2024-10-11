@@ -44,7 +44,7 @@ for vhd_file in vhd_files_list:
 # Execute linting for VC VHD files
 for vhd_file in vc_files_list:
     
-    result = os.system(f'vsg -c ../config/vsg_config.yml -f {vhd_file}')
+    result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml  -f {vhd_file}')
     if result != 0:
         print(f"Error: Command failed for file {vhd_file}")
         break

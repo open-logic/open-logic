@@ -367,10 +367,10 @@ begin
             Instance => AxiMaster_c
         )
         port map (
-            Clk   => Clk,
-            Rst   => Rst,
-            AxiMs => AxiMs_M,
-            AxiSm => AxiSm_M
+            Clk    => Clk,
+            Rst    => Rst,
+            Axi_Ms => AxiMs_M,
+            Axi_Sm => AxiSm_M
         );
 
     vc_slave : entity work.olo_test_axi_slave_vc

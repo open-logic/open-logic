@@ -1,0 +1,37 @@
+# Rule overlay to match VUnit interface style for verification components (VCs)
+rule:
+    type_004:
+        case: lower
+    procedure_501:
+        case: lower
+    function_017:
+        case: lower
+        case_exceptions: []
+    variable_004:
+        case: lower
+        suffix_exceptions: []
+    variable_600:
+        disable: true
+    constant_004:
+        case: lower
+    constant_600:
+        disable: true
+    generic_007:
+        case: lower
+        suffix_exceptions: []
+    generic_600:
+        disable: true
+    subtype_501:
+        case: lower
+    signal_004:
+        case: lower
+    process_036:
+        disable: true
+    architecture_025:
+        names: ["a"]
+    generic_map_002:
+        case: lower
+    port_010:
+        case: lower
+    port_map_002:
+        case: lower
