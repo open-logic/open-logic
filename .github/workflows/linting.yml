@@ -49,5 +49,5 @@ jobs:
         with:
           name: Linting Results
           path: lint/report/vsg_normal_vhdl.xml 
-          reporter: junit
+          reporter: xunit
           fail-on-error: false
