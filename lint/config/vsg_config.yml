@@ -4522,54 +4522,6 @@ rule:
         blank_lines_allowed: 1
         phase: 3
 
-file_rules:
-    - "./src/base/vhdl/olo_base_fifo_async.vhd":
-        rule:
-            signal_004:
-                case_exceptions: ["ri", "ro", "r", "rs", "rp", "ra", "ri_next", "ro_next", "r_next", "rs_next", "rp_next", "ra_next", "net"]
-            variable_004:
-                case_exceptions: ["vi", "vo", "v", "vs", "vp", "va"]
-    - "./src/axi/vhdl/olo_axi_pkg_protocol.vhd":
-        rule:
-            constant_004:
-                disable: true
-    - "./src/intf/vhdl/olo_intf_i2c_master.vhd":
-        rule:
-            constant_004:
-                disable: true
-            constant_600:
-                disable: true
-                
-                
-    - "C:/GitLab/PATRICK-STUDER/open-logic/src/base/vhdl/olo_base_fifo_async.vhd":
-        rule:
-            signal_004:
-                case_exceptions: ["ri", "ro", "r", "rs", "rp", "ra", "ri_next", "ro_next", "r_next", "rs_next", "rp_next", "ra_next", "net"]
-            variable_004:
-                case_exceptions: ["vi", "vo", "v", "vs", "vp", "va"]
-    - "C:/GitLab/PATRICK-STUDER/open-logic/src/axi/vhdl/olo_axi_pkg_protocol.vhd":
-        rule:
-            constant_004:
-                disable: true
-    - "C:/GitLab/PATRICK-STUDER/open-logic/src/intf/vhdl/olo_intf_i2c_master.vhd":
-        rule:
-            constant_004:
-                disable: true
-            constant_600:
-                disable: true
-    - "C:/GitLab/PATRICK-STUDER/open-logic/test/axi/olo_axi_master_simple/olo_axi_master_simple_tb.vhd":
-        rule:
-            # Ignore vunit verification components port maps.
-            port_map_002:
-                case_exceptions: ["aclk", "areset_n",
-                                  "tvalid", "tready", "tdata", "tlast", "tkeep", "tstrb", "tid", "tdest", "tuser",
-                                  "arready", "arvalid", "araddr", "rready", "rvalid",
-                                  "rdata", "rresp",
-                                  "awready", "awvalid", "awaddr", "wready",
-                                  "wvalid", "wdata", "wstrb",
-                                  "bvalid", "bready", "bresp",
-                                  "clk", "adr", "dat_i", "dat_o", "sel", "cyc", "stb", "we", "stall", "ack",
-                                  "rx", "tx"] 
 # -------------------------------------------------------------------------------------------------
 # -- EOF
 # -------------------------------------------------------------------------------------------------
