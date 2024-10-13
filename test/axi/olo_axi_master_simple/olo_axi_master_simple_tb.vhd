@@ -735,7 +735,7 @@ begin
 
     vc_rd_data : entity vunit_lib.axi_stream_slave
         generic map (
-            slave => RdDataSlave_c
+            Slave => RdDataSlave_c
         )
         port map (
             AClk   => Clk,
@@ -751,7 +751,7 @@ begin
 
         vc_wr_cmd : entity vunit_lib.axi_stream_master
             generic map (
-                master => WrCmdMaster_c
+                Master => WrCmdMaster_c
             )
             port map (
                 AClk   => Clk,
@@ -771,7 +771,7 @@ begin
 
         vc_rd_cmd : entity vunit_lib.axi_stream_master
             generic map (
-                master => RdCmdMaster_c
+                Master => RdCmdMaster_c
             )
             port map (
                 AClk   => Clk,
@@ -791,7 +791,7 @@ begin
 
         vc_wr_data : entity vunit_lib.axi_stream_master
             generic map (
-                master => WrDataMaster_c
+                Master => WrDataMaster_c
             )
             port map (
                 AClk   => Clk,

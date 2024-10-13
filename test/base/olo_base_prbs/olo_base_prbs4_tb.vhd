@@ -183,7 +183,7 @@ begin
     -----------------------------------------------------------------------------------------------
     vc_data : entity vunit_lib.axi_stream_slave
         generic map (
-            slave => AxisSlave_c
+            Slave => AxisSlave_c
         )
         port map (
             AClk   => Clk,
@@ -194,7 +194,7 @@ begin
 
     vc_state : entity vunit_lib.axi_stream_slave
         generic map (
-            slave => StateSlave_c
+            Slave => StateSlave_c
         )
         port map (
             AClk   => Clk,

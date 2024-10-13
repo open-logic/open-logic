@@ -210,7 +210,7 @@ begin
     -----------------------------------------------------------------------------------------------
     vc_stimuli : entity vunit_lib.axi_stream_master
         generic map (
-            master => AxisMaster_c
+            Master => AxisMaster_c
         )
         port map (
             AClk   => In_Clk,
@@ -221,7 +221,7 @@ begin
 
     vc_response : entity vunit_lib.axi_stream_slave
         generic map (
-            slave => AxisSlave_c
+            Slave => AxisSlave_c
         )
         port map (
             AClk   => Out_Clk,

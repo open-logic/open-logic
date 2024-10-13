@@ -2335,7 +2335,6 @@ rule:
         # This rule checks generic names have proper case.
         case: regex
         regex: "(?!.*[A-Z]{3})[A-Z][a-zA-Z0-9]*(?:_[A-Z0-9][a-zA-Z0-9]*)*"
-        case_exceptions: ["bus_handle", "master", "slave"]
         fixable: false
         phase: 6
         prefix_exceptions: []

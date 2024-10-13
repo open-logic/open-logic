@@ -205,7 +205,7 @@ begin
     -----------------------------------------------------------------------------------------------
     vc_response : entity vunit_lib.axi_stream_slave
         generic map (
-            slave => AxisSlave_c
+            Slave => AxisSlave_c
         )
         port map (
             AClk   => Out_Clk,
