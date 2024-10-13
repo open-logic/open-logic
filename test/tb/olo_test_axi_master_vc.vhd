@@ -445,8 +445,8 @@ entity olo_test_axi_master_vc is
     port (
         clk          : in    std_logic;
         rst          : in    std_logic;
-        axi_ms       : out   AxiMs_r;
-        axi_sm       : in    AxiSm_r
+        axi_ms       : out   axi_ms_t;
+        axi_sm       : in    axi_sm_t
     );
 end entity;
 
@@ -521,18 +521,18 @@ begin
         variable delay    : time;
     begin
         -- Initialize
-        axi_ms.AwId     <= toUslv(0, axi_ms.AwId'length);
-        axi_ms.AwAddr   <= toUslv(0, axi_ms.AwAddr'length);
-        axi_ms.AwLen    <= toUslv(0, 8);
-        axi_ms.AwSize   <= toUslv(0, 3);
-        axi_ms.AwBurst  <= "01";
-        axi_ms.AWValid  <= '0';
-        axi_ms.AwLock   <= '0';
-        axi_ms.AwCache  <= toUslv(0, 4);
-        axi_ms.AwProt   <= toUslv(0, 3);
-        axi_ms.AwQos    <= toUslv(0, 4);
-        axi_ms.AwRegion <= toUslv(0, 4);
-        axi_ms.AWUser   <= toUslv(0, axi_ms.AWUser'length);
+        axi_ms.aw_id     <= toUslv(0, axi_ms.aw_id'length);
+        axi_ms.aw_addr   <= toUslv(0, axi_ms.aw_addr'length);
+        axi_ms.aw_len    <= toUslv(0, 8);
+        axi_ms.aw_size   <= toUslv(0, 3);
+        axi_ms.aw_burst  <= "01";
+        axi_ms.aw_valid  <= '0';
+        axi_ms.aw_lock   <= '0';
+        axi_ms.aw_cache  <= toUslv(0, 4);
+        axi_ms.aw_prot   <= toUslv(0, 3);
+        axi_ms.aw_qos    <= toUslv(0, 4);
+        axi_ms.aw_region <= toUslv(0, 4);
+        axi_ms.aw_user   <= toUslv(0, axi_ms.aw_user'length);
         wait until rising_edge(clk);
 
         -- loop messages
@@ -557,20 +557,20 @@ begin
                     wait for delay;
                     wait until rising_edge(clk);
                 end if;
-                axi_ms.AwId    <= id;
-                axi_ms.AwAddr  <= std_logic_vector(addr);
-                axi_ms.AwLen   <= toUslv(len-1, 8);
-                axi_ms.AwSize  <= toUslv(log2(instance.data_width/8), 3);
-                axi_ms.AwBurst <= burst;
-                axi_ms.AWValid <= '1';
-                wait until rising_edge(clk) and axi_sm.AwReady = '1';
-                axi_ms.AWValid <= '0';
-                axi_ms.AwId    <= toUslv(0, axi_ms.AwId'length);
-                axi_ms.AwAddr  <= toUslv(0, axi_ms.AwAddr'length);
-                axi_ms.AwLen   <= toUslv(0, 8);
-                axi_ms.AwSize  <= toUslv(0, 3);
-                axi_ms.AwBurst <= xBURST_INCR_c;
-                aw_completed   := aw_completed + 1;
+                axi_ms.aw_id    <= id;
+                axi_ms.aw_addr  <= std_logic_vector(addr);
+                axi_ms.aw_len   <= toUslv(len-1, 8);
+                axi_ms.aw_size  <= toUslv(log2(instance.data_width/8), 3);
+                axi_ms.aw_burst <= burst;
+                axi_ms.aw_valid <= '1';
+                wait until rising_edge(clk) and axi_sm.aw_ready = '1';
+                axi_ms.aw_valid <= '0';
+                axi_ms.aw_id    <= toUslv(0, axi_ms.aw_id'length);
+                axi_ms.aw_addr  <= toUslv(0, axi_ms.aw_addr'length);
+                axi_ms.aw_len   <= toUslv(0, 8);
+                axi_ms.aw_size  <= toUslv(0, 3);
+                axi_ms.aw_burst <= xBURST_INCR_c;
+                aw_completed    := aw_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
@@ -591,18 +591,18 @@ begin
         variable delay    : time;
     begin
         -- Initialize
-        axi_ms.ArId     <= toUslv(0, axi_ms.ArId'length);
-        axi_ms.ArAddr   <= toUslv(0, axi_ms.ArAddr'length);
-        axi_ms.ArLen    <= toUslv(0, 8);
-        axi_ms.ArSize   <= toUslv(0, 3);
-        axi_ms.ArBurst  <= "01";
-        axi_ms.ArValid  <= '0';
-        axi_ms.ArLock   <= '0';
-        axi_ms.ArCache  <= toUslv(0, 4);
-        axi_ms.ArProt   <= toUslv(0, 3);
-        axi_ms.ArQos    <= toUslv(0, 4);
-        axi_ms.ArRegion <= toUslv(0, 4);
-        axi_ms.ArUser   <= toUslv(0, axi_ms.ArUser'length);
+        axi_ms.ar_id     <= toUslv(0, axi_ms.ar_id'length);
+        axi_ms.ar_addr   <= toUslv(0, axi_ms.ar_addr'length);
+        axi_ms.ar_len    <= toUslv(0, 8);
+        axi_ms.ar_size   <= toUslv(0, 3);
+        axi_ms.ar_burst  <= "01";
+        axi_ms.ar_valid  <= '0';
+        axi_ms.ar_lock   <= '0';
+        axi_ms.ar_cache  <= toUslv(0, 4);
+        axi_ms.ar_prot   <= toUslv(0, 3);
+        axi_ms.ar_qos    <= toUslv(0, 4);
+        axi_ms.ar_region <= toUslv(0, 4);
+        axi_ms.ar_user   <= toUslv(0, axi_ms.ar_user'length);
         wait until rising_edge(clk);
 
         -- loop messages
@@ -627,20 +627,20 @@ begin
                     wait for delay;
                     wait until rising_edge(clk);
                 end if;
-                axi_ms.ArId    <= id;
-                axi_ms.ArAddr  <= std_logic_vector(addr);
-                axi_ms.ArLen   <= toUslv(len-1, 8);
-                axi_ms.ArSize  <= toUslv(log2(instance.data_width/8), 3);
-                axi_ms.ArBurst <= burst;
-                axi_ms.ArValid <= '1';
-                wait until rising_edge(clk) and axi_sm.ArReady = '1';
-                axi_ms.ArValid <= '0';
-                axi_ms.ArId    <= toUslv(0, axi_ms.ArId'length);
-                axi_ms.ArAddr  <= toUslv(0, axi_ms.ArAddr'length);
-                axi_ms.ArLen   <= toUslv(0, 8);
-                axi_ms.ArSize  <= toUslv(0, 3);
-                axi_ms.ArBurst <= xBURST_INCR_c;
-                ar_completed   := ar_completed + 1;
+                axi_ms.ar_id    <= id;
+                axi_ms.ar_addr  <= std_logic_vector(addr);
+                axi_ms.ar_len   <= toUslv(len-1, 8);
+                axi_ms.ar_size  <= toUslv(log2(instance.data_width/8), 3);
+                axi_ms.ar_burst <= burst;
+                axi_ms.ar_valid <= '1';
+                wait until rising_edge(clk) and axi_sm.ar_ready = '1';
+                axi_ms.ar_valid <= '0';
+                axi_ms.ar_id    <= toUslv(0, axi_ms.ar_id'length);
+                axi_ms.ar_addr  <= toUslv(0, axi_ms.ar_addr'length);
+                axi_ms.ar_len   <= toUslv(0, 8);
+                axi_ms.ar_size  <= toUslv(0, 3);
+                axi_ms.ar_burst <= xBURST_INCR_c;
+                ar_completed    := ar_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
@@ -663,11 +663,11 @@ begin
         variable data        : unsigned(instance.data_width-1 downto 0);
     begin
         -- Initialize
-        axi_ms.WData  <= toUslv(0, axi_ms.WData'length);
-        axi_ms.WStrb  <= toUslv(0, axi_ms.WStrb'length);
-        axi_ms.WLast  <= '0';
-        axi_ms.WValid <= '0';
-        axi_ms.WUser  <= toUslv(0, axi_ms.WUser'length);
+        axi_ms.w_data  <= toUslv(0, axi_ms.w_data'length);
+        axi_ms.w_strb  <= toUslv(0, axi_ms.w_strb'length);
+        axi_ms.w_last  <= '0';
+        axi_ms.w_valid <= '0';
+        axi_ms.w_user  <= toUslv(0, axi_ms.w_user'length);
         wait until rising_edge(clk);
 
         -- loop messages
@@ -702,32 +702,33 @@ begin
                 -- loop through beats
                 for i in 0 to beats-1 loop
                     -- Data
-                    axi_ms.WData <= std_logic_vector(data);
+                    axi_ms.w_data <= std_logic_vector(data);
                     -- Strobe
                     if i = 0 then
-                        axi_ms.WStrb <= first_strb;
+                        axi_ms.w_strb <= first_strb;
                     elsif i = beats-1 then
-                        axi_ms.WStrb <= last_strb;
+                        axi_ms.w_strb <= last_strb;
                     else
-                        axi_ms.WStrb <= onesVector(axi_ms.WStrb'length);
+                        axi_ms.w_strb <= onesVector(axi_ms.w_strb'length);
                     end if;
                     -- Last
                     if i = beats-1 then
-                        axi_ms.WLast <= '1';
+                        axi_ms.w_last <= '1';
                     else
-                        axi_ms.WLast <= '0';
+                        axi_ms.w_last <= '0';
                     end if;
                     -- Valid
-                    axi_ms.WValid <= '1';
-                    wait until rising_edge(clk) and axi_sm.WReady = '1';
-                    axi_ms.WValid <= '0';
-                    data          := data + increment;
+                    axi_ms.w_valid <= '1';
+                    wait until rising_edge(clk) and axi_sm.w_ready = '1';
+                    axi_ms.w_valid <= '0';
+                    data           := data + increment;
                 end loop;
 
-                axi_ms.WData <= toUslv(0, axi_ms.WData'length);
-                axi_ms.WStrb <= toUslv(0, axi_ms.WStrb'length);
-                axi_ms.WLast <= '0';
-                w_completed  := w_completed + 1;
+                -- restore idle state
+                axi_ms.w_data <= toUslv(0, axi_ms.w_data'length);
+                axi_ms.w_strb <= toUslv(0, axi_ms.w_strb'length);
+                axi_ms.w_last <= '0';
+                w_completed   := w_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
@@ -746,7 +747,7 @@ begin
         variable delay    : time;
     begin
         -- Initialize
-        axi_ms.BReady <= '0';
+        axi_ms.b_ready <= '0';
         wait until rising_edge(clk);
 
         -- loop messages
@@ -770,18 +771,18 @@ begin
                 delay := pop(msg);
                 -- Execute
                 if delay > 0 ns then
-                    wait until rising_edge(clk) and axi_sm.BValid = '1';
+                    wait until rising_edge(clk) and axi_sm.b_valid = '1';
                     wait for delay;
                     wait until rising_edge(clk);
                 end if;
-                axi_ms.BReady <= '1';
-                wait until rising_edge(clk) and axi_sm.BValid = '1';
-                check_equal(axi_sm.BResp, resp, "expect_b: BResp not as expected");
+                axi_ms.b_ready <= '1';
+                wait until rising_edge(clk) and axi_sm.b_valid = '1';
+                check_equal(axi_sm.b_resp, resp, "expect_b: b_resp not as expected");
                 if id /= "X" then
-                    check_equal(axi_sm.BId, id, "expect_b: BId not as expected");
+                    check_equal(axi_sm.b_id, id, "expect_b: b_id not as expected");
                 end if;
-                axi_ms.BReady <= '0';
-                b_completed   := b_completed + 1;
+                axi_ms.b_ready <= '0';
+                b_completed    := b_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
@@ -805,7 +806,7 @@ begin
         variable ignore_data : boolean;
     begin
         -- Initialize
-        axi_ms.RReady <= '0';
+        axi_ms.r_ready <= '0';
         wait until rising_edge(clk);
 
         -- loop messages
@@ -833,31 +834,31 @@ begin
                 ignore_data := pop(msg);
                 -- Execute
                 if delay > 0 ns then
-                    wait until rising_edge(clk) and axi_sm.RValid = '1';
+                    wait until rising_edge(clk) and axi_sm.r_valid = '1';
                     wait for delay;
                     wait until rising_edge(clk);
                 end if;
-                axi_ms.RReady <= '1';
-                data          := start_value;
+                axi_ms.r_ready <= '1';
+                data           := start_value;
 
                 -- loop through beats
                 for i in 0 to beats-1 loop
-                    wait until rising_edge(clk) and axi_sm.RValid = '1';
+                    wait until rising_edge(clk) and axi_sm.r_valid = '1';
                     if not ignore_data then
-                        check_equal(axi_sm.RData, data, "expect_r: RData not as expected");
+                        check_equal(axi_sm.r_data, data, "expect_r: r_data not as expected");
                     end if;
-                    check_equal(axi_sm.RResp, resp, "expect_r: RResp not as expected");
+                    check_equal(axi_sm.r_resp, resp, "expect_r: r_resp not as expected");
                     if id /= "X" then
-                        check_equal(axi_sm.RId, id, "expect_r: RId not as expected");
+                        check_equal(axi_sm.r_id, id, "expect_r: r_id not as expected");
                     end if;
-                    data          := data + increment;
-                    axi_ms.Rready <= '0';
+                    data           := data + increment;
+                    axi_ms.r_ready <= '0';
                     wait until rising_edge(clk);
-                    axi_ms.RReady <= '1';
+                    axi_ms.r_ready <= '1';
                 end loop;
 
-                axi_ms.RReady <= '0';
-                r_completed   := r_completed + 1;
+                axi_ms.r_ready <= '0';
+                r_completed    := r_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
@@ -890,8 +891,8 @@ entity olo_test_axi_lite_master_vc is
     port (
         clk           : in    std_logic;
         rst           : in    std_logic;
-        axi_ms        : out   AxiMs_r;
-        axi_sm        : in    AxiSm_r
+        axi_ms        : out   axi_ms_t;
+        axi_sm        : in    axi_sm_t
     );
 end entity;
 
@@ -903,41 +904,41 @@ architecture a of olo_test_axi_lite_master_vc is
     subtype data_range_c is natural range instance.data_width - 1 downto 0;
     subtype byte_range_c is natural range instance.data_width/8 - 1 downto 0;
 
-    signal axi_ms_i : AxiMs_r (ArId(id_range_c), AwId(id_range_c),
-                                ArAddr(addr_range_c), AwAddr(addr_range_c),
-                                ArUser(user_range_c), AwUser(user_range_c), WUser(user_range_c),
-                                WData(data_range_c),
-                                WStrb(byte_range_c));
+    signal axi_ms_i : axi_ms_t (ar_id(id_range_c), aw_id(id_range_c),
+                                 ar_addr(addr_range_c), aw_addr(addr_range_c),
+                                 ar_user(user_range_c), aw_user(user_range_c), w_user(user_range_c),
+                                 w_data(data_range_c),
+                                 w_strb(byte_range_c));
 
-    signal axi_sm_i : AxiSm_r (RId(id_range_c), BId(id_range_c),
-                                RUser(user_range_c), BUser(user_range_c),
-                                RData(data_range_c));
+    signal axi_sm_i : axi_sm_t (r_id(id_range_c), b_id(id_range_c),
+                                 r_user(user_range_c), b_user(user_range_c),
+                                 r_data(data_range_c));
 
 begin
 
-    axi_ms.ArAddr  <= axi_ms_i.ArAddr;
-    axi_ms.ArValid <= axi_ms_i.ArValid;
-    axi_ms.RReady  <= axi_ms_i.RReady;
-    axi_ms.AwAddr  <= axi_ms_i.AwAddr;
-    axi_ms.AwValid <= axi_ms_i.AwValid;
-    axi_ms.WData   <= axi_ms_i.WData;
-    axi_ms.WStrb   <= axi_ms_i.WStrb;
-    axi_ms.WValid  <= axi_ms_i.WValid;
-    axi_ms.BReady  <= axi_ms_i.BReady;
+    axi_ms.ar_addr  <= axi_ms_i.ar_addr;
+    axi_ms.ar_valid <= axi_ms_i.ar_valid;
+    axi_ms.r_ready  <= axi_ms_i.r_ready;
+    axi_ms.aw_addr  <= axi_ms_i.aw_addr;
+    axi_ms.aw_valid <= axi_ms_i.aw_valid;
+    axi_ms.w_data   <= axi_ms_i.w_data;
+    axi_ms.w_strb   <= axi_ms_i.w_strb;
+    axi_ms.w_valid  <= axi_ms_i.w_valid;
+    axi_ms.b_ready  <= axi_ms_i.b_ready;
 
-    axi_sm_i.ArReady <= axi_sm.ArReady;
-    axi_sm_i.RId     <= toUslv(0, instance.id_width);
-    axi_sm_i.RData   <= axi_sm.RData;
-    axi_sm_i.RResp   <= axi_sm.RResp;
-    axi_sm_i.RLast   <= '1';
-    axi_sm_i.RUser   <= toUslv(0, instance.user_width);
-    axi_sm_i.RValid  <= axi_sm.RValid;
-    axi_sm_i.AWReady <= axi_sm.AwReady;
-    axi_sm_i.WReady  <= axi_sm.WReady;
-    axi_sm_i.BId     <= toUslv(0, instance.id_width);
-    axi_sm_i.BResp   <= axi_sm.BResp;
-    axi_sm_i.BUser   <= toUslv(0, instance.user_width);
-    axi_sm_i.BValid  <= axi_sm.BValid;
+    axi_sm_i.ar_ready <= axi_sm.ar_ready;
+    axi_sm_i.r_id     <= toUslv(0, instance.id_width);
+    axi_sm_i.r_data   <= axi_sm.r_data;
+    axi_sm_i.r_resp   <= axi_sm.r_resp;
+    axi_sm_i.r_last   <= '1';
+    axi_sm_i.r_user   <= toUslv(0, instance.user_width);
+    axi_sm_i.r_valid  <= axi_sm.r_valid;
+    axi_sm_i.aw_ready <= axi_sm.aw_ready;
+    axi_sm_i.w_ready  <= axi_sm.w_ready;
+    axi_sm_i.b_id     <= toUslv(0, instance.id_width);
+    axi_sm_i.b_resp   <= axi_sm.b_resp;
+    axi_sm_i.b_user   <= toUslv(0, instance.user_width);
+    axi_sm_i.b_valid  <= axi_sm.b_valid;
 
     i_full_master : entity work.olo_test_axi_master_vc
         generic map (

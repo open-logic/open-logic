@@ -62,15 +62,15 @@ architecture sim of olo_axi_master_simple_tb is
     subtype DataRange_c is natural range AxiDataWidth_g-1 downto 0;
     subtype ByteRange_c is natural range ByteWidth_c-1 downto 0;
 
-    signal AxiMs : AxiMs_r (ArId(IdRange_c), AwId(IdRange_c),
-                             ArAddr(AddrRange_c), AwAddr(AddrRange_c),
-                             ArUser(UserRange_c), AwUser(UserRange_c), WUser(UserRange_c),
-                             WData(DataRange_c),
-                             WStrb(ByteRange_c));
+    signal AxiMs : axi_ms_t (ar_id(IdRange_c), aw_id(IdRange_c),
+                              ar_addr(AddrRange_c), aw_addr(AddrRange_c),
+                              ar_user(UserRange_c), aw_user(UserRange_c), w_user(UserRange_c),
+                              w_data(DataRange_c),
+                              w_strb(ByteRange_c));
 
-    signal AxiSm : AxiSm_r (RId(IdRange_c), BId(IdRange_c),
-                             RUser(UserRange_c), BUser(UserRange_c),
-                             RData(DataRange_c));
+    signal AxiSm : axi_sm_t (r_id(IdRange_c), b_id(IdRange_c),
+                              r_user(UserRange_c), b_user(UserRange_c),
+                              r_data(DataRange_c));
 
     -----------------------------------------------------------------------------------------------
     -- Constants
@@ -315,9 +315,9 @@ begin
                         pushCommand(net, WrCmdMaster_c, X"1090", 1, CmdLowLat => choose(LowLatency=1, '1', '0'));
                         wait for 200 ns;
                         if LowLatency = 0 then
-                            check_equal(AxiMs.AwValid, '0', "HighLatency write executed before data was present");
+                            check_equal(AxiMs.aw_valid, '0', "HighLatency write executed before data was present");
                         else
-                            check_equal(AxiMs.AwValid, '1', "LowLatency write not executed before data was present");
+                            check_equal(AxiMs.aw_valid, '1', "LowLatency write not executed before data was present");
                         end if;
                         pushWrData(net, X"ABC2");
                         -- Slave
@@ -540,15 +540,15 @@ begin
                         -- Fill FIFO
                         pushCommand(net, RdCmdMaster_c, X"4000", DataFifoDepth_c, CmdLowLat => choose(LowLatency=1, '1', '0'));
                         wait for 100 ns;
-                        check_equal(AxiMs.ArValid, '1', "Fill Command not Valid");
+                        check_equal(AxiMs.ar_valid, '1', "Fill Command not Valid");
                         push_burst_read_aligned (net, AxiSlave_c, X"4000", X"10", 1, DataFifoDepth_c);
                         -- Push Second Command with full FIFO
                         pushCommand(net, RdCmdMaster_c, X"5000", 4, CmdLowLat => choose(LowLatency=1, '1', '0'));
                         wait for 100 ns;
                         if LowLatency = 0 then
-                            check_equal(AxiMs.ArValid, '0', "Second Command Valid despite full FIFO");
+                            check_equal(AxiMs.ar_valid, '0', "Second Command Valid despite full FIFO");
                         else
-                            check_equal(AxiMs.ArValid, '1', "Second Command not Valid despite low-latency");
+                            check_equal(AxiMs.ar_valid, '1', "Second Command not Valid despite low-latency");
                         end if;
                         -- Execute both commands
                         expectRdData(net, X"10", 1, DataFifoDepth_c);
@@ -682,41 +682,41 @@ begin
             Rd_Done        => Rd_Done,
             Rd_Error       => Rd_Error,
             -- AXI Address Write Channel
-            M_Axi_AwAddr   => AxiMs.AwAddr,
-            M_Axi_AwValid  => AxiMs.AwValid,
-            M_Axi_AwReady  => AxiSm.AwReady,
-            M_Axi_AwLen    => AxiMs.AwLen,
-            M_Axi_AwSize   => AxiMs.AwSize,
-            M_Axi_AwBurst  => AxiMs.AwBurst,
-            M_Axi_AwLock   => AxiMs.AwLock,
-            M_Axi_AwCache  => AxiMs.AwCache,
-            M_Axi_AwProt   => AxiMs.AwProt,
+            M_Axi_AwAddr   => AxiMs.aw_addr,
+            M_Axi_AwValid  => AxiMs.aw_valid,
+            M_Axi_AwReady  => AxiSm.aw_ready,
+            M_Axi_AwLen    => AxiMs.aw_len,
+            M_Axi_AwSize   => AxiMs.aw_size,
+            M_Axi_AwBurst  => AxiMs.aw_burst,
+            M_Axi_AwLock   => AxiMs.aw_lock,
+            M_Axi_AwCache  => AxiMs.aw_cache,
+            M_Axi_AwProt   => AxiMs.aw_prot,
             -- AXI Write Data Channel
-            M_Axi_WData    => AxiMs.WData,
-            M_Axi_WStrb    => AxiMs.WStrb,
-            M_Axi_WValid   => AxiMs.WValid,
-            M_Axi_WReady   => AxiSm.WReady,
-            M_Axi_WLast    => AxiMs.WLast,
+            M_Axi_WData    => AxiMs.w_data,
+            M_Axi_WStrb    => AxiMs.w_strb,
+            M_Axi_WValid   => AxiMs.w_valid,
+            M_Axi_WReady   => AxiSm.w_ready,
+            M_Axi_WLast    => AxiMs.w_last,
             -- AXI Write Response Channel
-            M_Axi_BResp    => AxiSm.BResp,
-            M_Axi_BValid   => AxiSm.BValid,
-            M_Axi_BReady   => AxiMs.BReady,
+            M_Axi_BResp    => AxiSm.b_resp,
+            M_Axi_BValid   => AxiSm.b_valid,
+            M_Axi_BReady   => AxiMs.b_ready,
             -- AXI Read Address Channel
-            M_Axi_ArAddr   => AxiMs.ArAddr,
-            M_Axi_ArValid  => AxiMs.ArValid,
-            M_Axi_ArReady  => AxiSm.ArReady,
-            M_Axi_ArLen    => AxiMs.ArLen,
-            M_Axi_ArSize   => AxiMs.ArSize,
-            M_Axi_ArBurst  => AxiMs.ArBurst,
-            M_Axi_ArLock   => AxiMs.ArLock,
-            M_Axi_ArCache  => AxiMs.ArCache,
-            M_Axi_ArProt   => AxiMs.ArProt,
+            M_Axi_ArAddr   => AxiMs.ar_addr,
+            M_Axi_ArValid  => AxiMs.ar_valid,
+            M_Axi_ArReady  => AxiSm.ar_ready,
+            M_Axi_ArLen    => AxiMs.ar_len,
+            M_Axi_ArSize   => AxiMs.ar_size,
+            M_Axi_ArBurst  => AxiMs.ar_burst,
+            M_Axi_ArLock   => AxiMs.ar_lock,
+            M_Axi_ArCache  => AxiMs.ar_cache,
+            M_Axi_ArProt   => AxiMs.ar_prot,
             -- AXI Read Data Channel
-            M_Axi_RData    => AxiSm.RData,
-            M_Axi_RValid   => AxiSm.RValid,
-            M_Axi_RReady   => AxiMs.RReady,
-            M_Axi_RResp    => AxiSm.RResp,
-            M_Axi_RLast    => AxiSm.RLast
+            M_Axi_RData    => AxiSm.r_data,
+            M_Axi_RValid   => AxiSm.r_valid,
+            M_Axi_RReady   => AxiMs.r_ready,
+            M_Axi_RResp    => AxiSm.r_resp,
+            M_Axi_RLast    => AxiSm.r_last
         );
 
     -----------------------------------------------------------------------------------------------

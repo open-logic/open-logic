@@ -55,15 +55,15 @@ architecture sim of olo_axi_lite_slave_tb is
     subtype DataRange_c is natural range DataWidth_c-1 downto 0;
     subtype ByteRange_c is natural range ByteWidth_c-1 downto 0;
 
-    signal AxiMs : AxiMs_r (ArId(IdRange_c), AwId(IdRange_c),
-                             ArAddr(AddrRange_c), AwAddr(AddrRange_c),
-                             ArUser(UserRange_c), AwUser(UserRange_c), WUser(UserRange_c),
-                             WData(DataRange_c),
-                             WStrb(ByteRange_c));
+    signal AxiMs : axi_ms_t (ar_id(IdRange_c), aw_id(IdRange_c),
+                              ar_addr(AddrRange_c), aw_addr(AddrRange_c),
+                              ar_user(UserRange_c), aw_user(UserRange_c), w_user(UserRange_c),
+                              w_data(DataRange_c),
+                              w_strb(ByteRange_c));
 
-    signal AxiSm : AxiSm_r (RId(IdRange_c), BId(IdRange_c),
-                             RUser(UserRange_c), BUser(UserRange_c),
-                             RData(DataRange_c));
+    signal AxiSm : axi_sm_t (r_id(IdRange_c), b_id(IdRange_c),
+                              r_user(UserRange_c), b_user(UserRange_c),
+                              r_data(DataRange_c));
 
     -----------------------------------------------------------------------------------------------
     -- Constants
@@ -304,27 +304,27 @@ begin
             Clk                 => Clk,
             Rst                 => Rst,
             -- Read address channel
-            S_AxiLite_ArAddr    => AxiMs.ArAddr,
-            S_AxiLite_ArValid   => AxiMs.ArValid,
-            S_AxiLite_ArReady   => AxiSm.ArReady,
+            S_AxiLite_ArAddr    => AxiMs.ar_addr,
+            S_AxiLite_ArValid   => AxiMs.ar_valid,
+            S_AxiLite_ArReady   => AxiSm.ar_ready,
             -- Read data channel
-            S_AxiLite_RData     => AxiSm.RData,
-            S_AxiLite_RResp     => AxiSm.RResp,
-            S_AxiLite_RValid    => AxiSm.RValid,
-            S_AxiLite_RReady    => AxiMs.RReady,
+            S_AxiLite_RData     => AxiSm.r_data,
+            S_AxiLite_RResp     => AxiSm.r_resp,
+            S_AxiLite_RValid    => AxiSm.r_valid,
+            S_AxiLite_RReady    => AxiMs.r_ready,
             -- Write address channel
-            S_AxiLite_AwAddr    => AxiMs.AwAddr,
-            S_AxiLite_AwValid   => AxiMs.AwValid,
-            S_AxiLite_AwReady   => AxiSm.AwReady,
+            S_AxiLite_AwAddr    => AxiMs.aw_addr,
+            S_AxiLite_AwValid   => AxiMs.aw_valid,
+            S_AxiLite_AwReady   => AxiSm.aw_ready,
             -- Write data channel
-            S_AxiLite_WData     => AxiMs.WData,
-            S_AxiLite_WStrb     => AxiMs.WStrb,
-            S_AxiLite_WValid    => AxiMs.WValid,
-            S_AxiLite_WReady    => AxiSm.WReady,
+            S_AxiLite_WData     => AxiMs.w_data,
+            S_AxiLite_WStrb     => AxiMs.w_strb,
+            S_AxiLite_WValid    => AxiMs.w_valid,
+            S_AxiLite_WReady    => AxiSm.w_ready,
             -- Write response channel
-            S_AxiLite_BResp     => AxiSm.BResp,
-            S_AxiLite_BValid    => AxiSm.BValid,
-            S_AxiLite_BReady    => AxiMs.BReady,
+            S_AxiLite_BResp     => AxiSm.b_resp,
+            S_AxiLite_BValid    => AxiSm.b_valid,
+            S_AxiLite_BReady    => AxiMs.b_ready,
             -- Register Interface
             Rb_Addr             => Rb_Addr,
             Rb_Wr               => Rb_Wr,

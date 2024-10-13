@@ -560,8 +560,8 @@ entity olo_test_axi_slave_vc is
     port (
         clk          : in    std_logic;
         rst          : in    std_logic;
-        axi_ms       : in    AxiMs_r;
-        axi_sm       : out   AxiSm_r
+        axi_ms       : in    axi_ms_t;
+        axi_sm       : out   axi_sm_t
     );
 end entity;
 
@@ -635,7 +635,7 @@ begin
         variable delay    : time;
     begin
         -- Initalize
-        axi_sm.AwReady <= '0';
+        axi_sm.aw_ready <= '0';
         wait until rising_edge(clk);
 
         -- loop messages
@@ -657,20 +657,20 @@ begin
                 delay := pop(msg);
                 -- Execute
                 if delay > 0 ns then
-                    wait until rising_edge(clk) and axi_ms.AwValid = '1';
+                    wait until rising_edge(clk) and axi_ms.aw_valid = '1';
                     wait for delay;
                     wait until rising_edge(clk);
                 end if;
-                axi_sm.AwReady <= '1';
-                wait until rising_edge(clk) and axi_ms.AwValid = '1';
-                check_equal(axi_ms.AwAddr, addr, "expect_aw: AwAddr not as expected");
+                axi_sm.aw_ready <= '1';
+                wait until rising_edge(clk) and axi_ms.aw_valid = '1';
+                check_equal(axi_ms.aw_addr, addr, "expect_aw: aw_addr not as expected");
                 if id /= "X" then
-                    check_equal(axi_ms.AwId, id, "expect_aw: AwId not as expected");
+                    check_equal(axi_ms.aw_id, id, "expect_aw: aw_id not as expected");
                 end if;
-                check_equal(axi_ms.AwLen, len-1, "expect_aw: AwLen not as expected");
-                check_equal(axi_ms.AwBurst, burst, "expect_aw: AwBurst not as expected");
-                axi_sm.AwReady <= '0';
-                aw_completed   := aw_completed + 1;
+                check_equal(axi_ms.aw_len, len-1, "expect_aw: aw_len not as expected");
+                check_equal(axi_ms.aw_burst, burst, "expect_aw: aw_burst not as expected");
+                axi_sm.aw_ready <= '0';
+                aw_completed    := aw_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
@@ -691,7 +691,7 @@ begin
         variable delay    : time;
     begin
         -- Initalize
-        axi_sm.ArReady <= '0';
+        axi_sm.ar_ready <= '0';
         wait until rising_edge(clk);
 
         -- loop messages
@@ -713,20 +713,20 @@ begin
                 delay := pop(msg);
                 -- Execute
                 if delay > 0 ns then
-                    wait until rising_edge(clk) and axi_ms.ArValid = '1';
+                    wait until rising_edge(clk) and axi_ms.ar_valid = '1';
                     wait for delay;
                     wait until rising_edge(clk);
                 end if;
-                axi_sm.ArReady <= '1';
-                wait until rising_edge(clk) and axi_ms.ArValid = '1';
-                check_equal(axi_ms.ArAddr, addr, "expect_ar: ArAddr not as expected");
+                axi_sm.ar_ready <= '1';
+                wait until rising_edge(clk) and axi_ms.ar_valid = '1';
+                check_equal(axi_ms.ar_addr, addr, "expect_ar: ar_addr not as expected");
                 if id /= "X" then
-                    check_equal(axi_ms.ArId, id, "expect_ar: ArId not as expected");
+                    check_equal(axi_ms.ar_id, id, "expect_ar: ar_id not as expected");
                 end if;
-                check_equal(axi_ms.ArLen, len-1, "expect_ar: ArLen not as expected");
-                check_equal(axi_ms.ArBurst, burst, "expect_ar: ArBurst not as expected");
-                axi_sm.ArReady <= '0';
-                ar_completed   := ar_completed + 1;
+                check_equal(axi_ms.ar_len, len-1, "expect_ar: ar_len not as expected");
+                check_equal(axi_ms.ar_burst, burst, "expect_ar: ar_burst not as expected");
+                axi_sm.ar_ready <= '0';
+                ar_completed    := ar_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
@@ -747,7 +747,7 @@ begin
         variable beat_delay : time;
     begin
         -- Initalize
-        axi_sm.WReady <= '0';
+        axi_sm.w_ready <= '0';
         wait until rising_edge(clk);
 
         -- loop messages
@@ -770,11 +770,11 @@ begin
                 beat_delay := pop(msg);
                 -- Execute
                 if delay > 0 ns then
-                    wait until rising_edge(clk) and axi_ms.WValid = '1';
+                    wait until rising_edge(clk) and axi_ms.w_valid = '1';
                     wait for delay;
                     wait until rising_edge(clk);
                 end if;
-                axi_sm.WReady <= '1';
+                axi_sm.w_ready <= '1';
 
                 -- loop through beats
                 loop
@@ -782,30 +782,31 @@ begin
                     data := pop(msg);
                     strb := pop(msg);
                     last := pop(msg);
-                    wait until rising_edge(clk) and axi_ms.WValid = '1';
+                    wait until rising_edge(clk) and axi_ms.w_valid = '1';
                     -- Data
-                    if signed(axi_ms.WStrb) = -1 then -- compare wordwise is all strobes are set
-                        check_equal(axi_ms.WData, data, "expect_w: WData not as expected");
+                    if signed(axi_ms.w_strb) = -1 then -- compare wordwise is all strobes are set
+                        check_equal(axi_ms.w_data, data, "expect_w: w_data not as expected");
                     else -- compare bytewise otherwise
 
                         -- Loop through bytes
-                        for i in 0 to axi_ms.WData'length/8-1 loop
-                            if axi_ms.WStrb(i) = '1' then
-                                check_equal(axi_ms.WData(8*(i+1)-1 downto 8*i), data(8*(i+1)-1 downto 8*i), "expect_w: Wrong WData[" & integer'image(i) & "]");
+                        for i in 0 to axi_ms.w_data'length/8-1 loop
+                            if axi_ms.w_strb(i) = '1' then
+                                check_equal(axi_ms.w_data(8*(i+1)-1 downto 8*i), data(8*(i+1)-1 downto 8*i),
+                                            "expect_w: Wrong w_data[" & integer'image(i) & "]");
                             end if;
                         end loop;
 
                     end if;
                     -- Strobe
-                    check_equal(axi_ms.WStrb, strb, "expect_w: WStrb not as expected");
+                    check_equal(axi_ms.w_strb, strb, "expect_w: w_strb not as expected");
                     -- Last
-                    check_equal(axi_ms.WLast, last, "expect_w: WLast not as expected");
+                    check_equal(axi_ms.w_last, last, "expect_w: w_last not as expected");
                     -- Add delay
                     if beat_delay > 0 ns then
-                        axi_sm.WReady <= '0';
+                        axi_sm.w_ready <= '0';
                         wait for beat_delay;
                         wait until rising_edge(clk);
-                        axi_sm.WReady <= '1';
+                        axi_sm.w_ready <= '1';
                     end if;
                     -- Abort loop after last word
                     if last = '1' then
@@ -813,8 +814,8 @@ begin
                     end if;
                 end loop;
 
-                axi_sm.WReady <= '0';
-                w_completed   := w_completed + 1;
+                axi_sm.w_ready <= '0';
+                w_completed    := w_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
@@ -833,10 +834,10 @@ begin
         variable delay    : time;
     begin
         -- Initalize
-        axi_sm.BValid <= '0';
-        axi_sm.BResp  <= xRESP_OKAY_c;
-        axi_sm.BId    <= toUslv(0, instance.id_width);
-        axi_sm.BUser  <= toUslv(0, axi_sm.BUser'length);
+        axi_sm.b_valid <= '0';
+        axi_sm.b_resp  <= xRESP_OKAY_c;
+        axi_sm.b_id    <= toUslv(0, instance.id_width);
+        axi_sm.b_user  <= toUslv(0, axi_sm.b_user'length);
         wait until rising_edge(clk);
 
         -- loop messages
@@ -863,14 +864,14 @@ begin
                     wait for delay;
                     wait until rising_edge(clk);
                 end if;
-                axi_sm.BValid <= '1';
-                axi_sm.BResp  <= resp;
-                axi_sm.BId    <= id;
-                wait until rising_edge(clk) and axi_ms.BReady = '1';
-                axi_sm.BValid <= '0';
-                axi_sm.BResp  <= xRESP_OKAY_c;
-                axi_sm.BId    <= toUslv(0, instance.id_width);
-                b_completed   := b_completed + 1;
+                axi_sm.b_valid <= '1';
+                axi_sm.b_resp  <= resp;
+                axi_sm.b_id    <= id;
+                wait until rising_edge(clk) and axi_ms.b_ready = '1';
+                axi_sm.b_valid <= '0';
+                axi_sm.b_resp  <= xRESP_OKAY_c;
+                axi_sm.b_id    <= toUslv(0, instance.id_width);
+                b_completed    := b_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
@@ -892,12 +893,12 @@ begin
         variable beat_delay : time;
     begin
         -- Initalize
-        axi_sm.RValid <= '0';
-        axi_sm.RResp  <= xRESP_OKAY_c;
-        axi_sm.RId    <= toUslv(0, instance.id_width);
-        axi_sm.RData  <= toUslv(0, instance.data_width);
-        axi_sm.RUser  <= toUslv(0, axi_sm.RUser'length);
-        axi_sm.RLast  <= '0';
+        axi_sm.r_valid <= '0';
+        axi_sm.r_resp  <= xRESP_OKAY_c;
+        axi_sm.r_id    <= toUslv(0, instance.id_width);
+        axi_sm.r_data  <= toUslv(0, instance.data_width);
+        axi_sm.r_user  <= toUslv(0, axi_sm.r_user'length);
+        axi_sm.r_last  <= '0';
         wait until rising_edge(clk);
 
         -- loop messages
@@ -932,13 +933,13 @@ begin
                     data := pop(msg);
                     last := pop(msg);
                     -- Apply AXI data
-                    axi_sm.RData  <= std_logic_vector(data);
-                    axi_sm.RLast  <= last;
-                    axi_sm.RResp  <= resp;
-                    axi_sm.RId    <= id;
-                    axi_sm.RValid <= '1';
-                    wait until rising_edge(clk) and axi_ms.RReady = '1';
-                    axi_sm.RValid <= '0';
+                    axi_sm.r_data  <= std_logic_vector(data);
+                    axi_sm.r_last  <= last;
+                    axi_sm.r_resp  <= resp;
+                    axi_sm.r_id    <= id;
+                    axi_sm.r_valid <= '1';
+                    wait until rising_edge(clk) and axi_ms.r_ready = '1';
+                    axi_sm.r_valid <= '0';
                     if beat_delay > 0 ns then
                         wait for beat_delay;
                         wait until rising_edge(clk);
@@ -950,11 +951,11 @@ begin
                 end loop;
 
                 -- Return to idle
-                axi_sm.RData <= toUslv(0, instance.data_width);
-                axi_sm.RLast <= '0';
-                axi_sm.RResp <= xRESP_OKAY_c;
-                axi_sm.RId   <= toUslv(0, instance.id_width);
-                r_completed  := r_completed + 1;
+                axi_sm.r_data <= toUslv(0, instance.data_width);
+                axi_sm.r_last <= '0';
+                axi_sm.r_resp <= xRESP_OKAY_c;
+                axi_sm.r_id   <= toUslv(0, instance.id_width);
+                r_completed   := r_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
