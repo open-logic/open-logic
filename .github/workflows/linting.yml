@@ -49,5 +49,5 @@ jobs:
         with:
           name: Linting Results
           path: lint/report/vsg_normal_vhdl.xml 
-          reporter: checkstyle
+          reporter: jest-junit
           fail-on-error: false
