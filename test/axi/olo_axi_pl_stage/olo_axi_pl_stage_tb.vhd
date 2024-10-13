@@ -378,8 +378,8 @@ begin
             Instance => AxiSlave_c
         )
         port map (
-            Clk   => Clk,
-            Rst   => Rst,
+            Clk    => Clk,
+            Rst    => Rst,
             Axi_Ms => AxiMs_S,
             Axi_Sm => AxiSm_S
         );

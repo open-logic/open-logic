@@ -557,7 +557,7 @@ begin
 
         -- *** Update Signal ***
         r_next <= v;
-    end process; 
+    end process;
 
     -- *** Registered Process ***
     p_reg : process (Clk) is
