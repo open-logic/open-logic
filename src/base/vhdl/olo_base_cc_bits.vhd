@@ -52,40 +52,51 @@ architecture struct of olo_base_cc_bits is
     signal Reg1  : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
 
     -- Synthesis attributes AMD (Vivado)
-    attribute SHREG_EXTRACT : string;
-    attribute SHREG_EXTRACT of Reg0  : signal is "no";
-    attribute SHREG_EXTRACT of Reg1  : signal is "no";
-    attribute SHREG_EXTRACT of RegIn : signal is "no";
+    attribute shreg_extract : string;
+    attribute shreg_extract of Reg0  : signal is "no";
+    attribute shreg_extract of Reg1  : signal is "no";
+    attribute shreg_extract of RegIn : signal is "no";
 
     -- Synthesis attributes for AMD (Vivado) and Efinix (Efinity)
-    attribute ASYNC_REG : boolean;
-    attribute ASYNC_REG of Reg0  : signal is true;
-    attribute ASYNC_REG of Reg1  : signal is true;
-    attribute ASYNC_REG of RegIn : signal is true;
+    attribute async_reg : boolean;
+    attribute async_reg of Reg0  : signal is true;
+    attribute async_reg of Reg1  : signal is true;
+    attribute async_reg of RegIn : signal is true;
 
-    attribute SYN_SRLSTYLE : string;
-    attribute SYN_SRLSTYLE of Reg0  : signal is "registers";
-    attribute SYN_SRLSTYLE of Reg1  : signal is "registers";
-    attribute SYN_SRLSTYLE of RegIn : signal is "registers";
+    attribute syn_srlstyle : string;
+    attribute syn_srlstyle of Reg0  : signal is "registers";
+    attribute syn_srlstyle of Reg1  : signal is "registers";
+    attribute syn_srlstyle of RegIn : signal is "registers";
 
     -- Synthesis attributes Altera (Quartus)
-    attribute DONT_MERGE : boolean;
-    attribute DONT_MERGE of Reg0  : signal is true;
-    attribute DONT_MERGE of Reg1  : signal is true;
-    attribute DONT_MERGE of RegIn : signal is true;
+    attribute dont_merge : boolean;
+    attribute dont_merge of Reg0  : signal is true;
+    attribute dont_merge of Reg1  : signal is true;
+    attribute dont_merge of RegIn : signal is true;
 
-    attribute PRESERVE : boolean;
-    attribute PRESERVE of Reg0  : signal is true;
-    attribute PRESERVE of Reg1  : signal is true;
-    attribute PRESERVE of RegIn : signal is true;
+    attribute preserve : boolean;
+    attribute preserve of Reg0  : signal is true;
+    attribute preserve of Reg1  : signal is true;
+    attribute preserve of RegIn : signal is true;
+
+    -- Synchthesis attributes for Synopsis (Lattice, Microchip)
+    attribute syn_preserve : boolean;
+    attribute syn_preserve of Reg0  : signal is true;
+    attribute syn_preserve of Reg1  : signal is true;
+    attribute syn_preserve of RegIn : signal is true;
+
+    attribute syn_keep : boolean;
+    attribute syn_keep of Reg0  : signal is true;
+    attribute syn_keep of Reg1  : signal is true;
+    attribute syn_keep of RegIn : signal is true;
 
     signal In_Clk_Sig : std_logic;
 
-    -- Synthesis attributes Xilinx
-    attribute DONT_TOUCH                    : boolean;
-    attribute KEEP                          : string;
-    attribute DONT_TOUCH of In_Clk_Sig : signal is true;
-    attribute KEEP of In_Clk_Sig       : signal is "yes";
+    -- Synthesis attributes automatic constraining (AMD only)
+    attribute dont_touch               : boolean;
+    attribute keep                     : string;
+    attribute dont_touch of In_Clk_Sig : signal is true;
+    attribute keep of In_Clk_Sig       : signal is "yes";
 
 begin
 

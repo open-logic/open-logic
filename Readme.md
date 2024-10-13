@@ -16,7 +16,13 @@
 
 Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 
+An [Introduction Video](https://www.youtube.com/watch?v=hh3bS1SiIQs&t=6s) to open logic can be found on youtube. If you are new to Open Logic, this is a good starting point.
+
 Maintainer: [obruendl](oliver.bruendler@gmx.ch)
+
+If you appreciate the project, consider **supporting it with a small donation**. If you're part of a commercial company that prefers purchasing services over making voluntary donations, that's no problem. You can also **purchase offerings** such as **workshops** and **priority support**. Click the button below to visit the sponsors page.
+
+[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/open-logic)
 
 ## Structure
 
@@ -48,6 +54,8 @@ It's suggested that you compile ALL files of the areas you need (plus their depe
   * [Quartus Tutorial](./doc/tutorials/QuartusTutorial.md) - for VHDL and System Verilog
   * [Efinity Tutorial](./doc/tutorials/EfinityTutorial.md) - for VHDL and System Verilog
   * [Questa Tutorial](./doc/tutorials/QuestasimTutorial.md) - for VHDL and System Verilog
+
+* [Instructions for Contributors](./Contributing.md)
 
 ## Project Philosophy
 
@@ -81,17 +89,13 @@ This goal is self explaining. It is implemented as follows:
 
 ### Pure VHDL
 
-*Open Logic* does not rely on vendor specific code (e.g. primitives) and can be compiled to very FPGA. Code is written with different technologies in mind (e.g. using read-before-write or write-before-read blockRAM, containing synthesis attributes for different tools) and hence works efficiently on all devices available and is known to be portable to future device families. Portability to new device families in general does not need any update on the *Open Logic* library.
+*Open Logic* does not rely on vendor specific code (e.g. primitives) and can be compiled to every FPGA. Code is written with different technologies in mind (e.g. using read-before-write or write-before-read blockRAM, containing synthesis attributes for different tools) and hence works efficiently on all devices available and is known to be portable to future device families. Portability to new device families in general does not need any update on the *Open Logic* library.
 
 Thanks to the *pure VHDL* philosophy, *Open Logic* simulates fast and is fully supported by the open-source GHDL simulator. This is crucial for an open-source project because it allows participating on the development at zero tool-cost.
 
 ## How to Contribute
 
-Of course you are more than welcome to contribute to the project.
-
-The easiest way of doing so, is by simply using *Open Logic* - and report any issues you find. That may be an idea for a new feature, a bug or simply unclear documentation. Any feedback is appreciated and will help improving the usability of *Open Logic*.
-
-If you want to contribute code, ideally you fork to your own GitHub account and hand in your changes as Pull-Request. You are welcome to discuss your ideas beforehand with (ideally as an issue in GitHub) - this might shorten the path to get your code accepted in *Open Logic*.
+See [Contributing](./Contributing.md).
 
 ## Origin of the Project
 

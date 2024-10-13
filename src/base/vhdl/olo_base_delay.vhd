@@ -52,8 +52,9 @@ architecture rtl of olo_base_delay is
     signal MemOut      : std_logic_vector(Width_g - 1 downto 0);
     constant MemTaps_c : natural := work.olo_base_pkg_math.max(Delay_g - 1, 0);
 
-    attribute SHREG_EXTRACT : string;
-    attribute SRL_STYLE : string;
+    -- Only AMD attributes, other tools do not do Shreg extraction or don't allow controlling it via attributes
+    attribute shreg_extract : string;
+    attribute srl_style     : string;
 
 begin
 
@@ -75,8 +76,8 @@ begin
 
         -- local signals
         signal SrlSig : Srl_t := (others => (others => '0'));
-        attribute SHREG_EXTRACT of SrlSig : signal is "true";
-        attribute SRL_STYLE of SrlSig : signal is "srl";
+        attribute shreg_extract of SrlSig : signal is "true";
+        attribute srl_style of SrlSig     : signal is "srl";
     begin
 
         p_srl : process (Clk) is

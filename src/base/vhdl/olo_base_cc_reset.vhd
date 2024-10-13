@@ -42,45 +42,58 @@ architecture struct of olo_base_cc_reset is
     -- Domain A signals
     signal RstALatch  : std_logic                    := '1';
     signal RstRqstB2A : std_logic_vector(2 downto 0) := (others => '0');
-    signal RstAckB2A  : std_logic; -- std_logic_vector(2 downto 0) := (others => '0');
+    signal RstAckB2A  : std_logic;
 
     -- Domain B signals
     signal RstBLatch  : std_logic                    := '1';
     signal RstRqstA2B : std_logic_vector(2 downto 0) := (others => '0');
-    signal RstAckA2B  : std_logic; -- std_logic_vector(2 downto 0) := (others => '0');
+    signal RstAckA2B  : std_logic;
 
     -- Synthesis attributes AMD (Vivado)
-    attribute SHREG_EXTRACT : string;
-    attribute SHREG_EXTRACT of RstRqstB2A : signal is "no";
-    attribute SHREG_EXTRACT of RstAckB2A  : signal is "no";
-    attribute SHREG_EXTRACT of RstRqstA2B : signal is "no";
-    attribute SHREG_EXTRACT of RstAckA2B  : signal is "no";
+    attribute shreg_extract : string;
+    attribute shreg_extract of RstRqstB2A : signal is "no";
+    attribute shreg_extract of RstAckB2A  : signal is "no";
+    attribute shreg_extract of RstRqstA2B : signal is "no";
+    attribute shreg_extract of RstAckA2B  : signal is "no";
 
     -- Synthesis attributes AMD (Vivado) and Efinix (Efinity)
-    attribute SYN_SRLSTYLE : string;
-    attribute SYN_SRLSTYLE of RstRqstB2A : signal is "registers";
-    attribute SYN_SRLSTYLE of RstAckB2A  : signal is "registers";
-    attribute SYN_SRLSTYLE of RstRqstA2B : signal is "registers";
-    attribute SYN_SRLSTYLE of RstAckA2B  : signal is "registers";
+    attribute syn_srlstyle : string;
+    attribute syn_srlstyle of RstRqstB2A : signal is "registers";
+    attribute syn_srlstyle of RstAckB2A  : signal is "registers";
+    attribute syn_srlstyle of RstRqstA2B : signal is "registers";
+    attribute syn_srlstyle of RstAckA2B  : signal is "registers";
 
-    attribute ASYNC_REG : boolean;
-    attribute ASYNC_REG of RstRqstB2A : signal is true;
-    attribute ASYNC_REG of RstAckB2A  : signal is true;
-    attribute ASYNC_REG of RstRqstA2B : signal is true;
-    attribute ASYNC_REG of RstAckA2B  : signal is true;
+    attribute async_reg : boolean;
+    attribute async_reg of RstRqstB2A : signal is true;
+    attribute async_reg of RstAckB2A  : signal is true;
+    attribute async_reg of RstRqstA2B : signal is true;
+    attribute async_reg of RstAckA2B  : signal is true;
 
     -- Synthesis attributes Altera (Quartus)
-    attribute DONT_MERGE : boolean;
-    attribute DONT_MERGE of RstRqstB2A : signal is true;
-    attribute DONT_MERGE of RstAckB2A  : signal is true;
-    attribute DONT_MERGE of RstRqstA2B : signal is true;
-    attribute DONT_MERGE of RstAckA2B  : signal is true;
+    attribute dont_merge : boolean;
+    attribute dont_merge of RstRqstB2A : signal is true;
+    attribute dont_merge of RstAckB2A  : signal is true;
+    attribute dont_merge of RstRqstA2B : signal is true;
+    attribute dont_merge of RstAckA2B  : signal is true;
 
-    attribute PRESERVE : boolean;
-    attribute PRESERVE of RstRqstB2A : signal is true;
-    attribute PRESERVE of RstAckB2A  : signal is true;
-    attribute PRESERVE of RstRqstA2B : signal is true;
-    attribute PRESERVE of RstAckA2B  : signal is true;
+    attribute preserve : boolean;
+    attribute preserve of RstRqstB2A : signal is true;
+    attribute preserve of RstAckB2A  : signal is true;
+    attribute preserve of RstRqstA2B : signal is true;
+    attribute preserve of RstAckA2B  : signal is true;
+
+    -- Synchthesis attributes for Synopsis (Lattice, Microchip)
+    attribute syn_keep : boolean;
+    attribute syn_keep of RstRqstB2A : signal is true;
+    attribute syn_keep of RstAckB2A  : signal is true;
+    attribute syn_keep of RstRqstA2B : signal is true;
+    attribute syn_keep of RstAckA2B  : signal is true;
+
+    attribute syn_preserve : boolean;
+    attribute syn_preserve of RstRqstB2A : signal is true;
+    attribute syn_preserve of RstAckB2A  : signal is true;
+    attribute syn_preserve of RstRqstA2B : signal is true;
+    attribute syn_preserve of RstAckA2B  : signal is true;
 
 begin
 
@@ -97,7 +110,6 @@ begin
     p_a_rst : process (A_Clk) is
     begin
         if rising_edge(A_Clk) then
-            -- RstAckB2A <= RstAckB2A(RstAckB2A'left - 1 downto 0) & RstRqstA2B(RstRqstA2B'left);
             -- Latch reset when it occurs
             if A_RstIn = '1' then
                 RstALatch <= '1';
@@ -123,7 +135,6 @@ begin
     p_b_rst : process (B_Clk) is
     begin
         if rising_edge(B_Clk) then
-            -- RstAckA2B <= RstAckA2B(RstAckA2B'left - 1 downto 0) & RstRqstB2A(RstRqstB2A'left);
             -- Latch reset when it occurs
             if B_RstIn = '1' then
                 RstBLatch <= '1';

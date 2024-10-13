@@ -1,0 +1,11 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p........', period: 2},
+  {name: 'In_Valid',   	 wave: '0101..0..', period: 2},
+  {name: 'In_Data',   	 wave: 'x3x456x..', period: 2, data:["0x0008", "0x0000", "0x1000", "0x1008"]},
+  {name: 'Out_Valid',    wave: '0..101..0', period: 2},
+  {name: 'Out_FirstBit', wave: 'x..3x4x6x', period: 2, data: ["3", "12", "3"], },
+  {name: 'Out_Found',    wave: 'x..1x101x', period: 2},
+
+
+
+]}

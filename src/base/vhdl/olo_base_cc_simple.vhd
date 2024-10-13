@@ -55,10 +55,11 @@ architecture struct of olo_base_cc_simple is
     signal Out_Data_Sig : std_logic_vector(Width_g - 1 downto 0);
 
     -- Synthesis attributes AMD (Vivado)
-    attribute DONT_TOUCH             : boolean;
-    attribute KEEP                   : string;
-    attribute DONT_TOUCH of Out_Data_Sig : signal is true;
-    attribute KEEP of Out_Data_Sig       : signal is "yes";
+    -- .. required for automatic constraining only, therefore for vivado only
+    attribute dont_touch             : boolean;
+    attribute keep                   : string;
+    attribute dont_touch of Out_Data_Sig : signal is true;
+    attribute keep of Out_Data_Sig       : signal is "yes";
 
 begin
 

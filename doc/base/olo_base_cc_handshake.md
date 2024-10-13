@@ -61,7 +61,7 @@ Note that this architecture is optimized for simplicity and not for throughput.
 
 
 
-![architecture](/home/oli/work/olo/open-logic/doc/base/clock_crossings/olo_base_cc_handshake.svg)
+![architecture](./clock_crossings/olo_base_cc_handshake.svg)
 
 Regarding timing constraints, refer to [clock-crossing principles](clock_crossing_principles.md).
 

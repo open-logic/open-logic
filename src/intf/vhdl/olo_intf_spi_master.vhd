@@ -96,20 +96,21 @@ architecture rtl of olo_intf_spi_master is
     signal SpiMiso_i : std_logic;
 
     -- Synthesis attributes Altera (Quartus)
-    attribute DONT_MERGE : boolean;
-    attribute DONT_MERGE of SpiMiso_i : signal is true;
-    attribute PRESERVE : boolean;
-    attribute PRESERVE of SpiMiso_i   : signal is true;
+    attribute dont_merge : boolean;
+    attribute dont_merge of SpiMiso_i : signal is true;
+    attribute preserve : boolean;
+    attribute preserve of SpiMiso_i   : signal is true;
 
     -- Synthesis attributes for AMD (Vivado)
-    attribute KEEP : string;
-    attribute KEEP of SpiMiso_i       : signal is "TRUE";
-    attribute DONT_TOUCH : string;
-    attribute DONT_TOUCH of SpiMiso_i : signal is "TRUE";
+    attribute keep : string;
+    attribute keep of SpiMiso_i       : signal is "TRUE";
+    attribute dont_touch : string;
+    attribute dont_touch of SpiMiso_i : signal is "TRUE";
 
-    -- Synthesis attributes for Efnix (Efinity)
-    attribute SYN_KEEP : boolean;
-    attribute SYN_KEEP of SpiMiso_i : signal is true;
+    -- Efinix RAM implementation attributes
+    -- Same attribute works for Synplify (Lattice, Microchip)
+    attribute syn_keep : boolean;
+    attribute syn_keep of SpiMiso_i : signal is true;
 
     -- *** Functions and procedures ***
     function getClockLevel (ClkActive : boolean) return std_logic is

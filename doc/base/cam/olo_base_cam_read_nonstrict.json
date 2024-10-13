@@ -1,0 +1,18 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p......................', period: 2},
+  {name: 'Wr_Valid',   	 wave: '01.0...10.....1.......0', period: 2},
+  {name: 'Wr_Ready',   	 wave: '101.....01....0..101010', period: 2},
+  {name: 'Wr_Addr',   	 wave: 'x3.x...5x.....6...7.8.x', data: [7, 2], period: 2},
+  {name: 'Wr_Content',   wave: 'x3.x...5x.....6...7.8.x', data: ["0x7777", "0x1234"], period: 2},
+  {name: 'Wr_Write',   	 wave: 'x1.x...0x.....6...7.8.x', period: 2},
+  {name: 'Wr_Clear',   	 wave: 'x0.x...1x.....6...7.8.x', period: 2},
+  {name: 'Rd_Valid',   	 wave: '010.....10....1..0.....', period: 2},
+  {name: 'Rd_Ready',   	 wave: '1......................', period: 2},
+  {name: 'Rd_Content',   wave: 'x4x.....5x....678x.....', data: ["0xABCD", "0x1234"], period: 2},
+  {name: 'Addr_Valid',   wave: '0....10.....10....1..0.', period: 2},
+  {name: 'Addr_Found',   wave: 'x....1x.....1x....678x.', period: 2},
+  {name: 'Addr_Addr',    wave: 'x....4x.....5x....678x.', data:[3, 2], period: 2},
+
+
+
+]}

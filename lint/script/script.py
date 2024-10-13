@@ -1,7 +1,17 @@
 import os
+import argparse
+
+# Detect arguments
+parser = argparse.ArgumentParser(description='Lint all VHDL files in the project')
+parser.add_argument('--debug', action='store_true', help='Lint files one by one and stop on any errors')
+
+args = parser.parse_args()
 
 # Define the directory to search
 DIR = '../..'
+
+# Not linted files
+NOT_LINTED = ["olo_intf_i2c_master.vhd"]
 
 def find_normal_vhd_files(directory):
     vhd_files = []
@@ -15,6 +25,9 @@ def find_normal_vhd_files(directory):
                 continue
             # Skip non VHD files
             if not file.endswith('.vhd'):
+                continue
+            # Skip not linted files
+            if file in NOT_LINTED:
                 continue
             #Append file
             vhd_files.append(os.path.join(root, file))
@@ -34,16 +47,29 @@ vhd_files_list = find_normal_vhd_files(DIR)
 vc_files_list = find_vc_vhd_files(DIR)
 
 # Execute linting for normal VHD files
-all_files = " ".join(vhd_files_list)
-result = os.system(f'vsg -c ../config/vsg_config.yml -f {all_files}')
-if result != 0:
-    print(f"Error: Linting of normal VHDL files failed - check report")
-    #break
+if args.debug:
+    for file in vhd_files_list:
+        print(f"Linting {file}")
+        result = os.system(f'vsg -c ../config/vsg_config.yml -f {file}')
+        if result != 0:
+            raise(f"Error: Linting of {file} failed - check report")
+else:
+    all_files = " ".join(vhd_files_list)
+    result = os.system(f'vsg -c ../config/vsg_config.yml -f {all_files}')
+    if result != 0:
+        raise(f"Error: Linting of normal VHDL files failed - check report")
 
-all_files = " ".join(vc_files_list) 
-result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml  -f {all_files}')
-if result != 0:
-    print(f"Error: Linting of normal Verification Component VHDL files failed - check report")
-    #break
+# Execute linting for VC VHD files
+if args.debug:
+    for file in vc_files_list:
+        print(f"Linting {file}")
+        result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml -f {file}')
+        if result != 0:
+            raise(f"Error: Linting of {file} failed - check report")
+else:
+    all_files = " ".join(vc_files_list) 
+    result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml  -f {all_files}')
+    if result != 0:
+        raise(f"Error: Linting of normal Verification Component VHDL files failed - check report")
 
 

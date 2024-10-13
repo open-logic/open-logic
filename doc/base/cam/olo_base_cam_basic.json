@@ -1,0 +1,17 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p..............', period: 2},
+  {name: 'Wr_Valid',   	 wave: '01010..........', period: 2},
+  {name: 'Wr_Addr',   	 wave: 'x3x4x..........', data: [1, 2], period: 2},
+  {name: 'Wr_Content',   wave: 'x3x4x..........', data: ["0x1234", "0xABCD"], period: 2},
+  {name: 'Wr_Write',   	 wave: '01010..........', period: 2},
+  {name: 'Rd_Valid',   	 wave: '0.....101.0....', period: 2},
+  {name: 'Rd_Content',   wave: 'x.....4x35x....', data: ["0xABCD", "0x1234", "0xEEEE"], period: 2},
+  {name: 'Match_Valid',  wave: '0........101.0.', period: 2},
+  {name: 'Match_Match',  wave: 'x........4x35x.', data: ["0100", "0010", "0000"], period: 2},
+  {name: 'Addr_Valid',   wave: '0.........101.0', period: 2},
+  {name: 'Addr_Found',   wave: 'x.........1x10x', period: 2},
+  {name: 'Addr_Addr',    wave: 'x.........4x35x', data:[2, 1, 0], period: 2},
+
+
+
+]}

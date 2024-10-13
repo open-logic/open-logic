@@ -1,5 +1,5 @@
 CAPI=2:
-name : open-logic:tutorials:quartus_tutorial:2.1.0
+name : open-logic:tutorials:quartus_tutorial:2.3.0
 description : quartus tutorial for open-logic, targetting DE0-CV board
 
 filesets:
@@ -34,4 +34,4 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 2.1.0
+  version : 2.3.0

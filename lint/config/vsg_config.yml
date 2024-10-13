@@ -927,7 +927,7 @@ rule:
         phase: 6
     attribute_declaration_501:
         # This rule checks the identifier has proper case.
-        case: upper
+        case: lower
         case_exceptions: []
         phase: 6
         prefix_exceptions: []
@@ -954,7 +954,7 @@ rule:
         phase: 6
     attribute_specification_501:
         # This rule checks the attribute_designator has proper case.
-        case: upper
+        case: lower
         case_exceptions: []
         phase: 6
         prefix_exceptions: []

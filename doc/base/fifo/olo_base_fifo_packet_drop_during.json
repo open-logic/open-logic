@@ -1,0 +1,13 @@
+{signal: [     
+  {name: 'Clk',          wave: 'p.................'},
+  {name: 'In_Valid',   	 wave: '01010101...0......', phase: -0.0},
+  {name: 'In_Ready',   	 wave: '1.................'},
+  {name: 'In_Last',      wave: 'x0x0x1x0..1x......'},
+  {name: 'In_Data',      wave: 'x3x3x3x4444x......', data:["1","2", "3", "4", "5", "6", "7"]},
+  {name: 'In_Drop',      wave: 'x0.1x..0...x......'},
+  {name: 'In_IsDropped', wave: '0..1..0...........'},
+  {name: 'Out_Valid',    wave: '0............1...0'},
+  {name: 'Out_Ready',    wave: '1.................'},
+  {name: 'Out_Last',     wave: '0...............10'},
+  {name: 'Out_Data',     wave: 'x............4444x', data:[ "4", "5", "6", "7"]},
+]}

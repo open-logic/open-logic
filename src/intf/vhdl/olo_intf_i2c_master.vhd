@@ -133,8 +133,8 @@ architecture rtl of olo_intf_i2c_master is
     end record;
 
     signal r, r_next : TwoProcess_r;
-    attribute DONT_TOUCH : string;
-    attribute DONT_TOUCH of r : signal is "true"; -- Required to Fix Vivado 2018.2 Synthesis Bug! Is fixed in Vivado 2019.1 according to Xilinx.
+    attribute dont_touch : string;
+    attribute dont_touch of r : signal is "true"; -- Required to Fix Vivado 2018.2 Synthesis Bug! Is fixed in Vivado 2019.1 according to Xilinx.
 
     -- Tri-state buffer muxing
     signal I2cScl_Input : std_logic;

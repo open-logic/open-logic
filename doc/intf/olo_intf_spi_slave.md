@@ -29,7 +29,7 @@ On the user-side there are 3 AXI4-Stream interfaces:
 
 The all SPI signals are properly synchronized to *Clk* using [olo_intf_sync](./olo_intf_sync.md) within *olo_intf_spi_slave*.
 
-The maximum supported *Spi_Sclk* frequency is 10x less than the *Clk* frequency (with some tricks up to 6x less).
+The maximum supported *Spi_Sclk* frequency is 10x less than the *Clk* frequency (with some tricks up to 8x less).
 
 ## Generics
 
@@ -198,8 +198,6 @@ The propagation delay from *Spi_Sclk* edges to the application of *Spi_Miso* dat
 *Spi_Sclk* frequencies above 1/10 of the *Clk* frequencies is possible with some special considerations, which violate the normal AXI4-Stream handshaking.
 
 For *Spi_Sclk* frequencies between 1/8 and 1/10 of the *Clk* frequency, ensure that *Tx_Valid* goes high not more than two clock cycles after *Tx_Ready* is asserted. This limitation applies even if *Tx_Ready* stays high for longer.
-
-For *Spi_Sclk* frequencies between 1/6 and 1/8 of the *Clk* frequency, ensure that *Tx_Valid* goes high not more than one clock cycle after *Tx_Ready* is asserted. This limitation applies even if *Tx_Ready* stays high for longer.
 
 For high *Spi_Sclk* frequencies, the *Spi_Miso* line is timing critical regarding routing.
 

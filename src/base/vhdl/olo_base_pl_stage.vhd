@@ -238,28 +238,33 @@ begin
         signal DataReg : std_logic_vector(Width_g-1 downto 0);
 
         -- Synthesis attributes AMD (Vivado)
-        attribute SHREG_EXTRACT : string;
-        attribute SHREG_EXTRACT of VldReg : signal is "no";
-        attribute SHREG_EXTRACT of DataReg : signal is "no";
+        attribute shreg_extract : string;
+        attribute shreg_extract of VldReg : signal is "no";
+        attribute shreg_extract of DataReg : signal is "no";
 
         -- Synthesis attributes AMD (Vivado) and Efinix (Efinity)
-        attribute SYN_SRLSTYLE : string;
-        attribute SYN_SRLSTYLE of VldReg : signal is "registers";
-        attribute SYN_SRLSTYLE of DataReg : signal is "registers";
-
-        -- Synthesis attributes Efinix (Efinity)
-        attribute SYN_PRESERVE : boolean;
-        attribute SYN_PRESERVE of VldReg : signal is true;
-        attribute SYN_PRESERVE of DataReg : signal is true;
+        attribute syn_srlstyle : string;
+        attribute syn_srlstyle of VldReg : signal is "registers";
+        attribute syn_srlstyle of DataReg : signal is "registers";
 
         -- Synthesis attributes Altera (Quartus)
-        attribute DONT_MERGE : boolean;
-        attribute DONT_MERGE of VldReg : signal is true;
-        attribute DONT_MERGE of DataReg : signal is true;
+        attribute dont_merge : boolean;
+        attribute dont_merge of VldReg : signal is true;
+        attribute dont_merge of DataReg : signal is true;
 
-        attribute PRESERVE : boolean;
-        attribute PRESERVE of VldReg : signal is true;
-        attribute PRESERVE of DataReg : signal is true;
+        attribute preserve : boolean;
+        attribute preserve of VldReg : signal is true;
+        attribute preserve of DataReg : signal is true;
+
+        -- Synchthesis attributes for Synopsis (Lattice, Microchip, Efinity)
+        attribute syn_keep : boolean;
+        attribute syn_keep of VldReg : signal is true;
+        attribute syn_keep of DataReg : signal is true;
+
+        attribute syn_preserve : boolean;
+        attribute syn_preserve of VldReg : signal is true;
+        attribute syn_preserve of DataReg : signal is true;
+
     begin
 
         p_stg : process (Clk) is

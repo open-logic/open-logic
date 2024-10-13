@@ -60,24 +60,25 @@ architecture rtl of olo_base_ram_sp is
     signal RdPipe : Data_t(1 to RdLatency_g);
 
     -- AMD RAM implementation attribute
-    attribute RAM_STYLE : string;
-    attribute RAM_STYLE of Mem_v      : variable is RamStyle_g;
-    attribute SHREG_EXTRACT : string;
-    attribute SHREG_EXTRACT of RdPipe : signal is "no";
+    attribute ram_style : string;
+    attribute ram_style of Mem_v      : variable is RamStyle_g;
+    attribute shreg_extract : string;
+    attribute shreg_extract of RdPipe : signal is "no";
 
     -- Altera RAM implementation attribute
-    attribute RAMSTYLE : string;
-    attribute RAMSTYLE of Mem_v : variable is RamStyle_g;
+    attribute ramstyle : string;
+    attribute ramstyle of Mem_v : variable is RamStyle_g;
 
     -- Efinix RAM implementation attributes
-    attribute SYN_RAMSTYLE : string;
-    attribute SYN_RAMSTYLE of Mem_v : variable is RamStyle_g;
+    -- Same attribute works for Synplify (Lattice, Microchip)
+    attribute syn_ramstyle : string;
+    attribute syn_ramstyle of Mem_v : variable is RamStyle_g;
 
 begin
 
     -- Assertions
     assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR"
-        report "olo_base_ram_sp: RamBehavior_g must Be RBW or WBR"
+        report "olo_base_ram_sp: RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g
         severity error;
     assert (Width_g mod 8 = 0) or (not UseByteEnable_g)
         report "olo_base_ram_sp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
