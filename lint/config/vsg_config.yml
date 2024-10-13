@@ -2668,9 +2668,7 @@ rule:
         severity: Warning
     length_003:
         # This rule checks the length of a process statement.
-        length: 200
-        phase: 7
-        severity: Warning
+        disable: true #Does not make sense for two-process design and TBs, which is the default for open logic
     library_001:
         # This rule checks the indent of the library keyword. Indenting helps in comprehending the code.
         phase: 4

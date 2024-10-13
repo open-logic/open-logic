@@ -174,7 +174,6 @@ begin
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 50 ms);
 
-    -- vsg_off length_003 -- TB process are allowed to be long
     p_control : process is
         variable Mosi16_v, Miso16_v : std_logic_vector(15 downto 0);
         variable Mosi48_v, Miso48_v : std_logic_vector(47 downto 0);
@@ -449,7 +448,7 @@ begin
 
         -- TB done
         test_runner_cleanup(runner);
-    end process; -- vsg_on
+    end process;
 
     -----------------------------------------------------------------------------------------------
     -- Clock

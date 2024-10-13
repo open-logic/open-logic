@@ -239,8 +239,6 @@ begin
         severity failure;
 
     -- *** Combinatorial Process ***
-    -- vsg_off length_003 -- The process is long but in this case this is accepted because it is proven existing code
-    --                       from psi_common
     p_comb : process (r,
                       CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat,
                       AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data,
@@ -559,7 +557,7 @@ begin
 
         -- *** Update Signal ***
         r_next <= v;
-    end process; -- vsg_on
+    end process; 
 
     -- *** Registered Process ***
     p_reg : process (Clk) is

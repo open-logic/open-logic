@@ -303,7 +303,6 @@ begin
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
 
-    -- vsg_off length_003 -- TB Processes can be long
     p_control : process is
         variable Addr_v      : unsigned(AxiAddrWidth_g -1 downto 0);
         variable Data_v      : unsigned(UserDataWidth_g-1 downto 0);
@@ -532,7 +531,7 @@ begin
 
         -- TB done
         test_runner_cleanup(runner);
-    end process; -- vsg_on
+    end process;
 
     -----------------------------------------------------------------------------------------------
     -- Clock

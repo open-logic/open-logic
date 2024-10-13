@@ -241,7 +241,6 @@ begin
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
 
-    -- vsg_off length_003 -- TB processes can be long
     p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
@@ -628,7 +627,7 @@ begin
 
         -- TB done
         test_runner_cleanup(runner);
-    end process; -- vsg_on
+    end process;
 
     -----------------------------------------------------------------------------------------------
     -- Clock
