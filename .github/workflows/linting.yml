@@ -32,7 +32,7 @@ jobs:
         with:
           os: ${{ runner.os }}
       #Run Linting
-      - name: Run Simulation
+      - name: Run Linting
         shell: bash
         run: |
           cd ./lint/script

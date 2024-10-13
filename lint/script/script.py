@@ -55,12 +55,12 @@ if args.debug:
         print(f"Linting {file}")
         result = os.system(f'vsg -c ../config/vsg_config.yml -f {file}')
         if result != 0:
-            raise(f"Error: Linting of {file} failed - check report")
+            raise Exception(f"Error: Linting of {file} failed - check report")
 else:
     all_files = " ".join(vhd_files_list)
     result = os.system(f'vsg -c ../config/vsg_config.yml -f {all_files} --junit ../report/vsg_normal_vhdl.xml --all_phases')
     if result != 0:
-        raise(f"Error: Linting of normal VHDL files failed - check report")
+        raise Exception(f"Error: Linting of normal VHDL files failed - check report")
 
 # Execute linting for VC VHD files
 if args.debug:
@@ -68,11 +68,11 @@ if args.debug:
         print(f"Linting {file}")
         result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml -f {file}')
         if result != 0:
-            raise(f"Error: Linting of {file} failed - check report")
+            raise Exception(f"Error: Linting of {file} failed - check report")
 else:
     all_files = " ".join(vc_files_list) 
     result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml  -f {all_files} --junit ../report/vsg_vc_vhdl.xml --all_phases')
     if result != 0:
-        raise(f"Error: Linting of normal Verification Component VHDL files failed - check report")
+        raise Exception(f"Error: Linting of normal Verification Component VHDL files failed - check report")
 
 
