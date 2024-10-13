@@ -124,9 +124,9 @@ architecture sim of olo_axi_master_simple_tb is
 
     -- *** Verification Compnents ***
     constant AxiSlave_c     : olo_test_axi_slave_t := new_olo_test_axi_slave (
-        dataWidth => AxiDataWidth_g,
-        addrWidth => AxiAddrWidth_g,
-        idWidth => 0
+        data_width => AxiDataWidth_g,
+        addr_width => AxiAddrWidth_g,
+        id_width => 0
     );
     constant RdDataSlave_c  : axi_stream_slave_t   := new_axi_stream_slave (
         data_length => AxiDataWidth_g,
@@ -333,7 +333,7 @@ begin
             if run("SingleWrite-DelayedAwReady") then
                 if ImplWrite_g then
                     -- Slave
-                    expect_single_write (net, AxiSlave_c, X"0100", X"03", AwReadyDelay => 200 ns);
+                    expect_single_write (net, AxiSlave_c, X"0100", X"03", aw_ready_delay => 200 ns);
                     -- Master
                     pushCommand(net, WrCmdMaster_c, X"0100", 1);
                     pushWrData(net, X"03");
@@ -345,7 +345,7 @@ begin
             if run("SingleWrite-DelayedWReady") then
                 if ImplWrite_g then
                     -- Slave
-                    expect_single_write (net, AxiSlave_c, X"0200", X"04", WReadyDelay => 200 ns);
+                    expect_single_write (net, AxiSlave_c, X"0200", X"04", w_ready_delay => 200 ns);
                     -- Master
                     pushCommand(net, WrCmdMaster_c, X"0200", 1);
                     pushWrData(net, X"04");
@@ -357,7 +357,7 @@ begin
             if run("SingleWrite-DelayedBValid") then
                 if ImplWrite_g then
                     -- Slave
-                    expect_single_write (net, AxiSlave_c, X"0208", X"05", BValidDelay => 200 ns);
+                    expect_single_write (net, AxiSlave_c, X"0208", X"05", b_valid_delay => 200 ns);
                     -- Master
                     pushCommand(net, WrCmdMaster_c, X"0208", 1);
                     pushWrData(net, X"05");
@@ -401,7 +401,7 @@ begin
             if run("SingleRead-DelayedArReady") then
                 if ImplRead_g then
                     -- Slave
-                    push_single_read (net, AxiSlave_c, X"0208", X"10", ArReadyDelay => 200 ns);
+                    push_single_read (net, AxiSlave_c, X"0208", X"10", ar_ready_delay => 200 ns);
                     -- Master
                     pushCommand(net, RdCmdMaster_c, X"0208", 1);
                     expectRdData(net, X"10");
@@ -413,7 +413,7 @@ begin
             if run("SingleRead-DelayedRValid") then
                 if ImplRead_g then
                     -- Slave
-                    push_single_read (net, AxiSlave_c, X"0210", X"20", RVAlidDelay => 200 ns);
+                    push_single_read (net, AxiSlave_c, X"0210", X"20", r_valid_delay => 200 ns);
                     -- Master
                     pushCommand(net, RdCmdMaster_c, X"0210", 1);
                     expectRdData(net, X"20");
@@ -566,7 +566,7 @@ begin
             if run("BurstRead-SlowData") then
                 if ImplRead_g then
                     -- Slave
-                    push_burst_read_aligned (net, AxiSlave_c, X"0210", X"10EF", 1, 12, beatDelay => 50 ns);
+                    push_burst_read_aligned (net, AxiSlave_c, X"0210", X"10EF", 1, 12, beat_delay => 50 ns);
                     -- Master
                     pushCommand(net, RdCmdMaster_c, X"0210", 12, CmdLowLat => '0');
                     expectRdData(net, X"10EF", 1, 12);
@@ -578,7 +578,7 @@ begin
             if run("BurstWrite-SlowData") then
                 if ImplWrite_g then
                     -- Slave
-                    expect_burst_write_aligned(net, AxiSlave_c, X"0100", X"1234", 1, 12, beatDelay => 50 ns);
+                    expect_burst_write_aligned(net, AxiSlave_c, X"0100", X"1234", 1, 12, beat_delay => 50 ns);
                     -- Master
                     pushCommand(net, WrCmdMaster_c, X"0100", 12, CmdLowLat => '0');
                     pushWrData(net, X"1234", 1, 12);
@@ -728,10 +728,10 @@ begin
             Instance => AxiSlave_c
         )
         port map (
-            Clk   => Clk,
-            Rst   => Rst,
-            AxiMs => AxiMs,
-            AxiSm => AxiSm
+            Clk    => Clk,
+            Rst    => Rst,
+            Axi_Ms => AxiMs,
+            Axi_Sm => AxiSm
         );
 
     vc_rd_data : entity vunit_lib.axi_stream_slave

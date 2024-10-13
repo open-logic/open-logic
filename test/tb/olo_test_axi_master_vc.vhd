@@ -122,59 +122,59 @@ package olo_test_axi_master_pkg is
     -- *** Push Compount Messages ***
     -- Single beat write
     procedure push_single_write (
-            signal net   : inout network_t;
-            axi_master   : olo_test_axi_master_t;
-            addr         : unsigned;
-            data         : unsigned;
-            id           : std_logic_vector := "X";
-            strb         : std_logic_vector := "X";
-            awValidDelay : time             := 0 ns;
-            wValidDelay  : time             := 0 ns;
-            bReadyDelay  : time             := 0 ns);
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            data           : unsigned;
+            id             : std_logic_vector := "X";
+            strb           : std_logic_vector := "X";
+            aw_valid_delay : time             := 0 ns;
+            w_valid_delay  : time             := 0 ns;
+            b_ready_delay  : time             := 0 ns);
 
     -- Single beat read & check read data
     procedure expect_single_read (
-            signal net   : inout network_t;
-            axi_master   : olo_test_axi_master_t;
-            addr         : unsigned;
-            data         : unsigned;
-            id           : std_logic_vector := "X";
-            arValidDelay : time             := 0 ns;
-            rReadyDelay  : time             := 0 ns);
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            data           : unsigned;
+            id             : std_logic_vector := "X";
+            ar_valid_delay : time             := 0 ns;
+            r_ready_delay  : time             := 0 ns);
 
     -- Burst write (aligned)
     procedure push_burst_write_aligned (
-            signal net    : inout network_t;
-            axi_master    : olo_test_axi_master_t;
-            addr          : unsigned;
-            dataStart     : unsigned;
-            dataIncrement : natural          := 1;
-            beats         : natural;
-            id            : std_logic_vector := "X";
-            burst         : Burst_t          := xBURST_INCR_c;
-            awValidDelay  : time             := 0 ns;
-            wValidDelay   : time             := 0 ns;
-            bReadyDelay   : time             := 0 ns);
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            dataStart      : unsigned;
+            dataIncrement  : natural          := 1;
+            beats          : natural;
+            id             : std_logic_vector := "X";
+            burst          : Burst_t          := xBURST_INCR_c;
+            aw_valid_delay : time             := 0 ns;
+            w_valid_delay  : time             := 0 ns;
+            b_ready_delay  : time             := 0 ns);
 
     -- Burst read (aligned)
     procedure expect_burst_read_aligned (
-            signal net    : inout network_t;
-            axi_master    : olo_test_axi_master_t;
-            addr          : unsigned;
-            dataStart     : unsigned;
-            dataIncrement : natural          := 1;
-            beats         : natural;
-            id            : std_logic_vector := "X";
-            burst         : Burst_t          := xBURST_INCR_c;
-            arValidDelay  : time             := 0 ns;
-            rReadyDelay   : time             := 0 ns);
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            dataStart      : unsigned;
+            dataIncrement  : natural          := 1;
+            beats          : natural;
+            id             : std_logic_vector := "X";
+            burst          : Burst_t          := xBURST_INCR_c;
+            ar_valid_delay : time             := 0 ns;
+            r_ready_delay  : time             := 0 ns);
 
     -- Constructor
     impure function new_olo_test_axi_master (
-            dataWidth : natural;
-            addrWidth : natural;
-            idWidth   : natural := 0;
-            userWidth : natural := 0) return olo_test_axi_master_t;
+            data_width : natural;
+            addr_width : natural;
+            id_width   : natural := 0;
+            user_width : natural := 0) return olo_test_axi_master_t;
 
     -- Casts
     impure function as_sync (instance : olo_test_axi_master_t) return sync_handle_t;
@@ -324,87 +324,87 @@ package body olo_test_axi_master_pkg is
     -- *** Push Compount Messages ***
     -- Single beat write
     procedure push_single_write (
-            signal net   : inout network_t;
-            axi_master   : olo_test_axi_master_t;
-            addr         : unsigned;
-            data         : unsigned;
-            id           : std_logic_vector := "X";
-            strb         : std_logic_vector := "X";
-            awValidDelay : time             := 0 ns;
-            wValidDelay  : time             := 0 ns;
-            bReadyDelay  : time             := 0 ns) is
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            data           : unsigned;
+            id             : std_logic_vector := "X";
+            strb           : std_logic_vector := "X";
+            aw_valid_delay : time             := 0 ns;
+            w_valid_delay  : time             := 0 ns;
+            b_ready_delay  : time             := 0 ns) is
     begin
         -- implementation
-        push_aw(net, axi_master, addr, id => id, delay => awValidDelay);
-        push_w(net, axi_master, data, delay => wValidDelay, first_strb => strb);
-        expect_b(net, axi_master, resp => xRESP_OKAY_c, id => id, delay => bReadyDelay);
+        push_aw(net, axi_master, addr, id => id, delay => aw_valid_delay);
+        push_w(net, axi_master, data, delay => w_valid_delay, first_strb => strb);
+        expect_b(net, axi_master, resp => xRESP_OKAY_c, id => id, delay => b_ready_delay);
     end procedure;
 
     -- Single beat read & check read data
     procedure expect_single_read (
-            signal net   : inout network_t;
-            axi_master   : olo_test_axi_master_t;
-            addr         : unsigned;
-            data         : unsigned;
-            id           : std_logic_vector := "X";
-            arValidDelay : time             := 0 ns;
-            rReadyDelay  : time             := 0 ns) is
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            data           : unsigned;
+            id             : std_logic_vector := "X";
+            ar_valid_delay : time             := 0 ns;
+            r_ready_delay  : time             := 0 ns) is
     begin
         -- implementation
-        push_ar(net, axi_master, addr, id => id, delay => arValidDelay);
-        expect_r(net, axi_master, data, resp => xRESP_OKAY_c, id => id, delay => rReadyDelay);
+        push_ar(net, axi_master, addr, id => id, delay => ar_valid_delay);
+        expect_r(net, axi_master, data, resp => xRESP_OKAY_c, id => id, delay => r_ready_delay);
     end procedure;
 
     -- Burst write (aligned)
     procedure push_burst_write_aligned (
-            signal net    : inout network_t;
-            axi_master    : olo_test_axi_master_t;
-            addr          : unsigned;
-            dataStart     : unsigned;
-            dataIncrement : natural          := 1;
-            beats         : natural;
-            id            : std_logic_vector := "X";
-            burst         : Burst_t          := xBURST_INCR_c;
-            awValidDelay  : time             := 0 ns;
-            wValidDelay   : time             := 0 ns;
-            bReadyDelay   : time             := 0 ns) is
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            dataStart      : unsigned;
+            dataIncrement  : natural          := 1;
+            beats          : natural;
+            id             : std_logic_vector := "X";
+            burst          : Burst_t          := xBURST_INCR_c;
+            aw_valid_delay : time             := 0 ns;
+            w_valid_delay  : time             := 0 ns;
+            b_ready_delay  : time             := 0 ns) is
     begin
         -- implementation
-        push_aw(net, axi_master, addr, len => beats, id => id, burst => burst, delay => awValidDelay);
-        push_w(net, axi_master, dataStart, dataIncrement, beats, delay => wValidDelay);
-        expect_b(net, axi_master, resp => xRESP_OKAY_c, id => id, delay => bReadyDelay);
+        push_aw(net, axi_master, addr, len => beats, id => id, burst => burst, delay => aw_valid_delay);
+        push_w(net, axi_master, dataStart, dataIncrement, beats, delay => w_valid_delay);
+        expect_b(net, axi_master, resp => xRESP_OKAY_c, id => id, delay => b_ready_delay);
     end procedure;
 
     -- Burst read (aligned)
     procedure expect_burst_read_aligned (
-            signal net    : inout network_t;
-            axi_master    : olo_test_axi_master_t;
-            addr          : unsigned;
-            dataStart     : unsigned;
-            dataIncrement : natural          := 1;
-            beats         : natural;
-            id            : std_logic_vector := "X";
-            burst         : Burst_t          := xBURST_INCR_c;
-            arValidDelay  : time             := 0 ns;
-            rReadyDelay   : time             := 0 ns) is
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            dataStart      : unsigned;
+            dataIncrement  : natural          := 1;
+            beats          : natural;
+            id             : std_logic_vector := "X";
+            burst          : Burst_t          := xBURST_INCR_c;
+            ar_valid_delay : time             := 0 ns;
+            r_ready_delay  : time             := 0 ns) is
     begin
         -- implementation
-        push_ar(net, axi_master, addr, len => beats, id => id, burst => burst, delay => arValidDelay);
-        expect_r(net, axi_master, dataStart, dataIncrement, beats, resp => xRESP_OKAY_c, id => id, delay => rReadyDelay);
+        push_ar(net, axi_master, addr, len => beats, id => id, burst => burst, delay => ar_valid_delay);
+        expect_r(net, axi_master, dataStart, dataIncrement, beats, resp => xRESP_OKAY_c, id => id, delay => r_ready_delay);
     end procedure;
 
     -- Constructor
     impure function new_olo_test_axi_master (
-            dataWidth : natural;
-            addrWidth : natural;
-            idWidth   : natural := 0;
-            userWidth : natural := 0) return olo_test_axi_master_t is
+            data_width : natural;
+            addr_width : natural;
+            id_width   : natural := 0;
+            user_width : natural := 0) return olo_test_axi_master_t is
     begin
         return (p_actor => new_actor,
-                data_width => dataWidth,
-                addr_width => addrWidth,
-                id_width => idWidth,
-                user_width => userWidth);
+                data_width => data_width,
+                addr_width => addr_width,
+                id_width => id_width,
+                user_width => user_width);
     end function;
 
     -- Casts

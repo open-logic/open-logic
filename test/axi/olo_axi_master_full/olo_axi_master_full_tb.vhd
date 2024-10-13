@@ -130,9 +130,9 @@ architecture sim of olo_axi_master_full_tb is
 
     -- *** Verification Compnents ***
     constant AxiSlave_c     : olo_test_axi_slave_t := new_olo_test_axi_slave (
-        dataWidth => AxiDataWidth_g,
-        addrWidth => AxiAddrWidth_g,
-        idWidth => 0
+        data_width => AxiDataWidth_g,
+        addr_width => AxiAddrWidth_g,
+        id_width => 0
     );
     constant RdDataSlave_c  : axi_stream_slave_t   := new_axi_stream_slave (
         data_length => UserDataWidth_g,
@@ -451,7 +451,7 @@ begin
                         expect_aw (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => xBURST_INCR_c);
                         expect_w_arbitrary (net, AxiSlave_c, AxiBeats_v,
                                             dataAsVectorAligned(Addr_v, Data_v, bytes => DataBytes_v),
-                                            strbAsVectorAligned(Addr_v, DataBytes_v), delay => 200 ns, beatDelay => 100 ns);
+                                            strbAsVectorAligned(Addr_v, DataBytes_v), delay => 200 ns, beat_delay => 100 ns);
                         push_b(net, AxiSlave_c, resp => xRESP_OKAY_c);
                         -- Master
                         pushCommand(net, WrCmdMaster_c, Addr_v, DataBytes_v);
@@ -632,10 +632,10 @@ begin
             Instance => AxiSlave_c
         )
         port map (
-            Clk   => Clk,
-            Rst   => Rst,
-            AxiMs => AxiMs,
-            AxiSm => AxiSm
+            Clk    => Clk,
+            Rst    => Rst,
+            Axi_Ms => AxiMs,
+            Axi_Sm => AxiSm
         );
 
     vc_rd_data : entity vunit_lib.axi_stream_slave

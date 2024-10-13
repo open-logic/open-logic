@@ -80,9 +80,9 @@ architecture sim of olo_axi_lite_slave_tb is
 
     -- *** Verification Compnents ***
     constant AxiMaster_c : olo_test_axi_master_t := new_olo_test_axi_master (
-        dataWidth => DataWidth_c,
-        addrWidth => AddrWidth_c,
-        idWidth => IdWidth_c
+        data_width => DataWidth_c,
+        addr_width => AddrWidth_c,
+        id_width => IdWidth_c
     );
 
     -----------------------------------------------------------------------------------------------
@@ -207,8 +207,8 @@ begin
 
             -- Write Timing
             if run("WriteTiming") then
-                push_single_write(net, AxiMaster_c, to_unsigned(32, AddrWidth_c), X"D0", bReadyDelay => 100 ns);
-                push_single_write(net, AxiMaster_c, to_unsigned(64, AddrWidth_c), X"D4", wValidDelay => 100 ns);
+                push_single_write(net, AxiMaster_c, to_unsigned(32, AddrWidth_c), X"D0", b_ready_delay => 100 ns);
+                push_single_write(net, AxiMaster_c, to_unsigned(64, AddrWidth_c), X"D4", w_valid_delay => 100 ns);
                 -- Check write on RB side [0]
                 wait until rising_edge(Clk) and Rb_Wr = '1';
                 check_equal(Rb_Addr, 32, "Rb_Addr wrong");
@@ -231,7 +231,7 @@ begin
             if run("ReadTiming") then
                 Rb_RdData <= (others => '0');
                 -- Operate VC
-                expect_single_read(net, AxiMaster_c, X"A0", X"01", rReadyDelay => 100 ns);
+                expect_single_read(net, AxiMaster_c, X"A0", X"01", r_ready_delay => 100 ns);
                 expect_single_read(net, AxiMaster_c, X"B0", X"02");
                 -- Check read on RB side [0]
                 wait until rising_edge(Clk) and Rb_Rd = '1';

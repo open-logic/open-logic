@@ -79,17 +79,17 @@ architecture sim of olo_axi_pl_stage_tb is
 
     -- *** Verification Compnents ***
     constant AxiMaster_c : olo_test_axi_master_t := new_olo_test_axi_master (
-        dataWidth => DataWidth_g,
-        addrWidth => AddrWidth_g,
-        idWidth => IdWidth_g,
-        userWidth => UserWidth_g
+        data_width => DataWidth_g,
+        addr_width => AddrWidth_g,
+        id_width => IdWidth_g,
+        user_width => UserWidth_g
     );
 
     constant AxiSlave_c : olo_test_axi_slave_t := new_olo_test_axi_slave (
-        dataWidth => DataWidth_g,
-        addrWidth => AddrWidth_g,
-        idWidth => IdWidth_g,
-        userWidth => UserWidth_g
+        data_width => DataWidth_g,
+        addr_width => AddrWidth_g,
+        id_width => IdWidth_g,
+        user_width => UserWidth_g
     );
 
     -----------------------------------------------------------------------------------------------
@@ -146,10 +146,10 @@ begin
             end if;
 
             -- Pipelined Write - AwReady driven
-            if run("PipelinedWrites-AwReadyDelay") then
+            if run("PipelinedWrites-aw_ready_delay") then
                 -- Blocked Aw-Ready
                 push_single_write(net, AxiMaster_c, X"00000001", X"0001");
-                expect_single_write(net, AxiSlave_c, X"00000001", X"0001", AwReadyDelay => 200 ns);
+                expect_single_write(net, AxiSlave_c, X"00000001", X"0001", aw_ready_delay => 200 ns);
 
                 -- Do a sane number of transactions
                 for i in 1 to Stages_g*3 loop
@@ -160,10 +160,10 @@ begin
             end if;
 
             -- Pipelined Write - WReady driven
-            if run("PipelinedWrites-WReadyDelay") then
+            if run("PipelinedWrites-w_ready_delay") then
                 -- Blocked Aw-Ready
                 push_single_write(net, AxiMaster_c, X"00000001", X"0001");
-                expect_single_write(net, AxiSlave_c, X"00000001", X"0001", WReadyDelay => 200 ns);
+                expect_single_write(net, AxiSlave_c, X"00000001", X"0001", w_ready_delay => 200 ns);
 
                 -- Do a sane number of transactions
                 for i in 1 to Stages_g*3 loop
@@ -174,9 +174,9 @@ begin
             end if;
 
             -- Pipelined Write - BReady driven
-            if run("PipelinedWrites-BReadyDelay") then
+            if run("PipelinedWrites-b_ready_delay") then
                 -- Blocked Aw-Ready
-                push_single_write(net, AxiMaster_c, X"00000001", X"0001", BReadyDelay => 200 ns);
+                push_single_write(net, AxiMaster_c, X"00000001", X"0001", b_ready_delay => 200 ns);
                 expect_single_write(net, AxiSlave_c, X"00000001", X"0001");
 
                 -- Do a sane number of transactions
@@ -188,10 +188,10 @@ begin
             end if;
 
             -- Pipelined Read - ArReady driven
-            if run("PipelinedRead-ArReadyDelay") then
+            if run("PipelinedRead-ar_ready_delay") then
                 -- Blocked Ar-Ready
                 expect_single_read(net, AxiMaster_c, X"00000001", X"0001");
-                push_single_read(net, AxiSlave_c, X"00000001", X"0001", ArReadyDelay => 200 ns);
+                push_single_read(net, AxiSlave_c, X"00000001", X"0001", ar_ready_delay => 200 ns);
 
                 -- Do a sane number of transactions
                 for i in 1 to Stages_g*3 loop
@@ -202,9 +202,9 @@ begin
             end if;
 
             -- Pipelined Read - RReady driven
-            if run("PipelinedRead-RReadyDelay") then
+            if run("PipelinedRead-r_ready_delay") then
                 -- Blocked Ar-Ready
-                expect_single_read(net, AxiMaster_c, X"00000001", X"0001", RReadyDelay => 200 ns);
+                expect_single_read(net, AxiMaster_c, X"00000001", X"0001", r_ready_delay => 200 ns);
                 push_single_read(net, AxiSlave_c, X"00000001", X"0001");
 
                 -- Do a sane number of transactions
@@ -380,8 +380,8 @@ begin
         port map (
             Clk   => Clk,
             Rst   => Rst,
-            AxiMs => AxiMs_S,
-            AxiSm => AxiSm_S
+            Axi_Ms => AxiMs_S,
+            Axi_Sm => AxiSm_S
         );
 
 end architecture;
