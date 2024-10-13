@@ -153,7 +153,6 @@ begin
     -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 50 ms);
 
-    -- vsg_off length_003 -- TB process are allowed to be long ...
     p_control : process is
         variable StartTime_v : time;
         variable Data1_v     : std_logic_vector(7 downto 0);
@@ -311,10 +310,10 @@ begin
                 -- Write then read case
                 -- I2C Endpoint
                 i2c_expect_start(net, I2cSlave_c);
-                i2c_expect_rx_byte(net, I2cSlave_c, 16#52#, clkStretch => 2*Scl_Period_c, msg => "byte rx");
-                i2c_expect_repeated_start(net, I2cSlave_c, clkStretch => 2*Scl_Period_c);
-                i2c_push_tx_byte(net, I2cSlave_c, 16#46#, I2c_NACK, clkStretch => 2*Scl_Period_c, msg => "byte tx");
-                i2c_expect_stop(net, I2cSlave_c, clkStretch => 2*Scl_Period_c);
+                i2c_expect_rx_byte(net, I2cSlave_c, 16#52#, clk_stretch => 2*Scl_Period_c, msg => "byte rx");
+                i2c_expect_repeated_start(net, I2cSlave_c, clk_stretch => 2*Scl_Period_c);
+                i2c_push_tx_byte(net, I2cSlave_c, 16#46#, I2c_NACK, clk_stretch => 2*Scl_Period_c, msg => "byte tx");
+                i2c_expect_stop(net, I2cSlave_c, clk_stretch => 2*Scl_Period_c);
                 -- Commands
                 pushCommand(CMD_START);
                 pushCommand(CMD_SEND, true, X"52");
@@ -666,7 +665,7 @@ begin
 
         -- TB done
         test_runner_cleanup(runner);
-    end process; -- vsg_on
+    end process;
 
     -----------------------------------------------------------------------------------------------
     -- Clock

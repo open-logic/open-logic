@@ -221,6 +221,8 @@ rule:
         case: lower
     iteration_scheme_501:
         case: lower
+    length_002:
+        disable: true # Better long VC files than many short ones
     library_004:
         case: lower
     library_005:
