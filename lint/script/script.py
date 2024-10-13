@@ -1,6 +1,9 @@
 import os
 import argparse
 
+# Change directory to the script directory
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
 # Detect arguments
 parser = argparse.ArgumentParser(description='Lint all VHDL files in the project')
 parser.add_argument('--debug', action='store_true', help='Lint files one by one and stop on any errors')
@@ -55,7 +58,7 @@ if args.debug:
             raise(f"Error: Linting of {file} failed - check report")
 else:
     all_files = " ".join(vhd_files_list)
-    result = os.system(f'vsg -c ../config/vsg_config.yml -f {all_files}')
+    result = os.system(f'vsg -c ../config/vsg_config.yml -f {all_files} --junit ../report/vsg_normal_vhdl.xml --all_phases')
     if result != 0:
         raise(f"Error: Linting of normal VHDL files failed - check report")
 
@@ -68,7 +71,7 @@ if args.debug:
             raise(f"Error: Linting of {file} failed - check report")
 else:
     all_files = " ".join(vc_files_list) 
-    result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml  -f {all_files}')
+    result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml  -f {all_files} --junit ../report/vsg_vc_vhdl.xml --all_phases')
     if result != 0:
         raise(f"Error: Linting of normal Verification Component VHDL files failed - check report")
 

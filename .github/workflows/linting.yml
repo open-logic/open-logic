@@ -1,0 +1,53 @@
+name: linting
+run-name: ${{ github.actor }} triggered HDL Linting
+
+# Set the permissions for the workflow
+permissions:
+  checks: write
+  pull-requests: write
+
+#Set Triggers
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * 1'
+  
+#Jobs  
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      #General Setup
+      - name: Setup node
+        uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      #Setup environment
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          os: ${{ runner.os }}
+      #Run Linting
+      - name: Run Simulation
+        shell: bash
+        run: |
+          cd ./lint/script
+          python3 script.py
+      - name: Upload sim results
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linting results
+          path: |
+            lint/report/vsg_normal_vhdl.xml 
+            lint/report/vsg_vc_vhdl.xml 
+      - name: Publish sim results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: | 
+            lint/report/vsg_normal_vhdl.xml 
+            lint/report/vsg_vc_vhdl.xml 
