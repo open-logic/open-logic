@@ -75,4 +75,8 @@ else:
     if result != 0:
         raise Exception(f"Error: Linting of normal Verification Component VHDL files failed - check report")
 
+# Print success message
+print("All VHDL files linted successfully")
+
+
 

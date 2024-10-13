@@ -37,17 +37,17 @@ jobs:
         run: |
           cd ./lint/script
           python3 script.py
-      - name: Upload sim results
+      - name: Upload Linting results
         uses: actions/upload-artifact@v4
         with:
           name: Linting results
           path: |
             lint/report/vsg_normal_vhdl.xml 
             lint/report/vsg_vc_vhdl.xml 
-      - name: Publish sim results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
+      - name: Publish Linting results
+        uses: dorny/test-reporter@v1
         with:
-          files: | 
-            lint/report/vsg_normal_vhdl.xml 
-            lint/report/vsg_vc_vhdl.xml 
+          name: Linting Results
+          path: lint/report/vsg_normal_vhdl.xml 
+          reporter: junit
+          fail-on-error: false
