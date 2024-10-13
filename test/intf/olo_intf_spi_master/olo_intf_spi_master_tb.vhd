@@ -82,17 +82,17 @@ architecture sim of olo_intf_spi_master_tb is
 
     -- *** Verification Compnents ***
     constant Slave0_c : olo_test_spi_slave_t := new_olo_test_spi_slave(
-        busFrequency    => SclkFreq_c,
-        lsbFirst        => LsbFirst_g,
-        maxTransWidth   => MaxTransWidth_c,
+        bus_frequency   => SclkFreq_c,
+        lsb_first       => LsbFirst_g,
+        max_trans_width => MaxTransWidth_c,
         cpha            => SpiCpha_g,
         cpol            => SpiCpol_g
     );
 
     constant Slave1_c : olo_test_spi_slave_t := new_olo_test_spi_slave(
-        busFrequency    => SclkFreq_c,
-        lsbFirst        => LsbFirst_g,
-        maxTransWidth   => MaxTransWidth_c,
+        bus_frequency   => SclkFreq_c,
+        lsb_first       => LsbFirst_g,
+        max_trans_width => MaxTransWidth_c,
         cpha            => SpiCpha_g,
         cpol            => SpiCpol_g
     );
