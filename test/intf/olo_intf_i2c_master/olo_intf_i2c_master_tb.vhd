@@ -94,11 +94,11 @@ architecture sim of olo_intf_i2c_master_tb is
 
     -- *** Verification Compnents ***
     constant I2cSlave_c : olo_test_i2c_t := new_olo_test_i2c (
-        busFrequency => real(BusFrequency_g)
+        bus_frequency => real(BusFrequency_g)
     );
 
     constant I2cMaster_c : olo_test_i2c_t := new_olo_test_i2c (
-        busFrequency => real(BusFrequency_g)
+        bus_frequency => real(BusFrequency_g)
     );
 
     -- *** Internal Messaging ***

@@ -156,7 +156,7 @@ package olo_test_i2c_pkg is
     constant i2c_force_bus_release_msg     : msg_type_t := new_msg_type("I2C Force Bus Release");
 
     -- Constructor
-    impure function new_olo_test_i2c (busFrequency : real    := 100.0e3) return olo_test_i2c_t;
+    impure function new_olo_test_i2c (bus_frequency : real    := 100.0e3) return olo_test_i2c_t;
 
     -- Casts
     impure function as_sync (instance : olo_test_i2c_t) return sync_handle_t;
@@ -373,10 +373,10 @@ package body olo_test_i2c_pkg is
 
     -- Constructor
     impure function new_olo_test_i2c (
-            busFrequency : real    := 100.0e3) return olo_test_i2c_t is
+            bus_frequency : real    := 100.0e3) return olo_test_i2c_t is
     begin
         return (p_actor => new_actor,
-                bus_frequency => busFrequency);
+                bus_frequency => bus_frequency);
     end function;
 
     -- Casts
