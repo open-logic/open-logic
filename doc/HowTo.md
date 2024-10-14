@@ -159,6 +159,28 @@ By default the script runs linting on all files at once, which is good for CI. F
 python3 <root>/lint/script/script.py --debug
 ```
 
+### Integrate Linter with VSCode
+
+A custom task configuration for running the linter on production code VHDL files is provided in *\<root\>/.vscode/tasks.json* and loaded automatically if you open the root folder of Open Logic in VSCode.
+
+You can then run the linter for the currently open file by doing: Ctrl+Shift+P > Tasks: Run Task > Run VSG Lint
+
+For running VSG on all files, use the "- All Files" variant of the task.
+
+The results will be properly displayed in the problems tab and you can navigate to the corresponding code line by clicking on the specific problem.
+
+![vsg-output](./general/linting/vsg_vscode.png)
+
+You can also map this as keyboard shortcut by editing your local *keybindings.json* file in VSCode. The example below will map it the Ctrl+Alt+L:
+
+```
+    {
+        "key": "ctrl+alt+l",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Run VSG Lint"
+    }
+```
+
 ## ... Run Simulations
 
 If you want to run simulations on your PC, you need the following prerequisites:
