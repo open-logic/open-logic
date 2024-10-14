@@ -605,7 +605,7 @@ rule:
         # This rule checks for after x in signal assignments in clock processes.
         disable: true
         fixable: false
-        severity: Warning
+        severity: Error # Could be Warning for Development
         magnitude: 1
         phase: 1
         units: ns
@@ -613,7 +613,7 @@ rule:
         # This rule checks the after keywords are aligned in a clock process.
         disable: true
         fixable: false
-        severity: Warning
+        severity: Error # Could be Warning for Development
         blank_line_ends_group: yes
         comment_line_ends_group: yes
         compact_alignment: yes
@@ -624,40 +624,40 @@ rule:
         fixable: false
         magnitude: 1
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
         units: ns
     alias_declaration_001:
         # This rule checks the alias keyword is on its own line.
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     alias_declaration_100:
         # This rule checks for a single space after the colon for the subtype_indication.
         number_of_spaces: 1
         phase: 2
-        severity: Warning
+        severity: Error # Could be Warning for Development
     alias_declaration_101:
         # This rule checks for a single space before the is keyword if the : is present.
         fixable: false
         number_of_spaces: 1
         phase: 2
-        severity: Warning
+        severity: Error # Could be Warning for Development
     alias_declaration_102:
         # This rule checks for a single space after the is keyword.
         number_of_spaces: ">=1"
         phase: 2
-        severity: Warning
+        severity: Error # Could be Warning for Development
     alias_declaration_103:
         # This rule checks for a single space before the designator.
         fixable: false
         number_of_spaces: 1
         phase: 2
-        severity: Warning
+        severity: Error # Could be Warning for Development
     alias_declaration_300:
         # This rule checks the indent of the alias keyword.
         fixable: false
         phase: 4
-        severity: Warning
+        severity: Error # Could be Warning for Development
     alias_declaration_500:
         # This rule checks the alias keyword has proper case.
         case: lower
@@ -685,14 +685,14 @@ rule:
         fixable: false
         phase: 7
         prefixes: ["a_"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     alias_declaration_601:
         # This rule checks for valid suffixes on alias designators.
         disable: true
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: []
     architecture_001:
         # This rule checks for blank spaces before the architecture keyword.
@@ -811,7 +811,7 @@ rule:
         include_lines_without_comments: no
         phase: 5
         separate_generic_port_alignment: yes
-        severity: Warning
+        severity: Error # Could be Warning for Development
     architecture_028:
         # This rule checks the architecture keyword in the end architecture has proper case.
         case: lower
@@ -827,7 +827,7 @@ rule:
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     architecture_030:
         # This rule checks for a single space between architecture and the name.
         number_of_spaces: 1
@@ -1042,7 +1042,7 @@ rule:
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     block_401:
         # This rule checks the colons are in the same column for all declarations in the block declarative part.
         blank_line_ends_group: yes
@@ -1053,7 +1053,7 @@ rule:
         if_control_statements_ends_group: no
         loop_control_statements_ends_group: no
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     block_402:
         # This rule checks the colons are in the same column for all attribute specifications.
         blank_line_ends_group: yes
@@ -1104,7 +1104,7 @@ rule:
         disable: true
         exceptions: []
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: []
     block_601:
         # This rule checks for valid prefixes on block labels. The default prefix is blk_.
@@ -1122,7 +1122,7 @@ rule:
         max_header_column: 99
         min_height: 3
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     block_comment_002:
         # This rule checks the comment_left attribute exists for all comments.
         allow_indenting: yes
@@ -1130,7 +1130,7 @@ rule:
         disable: true
         min_height: 3
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     block_comment_003:
         # This rule checks the block comment footer is correct.
         allow_indenting: yes
@@ -1142,7 +1142,7 @@ rule:
         max_footer_column: 99
         min_height: 3
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     case_001:
         # This rule checks the indent of case, when, and end case keywords.
         phase: 4
@@ -1170,18 +1170,18 @@ rule:
         # This rule checks for blank lines or comments above the case keyword.
         phase: 3
         style: allow_comment
-        severity: Warning
+        severity: Error # Could be Warning for Development
     case_009:
         # This rule checks for blank lines or comments above the end keyword.
         disable: true
         fixable: false
         phase: 3
-        severity: Warning
+        severity: Error # Could be Warning for Development
         style: no_code
     case_010:
         # This rule checks for a blank line below the end case keywords.
         phase: 3
-        severity: Warning
+        severity: Error # Could be Warning for Development
         style: require_blank_line
     case_011:
         # This rule checks the alignment of multiline when statements.
@@ -1192,7 +1192,7 @@ rule:
         disable: true
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     case_013:
         # This rule checks the indent of the null keyword.
         phase: 4
@@ -1232,7 +1232,7 @@ rule:
         disable: true
         fixable: false
         phase: 3
-        severity: Warning
+        severity: Error # Could be Warning for Development
         style: allow_comment
     case_generate_alternative_500:
         # This rule checks the when keyword has proper case.
@@ -1250,7 +1250,7 @@ rule:
         disable: true
         fixable: false
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     case_generate_statement_500:
         # This rule checks the case keyword has proper case.
         case: lower
@@ -1271,13 +1271,13 @@ rule:
         disable: true
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     comment_012:
         # This rule checks for user defined keywords in comments.
         fixable: false
         keywords: ["BUG", "TODO", "FIXME", "DEADCODE"]
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     comment_100:
         # This rule checks for a single space after the --.
         exceptions: ["---"]
@@ -1353,18 +1353,18 @@ rule:
         compact_alignment: no
         phase: 5
         separate_generic_port_alignment: yes
-        severity: Warning
+        severity: Error # Could be Warning for Development
     component_018:
         # This rule checks for a blank line below the end component line.
         phase: 3
-        severity: Warning
+        severity: Error # Could be Warning for Development
         style: require_blank_line
     component_019:
         # This rule checks for comments at the end of the port and generic clauses in component declarations. These comments represent additional maintainence. They will be out of sync with the entity at some point. Refer to the entity for port types, port directions and purpose.
         disable: true
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     component_020:
         # This rule checks for alignment of inline comments in the component declaration.
         blank_line_ends_group: yes
@@ -1375,7 +1375,7 @@ rule:
         include_lines_without_comments: no
         phase: 5
         separate_generic_port_alignment: yes
-        severity: Warning
+        severity: Error # Could be Warning for Development
     component_021:
         # This rule inserts the optional is keyword if it does not exist.
         action: add
@@ -1396,7 +1396,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     concurrent_004:
         # This rule checks for at least a single space before the <= operator.
         number_of_spaces: ">=1"
@@ -1427,7 +1427,7 @@ rule:
         align_paren: yes
         align_when_keywords: no
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
         wrap_at_when: yes
     concurrent_010:
         # This rule checks the structure of simple and conditional concurrent statements.
@@ -1454,14 +1454,14 @@ rule:
         compact_alignment: yes
         ignore_single_line_aggregates: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     concurrent_401:
         # This rule checks the alignment of multiline concurrent simple signal assignments that contain arrays.
         align_left: no
         align_paren: yes
         disable: true
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     conditional_expressions_100:
         # This rule checks for a single space before the when keyword.
         number_of_spaces: ">=1"
@@ -1551,7 +1551,7 @@ rule:
         align_paren: yes
         disable: true
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     constant_013:
         # This rule checks for consistent capitalization of constant names.
         phase: 6
@@ -1561,7 +1561,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     constant_015:
         # This rule checks for valid prefixes on constant identifiers. The default constant prefix is c_.
         disable: true
@@ -1569,7 +1569,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: ["c_"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     constant_016:
         # This rule checks the structure of multiline constants that contain arrays.
         first_paren_new_line: no
@@ -1580,7 +1580,7 @@ rule:
         assign_on_single_line: yes
         ignore_single_line: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     constant_017:
         # This rule checks the structure of constant constraints.
         array_constraint: all_in_one_line
@@ -1601,7 +1601,7 @@ rule:
     constant_200:
         # This rule checks for a blank line below a constant declaration unless there is another constant definition.
         phase: 3
-        severity: Warning
+        severity: Error # Could be Warning for Development
         style: require_blank_line
         disable: true
     constant_400:
@@ -1614,7 +1614,7 @@ rule:
         fixable: false
         ignore_single_line_aggregates: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     constant_600:
         # This rule checks for valid suffixes on constant identifiers. The default constant suffix is _c.
         exceptions: []
@@ -1716,12 +1716,12 @@ rule:
     context_025:
         # This rule adds a blank line below the context semicolon.
         phase: 3
-        severity: Warning
+        severity: Error # Could be Warning for Development
         style: require_blank_line
     context_028:
         # This rule has not been implemented yet!
         # This rule checks for alignment of inline comments in the context declaration.
-        severity: Warning
+        severity: Error # Could be Warning for Development
     context_ref_001:
         # This rule checks the indent of the context keyword.
         disable: true
@@ -1740,19 +1740,19 @@ rule:
     context_ref_006:
         # This rule has not been implemented yet!
         # This rule checks the semicolon is on the same line as the context selected name.
-        severity: Warning
+        severity: Error # Could be Warning for Development
     context_ref_007:
         # This rule has not been implemented yet!
         # This rule checks for code after the semicolon.
-        severity: Warning
+        severity: Error # Could be Warning for Development
     context_ref_008:
         # This rule has not been implemented yet!
         # This rule checks the context selected name is on the same line as the context keyword.
-        severity: Warning
+        severity: Error # Could be Warning for Development
     context_ref_009:
         # This rule has not been implemented yet!
         # This rule checks for multiple selected names in a single reference.
-        severity: Warning
+        severity: Error # Could be Warning for Development
     context_ref_500:
         # This rule checks the library name called out in the selected name has proper case.
         case: lower
@@ -1769,7 +1769,7 @@ rule:
         comment_line_ends_group: yes
         compact_alignment: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     element_association_100:
         # This rule checks for a single space between the others keyword and the => in an element_association.
         number_of_spaces: 1
@@ -1963,7 +1963,7 @@ rule:
         # This rule checks for a single space before the identifier.
         number_of_spaces: 1
         phase: 2
-        severity: Warning
+        severity: Error # Could be Warning for Development
     for_generate_statement_500:
         # This rule checks the for keyword has proper case.
         case: lower
@@ -1986,7 +1986,7 @@ rule:
     function_006:
         # This rule checks for blank lines or comments above the function keyword.
         phase: 3
-        severity: Warning
+        severity: Error # Could be Warning for Development
         style: no_code
     function_008:
         # This rule checks the indent of function parameters on multiple lines.
@@ -2020,7 +2020,7 @@ rule:
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     function_016:
         # This rule checks the indent of return statements in function bodies.
         phase: 4
@@ -2080,14 +2080,14 @@ rule:
         fixable: false
         phase: 7
         prefixes: ["f_"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     function_601:
         # This rule checks for valid suffixes on function designators. Default signal suffix is _f.
         disable: true
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: ["_f"]
     generate_001:
         # This rule checks the indent of the generate declaration.
@@ -2100,12 +2100,12 @@ rule:
         # This rule checks for a blank line below the end generate keywords.
         phase: 3
         style: require_blank_line
-        severity: Warning
+        severity: Error # Could be Warning for Development
     generate_004:
         # This rule checks for blank lines or comments before the generate label.
         phase: 3
         style: allow_comment
-        severity: Warning
+        severity: Error # Could be Warning for Development
     generate_005:
         # This rule checks the generate label has proper case.
         case: lower
@@ -2178,7 +2178,7 @@ rule:
         compact_alignment: yes
         if_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     generate_401:
         # This rule checks the colons are in the same column for all declarations in the generate declarative part in for generate statements.
         blank_line_ends_group: yes
@@ -2195,7 +2195,7 @@ rule:
         compact_alignment: yes
         if_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     generate_403:
         # This rule checks the colons are in the same column for all declarations in the generate declarative part in if generate statements.
         blank_line_ends_group: yes
@@ -2212,7 +2212,7 @@ rule:
         compact_alignment: yes
         if_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     generate_405:
         # This rule checks the colons are in the same column for all declarations in the generate declarative part in case generate statements.
         blank_line_ends_group: yes
@@ -2235,7 +2235,7 @@ rule:
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: []
     generate_601:
         # This rule checks for valid prefixes on generate parameter identifiers. The default generate prefix is gv_.
@@ -2244,14 +2244,14 @@ rule:
         fixable: false
         phase: 7
         prefixes: []
-        severity: Warning
+        severity: Error # Could be Warning for Development
     generate_602:
         # This rule checks for valid suffixes on generate parameter identifiers. The default generate suffix is _gv.
         disable: true
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: []
     generic_002:
         # This rule checks the indent of the generic keyword.
@@ -2318,7 +2318,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: []
-        severity: Warning
+        severity: Error # Could be Warning for Development
     generic_021:
         # This rule checks the semicolon is not on its own line.
         phase: 1
@@ -2339,7 +2339,7 @@ rule:
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_g"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     generic_map_003:
         # This rule checks the ( is on the same line as the generic map keywords.
         phase: 1
@@ -2370,7 +2370,7 @@ rule:
         phase: 7
         #If the component used does not use the _g suffix, we cant use it in the map
         suffixes: ["_g", ""]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     generic_map_601:
         # This rule checks for valid prefixes on generic identifiers in generic maps The default generic suffix is g_.
         disable: true
@@ -2378,7 +2378,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: []
-        severity: Warning
+        severity: Error # Could be Warning for Development
     ieee_500:
         # This rule checks IEEE types have the proper case.
         case: lower
@@ -2392,7 +2392,7 @@ rule:
         fixable: false
         parenthesis: insert
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     if_003:
         # This rule checks for a single space between the if keyword and the (.
         number_of_spaces: 1
@@ -2427,7 +2427,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 4
-        severity: Warning
+        severity: Error # Could be Warning for Development
     if_010:
         # This rule checks for blank lines before the else keyword.
         disable: true
@@ -2491,13 +2491,13 @@ rule:
         disable: true
         phase: 3
         style: require_blank_line
-        severity: Warning
+        severity: Error # Could be Warning for Development
     if_031:
         # This rule checks for blank lines or comments above the if keyword. In the case of nested if statements, the rule will be enfoced on the first if.
         disable: true
         phase: 3
         style: no_code
-        severity: Warning
+        severity: Error # Could be Warning for Development
     if_034:
         # This rule checks the if keyword in the end if has proper case.
         case: lower
@@ -2545,7 +2545,7 @@ rule:
         # This rule checks for blank lines or comments above the instantiation.
         phase: 3
         style: allow_comment
-        severity: Warning
+        severity: Error # Could be Warning for Development
     instantiation_005:
         # This rule checks the port map keywords are on their own line.
         phase: 1
@@ -2578,7 +2578,7 @@ rule:
         # This rule checks for a blank line below the end of the instantiation declaration.
         phase: 3
         style: require_blank_line
-        severity: Warning
+        severity: Error # Could be Warning for Development
     instantiation_027:
         # This rule checks the entity keyword has proper case in direct instantiations.
         case: lower
@@ -2616,7 +2616,7 @@ rule:
         fixable: false
         method: component
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     instantiation_035:
         # This rule checks the semicolon is not on its own line.
         phase: 1
@@ -2626,7 +2626,7 @@ rule:
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: []
     instantiation_601:
         # This rule checks for valid prefixes on instantiation labels. The default prefix is inst_.
@@ -2659,12 +2659,12 @@ rule:
         # This rule checks the length of the line.
         length: 160
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
     length_002:
         # This rule checks the length of a file.
         length: 1000
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
     length_003:
         # This rule checks the length of a process statement.
         disable: true #Does not make sense for two-process design and TBs, which is the default for open logic
@@ -2737,13 +2737,13 @@ rule:
         disable: true
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     loop_statement_007:
         # This rule checks the end loop_statement line has a label. The closing label will be added if the opening loop_statement label exists.
         action: remove
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     loop_statement_100:
         # This rule checks that a single space exists between the end and loop keywords
         number_of_spaces: 1
@@ -2768,24 +2768,24 @@ rule:
         # This rule checks for blank lines or comments above loop statements.
         phase: 3
         style: allow_comment
-        severity: Warning
+        severity: Error # Could be Warning for Development
     loop_statement_201:
         # This rule checks for blank lines below the loop keyword.
         disable: true
         phase: 3
         style: no_blank_line
-        severity: Warning
+        severity: Error # Could be Warning for Development
     loop_statement_202:
         # This rule checks for blank lines or comments above the end keyword.
         disable: true
         phase: 3
         style: no_code
-        severity: Warning
+        severity: Error # Could be Warning for Development
     loop_statement_203:
         # This rule checks for blank lines below the end loop keywords.
         phase: 3
         style: require_blank_line
-        severity: Warning
+        severity: Error # Could be Warning for Development
     loop_statement_300:
         # This rule checks the indentation of the loop keyword.
         phase: 4
@@ -2826,14 +2826,14 @@ rule:
         exceptions: []
         phase: 7
         prefixes: ["l_"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     loop_statement_601:
         # This rule checks for valid suffixes on loop labels. The default prefix is _loop.
         disable: true
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: ["_loop"]
     loop_statement_602:
         # This rule checks for valid prefixes on loop parameter identifiers. The default loop prefix is lv_.
@@ -2842,14 +2842,14 @@ rule:
         fixable: false
         phase: 7
         prefixes: ["lv_"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     loop_statement_603:
         # This rule checks for valid suffixes on loop parameter identifiers. The default loop suffix is _lv.
         disable: true
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: ["_lv"]
     package_001:
         # This rule checks the indent of the package declaration.
@@ -2943,7 +2943,7 @@ rule:
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
         disable: true # Conflicts with constant_101
     package_400:
         # This rule checks the colons are in the same column for all declarations in the package declarative part.
@@ -3021,7 +3021,7 @@ rule:
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     package_body_401:
         # This rule checks the colons are in the same column for all declarations in the package body declarative part.
         blank_line_ends_group: yes
@@ -3091,7 +3091,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: []
-        severity: Warning
+        severity: Error # Could be Warning for Development
     port_001:
         # This rule checks for a blank line above the port keyword.
         phase: 3
@@ -3137,13 +3137,13 @@ rule:
         fixable: false
         phase: 7
         prefixes: []
-        severity: Warning
+        severity: Error # Could be Warning for Development
     port_012:
         # This rule checks for default assignments on port declarations.
         disable: true
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     port_013:
         # This rule checks for multiple ports declared on a single line.
         phase: 1
@@ -3192,7 +3192,7 @@ rule:
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: []
     port_026:
         # This rule checks for multiple identifiers on port declarations.
@@ -3213,7 +3213,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: ["i_"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     port_601:
         # This rule checks for valid prefixes on port identifiers for output ports.
         disable: true
@@ -3221,7 +3221,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: ["o_"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     port_602:
         # This rule checks for valid prefixes on port identifiers for inout ports.
         disable: true
@@ -3229,7 +3229,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: ["io_"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     port_603:
         # This rule checks for valid prefixes on port identifiers for buffer ports.
         disable: true
@@ -3237,7 +3237,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: ["b_"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     port_604:
         # This rule checks for valid prefixes on port identifiers for linkage ports.
         disable: true
@@ -3245,14 +3245,14 @@ rule:
         fixable: false
         phase: 7
         prefixes: ["l_"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     port_605:
         # This rule checks for valid suffixes on port identifiers for input ports.
         disable: true
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: ["_i"]
     port_606:
         # This rule checks for valid suffixes on port identifiers for output ports.
@@ -3260,7 +3260,7 @@ rule:
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: ["_o"]
     port_607:
         # This rule checks for valid suffixes on port identifiers for inout ports.
@@ -3268,7 +3268,7 @@ rule:
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: ["_io"]
     port_608:
         # This rule checks for valid suffixes on port identifiers for buffer ports.
@@ -3276,7 +3276,7 @@ rule:
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: ["_b"]
     port_609:
         # This rule checks for valid suffixes on port identifiers for linkage ports.
@@ -3284,7 +3284,7 @@ rule:
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: ["_l"]
     port_map_001:
         # This rule checks the port map keywords have proper case.
@@ -3299,7 +3299,7 @@ rule:
         phase: 6
         prefix_exceptions: []
         suffix_exceptions: ["_n", "_p", "_i", "_o", "_t"]
-        severity: Warning
+        severity: Error # Could be Warning for Development
     port_map_003:
         # This rule checks the ( character is on the same line as the port map keywords.
         phase: 1
@@ -3325,7 +3325,7 @@ rule:
         disable: true
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     port_map_100:
         # This rule checks for at least a single space before the **=>** operator in port maps.
         phase: 2
@@ -3341,25 +3341,25 @@ rule:
     pragma_400:
         # This rule checks for blank lines or comments above opening pragmas.
         disable: true
-        severity: Warning
+        severity: Error # Could be Warning for Development
         phase: 3
         style: no_code
     pragma_401:
         # This rule checks for a blank line below opening pragmas.
         disable: true
-        severity: Warning
+        severity: Error # Could be Warning for Development
         phase: 3
         style: no_blank_line
     pragma_402:
         # This rule checks for blank lines or comments above closing pragmas.
         disable: true
-        severity: Warning
+        severity: Error # Could be Warning for Development
         phase: 3
         style: no_blank_line
     pragma_403:
         # This rule checks for a blank line below closing pragmas.
         disable: true
-        severity: Warning
+        severity: Error # Could be Warning for Development
         phase: 3
         style: no_blank_line
     procedure_001:
@@ -3397,7 +3397,7 @@ rule:
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     procedure_012:
         # This rule checks the procedure keyword exist in the closing of the procedure specification.
         action: add
@@ -3526,7 +3526,7 @@ rule:
         align_left: yes
         align_paren: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     procedure_call_401:
         # This rule checks the alignment of :code:`=>` keywords in procedure calls.
         blank_line_ends_group: yes
@@ -3534,7 +3534,7 @@ rule:
         compact_alignment: yes
         phase: 5
         separate_generic_port_alignment: yes
-        severity: Warning
+        severity: Error # Could be Warning for Development
     procedure_call_500:
         # This rule checks the label has proper case.
         fixable: false
@@ -3627,7 +3627,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 4
-        severity: Warning
+        severity: Error # Could be Warning for Development
     process_021:
         # This rule checks for blank lines above the begin keyword if there are no process declarative items.
         phase: 1
@@ -3643,7 +3643,7 @@ rule:
         disable: true
         phase: 3
         style: require_blank_line
-        severity: Warning
+        severity: Error # Could be Warning for Development
     process_024:
         # This rule checks for a single space after the process label.
         number_of_spaces: 1
@@ -3673,7 +3673,7 @@ rule:
         disable: true
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     process_031:
         # This rule checks for alignment of identifiers in the process declarative region.
         blank_line_ends_group: yes
@@ -3710,7 +3710,7 @@ rule:
         include_lines_without_comments: yes
         phase: 5
         separate_generic_port_alignment: yes
-        severity: Warning
+        severity: Error # Could be Warning for Development
     process_036:
         # This rule checks for valid prefixes on process labels. The default prefix is proc_.
         exceptions: []
@@ -3749,7 +3749,7 @@ rule:
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: []
     range_001:
         # This rule checks the case of the downto keyword.
@@ -3824,7 +3824,7 @@ rule:
         disable: true
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     report_statement_100:
         # This rule checks for a single space after the report keyword.
         number_of_spaces: 1
@@ -3918,7 +3918,7 @@ rule:
         fixable: false
         number_of_spaces: 1
         phase: 2
-        severity: Warning
+        severity: Error # Could be Warning for Development
     selected_assignment_105:
         # This rule checks for a single space after the force keyword.
         number_of_spaces: 1
@@ -3939,7 +3939,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     selected_assignment_500:
         # This rule checks the with keyword has proper case.
         case: lower
@@ -3972,7 +3972,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     sequential_006:
         # This rule checks for comments within multiline sequential statements.
         phase: 2
@@ -4016,7 +4016,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     signal_001:
         # This rule checks the indent of signal declarations.
         phase: 4
@@ -4046,7 +4046,7 @@ rule:
         disable: true
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     signal_008:
         # This rule checks for valid prefixes on signal identifiers. Default signal prefix is s_.
         disable: true
@@ -4054,7 +4054,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: []
-        severity: Warning
+        severity: Error # Could be Warning for Development
     signal_012:
         # This rule checks multiple signal declarations on a single line are column aligned.
         blank_line_ends_group: no
@@ -4063,7 +4063,7 @@ rule:
         disable: true
         fixable: false
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     signal_014:
         # This rule checks for consistent capitalization of signal names.
         phase: 6
@@ -4084,7 +4084,7 @@ rule:
         # This rule checks for a single space before the identifier.
         number_of_spaces: 1
         phase: 2
-        severity: Warning
+        severity: Error # Could be Warning for Development
     signal_101:
         # This rule checks for a single space before the default assignment token.
         number_of_spaces: ">=1"
@@ -4098,7 +4098,7 @@ rule:
         disable: true
         phase: 3
         style: require_blank_line
-        severity: Warning
+        severity: Error # Could be Warning for Development
     signal_400:
         # This rule checks alignment of multiline constraints in signal declarations.
         align_left: no
@@ -4110,12 +4110,12 @@ rule:
         exceptions: []
         fixable: false
         phase: 7
-        severity: Warning
+        severity: Error # Could be Warning for Development
         suffixes: []
     source_file_001:
         # This rule checks for the existance of the source file passed to VSG.
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     subprogram_body_201:
         # This rule checks for a blank line below the is keyword.
         phase: 3
@@ -4134,7 +4134,7 @@ rule:
         # This rule checks for blank lines above the end keyword.
         phase: 3
         style: no_blank_line
-        severity: Warning
+        severity: Error # Could be Warning for Development
         #Conflicting with other rules (loop blank-lines)
         disable: true
     subprogram_body_205:
@@ -4150,7 +4150,7 @@ rule:
         if_control_statements_ends_group: yes
         loop_control_statements_ends_group: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     subprogram_body_401:
         # This rule checks the colons are in the same column for all attribute specifications.
         blank_line_ends_group: yes
@@ -4173,7 +4173,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: []
-        severity: Warning
+        severity: Error # Could be Warning for Development
     subtype_100:
         # This rule checks for a single space before the identifier.
         number_of_spaces: ">=1"
@@ -4259,7 +4259,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: []
-        severity: Warning
+        severity: Error # Could be Warning for Development
     type_016:
         # This rule checks the indent of the closing parenthesis on multiline types.
         phase: 4
@@ -4277,7 +4277,7 @@ rule:
         # This rule checks for a blank line below a type declaration unless there is another type declaration.
         phase: 3
         style: require_blank_line
-        severity: Warning
+        severity: Error # Could be Warning for Development
     type_400:
         # This rule checks the colons are in the same column for all elements in the block declarative part.
         blank_line_ends_group: yes
@@ -4374,7 +4374,7 @@ rule:
         disable: true
         fixable: false
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     variable_011:
         # This rule checks for consistent capitalization of variable names.
         phase: 6
@@ -4385,7 +4385,7 @@ rule:
         fixable: false
         phase: 7
         prefixes: []
-        severity: Warning
+        severity: Error # Could be Warning for Development
     variable_017:
         # This rule checks the structure of variable constraints.
         array_constraint: all_in_one_line
@@ -4413,7 +4413,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     variable_600:
         # This rule checks for valid suffix on variable identifiers. The default variable suffix is _v.
         exceptions: ["v", "vs", "vp", "va"]
@@ -4435,7 +4435,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     variable_assignment_006:
         # This rule checks for comments in multiline variable assignments.
         phase: 2
@@ -4444,7 +4444,7 @@ rule:
         ignore_single_line: yes
         new_line_after_assign: no
         phase: 1
-        severity: Warning
+        severity: Error # Could be Warning for Development
     variable_assignment_008:
         # This rule checks the structure of multiline variable assignments that contain arrays.
         first_paren_new_line: no
@@ -4469,7 +4469,7 @@ rule:
         align_left: no
         align_paren: yes
         phase: 5
-        severity: Warning
+        severity: Error # Could be Warning for Development
     wait_001:
         # This rule checks for indentation of the wait keyword. Proper indentation enhances comprehension.
         phase: 4
@@ -4509,7 +4509,7 @@ rule:
         disable: true
         fixable: false
         phase: 2
-        severity: Warning
+        severity: Error # Could be Warning for Development
     whitespace_013:
         # This rule checks for at least a single space before and after logical operators.
         phase: 2
