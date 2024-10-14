@@ -32,6 +32,37 @@
             }
         },
         {
+            "label": "Run VSG Lint - VC",
+            "type": "shell",
+            "command": "vsg",
+            "args": [
+                "-c",
+                "./lint/config/vsg_config.yml",
+                "./lint/config/vsg_config_overlay_vc.yml",
+                "-f",
+                "${file}",
+                "-of",
+                "syntastic"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {
+                "owner": "vhdl",
+                "fileLocation": [
+                    "absolute"
+                ],
+                "pattern": {
+                    "regexp": "^(ERROR):\\s+([^\\(]+)\\((\\d+)\\)(.*)$",
+                    "severity": 1,
+                    "file": 2,
+                    "line": 3,
+                    "message": 4
+                }
+            }
+        },
+        {
             "label": "Run VSG Lint - All Files",
             "type": "shell",
             "command": "python3",
@@ -56,6 +87,82 @@
                     "message": 4
                 }
             }
-        }
+        },
+        {
+            "label": "VUnit - All Files",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "./sim/run.py",
+                "-p 16"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {
+                "owner": "vhdl",
+                "fileLocation": ["absolute"],
+                "pattern": {
+                    "regexp": "^([^:]+):(\\d+):(\\d+):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            }
+        },
+        {
+            "label": "VUnit - This File",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "./sim/run.py",
+                "-p 16",
+                "--gtkwave-fmt=ghw",
+                "*${fileBasenameNoExtension}*",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {
+                "owner": "vhdl",
+                "fileLocation": ["absolute"],
+                "pattern": {
+                    "regexp": "^([^:]+):(\\d+):(\\d+):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            }
+        },
+        {
+            "label": "VUnit - This File (GUI)",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "./sim/run.py",
+                "-p 16",
+                "*${fileBasenameNoExtension}*",
+                "--gui"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {
+                "owner": "vhdl",
+                "fileLocation": ["absolute"],
+                "pattern": {
+                    "regexp": "^([^:]+):(\\d+):(\\d+):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "message": 4
+                }
+            }
+        },
     ]
 }
