@@ -49,6 +49,8 @@ def find_vc_vhd_files(directory):
 vhd_files_list = find_normal_vhd_files(DIR)
 vc_files_list = find_vc_vhd_files(DIR)
 
+error_occurred = False
+
 # Execute linting for normal VHD files
 if args.debug:
     for file in vhd_files_list:
@@ -60,7 +62,7 @@ else:
     all_files = " ".join(vhd_files_list)
     result = os.system(f'vsg -c ../config/vsg_config.yml -f {all_files} --junit ../report/vsg_normal_vhdl.xml --all_phases')
     if result != 0:
-        raise Exception(f"Error: Linting of normal VHDL files failed - check report")
+        error_occurred = True
 
 # Execute linting for VC VHD files
 if args.debug:
@@ -73,7 +75,10 @@ else:
     all_files = " ".join(vc_files_list) 
     result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml  -f {all_files} --junit ../report/vsg_vc_vhdl.xml --all_phases')
     if result != 0:
-        raise Exception(f"Error: Linting of normal Verification Component VHDL files failed - check report")
+        error_occurred = True
+
+if error_occurred:
+    raise Exception(f"Error: Linting of VHDL files failed - check report")
 
 # Print success message
 print("All VHDL files linted successfully")

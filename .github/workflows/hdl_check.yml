@@ -1,0 +1,107 @@
+name: HDL-Check
+run-name: ${{ github.actor }} triggered HDL Check
+
+# Set the permissions for the workflow
+permissions:
+  checks: write
+  pull-requests: write
+
+#Set Triggers
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * 1'
+  
+#Jobs  
+jobs:
+  simulation-ghdl:
+    runs-on: ubuntu-latest
+    steps:
+      #General Setup
+      - name: Setup node
+        uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      #Setup environment
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          os: ${{ runner.os }}
+      #Run Simulation
+      - name: Run Simulation
+        uses: ./.github/actions/simulation
+        with:
+          os: ${{ runner.os }}
+          simulator: ghdl
+
+  simulation-nvc:
+    runs-on: ubuntu-latest
+    steps:
+      #General Setup
+      - name: Setup node
+        uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      #Setup environment
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          os: ${{ runner.os }}
+      #Run Simulation
+      - name: Run Simulation
+        uses: ./.github/actions/simulation
+        with:
+          os: ${{ runner.os }}
+          simulator: nvc
+
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      #General Setup
+      - name: Setup node
+        uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      #Setup environment
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          os: ${{ runner.os }}
+      #Run Linting
+      - name: Run Linting
+        shell: bash
+        run: |
+          cd ./lint/script
+          python3 script.py
+      #Upload Linting results
+      - name: Upload Linting results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Linting results
+          path: |
+            lint/report/vsg_normal_vhdl.xml 
+            lint/report/vsg_vc_vhdl.xml 
+
+  publish-results:
+    runs-on: ubuntu-latest
+    needs: [simulation-ghdl, simulation-nvc, linting]
+    steps:
+      # Download artifacts from previous jobs
+      - name: Download artifacts from previous jobs
+        uses: actions/download-artifact@v4
+        with:
+          name: Linting results, Simulation Results nvc, Simulation Results ghdl
+          path: ./artifacts
+      # Publish results
+      - name: Publish results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "artifacts/*.xml"
+
+      
+      

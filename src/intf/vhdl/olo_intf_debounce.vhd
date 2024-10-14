@@ -51,7 +51,7 @@ architecture struct of olo_intf_debounce is
 
     -- Time Constants
     -- Idea is to have a counter in the range 15-31 for each bit
-    constant TargetTickFrequency : real    := 1.0/(DebounceTime_g/31.0);
+    constant TargetTickFrequency_c : real    := 1.0/(DebounceTime_g/31.0);
     constant TickCycles_c          : real    := ceil(ClkFrequency_g/TargetTickFrequency_c);
     constant ActualTickFrequency_c : real    := ClkFrequency_g/TickCycles_c;
     constant DebounceTicks_c       : integer := integer(ceil(DebounceTime_g*ActualTickFrequency_c));
