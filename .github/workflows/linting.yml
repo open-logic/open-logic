@@ -44,13 +44,7 @@ jobs:
           path: |
             lint/report/vsg_normal_vhdl.xml 
             lint/report/vsg_vc_vhdl.xml 
-      - name: Publish Linting results normal
+      - name: Publish Linting results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: lint/report/vsg_normal_vhdl.xml 
-          comment_mode: create 
-      - name: Publish Linting results vc
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: lint/report/vsg_vc_vhdl.xml 
-          comment_mode: create 
+          files: "lint/report/*.xml" 
