@@ -75,34 +75,6 @@ else:
     if result != 0:
         raise Exception(f"Error: Linting of normal Verification Component VHDL files failed - check report")
 
-# Merge results into one report
-import xml.etree.ElementTree as ET
-
-def merge_junit_reports(input_dir, output_file):
-    testsuites = ET.Element("testsuites")
-    
-    for file_name in os.listdir(input_dir):
-        if file_name.endswith(".xml"):
-            file_path = os.path.join(input_dir, file_name)
-            tree = ET.parse(file_path)
-            root = tree.getroot()
-            
-            if root.tag == "testsuite":
-                testsuites.append(root)
-            elif root.tag == "testsuites":
-                for testsuite in root:
-                    testsuites.append(testsuite)
-    
-    tree = ET.ElementTree(testsuites)
-    tree.write(output_file, encoding="utf-8", xml_declaration=True)
-
-# Directory containing the JUnit XML files
-input_dir = "../report"
-# Output file for the merged report
-output_file = "../report/merged-report.xml"
-
-merge_junit_reports(input_dir, output_file)
-
 # Print success message
 print("All VHDL files linted successfully")
 

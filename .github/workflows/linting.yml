@@ -44,10 +44,13 @@ jobs:
           path: |
             lint/report/vsg_normal_vhdl.xml 
             lint/report/vsg_vc_vhdl.xml 
-      - name: Publish Linting results
-        uses: dorny/test-reporter@v1
+      - name: Publish Linting results normal
+        uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          name: Linting Results
-          path: lint/report/merged-report.xml 
-          reporter: jest-junit
-          fail-on-error: false
+          files: lint/report/vsg_normal_vhdl.xml 
+          comment_mode: create 
+      - name: Publish Linting results vc
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: lint/report/vsg_vc_vhdl.xml 
+          comment_mode: create 
