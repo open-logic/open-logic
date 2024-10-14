@@ -1,4 +1,4 @@
 vunit_hdl 
 PyGithub 
 google-cloud-storage
-vsg==3.25
+vsg==3.27

@@ -65,6 +65,29 @@ VUnit verification components (VCs) shall be located in the folder *\<root\>/tes
 
 The convention for VCs is, that all identifiers are *snail_case* and there are no mandatory suffixes or prefixes.
 
+The differences between VCs and Open Logic production code are only in the case of identifiers. To keep the linter happy, instantiation of VCs (which are VUnit case-style) in test-benches (which are Open Logic case-style) are written in Open Logic case-style. This is possible due to the case insensitivity of VHDL.
+
+```
+-- VC Code (VUnit case-style)
+entity some_vc is
+    generic (
+        some_generic : string
+    )
+    port (
+        some_port : string
+    );
+end entity;
+
+-- Instantiation in test-bench (Open-Logic case-stlye)
+vc_any : entity work.some_vc
+    generic map (
+        Some_Generic => "bla"
+    )
+    port map (
+        Some_Port => TbSignal
+    );
+```
+
 ### Other Naming Conventions
 
 There are a few other naming conventions (e.g. for process and generic labels). Indentation is best understood by looking at existing code. 

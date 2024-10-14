@@ -107,6 +107,58 @@ open-logic:tutorials:vivado_tutorial:1.0  :      empty : vivado tutorial for ope
 
 **Note:** Like for all other tool integrations, Open Logic entities are compiled into the library *olo* and can be instantiated using e.g. `i_fifo : entity olo.olo_base_fifo_sync`.
 
+## ... Use the Linter
+
+### Introduction
+
+*Open Logic* makes use of the [vhdl-style-guide](https://github.com/jeremiah-c-leary/vhdl-style-guide) linter (short VSG).
+
+VSG can be installed as python package easily:
+
+```
+pip3 install vsg==3.27
+```
+
+**Note:** It is important to install the exactly correct version. Configuration files tend to not work with newer or older versions.
+
+All VHDL files are linted (production code and test benches). 
+
+### Run Linter on Specific File
+
+To run VSG with the correct configuration on a VHDL file the following command can be used:
+
+```
+vsg -c <root>/lint/config/vsg_config.yml -f <path-to-file>
+```
+
+For VUnit verification components a slightly different style applies (see [Conventions](./Conventions.md)). This is covered by passing an additional config file:
+
+```
+vsg -c <root>/lint/config/vsg_config.yml -c <root>/lint/config/vsg_config_overlay_vc.yml -f <path-to-file>
+```
+
+Any errors or warnings found will be reported:
+
+![vsg-output](./general/linting/vsg_output.png)
+
+VSG is also automatically executed in the CI pipeline and pull requests are only accepted if it succeeds without errors or warnings.
+
+### Run Linter on All Files
+
+For running VSG on all files, a python script is provided. It can be executed as follows:
+
+```
+python3 <root>/lint/script/script.py
+```
+
+This script automatically applies the correct rules to all files.
+
+By default the script runs linting on all files at once, which is good for CI. For development purposes often it is tedious to scroll through the long report. Therefore a debug option is provided, which runs VSG file by file and stops on the first error, which makes errors appearing on the bottom of the log.
+
+```
+python3 <root>/lint/script/script.py --debug
+```
+
 ## ... Run Simulations
 
 If you want to run simulations on your PC, you need the following prerequisites:
