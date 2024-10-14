@@ -1,13 +1,12 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- VC Package
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -29,411 +28,396 @@ package olo_test_axi_master_pkg is
 
     -- Instance type
     type olo_test_axi_master_t is record
-        p_actor        : actor_t;
-        DataWidth      : natural;
-        AddrWidth      : natural;
-        IdWidth        : natural;
-        UserWidth      : natural;
+        p_actor    : actor_t;
+        data_width : natural;
+        addr_width : natural;
+        id_width   : natural;
+        user_width : natural;
     end record;
 
     -- individual channel messages
-    constant AxiAwMsg : msg_type_t := new_msg_type("axi aw");
-    constant AxiArMsg : msg_type_t := new_msg_type("axi ar");
-    constant AxiWMsg : msg_type_t := new_msg_type("axi w");
-    constant AxiBMsg : msg_type_t := new_msg_type("axi b");
-    constant AxiRMsg : msg_type_t := new_msg_type("axi r");    
+    constant axi_aw_msg : msg_type_t := new_msg_type("axi aw");
+    constant axi_ar_msg : msg_type_t := new_msg_type("axi ar");
+    constant axi_w_msg  : msg_type_t := new_msg_type("axi w");
+    constant axi_b_msg  : msg_type_t := new_msg_type("axi b");
+    constant axi_r_msg  : msg_type_t := new_msg_type("axi r");
 
     -- Aw State
-    constant AwQueue : queue_t := new_queue;
-    shared variable AwInitiated : natural := 0;
-    shared variable AwCompleted : natural := 0;
+    constant aw_queue            : queue_t := new_queue;
+    shared variable aw_initiated : natural := 0;
+    shared variable aw_completed : natural := 0;
 
     -- Ar State
-    constant ArQueue : queue_t := new_queue;
-    shared variable ArInitiated : natural := 0;
-    shared variable ArCompleted : natural := 0;
+    constant ar_queue            : queue_t := new_queue;
+    shared variable ar_initiated : natural := 0;
+    shared variable ar_completed : natural := 0;
 
     -- W State
-    constant WQueue : queue_t := new_queue;
-    shared variable WInitiated : natural := 0;
-    shared variable WCompleted : natural := 0;
+    constant w_queue            : queue_t := new_queue;
+    shared variable w_initiated : natural := 0;
+    shared variable w_completed : natural := 0;
 
     -- B State
-    constant BQueue : queue_t := new_queue;
-    shared variable BInitiated : natural := 0;
-    shared variable BCompleted : natural := 0;
+    constant b_queue            : queue_t := new_queue;
+    shared variable b_initiated : natural := 0;
+    shared variable b_completed : natural := 0;
 
     -- R State
-    constant RQueue : queue_t := new_queue;
-    shared variable RInitiated : natural := 0;
-    shared variable RCompleted : natural := 0;
+    constant r_queue            : queue_t := new_queue;
+    shared variable r_initiated : natural := 0;
+    shared variable r_completed : natural := 0;
 
     -- *** Push individual messages ***
     -- Push AW message
     procedure push_aw (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        id              : std_logic_vector      := "X";
-        len             : positive              := 1;       -- lenght of the transfer in beats (1 = 1 beat)
-        burst           : Burst_t               := xBURST_INCR_c;
-        delay           : time                  := 0 ns    -- Delay before sending the message
-    );
+            signal net : inout network_t;
+            axi_master : olo_test_axi_master_t;
+            addr       : unsigned;
+            id         : std_logic_vector := "X";
+            len        : positive         := 1;     -- lenght of the transfer in beats (1 = 1 beat)
+            burst      : Burst_t          := xBURST_INCR_c;
+            delay      : time             := 0 ns); -- Delay before sending the message
 
     -- Push AR message
     procedure push_ar (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        id              : std_logic_vector      := "X";
-        len             : positive              := 1;       -- lenght of the transfer in beats (1 = 1 beat)
-        burst           : Burst_t               := xBURST_INCR_c;
-        delay           : time                  := 0 ns    -- delay before sending the message
-    );
+            signal net : inout network_t;
+            axi_master : olo_test_axi_master_t;
+            addr       : unsigned;
+            id         : std_logic_vector := "X";
+            len        : positive         := 1;     -- lenght of the transfer in beats (1 = 1 beat)
+            burst      : Burst_t          := xBURST_INCR_c;
+            delay      : time             := 0 ns); -- delay before sending the message
 
     -- Push write message
     procedure push_w (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        startValue      : unsigned;
-        increment       : natural               := 1; 
-        beats           : natural               := 1;       -- number of beats to write
-        firstStrb       : std_logic_vector      := "X";
-        lastStrb        : std_logic_vector      := "X";
-        delay           : time                  := 0 ns     -- delay before sending the message
-    );
-    
+            signal net  : inout network_t;
+            axi_master  : olo_test_axi_master_t;
+            start_value : unsigned;
+            increment   : natural          := 1;
+            beats       : natural          := 1;     -- number of beats to write
+            first_strb  : std_logic_vector := "X";
+            last_strb   : std_logic_vector := "X";
+            delay       : time             := 0 ns); -- delay before sending the message
+
     -- Expect b message (write response)
     procedure expect_b (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        resp            : Resp_t                := xRESP_OKAY_c;
-        id              : std_logic_vector      := "X";
-        delay           : time                  := 0 ns     -- delay eady after valid
-    );
+            signal net : inout network_t;
+            axi_master : olo_test_axi_master_t;
+            resp       : Resp_t           := xRESP_OKAY_c;
+            id         : std_logic_vector := "X";
+            delay      : time             := 0 ns); -- delay eady after valid
 
     -- Expect r message (read response)
     procedure expect_r (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        startValue      : unsigned;
-        increment       : natural               := 1; 
-        beats           : natural               := 1;       -- number of beats to write
-        resp            : Resp_t                := xRESP_OKAY_c;
-        id              : std_logic_vector      := "X";
-        delay           : time                  := 0 ns;   -- delay ready after valid
-        ignoreData      : boolean               := false
-    );
+            signal net  : inout network_t;
+            axi_master  : olo_test_axi_master_t;
+            start_value : unsigned;
+            increment   : natural          := 1;
+            beats       : natural          := 1;    -- number of beats to write
+            resp        : Resp_t           := xRESP_OKAY_c;
+            id          : std_logic_vector := "X";
+            delay       : time             := 0 ns; -- delay ready after valid
+            ignore_data : boolean          := false);
 
     -- *** Push Compount Messages ***
     -- Single beat write
     procedure push_single_write (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        data            : unsigned;
-        id              : std_logic_vector      := "X";
-        strb            : std_logic_vector      := "X";
-        awValidDelay    : time := 0 ns;
-        wValidDelay     : time := 0 ns;
-        bReadyDelay     : time := 0 ns
-    );
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            data           : unsigned;
+            id             : std_logic_vector := "X";
+            strb           : std_logic_vector := "X";
+            aw_valid_delay : time             := 0 ns;
+            w_valid_delay  : time             := 0 ns;
+            b_ready_delay  : time             := 0 ns);
 
     -- Single beat read & check read data
     procedure expect_single_read (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        data            : unsigned;
-        id              : std_logic_vector      := "X";
-        arValidDelay    : time := 0 ns;
-        rReadyDelay     : time := 0 ns
-    );
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            data           : unsigned;
+            id             : std_logic_vector := "X";
+            ar_valid_delay : time             := 0 ns;
+            r_ready_delay  : time             := 0 ns);
 
     -- Burst write (aligned)
     procedure push_burst_write_aligned (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        dataStart       : unsigned;
-        dataIncrement   : natural             := 1;
-        beats           : natural;
-        id              : std_logic_vector    := "X";
-        burst           : Burst_t             := xBURST_INCR_c;
-        awValidDelay    : time := 0 ns;
-        wValidDelay     : time := 0 ns;
-        bReadyDelay     : time := 0 ns
-    );
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            dataStart      : unsigned;
+            dataIncrement  : natural          := 1;
+            beats          : natural;
+            id             : std_logic_vector := "X";
+            burst          : Burst_t          := xBURST_INCR_c;
+            aw_valid_delay : time             := 0 ns;
+            w_valid_delay  : time             := 0 ns;
+            b_ready_delay  : time             := 0 ns);
 
     -- Burst read (aligned)
     procedure expect_burst_read_aligned (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        dataStart       : unsigned;
-        dataIncrement   : natural             := 1;
-        beats           : natural;
-        id              : std_logic_vector    := "X";
-        burst           : Burst_t             := xBURST_INCR_c;
-        arValidDelay    : time := 0 ns;
-        rReadyDelay     : time := 0 ns
-    );
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            dataStart      : unsigned;
+            dataIncrement  : natural          := 1;
+            beats          : natural;
+            id             : std_logic_vector := "X";
+            burst          : Burst_t          := xBURST_INCR_c;
+            ar_valid_delay : time             := 0 ns;
+            r_ready_delay  : time             := 0 ns);
 
     -- Constructor
-    impure function new_olo_test_axi_master(dataWidth : natural;
-                                            addrWidth : natural;
-                                            idWidth   : natural := 0;
-                                            userWidth : natural := 0) return olo_test_axi_master_t;
+    impure function new_olo_test_axi_master (
+            data_width : natural;
+            addr_width : natural;
+            id_width   : natural := 0;
+            user_width : natural := 0) return olo_test_axi_master_t;
+
     -- Casts
-    impure function as_sync(instance : olo_test_axi_master_t) return sync_handle_t;
+    impure function as_sync (instance : olo_test_axi_master_t) return sync_handle_t;
 
 end package;
 
-package body olo_test_axi_master_pkg is 
+package body olo_test_axi_master_pkg is
+
     -- *** Push individual messages ***
     -- Push AW message
     procedure push_aw (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        id              : std_logic_vector      := "X";
-        len             : positive              := 1;
-        burst           : Burst_t               := xBURST_INCR_c;
-        delay           : time                  := 0 ns
-    ) is
-        variable msg : msg_t := new_msg(AxiAwMsg);
-        variable id_v : std_logic_vector(axiMaster.IdWidth-1 downto 0) := (others => '0');
+            signal net : inout network_t;
+            axi_master : olo_test_axi_master_t;
+            addr       : unsigned;
+            id         : std_logic_vector := "X";
+            len        : positive         := 1;
+            burst      : Burst_t          := xBURST_INCR_c;
+            delay      : time             := 0 ns) is
+        variable msg  : msg_t                                            := new_msg(axi_aw_msg);
+        variable id_v : std_logic_vector(axi_master.id_width-1 downto 0) := (others => '0');
     begin
         -- checks
         if id /= "X" then
-            check_equal(id'length, axiMaster.IdWidth, "push_aw: id width mismatch");
+            check_equal(id'length, axi_master.id_width, "push_aw: id width mismatch");
             id_v := id;
         end if;
         -- implementation
-        push(msg, resize(addr, axiMaster.AddrWidth));
+        push(msg, resize(addr, axi_master.addr_width));
         push(msg, id_v);
         push(msg, len);
         push(msg, burst);
         push(msg, delay);
-        send(net, axiMaster.p_actor, msg);
+        send(net, axi_master.p_actor, msg);
     end procedure;
 
     -- Push AR message
     procedure push_ar (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        id              : std_logic_vector      := "X";
-        len             : positive              := 1;
-        burst           : Burst_t               := xBURST_INCR_c;
-        delay           : time                  := 0 ns
-    ) is
-        variable msg : msg_t := new_msg(AxiArMsg);
-        variable id_v : std_logic_vector(axiMaster.IdWidth-1 downto 0) := (others => '0');
+            signal net : inout network_t;
+            axi_master : olo_test_axi_master_t;
+            addr       : unsigned;
+            id         : std_logic_vector := "X";
+            len        : positive         := 1;
+            burst      : Burst_t          := xBURST_INCR_c;
+            delay      : time             := 0 ns) is
+        variable msg  : msg_t                                            := new_msg(axi_ar_msg);
+        variable id_v : std_logic_vector(axi_master.id_width-1 downto 0) := (others => '0');
     begin
         -- checks
         if id /= "X" then
-            check_equal(id'length, axiMaster.IdWidth, "push_ar: id width mismatch");
+            check_equal(id'length, axi_master.id_width, "push_ar: id width mismatch");
             id_v := id;
         end if;
         -- implementation
-        push(msg, resize(addr, axiMaster.AddrWidth));
+        push(msg, resize(addr, axi_master.addr_width));
         push(msg, id_v);
         push(msg, len);
         push(msg, burst);
         push(msg, delay);
-        send(net, axiMaster.p_actor, msg);
+        send(net, axi_master.p_actor, msg);
     end procedure;
 
     -- Push W message
     procedure push_w (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        startValue      : unsigned;
-        increment       : natural               := 1;
-        beats           : natural               := 1;
-        firstStrb       : std_logic_vector      := "X";
-        lastStrb        : std_logic_vector      := "X";
-        delay           : time                  := 0 ns
-    ) is
-        variable msg : msg_t := new_msg(AxiWMsg);
-        variable firstStrb_v : std_logic_vector(axiMaster.DataWidth/8-1 downto 0) := (others => '1');
-        variable lastStrb_v : std_logic_vector(axiMaster.DataWidth/8-1 downto 0) := (others => '1');
+            signal net  : inout network_t;
+            axi_master  : olo_test_axi_master_t;
+            start_value : unsigned;
+            increment   : natural          := 1;
+            beats       : natural          := 1;
+            first_strb  : std_logic_vector := "X";
+            last_strb   : std_logic_vector := "X";
+            delay       : time             := 0 ns) is
+        variable msg         : msg_t                                                := new_msg(axi_w_msg);
+        variable frst_strb_v : std_logic_vector(axi_master.data_width/8-1 downto 0) := (others => '1');
+        variable last_strb_v : std_logic_vector(axi_master.data_width/8-1 downto 0) := (others => '1');
     begin
         -- checks
-        if firstStrb /= "X" then
-            check_equal(firstStrb'length, axiMaster.DataWidth/8, "push_w: firstStrb width mismatch");
-            firstStrb_v := firstStrb;
+        if first_strb /= "X" then
+            check_equal(first_strb'length, axi_master.data_width/8, "push_w: first_strb width mismatch");
+            frst_strb_v := first_strb;
         end if;
-        if lastStrb /= "X" then
-            check_equal(lastStrb'length, axiMaster.DataWidth/8, "push_w: lastStrb width mismatch");
-            lastStrb_v := lastStrb;
+        if last_strb /= "X" then
+            check_equal(last_strb'length, axi_master.data_width/8, "push_w: last_strb width mismatch");
+            last_strb_v := last_strb;
         end if;
         -- implementation
-        push(msg, resize(startValue, axiMaster.DataWidth));
+        push(msg, resize(start_value, axi_master.data_width));
         push(msg, increment);
         push(msg, beats);
-        push(msg, firstStrb_v);
-        push(msg, lastStrb_v);
+        push(msg, frst_strb_v);
+        push(msg, last_strb_v);
         push(msg, delay);
-        send(net, axiMaster.p_actor, msg);
+        send(net, axi_master.p_actor, msg);
     end procedure;
 
     -- Expect B message
     procedure expect_b (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        resp            : Resp_t                := xRESP_OKAY_c;
-        id              : std_logic_vector      := "X";
-        delay           : time                  := 0 ns                 -- Delay ready after valid
-    ) is
-        variable msg : msg_t := new_msg(AxiBMsg);
-        variable id_v : std_logic_vector(axiMaster.IdWidth-1 downto 0) := (others => '0');
+            signal net : inout network_t;
+            axi_master : olo_test_axi_master_t;
+            resp       : Resp_t           := xRESP_OKAY_c;
+            id         : std_logic_vector := "X";
+            delay      : time             := 0 ns) is
+        variable msg  : msg_t                                            := new_msg(axi_b_msg);
+        variable id_v : std_logic_vector(axi_master.id_width-1 downto 0) := (others => '0');
     begin
         -- checks
         if id /= "X" then
-            check_equal(id'length, axiMaster.IdWidth, "expect_b: id width mismatch");
+            check_equal(id'length, axi_master.id_width, "expect_b: id width mismatch");
             id_v := id;
         end if;
         -- implementation
         push(msg, resp);
         push(msg, id_v);
         push(msg, delay);
-        send(net, axiMaster.p_actor, msg);
+        send(net, axi_master.p_actor, msg);
     end procedure;
-    
 
     -- Expect R message
     procedure expect_r (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        startValue      : unsigned;
-        increment       : natural               := 1;
-        beats           : natural               := 1;
-        resp            : Resp_t                := xRESP_OKAY_c;
-        id              : std_logic_vector      := "X";
-        delay           : time                  := 0 ns;                 -- Delay ready after valid
-        ignoreData      : boolean               := false
-    ) is
-        variable msg : msg_t := new_msg(AxiRMsg);
-        variable id_v : std_logic_vector(axiMaster.IdWidth-1 downto 0) := (others => '0');
+            signal net  : inout network_t;
+            axi_master  : olo_test_axi_master_t;
+            start_value : unsigned;
+            increment   : natural          := 1;
+            beats       : natural          := 1;
+            resp        : Resp_t           := xRESP_OKAY_c;
+            id          : std_logic_vector := "X";
+            delay       : time             := 0 ns;                 -- Delay ready after valid
+            ignore_data : boolean          := false) is
+        variable msg  : msg_t                                            := new_msg(axi_r_msg);
+        variable id_v : std_logic_vector(axi_master.id_width-1 downto 0) := (others => '0');
     begin
         -- checks
         if id /= "X" then
-            check_equal(id'length, axiMaster.IdWidth, "expect_r: id width mismatch");
+            check_equal(id'length, axi_master.id_width, "expect_r: id width mismatch");
             id_v := id;
         end if;
         -- implementation
-        push(msg, resize(startValue, axiMaster.DataWidth));
+        push(msg, resize(start_value, axi_master.data_width));
         push(msg, increment);
         push(msg, beats);
         push(msg, resp);
         push(msg, id_v);
         push(msg, delay);
-        push(msg, ignoreData);
-        send(net, axiMaster.p_actor, msg);
+        push(msg, ignore_data);
+        send(net, axi_master.p_actor, msg);
     end procedure;
 
     -- *** Push Compount Messages ***
-    -- signgle beat write
+    -- Single beat write
     procedure push_single_write (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        data            : unsigned;
-        id              : std_logic_vector      := "X";
-        strb            : std_logic_vector      := "X";
-        awValidDelay    : time := 0 ns;
-        wValidDelay     : time := 0 ns;
-        bReadyDelay     : time := 0 ns
-    ) is
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            data           : unsigned;
+            id             : std_logic_vector := "X";
+            strb           : std_logic_vector := "X";
+            aw_valid_delay : time             := 0 ns;
+            w_valid_delay  : time             := 0 ns;
+            b_ready_delay  : time             := 0 ns) is
     begin
         -- implementation
-        push_aw(net, axiMaster, addr, id => id, delay => awValidDelay);
-        push_w(net, axiMaster, data, delay => wValidDelay, firstStrb => strb);
-        expect_b(net, axiMaster, resp => xRESP_OKAY_c, id => id, delay => bReadyDelay);
+        push_aw(net, axi_master, addr, id => id, delay => aw_valid_delay);
+        push_w(net, axi_master, data, delay => w_valid_delay, first_strb => strb);
+        expect_b(net, axi_master, resp => xRESP_OKAY_c, id => id, delay => b_ready_delay);
     end procedure;
 
-    -- Burst beat read
+    -- Single beat read & check read data
     procedure expect_single_read (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        data            : unsigned; 
-        id              : std_logic_vector      := "X";
-        arValidDelay    : time := 0 ns;
-        rReadyDelay     : time := 0 ns
-    ) is
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            data           : unsigned;
+            id             : std_logic_vector := "X";
+            ar_valid_delay : time             := 0 ns;
+            r_ready_delay  : time             := 0 ns) is
     begin
         -- implementation
-        push_ar(net, axiMaster, addr, id => id, delay => arValidDelay);
-        expect_r(net, axiMaster, data, resp => xRESP_OKAY_c, id => id, delay => rReadyDelay);
+        push_ar(net, axi_master, addr, id => id, delay => ar_valid_delay);
+        expect_r(net, axi_master, data, resp => xRESP_OKAY_c, id => id, delay => r_ready_delay);
     end procedure;
 
     -- Burst write (aligned)
     procedure push_burst_write_aligned (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        dataStart       : unsigned;
-        dataIncrement   : natural            := 1;
-        beats           : natural;
-        id              : std_logic_vector      := "X";
-        burst           : Burst_t               := xBURST_INCR_c;
-        awValidDelay    : time := 0 ns;
-        wValidDelay     : time := 0 ns;
-        bReadyDelay     : time := 0 ns
-    ) is
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            dataStart      : unsigned;
+            dataIncrement  : natural          := 1;
+            beats          : natural;
+            id             : std_logic_vector := "X";
+            burst          : Burst_t          := xBURST_INCR_c;
+            aw_valid_delay : time             := 0 ns;
+            w_valid_delay  : time             := 0 ns;
+            b_ready_delay  : time             := 0 ns) is
     begin
         -- implementation
-        push_aw(net, axiMaster, addr, len => beats, id => id, burst => burst, delay => awValidDelay);
-        push_w(net, axiMaster, dataStart, dataIncrement, beats, delay => wValidDelay);
-        expect_b(net, axiMaster, resp => xRESP_OKAY_c, id => id, delay => bReadyDelay);
+        push_aw(net, axi_master, addr, len => beats, id => id, burst => burst, delay => aw_valid_delay);
+        push_w(net, axi_master, dataStart, dataIncrement, beats, delay => w_valid_delay);
+        expect_b(net, axi_master, resp => xRESP_OKAY_c, id => id, delay => b_ready_delay);
     end procedure;
 
     -- Burst read (aligned)
     procedure expect_burst_read_aligned (
-        signal net      : inout network_t;
-        axiMaster       : olo_test_axi_master_t;
-        addr            : unsigned;
-        dataStart       : unsigned;
-        dataIncrement   : natural            := 1;
-        beats           : natural;
-        id              : std_logic_vector      := "X";
-        burst           : Burst_t               := xBURST_INCR_c;
-        arValidDelay    : time := 0 ns;
-        rReadyDelay     : time := 0 ns
-    ) is
+            signal net     : inout network_t;
+            axi_master     : olo_test_axi_master_t;
+            addr           : unsigned;
+            dataStart      : unsigned;
+            dataIncrement  : natural          := 1;
+            beats          : natural;
+            id             : std_logic_vector := "X";
+            burst          : Burst_t          := xBURST_INCR_c;
+            ar_valid_delay : time             := 0 ns;
+            r_ready_delay  : time             := 0 ns) is
     begin
         -- implementation
-        push_ar(net, axiMaster, addr, len => beats, id => id, burst => burst, delay => arValidDelay);
-        expect_r(net, axiMaster, dataStart, dataIncrement, beats, resp => xRESP_OKAY_c, id => id, delay => rReadyDelay);
+        push_ar(net, axi_master, addr, len => beats, id => id, burst => burst, delay => ar_valid_delay);
+        expect_r(net, axi_master, dataStart, dataIncrement, beats, resp => xRESP_OKAY_c, id => id, delay => r_ready_delay);
     end procedure;
 
     -- Constructor
-    impure function new_olo_test_axi_master(    dataWidth : natural;
-                                                addrWidth : natural;
-                                                idWidth   : natural := 0;
-                                                userWidth : natural := 0 ) return olo_test_axi_master_t is
+    impure function new_olo_test_axi_master (
+            data_width : natural;
+            addr_width : natural;
+            id_width   : natural := 0;
+            user_width : natural := 0) return olo_test_axi_master_t is
     begin
-        return (p_actor => new_actor, 
-                DataWidth => dataWidth, 
-                AddrWidth => addrWidth,
-                IdWidth => idWidth,
-                UserWidth => userWidth);
-    end;
-        
+        return (p_actor => new_actor,
+                data_width => data_width,
+                addr_width => addr_width,
+                id_width => id_width,
+                user_width => user_width);
+    end function;
+
     -- Casts
-    impure function as_sync(instance : olo_test_axi_master_t) return sync_handle_t is
+    impure function as_sync (instance : olo_test_axi_master_t) return sync_handle_t is
     begin
         return instance.p_actor;
-    end;
+    end function;
 
-end;
+end package body;
 
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Component Implementation
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -459,23 +443,25 @@ entity olo_test_axi_master_vc is
         instance                 : olo_test_axi_master_t
     );
     port (
-        Clk          : in  std_logic;
-        Rst          : in  std_logic;
-        AxiMs        : out AxiMs_r;
-        AxiSm        : in  AxiSm_r
+        clk          : in    std_logic;
+        rst          : in    std_logic;
+        axi_ms       : out   axi_ms_t;
+        axi_sm       : in    axi_sm_t
     );
 end entity;
 
 architecture a of olo_test_axi_master_vc is
+
 begin
 
     -- Main process
-    main : process
-        variable request_msg    : msg_t;
-        variable reply_msg      : msg_t;
-        variable copy_msg       : msg_t;
-        variable msg_type       : msg_type_t;
+    main : process is
+        variable request_msg : msg_t;
+        variable reply_msg   : msg_t;
+        variable copy_msg    : msg_t;
+        variable msg_type    : msg_type_t;
     begin
+
         -- Loop though messages
         loop
             -- Receive message
@@ -483,390 +469,410 @@ begin
             msg_type := message_type(request_msg);
             copy_msg := copy(request_msg);
             -- Handle Message
-            if msg_type = AxiAwMsg then
+            if msg_type = axi_aw_msg then
                 -- AW
-                push(AwQueue, copy_msg);
-                AwInitiated := AwInitiated + 1;
-            elsif msg_type = AxiArMsg then
+                push(aw_queue, copy_msg);
+                aw_initiated := aw_initiated + 1;
+            elsif msg_type = axi_ar_msg then
                 -- AR
-                push(ArQueue, copy_msg);
-                ArInitiated := ArInitiated + 1;
-            elsif msg_type = AxiWMsg then
+                push(ar_queue, copy_msg);
+                ar_initiated := ar_initiated + 1;
+            elsif msg_type = axi_w_msg then
                 -- W
-                push(WQueue, copy_msg);
-                WInitiated := WInitiated + 1;
-            elsif msg_type = AxiBMsg then
+                push(w_queue, copy_msg);
+                w_initiated := w_initiated + 1;
+            elsif msg_type = axi_b_msg then
                 -- B
-                push(BQueue, copy_msg);
-                BInitiated := BInitiated + 1;
-            elsif msg_type = AxiRMsg then
+                push(b_queue, copy_msg);
+                b_initiated := b_initiated + 1;
+            elsif msg_type = axi_r_msg then
                 -- R
-                push(RQueue, copy_msg);
-                RInitiated := RInitiated + 1;
+                push(r_queue, copy_msg);
+                r_initiated := r_initiated + 1;
             elsif msg_type = wait_until_idle_msg then
-                while AwInitiated /= AwCompleted or
-                      ArInitiated /= ArCompleted or
-                      WInitiated /= WCompleted or
-                      BInitiated /= BCompleted or
-                      RInitiated /= RCompleted loop
-                    wait until rising_edge(Clk);
+
+                -- Wait until idle
+                while aw_initiated /= aw_completed or
+                      ar_initiated /= ar_completed or
+                      w_initiated /= w_completed or
+                      b_initiated /= b_completed or
+                      r_initiated /= r_completed loop
+                    wait until rising_edge(clk);
                 end loop;
+
                 handle_wait_until_idle(net, msg_type, request_msg);
             else
                 delete(copy_msg);
                 unexpected_msg_type(msg_type);
             end if;
         end loop;
+
         wait;
     end process;
 
-
     -- AW process
-    p_aw : process
-        variable msg : msg_t;
+    p_aw : process is
+        variable msg      : msg_t;
         variable msg_type : msg_type_t;
-        variable addr : unsigned(instance.AddrWidth-1 downto 0);
-        variable id : std_logic_vector(instance.IdWidth-1 downto 0);
-        variable len : positive;
-        variable burst : Burst_t;
-        variable delay : time;
+        variable addr     : unsigned(instance.addr_width-1 downto 0);
+        variable id       : std_logic_vector(instance.id_width-1 downto 0);
+        variable len      : positive;
+        variable burst    : Burst_t;
+        variable delay    : time;
     begin
         -- Initialize
-        AxiMs.AwId     <= toUslv(0, AxiMs.AwId'length);
-        AxiMs.AwAddr   <= toUslv(0, AxiMs.AwAddr'length);
-        AxiMs.AwLen    <= toUslv(0, 8);
-        AxiMs.AwSize   <= toUslv(0, 3);
-        AxiMs.AwBurst  <= "01";
-        AxiMs.AWValid  <= '0';
-        AxiMs.AwLock   <= '0';
-        AxiMs.AwCache  <= toUslv(0, 4);
-        AxiMs.AwProt   <= toUslv(0, 3);
-        AxiMs.AwQos    <= toUslv(0, 4);
-        AxiMs.AwRegion <= toUslv(0, 4);
-        AxiMs.AWUser   <= toUslv(0, AxiMs.AWUser'length);
-        wait until rising_edge(Clk);
+        axi_ms.aw_id     <= toUslv(0, axi_ms.aw_id'length);
+        axi_ms.aw_addr   <= toUslv(0, axi_ms.aw_addr'length);
+        axi_ms.aw_len    <= toUslv(0, 8);
+        axi_ms.aw_size   <= toUslv(0, 3);
+        axi_ms.aw_burst  <= "01";
+        axi_ms.aw_valid  <= '0';
+        axi_ms.aw_lock   <= '0';
+        axi_ms.aw_cache  <= toUslv(0, 4);
+        axi_ms.aw_prot   <= toUslv(0, 3);
+        axi_ms.aw_qos    <= toUslv(0, 4);
+        axi_ms.aw_region <= toUslv(0, 4);
+        axi_ms.aw_user   <= toUslv(0, axi_ms.aw_user'length);
+        wait until rising_edge(clk);
+
         -- loop messages
         loop
             -- wait until message available
-            if is_empty(AwQueue) then
-                wait until not is_empty(AwQueue) and rising_edge(Clk);
+            if is_empty(aw_queue) then
+                wait until not is_empty(aw_queue) and rising_edge(clk);
             end if;
             -- get message
-            msg := pop(AwQueue);
+            msg      := pop(aw_queue);
             msg_type := message_type(msg);
             -- process message
-            if msg_type = AxiAwMsg then
+            if msg_type = axi_aw_msg then
                 -- Pop Information
-                addr := pop(msg);
-                id := pop(msg);
-                len := pop(msg);
+                addr  := pop(msg);
+                id    := pop(msg);
+                len   := pop(msg);
                 burst := pop(msg);
                 delay := pop(msg);
                 -- Execute
                 if delay > 0 ns then
                     wait for delay;
-                    wait until rising_edge(Clk);
+                    wait until rising_edge(clk);
                 end if;
-                AxiMs.AwId      <= id;
-                AxiMs.AwAddr    <= std_logic_vector(addr);
-                AxiMs.AwLen     <= toUslv(len-1, 8);
-                AxiMs.AwSize    <= toUslv(log2(instance.DataWidth/8), 3);
-                AxiMs.AwBurst   <= burst;
-                AxiMs.AWValid   <= '1';
-                wait until rising_edge(Clk) and AxiSm.AwReady = '1';
-                AxiMs.AWValid   <= '0';
-                AxiMs.AwId      <= toUslv(0, AxiMs.AwId'length);
-                AxiMs.AwAddr    <= toUslv(0, AxiMs.AwAddr'length);
-                AxiMs.AwLen     <= toUslv(0, 8);
-                AxiMs.AwSize    <= toUslv(0, 3);
-                AxiMs.AwBurst   <= xBURST_INCR_c;
-                AwCompleted := AwCompleted + 1;
+                axi_ms.aw_id    <= id;
+                axi_ms.aw_addr  <= std_logic_vector(addr);
+                axi_ms.aw_len   <= toUslv(len-1, 8);
+                axi_ms.aw_size  <= toUslv(log2(instance.data_width/8), 3);
+                axi_ms.aw_burst <= burst;
+                axi_ms.aw_valid <= '1';
+                wait until rising_edge(clk) and axi_sm.aw_ready = '1';
+                axi_ms.aw_valid <= '0';
+                axi_ms.aw_id    <= toUslv(0, axi_ms.aw_id'length);
+                axi_ms.aw_addr  <= toUslv(0, axi_ms.aw_addr'length);
+                axi_ms.aw_len   <= toUslv(0, 8);
+                axi_ms.aw_size  <= toUslv(0, 3);
+                axi_ms.aw_burst <= xBURST_INCR_c;
+                aw_completed    := aw_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
             delete(msg);
         end loop;
+
         wait;
     end process;
 
     -- AR process
-    p_ar : process
-        variable msg : msg_t;
+    p_ar : process is
+        variable msg      : msg_t;
         variable msg_type : msg_type_t;
-        variable addr : unsigned(instance.AddrWidth-1 downto 0);
-        variable id : std_logic_vector(instance.IdWidth-1 downto 0);
-        variable len : positive;
-        variable burst : Burst_t;
-        variable delay : time;
+        variable addr     : unsigned(instance.addr_width-1 downto 0);
+        variable id       : std_logic_vector(instance.id_width-1 downto 0);
+        variable len      : positive;
+        variable burst    : Burst_t;
+        variable delay    : time;
     begin
         -- Initialize
-        AxiMs.ArId     <= toUslv(0, AxiMs.ArId'length);
-        AxiMs.ArAddr   <= toUslv(0, AxiMs.ArAddr'length);
-        AxiMs.ArLen    <= toUslv(0, 8);
-        AxiMs.ArSize   <= toUslv(0, 3);
-        AxiMs.ArBurst  <= "01";
-        AxiMs.ArValid  <= '0';
-        AxiMs.ArLock   <= '0';
-        AxiMs.ArCache  <= toUslv(0, 4);
-        AxiMs.ArProt   <= toUslv(0, 3);
-        AxiMs.ArQos    <= toUslv(0, 4);
-        AxiMs.ArRegion <= toUslv(0, 4);
-        AxiMs.ArUser   <= toUslv(0, AxiMs.ArUser'length);
-        wait until rising_edge(Clk);
+        axi_ms.ar_id     <= toUslv(0, axi_ms.ar_id'length);
+        axi_ms.ar_addr   <= toUslv(0, axi_ms.ar_addr'length);
+        axi_ms.ar_len    <= toUslv(0, 8);
+        axi_ms.ar_size   <= toUslv(0, 3);
+        axi_ms.ar_burst  <= "01";
+        axi_ms.ar_valid  <= '0';
+        axi_ms.ar_lock   <= '0';
+        axi_ms.ar_cache  <= toUslv(0, 4);
+        axi_ms.ar_prot   <= toUslv(0, 3);
+        axi_ms.ar_qos    <= toUslv(0, 4);
+        axi_ms.ar_region <= toUslv(0, 4);
+        axi_ms.ar_user   <= toUslv(0, axi_ms.ar_user'length);
+        wait until rising_edge(clk);
+
         -- loop messages
         loop
             -- wait until message available
-            if is_empty(ArQueue) then
-                wait until not is_empty(ArQueue) and rising_edge(Clk);
+            if is_empty(ar_queue) then
+                wait until not is_empty(ar_queue) and rising_edge(clk);
             end if;
             -- get message
-            msg := pop(ArQueue);
+            msg      := pop(ar_queue);
             msg_type := message_type(msg);
             -- process message
-            if msg_type = AxiArMsg then
+            if msg_type = axi_ar_msg then
                 -- Pop Information
-                addr := pop(msg);
-                id := pop(msg);
-                len := pop(msg);
+                addr  := pop(msg);
+                id    := pop(msg);
+                len   := pop(msg);
                 burst := pop(msg);
                 delay := pop(msg);
                 -- Execute
                 if delay > 0 ns then
                     wait for delay;
-                    wait until rising_edge(Clk);
+                    wait until rising_edge(clk);
                 end if;
-                AxiMs.ArId      <= id;
-                AxiMs.ArAddr    <= std_logic_vector(addr);
-                AxiMs.ArLen     <= toUslv(len-1, 8);
-                AxiMs.ArSize    <= toUslv(log2(instance.DataWidth/8), 3);
-                AxiMs.ArBurst   <= burst;
-                AxiMs.ArValid   <= '1';
-                wait until rising_edge(Clk) and AxiSm.ArReady = '1';
-                AxiMs.ArValid   <= '0';
-                AxiMs.ArId      <= toUslv(0, AxiMs.ArId'length);
-                AxiMs.ArAddr    <= toUslv(0, AxiMs.ArAddr'length);
-                AxiMs.ArLen     <= toUslv(0, 8);
-                AxiMs.ArSize    <= toUslv(0, 3);
-                AxiMs.ArBurst   <= xBURST_INCR_c;
-                ArCompleted := ArCompleted + 1;
+                axi_ms.ar_id    <= id;
+                axi_ms.ar_addr  <= std_logic_vector(addr);
+                axi_ms.ar_len   <= toUslv(len-1, 8);
+                axi_ms.ar_size  <= toUslv(log2(instance.data_width/8), 3);
+                axi_ms.ar_burst <= burst;
+                axi_ms.ar_valid <= '1';
+                wait until rising_edge(clk) and axi_sm.ar_ready = '1';
+                axi_ms.ar_valid <= '0';
+                axi_ms.ar_id    <= toUslv(0, axi_ms.ar_id'length);
+                axi_ms.ar_addr  <= toUslv(0, axi_ms.ar_addr'length);
+                axi_ms.ar_len   <= toUslv(0, 8);
+                axi_ms.ar_size  <= toUslv(0, 3);
+                axi_ms.ar_burst <= xBURST_INCR_c;
+                ar_completed    := ar_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
-            delete(msg);   
+            delete(msg);
         end loop;
+
         wait;
     end process;
 
     -- W process
-    p_w : process
-        variable msg : msg_t;
-        variable msg_type : msg_type_t;
-        variable startValue : unsigned(instance.DataWidth-1 downto 0);
-        variable increment : natural;
-        variable beats : natural;
-        variable firstStrb : std_logic_vector(instance.DataWidth/8-1 downto 0);
-        variable lastStrb : std_logic_vector(instance.DataWidth/8-1 downto 0);
-        variable delay : time;
-        variable data : unsigned(instance.DataWidth-1 downto 0);
+    p_w : process is
+        variable msg         : msg_t;
+        variable msg_type    : msg_type_t;
+        variable start_value : unsigned(instance.data_width-1 downto 0);
+        variable increment   : natural;
+        variable beats       : natural;
+        variable first_strb  : std_logic_vector(instance.data_width/8-1 downto 0);
+        variable last_strb   : std_logic_vector(instance.data_width/8-1 downto 0);
+        variable delay       : time;
+        variable data        : unsigned(instance.data_width-1 downto 0);
     begin
         -- Initialize
-        AxiMs.WData    <= toUslv(0, AxiMs.WData'length);
-        AxiMs.WStrb    <= toUslv(0, AxiMs.WStrb'length);
-        AxiMs.WLast    <= '0';
-        AxiMs.WValid   <= '0';
-        AxiMs.WUser    <= toUslv(0, AxiMs.WUser'length);
-        wait until rising_edge(Clk);
+        axi_ms.w_data  <= toUslv(0, axi_ms.w_data'length);
+        axi_ms.w_strb  <= toUslv(0, axi_ms.w_strb'length);
+        axi_ms.w_last  <= '0';
+        axi_ms.w_valid <= '0';
+        axi_ms.w_user  <= toUslv(0, axi_ms.w_user'length);
+        wait until rising_edge(clk);
+
         -- loop messages
         loop
             -- wait until message available
-            if is_empty(WQueue) then
-                wait until not is_empty(WQueue) and rising_edge(Clk);
+            if is_empty(w_queue) then
+                wait until not is_empty(w_queue) and rising_edge(clk);
             end if;
             -- wait until address is sent
-            if WCompleted = AwCompleted then
-                wait until WCompleted < AwCompleted and rising_edge(Clk);
+            if w_completed = aw_completed then
+                wait until w_completed < aw_completed and rising_edge(clk);
             end if;
             -- get message
-            msg := pop(WQueue);
+            msg      := pop(w_queue);
             msg_type := message_type(msg);
             -- process message
-            if msg_type = AxiWMsg then
+            if msg_type = axi_w_msg then
                 -- Pop Information
-                startValue := pop(msg);
-                increment := pop(msg);
-                beats := pop(msg);
-                firstStrb := pop(msg);
-                lastStrb := pop(msg);
-                delay := pop(msg);
+                start_value := pop(msg);
+                increment   := pop(msg);
+                beats       := pop(msg);
+                first_strb  := pop(msg);
+                last_strb   := pop(msg);
+                delay       := pop(msg);
                 -- Execute
                 if delay > 0 ns then
                     wait for delay;
-                    wait until rising_edge(Clk);
+                    wait until rising_edge(clk);
                 end if;
-                data := startValue;
+                data := start_value;
+
+                -- loop through beats
                 for i in 0 to beats-1 loop
                     -- Data
-                    AxiMs.WData    <= std_logic_vector(data);
+                    axi_ms.w_data <= std_logic_vector(data);
                     -- Strobe
                     if i = 0 then
-                        Axims.WStrb    <= firstStrb;
+                        axi_ms.w_strb <= first_strb;
                     elsif i = beats-1 then
-                        AxiMs.WStrb    <= lastStrb;
+                        axi_ms.w_strb <= last_strb;
                     else
-                        AxiMs.WStrb    <= onesVector(AxiMs.WStrb'length);
+                        axi_ms.w_strb <= onesVector(axi_ms.w_strb'length);
                     end if;
                     -- Last
                     if i = beats-1 then
-                        AxiMs.WLast    <= '1';
+                        axi_ms.w_last <= '1';
                     else
-                        AxiMs.WLast    <= '0';
+                        axi_ms.w_last <= '0';
                     end if;
                     -- Valid
-                    AxiMs.WValid   <= '1';
-                    wait until rising_edge(Clk) and AxiSm.WReady = '1';
-                    AxiMs.WValid   <= '0';
-                    data := data + increment;
+                    axi_ms.w_valid <= '1';
+                    wait until rising_edge(clk) and axi_sm.w_ready = '1';
+                    axi_ms.w_valid <= '0';
+                    data           := data + increment;
                 end loop;
-                AxiMs.WData    <= toUslv(0, AxiMs.WData'length);
-                AxiMs.WStrb    <= toUslv(0, AxiMs.WStrb'length);
-                AxiMs.WLast    <= '0';
-                WCompleted := WCompleted + 1;
+
+                -- restore idle state
+                axi_ms.w_data <= toUslv(0, axi_ms.w_data'length);
+                axi_ms.w_strb <= toUslv(0, axi_ms.w_strb'length);
+                axi_ms.w_last <= '0';
+                w_completed   := w_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
             delete(msg);
         end loop;
+
         wait;
     end process;
 
     -- B process
-    p_b : process
-        variable msg : msg_t;
+    p_b : process is
+        variable msg      : msg_t;
         variable msg_type : msg_type_t;
-        variable resp : Resp_t;
-        variable id : std_logic_vector(instance.IdWidth-1 downto 0);
-        variable delay : time;
+        variable resp     : Resp_t;
+        variable id       : std_logic_vector(instance.id_width-1 downto 0);
+        variable delay    : time;
     begin
         -- Initialize
-        AxiMs.BReady  <= '0';
-        wait until rising_edge(Clk);
+        axi_ms.b_ready <= '0';
+        wait until rising_edge(clk);
+
         -- loop messages
         loop
             -- wait until message available
-            if is_empty(BQueue) then
-                wait until not is_empty(BQueue) and rising_edge(Clk);
+            if is_empty(b_queue) then
+                wait until not is_empty(b_queue) and rising_edge(clk);
             end if;
             -- Wait until write is completed
-            if BCompleted = WCompleted then
-                wait until BCompleted < WCompleted and rising_edge(Clk);
+            if b_completed = w_completed then
+                wait until b_completed < w_completed and rising_edge(clk);
             end if;
             -- get message
-            msg := pop(BQueue);
+            msg      := pop(b_queue);
             msg_type := message_type(msg);
             -- process message
-            if msg_type = AxiBMsg then
+            if msg_type = axi_b_msg then
                 -- Pop Information
-                resp := pop(msg);
-                id := pop(msg);
+                resp  := pop(msg);
+                id    := pop(msg);
                 delay := pop(msg);
                 -- Execute
                 if delay > 0 ns then
-                    wait until rising_edge(Clk) and AxiSm.BValid = '1';
+                    wait until rising_edge(clk) and axi_sm.b_valid = '1';
                     wait for delay;
-                    wait until rising_edge(Clk);
+                    wait until rising_edge(clk);
                 end if;
-                AxiMs.BReady   <= '1';
-                wait until rising_edge(Clk) and AxiSm.BValid = '1';
-                check_equal(AxiSm.BResp, resp, "expect_b: BResp not as expected");
-                if id /= "X" then 
-                    check_equal(AxiSm.BId, id, "expect_b: BId not as expected");
+                axi_ms.b_ready <= '1';
+                wait until rising_edge(clk) and axi_sm.b_valid = '1';
+                check_equal(axi_sm.b_resp, resp, "expect_b: b_resp not as expected");
+                if id /= "X" then
+                    check_equal(axi_sm.b_id, id, "expect_b: b_id not as expected");
                 end if;
-                AxiMs.BReady    <= '0';
-                BCompleted := BCompleted + 1;
+                axi_ms.b_ready <= '0';
+                b_completed    := b_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
             delete(msg);
         end loop;
+
         wait;
     end process;
 
     -- R process
-    p_r : process
-        variable msg : msg_t;
-        variable msg_type : msg_type_t;
-        variable startValue : unsigned(instance.DataWidth-1 downto 0);
-        variable increment : natural;
-        variable beats : natural;
-        variable resp : Resp_t;
-        variable id : std_logic_vector(instance.IdWidth-1 downto 0);
-        variable delay : time;
-        variable data : unsigned(instance.DataWidth-1 downto 0);
-        variable ignoreData : boolean;
+    p_r : process is
+        variable msg         : msg_t;
+        variable msg_type    : msg_type_t;
+        variable start_value : unsigned(instance.data_width-1 downto 0);
+        variable increment   : natural;
+        variable beats       : natural;
+        variable resp        : Resp_t;
+        variable id          : std_logic_vector(instance.id_width-1 downto 0);
+        variable delay       : time;
+        variable data        : unsigned(instance.data_width-1 downto 0);
+        variable ignore_data : boolean;
     begin
         -- Initialize
-        AxiMs.RReady   <= '0';
-        wait until rising_edge(Clk);
+        axi_ms.r_ready <= '0';
+        wait until rising_edge(clk);
+
         -- loop messages
         loop
             -- wait until message available
-            if is_empty(RQueue) then
-                wait until not is_empty(RQueue) and rising_edge(Clk);
+            if is_empty(r_queue) then
+                wait until not is_empty(r_queue) and rising_edge(clk);
             end if;
             -- wait until address is sent
-            if RCompleted = ArCompleted then
-                wait until RCompleted < ArCompleted and rising_edge(Clk);
+            if r_completed = ar_completed then
+                wait until r_completed < ar_completed and rising_edge(clk);
             end if;
             -- get message
-            msg := pop(RQueue);
+            msg      := pop(r_queue);
             msg_type := message_type(msg);
             -- process message
-            if msg_type = AxiRMsg then
+            if msg_type = axi_r_msg then
                 -- Pop Information
-                startValue := pop(msg);
-                increment := pop(msg);
-                beats := pop(msg);
-                resp := pop(msg);
-                id := pop(msg);
-                delay := pop(msg);
-                ignoreData := pop(msg);
+                start_value := pop(msg);
+                increment   := pop(msg);
+                beats       := pop(msg);
+                resp        := pop(msg);
+                id          := pop(msg);
+                delay       := pop(msg);
+                ignore_data := pop(msg);
                 -- Execute
                 if delay > 0 ns then
-                    wait until rising_edge(Clk) and AxiSm.RValid = '1';
+                    wait until rising_edge(clk) and axi_sm.r_valid = '1';
                     wait for delay;
-                    wait until rising_edge(Clk);
+                    wait until rising_edge(clk);
                 end if;
-                AxiMs.RReady   <= '1';
-                data := startValue;
+                axi_ms.r_ready <= '1';
+                data           := start_value;
+
+                -- loop through beats
                 for i in 0 to beats-1 loop
-                    wait until rising_edge(Clk) and AxiSm.RValid = '1';
-                    if not ignoreData then
-                        check_equal(AxiSm.RData, data, "expect_r: RData not as expected");
+                    wait until rising_edge(clk) and axi_sm.r_valid = '1';
+                    if not ignore_data then
+                        check_equal(axi_sm.r_data, data, "expect_r: r_data not as expected");
                     end if;
-                    check_equal(AxiSm.RResp, resp, "expect_r: RResp not as expected");
+                    check_equal(axi_sm.r_resp, resp, "expect_r: r_resp not as expected");
                     if id /= "X" then
-                        check_equal(AxiSm.RId, id, "expect_r: RId not as expected");
+                        check_equal(axi_sm.r_id, id, "expect_r: r_id not as expected");
                     end if;
-                    data := data + increment;
-                    AxiMs.Rready <= '0';
-                    wait until rising_edge(Clk);
-                    AxiMs.RReady   <= '1';
+                    data           := data + increment;
+                    axi_ms.r_ready <= '0';
+                    wait until rising_edge(clk);
+                    axi_ms.r_ready <= '1';
                 end loop;
-                AxiMs.RReady   <= '0';
-                RCompleted := RCompleted + 1;
+
+                axi_ms.r_ready <= '0';
+                r_completed    := r_completed + 1;
             else
                 unexpected_msg_type(msg_type);
             end if;
             delete(msg);
         end loop;
+
         wait;
     end process;
 
 end architecture;
 
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- AXI Lite Master Verification Component
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -883,68 +889,67 @@ entity olo_test_axi_lite_master_vc is
         instance                 : olo_test_axi_master_t
     );
     port (
-        Clk          : in  std_logic;
-        Rst          : in  std_logic;
-        AxiMs        : out AxiMs_r;
-        AxiSm        : in  AxiSm_r
+        clk           : in    std_logic;
+        rst           : in    std_logic;
+        axi_ms        : out   axi_ms_t;
+        axi_sm        : in    axi_sm_t
     );
 end entity;
 
 architecture a of olo_test_axi_lite_master_vc is
 
-    subtype IdRange_r   is natural range instance.IdWidth - 1 downto 0;
-    subtype AddrRange_r is natural range instance.AddrWidth - 1 downto 0;
-    subtype UserRange_r is natural range instance.UserWidth - 1 downto 0;
-    subtype DataRange_r is natural range instance.DataWidth - 1 downto 0;
-    subtype ByteRange_r is natural range instance.DataWidth/8 - 1 downto 0;
+    subtype id_range_c   is natural range instance.id_width - 1 downto 0;
+    subtype addr_range_c is natural range instance.addr_width - 1 downto 0;
+    subtype user_range_c is natural range instance.user_width - 1 downto 0;
+    subtype data_range_c is natural range instance.data_width - 1 downto 0;
+    subtype byte_range_c is natural range instance.data_width/8 - 1 downto 0;
 
-    signal AxiMs_i  : AxiMs_r ( ArId(IdRange_r), AwId(IdRange_r),
-                                ArAddr(AddrRange_r), AwAddr(AddrRange_r),
-                                ArUser(UserRange_r), AwUser(UserRange_r), WUser(UserRange_r),
-                                WData(DataRange_r),
-                                WStrb(ByteRange_r));
+    signal axi_ms_i : axi_ms_t (ar_id(id_range_c), aw_id(id_range_c),
+                                 ar_addr(addr_range_c), aw_addr(addr_range_c),
+                                 ar_user(user_range_c), aw_user(user_range_c), w_user(user_range_c),
+                                 w_data(data_range_c),
+                                 w_strb(byte_range_c));
 
-    signal AxiSm_i  : AxiSm_r ( RId(IdRange_r), BId(IdRange_r),
-                                RUser(UserRange_r), BUser(UserRange_r),
-                                RData(DataRange_r));
+    signal axi_sm_i : axi_sm_t (r_id(id_range_c), b_id(id_range_c),
+                                 r_user(user_range_c), b_user(user_range_c),
+                                 r_data(data_range_c));
 
 begin
 
-    AxiMs.ArAddr   <= AxiMs_i.ArAddr;
-    AxiMs.ArValid  <= AxiMs_i.ArValid;
-    AxiMs.RReady   <= AxiMs_i.RReady;
-    AxiMs.AwAddr   <= AxiMs_i.AwAddr;
-    AxiMs.AwValid  <= AxiMs_i.AwValid;
-    AxiMs.WData    <= AxiMs_i.WData;
-    AxiMs.WStrb    <= AxiMs_i.WStrb;
-    AxiMs.WValid   <= AxiMs_i.WValid;
-    AxiMs.BReady   <= AxiMs_i.BReady;
+    axi_ms.ar_addr  <= axi_ms_i.ar_addr;
+    axi_ms.ar_valid <= axi_ms_i.ar_valid;
+    axi_ms.r_ready  <= axi_ms_i.r_ready;
+    axi_ms.aw_addr  <= axi_ms_i.aw_addr;
+    axi_ms.aw_valid <= axi_ms_i.aw_valid;
+    axi_ms.w_data   <= axi_ms_i.w_data;
+    axi_ms.w_strb   <= axi_ms_i.w_strb;
+    axi_ms.w_valid  <= axi_ms_i.w_valid;
+    axi_ms.b_ready  <= axi_ms_i.b_ready;
 
-    AxiSm_i.ArReady <= AxiSm.ArReady;
-    AxiSm_i.RId     <= toUslv(0, instance.IdWidth);
-    AxiSm_i.RData   <= AxiSm.RData;
-    AxiSm_i.RResp   <= AxiSm.RResp;
-    AxiSm_i.RLast   <= '1';
-    AxiSm_i.RUser   <= toUslv(0, instance.UserWidth);
-    AxiSm_i.RValid  <= AxiSm.RValid;
-    AxiSm_i.AWReady <= AxiSm.AwReady;
-    AxiSm_i.WReady  <= AxiSm.WReady;
-    AxiSm_i.BId     <= toUslv(0, instance.IdWidth);
-    AxiSm_i.BResp   <= AxiSm.BResp;
-    AxiSm_i.BUser   <= toUslv(0, instance.UserWidth);
-    AxiSm_i.BValid  <= AxiSm.BValid;
-
-
+    axi_sm_i.ar_ready <= axi_sm.ar_ready;
+    axi_sm_i.r_id     <= toUslv(0, instance.id_width);
+    axi_sm_i.r_data   <= axi_sm.r_data;
+    axi_sm_i.r_resp   <= axi_sm.r_resp;
+    axi_sm_i.r_last   <= '1';
+    axi_sm_i.r_user   <= toUslv(0, instance.user_width);
+    axi_sm_i.r_valid  <= axi_sm.r_valid;
+    axi_sm_i.aw_ready <= axi_sm.aw_ready;
+    axi_sm_i.w_ready  <= axi_sm.w_ready;
+    axi_sm_i.b_id     <= toUslv(0, instance.id_width);
+    axi_sm_i.b_resp   <= axi_sm.b_resp;
+    axi_sm_i.b_user   <= toUslv(0, instance.user_width);
+    axi_sm_i.b_valid  <= axi_sm.b_valid;
 
     i_full_master : entity work.olo_test_axi_master_vc
         generic map (
             instance => instance
         )
         port map (
-            Clk     => Clk,
-            Rst     => Rst,
+            clk      => clk,
+            rst      => rst,
             -- AXI MS
-            AxiMs   => AxiMs_i,
-            AxiSm   => AxiSm_i
+            axi_ms   => axi_ms_i,
+            axi_sm   => axi_sm_i
         );
-end;
+
+end architecture;

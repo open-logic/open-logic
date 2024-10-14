@@ -1,0 +1,2 @@
+#Do not version linting reports
+report/*.xml

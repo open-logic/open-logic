@@ -1,18 +1,18 @@
-------------------------------------------------------------------------------
---	Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---	All rights reserved.
---  Authors: Oliver Bruendler, Franz Herzog
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler, Franz Herzog
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements a simple SPI-master
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -22,45 +22,45 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_intf_spi_master is
     generic (
         ClkFreq_g       : real;
-        SclkFreq_g      : real                      := 1.0e6;
-        MaxTransWidth_g : positive                  := 32;
-        CsHighTime_g    : real                      := 20.0e-9;
-        SpiCPOL_g       : natural range 0 to 1      := 1;
-        SpiCPHA_g       : natural range 0 to 1      := 1;
-        SlaveCnt_g      : positive                  := 1;
-        LsbFirst_g      : boolean                   := false;
-        MosiIdleState_g : std_logic                 := '0'
+        SclkFreq_g      : real                 := 1.0e6;
+        MaxTransWidth_g : positive             := 32;
+        CsHighTime_g    : real                 := 20.0e-9;
+        SpiCpol_g       : natural range 0 to 1 := 1;
+        SpiCpha_g       : natural range 0 to 1 := 1;
+        SlaveCnt_g      : positive             := 1;
+        LsbFirst_g      : boolean              := false;
+        MosiIdleState_g : std_logic            := '0'
     );
     port (
         -- Control Signals
-        Clk             : in  std_logic; 
-        Rst             : in  std_logic;
+        Clk             : in    std_logic;
+        Rst             : in    std_logic;
         -- Command Interface
-        Cmd_Valid       : in  std_logic;
-        Cmd_Ready       : out std_logic;
-        Cmd_Slave       : in  std_logic_vector(log2ceil(SlaveCnt_g) - 1 downto 0)        := (others => '0');
-        Cmd_Data        : in  std_logic_vector(MaxTransWidth_g - 1 downto 0)             := (others => '0');
-        Cmd_TransWidth  : in  std_logic_vector(log2ceil(MaxTransWidth_g+1)-1 downto 0)   := toUslv(MaxTransWidth_g, log2ceil(MaxTransWidth_g+1));
+        Cmd_Valid       : in    std_logic;
+        Cmd_Ready       : out   std_logic;
+        Cmd_Slave       : in    std_logic_vector(log2ceil(SlaveCnt_g) - 1 downto 0)      := (others => '0');
+        Cmd_Data        : in    std_logic_vector(MaxTransWidth_g - 1 downto 0)           := (others => '0');
+        Cmd_TransWidth  : in    std_logic_vector(log2ceil(MaxTransWidth_g+1)-1 downto 0) := toUslv(MaxTransWidth_g, log2ceil(MaxTransWidth_g+1));
         -- Response Interface
-        Resp_Valid      : out std_logic;
-        Resp_Data       : out std_logic_vector(MaxTransWidth_g - 1 downto 0);
-        -- SPI 
-        Spi_Sclk        : out std_logic;
-        Spi_Mosi        : out std_logic;
-        Spi_Miso        : in  std_logic                                                        := '0';
-        Spi_Cs_n        : out std_logic_vector(SlaveCnt_g - 1 downto 0)
+        Resp_Valid      : out   std_logic;
+        Resp_Data       : out   std_logic_vector(MaxTransWidth_g - 1 downto 0);
+        -- SPI
+        Spi_Sclk        : out   std_logic;
+        Spi_Mosi        : out   std_logic;
+        Spi_Miso        : in    std_logic                                                := '0';
+        Spi_Cs_n        : out   std_logic_vector(SlaveCnt_g - 1 downto 0)
     );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_intf_spi_master is
 
     -- *** Types ***
@@ -73,23 +73,24 @@ architecture rtl of olo_intf_spi_master is
     constant SclkFreqResult_c : real    := ClkFreq_g/(2.0*real(ClkDivThres_c+1));
 
     -- *** Two Process Method ***
-    type two_process_r is record
-        State     : State_t;
-        StateLast : State_t;
-        ShiftReg  : std_logic_vector(MaxTransWidth_g - 1 downto 0);
-        RdData    : std_logic_vector(MaxTransWidth_g - 1 downto 0);
+    type TwoProcess_r is record
+        State      : State_t;
+        StateLast  : State_t;
+        shiftReg   : std_logic_vector(MaxTransWidth_g - 1 downto 0);
+        RdData     : std_logic_vector(MaxTransWidth_g - 1 downto 0);
         Spi_Cs_n   : std_logic_vector(SlaveCnt_g - 1 downto 0);
-        Spi_Sclk    : std_logic;
+        Spi_Sclk   : std_logic;
         Spi_Mosi   : std_logic;
-        ClkDivCnt : integer range 0 to ClkDivThres_c;
-        BitCnt    : integer range 0 to MaxTransWidth_g;
-        CsHighCnt : integer range 0 to CsHighCycles_c - 1;
-        Busy      : std_logic;
-        Done      : std_logic;
-        MosiNext  : std_logic;
-        TransWidth: integer range 0 to MaxTransWidth_g;
+        ClkDivCnt  : integer range 0 to ClkDivThres_c;
+        BitCnt     : integer range 0 to MaxTransWidth_g;
+        CsHighCnt  : integer range 0 to CsHighCycles_c - 1;
+        Busy       : std_logic;
+        Done       : std_logic;
+        MosiNext   : std_logic;
+        TransWidth : integer range 0 to MaxTransWidth_g;
     end record;
-    signal r, r_next : two_process_r;
+
+    signal r, r_next : TwoProcess_r;
 
     -- Signal required for automatic constraining
     signal SpiMiso_i : std_logic;
@@ -98,11 +99,11 @@ architecture rtl of olo_intf_spi_master is
     attribute dont_merge : boolean;
     attribute dont_merge of SpiMiso_i : signal is true;
     attribute preserve : boolean;
-    attribute preserve of SpiMiso_i : signal is true;
+    attribute preserve of SpiMiso_i   : signal is true;
 
     -- Synthesis attributes for AMD (Vivado)
     attribute keep : string;
-    attribute keep of SpiMiso_i : signal is "TRUE";
+    attribute keep of SpiMiso_i       : signal is "TRUE";
     attribute dont_touch : string;
     attribute dont_touch of SpiMiso_i : signal is "TRUE";
 
@@ -110,11 +111,11 @@ architecture rtl of olo_intf_spi_master is
     -- Same attribute works for Synplify (Lattice, Microchip)
     attribute syn_keep : boolean;
     attribute syn_keep of SpiMiso_i : signal is true;
-    
+
     -- *** Functions and procedures ***
-    function GetClockLevel(ClkActive : boolean) return std_logic is
+    function getClockLevel (ClkActive : boolean) return std_logic is
     begin
-        if SpiCPOL_g = 0 then
+        if SpiCpol_g = 0 then
             if ClkActive then
                 return '1';
             else
@@ -129,15 +130,16 @@ architecture rtl of olo_intf_spi_master is
         end if;
     end function;
 
-    procedure ShiftReg(signal BeforeShift  : in std_logic_vector(MaxTransWidth_g-1 downto 0);
-                       variable AfterShift : out std_logic_vector(MaxTransWidth_g-1 downto 0);
-                       signal InputBit     : in std_logic;
-                       variable OutputBit  : out std_logic;
-                                TransWidth : in integer range 0 to MaxTransWidth_g) is
+    procedure shiftReg (
+            signal BeforeShift  : in std_logic_vector(MaxTransWidth_g-1 downto 0);
+            variable AfterShift : out std_logic_vector(MaxTransWidth_g-1 downto 0);
+            signal InputBit     : in std_logic;
+            variable OutputBit  : out std_logic;
+            TransWidth          : in integer range 0 to MaxTransWidth_g) is
     begin
         if LsbFirst_g then
-            OutputBit  := BeforeShift(0);
-            AfterShift := '0' & BeforeShift(BeforeShift'high downto 1);
+            OutputBit                := BeforeShift(0);
+            AfterShift               := '0' & BeforeShift(BeforeShift'high downto 1);
             AfterShift(TransWidth-1) := InputBit;
         else
             OutputBit  := BeforeShift(TransWidth-1);
@@ -146,17 +148,21 @@ architecture rtl of olo_intf_spi_master is
     end procedure;
 
 begin
-    --------------------------------------------------------------------------
-    -- Assertions
-    --------------------------------------------------------------------------
-    assert abs(SclkFreqResult_c/SclkFreq_g - 1.0) < 0.1 report "###ERROR###: olo_intf_spi_master - SclkFreq_g is not within 10% of the actual Sclk frequency" severity error;
 
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
+    -- Assertions
+    -----------------------------------------------------------------------------------------------
+    assert abs(SclkFreqResult_c/SclkFreq_g - 1.0) < 0.1
+        report "###ERROR###: olo_intf_spi_master - SclkFreq_g is not within 10% of the actual Sclk frequency"
+        severity error;
+
+    -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     SpiMiso_i <= Spi_Miso;
-    p_comb : process(r, Cmd_Valid, Cmd_Data, SpiMiso_i, Cmd_Slave, Cmd_TransWidth)
-        variable v : two_process_r;
+
+    p_comb : process (r, Cmd_Valid, Cmd_Data, SpiMiso_i, Cmd_Slave, Cmd_TransWidth) is
+        variable v : TwoProcess_r;
     begin
         -- *** hold variables stable ***
         v := r;
@@ -169,8 +175,8 @@ begin
             when Idle_s =>
                 -- Start of Transfer
                 if Cmd_Valid = '1' then
-                    v.ShiftReg                                  := Cmd_Data;
-                    v.Spi_Cs_n(to_integer(unsigned(Cmd_Slave)))  := '0';
+                    v.shiftReg                                  := Cmd_Data;
+                    v.Spi_Cs_n(to_integer(unsigned(Cmd_Slave))) := '0';
                     v.State                                     := SftComp_s;
                     v.Busy                                      := '1';
                     v.TransWidth                                := fromUslv(Cmd_TransWidth);
@@ -182,18 +188,18 @@ begin
             when SftComp_s =>
                 v.State := ClkInact_s;
                 -- Compensate shift for CPHA 0
-                if SpiCPHA_g = 0 then
-                    ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
+                if SpiCpha_g = 0 then
+                    shiftReg(r.shiftReg, v.shiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                 end if;
 
             when ClkInact_s =>
-                v.Spi_Sclk := GetClockLevel(false);
+                v.Spi_Sclk := getClockLevel(false);
                 -- Apply/Latch data if required
                 if r.ClkDivCnt = 0 then
-                    if SpiCPHA_g = 0 then
+                    if SpiCpha_g = 0 then
                         v.Spi_Mosi := r.MosiNext;
                     else
-                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
+                        shiftReg(r.shiftReg, v.shiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                     end if;
                 end if;
                 -- Clock period handling
@@ -201,7 +207,7 @@ begin
                     -- All bits done
                     if r.BitCnt = r.TransWidth then
                         v.Spi_Mosi := MosiIdleState_g;
-                        v.State   := CsHigh_s;
+                        v.State    := CsHigh_s;
                     -- Otherwise contintue
                     else
                         v.State := ClkAct_s;
@@ -212,13 +218,13 @@ begin
                 end if;
 
             when ClkAct_s =>
-                v.Spi_Sclk := GetClockLevel(true);
+                v.Spi_Sclk := getClockLevel(true);
                 -- Apply data if required
                 if r.ClkDivCnt = 0 then
-                    if SpiCPHA_g = 1 then
+                    if SpiCpha_g = 1 then
                         v.Spi_Mosi := r.MosiNext;
                     else
-                        ShiftReg(r.ShiftReg, v.ShiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
+                        shiftReg(r.shiftReg, v.shiftReg, SpiMiso_i, v.MosiNext, r.TransWidth);
                     end if;
                 end if;
                 -- Clock period handling
@@ -236,7 +242,7 @@ begin
                     v.State  := Idle_s;
                     v.Busy   := '0';
                     v.Done   := '1';
-                    v.RdData := r.ShiftReg;
+                    v.RdData := r.shiftReg;
                 else
                     v.CsHighCnt := r.CsHighCnt + 1;
                 end if;
@@ -250,33 +256,33 @@ begin
         r_next <= v;
     end process;
 
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Outputs
-    --------------------------------------------------------------------------
-    Cmd_Ready   <= not r.Busy;
-    Resp_Valid  <= r.Done;
-    Resp_Data   <= r.RdData;
-    Spi_Sclk    <= r.Spi_Sclk;
-    Spi_Cs_n    <= r.Spi_Cs_n;
-    Spi_Mosi    <= r.Spi_Mosi;
+    -----------------------------------------------------------------------------------------------
+    Cmd_Ready  <= not r.Busy;
+    Resp_Valid <= r.Done;
+    Resp_Data  <= r.RdData;
+    Spi_Sclk   <= r.Spi_Sclk;
+    Spi_Cs_n   <= r.Spi_Cs_n;
+    Spi_Mosi   <= r.Spi_Mosi;
 
-    --------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- Sequential Proccess
-    --------------------------------------------------------------------------
-    p_seq : process(Clk)
+    -----------------------------------------------------------------------------------------------
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;
             if Rst = '1' then
-                r.State     <= Idle_s;
-                r.Spi_Cs_n  <= (others => '1');
-                r.Spi_Sclk  <= GetClockLevel(false);
-                r.Busy      <= '0';
-                r.Done      <= '0';
-                r.Spi_Mosi  <= MosiIdleState_g;
+                r.State    <= Idle_s;
+                r.Spi_Cs_n <= (others => '1');
+                r.Spi_Sclk <= getClockLevel(false);
+                r.Busy     <= '0';
+                r.Done     <= '0';
+                r.Spi_Mosi <= MosiIdleState_g;
             end if;
         end if;
     end process;
 
-end;
+end architecture;
 

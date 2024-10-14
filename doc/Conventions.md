@@ -34,17 +34,81 @@ Constants shall have *_c* suffixes.
 
 Generics shall have *_g* suffixes.
 
+### Variables
+
+Variables shall have *_v* suffixes.
+
+### Types
+
+Types shall have *_t* suffixes.
+
+For enumeration types the following additional points apply:
+
+* FSM types shall be named *\<freely-choosable-identifier\>Fsm_t*.
+* The different values for FSM types shall have *_s* suffixes (for "state").
+* The different values of enumeration types not related to an FSM shall *NOT* have the *_s* suffix (these are *NOT* states)
+
+For subtypes the suffix depends on the usage:
+
+* Subtypes that are used as types shall have *_t* suffixes.
+* Sometimes subtypes are used as constant (e.g. to define range constants). In this case, Subtypes shall have a *_c* suffix.
+
 ### Versions
 
 [Semantic Versioning](https://semver.org/) is used for naming of releases from 1.0.0 onwards.
 
 0.x.y relealses are considered early development and do not increase major version number in case of breaking backward compatibility.
 
+### Special Case: Verification Components
+
+VUnit verification components (VCs) shall be located in the folder *\<root\>/test/tb*. They follow the VUnit naming convention to ensure consistent testbench code when native VUnit VCs are mixed with Open Logic specific VCs. 
+
+The convention for VCs is, that all identifiers are *snail_case* and there are no mandatory suffixes or prefixes.
+
+The differences between VCs and Open Logic production code are only in the case of identifiers. To keep the linter happy, instantiation of VCs (which are VUnit case-style) in test-benches (which are Open Logic case-style) are written in Open Logic case-style. This is possible due to the case insensitivity of VHDL.
+
+```
+-- VC Code (VUnit case-style)
+entity some_vc is
+    generic (
+        some_generic : string
+    )
+    port (
+        some_port : string
+    );
+end entity;
+
+-- Instantiation in test-bench (Open-Logic case-stlye)
+vc_any : entity work.some_vc
+    generic map (
+        Some_Generic => "bla"
+    )
+    port map (
+        Some_Port => TbSignal
+    );
+```
+
+### Other Naming Conventions
+
+There are a few other naming conventions (e.g. for process and generic labels). Indentation is best understood by looking at existing code. 
+
+Instead of documenting them in detail, the linter was configured to enforce them (see [How To](./HowTo.md)). It is suggested that you write the code according to the coding conventions as good as you can and then you clean-up all linter errors and warnings. 
+
+**Note:** All linting errors *and warnings* must be resolved for pull-requests to be accepted. 
+
 ## Coding Convention
 
 ### White Spaces
 
-Indentation is done using four whitespaces per level.
+* Indentation is done using four whitespaces per level.
+* No tabs shall be used.
+* Files shall not contain trailing whitespaces.
+
+### Indentation
+
+Indentation is best understood by looking at existing code. From there on, the linter will guide you (see [How To](./HowTo.md)). It is suggested that you write the code according to the coding conventions as good as you can and then you clean-up all linter errors and warnings. 
+
+**Note:** All linting errors *and warnings* must be resolved for pull-requests to be accepted.
 
 ## Functional Conventions
 

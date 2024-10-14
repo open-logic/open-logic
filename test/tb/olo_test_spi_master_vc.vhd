@@ -1,14 +1,13 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- VC Package
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -23,48 +22,47 @@ library vunit_lib;
     context vunit_lib.com_context;
     use vunit_lib.sync_pkg.all;
 
-package olo_test_spi_master_pkg is  
+package olo_test_spi_master_pkg is
 
     -- *** VUnit instance type ***
     type olo_test_spi_master_t is record
         p_actor         : actor_t;
-        LsbFirst        : boolean;
-        MaxTransWidth   : positive;
-        ClkPeriod       : time;
-        CPHA            : integer range 0 to 1;
-        CPOL            : integer range 0 to 1;
+        lsb_first       : boolean;
+        max_trans_width : positive;
+        clk_period      : time;
+        cpha            : integer range 0 to 1;
+        cpol            : integer range 0 to 1;
     end record;
 
     -- *** Slave Operations ***
 
     -- Transaction
     procedure spi_master_push_transaction (
-        signal net          : inout network_t;
-        spi                 : olo_test_spi_master_t;
-        transaction_bits    : positive;
-        data_mosi           : std_logic_vector  := "X";
-        data_miso           : std_logic_vector  := "X";
-        csn_first           : boolean           := false; -- CSn is operated before Sclk at beginning/end of transaction
-        timeout             : time              := 1 ms;
-        msg                 : string             := ""
-    );
+            signal net       : inout network_t;
+            spi              : olo_test_spi_master_t;
+            transaction_bits : positive;
+            data_mosi        : std_logic_vector := "X";
+            data_miso        : std_logic_vector := "X";
+            csn_first        : boolean          := false; -- CSn is operated before sclk at beginning/end of transaction
+            timeout          : time             := 1 ms;
+            msg              : string           := "");
 
     -- *** VUnit Operations ***
     -- Message Types
-    constant SpiMasterPushTransactionMsg  : msg_type_t := new_msg_type("SpiMasterPushTransaction");
+    constant spi_master_push_transaction_msg : msg_type_t := new_msg_type("spi_master_push_transaction_msg");
 
     -- Constructor
-    impure function new_olo_test_spi_master( 
-        busFrequency    : real    := 1.0e6;
-        lsbFirst        : boolean := false;
-        maxTransWidth   : natural := 32;
-        cpha            : integer range 0 to 1 := 0;
-        cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t;
-        
-    -- Casts
-    impure function as_sync(instance : olo_test_spi_master_t) return sync_handle_t;
+    impure function new_olo_test_spi_master (
+            bus_frequency   : real    := 1.0e6;
+            lsb_first       : boolean := false;
+            max_trans_width : natural := 32;
+            cpha            : integer range 0 to 1 := 0;
+            cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t;
 
-end;
+    -- Casts
+    impure function as_sync (instance : olo_test_spi_master_t) return sync_handle_t;
+
+end package;
 
 package body olo_test_spi_master_pkg is
 
@@ -72,18 +70,17 @@ package body olo_test_spi_master_pkg is
 
     -- Transaction
     procedure spi_master_push_transaction (
-        signal net          : inout network_t;
-        spi                 : olo_test_spi_master_t;
-        transaction_bits    : positive;
-        data_mosi           : std_logic_vector  := "X";
-        data_miso           : std_logic_vector  := "X";
-        csn_first           : boolean           := false; 
-        timeout             : time              := 1 ms;
-        msg                 : string            := ""
-    ) is
-        variable Msg_v : msg_t := new_msg(SpiMasterPushTransactionMsg);
-        variable mosi_v : std_logic_vector(spi.MaxTransWidth-1 downto 0) := (others => '0');
-        variable miso_v : std_logic_vector(spi.MaxTransWidth-1 downto 0) := (others => 'X');
+            signal net       : inout network_t;
+            spi              : olo_test_spi_master_t;
+            transaction_bits : positive;
+            data_mosi        : std_logic_vector := "X";
+            data_miso        : std_logic_vector := "X";
+            csn_first        : boolean          := false;
+            timeout          : time             := 1 ms;
+            msg              : string           := "") is
+        variable msg_v  : msg_t                                            := new_msg(spi_master_push_transaction_msg);
+        variable mosi_v : std_logic_vector(spi.max_trans_width-1 downto 0) := (others => '0');
+        variable miso_v : std_logic_vector(spi.max_trans_width-1 downto 0) := (others => 'X');
     begin
         -- checks
         if data_mosi /= "X" then
@@ -96,43 +93,44 @@ package body olo_test_spi_master_pkg is
         end if;
 
         -- Create message
-        push(Msg_v, transaction_bits);
-        push(Msg_v, mosi_v);
-        push(Msg_v, miso_v);
-        push(Msg_v, csn_first);
-        push(Msg_v, timeout);
-        push_string(Msg_v, msg);
-        
+        push(msg_v, transaction_bits);
+        push(msg_v, mosi_v);
+        push(msg_v, miso_v);
+        push(msg_v, csn_first);
+        push(msg_v, timeout);
+        push_string(msg_v, msg);
+
         -- Send message
-        send(net, spi.p_actor, Msg_v);
-    end;
+        send(net, spi.p_actor, msg_v);
+    end procedure;
 
     -- Constructor
-    impure function new_olo_test_spi_master( 
-        busFrequency    : real    := 1.0e6;
-        lsbFirst        : boolean := false;
-        maxTransWidth    : natural := 32;
-        cpha            : integer range 0 to 1 := 0;
-        cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t is
+    impure function new_olo_test_spi_master (
+            bus_frequency   : real                 := 1.0e6;
+            lsb_first       : boolean              := false;
+            max_trans_width : natural              := 32;
+            cpha            : integer range 0 to 1 := 0;
+            cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t is
     begin
-        return (p_actor => new_actor, 
-                LsbFirst => lsbFirst,
-                MaxTransWidth => maxTransWidth,
-                ClkPeriod => (1 sec) / busFrequency,                
-                CPHA => cpha,
-                CPOL => cpol);
-    end;
-        
+        return (p_actor => new_actor,
+                lsb_first => lsb_first,
+                max_trans_width => max_trans_width,
+                clk_period => (1 sec) / bus_frequency,
+                cpha => cpha,
+                cpol => cpol);
+    end function;
+
     -- Casts
-    impure function as_sync(instance : olo_test_spi_master_t) return sync_handle_t is
+    impure function as_sync (instance : olo_test_spi_master_t) return sync_handle_t is
     begin
         return instance.p_actor;
-    end;
-end;
+    end function;
 
-------------------------------------------------------------------------------------------------------------------------
+end package body;
+
+---------------------------------------------------------------------------------------------------
 -- Component Implementation
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -156,42 +154,42 @@ entity olo_test_spi_master_vc is
         instance                 : olo_test_spi_master_t
     );
     port (
-        Sclk     : out       std_logic;
-        CS_n     : out       std_logic;
-        Mosi     : out       std_logic;
-        Miso     : in        std_logic
+        sclk     : out   std_logic;
+        cs_n     : out   std_logic;
+        mosi     : out   std_logic;
+        miso     : in    std_logic
     );
 end entity;
 
-architecture rtl of olo_test_spi_master_vc is
+architecture a of olo_test_spi_master_vc is
+
 begin
 
     -- Main Process
-    main : process
+    main : process is
         -- Messaging
-        variable request_msg        : msg_t;
-        variable reply_msg          : msg_t;
-        variable msg_type           : msg_type_t;
-        variable transaction_bits   : positive;
-        variable data_mosi          : std_logic_vector(instance.MaxTransWidth-1 downto 0);
-        variable data_miso          : std_logic_vector(instance.MaxTransWidth-1 downto 0);
-        variable csn_first          : boolean;
-        variable timeout            : time;
-        variable msg_p              : string_ptr_t;
+        variable request_msg      : msg_t;
+        variable reply_msg        : msg_t;
+        variable msg_type         : msg_type_t;
+        variable transaction_bits : positive;
+        variable data_mosi        : std_logic_vector(instance.max_trans_width-1 downto 0);
+        variable data_miso        : std_logic_vector(instance.max_trans_width-1 downto 0);
+        variable csn_first        : boolean;
+        variable timeout          : time;
+        variable msg_p            : string_ptr_t;
 
         -- Shift Registers
-        variable ShiftRegRx_v : std_logic_vector(instance.MaxTransWidth-1 downto 0);
-        variable ShiftRegTx_v : std_logic_vector(instance.MaxTransWidth-1 downto 0);
-        variable TxIdx_v      : integer;
+        variable shift_reg_rx : std_logic_vector(instance.max_trans_width-1 downto 0);
+        variable shift_reg_tx : std_logic_vector(instance.max_trans_width-1 downto 0);
 
         -- Others
-        variable LastEdge_v   : time;
-
+        variable tx_id     : integer;
+        variable last_edge : time;
     begin
         -- Initialization
-        Mosi <= '0';
-        Sclk <= choose(instance.Cpol = 0, '1', '0'); -- Clock by default in wrong state
-        CS_n <= '1';
+        mosi <= '0';
+        sclk <= choose(instance.Cpol = 0, '1', '0'); -- Clock by default in wrong state
+        cs_n <= '1';
 
         -- Loop though messages
         loop
@@ -200,99 +198,101 @@ begin
             msg_type := message_type(request_msg);
 
             -- *** Handle Messages ***
-            if msg_type = SpiMasterPushTransactionMsg then
+            if msg_type = spi_master_push_transaction_msg then
                 -- Pop Transaction
                 transaction_bits := pop(request_msg);
-                data_mosi := pop(request_msg);
-                data_miso := pop(request_msg);
-                csn_first := pop(request_msg);
-                timeout := pop(request_msg);
-                msg_p := new_string_ptr(pop_string(request_msg));
+                data_mosi        := pop(request_msg);
+                data_miso        := pop(request_msg);
+                csn_first        := pop(request_msg);
+                timeout          := pop(request_msg);
+                msg_p            := new_string_ptr(pop_string(request_msg));
 
                 -- Select tx bit index
-                TxIdx_v := choose(instance.LsbFirst, 0, transaction_bits - 1);
+                tx_id := choose(instance.lsb_first, 0, transaction_bits - 1);
 
                 -- Start transaction
                 if csn_first then
-                    CS_n <= '0';
-                    wait for 0.5*instance.ClkPeriod;
-                    Sclk <= choose(instance.Cpol = 0, '0', '1');
+                    cs_n <= '0';
+                    wait for 0.5*instance.clk_period;
+                    sclk <= choose(instance.Cpol = 0, '0', '1');
                 else
-                    Sclk <= choose(instance.Cpol = 0, '0', '1');
-                    wait for 0.5*instance.ClkPeriod;
-                    CS_n <= '0';
+                    sclk <= choose(instance.Cpol = 0, '0', '1');
+                    wait for 0.5*instance.clk_period;
+                    cs_n <= '0';
                 end if;
-                wait for 0.5*instance.ClkPeriod;
+                wait for 0.5*instance.clk_period;
 
                 -- Load data into shift register
-                ShiftRegTx_v := data_mosi;
-                ShiftRegRx_v := (others => 'U'); 
-                
+                shift_reg_tx := data_mosi;
+                shift_reg_rx := (others => 'U');
+
                 -- For CPHA0 apply data immediately
-                if instance.CPHA = 0 then
-                    Mosi <= ShiftRegTx_v(TxIdx_v);
+                if instance.cpha = 0 then
+                    mosi <= shift_reg_tx(tx_id);
                 end if;
 
                 -- loop over bits
                 for i in 0 to transaction_bits - 1 loop
 
                     -- First edge
-                    wait for 0.5*instance.ClkPeriod;
-                    Sclk <= not Sclk;
-                    if instance.CPHA = 0 then
-                        if instance.LsbFirst = False then
-                            ShiftRegRx_v(transaction_bits-1 downto 0) := ShiftRegRx_v(transaction_bits - 2 downto 0) & Miso;
-                            ShiftRegTx_v(transaction_bits-1 downto 0) := ShiftRegTx_v(transaction_bits - 2 downto 0) & 'U';
+                    wait for 0.5*instance.clk_period;
+                    sclk <= not sclk;
+                    if instance.cpha = 0 then
+                        if instance.lsb_first = False then
+                            shift_reg_rx(transaction_bits-1 downto 0) := shift_reg_rx(transaction_bits - 2 downto 0) & miso;
+                            shift_reg_tx(transaction_bits-1 downto 0) := shift_reg_tx(transaction_bits - 2 downto 0) & 'U';
                         else
-                            ShiftRegRx_v(transaction_bits-1 downto 0) := Miso & ShiftRegRx_v(transaction_bits - 1 downto 1);
-                            ShiftRegTx_v(transaction_bits-1 downto 0) := 'U' & ShiftRegTx_v(transaction_bits - 1 downto 1);
+                            shift_reg_rx(transaction_bits-1 downto 0) := miso & shift_reg_rx(transaction_bits - 1 downto 1);
+                            shift_reg_tx(transaction_bits-1 downto 0) := 'U' & shift_reg_tx(transaction_bits - 1 downto 1);
                         end if;
                     else
-                        Mosi <= ShiftRegTx_v(TxIdx_v);
+                        mosi <= shift_reg_tx(tx_id);
                     end if;
 
                     -- Second edge
-                    wait for 0.5*instance.ClkPeriod;
-                    Sclk <= not Sclk;
-                    if instance.CPHA = 1 then
-                        if instance.LsbFirst = False then
-                            ShiftRegRx_v(transaction_bits-1 downto 0) := ShiftRegRx_v(transaction_bits - 2 downto 0) & Miso;
-                            ShiftRegTx_v(transaction_bits-1 downto 0) := ShiftRegTx_v(transaction_bits - 2 downto 0) & 'U';
+                    wait for 0.5*instance.clk_period;
+                    sclk <= not sclk;
+                    if instance.cpha = 1 then
+                        if instance.lsb_first = False then
+                            shift_reg_rx(transaction_bits-1 downto 0) := shift_reg_rx(transaction_bits - 2 downto 0) & miso;
+                            shift_reg_tx(transaction_bits-1 downto 0) := shift_reg_tx(transaction_bits - 2 downto 0) & 'U';
                         else
-                            ShiftRegRx_v(transaction_bits-1 downto 0) := Miso & ShiftRegRx_v(transaction_bits - 1 downto 1);
-                            ShiftRegTx_v(transaction_bits-1 downto 0) := 'U' & ShiftRegTx_v(transaction_bits - 1 downto 1);
+                            shift_reg_rx(transaction_bits-1 downto 0) := miso & shift_reg_rx(transaction_bits - 1 downto 1);
+                            shift_reg_tx(transaction_bits-1 downto 0) := 'U' & shift_reg_tx(transaction_bits - 1 downto 1);
                         end if;
                     else
-                        Mosi <= ShiftRegTx_v(TxIdx_v);
+                        mosi <= shift_reg_tx(tx_id);
                     end if;
 
                 end loop;
 
                 -- End transaction
-                wait for 0.5*instance.ClkPeriod;
+                wait for 0.5*instance.clk_period;
                 if csn_first then
-                    CS_n <= '1';
-                    wait for 0.5*instance.ClkPeriod;
-                    Sclk <= choose(instance.Cpol = 0, '1', '0');
+                    cs_n <= '1';
+                    wait for 0.5*instance.clk_period;
+                    sclk <= choose(instance.Cpol = 0, '1', '0');
                 else
-                    Sclk <= choose(instance.Cpol = 0, '1', '0');
-                    wait for 0.5*instance.ClkPeriod;
-                    CS_n <= '1';
+                    sclk <= choose(instance.Cpol = 0, '1', '0');
+                    wait for 0.5*instance.clk_period;
+                    cs_n <= '1';
                 end if;
 
                 -- checks
-                check_equal(ShiftRegRx_v(transaction_bits - 1 downto 0), data_miso(transaction_bits - 1 downto 0), "SPI master received wrong data: " & to_string(msg_p));	
+                check_equal(shift_reg_rx(transaction_bits - 1 downto 0), data_miso(transaction_bits - 1 downto 0),
+                            "SPI master received wrong data: " & to_string(msg_p));
 
                 -- Wait for minimum CSn high time
-                wait for 0.5*instance.ClkPeriod;
-                check_equal(Miso, 'Z', "Miso must be tri-stated after transaction: " & to_string(msg_p));
+                wait for 0.5*instance.clk_period;
+                check_equal(miso, 'Z', "miso must be tri-stated after transaction: " & to_string(msg_p));
 
             elsif msg_type = wait_until_idle_msg then
                 handle_wait_until_idle(net, msg_type, request_msg);
             else
                 unexpected_msg_type(msg_type);
-            end if;                
+            end if;
         end loop;
+
     end process;
 
-end;
+end architecture;

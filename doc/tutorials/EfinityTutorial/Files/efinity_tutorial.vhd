@@ -5,41 +5,42 @@ library ieee;
 
 library olo;    -- Open Logic Library
 
-    
 entity efinity_tutorial is
-    port(   
+    port (
         -- Control Signals
         Clk             : in    std_logic;
         -- Interfaces
         Buttons         : in    std_logic_vector(1 downto 0);
         Switches        : in    std_logic_vector(3 downto 0);
-        Led             : out   std_logic_vector(3 downto 0)           
-    );           
+        Led             : out   std_logic_vector(3 downto 0)
+    );
 end entity;
 
 architecture rtl of efinity_tutorial is
-    signal Buttons_Inv      : std_logic_vector(1 downto 0);
-    signal Buttons_Sync     : std_logic_vector(1 downto 0);
-    signal Switches_Sync    : std_logic_vector(3 downto 0);
-    signal RisingEdges      : std_logic_vector(1 downto 0);
-    signal Buttons_Last     : std_logic_vector(1 downto 0);
-    signal Rst              : std_logic := '1';
-    signal LedSig           : std_logic_vector(3 downto 0);     
+
+    signal Buttons_Inv   : std_logic_vector(1 downto 0);
+    signal Buttons_Sync  : std_logic_vector(1 downto 0);
+    signal Switches_Sync : std_logic_vector(3 downto 0);
+    signal RisingEdges   : std_logic_vector(1 downto 0);
+    signal Buttons_Last  : std_logic_vector(1 downto 0);
+    signal Rst           : std_logic := '1';
+    signal LedSig        : std_logic_vector(3 downto 0);
+
 begin
 
     -- Assert reset after power up
-    i_reset: entity olo.olo_base_reset_gen                   
-    port map ( 
-        Clk         => Clk,
-        RstOut      => Rst
-    );  
+    i_reset : entity olo.olo_base_reset_gen
+        port map (
+            Clk         => Clk,
+            RstOut      => Rst
+        );
 
     -- Debounce Buttons
     i_buttons : entity olo.olo_intf_debounce
         generic map (
             ClkFrequency_g  => 50.0e6,
             DebounceTime_g  => 25.0e-3,
-            Width_g         => 2       
+            Width_g         => 2
         )
         port map (
             Clk         => Clk,
@@ -53,7 +54,7 @@ begin
         generic map (
             ClkFrequency_g  => 50.0e6,
             DebounceTime_g  => 25.0e-3,
-            Width_g         => 4       
+            Width_g         => 4
         )
         port map (
             Clk         => Clk,
@@ -63,18 +64,18 @@ begin
         );
 
     -- Edge Detection
-    p_edge_detection : process(Clk)
+    p_edge_detection : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- Normal Operation
-            Buttons_Inv <= not Buttons_Sync;
-            RisingEdges <= Buttons_Inv and (not Buttons_Last);
+            Buttons_Inv  <= not Buttons_Sync;
+            RisingEdges  <= Buttons_Inv and (not Buttons_Last);
             Buttons_Last <= Buttons_Inv;
 
             -- Reset
             if Rst = '1' then
-                Buttons_Inv <= (others => '0');
-                RisingEdges <= (others => '0');
+                Buttons_Inv  <= (others => '0');
+                RisingEdges  <= (others => '0');
                 Buttons_Last <= (others => '0');
             end if;
         end if;
@@ -82,19 +83,19 @@ begin
 
     -- FIFO
     i_fifo : entity olo.olo_base_fifo_sync
-        generic map ( 
-            Width_g         => 4,               
-            Depth_g         => 4096                 
+        generic map (
+            Width_g         => 4,
+            Depth_g         => 4096
         )
-        port map (    
-              Clk           => Clk,
-              Rst           => Rst,
-              In_Data       => Switches_Sync,
-              In_Valid      => RisingEdges(0),
-              Out_Data      => LedSig,
-              Out_Ready     => RisingEdges(1)              
+        port map (
+            Clk           => Clk,
+            Rst           => Rst,
+            In_Data       => Switches_Sync,
+            In_Valid      => RisingEdges(0),
+            Out_Data      => LedSig,
+            Out_Ready     => RisingEdges(1)
         );
-	Led <= not LedSig;
-    
 
-end;
+    Led <= not LedSig;
+
+end architecture;
