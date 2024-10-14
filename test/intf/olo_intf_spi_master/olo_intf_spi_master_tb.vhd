@@ -155,7 +155,7 @@ begin
             -- *** Basics ***
             if run("ResetValues") then
                 wait for 1 us;
-                check_equal(Cmd_Ready, '0', "Cmd_Ready not asserted");
+                check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
                 check_equal(Resp_Valid, '0', "Resp_Valid");
                 check_equal(Spi_Cs_n, onesVector(SlaveCnt_c), "Spi_Cs_n");
             end if;
