@@ -99,17 +99,20 @@ jobs:
           name: linting-artifacts
           path: ./artifacts
       - name: Download NVC Simulation artifacts
+        if: always()
         uses: actions/download-artifact@v4
         with:
           name: simulation-nvc-artifacts
           path: ./artifacts
       - name: Download GHDL Simulation artifacts
+        if: always()
         uses: actions/download-artifact@v4
         with:
           name: simulation-ghdl-artifacts
           path: ./artifacts
       # Publish results
       - name: Publish results
+        if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: "./artifacts/*.xml"
