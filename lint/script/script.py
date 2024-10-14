@@ -15,18 +15,14 @@ args = parser.parse_args()
 DIR = '../..'
 
 # Not linted files
-NOT_LINTED = ["olo_intf_i2c_master.vhd", # Temporary, must be done with breaking changes
-              "RbExample.vhd"] # Docmentation example, incomplete VHDL
+NOT_LINTED = ["RbExample.vhd"] # Docmentation example, incomplete VHDL
 
 def find_normal_vhd_files(directory):
     vhd_files = []
     for root, _, files in os.walk(directory):
         for file in files:
-            # Skip Package Files
-            if 'pkg' in file:
-                continue
             # Skip VC files
-            if file.endswith('vc.vhd'):
+            if root.endswith('test/tb'):
                 continue
             # Skip non VHD files
             if not file.endswith('.vhd'):
@@ -42,8 +38,8 @@ def find_vc_vhd_files(directory):
     vhd_files = []
     for root, _, files in os.walk(directory):
         for file in files:
-            # Skip VC files
-            if file.endswith('_vc.vhd'):
+            # Only add VC files
+            if root.endswith('test/tb'):
                 vhd_files.append(os.path.abspath(os.path.join(root, file)))
     return vhd_files
 
@@ -56,6 +52,13 @@ if args.syntastic:
 # Get the list of .vhd files
 vhd_files_list = find_normal_vhd_files(DIR)
 vc_files_list = find_vc_vhd_files(DIR)
+
+#print("Normal VHDL Files")
+#print("\n".join(vhd_files_list))
+#print()
+#print("VC VHDL Files")
+#print("\n".join(vc_files_list))
+#exit()
 
 error_occurred = False
 

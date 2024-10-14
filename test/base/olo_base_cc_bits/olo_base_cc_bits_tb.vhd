@@ -112,9 +112,9 @@ begin
 
             if run("SimpleTransfer") then
                 In_Data <= x"AB";
-                WaitForValueStdlv(Out_Data, x"AB", Time_MaxDel_c, "Data not transferred 1");
+                wait_for_value_stdlv(Out_Data, x"AB", Time_MaxDel_c, "Data not transferred 1");
                 In_Data <= x"CD";
-                WaitForValueStdlv(Out_Data, x"CD", Time_MaxDel_c, "Data not transferred 2");
+                wait_for_value_stdlv(Out_Data, x"CD", Time_MaxDel_c, "Data not transferred 2");
 
             -- data transfer with A longer in reset
             elsif run("LongResetA") then
@@ -127,9 +127,9 @@ begin
                 In_Rst  <= '0';
                 wait for Time_Rst_Recover_c;
                 In_Data <= x"12";
-                WaitForValueStdlv(Out_Data, x"12", Time_MaxDel_c, "Data not transferred 3");
+                wait_for_value_stdlv(Out_Data, x"12", Time_MaxDel_c, "Data not transferred 3");
                 In_Data <= x"34";
-                WaitForValueStdlv(Out_Data, x"34", Time_MaxDel_c, "Data not transferred 4");
+                wait_for_value_stdlv(Out_Data, x"34", Time_MaxDel_c, "Data not transferred 4");
 
             -- data transfer with B longer in reset
             elsif run("LongResetB") then
@@ -142,9 +142,9 @@ begin
                 Out_Rst <= '0';
                 wait for Time_Rst_Recover_c;
                 In_Data <= x"56";
-                WaitForValueStdlv(Out_Data, x"56", Time_MaxDel_c, "Data not transferred 5");
+                wait_for_value_stdlv(Out_Data, x"56", Time_MaxDel_c, "Data not transferred 5");
                 In_Data <= x"78";
-                WaitForValueStdlv(Out_Data, x"78", Time_MaxDel_c, "Data not transferred 6");
+                wait_for_value_stdlv(Out_Data, x"78", Time_MaxDel_c, "Data not transferred 6");
             end if;
         end loop;
 

@@ -40,9 +40,9 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        variable stdlv5 : std_logic_vector(4 downto 0);
-        variable stdlv3 : std_logic_vector(2 downto 0);
-        variable stdlv9 : std_logic_vector(8 downto 0);
+        variable Stdlv5_v : std_logic_vector(4 downto 0);
+        variable Stdlv3_v : std_logic_vector(2 downto 0);
+        variable Stdlv9_v : std_logic_vector(8 downto 0);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -59,38 +59,38 @@ begin
                 check_equal(onesVector(3), toSslv(-1, 3), "onesVector(3)");
 
             elsif run("shiftLeft") then
-                stdlv5 := "11010";
-                check_equal(shiftLeft(stdlv5, 1, '0'), stdlv5(3 downto 0) & '0', "shiftLeft(stdlv5, 1, '0')");
-                check_equal(shiftLeft(stdlv5, 2, '1'), stdlv5(2 downto 0) & "11", "shiftLeft(stdlv5, 2, '1')");
-                check_equal(shiftLeft(stdlv5, -2, '0'), "00" & stdlv5(4 downto 2), "shiftLeft(stdlv5, -2, '0')");
-                check_equal(shiftLeft(stdlv5, -1, '1'), '1' & stdlv5(4 downto 1), "shiftLeft(stdlv5, -1, '1')");
+                Stdlv5_v := "11010";
+                check_equal(shiftLeft(Stdlv5_v, 1, '0'), Stdlv5_v(3 downto 0) & '0', "shiftLeft(Stdlv5_v, 1, '0')");
+                check_equal(shiftLeft(Stdlv5_v, 2, '1'), Stdlv5_v(2 downto 0) & "11", "shiftLeft(Stdlv5_v, 2, '1')");
+                check_equal(shiftLeft(Stdlv5_v, -2, '0'), "00" & Stdlv5_v(4 downto 2), "shiftLeft(Stdlv5_v, -2, '0')");
+                check_equal(shiftLeft(Stdlv5_v, -1, '1'), '1' & Stdlv5_v(4 downto 1), "shiftLeft(Stdlv5_v, -1, '1')");
 
             elsif run("shiftRight") then
-                stdlv5 := "11010";
-                check_equal(shiftRight(stdlv5, -1, '0'), stdlv5(3 downto 0) & '0', "shiftLeft(stdlv5, -1, '0')");
-                check_equal(shiftRight(stdlv5, -2, '1'), stdlv5(2 downto 0) & "11", "shiftLeft(stdlv5, -2, '1')");
-                check_equal(shiftRight(stdlv5, 2, '0'), "00" & stdlv5(4 downto 2), "shiftLeft(stdlv5, 2, '0')");
-                check_equal(shiftRight(stdlv5, 1, '1'), '1' & stdlv5(4 downto 1), "shiftLeft(stdlv5, 1, '1')");
+                Stdlv5_v := "11010";
+                check_equal(shiftRight(Stdlv5_v, -1, '0'), Stdlv5_v(3 downto 0) & '0', "shiftLeft(Stdlv5_v, -1, '0')");
+                check_equal(shiftRight(Stdlv5_v, -2, '1'), Stdlv5_v(2 downto 0) & "11", "shiftLeft(Stdlv5_v, -2, '1')");
+                check_equal(shiftRight(Stdlv5_v, 2, '0'), "00" & Stdlv5_v(4 downto 2), "shiftLeft(Stdlv5_v, 2, '0')");
+                check_equal(shiftRight(Stdlv5_v, 1, '1'), '1' & Stdlv5_v(4 downto 1), "shiftLeft(Stdlv5_v, 1, '1')");
 
             elsif run("binaryToGray") then
-                stdlv3 := "000"; check_equal(binaryToGray(stdlv3), 2#000#, "binaryToGray(000)");
-                stdlv3 := "001"; check_equal(binaryToGray(stdlv3), 2#001#, "binaryToGray(001)");
-                stdlv3 := "010"; check_equal(binaryToGray(stdlv3), 2#011#, "binaryToGray(010)");
-                stdlv3 := "011"; check_equal(binaryToGray(stdlv3), 2#010#, "binaryToGray(011)");
-                stdlv3 := "100"; check_equal(binaryToGray(stdlv3), 2#110#, "binaryToGray(100)");
-                stdlv3 := "101"; check_equal(binaryToGray(stdlv3), 2#111#, "binaryToGray(101)");
-                stdlv3 := "110"; check_equal(binaryToGray(stdlv3), 2#101#, "binaryToGray(110)");
-                stdlv3 := "111"; check_equal(binaryToGray(stdlv3), 2#100#, "binaryToGray(111)");
+                Stdlv3_v := "000"; check_equal(binaryToGray(Stdlv3_v), 2#000#, "binaryToGray(000)");
+                Stdlv3_v := "001"; check_equal(binaryToGray(Stdlv3_v), 2#001#, "binaryToGray(001)");
+                Stdlv3_v := "010"; check_equal(binaryToGray(Stdlv3_v), 2#011#, "binaryToGray(010)");
+                Stdlv3_v := "011"; check_equal(binaryToGray(Stdlv3_v), 2#010#, "binaryToGray(011)");
+                Stdlv3_v := "100"; check_equal(binaryToGray(Stdlv3_v), 2#110#, "binaryToGray(100)");
+                Stdlv3_v := "101"; check_equal(binaryToGray(Stdlv3_v), 2#111#, "binaryToGray(101)");
+                Stdlv3_v := "110"; check_equal(binaryToGray(Stdlv3_v), 2#101#, "binaryToGray(110)");
+                Stdlv3_v := "111"; check_equal(binaryToGray(Stdlv3_v), 2#100#, "binaryToGray(111)");
 
             elsif run("grayToBinary") then
-                stdlv3 := "000"; check_equal(grayToBinary(stdlv3), 2#000#, "grayToBinary(000)");
-                stdlv3 := "001"; check_equal(grayToBinary(stdlv3), 2#001#, "grayToBinary(001)");
-                stdlv3 := "011"; check_equal(grayToBinary(stdlv3), 2#010#, "grayToBinary(011)");
-                stdlv3 := "010"; check_equal(grayToBinary(stdlv3), 2#011#, "grayToBinary(010)");
-                stdlv3 := "110"; check_equal(grayToBinary(stdlv3), 2#100#, "grayToBinary(110)");
-                stdlv3 := "111"; check_equal(grayToBinary(stdlv3), 2#101#, "grayToBinary(111)");
-                stdlv3 := "101"; check_equal(grayToBinary(stdlv3), 2#110#, "grayToBinary(101)");
-                stdlv3 := "100"; check_equal(grayToBinary(stdlv3), 2#111#, "grayToBinary(100)");
+                Stdlv3_v := "000"; check_equal(grayToBinary(Stdlv3_v), 2#000#, "grayToBinary(000)");
+                Stdlv3_v := "001"; check_equal(grayToBinary(Stdlv3_v), 2#001#, "grayToBinary(001)");
+                Stdlv3_v := "011"; check_equal(grayToBinary(Stdlv3_v), 2#010#, "grayToBinary(011)");
+                Stdlv3_v := "010"; check_equal(grayToBinary(Stdlv3_v), 2#011#, "grayToBinary(010)");
+                Stdlv3_v := "110"; check_equal(grayToBinary(Stdlv3_v), 2#100#, "grayToBinary(110)");
+                Stdlv3_v := "111"; check_equal(grayToBinary(Stdlv3_v), 2#101#, "grayToBinary(111)");
+                Stdlv3_v := "101"; check_equal(grayToBinary(Stdlv3_v), 2#110#, "grayToBinary(101)");
+                Stdlv3_v := "100"; check_equal(grayToBinary(Stdlv3_v), 2#111#, "grayToBinary(100)");
 
             elsif run("ppcOr") then
                 check_equal(ppcOr("0100"), 2#0111#, "ppcOr(0100)");
@@ -131,8 +131,8 @@ begin
                 check_equal(to01X('X'), 'X', "to01X('X')");
 
             elsif run("to01X-stlv") then
-                stdlv9 := "0101XXXXX";
-                check_equal(to01X("01LHW-ZUX"), stdlv9, "to01X(01HLW-ZUX)");
+                Stdlv9_v := "0101XXXXX";
+                check_equal(to01X("01LHW-ZUX"), Stdlv9_v, "to01X(01HLW-ZUX)");
 
             elsif run("to01-stdl") then
                 check_equal(to01('0'), '0', "to01('0')");
@@ -146,12 +146,12 @@ begin
                 check_equal(to01('X'), '0', "to01('X')");
 
             elsif run("to01-stlv") then
-                stdlv9 := "010100000";
-                check_equal(to01("01LHW-ZUX"), stdlv9, "to01(01HLW-ZUX)");
+                Stdlv9_v := "010100000";
+                check_equal(to01("01LHW-ZUX"), Stdlv9_v, "to01(01HLW-ZUX)");
 
             elsif run("invertBitOrder") then
-            stdlv9 := "110010101";
-            check_equal(invertBitOrder("101010011"), stdlv9, "to01X(110010101)");
+                Stdlv9_v := "110010101";
+                check_equal(invertBitOrder("101010011"), Stdlv9_v, "to01X(110010101)");
 
             end if;
 

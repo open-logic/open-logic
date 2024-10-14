@@ -40,7 +40,7 @@ architecture sim of olo_base_prbs4_tb is
     -----------------------------------------------------------------------------------------------
     constant PrbsSequence_c    : std_logic_vector(14 downto 0)                        := "010110010001111";
     constant PrbsSequenceRep_c : std_logic_vector(2*PrbsSequence_c'length-1 downto 0) := PrbsSequence_c & PrbsSequence_c;
-    constant States_c          : t_aslv4 (0 to PrbsSequence_c'high)                   := (
+    constant States_c          : StlvArray4_t (0 to PrbsSequence_c'high)              := (
         "1111", "1110", "1100", "1000",
         "0001", "0010", "0100", "1001",
         "0011", "0110", "1101", "1010",

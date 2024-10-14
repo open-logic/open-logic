@@ -40,14 +40,14 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        variable stdlva, stdlvb : std_logic_vector(2 downto 0);
-        variable stra           : string(1 to 3) := "bla";
-        variable strb           : string(1 to 5) := "blubb";
-        variable usa, usb       : unsigned(2 downto 0);
-        variable tra, trb, trc  : t_areal(0 to 1);
-        variable taint          : t_ainteger(0 to 3);
-        variable tabool         : t_abool(0 to 3);
-        variable tra4           : t_areal(0 to 3);
+        variable StdlvA_v, StdlvB_v                 : std_logic_vector(2 downto 0);
+        variable StrA_v                             : string(1 to 3) := "bla";
+        variable StrB_v                             : string(1 to 5) := "blubb";
+        variable UnsA_v, UnsB_v                     : unsigned(2 downto 0);
+        variable RealArrA_v, RealArrB_v, RealArrC_v : RealArray_t(0 to 1);
+        variable IntArr_v                           : IntegerArray_t(0 to 3);
+        variable BoolArr_v                          : BoolArray_t(0 to 3);
+        variable RealArr4_v                         : RealArray_t(0 to 3);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -113,10 +113,10 @@ begin
                 check_equal(choose(false,  '0', '1'), '1',   "choose(false,  '0', '1')");
 
             elsif run("choose-std_logic_vector") then
-                stdlva := "000";
-                stdlvb := "111";
-                check_equal(choose(true, stdlva, stdlvb), stdlva,   "choose(true, 000, 111)");
-                check_equal(choose(false, stdlva, stdlvb), stdlvb,  "choose(false, 000, 111)");
+                StdlvA_v := "000";
+                StdlvB_v := "111";
+                check_equal(choose(true, StdlvA_v, StdlvB_v), StdlvA_v,   "choose(true, 000, 111)");
+                check_equal(choose(false, StdlvA_v, StdlvB_v), StdlvB_v,  "choose(false, 000, 111)");
 
             elsif run("choose-integer") then
                 check_equal(choose(true, 2, 3), 2,   "choose(true, 2, 3)");
@@ -127,37 +127,45 @@ begin
                 check_equal(choose(false, 2.0, 3.0), 3.0,  "choose(false, 2.0, 3.0)");
 
             elsif run("choose-string") then
-                check_equal(choose(true, stra, strb), stra,     "choose(true, bla, blubb)");
-                check_equal(choose(false, stra, strb), strb,    "choose(false, bla, blubb)");
+                check_equal(choose(true, StrA_v, StrB_v), StrA_v,     "choose(true, bla, blubb)");
+                check_equal(choose(false, StrA_v, StrB_v), StrB_v,    "choose(false, bla, blubb)");
 
             elsif run("choose-unsigned") then
-                usa := "000";
-                usb := "111";
-                check_equal(choose(true, usa, usb), usa,    "choose(true, usa, usb)");
-                check_equal(choose(false, usa, usb), usb,   "choose(false, usa, usb)");
+                UnsA_v := "000";
+                UnsB_v := "111";
+                check_equal(choose(true, UnsA_v, UnsB_v), UnsA_v,    "choose(true, UnsA_v, UnsB_v)");
+                check_equal(choose(false, UnsA_v, UnsB_v), UnsB_v,   "choose(false, UnsA_v, UnsB_v)");
 
-            elsif run("choose-t_areal") then
-                tra := (0.1, 0.2);
-                trb := (2.0, 3.0);
-                trc := choose(true, tra, trb);
-                check_equal(trc(0), tra(0),    "choose(true, tra, trb)");
-                trc := choose(false, tra, trb);
-                check_equal(trc(0), trb(0),   "choose(false, tra, trb)");
+            elsif run("choose-RealArray_t") then
+                RealArrA_v := (0.1,
+                               0.2);
+                RealArrB_v := (2.0,
+                               3.0);
+                RealArrC_v := choose(true, RealArrA_v, RealArrB_v);
+                check_equal(RealArrC_v(0), RealArrA_v(0),    "choose(true, RealArrA_v, RealArrB_v)");
+                RealArrC_v := choose(false, RealArrA_v, RealArrB_v);
+                check_equal(RealArrC_v(0), RealArrB_v(0),   "choose(false, RealArrA_v, RealArrB_v)");
 
-            elsif run("count-t_ainteger") then
-                taint := (1, 2, 3, 2);
-                check_equal(count(taint, 2), 2,    "count -> 2");
-                check_equal(count(taint, 3), 1,    "count -> 3");
+            elsif run("count-IntegerArray_t") then
+                IntArr_v := (1,
+                             2,
+                             3,
+                             2);
+                check_equal(count(IntArr_v, 2), 2,    "count -> 2");
+                check_equal(count(IntArr_v, 3), 1,    "count -> 3");
 
-            elsif run("count-t_abool") then
-                tabool := (true, false, true, true);
-                check_equal(count(tabool, true), 3,    "count -> true");
-                check_equal(count(tabool, false), 1,   "count -> false");
+            elsif run("count-BoolArray_t") then
+                BoolArr_v := (true,
+                              false,
+                              true,
+                              true);
+                check_equal(count(BoolArr_v, true), 3,    "count -> true");
+                check_equal(count(BoolArr_v, false), 1,   "count -> false");
 
             elsif run("count-std_logic_vector") then
-                stdlva := "010";
-                check_equal(count(stdlva, '1'), 1,    "count -> '1''");
-                check_equal(count(stdlva, '0'), 2,    "count -> '0'");
+                StdlvA_v := "010";
+                check_equal(count(StdlvA_v, '1'), 1,    "count -> '1''");
+                check_equal(count(StdlvA_v, '0'), 2,    "count -> '0'");
 
             elsif run("toUslv") then
                 check_equal(toUslv(3, 4), std_logic_vector(to_unsigned(3, 4)),    "toUslv(3, 4)");
@@ -171,14 +179,14 @@ begin
                 check_equal(toStdl(0), '0', "toStdl(0)");
 
             elsif run("fromUslv") then
-                stdlva := "010";
-                check_equal(fromUslv(stdlva), 2,    "fromUslv(010)");
+                StdlvA_v := "010";
+                check_equal(fromUslv(StdlvA_v), 2,    "fromUslv(010)");
 
             elsif run("fromSslv") then
-                stdlva := "010";
-                check_equal(fromSslv(stdlva), 2,    "fromSslv(010)");
-                stdlva := "110";
-                check_equal(fromSslv(stdlva), -2,   "fromSslv(110)");
+                StdlvA_v := "010";
+                check_equal(fromSslv(StdlvA_v), 2,    "fromSslv(010)");
+                StdlvA_v := "110";
+                check_equal(fromSslv(StdlvA_v), -2,   "fromSslv(110)");
 
             elsif run("fromStdl") then
                 check_equal(fromStdl('0'), 0, "fromStdl('0')");
@@ -196,29 +204,41 @@ begin
                 check_equal(fromString("-13.3e2"), -13.3e2,   "fromString(-13.3e2)", 0.001e-6);
                 check_equal(fromString("12.2E-3"), 12.2E-3,   "fromString(12.2E-3)", 0.001e-6);
 
-            elsif run("fromString-t_areal") then
-                tra := fromString("0.1, -0.3e-2");
-                check_equal(tra(0), 0.1,           "fromString(t_areal) - 0", 0.001e-6);
-                check_equal(tra(1), -0.3e-2,       "fromString(t_areal) - 1", 0.001e-6);
-                tra := fromString("0.1,");
-                check_equal(tra(1), 0.0,       "fromString(t_areal) - 2a", 0.001e-6); -- empty last array element is interpreted as zero
-                check_equal(tra(0), 0.1,       "fromString(t_areal) - 2b", 0.001e-6);
+            elsif run("fromString-RealArray_t") then
+                RealArrA_v := fromString("0.1, -0.3e-2");
+                check_equal(RealArrA_v(0), 0.1,           "fromString(RealArray_t) - 0", 0.001e-6);
+                check_equal(RealArrA_v(1), -0.3e-2,       "fromString(RealArray_t) - 1", 0.001e-6);
+                RealArrA_v := fromString("0.1,");
+                check_equal(RealArrA_v(1), 0.0,       "fromString(RealArray_t) - 2a", 0.001e-6); -- empty last array element is interpreted as zero
+                check_equal(RealArrA_v(0), 0.1,       "fromString(RealArray_t) - 2b", 0.001e-6);
 
             elsif run("maxArray-int") then
-                taint := (1, -3, 4, 2);
-                check_equal(maxArray(taint), 4, "maxArray(taint)");
+                IntArr_v := (1,
+                             -3,
+                             4,
+                             2);
+                check_equal(maxArray(IntArr_v), 4, "maxArray(IntArr_v)");
 
             elsif run("maxArray-real") then
-                tra4 := (0.1, -0.3, 1.4, 0.2);
-                check_equal(maxArray(tra4), 1.4, "maxArray(tra4)");
+                RealArr4_v := (0.1,
+                               -0.3,
+                               1.4,
+                               0.2);
+                check_equal(maxArray(RealArr4_v), 1.4, "maxArray(RealArr4_v)");
 
             elsif run("minArray-int") then
-                taint := (1, -3, 4, 2);
-                check_equal(minArray(taint), -3, "minArray(taint)");
+                IntArr_v := (1,
+                             -3,
+                             4,
+                             2);
+                check_equal(minArray(IntArr_v), -3, "minArray(IntArr_v)");
 
             elsif run("minArray-real") then
-                tra4 := (0.1, -0.3, 1.4, 0.2);
-                check_equal(minArray(tra4), -0.3, "minArray(tra4)");
+                RealArr4_v := (0.1,
+                               -0.3,
+                               1.4,
+                               0.2);
+                check_equal(minArray(RealArr4_v), -0.3, "minArray(RealArr4_v)");
 
             end if;
         end loop;

@@ -200,7 +200,7 @@ begin
                 msg_p            := new_string_ptr(pop_string(request_msg));
 
                 -- Wait for CSn
-                WaitForValueStdl(cs_n, '0', timeout, to_string(msg_p));
+                wait_for_value_stdl(cs_n, '0', timeout, to_string(msg_p));
                 shift_reg_tx := data_miso;
                 shift_reg_rx := (others => 'U');
 
@@ -256,7 +256,7 @@ begin
                 end loop;
 
                 -- wait fir CS going high
-                WaitForValueStdl(cs_n, '1', timeout, to_string(msg_p));
+                wait_for_value_stdl(cs_n, '1', timeout, to_string(msg_p));
                 miso <= 'Z';
 
                 -- checks

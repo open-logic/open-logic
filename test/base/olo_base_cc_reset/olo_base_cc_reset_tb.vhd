@@ -117,8 +117,8 @@ begin
                 check_equal(B_RstOut, '1', "assert B 2.1");
                 check_equal(A_RstOut, '1', "assert A 2.1");
                 wait for PropagationTime_c;
-                CheckNoActivityStdl(B_RstOut, PropagationTime_c, "unexpected activity B 2.1");
-                CheckNoActivityStdl(A_RstOut, PropagationTime_c, "unexpected activity A 2.1");
+                check_no_activity_stdl(B_RstOut, PropagationTime_c, "unexpected activity B 2.1");
+                check_no_activity_stdl(A_RstOut, PropagationTime_c, "unexpected activity A 2.1");
                 wait until rising_edge(A_Clk);
                 A_RstIn <= '0';
                 wait for RemovalTime_c;
@@ -127,7 +127,7 @@ begin
 
                 -- short pulse
                 wait for 1 us;
-                PulseSig(A_RstIn, A_Clk);
+                pulse_sig(A_RstIn, A_Clk);
                 wait for PropagationTime_c;
                 check(LastRstA > now-PropagationTime_c-0.5 us, "reset A not detected 2.2");
                 check(LastRstB > now-PropagationTime_c-0.5 us, "reset B not detected 2.2");
@@ -144,8 +144,8 @@ begin
                 check_equal(B_RstOut, '1', "assert B 3.1");
                 check_equal(A_RstOut, '1', "assert A 3.1");
                 wait for PropagationTime_c;
-                CheckNoActivityStdl(B_RstOut, PropagationTime_c, "unexpected activity B 3.1");
-                CheckNoActivityStdl(A_RstOut, PropagationTime_c, "unexpected activity A 3.1");
+                check_no_activity_stdl(B_RstOut, PropagationTime_c, "unexpected activity B 3.1");
+                check_no_activity_stdl(A_RstOut, PropagationTime_c, "unexpected activity A 3.1");
                 wait until rising_edge(B_Clk);
                 B_RstIn <= '0';
                 wait for RemovalTime_c;
@@ -154,7 +154,7 @@ begin
 
                 -- short pulse
                 wait for 1 us;
-                PulseSig(B_RstIn, B_Clk);
+                pulse_sig(B_RstIn, B_Clk);
                 wait for PropagationTime_c;
                 check(LastRstA > now-PropagationTime_c-0.5 us, "reset A not detected 3.2");
                 check(LastRstB > now-PropagationTime_c-0.5 us, "reset B not detected 3.2");
@@ -191,8 +191,8 @@ begin
                 wait until rising_edge(A_Clk);
                 A_RstIn <= '1';
                 wait until rising_edge(A_Clk);
-                WaitForValueStdl(A_RstOut, '1', PropagationTime_c, "assert A 6"); -- Wait until both resets asserted
-                WaitForValueStdl(B_RstOut, '1', PropagationTime_c, "assert B 6"); -- Wait until both resets asserted
+                wait_for_value_stdl(A_RstOut, '1', PropagationTime_c, "assert A 6"); -- Wait until both resets asserted
+                wait_for_value_stdl(B_RstOut, '1', PropagationTime_c, "assert B 6"); -- Wait until both resets asserted
 
                 for i in 0 to 9 loop
                     wait until rising_edge(A_Clk);

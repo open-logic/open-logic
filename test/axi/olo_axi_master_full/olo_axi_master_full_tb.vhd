@@ -390,11 +390,11 @@ begin
                             AxiBeats_v  := to_integer(axiWordAddr(Addr_v+dataBytes-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                             UserBeats_v := (dataBytes+UserBytes_c-1)/UserBytes_c;
                             -- Slave
-                            expect_aw (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => xBURST_INCR_c);
+                            expect_aw (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => AxiBurst_Incr_c);
                             expect_w_arbitrary (net, AxiSlave_c, AxiBeats_v,
                                                 dataAsVectorAligned(Addr_v, Data_v, bytes => dataBytes),
                                                 strbAsVectorAligned(Addr_v, dataBytes));
-                            push_b(net, AxiSlave_c, resp => xRESP_OKAY_c);
+                            push_b(net, AxiSlave_c, resp => AxiResp_Okay_c);
                             -- Master
                             pushCommand(net, WrCmdMaster_c, Addr_v, dataBytes);
                             pushWrData(net, Data_v, beats => UserBeats_v);
@@ -418,11 +418,11 @@ begin
                         AxiBeats_v  := to_integer(axiWordAddr(Addr_v+DataBytes_v-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                         UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
                         -- Slave
-                        expect_aw (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => xBURST_INCR_c);
+                        expect_aw (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => AxiBurst_Incr_c);
                         expect_w_arbitrary (net, AxiSlave_c, AxiBeats_v,
                                             dataAsVectorAligned(Addr_v, Data_v, bytes => DataBytes_v),
                                             strbAsVectorAligned(Addr_v, DataBytes_v));
-                        push_b(net, AxiSlave_c, resp => xRESP_OKAY_c);
+                        push_b(net, AxiSlave_c, resp => AxiResp_Okay_c);
                         -- Master
                         pushCommand(net, WrCmdMaster_c, Addr_v, DataBytes_v);
                         pushWrData(net, Data_v, beats => UserBeats_v);
@@ -447,11 +447,11 @@ begin
                         AxiBeats_v  := to_integer(axiWordAddr(Addr_v+DataBytes_v-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                         UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
                         -- Slave
-                        expect_aw (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => xBURST_INCR_c);
+                        expect_aw (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => AxiBurst_Incr_c);
                         expect_w_arbitrary (net, AxiSlave_c, AxiBeats_v,
                                             dataAsVectorAligned(Addr_v, Data_v, bytes => DataBytes_v),
                                             strbAsVectorAligned(Addr_v, DataBytes_v), delay => 200 ns, beat_delay => 100 ns);
-                        push_b(net, AxiSlave_c, resp => xRESP_OKAY_c);
+                        push_b(net, AxiSlave_c, resp => AxiResp_Okay_c);
                         -- Master
                         pushCommand(net, WrCmdMaster_c, Addr_v, DataBytes_v);
                         pushWrData(net, Data_v, beats => UserBeats_v);
@@ -479,7 +479,7 @@ begin
                             AxiBeats_v  := to_integer(axiWordAddr(Addr_v+dataBytes-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                             UserBeats_v := (dataBytes+UserBytes_c-1)/UserBytes_c;
                             -- Slave
-                            expect_ar (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => xBURST_INCR_c);
+                            expect_ar (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => AxiBurst_Incr_c);
                             push_r_arbitrary (net, AxiSlave_c, AxiBeats_v, dataAsVectorAligned(Addr_v, Data_v, bytes => dataBytes));
                             -- Master
                             pushCommand(net, RdCmdMaster_c, Addr_v, dataBytes);
@@ -504,7 +504,7 @@ begin
                         AxiBeats_v  := to_integer(axiWordAddr(Addr_v+DataBytes_v-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                         UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
                         -- Slave
-                        expect_ar (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => xBURST_INCR_c);
+                        expect_ar (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => AxiBurst_Incr_c);
                         push_r_arbitrary (net, AxiSlave_c, AxiBeats_v, dataAsVectorAligned(Addr_v, Data_v, bytes => DataBytes_v));
                         -- Master
                         pushCommand(net, RdCmdMaster_c, Addr_v, DataBytes_v);

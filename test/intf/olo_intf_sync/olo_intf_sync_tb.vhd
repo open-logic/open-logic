@@ -100,9 +100,9 @@ begin
 
             if run("SimpleTransfer") then
                 DataAsync <= x"AB";
-                WaitForValueStdlv(DataSync, x"AB", Time_MaxDel_c, "Data not transferred 1");
+                wait_for_value_stdlv(DataSync, x"AB", Time_MaxDel_c, "Data not transferred 1");
                 DataAsync <= x"CD";
-                WaitForValueStdlv(DataSync, x"CD", Time_MaxDel_c, "Data not transferred 2");
+                wait_for_value_stdlv(DataSync, x"CD", Time_MaxDel_c, "Data not transferred 2");
             end if;
 
         end loop;

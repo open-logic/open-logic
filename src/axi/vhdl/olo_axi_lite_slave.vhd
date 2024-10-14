@@ -177,13 +177,13 @@ begin
                 if Rb_RdValid = '1' then
                     v.RData  := Rb_RdData;
                     v.RValid := '1';
-                    v.RResp  := xRESP_OKAY_c;
+                    v.RResp  := AxiResp_Okay_c;
                     v.State  := RdResp;
                 end if;
                 -- Timeout handling
                 if v.ToCnt = 0 then
                     v.RValid := '1';
-                    v.RResp  := xRESP_SLVERR_c;
+                    v.RResp  := AxiResp_SlvErr_c;
                     v.State  := RdResp;
                 else
                     v.ToCnt := v.ToCnt - 1;
@@ -206,7 +206,7 @@ begin
         S_AxiLite_ArReady <= r.ArReady;
         S_AxiLite_AwReady <= r.AwReady;
         S_AxiLite_WReady  <= r.WReady;
-        S_AxiLite_BResp   <= xRESP_OKAY_c; -- Writes can't fail
+        S_AxiLite_BResp   <= AxiResp_Okay_c; -- Writes can't fail
         S_AxiLite_BValid  <= r.BValid;
         S_AxiLite_RData   <= r.RData;
         S_AxiLite_RResp   <= r.RResp;

@@ -202,7 +202,7 @@ begin
             if run("ReadTimeout") then
                 -- Operate VC
                 push_ar(net, AxiMaster_c, addr => to_unsigned(16, AddrWidth_c));
-                expect_r(net, AxiMaster_c, X"0", resp => xRESP_SLVERR_c, ignore_data => true);
+                expect_r(net, AxiMaster_c, X"0", resp => AxiResp_SlvErr_c, ignore_data => true);
             end if;
 
             -- Write Timing

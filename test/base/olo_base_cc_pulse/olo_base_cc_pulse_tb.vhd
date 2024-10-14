@@ -162,7 +162,7 @@ begin
                     -- Wait for output pulse
                     v      := (others => '0');
                     v(idx) := '1';
-                    WaitForValueStdlv(Out_Pulse, v, 100 us, "Pulse not transferred 1");
+                    wait_for_value_stdlv(Out_Pulse, v, 100 us, "Pulse not transferred 1");
                     wait until rising_edge(Out_Clk);
                     wait until rising_edge(Out_Clk);
                     v      := (others => '0');
@@ -177,7 +177,7 @@ begin
                 wait until rising_edge(In_Clk);
                 In_Pulse <= "0000";
                 -- Wait for output pulse
-                WaitForValueStdlv(Out_Pulse, "0101", 100 us, "Pulse not transferred 2");
+                wait_for_value_stdlv(Out_Pulse, "0101", 100 us, "Pulse not transferred 2");
                 wait until rising_edge(Out_Clk);
                 wait until rising_edge(Out_Clk);
                 v := (others => '0');
@@ -186,24 +186,24 @@ begin
             -- *** Test if no pulse is transferred after the internal toggle FF is reset by RstIn ***
             elsif run("NoPulse-RstIn") then
                 -- transfer one pulse
-                PulseSig(In_Pulse(0), In_Clk);
-                WaitForValueStdlv(Out_Pulse, "0001", 100 us, "Pulse not transferred 3");
+                pulse_sig(In_Pulse(0), In_Clk);
+                wait_for_value_stdlv(Out_Pulse, "0001", 100 us, "Pulse not transferred 3");
                 -- Check if no pulse is produced by RstIn
                 wait for MaxReactionTime_c;
-                PulseSig(In_RstIn, In_Clk);
+                pulse_sig(In_RstIn, In_Clk);
                 wait for MaxReactionTime_c;
-                CheckNoActivityStlv(Out_Pulse, MaxReactionTime_c*2, "Unexpected pulse 3");
+                check_no_activity_stdlv(Out_Pulse, MaxReactionTime_c*2, "Unexpected pulse 3");
 
             -- *** Test if no pulse is transferred after the internal toggle FF is reset by RstOut ***
             elsif run("NoPulse-RstOut") then
                 -- transfer one pulse
-                PulseSig(In_Pulse(0), In_Clk);
-                WaitForValueStdlv(Out_Pulse, "0001", 100 us, "Pulse not transferred 4");
+                pulse_sig(In_Pulse(0), In_Clk);
+                wait_for_value_stdlv(Out_Pulse, "0001", 100 us, "Pulse not transferred 4");
                 -- Check if no pulse is produced by RstIn
                 wait for MaxReactionTime_c;
-                PulseSig(Out_RstIn, Out_Clk);
+                pulse_sig(Out_RstIn, Out_Clk);
                 wait for MaxReactionTime_c;
-                CheckNoActivityStlv(Out_Pulse, MaxReactionTime_c*2, "Unexpected pulse 4");
+                check_no_activity_stdlv(Out_Pulse, MaxReactionTime_c*2, "Unexpected pulse 4");
             end if;
         end loop;
 

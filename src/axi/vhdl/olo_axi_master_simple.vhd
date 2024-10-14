@@ -434,14 +434,14 @@ begin
                     severity error;
                 v.WrOpenTrans := v.WrOpenTrans - 1; -- Use v. because it may have been modified above and this modification has not to be overriden
                 if WrRespIsLast = '1' then
-                    if (M_Axi_BResp /= xRESP_OKAY_c) then
+                    if (M_Axi_BResp /= AxiResp_Okay_c) then
                         v.Wr_Error := '1';
                     else
                         v.Wr_Error    := r.WrRespError;
                         v.Wr_Done     := not r.WrRespError;
                         v.WrRespError := '0';
                     end if;
-                elsif M_Axi_BResp /= xRESP_OKAY_c then
+                elsif M_Axi_BResp /= AxiResp_Okay_c then
                     v.WrRespError := '1';
                 end if;
             end if;
@@ -567,14 +567,14 @@ begin
                     severity error;
                 v.RdOpenTrans := v.RdOpenTrans - 1; -- Use v. because it may have been modified above and this modification has not to be overriden
                 if RdRespIsLast = '1' then
-                    if (M_Axi_RResp /= xRESP_OKAY_c) then
+                    if (M_Axi_RResp /= AxiResp_Okay_c) then
                         v.Rd_Error := '1';
                     else
                         v.Rd_Error    := r.RdRespError;
                         v.Rd_Done     := not r.RdRespError;
                         v.RdRespError := '0';
                     end if;
-                elsif M_Axi_RResp /= xRESP_OKAY_c then
+                elsif M_Axi_RResp /= AxiResp_Okay_c then
                     v.RdRespError := '1';
                 end if;
             end if;
@@ -648,8 +648,8 @@ begin
     -- *** Constant Outputs ***
     M_Axi_AwSize  <= std_logic_vector(to_unsigned(log2(AxiDataWidth_g / 8), 3));
     M_Axi_ArSize  <= std_logic_vector(to_unsigned(log2(AxiDataWidth_g / 8), 3));
-    M_Axi_AwBurst <= xBURST_INCR_c;
-    M_Axi_ArBurst <= xBURST_INCR_c;
+    M_Axi_AwBurst <= AxiBurst_Incr_c;
+    M_Axi_ArBurst <= AxiBurst_Incr_c;
     M_Axi_AwCache <= "0011";              -- According AXI reference guide
     M_Axi_ArCache <= "0011";              -- According AXI reference guide
     M_Axi_AwProt  <= "000";               -- According AXI reference guide
