@@ -90,19 +90,20 @@ jobs:
   publish-results:
     runs-on: ubuntu-latest
     needs: [simulation-ghdl, simulation-nvc, linting]
+    if: always()
     steps:
       # Download artifacts from previous jobs
-      - name: Download artifacts from previous jobs
+      - name: Download Linting artifacts
         uses: actions/download-artifact@v4
         with:
           name: linting-artifacts
           path: ./artifacts
-      - name: Download artifacts from previous jobs
+      - name: Download NVC Simulation artifacts
         uses: actions/download-artifact@v4
         with:
           name: simulation-nvc-artifacts
           path: ./artifacts
-      - name: Download artifacts from previous jobs
+      - name: Download GHDL Simulation artifacts
         uses: actions/download-artifact@v4
         with:
           name: simulation-ghdl-artifacts
