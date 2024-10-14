@@ -47,7 +47,7 @@ architecture rtl of olo_intf_clk_meas is
 
     -- Constants
     constant MaxClkTestFrequencyInt_c : integer := integer(MaxClkTestFrequency_g);
-    constant ResultWidth            : integer := log2ceil(integer(MaxClkTestFrequencyInt_c)+1);
+    constant ResultWidth_c            : integer := log2ceil(integer(MaxClkTestFrequencyInt_c)+1);
 
     -- Signals Master Clock
     signal AwaitResult_M : std_logic;
