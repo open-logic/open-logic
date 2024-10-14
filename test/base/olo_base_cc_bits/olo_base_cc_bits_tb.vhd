@@ -59,7 +59,7 @@ architecture sim of olo_base_cc_bits_tb is
     -----------------------------------------------------------------------------------------------
     signal In_Clk   : std_logic                                  := '0';
     signal In_Rst   : std_logic                                  := '1';
-    signal In_Data  : std_logic_vector(DataWidth_c - 1 downto 0) := X"00";
+    signal In_Data  : std_logic_vector(DataWidth_c - 1 downto 0) := x"00";
     signal Out_Clk  : std_logic                                  := '0';
     signal Out_Rst  : std_logic                                  := '1';
     signal Out_Data : std_logic_vector(DataWidth_c - 1 downto 0);
@@ -111,10 +111,10 @@ begin
             wait for Time_Rst_Recover_c;
 
             if run("SimpleTransfer") then
-                In_Data <= X"AB";
-                WaitForValueStdlv(Out_Data, X"AB", Time_MaxDel_c, "Data not transferred 1");
-                In_Data <= X"CD";
-                WaitForValueStdlv(Out_Data, X"CD", Time_MaxDel_c, "Data not transferred 2");
+                In_Data <= x"AB";
+                WaitForValueStdlv(Out_Data, x"AB", Time_MaxDel_c, "Data not transferred 1");
+                In_Data <= x"CD";
+                WaitForValueStdlv(Out_Data, x"CD", Time_MaxDel_c, "Data not transferred 2");
 
             -- data transfer with A longer in reset
             elsif run("LongResetA") then
@@ -126,10 +126,10 @@ begin
                 wait for 100 * SlowerClock_Period_c;
                 In_Rst  <= '0';
                 wait for Time_Rst_Recover_c;
-                In_Data <= X"12";
-                WaitForValueStdlv(Out_Data, X"12", Time_MaxDel_c, "Data not transferred 3");
-                In_Data <= X"34";
-                WaitForValueStdlv(Out_Data, X"34", Time_MaxDel_c, "Data not transferred 4");
+                In_Data <= x"12";
+                WaitForValueStdlv(Out_Data, x"12", Time_MaxDel_c, "Data not transferred 3");
+                In_Data <= x"34";
+                WaitForValueStdlv(Out_Data, x"34", Time_MaxDel_c, "Data not transferred 4");
 
             -- data transfer with B longer in reset
             elsif run("LongResetB") then
@@ -141,10 +141,10 @@ begin
                 wait for 100 * SlowerClock_Period_c;
                 Out_Rst <= '0';
                 wait for Time_Rst_Recover_c;
-                In_Data <= X"56";
-                WaitForValueStdlv(Out_Data, X"56", Time_MaxDel_c, "Data not transferred 5");
-                In_Data <= X"78";
-                WaitForValueStdlv(Out_Data, X"78", Time_MaxDel_c, "Data not transferred 6");
+                In_Data <= x"56";
+                WaitForValueStdlv(Out_Data, x"56", Time_MaxDel_c, "Data not transferred 5");
+                In_Data <= x"78";
+                WaitForValueStdlv(Out_Data, x"78", Time_MaxDel_c, "Data not transferred 6");
             end if;
         end loop;
 

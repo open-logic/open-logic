@@ -150,7 +150,7 @@ begin
 
                 -- Write 1
                 wait until falling_edge(Clk);
-                In_Data  <= X"0001";
+                In_Data  <= x"0001";
                 In_Valid <= '1';
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
                 check_equal(Out_Valid, '0', "Out_Valid wnt high unexpectedly");
@@ -160,7 +160,7 @@ begin
 
                 -- Write 2
                 wait until falling_edge(Clk);
-                In_Data <= X"0002";
+                In_Data <= x"0002";
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
                 check_equal(Out_Valid, '0', "Out_Valid wnt high unexpectedly");
                 check_equal(Empty, '1', "Empty not high");
@@ -169,7 +169,7 @@ begin
 
                 -- Pause 1
                 wait until falling_edge(Clk);
-                In_Data  <= X"0003";
+                In_Data  <= x"0003";
                 In_Valid <= '0';
                 check_equal(In_Ready, '1', "In_Ready went low unexpectedly");
                 check_equal(Out_Valid, '1', "Out_Valid not high");
@@ -242,9 +242,9 @@ begin
 
                 -- Add more data (not written because full)
                 In_Valid <= '1';
-                In_Data  <= X"ABCD";
+                In_Data  <= x"ABCD";
                 wait until falling_edge(Clk);
-                In_Data  <= X"8765";
+                In_Data  <= x"8765";
                 wait until falling_edge(Clk);
                 In_Valid <= '0';
                 wait until falling_edge(Clk);
@@ -285,7 +285,7 @@ begin
                 check_equal(In_Level, 0, "In_Level not Empty");
                 check_equal(Out_Level, 0, "Out_Level not Empty");
                 In_Valid  <= '1';
-                In_Data   <= X"8765";
+                In_Data   <= x"8765";
                 wait until falling_edge(Clk);
                 In_Valid  <= '0';
                 wait until falling_edge(Clk);
@@ -376,7 +376,7 @@ begin
                             -- Wrie delay
                             for k in 1 to wrDel loop
                                 In_Valid <= '0';
-                                In_Data  <= X"0000";
+                                In_Data  <= x"0000";
                                 wait until falling_edge(Clk);
                             end loop;
 

@@ -341,8 +341,8 @@ begin
 
                     -- Loop through different offsets / alignments
                     for addrOffs in 0 to AxiBytes_c-1 loop
-                        Addr_v := resize(X"0800"+addrOffs, AxiAddrWidth_g);
-                        Data_v := resize(X"10"+addrOffs, UserDataWidth_g);
+                        Addr_v := resize(x"0800"+addrOffs, AxiAddrWidth_g);
+                        Data_v := resize(x"10"+addrOffs, UserDataWidth_g);
                         -- Slave
                         expect_single_write(net, AxiSlave_c, axiWordAddr(Addr_v),
                             dataAsVectorAligned(Addr_v, Data_v), strb => strbAsVectorAligned(Addr_v, 1));
@@ -362,8 +362,8 @@ begin
 
                     -- Loop through different offsets / alignments
                     for addrOffs in 0 to AxiBytes_c-1 loop
-                        Addr_v := resize(X"1800"+addrOffs, AxiAddrWidth_g);
-                        Data_v := resize(X"20"+addrOffs, UserDataWidth_g);
+                        Addr_v := resize(x"1800"+addrOffs, AxiAddrWidth_g);
+                        Data_v := resize(x"20"+addrOffs, UserDataWidth_g);
                         -- Slave
                         push_single_read(net, AxiSlave_c, axiWordAddr(Addr_v), dataAsVectorAligned(Addr_v, Data_v));
                         -- Master
@@ -385,8 +385,8 @@ begin
 
                         -- Loop through transfer sizes
                         for dataBytes in 2*AxiBytes_c to 3*AxiBytes_c-1 loop
-                            Addr_v      := resize(X"0800"+addrOffs, AxiAddrWidth_g);
-                            Data_v      := resize(X"10"+dataBytes, UserDataWidth_g);
+                            Addr_v      := resize(x"0800"+addrOffs, AxiAddrWidth_g);
+                            Data_v      := resize(x"10"+dataBytes, UserDataWidth_g);
                             AxiBeats_v  := to_integer(axiWordAddr(Addr_v+dataBytes-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                             UserBeats_v := (dataBytes+UserBytes_c-1)/UserBytes_c;
                             -- Slave
@@ -412,8 +412,8 @@ begin
 
                     -- Do 3 accesses
                     for i in 0 to 2 loop
-                        Addr_v      := resize(X"08FF"+i, AxiAddrWidth_g);
-                        Data_v      := resize(X"10"+16*i, UserDataWidth_g);
+                        Addr_v      := resize(x"08FF"+i, AxiAddrWidth_g);
+                        Data_v      := resize(x"10"+16*i, UserDataWidth_g);
                         DataBytes_v := 2*AxiBytes_c;
                         AxiBeats_v  := to_integer(axiWordAddr(Addr_v+DataBytes_v-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                         UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
@@ -441,8 +441,8 @@ begin
 
                     -- Do 3 accesses
                     for i in 0 to 2 loop
-                        Addr_v      := resize(X"08FF"+i, AxiAddrWidth_g);
-                        Data_v      := resize(X"10"+16*i, UserDataWidth_g);
+                        Addr_v      := resize(x"08FF"+i, AxiAddrWidth_g);
+                        Data_v      := resize(x"10"+16*i, UserDataWidth_g);
                         DataBytes_v := 12*AxiBytes_c;
                         AxiBeats_v  := to_integer(axiWordAddr(Addr_v+DataBytes_v-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                         UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
@@ -474,8 +474,8 @@ begin
 
                         -- Loop through transfer sizes
                         for dataBytes in 2*AxiBytes_c to 3*AxiBytes_c-1 loop
-                            Addr_v      := resize(X"1800"+addrOffs, AxiAddrWidth_g);
-                            Data_v      := resize(X"20"+dataBytes, UserDataWidth_g);
+                            Addr_v      := resize(x"1800"+addrOffs, AxiAddrWidth_g);
+                            Data_v      := resize(x"20"+dataBytes, UserDataWidth_g);
                             AxiBeats_v  := to_integer(axiWordAddr(Addr_v+dataBytes-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                             UserBeats_v := (dataBytes+UserBytes_c-1)/UserBytes_c;
                             -- Slave
@@ -498,8 +498,8 @@ begin
 
                     -- do 3 accesses
                     for i in 0 to 2 loop
-                        Addr_v      := resize(X"08FF"+i, AxiAddrWidth_g);
-                        Data_v      := resize(X"10"+16*i, UserDataWidth_g);
+                        Addr_v      := resize(x"08FF"+i, AxiAddrWidth_g);
+                        Data_v      := resize(x"10"+16*i, UserDataWidth_g);
                         DataBytes_v := 2*AxiBytes_c;
                         AxiBeats_v  := to_integer(axiWordAddr(Addr_v+DataBytes_v-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                         UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;

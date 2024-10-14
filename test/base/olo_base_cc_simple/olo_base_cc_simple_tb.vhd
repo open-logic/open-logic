@@ -57,7 +57,7 @@ architecture sim of olo_base_cc_simple_tb is
     signal In_Clk     : std_logic                                  := '0';
     signal In_RstIn   : std_logic                                  := '1';
     signal In_RstOut  : std_logic;
-    signal In_Data    : std_logic_vector(DataWidth_c - 1 downto 0) := X"00";
+    signal In_Data    : std_logic_vector(DataWidth_c - 1 downto 0) := x"00";
     signal In_Valid   : std_logic                                  := '0';
     signal Out_Clk    : std_logic                                  := '0';
     signal Out_RstIn  : std_logic                                  := '1';
@@ -160,20 +160,20 @@ begin
             elsif run("Transfer") then
 
                 wait until rising_edge(In_Clk);
-                In_Data  <= X"AB";
+                In_Data  <= x"AB";
                 In_Valid <= '1';
                 wait until rising_edge(In_Clk);
-                In_Data  <= X"00";
+                In_Data  <= x"00";
                 In_Valid <= '0';
                 wait until rising_edge(Out_Clk) and Out_Valid = '1';
                 check_equal(Out_Data, 16#AB#, "Received wrong value 1");
                 CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 1");
 
                 wait until rising_edge(In_Clk);
-                In_Data  <= X"CD";
+                In_Data  <= x"CD";
                 In_Valid <= '1';
                 wait until rising_edge(In_Clk);
-                In_Data  <= X"00";
+                In_Data  <= x"00";
                 In_Valid <= '0';
                 wait until rising_edge(Out_Clk) and Out_Valid = '1';
                 check_equal(Out_Data, 16#CD#, "Received wrong value 2");

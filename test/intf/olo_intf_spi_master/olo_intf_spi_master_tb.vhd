@@ -163,8 +163,8 @@ begin
             -- *** Transfers ***
             if run("FullWidthTransfer") then
                 -- Cmd_Slave Expectation
-                Tx32_v := X"12345678";
-                Rx32_v := X"DEADBEEF";
+                Tx32_v := x"12345678";
+                Rx32_v := x"DEADBEEF";
                 spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => Tx32_v, data_miso => Rx32_v);
 
                 -- Send command
@@ -174,8 +174,8 @@ begin
 
             if run("ReducedWidthTransfer") then
                 -- Cmd_Slave Expectation
-                Tx16_v := X"11AA";
-                Rx16_v := X"EE33";
+                Tx16_v := x"11AA";
+                Rx16_v := x"EE33";
                 spi_slave_push_transaction (net, Slave0_c, 16, data_mosi => Tx16_v, data_miso => Rx16_v);
 
                 -- Send command
@@ -186,36 +186,36 @@ begin
             -- *** Cmd_Slave Selection ***
             if run("SlaveSelection") then
                 -- Cmd_Slave Expectation
-                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => X"11111111", data_miso => X"22222222");
-                spi_slave_push_transaction (net, Slave1_c, MaxTransWidth_c, data_mosi => X"33333333", data_miso => X"44444444");
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => x"11111111", data_miso => x"22222222");
+                spi_slave_push_transaction (net, Slave1_c, MaxTransWidth_c, data_mosi => x"33333333", data_miso => x"44444444");
 
                 -- Cmd_Slave 1 Transfer
-                sendCommand(1, X"33333333", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
-                checkResponse(X"44444444");
+                sendCommand(1, x"33333333", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                checkResponse(x"44444444");
 
                 -- Cmd_Slave 0 Transfer
-                sendCommand(0, X"11111111", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
-                checkResponse(X"22222222");
+                sendCommand(0, x"11111111", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                checkResponse(x"22222222");
             end if;
 
             -- *** Edge Cases ***
             if run("Cmd_ValidWhileBusy") then
                 -- Cmd_Slave Expectation
-                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => X"AAAAAAAA", data_miso => X"BBBBBBBB");
-                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => X"CCCCCCCC", data_miso => X"DDDDDDDD");
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => x"AAAAAAAA", data_miso => x"BBBBBBBB");
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => x"CCCCCCCC", data_miso => x"DDDDDDDD");
 
                 -- Send command 1 (and start during busy)
-                sendCommand(0, X"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                sendCommand(0, x"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
                 check_equal(Cmd_Ready, '0', "Cmd_Ready not de-asserted");
                 wait until rising_edge(Clk);
                 Cmd_Valid <= '1';
                 wait until rising_edge(Clk);
                 Cmd_Valid <= '0';
-                checkResponse(X"BBBBBBBB");
+                checkResponse(x"BBBBBBBB");
 
                 -- Send Command 2
-                sendCommand(0, X"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
-                checkResponse(X"DDDDDDDD");
+                sendCommand(0, x"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                checkResponse(x"DDDDDDDD");
             end if;
 
             -- *** Wait until done ***

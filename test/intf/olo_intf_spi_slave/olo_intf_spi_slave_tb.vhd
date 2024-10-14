@@ -243,8 +243,8 @@ begin
             if run("DelayedDataForCpha1") then
                 if SpiCpha_g = 1 then
                     -- Define Data
-                    Mosi16_v := X"ABCD";
-                    Miso16_v := X"1357";
+                    Mosi16_v := x"ABCD";
+                    Miso16_v := x"1357";
 
                     -- Start Transaction
                     spi_master_push_transaction (net, Master_c, TransWidth_g, Mosi16_v(D'Range), Miso16_v(D'Range), msg => "SimpleTransaction");
@@ -267,8 +267,8 @@ begin
                 -- Only execute when enabled
                 if ConsecutiveTransactions_g then
                     -- Define Data
-                    Mosi48_v := X"81F13C81468F";
-                    Miso48_v := X"3C183C8F6481";
+                    Mosi48_v := x"81F13C81468F";
+                    Miso48_v := x"3C183C8F6481";
 
                     -- Start Transaction
                     spi_master_push_transaction (net, Master_c, TransWidth_g*3,
@@ -322,8 +322,8 @@ begin
                 -- Only execute when enabled
                 if ConsecutiveTransactions_g then
                     -- Define Data
-                    Mosi48_v := X"1A2B3C4D5E6F";
-                    Miso48_v := X"112233445566";
+                    Mosi48_v := x"1A2B3C4D5E6F";
+                    Miso48_v := x"112233445566";
 
                     -- Start Transaction
                     spi_master_push_transaction (net, Master_c, TransWidth_g*2,
@@ -360,7 +360,7 @@ begin
             if run("DataTimeout") then
                 if SpiCpha_g = 1 then
                     -- Define Data
-                    Mosi16_v := X"1357";
+                    Mosi16_v := x"1357";
 
                     -- Start Transaction (exect zero response due to no data)
                     spi_master_push_transaction (net, Master_c, TransWidth_g, Mosi16_v(D'Range), zerosVector(TransWidth_g));

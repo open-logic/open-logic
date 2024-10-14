@@ -148,8 +148,8 @@ begin
             -- *** Transfers ***
             if run("FullWidthTransfer") then
                 -- Cmd_Slave Expectation
-                Tx8_v := X"12";
-                Rx8_v := X"AB";
+                Tx8_v := x"12";
+                Rx8_v := x"AB";
                 spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => Tx8_v, data_miso => Rx8_v);
 
                 -- Send command
