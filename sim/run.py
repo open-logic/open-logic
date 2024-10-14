@@ -10,6 +10,9 @@ class Simulator(Enum):
     MODELSIM = 2
     NVC = 3
 
+#Execute from sim directory
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
 #Argument handling
 argv = sys.argv[1:]
 SIMULATOR = Simulator.GHDL

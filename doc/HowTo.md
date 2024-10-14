@@ -134,7 +134,7 @@ vsg -c <root>/lint/config/vsg_config.yml -f <path-to-file>
 For VUnit verification components a slightly different style applies (see [Conventions](./Conventions.md)). This is covered by passing an additional config file:
 
 ```
-vsg -c <root>/lint/config/vsg_config.yml -c <root>/lint/config/vsg_config_overlay_vc.yml -f <path-to-file>
+vsg -c <root>/lint/config/vsg_config.yml <root>/lint/config/vsg_config_overlay_vc.yml -f <path-to-file>
 ```
 
 Any errors or warnings found will be reported:
@@ -163,9 +163,11 @@ python3 <root>/lint/script/script.py --debug
 
 A custom task configuration for running the linter on production code VHDL files is provided in *\<root\>/.vscode/tasks.json* and loaded automatically if you open the root folder of Open Logic in VSCode.
 
-You can then run the linter for the currently open file by doing: Ctrl+Shift+P > Tasks: Run Task > Run VSG Lint
+You can then run the linter for the currently open file by doing: *Ctrl+Shift+P > Tasks: Run Task > Run VSG Lint*
 
-For running VSG on all files, use the "- All Files" variant of the task.
+For running VSG on all files, use the *Run VSG Lint - All Files* variant of the task.
+
+For verification components (with slightly different coding conventions, see [Conventions](./Conventions.md)) use the *Run VSG Lint - VC* command.
 
 The results will be properly displayed in the problems tab and you can navigate to the corresponding code line by clicking on the specific problem.
 
@@ -183,6 +185,8 @@ You can also map this as keyboard shortcut by editing your local *keybindings.js
 
 ## ... Run Simulations
 
+### Introduction
+
 If you want to run simulations on your PC, you need the following prerequisites:
 
 1. *Python 3* must be installed
@@ -190,6 +194,8 @@ If you want to run simulations on your PC, you need the following prerequisites:
 3. Simulator must be installed and added to the *PATH* environment variable  
    1. Default choice: [GHDL](https://github.com/ghdl/ghdl/releases)
    2. Alternative (used for code-coverage analysis): Questasim. 
+
+### Run Simulations from Commandline
 
 To run the simulations, navigate to *\<root\>/sim* and execute the following command:
 
@@ -205,7 +211,7 @@ You should now see an output indicating that all tests pass.
 
 ![simulation](./general/Simulation.png)
 
-## ... Open a Simulation in the GUI
+### Open Simulation Waveforms from Commandline
 
 For debugging purposes, you may want to visualize a test-case in the GUI. 
 
@@ -226,6 +232,35 @@ python3 run.py olo_tb.olo_base_cc_bits_tb.D=19-N=20.SimpleTransfer --gui
 The simulator GUI will show up (the example is showing GTKWave - the GHDL/NVC GUI):
 
 ![SimGui](./general/GtkwaveGui.png)
+
+### Integrate Simulations with VSCode
+
+A custom task configuration for running the simulations from VSCode is provided in *\<root\>/.vscode/tasks.json* and loaded automatically if you open the root folder of Open Logic in VSCode. Note that the configuration is written for GHDL/GTKWave only.
+
+You can then run the simulations for the currently open file by doing: *Ctrl+Shift+P > Tasks: Run Task > VUnit - This File*. 
+
+If you want to open the waveforms for the simulations executed, use the *VUnit - This File (GUI)* variant of the command. Important notes to this command:
+
+* Multiple GTKWave windows are opened. One for every configuration VUnit runs.
+* The waveforms can be update by using the non-GUI command. If you configured your view in GTKWave, you can keep it open, re-run *VUnit - This File* after changes and just update the waveform in GTKWave.
+
+It also is possible to run all simulations in the project, using the *VUnit - All Files* variant of the command. No GUI option is provided because this command runs *really a lot* of simulations.
+
+Any compile errors are properly displayed in the VSCode *Problems* tab. In below example a semicolon was missed:
+
+![CompileError-VSCode](./general/Simulation_VsCode.png)
+
+You can also map this as keyboard shortcut by editing your local *keybindings.json* file in VSCode. The example below will map it to Ctrl+Alt+S:
+
+```
+    {
+        "key": "ctrl+alt+s",
+        "command": "workbench.action.tasks.runTask",
+        "args": "VUnit - This File"
+    },
+```
+
+## 
 
 ## ... Analyze Coverage
 
