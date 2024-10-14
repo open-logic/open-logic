@@ -15,7 +15,8 @@ args = parser.parse_args()
 DIR = '../..'
 
 # Not linted files
-NOT_LINTED = ["olo_intf_i2c_master.vhd"]
+NOT_LINTED = ["olo_intf_i2c_master.vhd", # Temporary, must be done with breaking changes
+              "RbExample.vhd"] # Docmentation example, incomplete VHDL
 
 def find_normal_vhd_files(directory):
     vhd_files = []
