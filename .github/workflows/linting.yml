@@ -48,6 +48,6 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           name: Linting Results
-          path: lint/report/vsg_normal_vhdl.xml 
+          path: lint/report/merged-report.xml 
           reporter: jest-junit
           fail-on-error: false
