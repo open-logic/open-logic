@@ -112,33 +112,32 @@ package body olo_base_pkg_logic is
 
     -- *** ZerosVector ***
     function zerosVector (size : in natural) return std_logic_vector is
-        constant c : std_logic_vector(size - 1 downto 0) := (others => '0');
+        constant Vector_c : std_logic_vector(size - 1 downto 0) := (others => '0');
     begin
-        return c;
+        return Vector_c;
     end function;
 
     -- *** OnesVector ***
     function onesVector (size : in natural) return std_logic_vector is
-        constant c : std_logic_vector(size - 1 downto 0) := (others => '1');
+        constant Vector_c : std_logic_vector(size - 1 downto 0) := (others => '1');
     begin
-        return c;
+        return Vector_c;
     end function;
 
     -- *** ShiftLeft ***
     function shiftLeft (
             arg  : in std_logic_vector;
             bits : in integer;
-            fill : in std_logic := '0')
-                            return std_logic_vector is
-        constant argDt : std_logic_vector(arg'high downto arg'low) := arg;
-        variable v     : std_logic_vector(argDt'range);
+            fill : in std_logic := '0') return std_logic_vector is
+        constant ArgDownto_c : std_logic_vector(arg'high downto arg'low) := arg;
+        variable Vector_v    : std_logic_vector(ArgDownto_c'range);
     begin
         if bits < 0 then
-            return shiftRight(argDt, -bits, fill);
+            return shiftRight(ArgDownto_c, -bits, fill);
         else
-            v(v'left downto bits)      := argDt(argDt'left - bits downto argDt'right);
-            v(bits - 1 downto v'right) := (others => fill);
-            return v;
+            Vector_v(Vector_v'left downto bits)      := ArgDownto_c(ArgDownto_c'left - bits downto ArgDownto_c'right);
+            Vector_v(bits - 1 downto Vector_v'right) := (others => fill);
+            return Vector_v;
         end if;
     end function;
 
@@ -146,17 +145,16 @@ package body olo_base_pkg_logic is
     function shiftRight (
             arg  : in std_logic_vector;
             bits : in integer;
-            fill : in std_logic := '0')
-                            return std_logic_vector is
-        constant argDt : std_logic_vector(arg'high downto arg'low) := arg;
-        variable v     : std_logic_vector(argDt'range);
+            fill : in std_logic := '0') return std_logic_vector is
+        constant ArgDownto_c : std_logic_vector(arg'high downto arg'low) := arg;
+        variable Vector_v    : std_logic_vector(ArgDownto_c'range);
     begin
         if bits < 0 then
-            return shiftLeft(argDt, -bits, fill);
+            return shiftLeft(ArgDownto_c, -bits, fill);
         else
-            v(v'left - bits downto v'right)    := argDt(argDt'left downto bits);
-            v(v'left downto v'left - bits + 1) := (others => fill);
-            return v;
+            Vector_v(Vector_v'left - bits downto Vector_v'right) := ArgDownto_c(ArgDownto_c'left downto bits);
+            Vector_v(Vector_v'left downto Vector_v'left - bits + 1)     := (others => fill);
+            return Vector_v;
         end if;
     end function;
 
@@ -173,24 +171,36 @@ package body olo_base_pkg_logic is
         variable Binary_v : std_logic_vector(gray'range);
     begin
         Binary_v(Binary_v'high) := gray(gray'high);
+
+        -- Loop through all bits
         for b in gray'high - 1 downto gray'low loop
             Binary_v(b) := gray(b) xor Binary_v(b + 1);
         end loop;
+
         return Binary_v;
     end function;
 
     -- *** PpcOr ***
     function ppcOr (inp : in std_logic_vector) return std_logic_vector is
+        -- Constants
         constant Stages_c    : integer := log2ceil(inp'length);
         constant Pwr2Width_c : integer := 2**Stages_c;
+
+        -- Types
         type StageOut_t is array (natural range <>) of std_logic_vector(Pwr2Width_c - 1 downto 0);
-        variable StageOut_v  : StageOut_t(0 to Stages_c);
-        variable BinCnt_v    : unsigned(Pwr2Width_c - 1 downto 0);
+
+        -- Variables
+        variable StageOut_v : StageOut_t(0 to Stages_c);
+        variable BinCnt_v   : unsigned(Pwr2Width_c - 1 downto 0);
     begin
         StageOut_v(0)                          := (others => '0');
         StageOut_v(0)(inp'length - 1 downto 0) := inp;
+
+        -- Loop through all stages
         for stage in 0 to Stages_c - 1 loop
             BinCnt_v := (others => '0');
+
+            -- Loop through all bits
             for idx in 0 to Pwr2Width_c - 1 loop
                 if BinCnt_v(stage) = '0' then
                     StageOut_v(stage + 1)(idx) := StageOut_v(stage)(idx) or StageOut_v(stage)((idx / (2**stage) + 1) * 2**stage);
@@ -199,85 +209,111 @@ package body olo_base_pkg_logic is
                 end if;
                 BinCnt_v := BinCnt_v + 1;
             end loop;
+
         end loop;
+
         return StageOut_v(Stages_c)(inp'length - 1 downto 0);
     end function;
 
     function reduceOr (vec : in std_logic_vector) return std_logic is
-        variable tmp : std_logic;
+        variable Result_v : std_logic;
     begin
-        tmp := '0';
+        Result_v := '0';
+
+        -- Loop through all bits
         for i in vec'low to vec'high loop
-            tmp := tmp or vec(i);
+            Result_v := Result_v or vec(i);
         end loop;
-        return tmp;
+
+        return Result_v;
     end function;
 
     function reduceAnd (vec : in std_logic_vector) return std_logic is
-        variable tmp : std_logic;
+        variable Result_v : std_logic;
     begin
-        tmp := '1';
+        Result_v := '1';
+
+        -- Loop through all bits
         for i in vec'low to vec'high loop
-            tmp := tmp and vec(i);
+            Result_v := Result_v and vec(i);
         end loop;
-        return tmp;
+
+        return Result_v;
     end function;
 
     function reduceXor (vec : in std_logic_vector) return std_logic is
-        variable tmp : std_logic;
+        variable Result_v : std_logic;
     begin
-        tmp := '0';
+        Result_v := '0';
+
+        -- Loop through all bits
         for i in vec'low to vec'high loop
-            tmp := tmp xor vec(i);
+            Result_v := Result_v xor vec(i);
         end loop;
-        return tmp;
+
+        return Result_v;
     end function;
 
     function to01X (inp : in std_logic) return std_logic is
     begin
+
+        -- Convert to 0, 1 or X (weak aware)
         case inp is
             when '0' | 'L' => return '0';
             when '1' | 'H' => return '1';
             when others => return 'X';
         end case;
+
     end function;
 
     function to01X (inp : in std_logic_vector) return std_logic_vector is
-        variable tmp : std_logic_vector(inp'range);
+        variable Result_v : std_logic_vector(inp'range);
     begin
+
+        -- Loop through all bits
         for i in inp'low to inp'high loop
-            tmp(i) := to01X(inp(i));
+            Result_v(i) := to01X(inp(i));
         end loop;
-        return tmp;
+
+        return Result_v;
     end function;
 
     function to01 (inp : in std_logic) return std_logic is
     begin
+
+        -- Convert to 0 or 1
         case inp is
             when '0' | 'L' => return '0';
             when '1' | 'H' => return '1';
             when others => return '0';
         end case;
+
     end function;
 
     function to01 (inp : in std_logic_vector) return std_logic_vector is
-        variable tmp : std_logic_vector(inp'range);
+        variable Result_v : std_logic_vector(inp'range);
     begin
+
+        -- Loop through all bits
         for i in inp'low to inp'high loop
-            tmp(i) := to01(inp(i));
+            Result_v(i) := to01(inp(i));
         end loop;
-        return tmp;
+
+        return Result_v;
     end function;
 
     function invertBitOrder (inp : in std_logic_vector) return std_logic_vector is
-        variable inp_v : std_logic_vector(inp'length-1 downto 0);
-        variable tmp   : std_logic_vector(inp_v'range);
+        variable Inp_v    : std_logic_vector(inp'length-1 downto 0);
+        variable Result_v : std_logic_vector(Inp_v'range);
     begin
-        inp_v := inp;
-        for i in 0 to inp_v'high loop
-            tmp(tmp'high - i) := inp_v(i);
+        Inp_v := inp;
+
+        -- Loop through all bits
+        for i in 0 to Inp_v'high loop
+            Result_v(Result_v'high - i) := Inp_v(i);
         end loop;
-        return tmp;
+
+        return Result_v;
     end function;
 
 end package body;

@@ -141,7 +141,7 @@ begin
             if run("Reset") then
 
                 -- Check if RstA is propagated to both sides
-                PulseSig(In_RstIn, In_Clk);
+                pulse_sig(In_RstIn, In_Clk);
                 wait for 1 us;
                 check(In_RstOut = '0', "In_RstOut not de-asserted after In_RstIn");
                 check(Out_RstOut = '0', "Out_RstOut not de-asserted after In_RstIn");
@@ -149,7 +149,7 @@ begin
                 check(Out_RstOut'last_event < 1 us, "Out_RstOut not asserted afterIn_RstIn");
 
                 -- Check if RstB is propagated to both sides
-                PulseSig(Out_RstIn, Out_Clk);
+                pulse_sig(Out_RstIn, Out_Clk);
                 wait for 1 us;
                 check(In_RstOut = '0', "In_RstOut not de-asserted after Out_RstIn");
                 check(Out_RstOut = '0', "Out_RstOut not de-asserted after Out_RstIn");
@@ -167,7 +167,7 @@ begin
                 In_Valid <= '0';
                 wait until rising_edge(Out_Clk) and Out_Valid = '1';
                 check_equal(Out_Data, 16#AB#, "Received wrong value 1");
-                CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 1");
+                check_no_activity_stdlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 1");
 
                 wait until rising_edge(In_Clk);
                 In_Data  <= x"CD";
@@ -177,7 +177,7 @@ begin
                 In_Valid <= '0';
                 wait until rising_edge(Out_Clk) and Out_Valid = '1';
                 check_equal(Out_Data, 16#CD#, "Received wrong value 2");
-                CheckNoActivityStlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 2");
+                check_no_activity_stdlv(Out_Data, 10*ClkOut_Period_c, "Value was not kept after Vld going low 2");
 
             elsif run("MaxRate") then
 

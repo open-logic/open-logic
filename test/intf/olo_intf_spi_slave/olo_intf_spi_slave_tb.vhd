@@ -545,7 +545,7 @@ begin
                 MsgPtr_v := new_string_ptr(pop_string(Msg_v));
 
                 -- Wait for RX data
-                WaitForValueStdl(Rx_Valid, '1', 1 ms, "Rx_Valid not asserted: " & to_string(MsgPtr_v));
+                wait_for_value_stdl(Rx_Valid, '1', 1 ms, "Rx_Valid not asserted: " & to_string(MsgPtr_v));
                 wait until rising_edge(Clk);
                 check_equal(Rx_Data, Data_v(D'Range), "Rx_Data wrong: " & to_string(MsgPtr_v));
                 wait until falling_edge(Clk);
@@ -587,7 +587,7 @@ begin
                 CleanEnd_v := pop(Msg_v);
 
                 -- Check Resp
-                WaitForValueStdl(Resp_Valid, '1', 1 ms, "Resp_Valid not asserted");
+                wait_for_value_stdl(Resp_Valid, '1', 1 ms, "Resp_Valid not asserted");
                 check_equal(Resp_Sent, Sent_v, "Resp_Sent wrong");
                 check_equal(Resp_Aborted, Aborted_v, "Resp_Aborted wrong");
                 check_equal(Resp_CleanEnd, CleanEnd_v, "Resp_CleanEnd not deasserted");
@@ -631,7 +631,7 @@ begin
                 MsgPtr_v      := new_string_ptr(pop_string(Msg_v));
 
                 -- Apply Data
-                WaitForValueStdl(Tx_Ready, '1', 1 ms, "Tx_Ready not asserted: " & to_string(MsgPtr_v));
+                wait_for_value_stdl(Tx_Ready, '1', 1 ms, "Tx_Ready not asserted: " & to_string(MsgPtr_v));
 
                 for i in 1 to DelayCycles_v loop
                     wait until rising_edge(Clk);

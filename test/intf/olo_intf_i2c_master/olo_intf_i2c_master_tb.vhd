@@ -188,16 +188,16 @@ begin
                 i2c_expect_repeated_start(net, I2cSlave_c);
                 i2c_expect_stop(net, I2cSlave_c);
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_REPSTART);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_RepStart_c);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_REPSTART);
-                checkResp(CMD_STOP);
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_RepStart_c);
+                checkResp(I2cCmd_Stop_c);
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             -- *** Write ***
@@ -207,16 +207,16 @@ begin
                 i2c_expect_rx_byte(net, I2cSlave_c, 16#42#);
                 i2c_expect_stop(net, I2cSlave_c);
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"42", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"42", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, X"42", '1');
-                checkResp(CMD_STOP);
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, X"42", '1');
+                checkResp(I2cCmd_Stop_c);
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("Write2bAckNack") then
@@ -226,18 +226,18 @@ begin
                 i2c_expect_rx_byte(net, I2cSlave_c, 16#53#, I2c_NACK, msg => "byte 1");
                 i2c_expect_stop(net, I2cSlave_c);
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"42", true);
-                pushCommand(CMD_SEND, true, X"53", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"42", true);
+                pushCommand(I2cCmd_Send_c, true, X"53", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, Ack => '1');
-                checkResp(CMD_SEND, Ack => '0');
-                checkResp(CMD_STOP);
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, Ack => '1');
+                checkResp(I2cCmd_Send_c, Ack => '0');
+                checkResp(I2cCmd_Stop_c);
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             -- *** Read ***
@@ -247,16 +247,16 @@ begin
                 i2c_push_tx_byte(net, I2cSlave_c, 16#36#);
                 i2c_expect_stop(net, I2cSlave_c);
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_REC, false, SetAck => true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Receive_c, false, SetAck => true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_REC, Data => X"36");
-                checkResp(CMD_STOP);
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Receive_c, Data => X"36");
+                checkResp(I2cCmd_Stop_c);
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("Read2bAckNack") then
@@ -266,18 +266,18 @@ begin
                 i2c_push_tx_byte(net, I2cSlave_c, 16#47#, I2c_NACK, msg => "byte 1");
                 i2c_expect_stop(net, I2cSlave_c);
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_REC, false, SetAck => true, Ack => '1');
-                pushCommand(CMD_REC, false, SetAck => true, Ack => '0');
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Receive_c, false, SetAck => true, Ack => '1');
+                pushCommand(I2cCmd_Receive_c, false, SetAck => true, Ack => '0');
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_REC, Data => X"36");
-                checkResp(CMD_REC, Data => X"47");
-                checkResp(CMD_STOP);
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Receive_c, Data => X"36");
+                checkResp(I2cCmd_Receive_c, Data => X"47");
+                checkResp(I2cCmd_Stop_c);
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             -- *** Test Write then Read ***
@@ -289,20 +289,20 @@ begin
                 i2c_push_tx_byte(net, I2cSlave_c, 16#36#, I2c_NACK, msg => "byte tx");
                 i2c_expect_stop(net, I2cSlave_c);
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"42");
-                pushCommand(CMD_REPSTART);
-                pushCommand(CMD_REC, false, SetAck => true, Ack => '0');
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"42");
+                pushCommand(I2cCmd_RepStart_c);
+                pushCommand(I2cCmd_Receive_c, false, SetAck => true, Ack => '0');
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, Ack => '1');
-                checkResp(CMD_REPSTART);
-                checkResp(CMD_REC, Data => X"36");
-                checkResp(CMD_STOP);
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, Ack => '1');
+                checkResp(I2cCmd_RepStart_c);
+                checkResp(I2cCmd_Receive_c, Data => X"36");
+                checkResp(I2cCmd_Stop_c);
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             -- *** Test Clock Stretching ***
@@ -315,20 +315,20 @@ begin
                 i2c_push_tx_byte(net, I2cSlave_c, 16#46#, I2c_NACK, clk_stretch => 2*Scl_Period_c, msg => "byte tx");
                 i2c_expect_stop(net, I2cSlave_c, clk_stretch => 2*Scl_Period_c);
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"52");
-                pushCommand(CMD_REPSTART);
-                pushCommand(CMD_REC, false, SetAck => true, Ack => '0');
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"52");
+                pushCommand(I2cCmd_RepStart_c);
+                pushCommand(I2cCmd_Receive_c, false, SetAck => true, Ack => '0');
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, Ack => '1');
-                checkResp(CMD_REPSTART);
-                checkResp(CMD_REC, Data => X"46");
-                checkResp(CMD_STOP);
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, Ack => '1');
+                checkResp(I2cCmd_RepStart_c);
+                checkResp(I2cCmd_Receive_c, Data => X"46");
+                checkResp(I2cCmd_Stop_c);
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             -- *** Test delayed command ***
@@ -338,16 +338,16 @@ begin
                 i2c_expect_rx_byte(net, I2cSlave_c, 16#42#);
                 i2c_expect_stop(net, I2cSlave_c);
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"42", true, Delay => CmdTimeout_c * (0.5 sec));
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"42", true, Delay => CmdTimeout_c * (0.5 sec));
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, Ack => '1');
-                checkResp(CMD_STOP);
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, Ack => '1');
+                checkResp(I2cCmd_Stop_c);
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("CmdTimeout") then
@@ -356,41 +356,41 @@ begin
                 i2c_expect_start(net, I2cSlave_c);
                 i2c_expect_stop(net, I2cSlave_c);
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"42", true, Delay => CmdTimeout_c * (1.5 sec));
-                pushCommand(CMD_SEND, true, X"55", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"42", true, Delay => CmdTimeout_c * (1.5 sec));
+                pushCommand(I2cCmd_Send_c, true, X"55", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                WaitForValueStdl(Status_CmdTo, '1', CmdTimeout_c*(1.1 sec), "Status_BusBusy 0");
-                WaitForValueStdl(Status_BusBusy, '0', 100 us, "Status_BusBusy 0");
-                checkResp(CMD_SEND, SeqErr => '1');
-                checkResp(CMD_SEND, SeqErr => '1');
-                checkResp(CMD_STOP, SeqErr => '1');
+                wait_for_value_stdl(Status_CmdTo, '1', CmdTimeout_c*(1.1 sec), "Status_BusBusy 0");
+                wait_for_value_stdl(Status_BusBusy, '0', 100 us, "Status_BusBusy 0");
+                checkResp(I2cCmd_Send_c, SeqErr => '1');
+                checkResp(I2cCmd_Send_c, SeqErr => '1');
+                checkResp(I2cCmd_Stop_c, SeqErr => '1');
             end if;
 
             -- *** Test Sequence Error ***
             if run("SequenceError-SendWithoutStart") then
                 -- Commands
-                pushCommand(CMD_SEND, true, X"55", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Send_c, true, X"55", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_SEND, SeqErr => '1');
-                checkResp(CMD_STOP, SeqErr => '1');
+                checkResp(I2cCmd_Send_c, SeqErr => '1');
+                checkResp(I2cCmd_Stop_c, SeqErr => '1');
                 check_equal(Status_BusBusy, '0', "Status_BusBusy 0");
             end if;
 
             if run("SequenceError-DoubleStart") then
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_START);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
-                checkResp(CMD_START, SeqErr => '1');
-                checkResp(CMD_STOP);
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                checkResp(I2cCmd_Start_c);
+                checkResp(I2cCmd_Start_c, SeqErr => '1');
+                checkResp(I2cCmd_Stop_c);
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
             end if;
 
             -- *** Test Arbitration ***
@@ -405,16 +405,16 @@ begin
                 i2c_push_tx_byte(net, I2cMaster_c, 16#42#, delay => 100 ns, msg => "data master");
                 i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"42", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"42", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, Ack => '1');
-                checkResp(CMD_STOP);
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, Ack => '1');
+                checkResp(I2cCmd_Stop_c);
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("MultiMaster-ArbLostWrite") then
@@ -428,16 +428,16 @@ begin
                 i2c_push_tx_byte(net, I2cMaster_c, 16#87#, delay => 100 ns, msg => "data master");
                 i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"A3", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"A3", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, ArbLost => '1');
-                checkResp(CMD_STOP, SeqErr => '1'); -- Sequence error because of lost arbitration
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, ArbLost => '1');
+                checkResp(I2cCmd_Stop_c, SeqErr => '1'); -- Sequence error because of lost arbitration
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("MultiMaster-ArbLostStop") then
@@ -454,16 +454,16 @@ begin
                 i2c_push_tx_byte(net, I2cMaster_c, 16#12#, delay => 100 ns, msg => "byte 1 master");
                 i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"A3", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"A3", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, Ack => '1');
-                checkResp(CMD_STOP, ArbLost => '1');
-                WaitForValueStdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, Ack => '1');
+                checkResp(I2cCmd_Stop_c, ArbLost => '1');
+                wait_for_value_stdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("MultiMaster-ArbLostRepStartContinue") then
@@ -480,18 +480,18 @@ begin
                 i2c_push_tx_byte(net, I2cMaster_c, 16#12#, delay => 100 ns, msg => "byte 1 master");
                 i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"A3", true);
-                pushCommand(CMD_REPSTART);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"A3", true);
+                pushCommand(I2cCmd_RepStart_c);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, Ack => '1');
-                checkResp(CMD_REPSTART, ArbLost => '1');
-                checkResp(CMD_STOP, SeqErr => '1');
-                WaitForValueStdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, Ack => '1');
+                checkResp(I2cCmd_RepStart_c, ArbLost => '1');
+                checkResp(I2cCmd_Stop_c, SeqErr => '1');
+                wait_for_value_stdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("MultiMaster-ArbLostRepStartStop") then
@@ -506,18 +506,18 @@ begin
                 i2c_push_tx_byte(net, I2cMaster_c, 16#A3#, delay => 100 ns, msg => "data master");
                 i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"A3", true);
-                pushCommand(CMD_REPSTART);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"A3", true);
+                pushCommand(I2cCmd_RepStart_c);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, Ack => '1');
-                checkResp(CMD_REPSTART, ArbLost => '1');
-                checkResp(CMD_STOP, SeqErr => '1');
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, Ack => '1');
+                checkResp(I2cCmd_RepStart_c, ArbLost => '1');
+                checkResp(I2cCmd_Stop_c, SeqErr => '1');
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("MultiMaster-ArbLostBit1") then
@@ -532,16 +532,16 @@ begin
                 i2c_push_tx_byte(net, I2cMaster_c, 16#C3#, delay => 100 ns, msg => "data master");
                 i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"E3", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"E3", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, ArbLost => '1');
-                checkResp(CMD_STOP, SeqErr => '1');
-                WaitForValueStdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, ArbLost => '1');
+                checkResp(I2cCmd_Stop_c, SeqErr => '1');
+                wait_for_value_stdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("MultiMaster-ArbLostByRepstart") then
@@ -556,16 +556,16 @@ begin
                 i2c_push_repeated_start(net, I2cMaster_c, delay => 100 ns, msg => "repstart master");
                 i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"E3", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"E3", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_SEND, ArbLost => '1');
-                checkResp(CMD_STOP, SeqErr => '1');
-                WaitForValueStdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Send_c, ArbLost => '1');
+                checkResp(I2cCmd_Stop_c, SeqErr => '1');
+                wait_for_value_stdl(Status_BusBusy, '0', 10*Scl_Period_c, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("MultiMaster-ArbLostOtherStart") then
@@ -577,14 +577,14 @@ begin
                 i2c_push_start(net, I2cMaster_c, delay => 100 ns, msg => "start master");
                 i2c_push_stop(net, I2cMaster_c, delay => 100 ns, msg => "stop master");
                 -- Commands
-                pushCommand(CMD_START, delay => 0.25 * Scl_Period_c);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c, delay => 0.25 * Scl_Period_c);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START, ArbLost => '1');
+                checkResp(I2cCmd_Start_c, ArbLost => '1');
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
-                checkResp(CMD_STOP, SeqErr => '1');
-                WaitForValueStdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Stop_c, SeqErr => '1');
+                wait_for_value_stdl(Status_BusBusy, '0', 10 us, "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("MultiMaster-ArbLostIllegalSdaPulldown-EarlyInScl") then
@@ -596,22 +596,22 @@ begin
                 i2c_force_bus_release(net, I2cSlave_c); -- return to idle state
                 -- data not checked because its not relevant
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"E3", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"E3", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
                 -- ... Pull down SDA during the first bit while SCL = '1'
                 wait until I2c_Scl = 'H' or I2c_Scl = '1';
                 wait for 0.1 * Scl_Period_c;
                 I2c_Sda <= '0';
-                checkResp(CMD_SEND, ArbLost => '1');
+                checkResp(I2cCmd_Send_c, ArbLost => '1');
                 wait for 5 * Scl_Period_c;
                 I2c_Sda <= 'Z';
-                checkResp(CMD_STOP, SeqErr => '1');
-                WaitForValueStdl(Status_BusBusy, '0', BusBusyTimeout_c * 1.1 * (1 sec), "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Stop_c, SeqErr => '1');
+                wait_for_value_stdl(Status_BusBusy, '0', BusBusyTimeout_c * 1.1 * (1 sec), "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             if run("MultiMaster-ArbLostIllegalSdaPulldown-LateInScl") then
@@ -623,22 +623,22 @@ begin
                 i2c_force_bus_release(net, I2cSlave_c); -- return to idle state
                 -- data not checked because its not relevant
                 -- Commands
-                pushCommand(CMD_START);
-                pushCommand(CMD_SEND, true, X"E3", true);
-                pushCommand(CMD_STOP);
+                pushCommand(I2cCmd_Start_c);
+                pushCommand(I2cCmd_Send_c, true, X"E3", true);
+                pushCommand(I2cCmd_Stop_c);
                 -- Check responses (blocking)
-                checkResp(CMD_START);
+                checkResp(I2cCmd_Start_c);
                 check_equal(Status_BusBusy, '1', "Status_BusBusy 1");
                 -- ... Pull down SDA during the first bit while SCL = '1'
                 wait until I2c_Scl = 'H' or I2c_Scl = '1';
                 wait for 0.4 * Scl_Period_c;
                 I2c_Sda <= '0';
-                checkResp(CMD_SEND, ArbLost => '1');
+                checkResp(I2cCmd_Send_c, ArbLost => '1');
                 wait for 5 * Scl_Period_c;
                 I2c_Sda <= 'Z';
-                checkResp(CMD_STOP, SeqErr => '1');
-                WaitForValueStdl(Status_BusBusy, '0', BusBusyTimeout_c * 1.1 * (1 sec), "Status_BusBusy 0");
-                CheckLastActivity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
+                checkResp(I2cCmd_Stop_c, SeqErr => '1');
+                wait_for_value_stdl(Status_BusBusy, '0', BusBusyTimeout_c * 1.1 * (1 sec), "Status_BusBusy 0");
+                check_last_activity(Status_CmdTo, now-StartTime_v, 0, "Status_CmdTo");
             end if;
 
             -- *** Test Bus Busy Timeout ***

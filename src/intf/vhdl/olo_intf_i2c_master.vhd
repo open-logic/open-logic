@@ -24,11 +24,11 @@ library work;
 
 package olo_intf_i2c_master_pkg is
 
-    constant CMD_START    : std_logic_vector(2 downto 0) := "000";
-    constant CMD_STOP     : std_logic_vector(2 downto 0) := "001";
-    constant CMD_REPSTART : std_logic_vector(2 downto 0) := "010";
-    constant CMD_SEND     : std_logic_vector(2 downto 0) := "011";
-    constant CMD_REC      : std_logic_vector(2 downto 0) := "100";
+    constant I2cCmd_Start_c    : std_logic_vector(2 downto 0) := "000";
+    constant I2cCmd_Stop_c     : std_logic_vector(2 downto 0) := "001";
+    constant I2cCmd_RepStart_c : std_logic_vector(2 downto 0) := "010";
+    constant I2cCmd_Send_c     : std_logic_vector(2 downto 0) := "011";
+    constant I2cCmd_Receive_c  : std_logic_vector(2 downto 0) := "100";
 
 end package;
 
@@ -223,11 +223,11 @@ begin
                 -- Detect Bus Busy by Start Command
                 if (r.Cmd_Ready = '1') and (Cmd_Valid = '1') then
                     -- Everyting else than START commands is ignored and an error is printed in this case
-                    assert (Cmd_Command = CMD_START) or DisableAsserts_g
-                        report "###ERROR###: olo_intf_i2c_master: In idle state, only CMD_START commands are allowed!"
+                    assert (Cmd_Command = I2cCmd_Start_c) or DisableAsserts_g
+                        report "###ERROR###: olo_intf_i2c_master: In idle state, only I2cCmd_Start_c commands are allowed!"
                         severity error;
                     v.CmdTypeLatch := Cmd_Command;
-                    if Cmd_Command = CMD_START then
+                    if Cmd_Command = I2cCmd_Start_c then
                         v.Fsm       := Start1_s;
                         v.Cmd_Ready := '0';
                     else
@@ -280,7 +280,7 @@ begin
                 end if;
 
                 -- Handle Clock Stretching in case of a repeated start (slave keeps SCL low)
-                if I2cScl_Sync = '0' and r.CmdTypeLatch = CMD_REPSTART then
+                if I2cScl_Sync = '0' and r.CmdTypeLatch = I2cCmd_RepStart_c then
                     v.QuartPeriodCnt := (others => '0');
                 end if;
 
@@ -309,10 +309,12 @@ begin
 
                 -- All commands except START are allowed, START commands are ignored
                 if (r.Cmd_Ready = '1') and (Cmd_Valid = '1') then
-                    assert (Cmd_Command = CMD_STOP) or (Cmd_Command = CMD_REPSTART) or (Cmd_Command = CMD_SEND) or (Cmd_Command = CMD_REC) or DisableAsserts_g
-                        report "###ERROR###: olo_intf_i2c_master: In WaitCmd_s state, CMD_START commands are not allowed!"
+                    assert (Cmd_Command = I2cCmd_Stop_c) or (Cmd_Command = I2cCmd_RepStart_c) or
+                           (Cmd_Command = I2cCmd_Send_c) or (Cmd_Command = I2cCmd_Receive_c) or DisableAsserts_g
+                        report "###ERROR###: olo_intf_i2c_master: In WaitCmd_s state, I2cCmd_Start_c commands are not allowed!"
                         severity error;
-                    if (Cmd_Command = CMD_STOP) or (Cmd_Command = CMD_REPSTART) or (Cmd_Command = CMD_SEND) or (Cmd_Command = CMD_REC) then
+                    if (Cmd_Command = I2cCmd_Stop_c) or (Cmd_Command = I2cCmd_RepStart_c) or
+                       (Cmd_Command = I2cCmd_Send_c) or (Cmd_Command = I2cCmd_Receive_c) then
                         v.Fsm       := WaitLowCenter_s;
                         v.Cmd_Ready := '0';
                     else
@@ -343,10 +345,10 @@ begin
                     else
 
                         case r.CmdTypeLatch is
-                            when CMD_STOP => v.Fsm := Stop1_s;
-                            when CMD_REPSTART => v.Fsm := RepStart1_s;
-                            when CMD_SEND => v.Fsm := DataBit1_s;
-                            when CMD_REC => v.Fsm := DataBit1_s;
+                            when I2cCmd_Stop_c => v.Fsm := Stop1_s;
+                            when I2cCmd_RepStart_c => v.Fsm := RepStart1_s;
+                            when I2cCmd_Send_c => v.Fsm := DataBit1_s;
+                            when I2cCmd_Receive_c => v.Fsm := DataBit1_s;
                             -- coverage off
                             when others => null; -- unreacable code
                             -- coverage on
@@ -395,7 +397,7 @@ begin
                 v.SclOut := '0';
 
                 -- Send Operation
-                if r.CmdTypeLatch = CMD_SEND then
+                if r.CmdTypeLatch = I2cCmd_Send_c then
                     -- For Ack, receive data
                     if r.BitCnt = 8 then
                         v.SdaOut := '1';
@@ -432,7 +434,7 @@ begin
                 end if;
 
                 -- Handle Arbitration for Sending (only databits, not ack)
-                if (r.CmdTypeLatch = CMD_SEND) and (r.BitCnt /= 8) then
+                if (r.CmdTypeLatch = I2cCmd_Send_c) and (r.BitCnt /= 8) then
                     if I2cSda_Sync /= r.SdaOut then
                         v.Fsm := ArbitLost_s;
                     end if;
@@ -453,7 +455,7 @@ begin
                 v.SclOut := '1';
 
                 -- Handle Arbitration for Sending (only databits, not ack)
-                if (r.CmdTypeLatch = CMD_SEND) and (r.BitCnt /= 8) then
+                if (r.CmdTypeLatch = I2cCmd_Send_c) and (r.BitCnt /= 8) then
                     if I2cSda_Sync /= r.SdaOut then
                         v.Fsm := ArbitLost_s;
                     end if;

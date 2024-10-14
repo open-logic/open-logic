@@ -115,8 +115,8 @@ begin
                 RstIn <= not RstPolarityStdl_c;
 
                 -- Wait for reset output
-                WaitForValueStdl(RstOut, '1', 1 us, "AsyncDetect - RstOut assertion");
-                WaitForValueStdl(RstOut, '0', Clk_Period_c*(RstPulseCycles_g*2), "AsyncDetect - RstOut de-assertion");
+                wait_for_value_stdl(RstOut, '1', 1 us, "AsyncDetect - RstOut assertion");
+                wait_for_value_stdl(RstOut, '0', Clk_Period_c*(RstPulseCycles_g*2), "AsyncDetect - RstOut de-assertion");
             end if;
 
             -- Pulse Duration
@@ -127,7 +127,7 @@ begin
                 RstIn <= not RstPolarityStdl_c;
 
                 -- Check Duration
-                WaitForValueStdl(RstOut, '1', 1 us, "RstOut assertion");
+                wait_for_value_stdl(RstOut, '1', 1 us, "RstOut assertion");
 
                 for i in 0 to RstPulseCycles_g-1 loop
                     check_equal(RstOut, '1', "reset removed early");
@@ -150,7 +150,7 @@ begin
                 -- Wait for reset output (only check when enabled)
                 if AsyncResetOutput_g then
                     check_equal(RstOut, '1', "AsyncForward - RstOut assertion");
-                    WaitForValueStdl(RstOut, '0', Clk_Period_c*(RstPulseCycles_g*2), "AsyncForward - RstOut de-assertion");
+                    wait_for_value_stdl(RstOut, '0', Clk_Period_c*(RstPulseCycles_g*2), "AsyncForward - RstOut de-assertion");
                 end if;
             end if;
 

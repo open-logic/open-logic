@@ -1985,9 +1985,7 @@ rule:
         phase: 6
     function_006:
         # This rule checks for blank lines or comments above the function keyword.
-        phase: 3
-        severity: Error # Could be Warning for Development
-        style: no_code
+        disable: true #Unhandy for multiple consecutive function declarations (e.g. in packages)
     function_008:
         # This rule checks the indent of function parameters on multiple lines.
         phase: 4

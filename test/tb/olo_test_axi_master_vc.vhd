@@ -75,7 +75,7 @@ package olo_test_axi_master_pkg is
             addr       : unsigned;
             id         : std_logic_vector := "X";
             len        : positive         := 1;     -- lenght of the transfer in beats (1 = 1 beat)
-            burst      : Burst_t          := xBURST_INCR_c;
+            burst      : Burst_t          := AxiBurst_Incr_c;
             delay      : time             := 0 ns); -- Delay before sending the message
 
     -- Push AR message
@@ -85,7 +85,7 @@ package olo_test_axi_master_pkg is
             addr       : unsigned;
             id         : std_logic_vector := "X";
             len        : positive         := 1;     -- lenght of the transfer in beats (1 = 1 beat)
-            burst      : Burst_t          := xBURST_INCR_c;
+            burst      : Burst_t          := AxiBurst_Incr_c;
             delay      : time             := 0 ns); -- delay before sending the message
 
     -- Push write message
@@ -103,7 +103,7 @@ package olo_test_axi_master_pkg is
     procedure expect_b (
             signal net : inout network_t;
             axi_master : olo_test_axi_master_t;
-            resp       : Resp_t           := xRESP_OKAY_c;
+            resp       : Resp_t           := AxiResp_Okay_c;
             id         : std_logic_vector := "X";
             delay      : time             := 0 ns); -- delay eady after valid
 
@@ -114,7 +114,7 @@ package olo_test_axi_master_pkg is
             start_value : unsigned;
             increment   : natural          := 1;
             beats       : natural          := 1;    -- number of beats to write
-            resp        : Resp_t           := xRESP_OKAY_c;
+            resp        : Resp_t           := AxiResp_Okay_c;
             id          : std_logic_vector := "X";
             delay       : time             := 0 ns; -- delay ready after valid
             ignore_data : boolean          := false);
@@ -151,7 +151,7 @@ package olo_test_axi_master_pkg is
             dataIncrement  : natural          := 1;
             beats          : natural;
             id             : std_logic_vector := "X";
-            burst          : Burst_t          := xBURST_INCR_c;
+            burst          : Burst_t          := AxiBurst_Incr_c;
             aw_valid_delay : time             := 0 ns;
             w_valid_delay  : time             := 0 ns;
             b_ready_delay  : time             := 0 ns);
@@ -165,7 +165,7 @@ package olo_test_axi_master_pkg is
             dataIncrement  : natural          := 1;
             beats          : natural;
             id             : std_logic_vector := "X";
-            burst          : Burst_t          := xBURST_INCR_c;
+            burst          : Burst_t          := AxiBurst_Incr_c;
             ar_valid_delay : time             := 0 ns;
             r_ready_delay  : time             := 0 ns);
 
@@ -191,7 +191,7 @@ package body olo_test_axi_master_pkg is
             addr       : unsigned;
             id         : std_logic_vector := "X";
             len        : positive         := 1;
-            burst      : Burst_t          := xBURST_INCR_c;
+            burst      : Burst_t          := AxiBurst_Incr_c;
             delay      : time             := 0 ns) is
         variable msg  : msg_t                                            := new_msg(axi_aw_msg);
         variable id_v : std_logic_vector(axi_master.id_width-1 downto 0) := (others => '0');
@@ -217,7 +217,7 @@ package body olo_test_axi_master_pkg is
             addr       : unsigned;
             id         : std_logic_vector := "X";
             len        : positive         := 1;
-            burst      : Burst_t          := xBURST_INCR_c;
+            burst      : Burst_t          := AxiBurst_Incr_c;
             delay      : time             := 0 ns) is
         variable msg  : msg_t                                            := new_msg(axi_ar_msg);
         variable id_v : std_logic_vector(axi_master.id_width-1 downto 0) := (others => '0');
@@ -273,7 +273,7 @@ package body olo_test_axi_master_pkg is
     procedure expect_b (
             signal net : inout network_t;
             axi_master : olo_test_axi_master_t;
-            resp       : Resp_t           := xRESP_OKAY_c;
+            resp       : Resp_t           := AxiResp_Okay_c;
             id         : std_logic_vector := "X";
             delay      : time             := 0 ns) is
         variable msg  : msg_t                                            := new_msg(axi_b_msg);
@@ -298,7 +298,7 @@ package body olo_test_axi_master_pkg is
             start_value : unsigned;
             increment   : natural          := 1;
             beats       : natural          := 1;
-            resp        : Resp_t           := xRESP_OKAY_c;
+            resp        : Resp_t           := AxiResp_Okay_c;
             id          : std_logic_vector := "X";
             delay       : time             := 0 ns;                 -- Delay ready after valid
             ignore_data : boolean          := false) is
@@ -337,7 +337,7 @@ package body olo_test_axi_master_pkg is
         -- implementation
         push_aw(net, axi_master, addr, id => id, delay => aw_valid_delay);
         push_w(net, axi_master, data, delay => w_valid_delay, first_strb => strb);
-        expect_b(net, axi_master, resp => xRESP_OKAY_c, id => id, delay => b_ready_delay);
+        expect_b(net, axi_master, resp => AxiResp_Okay_c, id => id, delay => b_ready_delay);
     end procedure;
 
     -- Single beat read & check read data
@@ -352,7 +352,7 @@ package body olo_test_axi_master_pkg is
     begin
         -- implementation
         push_ar(net, axi_master, addr, id => id, delay => ar_valid_delay);
-        expect_r(net, axi_master, data, resp => xRESP_OKAY_c, id => id, delay => r_ready_delay);
+        expect_r(net, axi_master, data, resp => AxiResp_Okay_c, id => id, delay => r_ready_delay);
     end procedure;
 
     -- Burst write (aligned)
@@ -364,7 +364,7 @@ package body olo_test_axi_master_pkg is
             dataIncrement  : natural          := 1;
             beats          : natural;
             id             : std_logic_vector := "X";
-            burst          : Burst_t          := xBURST_INCR_c;
+            burst          : Burst_t          := AxiBurst_Incr_c;
             aw_valid_delay : time             := 0 ns;
             w_valid_delay  : time             := 0 ns;
             b_ready_delay  : time             := 0 ns) is
@@ -372,7 +372,7 @@ package body olo_test_axi_master_pkg is
         -- implementation
         push_aw(net, axi_master, addr, len => beats, id => id, burst => burst, delay => aw_valid_delay);
         push_w(net, axi_master, dataStart, dataIncrement, beats, delay => w_valid_delay);
-        expect_b(net, axi_master, resp => xRESP_OKAY_c, id => id, delay => b_ready_delay);
+        expect_b(net, axi_master, resp => AxiResp_Okay_c, id => id, delay => b_ready_delay);
     end procedure;
 
     -- Burst read (aligned)
@@ -384,13 +384,13 @@ package body olo_test_axi_master_pkg is
             dataIncrement  : natural          := 1;
             beats          : natural;
             id             : std_logic_vector := "X";
-            burst          : Burst_t          := xBURST_INCR_c;
+            burst          : Burst_t          := AxiBurst_Incr_c;
             ar_valid_delay : time             := 0 ns;
             r_ready_delay  : time             := 0 ns) is
     begin
         -- implementation
         push_ar(net, axi_master, addr, len => beats, id => id, burst => burst, delay => ar_valid_delay);
-        expect_r(net, axi_master, dataStart, dataIncrement, beats, resp => xRESP_OKAY_c, id => id, delay => r_ready_delay);
+        expect_r(net, axi_master, dataStart, dataIncrement, beats, resp => AxiResp_Okay_c, id => id, delay => r_ready_delay);
     end procedure;
 
     -- Constructor
@@ -569,7 +569,7 @@ begin
                 axi_ms.aw_addr  <= toUslv(0, axi_ms.aw_addr'length);
                 axi_ms.aw_len   <= toUslv(0, 8);
                 axi_ms.aw_size  <= toUslv(0, 3);
-                axi_ms.aw_burst <= xBURST_INCR_c;
+                axi_ms.aw_burst <= AxiBurst_Incr_c;
                 aw_completed    := aw_completed + 1;
             else
                 unexpected_msg_type(msg_type);
@@ -639,7 +639,7 @@ begin
                 axi_ms.ar_addr  <= toUslv(0, axi_ms.ar_addr'length);
                 axi_ms.ar_len   <= toUslv(0, 8);
                 axi_ms.ar_size  <= toUslv(0, 3);
-                axi_ms.ar_burst <= xBURST_INCR_c;
+                axi_ms.ar_burst <= AxiBurst_Incr_c;
                 ar_completed    := ar_completed + 1;
             else
                 unexpected_msg_type(msg_type);

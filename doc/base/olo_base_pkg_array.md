@@ -16,7 +16,7 @@ This package contains different array types which are used in *Open Logic* inter
 
 ## Definitions
 
-### t_aslv\<N\>
+### StdlvArray\<N\>_t
 
 Arrays of *std_logic_vector* of width N for regularly used widths.
 
@@ -25,10 +25,10 @@ Options for \<N\>: 2...32, 36, 48, 64, 512
 Example:
 
 ```
-variable x : t_aslv4(0 to 9);  -- An array containint 10 std_logic_vector(3 downto 0);
+variable x : StdlvArray4_t(0 to 9);  -- An array containint 10 std_logic_vector(3 downto 0);
 ```
 
-### t_a\<T\>
+### \<T\>Array_t
 
 Arrays of different types .
 
@@ -37,9 +37,9 @@ Options for \<T\>: bool, integer, real
 Examples:
 
 ```
-variable x : t_ainteger(0 to 2); -- An array of 3 integers
-variable y : t_abool(0 to 3); -- An array of 4 bools
-variable z : t_areal(0 to 1); -- An array of 2 reals
+variable x : IntegerArray_t(0 to 2); -- An array of 3 integers
+variable y : BoolArray_t(0 to 3);    -- An array of 4 bools
+variable z : RealArray_t(0 to 1);    -- An array of 2 reals
 ```
 
 
@@ -51,9 +51,9 @@ variable z : t_areal(0 to 1); -- An array of 2 reals
 Convert one array type into another.
 
 ```
-function aInteger2aReal(a : in t_ainteger) return t_areal;
-function stdlv2aBool(a : in std_logic_vector) return t_abool;
-function aBool2stdlv(a : in t_abool) return std_logic_vector;
+function arrayInteger2Real(a : in t_ainteger) return t_areal;
+function arrayStdl2Bool(a : in std_logic_vector) return t_abool;
+function arrayBool2Stdl(a : in t_abool) return std_logic_vector;
 ```
 
 For *bool* and *std_logic_vector* '1' is converted to *true* and '0' to *false*.

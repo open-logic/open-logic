@@ -496,9 +496,9 @@ architecture a of olo_test_i2c_vc is
         scl <= 'Z';
         level_wait(scl, '1', msg & " - SCL held low by other device [send_bit_incl_clock]", timeout);
         wait for clk_half_period;
-        CheckLastActivity(scl, clk_half_period*0.9, -1, msg & " - SCL high period too short [send_bit_incl_clock]");
+        check_last_activity(scl, clk_half_period*0.9, -1, msg & " - SCL high period too short [send_bit_incl_clock]");
         level_check(sda, data, msg & " - SDA readback does not match SDA transmit value during SCL pulse [send_bit_incl_clock]");
-        CheckLastActivity(sda, clk_half_period, -1, msg & " - SDA not stable during SCL pulse [send_bit_incl_clock]");
+        check_last_activity(sda, clk_half_period, -1, msg & " - SDA not stable during SCL pulse [send_bit_incl_clock]");
         scl <= '0';
         wait for clk_quart_period;
     end procedure;
@@ -520,8 +520,8 @@ architecture a of olo_test_i2c_vc is
         scl  <= 'Z';
         level_wait(scl, '1', msg & " - SCL held low by other device [receive_bit_incl_clock]", timeout);
         wait for clk_half_period;
-        CheckLastActivity(scl, clk_half_period*0.9, -1, msg & " - SCL high period too short [receive_bit_incl_clock]");
-        CheckLastActivity(sda, clk_half_period, -1, msg & " - SDA not stable during SCL pulse [receive_bit_incl_clock]");
+        check_last_activity(scl, clk_half_period*0.9, -1, msg & " - SCL high period too short [receive_bit_incl_clock]");
+        check_last_activity(sda, clk_half_period, -1, msg & " - SDA not stable during SCL pulse [receive_bit_incl_clock]");
         data := to01X(sda);
         scl  <= '0';
         wait for clk_quart_period;
@@ -563,7 +563,7 @@ architecture a of olo_test_i2c_vc is
         -- wait clock falling edge
         level_wait(scl, '0', msg & " - SCL did not go low [receive_bit_incl_clock]", timeout);
         level_check(sda, data, msg & " - SDA readback does not match SDA transmit value during SCL pulse [receive_bit_incl_clock]");
-        CheckLastActivity(sda, clk_half_period, -1, msg & " - SDA not stable during SCL pulse [receive_bit_incl_clock]");
+        check_last_activity(sda, clk_half_period, -1, msg & " - SDA not stable during SCL pulse [receive_bit_incl_clock]");
 
         -- wait until center of low
         wait for clk_quart_period;
@@ -592,7 +592,7 @@ architecture a of olo_test_i2c_vc is
 
         -- wait clock falling edge
         level_wait(scl, '0', msg & " - SCL did not go low [receive_bit_excl_clock]", timeout);
-        CheckLastActivity(sda, clk_half_period, -1, msg & " - SDA not stable during SCL pulse [receive_bit_excl_clock]");
+        check_last_activity(sda, clk_half_period, -1, msg & " - SDA not stable during SCL pulse [receive_bit_excl_clock]");
         data := to01X(sda);
 
         -- wait until center of low

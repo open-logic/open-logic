@@ -370,7 +370,7 @@ begin
                     -- Slave
                     expect_aw(net, AxiSlave_c, X"0300");
                     expect_w(net, AxiSlave_c, X"05");
-                    push_b(net, AxiSlave_c, resp => xRESP_SLVERR_c);
+                    push_b(net, AxiSlave_c, resp => AxiResp_SlvErr_c);
                     -- Master
                     pushCommand(net, WrCmdMaster_c, X"0300", 1);
                     pushWrData(net, X"05");
@@ -425,7 +425,7 @@ begin
                 if ImplRead_g then
                     -- Slave
                     expect_ar(net, AxiSlave_c, X"0300");
-                    push_r(net, AxiSlave_c, X"23", resp => xRESP_SLVERR_c);
+                    push_r(net, AxiSlave_c, X"23", resp => AxiResp_SlvErr_c);
                     -- Master
                     pushCommand(net, RdCmdMaster_c, X"0300", 1);
                     expectRdData(net, X"23");
@@ -472,7 +472,7 @@ begin
                     -- Slave first burst
                     expect_aw(net, AxiSlave_c, X"2000"-2*AxiDataWidth_g/8, len => 2);
                     expect_w(net, AxiSlave_c, X"12", beats => 2);
-                    push_b(net, AxiSlave_c, resp => xRESP_SLVERR_c);
+                    push_b(net, AxiSlave_c, resp => AxiResp_SlvErr_c);
                     -- Slave second burst
                     expect_burst_write_aligned(net, AxiSlave_c, X"2000", X"14", 1, 6);
                     -- Master
@@ -520,7 +520,7 @@ begin
                     -- 2 words before boundary, 6 after, 8 total
                     -- Slave first burst
                     expect_ar(net, AxiSlave_c, X"3000"-2*AxiDataWidth_g/8, len => 2);
-                    push_r(net, AxiSlave_c, X"12", beats => 2, resp => xRESP_SLVERR_c);
+                    push_r(net, AxiSlave_c, X"12", beats => 2, resp => AxiResp_SlvErr_c);
                     -- Slave second burst
                     push_burst_read_aligned (net, AxiSlave_c, X"3000", X"14", 1, 6);
                     -- Master

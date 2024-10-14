@@ -156,7 +156,7 @@ begin
                 if IsLowLat_c then
                     check_equal(DataOut(0), not IdleLevel_c, "After Pulse Value wrong");
                 else
-                    CheckLastActivity(DataOut(0), Time_Debounce_c*0.8, choose(IdleLevel_c='0', 0, 1), "Value after pulse 1");
+                    check_last_activity(DataOut(0), Time_Debounce_c*0.8, choose(IdleLevel_c='0', 0, 1), "Value after pulse 1");
                 end if;
                 -- After pulse value
                 wait for Time_Debounce_c*0.3+MaxPropDelay_c;

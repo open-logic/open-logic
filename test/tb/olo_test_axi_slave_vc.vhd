@@ -76,7 +76,7 @@ package olo_test_axi_slave_pkg is
             addr       : unsigned;
             id         : std_logic_vector := "X";
             len        : positive         := 1;     -- length of the transfer in beats (1 = 1 beat)
-            burst      : burst_t          := xBURST_INCR_c;
+            burst      : burst_t          := AxiBurst_Incr_c;
             delay      : time             := 0 ns); -- delay from valid to ready
 
     -- Expect AR transaction
@@ -86,7 +86,7 @@ package olo_test_axi_slave_pkg is
             addr       : unsigned;
             id         : std_logic_vector := "X";
             len        : positive         := 1;     -- length of the transfer in beats (1 = 1 beat)
-            burst      : burst_t          := xBURST_INCR_c;
+            burst      : burst_t          := AxiBurst_Incr_c;
             delay      : time             := 0 ns); -- delay from valid to ready
 
     -- Expect W transaction (counter based)
@@ -117,7 +117,7 @@ package olo_test_axi_slave_pkg is
     procedure push_b (
             signal net : inout network_t;
             axi_slave  : olo_test_axi_slave_t;
-            resp       : resp_t           := xRESP_OKAY_c;
+            resp       : resp_t           := AxiResp_Okay_c;
             id         : std_logic_vector := "X";
             delay      : time             := 0 ns); -- delay before executing transaction
 
@@ -128,7 +128,7 @@ package olo_test_axi_slave_pkg is
             start_value : unsigned;
             increment   : natural          := 1;
             beats       : natural          := 1;     -- number of beats to write
-            resp        : resp_t           := xRESP_OKAY_c;
+            resp        : resp_t           := AxiResp_Okay_c;
             id          : std_logic_vector := "X";
             delay       : time             := 0 ns;  -- delay before executing transaction
             beat_delay  : time             := 0 ns); -- delay between beats
@@ -141,7 +141,7 @@ package olo_test_axi_slave_pkg is
             axi_slave  : olo_test_axi_slave_t;
             beats      : natural          := 1;
             all_data   : unsigned;
-            resp       : resp_t           := xRESP_OKAY_c;
+            resp       : resp_t           := AxiResp_Okay_c;
             id         : std_logic_vector := "X";
             delay      : time             := 0 ns;  -- delay before executing transaction
             beat_delay : time             := 0 ns); -- delay between beats
@@ -213,7 +213,7 @@ package body olo_test_axi_slave_pkg is
             addr       : unsigned;
             id         : std_logic_vector := "X";
             len        : positive         := 1;       -- length of the transfer in beats (1 = 1 beat)
-            burst      : burst_t          := xBURST_INCR_c;
+            burst      : burst_t          := AxiBurst_Incr_c;
             delay      : time             := 0 ns) is -- delay from valid to ready
         variable msg : msg_t;
         variable id_v : std_logic_vector(axi_slave.id_width-1 downto 0) := (others => '0');
@@ -240,7 +240,7 @@ package body olo_test_axi_slave_pkg is
             addr       : unsigned;
             id         : std_logic_vector := "X";
             len        : positive         := 1;       -- length of the transfer in beats (1 = 1 beat)
-            burst      : burst_t          := xBURST_INCR_c;
+            burst      : burst_t          := AxiBurst_Incr_c;
             delay      : time             := 0 ns) is -- delay from valid to ready
         variable msg : msg_t;
         variable id_v : std_logic_vector(axi_slave.id_width-1 downto 0) := (others => '0');
@@ -348,7 +348,7 @@ package body olo_test_axi_slave_pkg is
     procedure push_b (
             signal net : inout network_t;
             axi_slave  : olo_test_axi_slave_t;
-            resp       : resp_t           := xRESP_OKAY_c;
+            resp       : resp_t           := AxiResp_Okay_c;
             id         : std_logic_vector := "X";
             delay      : time             := 0 ns) is -- delay before executing transaction
         variable msg  : msg_t;
@@ -374,7 +374,7 @@ package body olo_test_axi_slave_pkg is
             start_value : unsigned;
             increment   : natural          := 1;
             beats       : natural          := 1;       -- number of beats to write
-            resp        : resp_t           := xRESP_OKAY_c;
+            resp        : resp_t           := AxiResp_Okay_c;
             id          : std_logic_vector := "X";
             delay       : time             := 0 ns;    -- delay before executing transaction
             beat_delay  : time             := 0 ns) is -- delay between beats
@@ -406,7 +406,7 @@ package body olo_test_axi_slave_pkg is
             axi_slave  : olo_test_axi_slave_t;
             beats      : natural          := 1;
             all_data   : unsigned;
-            resp       : resp_t           := xRESP_OKAY_c;
+            resp       : resp_t           := AxiResp_Okay_c;
             id         : std_logic_vector := "X";
             delay      : time             := 0 ns;    -- delay before executing transaction
             beat_delay : time             := 0 ns) is -- delay between beats
@@ -457,7 +457,7 @@ package body olo_test_axi_slave_pkg is
     begin
         expect_aw(net, axi_slave, addr, delay => aw_ready_delay);
         expect_w(net, axi_slave, data, first_strb => strb, delay => w_ready_delay);
-        push_b(net, axi_slave, resp => xRESP_OKAY_c, delay => b_valid_delay);
+        push_b(net, axi_slave, resp => AxiResp_Okay_c, delay => b_valid_delay);
     end procedure;
 
     -- Single beat read
@@ -470,7 +470,7 @@ package body olo_test_axi_slave_pkg is
             r_valid_delay  : time := 0 ns) is
     begin
         expect_ar(net, axi_slave, addr, delay => ar_ready_delay);
-        push_r(net, axi_slave, data, resp => xRESP_OKAY_c, delay => r_valid_delay);
+        push_r(net, axi_slave, data, resp => AxiResp_Okay_c, delay => r_valid_delay);
     end procedure;
 
     -- Burst write (aligned)
@@ -488,7 +488,7 @@ package body olo_test_axi_slave_pkg is
     begin
         expect_aw(net, axi_slave, addr, len => beats, delay => aw_ready_delay);
         expect_w(net, axi_slave, data_start, data_increment, beats, delay => w_ready_delay, beat_delay => beat_delay);
-        push_b(net, axi_slave, resp => xRESP_OKAY_c, delay => b_valid_delay);
+        push_b(net, axi_slave, resp => AxiResp_Okay_c, delay => b_valid_delay);
     end procedure;
 
     -- Burst read (aligned)
@@ -504,7 +504,7 @@ package body olo_test_axi_slave_pkg is
             beat_delay     : time    := 0 ns) is
     begin
         expect_ar(net, axi_slave, addr, len => beats, delay => ar_ready_delay);
-        push_r(net, axi_slave, data_start, data_increment, beats, resp => xRESP_OKAY_c, delay => r_valid_delay, beat_delay => beat_delay);
+        push_r(net, axi_slave, data_start, data_increment, beats, resp => AxiResp_Okay_c, delay => r_valid_delay, beat_delay => beat_delay);
     end procedure;
 
     -- Constructor
@@ -835,7 +835,7 @@ begin
     begin
         -- Initalize
         axi_sm.b_valid <= '0';
-        axi_sm.b_resp  <= xRESP_OKAY_c;
+        axi_sm.b_resp  <= AxiResp_Okay_c;
         axi_sm.b_id    <= toUslv(0, instance.id_width);
         axi_sm.b_user  <= toUslv(0, axi_sm.b_user'length);
         wait until rising_edge(clk);
@@ -869,7 +869,7 @@ begin
                 axi_sm.b_id    <= id;
                 wait until rising_edge(clk) and axi_ms.b_ready = '1';
                 axi_sm.b_valid <= '0';
-                axi_sm.b_resp  <= xRESP_OKAY_c;
+                axi_sm.b_resp  <= AxiResp_Okay_c;
                 axi_sm.b_id    <= toUslv(0, instance.id_width);
                 b_completed    := b_completed + 1;
             else
@@ -894,7 +894,7 @@ begin
     begin
         -- Initalize
         axi_sm.r_valid <= '0';
-        axi_sm.r_resp  <= xRESP_OKAY_c;
+        axi_sm.r_resp  <= AxiResp_Okay_c;
         axi_sm.r_id    <= toUslv(0, instance.id_width);
         axi_sm.r_data  <= toUslv(0, instance.data_width);
         axi_sm.r_user  <= toUslv(0, axi_sm.r_user'length);
@@ -953,7 +953,7 @@ begin
                 -- Return to idle
                 axi_sm.r_data <= toUslv(0, instance.data_width);
                 axi_sm.r_last <= '0';
-                axi_sm.r_resp <= xRESP_OKAY_c;
+                axi_sm.r_resp <= AxiResp_Okay_c;
                 axi_sm.r_id   <= toUslv(0, instance.id_width);
                 r_completed   := r_completed + 1;
             else

@@ -86,16 +86,16 @@ package olo_base_pkg_math is
 
     function choose (
             s : in boolean;
-            t : in t_areal;
-            f : in t_areal) return t_areal;
+            t : in RealArray_t;
+            f : in RealArray_t) return RealArray_t;
 
     -- count occurence of a value inside an array
     function count (
-            a : in t_ainteger;
+            a : in IntegerArray_t;
             v : in integer) return integer;
 
     function count (
-            a : in t_abool;
+            a : in BoolArray_t;
             v : in boolean) return integer;
 
     function count (
@@ -124,16 +124,16 @@ package olo_base_pkg_math is
     function fromString (input : string) return real;
 
     -- convert string  to real array
-    function fromString (input : string) return t_areal;
+    function fromString (input : string) return RealArray_t;
 
     -- get max/min from array type interger /real
-    function maxArray (a : in t_ainteger) return integer;
+    function maxArray (a : in IntegerArray_t) return integer;
 
-    function maxArray (a : in t_areal) return real;
+    function maxArray (a : in RealArray_t) return real;
 
-    function minArray (a : in t_ainteger) return integer;
+    function minArray (a : in IntegerArray_t) return integer;
 
-    function minArray (a : in t_areal) return real;
+    function minArray (a : in RealArray_t) return real;
 
 end package;
 
@@ -146,17 +146,20 @@ package body olo_base_pkg_math is
     -- Helpers
     -- *************************************************************************
     -- Coun the number of elements in a array string (separated by ",")
-    function count_array_str_elements (input : string) return natural is
-        variable count : natural := 1;
-        variable idx   : integer := input'low;
+    function countCommaSepElems (input : string) return natural is
+        variable Count_v : natural := 1;
+        variable Idx_v   : integer := input'low;
     begin
-        while idx <= input'high loop
-            if input(idx) = ',' then
-                count := count + 1;
+
+        -- loop through all characters
+        while Idx_v <= input'high loop
+            if input(Idx_v) = ',' then
+                Count_v := Count_v + 1;
             end if;
-            idx := idx + 1;
+            Idx_v := Idx_v + 1;
         end loop;
-        return count;
+
+        return Count_v;
     end function;
 
     -- *************************************************************************
@@ -165,14 +168,17 @@ package body olo_base_pkg_math is
 
     -- *** Log2 integer ***
     function log2 (arg : in natural) return natural is
-        variable v : natural := arg;
-        variable r : natural := 0;
+        variable ArgShift_v : natural := arg;
+        variable Log2_v     : natural := 0;
     begin
-        while v > 1 loop
-            v := v / 2;
-            r := r + 1;
+
+        -- Calculate log2
+        while ArgShift_v > 1 loop
+            ArgShift_v := ArgShift_v / 2;
+            Log2_v     := Log2_v + 1;
         end loop;
-        return r;
+
+        return Log2_v;
     end function;
 
     -- *** Log2Ceil integer ***
@@ -331,11 +337,11 @@ package body olo_base_pkg_math is
         end if;
     end function;
 
-    -- *** Choose (t_areal) ***
+    -- *** Choose (RealArray_t) ***
     function choose (
             s : in boolean;
-            t : in t_areal;
-            f : in t_areal) return t_areal is
+            t : in RealArray_t;
+            f : in RealArray_t) return RealArray_t is
     begin
         if s then
             return t;
@@ -346,44 +352,53 @@ package body olo_base_pkg_math is
 
     -- *** count (integer) ***
     function count (
-            a : in t_ainteger;
+            a : in IntegerArray_t;
             v : in integer) return integer is
-        variable cnt_v : integer := 0;
+        variable Cnt_v : integer := 0;
     begin
+
+        -- Count number of ocurrences
         for idx in a'low to a'high loop
             if a(idx) = v then
-                cnt_v := cnt_v + 1;
+                Cnt_v := Cnt_v + 1;
             end if;
         end loop;
-        return cnt_v;
+
+        return Cnt_v;
     end function;
 
     -- *** count (bool) ***
     function count (
-            a : in t_abool;
+            a : in BoolArray_t;
             v : in boolean) return integer is
-        variable cnt_v : integer := 0;
+        variable Cnt_v : integer := 0;
     begin
+
+        -- Count number of ocurrences
         for idx in a'low to a'high loop
             if a(idx) = v then
-                cnt_v := cnt_v + 1;
+                Cnt_v := Cnt_v + 1;
             end if;
         end loop;
-        return cnt_v;
+
+        return Cnt_v;
     end function;
 
     -- *** count (std_logic) ***
     function count (
             a : in std_logic_vector;
             v : in std_logic) return integer is
-        variable cnt_v : integer := 0;
+        variable Cnt_v : integer := 0;
     begin
+
+        -- Count number of ocurrences
         for idx in a'low to a'high loop
             if a(idx) = v then
-                cnt_v := cnt_v + 1;
+                Cnt_v := Cnt_v + 1;
             end if;
         end loop;
-        return cnt_v;
+
+        return Cnt_v;
     end function;
 
     -- *** integer to unsigned slv  ***
@@ -449,6 +464,7 @@ package body olo_base_pkg_math is
         variable ExpNeg_v     : boolean   := false;
         variable ValAbs_v     : real      := 0.0;
     begin
+
         -- skip leading white-spaces (space, non-breaking space or horizontal tab)
         while (Idx_v <= input'high) and (input(Idx_v) = ' ' or input(Idx_v) = Nbsp_c or input(Idx_v) = HT) loop
             Idx_v := Idx_v + 1;
@@ -477,6 +493,7 @@ package body olo_base_pkg_math is
                     FracDigits_v := FracDigits_v + 1;
                     Idx_v        := Idx_v + 1;
                 end loop;
+
             end if;
         end if;
 
@@ -495,6 +512,8 @@ package body olo_base_pkg_math is
                     Exp_v := Exp_v * 10 + (character'pos(input(Idx_v)) - character'pos('0'));
                     Idx_v := Idx_v + 1;
                 end loop;
+
+                -- Handle negative exponent
                 if ExpNeg_v then
                     Exp_v := -Exp_v;
                 end if;
@@ -511,74 +530,91 @@ package body olo_base_pkg_math is
     end function;
 
     -- convert string to real array
-    function fromString (input : string) return t_areal is
-        variable arr      : t_areal(0 to count_array_str_elements(input) - 1) := (others => 0.0);
-        variable aIdx     : natural                                           := 0;
-        variable startIdx : natural                                           := 1;
-        variable endIdx   : natural                                           := 1;
-        variable idx      : natural                                           := input'low;
+    function fromString (input : string) return RealArray_t is
+        variable Array_v    : RealArray_t(0 to countCommaSepElems(input) - 1) := (others => 0.0);
+        variable ArrayIdx_v : natural                                     := 0;
+        variable StartIdx_v : natural                                     := 1;
+        variable EndIdx_v   : natural                                     := 1;
+        variable CharIdx_v  : natural                                     := input'low;
     begin
-        while idx <= input'high loop
-            if input(idx) = ',' then
-                endIdx    := idx - 1;
-                arr(aIdx) := fromString(input(startIdx to endIdx));
-                aIdx      := aIdx + 1;
-                startIdx  := idx + 1;
+
+        -- loop through all characters
+        while CharIdx_v <= input'high loop
+            if input(CharIdx_v) = ',' then
+                EndIdx_v            := CharIdx_v - 1;
+                Array_v(ArrayIdx_v) := fromString(input(StartIdx_v to EndIdx_v));
+                ArrayIdx_v          := ArrayIdx_v + 1;
+                StartIdx_v          := CharIdx_v + 1;
             end if;
-            idx := idx + 1;
+            CharIdx_v := CharIdx_v + 1;
         end loop;
-        if startIdx <= input'high then
-            arr(aIdx) := fromString(input(startIdx to input'high));
+
+        -- handle last element
+        if StartIdx_v <= input'high then
+            Array_v(ArrayIdx_v) := fromString(input(StartIdx_v to input'high));
         end if;
-        return arr;
+
+        return Array_v;
     end function;
 
     -- *** get the maximum out of an array of integer ***
-    function maxArray (a : in t_ainteger) return integer is
-        variable max_v : integer := 0;
+    function maxArray (a : in IntegerArray_t) return integer is
+        variable Max_v : integer := 0;
     begin
+
+        -- Loop through all elements
         for idx in a'low to a'high loop
-            if max(max_v, a(idx)) > max_v then
-                max_v := a(idx);
+            if max(Max_v, a(idx)) > Max_v then
+                Max_v := a(idx);
             end if;
         end loop;
-        return max_v;
+
+        return Max_v;
     end function;
 
     -- *** get the maximum out of an array of real ***
-    function maxArray (a : in t_areal) return real is
-        variable max_v : real := 0.0;
+    function maxArray (a : in RealArray_t) return real is
+        variable Max_v : real := 0.0;
     begin
+
+        -- Loop through all elements
         for idx in a'low to a'high loop
-            if max(max_v, a(idx)) > max_v then
-                max_v := a(idx);
+            if max(Max_v, a(idx)) > Max_v then
+                Max_v := a(idx);
             end if;
         end loop;
-        return max_v;
+
+        return Max_v;
     end function;
 
     -- *** get the minimum out of an array of integer ***
-    function minArray (a : in t_ainteger) return integer is
-        variable min_v : integer := 0;
+    function minArray (a : in IntegerArray_t) return integer is
+        variable Min_v : integer := 0;
     begin
+
+        -- Loop through all elements
         for idx in a'low to a'high loop
-            if min(min_v, a(idx)) < min_v then
-                min_v := a(idx);
+            if min(Min_v, a(idx)) < Min_v then
+                Min_v := a(idx);
             end if;
         end loop;
-        return min_v;
+
+        return Min_v;
     end function;
 
     -- *** get the minimum out of an array of real ***
-    function minArray (a : in t_areal) return real is
-        variable min_v : real := 0.0;
+    function minArray (a : in RealArray_t) return real is
+        variable Min_v : real := 0.0;
     begin
+
+        -- Loop through all elements
         for idx in a'low to a'high loop
-            if min(min_v, a(idx)) < min_v then
-                min_v := a(idx);
+            if min(Min_v, a(idx)) < Min_v then
+                Min_v := a(idx);
             end if;
         end loop;
-        return min_v;
+
+        return Min_v;
     end function;
 
 end package body;
