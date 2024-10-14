@@ -392,22 +392,6 @@ freqs = [(100, 100), (123, 7837), (7837, 123)]
 for FreqClk, FreqTest in freqs:
     named_config(tb, {'ClkFrequency_g': FreqClk, 'MaxClkTestFrequency_g': FreqTest})
 
-
-spi_master_tb = 'olo_intf_spi_master_tb'
-tb = olo_tb.test_bench(spi_master_tb)
-for FreqBus in [int(1e6), int(10e6)]:
-    named_config(tb, {'BusFrequency_g': FreqBus})
-for LsbFirst in [False, True]:
-    named_config(tb, {'LsbFirst_g': LsbFirst})
-for CPHA in [0, 1]:
-    for CPOL in [0, 1]:
-        named_config(tb, {'SpiCpha_g': CPHA, 'SpiCpol_g': CPOL})
-
-spi_master_fixsize_tb = 'olo_intf_spi_master_fixsize_tb'
-tb = olo_tb.test_bench(spi_master_fixsize_tb)
-for LsbFirst in [False, True]:
-    named_config(tb, {'LsbFirst_g': LsbFirst})
-
 spi_slave_tb = 'olo_intf_spi_slave_tb'
 tb = olo_tb.test_bench(spi_slave_tb)
 #Test different configs for transactions (all combinations)
@@ -440,8 +424,6 @@ for DataBits in [8, 9]:
         named_config(tb, {'DataBits_g': DataBits, 'Parity_g' : Parity})
 for StopBits in ["1", "1.5", "2"]:
     named_config(tb, {'StopBits_g' : StopBits})
-
-
 
 spi_master_tb = 'olo_intf_spi_master_tb'
 tb = olo_tb.test_bench(spi_master_tb)
