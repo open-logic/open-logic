@@ -1,0 +1,61 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run VSG Lint",
+            "type": "shell",
+            "command": "vsg",
+            "args": [
+                "-c",
+                "./lint/config/vsg_config.yml",
+                "-f",
+                "${file}",
+                "-of",
+                "syntastic"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {
+                "owner": "vhdl",
+                "fileLocation": [
+                    "absolute"
+                ],
+                "pattern": {
+                    "regexp": "^(ERROR):\\s+([^\\(]+)\\((\\d+)\\)(.*)$",
+                    "severity": 1,
+                    "file": 2,
+                    "line": 3,
+                    "message": 4
+                }
+            }
+        },
+        {
+            "label": "Run VSG Lint - All Files",
+            "type": "shell",
+            "command": "python3",
+            "args": [
+                "./lint/script/script.py",
+                "--syntastic"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {
+                "owner": "vhdl",
+                "fileLocation": [
+                    "absolute"
+                ],
+                "pattern": {
+                    "regexp": "^(ERROR):\\s+([^\\(]+)\\((\\d+)\\)(.*)$",
+                    "severity": 1,
+                    "file": 2,
+                    "line": 3,
+                    "message": 4
+                }
+            }
+        }
+    ]
+}
