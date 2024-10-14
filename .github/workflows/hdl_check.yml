@@ -95,7 +95,17 @@ jobs:
       - name: Download artifacts from previous jobs
         uses: actions/download-artifact@v4
         with:
-          name: linting-artifacts, simulation-nvc-artifacts, simulation-ghdl-artifacts
+          name: linting-artifacts
+          path: ./artifacts
+      - name: Download artifacts from previous jobs
+        uses: actions/download-artifact@v4
+        with:
+          name: simulation-nvc-artifacts
+          path: ./artifacts
+      - name: Download artifacts from previous jobs
+        uses: actions/download-artifact@v4
+        with:
+          name: simulation-ghdl-artifacts
           path: ./artifacts
       # Publish results
       - name: Publish results
