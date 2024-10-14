@@ -532,10 +532,10 @@ package body olo_base_pkg_math is
     -- convert string to real array
     function fromString (input : string) return RealArray_t is
         variable Array_v    : RealArray_t(0 to countCommaSepElems(input) - 1) := (others => 0.0);
-        variable ArrayIdx_v : natural                                     := 0;
-        variable StartIdx_v : natural                                     := 1;
-        variable EndIdx_v   : natural                                     := 1;
-        variable CharIdx_v  : natural                                     := input'low;
+        variable ArrayIdx_v : natural                                         := 0;
+        variable StartIdx_v : natural                                         := 1;
+        variable EndIdx_v   : natural                                         := 1;
+        variable CharIdx_v  : natural                                         := input'low;
     begin
 
         -- loop through all characters

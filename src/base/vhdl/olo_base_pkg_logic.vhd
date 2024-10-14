@@ -152,8 +152,8 @@ package body olo_base_pkg_logic is
         if bits < 0 then
             return shiftLeft(ArgDownto_c, -bits, fill);
         else
-            Vector_v(Vector_v'left - bits downto Vector_v'right) := ArgDownto_c(ArgDownto_c'left downto bits);
-            Vector_v(Vector_v'left downto Vector_v'left - bits + 1)     := (others => fill);
+            Vector_v(Vector_v'left - bits downto Vector_v'right)    := ArgDownto_c(ArgDownto_c'left downto bits);
+            Vector_v(Vector_v'left downto Vector_v'left - bits + 1) := (others => fill);
             return Vector_v;
         end if;
     end function;
