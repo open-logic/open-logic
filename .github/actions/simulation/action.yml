@@ -23,5 +23,5 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: Simulation Results --${{ inputs.simulator }}
-        path: sim/sim_report_--${{ inputs.simulator }}.xml
+        path: sim/sim_report_${{ inputs.simulator }}.xml
 

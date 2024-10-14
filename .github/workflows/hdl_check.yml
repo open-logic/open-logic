@@ -82,7 +82,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Linting results
+          name: linting-artifacts
           path: |
             lint/report/vsg_normal_vhdl.xml 
             lint/report/vsg_vc_vhdl.xml 
@@ -95,13 +95,13 @@ jobs:
       - name: Download artifacts from previous jobs
         uses: actions/download-artifact@v4
         with:
-          name: Linting results, Simulation Results nvc, Simulation Results ghdl
+          name: linting-artifacts, simulation-nvc-artifacts, simulation-ghdl-artifacts
           path: ./artifacts
       # Publish results
       - name: Publish results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: "artifacts/*.xml"
+          files: "./artifacts/*.xml"
 
       
       
