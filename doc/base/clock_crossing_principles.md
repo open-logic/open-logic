@@ -16,7 +16,7 @@ set_max_delay -from [get_clocks <dst-clock>] to [get_clocks <src-clock>] -datapa
 ```
 
 
-**Note:** For Intel Quartus, manual constraints are required because automatic constraining (scoped constraints) is not supported by Quartus.
+**Note:** For all tools except AMD Vivado, manual constraints are required because automatic constraining (scoped constraints) is only supported by Vivado.
 
 **Note:** For using *Open Logic* from Verilog, manual constraints are required. Automatic constraining currently only works for VHDL.
 
