@@ -28,14 +28,15 @@ library work;
 entity olo_base_fifo_async is
     generic (
         Width_g         : positive;
-        Depth_g         : positive;         -- must be power of two
-        AlmFullOn_g     : boolean   := false;
-        AlmFullLevel_g  : natural   := 0;
-        AlmEmptyOn_g    : boolean   := false;
-        AlmEmptyLevel_g : natural   := 0;
-        RamStyle_g      : string    := "auto";
-        RamBehavior_g   : string    := "RBW";
-        ReadyRstState_g : std_logic := '1'
+        Depth_g         : positive; -- must be power of two
+        AlmFullOn_g     : boolean               := false;
+        AlmFullLevel_g  : natural               := 0;
+        AlmEmptyOn_g    : boolean               := false;
+        AlmEmptyLevel_g : natural               := 0;
+        RamStyle_g      : string                := "auto";
+        RamBehavior_g   : string                := "RBW";
+        ReadyRstState_g : std_logic             := '1';
+        SyncStages_g    : positive range 2 to 4 := 2
     );
     port (
         -- Input interface
@@ -264,7 +265,8 @@ begin
     -- Wr -> Rd Sync
     i_cc_wr_rd : entity work.olo_base_cc_bits
         generic map (
-            Width_g => AddrWidth_c
+            Width_g      => AddrWidth_c,
+            SyncStages_g => SyncStages_g
         )
         port map (
             In_Clk   => In_Clk,
@@ -278,7 +280,8 @@ begin
     -- Rd -> Wr Sync
     i_cc_rd_wr : entity work.olo_base_cc_bits
         generic map (
-            Width_g => AddrWidth_c
+            Width_g      => AddrWidth_c,
+            SyncStages_g => SyncStages_g
         )
         port map (
             In_Clk   => In_Clk,

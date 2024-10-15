@@ -30,7 +30,8 @@ entity olo_base_fifo_async_tb is
         AlmEmptyOn_g    : boolean              := true;
         Depth_g         : natural              := 32;
         RamBehavior_g   : string               := "RBW";
-        ReadyRstState_g : integer range 0 to 1 := 1
+        ReadyRstState_g : integer range 0 to 1 := 1;
+        SyncStages_g    : integer range 2 to 4 := 2
     );
 end entity;
 
@@ -91,7 +92,8 @@ begin
             AlmEmptyOn_g    => AlmEmptyOn_g,
             AlmEmptyLevel_g => AlmEmptyLevel_c,
             RamBehavior_g   => RamBehavior_g,
-            ReadyRstState_g => toStdl(ReadyRstState_g)
+            ReadyRstState_g => toStdl(ReadyRstState_g),
+            SyncStages_g    => SyncStages_g
         )
         port map (
             -- Control Ports
@@ -441,6 +443,10 @@ begin
                         -- Read 5 words
                         for i in 0 to 4 loop
                             Out_Ready <= '1';
+                            if Out_Valid = '0' then
+                                wait until rising_edge(Out_Clk) and Out_Valid = '1';
+                            end if;
+
                             check_equal(Out_Data, i, "Wrong data");
                             wait until falling_edge(Out_Clk);
 

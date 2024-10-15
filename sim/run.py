@@ -175,6 +175,10 @@ for tb_name in fifo_tbs:
     for AlmFull in [True, False]:
         for AlmEmpty in [True, False]:
             named_config(tb, {"AlmFullOn_g": AlmFull, "AlmEmptyOn_g": AlmEmpty})
+    # For async FIFO, test different sync stagecounts
+    if tb_name == "olo_base_fifo_async_tb":
+        for Stages in [2, 4]:
+            named_config(tb, {"SyncStages_g": Stages})
 
 #Width Converter TBs
 wconv_xn2n_tb = 'olo_base_wconv_xn2n_tb'
