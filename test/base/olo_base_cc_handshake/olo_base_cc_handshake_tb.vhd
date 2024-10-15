@@ -78,7 +78,9 @@ architecture sim of olo_base_cc_handshake_tb is
 
         -- Loop over values
         for i in 0 to values-1 loop
-            wait for InDelay_v;
+            if InDelay_v > 0 ns then
+                wait for InDelay_v;
+            end if;
             push_axi_stream(net, AxisMaster_c, toUslv(i, DataWidth_c));
         end loop;
 
@@ -91,7 +93,9 @@ architecture sim of olo_base_cc_handshake_tb is
 
         -- Loop over values
         for i in 0 to values-1 loop
-            wait for OutDelay_v;
+            if OutDelay_v > 0 ns then
+                wait for OutDelay_v;
+            end if;
             check_axi_stream(net, AxisSlave_c, toUslv(i, DataWidth_c), blocking => false, msg => "data " & integer'image(i));
         end loop;
 
@@ -163,8 +167,8 @@ begin
                     pushValues(net, 20);
                     checkValues(net, 20);
                 else
-                    pushValues(net, 100);
-                    checkValues(net, 100);
+                    pushValues(net, 1000);
+                    checkValues(net, 1000);
                 end if;
 
             elsif run("OutLimited") then

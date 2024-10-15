@@ -480,6 +480,7 @@ for LsbFirst in [False, True]:
 ########################################################################################################################
 
 olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
+olo_tb.set_sim_option('nvc.heap_size', '5000M')
 
 if USE_COVERAGE:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
