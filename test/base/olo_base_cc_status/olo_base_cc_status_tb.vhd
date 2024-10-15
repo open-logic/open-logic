@@ -73,7 +73,8 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_cc_status
         generic map (
-            Width_g => DataWidth_c
+            Width_g      => DataWidth_c,
+            SyncStages_g => SyncStages_g
         )
         port map (
             -- Clock Domain A
