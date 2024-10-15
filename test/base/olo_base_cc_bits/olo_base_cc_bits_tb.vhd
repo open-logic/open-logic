@@ -28,8 +28,9 @@ library olo;
 entity olo_base_cc_bits_tb is
     generic (
         runner_cfg     : string;
-        ClockRatio_N_g : integer := 3;
-        ClockRatio_D_g : integer := 2
+        ClockRatio_N_g : integer               := 3;
+        ClockRatio_D_g : integer               := 2;
+        SyncStages_g   : positive range 2 to 4 := 2
     );
 end entity;
 
@@ -52,7 +53,7 @@ architecture sim of olo_base_cc_bits_tb is
 
     constant Time_Rst_Assert_c  : time := 2 * SlowerClock_Period_c;
     constant Time_Rst_Recover_c : time := 10 * SlowerClock_Period_c;
-    constant Time_MaxDel_c      : time := 3.01 * SlowerClock_Period_c;
+    constant Time_MaxDel_c      : time := (real(SyncStages_g + 1) + 0.01) * SlowerClock_Period_c; -- 1 cycle per stage + 1 for input register
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals

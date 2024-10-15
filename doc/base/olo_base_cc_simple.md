@@ -14,15 +14,16 @@ VHDL Source: [olo_base_cc_simple](../../src/base/vhdl/olo_base_cc_simple.vhd)
 
 This component implements a clock crossing for transferring single values from one clock domain to another (completely asynchronous clocks). In both clock domains the valid samples are marked with a Valid signal according to the AXI-S specification but back-pressure (Ready) is not handled.
 
-**For the entity to work correctly, the data-rate must be significantly lower (5x lower) than the slower clock frequency.**
+**For the entity to work correctly, the data-rate must be significantly lower ( (_3+SyncStages_g_ x lower) than the slower clock frequency.**
 
 This block follows the general [clock-crossing principles](clock_crossing_principles.md). Read through them for more information.
 
 ## Generics
 
-| Name    | Type     | Default | Description                             |
-| :------ | :------- | ------- | :-------------------------------------- |
-| Width_g | positive | 1       | Width of the data-signal to clock-cross |
+| Name         | Type     | Default | Description                                            |
+| :----------- | :------- | ------- | :----------------------------------------------------- |
+| Width_g      | positive | 1       | Width of the data-signal to clock-cross                |
+| SyncStages_g | positive | 2       | Number of synchronization stages. <br />Range: 2 ... 4 |
 
 ## Interfaces
 

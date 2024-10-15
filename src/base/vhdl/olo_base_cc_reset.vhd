@@ -24,6 +24,9 @@ library ieee;
 -- Entity
 ---------------------------------------------------------------------------------------------------
 entity olo_base_cc_reset is
+    generic (
+        SyncStages_g : positive range 2 to 4 := 2
+    );
     port (
         A_Clk       : in    std_logic;
         A_RstIn     : in    std_logic := '0';
@@ -150,7 +153,8 @@ begin
     -- Ack Crossing
     i_ackb2a : entity work.olo_base_cc_bits
         generic map (
-            Width_g => 1
+            Width_g      => 1,
+            SyncStages_g => SyncStages_g
         )
         port map (
             -- Input clock domain
@@ -165,7 +169,8 @@ begin
 
     i_acka2b : entity work.olo_base_cc_bits
         generic map (
-            Width_g => 1
+            Width_g      => 1,
+            SyncStages_g => SyncStages_g
         )
         port map (
             -- Input clock domain

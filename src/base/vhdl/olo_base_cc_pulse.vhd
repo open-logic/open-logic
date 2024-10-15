@@ -27,7 +27,8 @@ library ieee;
 ---------------------------------------------------------------------------------------------------
 entity olo_base_cc_pulse is
     generic (
-        NumPulses_g     : positive := 1
+        NumPulses_g     : positive              := 1;
+        SyncStages_g    : positive range 2 to 4 := 2
     );
     port (
         In_Clk          : in    std_logic;
@@ -92,7 +93,8 @@ begin
     -- Two-Stage synchronizer
     i_sync : entity work.olo_base_cc_bits
         generic map (
-            Width_g => NumPulses_g
+            Width_g      => NumPulses_g,
+            SyncStages_g => SyncStages_g
         )
         port map (
             In_Clk   => In_Clk,

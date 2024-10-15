@@ -19,6 +19,7 @@ library work;
     use work.olo_test_activity_pkg.all;
 
 library olo;
+    use olo.olo_base_pkg_math.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -26,7 +27,8 @@ library olo;
 -- vunit: run_all_in_same_sim
 entity olo_intf_sync_tb is
     generic (
-        RstLevel_g     : std_logic := '0';
+        RstLevel_g     : natural range 0 to 1  := 0;
+        SyncStages_g   : positive range 2 to 4 := 2;
         runner_cfg     : string
     );
 end entity;
@@ -37,20 +39,21 @@ architecture sim of olo_intf_sync_tb is
     -- Constants
     -----------------------------------------------------------------------------------------------
     constant DataWidth_c : integer := 8;
+    constant RstLevel_c  : std_logic := toStdl(RstLevel_g);
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
     constant Clk_Frequency_c : real := 100.0e6;
     constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
-    constant Time_MaxDel_c   : time := 2.1 * Clk_Period_c;
+    constant Time_MaxDel_c   : time := (real(SyncStages_g) + 0.1)* Clk_Period_c; -- 1 cycle per stage
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
     signal Clk       : std_logic                                  := '0';
     signal Rst       : std_logic                                  := '1';
-    signal DataAsync : std_logic_vector(DataWidth_c - 1 downto 0) := (others => RstLevel_g);
+    signal DataAsync : std_logic_vector(DataWidth_c - 1 downto 0) := (others => RstLevel_c);
     signal DataSync  : std_logic_vector(DataWidth_c - 1 downto 0);
 
 begin
@@ -60,8 +63,9 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_intf_sync
         generic map (
-            Width_g    => DataWidth_c,
-            RstLevel_g => RstLevel_g
+            Width_g      => DataWidth_c,
+            RstLevel_g   => RstLevel_c,
+            SyncStages_g => SyncStages_g
         )
         port map (
             Clk         => Clk,
@@ -82,7 +86,7 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        constant RstVal_c : std_logic_vector(DataWidth_c - 1 downto 0) := (others => RstLevel_g);
+        constant RstVal_c : std_logic_vector(DataWidth_c - 1 downto 0) := (others => RstLevel_c);
     begin
         test_runner_setup(runner, runner_cfg);
 

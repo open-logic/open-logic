@@ -112,6 +112,8 @@ for tb_name in cc_tbs:
         if N == D and N != 1:
             continue
         named_config(tb, {'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
+    for Stages in [2, 4]:
+        named_config(tb, {'SyncStages_g': Stages})
 
 # Specific cases to cc_handshake
 cc_handshake_tb = 'olo_base_cc_handshake_tb'
@@ -408,7 +410,12 @@ for BusFreq in [int(100e3), int(400e3), int(1e6)]:
 for IntTri in [True, False]:
     named_config(tb, {'InternalTriState_g': IntTri})
 
-# olo_intf_sync - no generics to iterate
+sync_tb = 'olo_intf_sync_tb'
+tb = olo_tb.test_bench(sync_tb)
+for SyncStages in [2, 4]:
+    for ResetLvel in [0, 1]:
+        named_config(tb, {'SyncStages_g': SyncStages, 'RstLevel_g': ResetLvel})
+
 clk_meas_tb = 'olo_intf_clk_meas_tb'
 tb = olo_tb.test_bench(clk_meas_tb)
 freqs = [(100, 100), (123, 7837), (7837, 123)]

@@ -28,8 +28,9 @@ library olo;
 entity olo_base_cc_status_tb is
     generic (
         runner_cfg     : string;
-        ClockRatio_N_g : integer := 3;
-        ClockRatio_D_g : integer := 2
+        ClockRatio_N_g : integer               := 3;
+        ClockRatio_D_g : integer               := 2;
+        SyncStages_g   : positive range 2 to 4 := 2
     );
 end entity;
 
