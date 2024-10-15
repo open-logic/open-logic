@@ -154,7 +154,7 @@ begin
                 push_axi_stream(net, AxisMaster_c, toUslv(5, DataWidth_c));
                 check_axi_stream(net, AxisSlave_c, toUslv(5, DataWidth_c), blocking => false, msg => "data a");
                 -- Second value
-                wait for 0*SlowerClock_Period_c;
+                wait for 20*SlowerClock_Period_c;
                 push_axi_stream(net, AxisMaster_c, toUslv(10, DataWidth_c));
                 check_axi_stream(net, AxisSlave_c, toUslv(10, DataWidth_c), blocking => false, msg => "data b");
 
@@ -169,12 +169,12 @@ begin
 
             elsif run("OutLimited") then
                 pushValues(net, 20);
-                OutDelay_v := SlowerClock_Period_c*0;
+                OutDelay_v := SlowerClock_Period_c*20;
                 checkValues(net, 20);
 
             elsif run("InLimited") then
                 checkValues(net, 20);
-                InDelay_v := SlowerClock_Period_c*0;
+                InDelay_v := SlowerClock_Period_c*20;
                 pushValues(net, 20);
             end if;
 
