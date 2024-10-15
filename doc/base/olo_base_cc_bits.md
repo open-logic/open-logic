@@ -13,15 +13,17 @@ VHDL Source: [olo_base_cc_bits](../../src/base/vhdl/olo_base_cc_bits.vhd)
 ## Description
 
 This component implements a clock crossing for multiple independent single-bit signals. It contains double-stage synchronizers and sets all the attributes required for proper synthesis.
+
 Note that this clock crossing does not guarantee that all bits arrive in the same clock cycle at the destination clock domain, therefore it can only be used for independent single-bit signals. Do not use it to transfer multi-bit signals (e.g. numbers) where it is important that all the bits are updated in the same clock cycle.
 
 This block follows the general [clock-crossing principles](clock_crossing_principles.md). Read through them for more information.
 
 ## Generics
 
-| Name    | Type     | Default | Description                                             |
-| :------ | :------- | ------- | :------------------------------------------------------ |
-| Width_g | positive | 1       | Number of data bits to implement the clock crossing for |
+| Name         | Type     | Default | Description                                             |
+| :----------- | :------- | ------- | :------------------------------------------------------ |
+| Width_g      | positive | 1       | Number of data bits to implement the clock crossing for |
+| SyncStages_g | positive | 2       | Number of synchronization stages. <br />Range: 2 ... 4  |
 
 ## Interfaces
 
@@ -38,11 +40,13 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 
 *In_Data* is first synchronized to *In_Clk*. The synchronization register is included to cover cases where users connect a combinatorial signal (from the *In_Clk* domain) to *In_Data*. Although this is in-line with synchronous design practices,  without the input FF this would lead to a clock crossing containing combinatorial logic which is problematic.
 
-On the *Out_Clk* domain, the signal is then synchronized using an ordinary two-stage synchronizer. 
+On the *Out_Clk* domain, the signal is then synchronized using an ordinary ordinary N-stage synchronizer. In most cases, the default value of two synchronization stages is fine. However, in special cases more stages might be required to increase MTBF.
+
+Below figures shows the implementation for *SyncStages_g=2*.
 
 ![architecture](./clock_crossings/olo_base_cc_bits.svg)
 
-The VHDL code contains all synthesis attributes required to ensure correct behavior of tools (e.g. avoid mapping of the synchronizer FFs into shift registers) for the most common FPGA vendors *AMD* and *Intel*.
+The VHDL code contains all synthesis attributes required to ensure correct behavior of tools (e.g. avoid mapping of the synchronizer FFs into shift registers) for all supported tools.
 
 Regarding timing constraints, refer to [clock-crossing principles](clock_crossing_principles.md).
 

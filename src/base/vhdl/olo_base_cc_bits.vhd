@@ -26,7 +26,8 @@ library ieee;
 
 entity olo_base_cc_bits is
     generic (
-        Width_g : positive := 1
+        Width_g      : positive              := 1;
+        SyncStages_g : positive range 2 to 4 := 2
     );
     port (
         -- Input clock domain
@@ -46,48 +47,51 @@ end entity;
 
 architecture struct of olo_base_cc_bits is
 
-    -- Synchronizer registers (plain VHDL)
+    -- Types
+    type SyncStages_t is array(0 to SyncStages_g - 2) of std_logic_vector(Width_g - 1 downto 0);
+
+    -- Synchronizer registers
     signal RegIn : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
     signal Reg0  : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
-    signal Reg1  : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
+    signal RegN  : SyncStages_t                           := (others => (others => '0'));
 
     -- Synthesis attributes AMD (Vivado)
     attribute shreg_extract : string;
     attribute shreg_extract of Reg0  : signal is "no";
-    attribute shreg_extract of Reg1  : signal is "no";
+    attribute shreg_extract of RegN  : signal is "no";
     attribute shreg_extract of RegIn : signal is "no";
 
     -- Synthesis attributes for AMD (Vivado) and Efinix (Efinity)
     attribute async_reg : boolean;
     attribute async_reg of Reg0  : signal is true;
-    attribute async_reg of Reg1  : signal is true;
+    attribute async_reg of RegN  : signal is true;
     attribute async_reg of RegIn : signal is true;
 
     attribute syn_srlstyle : string;
     attribute syn_srlstyle of Reg0  : signal is "registers";
-    attribute syn_srlstyle of Reg1  : signal is "registers";
+    attribute syn_srlstyle of RegN  : signal is "registers";
     attribute syn_srlstyle of RegIn : signal is "registers";
 
     -- Synthesis attributes Altera (Quartus)
     attribute dont_merge : boolean;
     attribute dont_merge of Reg0  : signal is true;
-    attribute dont_merge of Reg1  : signal is true;
+    attribute dont_merge of RegN  : signal is true;
     attribute dont_merge of RegIn : signal is true;
 
     attribute preserve : boolean;
     attribute preserve of Reg0  : signal is true;
-    attribute preserve of Reg1  : signal is true;
+    attribute preserve of RegN  : signal is true;
     attribute preserve of RegIn : signal is true;
 
     -- Synchthesis attributes for Synopsis (Lattice, Microchip)
     attribute syn_preserve : boolean;
     attribute syn_preserve of Reg0  : signal is true;
-    attribute syn_preserve of Reg1  : signal is true;
+    attribute syn_preserve of RegN  : signal is true;
     attribute syn_preserve of RegIn : signal is true;
 
     attribute syn_keep : boolean;
     attribute syn_keep of Reg0  : signal is true;
-    attribute syn_keep of Reg1  : signal is true;
+    attribute syn_keep of RegN  : signal is true;
     attribute syn_keep of RegIn : signal is true;
 
     signal In_Clk_Sig : std_logic;
@@ -102,6 +106,7 @@ begin
 
     In_Clk_Sig <= In_Clk;
 
+    -- Input Register
     p_inff : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
@@ -112,19 +117,30 @@ begin
         end if;
     end process;
 
+    -- Synchronizer process
     p_outff : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
-            Reg0 <= RegIn;
-            Reg1 <= Reg0;
+            -- *** Synchronization ***
+            -- First two stages
+            Reg0    <= RegIn;
+            RegN(0) <= Reg0;
+
+            -- Loop through aremaining stages
+            for i in 1 to RegN'high loop
+                RegN(i) <= RegN(i - 1);
+            end loop;
+
+            -- *** Reset ***
             if Out_Rst = '1' then
                 Reg0 <= (others => '0');
-                Reg1 <= (others => '0');
+                RegN <= (others => (others => '0'));
             end if;
         end if;
     end process;
 
-    Out_Data <= Reg1;
+    -- Output is content of last sync stage
+    Out_Data <= RegN(RegN'high);
 
 end architecture;
 

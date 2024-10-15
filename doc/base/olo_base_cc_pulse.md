@@ -22,9 +22,10 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 
 ## Generics
 
-| Name        | Type     | Default | Description                                                  |
-| :---------- | :------- | ------- | :----------------------------------------------------------- |
-| NumPulses_g | positive | 1       | Number of individual pulse signals to implement the clock crossing for |
+| Name         | Type     | Default | Description                                                  |
+| :----------- | :------- | ------- | :----------------------------------------------------------- |
+| NumPulses_g  | positive | 1       | Number of individual pulse signals to implement the clock crossing for |
+| SyncStages_g | positive | 2       | Number of synchronization stages. <br />Range: 2 ... 4       |
 
 ## Interfaces
 
@@ -43,11 +44,13 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 
 The figure below shows how the pulses are transferred from one clock domain to the other. Every pulse toggles a signal in the *In_Clk* comain. The toggle signal is clock-crossed using *olo_base_cc_bits* and in the *Out_Clk* domain the pulse is recovered.
 
+Below figures assumes *SyncStages_g=2*.
+
 ![architecture](./clock_crossings/olo_base_cc_pulse.svg)
 
 Note that the clock-crossing of the reset is not shown for simplicity reasons. Refer to  [clock-crossing principles](clock_crossing_principles.md). Important is that all registers inside *olo_base_cc_pulse* are reset by the clock-crossed resets. Hence it is guaranteed that a reset does not produce any spurious pulses.
 
-The VHDL code contains all synthesis attributes required to ensure correct behavior of tools (e.g. avoid mapping of the synchronizer FFs into shift registers) for the most common FPGA vendors *AMD* and *Intel*.
+The VHDL code contains all synthesis attributes required to ensure correct behavior of tools (e.g. avoid mapping of the synchronizer FFs into shift registers) for all supported tools.
 
 Since each pulse is handled separately, the pulse alignment may change because of the clock crossing. This is shown in the figure below.
 

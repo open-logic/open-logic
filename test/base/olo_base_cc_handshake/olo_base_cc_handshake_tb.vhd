@@ -28,10 +28,11 @@ library olo;
 entity olo_base_cc_handshake_tb is
     generic (
         runner_cfg      : string;
-        RandomStall_g   : boolean := false;
-        ReadyRstState_g : integer := 1;
-        ClockRatio_N_g  : integer := 1;
-        ClockRatio_D_g  : integer := 1
+        RandomStall_g   : boolean               := false;
+        ReadyRstState_g : integer               := 1;
+        ClockRatio_N_g  : integer               := 1;
+        ClockRatio_D_g  : integer               := 1;
+        SyncStages_g    : positive range 2 to 4 := 2
     );
 end entity;
 
@@ -153,7 +154,7 @@ begin
                 push_axi_stream(net, AxisMaster_c, toUslv(5, DataWidth_c));
                 check_axi_stream(net, AxisSlave_c, toUslv(5, DataWidth_c), blocking => false, msg => "data a");
                 -- Second value
-                wait for 10*SlowerClock_Period_c;
+                wait for 20*SlowerClock_Period_c;
                 push_axi_stream(net, AxisMaster_c, toUslv(10, DataWidth_c));
                 check_axi_stream(net, AxisSlave_c, toUslv(10, DataWidth_c), blocking => false, msg => "data b");
 
@@ -168,12 +169,12 @@ begin
 
             elsif run("OutLimited") then
                 pushValues(net, 20);
-                OutDelay_v := SlowerClock_Period_c*10;
+                OutDelay_v := SlowerClock_Period_c*20;
                 checkValues(net, 20);
 
             elsif run("InLimited") then
                 checkValues(net, 20);
-                InDelay_v := SlowerClock_Period_c*10;
+                InDelay_v := SlowerClock_Period_c*20;
                 pushValues(net, 20);
             end if;
 
@@ -199,7 +200,8 @@ begin
     i_dut : entity olo.olo_base_cc_handshake
         generic map (
             Width_g         => DataWidth_c,
-            ReadyRstState_g => ReadyRstState_c
+            ReadyRstState_g => ReadyRstState_c,
+            SyncStages_g    => SyncStages_g
         )
         port map (
             In_Clk      => In_Clk,

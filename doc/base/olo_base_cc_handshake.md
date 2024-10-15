@@ -14,7 +14,7 @@ VHDL Source: [olo_base_cc_handshake](../../src/base/vhdl/olo_base_cc_handshake.v
 
 This component implements a clock crossing with AXI-S handshaking for transferring data from one clock domain to another one that runs at a potentially completely asynchronous clock It can for example be used to transfer data from a 100 MHz clock domain to a 55.32 MHz clock domain.
 
-This component implements full AXI-S handshaking but is not made for high performance. It can transfer one data-word every *4 x InputClockPeriods + 4 x OutputClockPeriods* .
+This component implements full AXI-S handshaking but is not made for high performance. It can transfer one data-word every *(2 + SyncStages_g) x InputClockPeriods + (2 + SyncStages_g) x OutputClockPeriods* .
 
 Whenever distributed RAM can be used (i.e. LUTs can be used as small RAMs), [olo_base_fifo_async](./olo_base_fifo_async.md) is to be preferred over this entity. For small FIFO depths, it is more resource efficient. Hence *olo_base_cc_handshake* shall only be used in cases where distributed RAM is not an option (e.g. because it is in not supported by the target technology or because the design is short the related LUT resources).
 
@@ -25,7 +25,8 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 | Name            | Type      | Default | Description                                                  |
 | :-------------- | :-------- | ------- | :----------------------------------------------------------- |
 | Width_g         | positive  | -       | Data width in bits.                                          |
-| ReadyRstState_g | std_logic | '1'     | Controls the status of the *In_Ready* signal in during reset.<br>Choose '1' for minimal logic on the (often timing-critical) *In_Ready* path. <br |
+| ReadyRstState_g | std_logic | '1'     | Controls the status of the *In_Ready* signal in during reset.<br>Choose '1' for minimal logic on the (often timing-critical) *In_Ready* path. |
+| SyncStages_g    | positive  | 2       | Number of synchronization stages. <br />Range: 2 ... 4       |
 
 ## Interfaces
 

@@ -27,8 +27,9 @@ library olo;
 entity olo_base_cc_reset_tb is
     generic (
         runner_cfg     : string;
-        ClockRatio_N_g : integer := 3;
-        ClockRatio_D_g : integer := 2
+        ClockRatio_N_g : integer               := 3;
+        ClockRatio_D_g : integer               := 2;
+        SyncStages_g   : positive range 2 to 4 := 2
     );
 end entity;
 
@@ -48,7 +49,7 @@ architecture sim of olo_base_cc_reset_tb is
     constant ClkB_Frequency_c     : real := ClkA_Frequency_c * ClockRatio_c;
     constant ClkB_Period_c        : time := (1 sec) / ClkB_Frequency_c;
     constant SlowerClock_Period_c : time := (1 sec) / minimum(ClkA_Frequency_c, ClkB_Frequency_c);
-    constant PropagationTime_c    : time := 3.01*SlowerClock_Period_c;
+    constant PropagationTime_c    : time := (real(SyncStages_g + 1) + 0.01) * SlowerClock_Period_c;
     constant RemovalTime_c        : time := 10*SlowerClock_Period_c;
 
     -----------------------------------------------------------------------------------------------
@@ -73,6 +74,9 @@ begin
     -- DUT
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_cc_reset
+        generic map (
+            SyncStages_g => SyncStages_g
+        )
         port map (
             -- Clock Domain A
             A_Clk     => A_Clk,

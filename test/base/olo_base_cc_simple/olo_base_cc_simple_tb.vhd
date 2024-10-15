@@ -29,8 +29,9 @@ library olo;
 entity olo_base_cc_simple_tb is
     generic (
         runner_cfg     : string;
-        ClockRatio_N_g : integer := 3;
-        ClockRatio_D_g : integer := 2
+        ClockRatio_N_g : integer               := 3;
+        ClockRatio_D_g : integer               := 2;
+        SyncStages_g   : positive range 2 to 4 := 2
     );
 end entity;
 
@@ -49,7 +50,7 @@ architecture sim of olo_base_cc_simple_tb is
     constant ClkIn_Period_c     : time := (1 sec) / ClkIn_Frequency_c;
     constant ClkOut_Frequency_c : real := ClkIn_Frequency_c * ClockRatio_c;
     constant ClkOut_Period_c    : time := (1 sec) / ClkOut_Frequency_c;
-    constant MaxRatePeriod_c    : time := ClkOut_Period_c*5;
+    constant MaxRatePeriod_c    : time := ClkOut_Period_c * (3+SyncStages_g);
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
@@ -80,7 +81,8 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_cc_simple
         generic map (
-            Width_g => DataWidth_c
+            Width_g      => DataWidth_c,
+            SyncStages_g => SyncStages_g
         )
         port map (
             -- Clock Domain A

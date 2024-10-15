@@ -24,7 +24,8 @@ library ieee;
 ---------------------------------------------------------------------------------------------------
 entity olo_base_cc_simple is
     generic (
-        Width_g     : positive := 1
+        Width_g      : positive              := 1;
+        SyncStages_g : positive range 2 to 4 := 2
     );
     port (
         In_Clk      : in    std_logic;
@@ -65,7 +66,8 @@ begin
 
     i_pulse_cc : entity work.olo_base_cc_pulse
         generic map (
-            NumPulses_g => 1
+            NumPulses_g  => 1,
+            SyncStages_g => SyncStages_g
         )
         port map (
             In_Clk       => In_Clk,
