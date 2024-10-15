@@ -71,7 +71,8 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_cc_pulse
         generic map (
-            NumPulses_g => NumPulses_c
+            NumPulses_g  => NumPulses_c,
+            SyncStages_g => SyncStages_g
         )
         port map (
             -- Clock Domain A
