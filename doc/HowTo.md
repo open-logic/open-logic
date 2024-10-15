@@ -241,7 +241,8 @@ You can then run the simulations for the currently open file by doing: *Ctrl+Shi
 
 If you want to open the waveforms for the simulations executed, use the *VUnit - This File (GUI)* variant of the command. Important notes to this command:
 
-* Multiple GTKWave windows are opened. One for every configuration VUnit runs.
+* You will be asked on the console to further narrow down which exact configuration(s) you want to run. Press enter to run all configurations related to the file selected - not that this could be quite many depending on the file.
+* Multiple GTKWave windows are opened. One for every configuration VUnit runs (if there are multiple).
 * The waveforms can be update by using the non-GUI command. If you configured your view in GTKWave, you can keep it open, re-run *VUnit - This File* after changes and just update the waveform in GTKWave.
 
 It also is possible to run all simulations in the project, using the *VUnit - All Files* variant of the command. No GUI option is provided because this command runs *really a lot* of simulations.

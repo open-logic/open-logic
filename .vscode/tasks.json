@@ -144,7 +144,9 @@
             "command": "python3",
             "args": [
                 "./sim/run.py",
-                "-p 16",
+                "-p",
+                "16",
+                "--interactive-test-selection",
                 "*${fileBasenameNoExtension}*",
                 "--gui"
             ],

@@ -5,6 +5,7 @@ import os
 import sys
 from enum import Enum
 
+
 class Simulator(Enum):
     GHDL = 1
     MODELSIM = 2
@@ -17,6 +18,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 argv = sys.argv[1:]
 SIMULATOR = Simulator.GHDL
 USE_COVERAGE = False
+INTERACTIVE_TEST_SELECTION = False
 
 #Simulator Selection
 #.. The environment variable VUNIT_SIMULATOR has precedence over the commandline options.
@@ -34,6 +36,9 @@ if "--coverage" in sys.argv:
     argv.remove("--coverage")
     if SIMULATOR != Simulator.MODELSIM:
         raise "Coverage is only allowed with --modelsim"
+if "--interactive-test-selection" in sys.argv:
+    INTERACTIVE_TEST_SELECTION = True
+    argv.remove("--interactive-test-selection")
 
 # Obviously the simulator must be chosen before sources are added
 if 'VUNIT_SIMULATOR' not in os.environ:
@@ -43,6 +48,21 @@ if 'VUNIT_SIMULATOR' not in os.environ:
         os.environ['VUNIT_SIMULATOR'] = 'nvc'
     else:
         os.environ['VUNIT_SIMULATOR'] = 'modelsim'
+
+# Ask the user for interactive test selection if required
+if INTERACTIVE_TEST_SELECTION:
+    # find test selector (only argument without a leading dash)
+    for idx in range(len(argv)):
+        if argv[idx].startswith('*'):
+            selector_idx = idx
+            break
+    else:
+        raise Exception("No test selector found")
+    print(f'Currently the following test is selected: {argv[selector_idx]}')
+    print(f'Would you like to refine the selection to be {argv[selector_idx]}*<your-input>*?')
+    refinement = input("Enter <your-input> or press enter to skip refinement: ")
+    if refinement:
+        argv[selector_idx] = f"{argv[selector_idx]}*{refinement}*"
 
 # Parse VUnit Arguments
 vu = VUnit.from_argv(compile_builtins=False, argv=argv)
