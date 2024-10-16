@@ -278,11 +278,11 @@ begin
             Width_g => AddrWidth_c
         )
         port map (
-            In_Clk   => In_Clk,
-            In_Rst   => RstInInt,
+            In_Clk   => Out_Clk,
+            In_Rst   => RstOutInt,
             In_Data  => ro_next.RdAddrGray, -- use unregistered signal because CC contains register
-            Out_Clk  => Out_Clk,
-            Out_Rst  => RstOutInt,
+            Out_Clk  => In_Clk,
+            Out_Rst  => RstInInt,
             Out_Data => RdAddrGray
         );
 
