@@ -55,8 +55,8 @@ architecture rtl of olo_base_strobe_gen is
     constant WrapBorder_c : integer := PeriodCounts_c - Increment_c;
 
     -- Signal Declarations
-    signal Count    : integer range 0 to PeriodCounts_c-1 := 0;
-    signal SyncLast : std_logic                           := '0';
+    signal Count    : integer range 0 to PeriodCounts_c-1;
+    signal SyncLast : std_logic;
 
 begin
 
