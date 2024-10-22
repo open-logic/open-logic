@@ -34,10 +34,9 @@ run_tool -name {PLACEROUTE}
 run_tool -name {VERIFYTIMING} 
 
 # Export Bitstream and FlashPro Job 
-configure_snvm -cfg_file {./tutorial_prj/designer/libero_tutorial/SNVM.cfg} 
 export_bitstream_file \
          -file_name {libero_tutorial} \
-         -export_dir {/home/oli/work/olo/open-logic/doc/tutorials/LiberoTutorial/Files/tutorial_prj/designer/libero_tutorial/export} \
+         -export_dir {./tutorial_prj/designer/libero_tutorial/export} \
          -format {DAT PPD} \
          -for_ihp 0 \
          -limit_SVF_file_size 0 \
@@ -73,9 +72,10 @@ export_bitstream_file \
          -uek2_skip_startup_seq 0 \
          -uek2_mss_keep_alive 0 \
          -uek2_high_water_mark {} 
+configure_snvm -cfg_file {./tutorial_prj/designer/libero_tutorial/SNVM.cfg} 
 export_prog_job \
          -job_file_name {libero_tutorial} \
-         -export_dir {/home/oli/work/olo/open-logic/doc/tutorials/LiberoTutorial/Files/tutorial_prj/designer/libero_tutorial/export} \
+         -export_dir {./tutorial_prj/designer/libero_tutorial/export} \
          -bitstream_file_type {TRUSTED_FACILITY} \
          -bitstream_file_components {FABRIC SNVM} \
          -zeroization_likenew_action 0 \
