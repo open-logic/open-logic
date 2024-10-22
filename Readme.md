@@ -110,3 +110,17 @@ I decided to create *Open Logic* instead of more actively working on the PSI lib
 
 For users switching from *psi_common* to *Open Logic* there is a [Porting Guide](./doc/PsiCommonPorting.md), which describes the correspondences between the two libraries.
 
+### Other HDL Standard Libraries
+
+The aim of Open Logic is to simplify designers life - not to rule the world. If you do not find certain functionality in Open Logic or you are looking for an alternative HDL standard library for other reasons, you might want to check out the libraries below. **That they are listed here does not imply that they were tested nor does it mean anything regarding code quality, the presence of documentation, state of maintenance or the degree of testing**. The list is meant as a summary of alternative libraries that was reported by users and in replies to Open Logic related social media posts.
+
+* [hdl-modules](https://github.com/hdl-modules/hdl-modules)
+* [Pile of Cores](https://github.com/VLSI-EDA/PoC)
+* [Basejump STL](https://github.com/bespoke-silicon-group/basejump_stl)
+* [pulp-platform common-cells](https://github.com/pulp-platform/common_cells)
+* [FPGA Design Elements](https://github.com/laforest/FPGADesignElements)
+* [SURF](https://github.com/slaclab/surf)
+
+If you are interested in my opinion what the pros and cons of those libraries are compared to Open Logic, contact me directly: [obruendl](oliver.bruendler@gmx.ch).
+
+If you are aware of any oder HDL standard libraries, please let me know as well so I can extend the list.
