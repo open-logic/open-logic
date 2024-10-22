@@ -3,47 +3,47 @@ set_iobank -bank_name Bank0  \
     -fixed true             \
     -update_iostd true
     
-set_io -port_name SW0 \
+set_io -port_name {Switches[0]} \
     -pin_name V19 \
     -fixed true \
     -DIRECTION INPUT
     
-set_io -port_name SW1 \
+set_io -port_name {Switches[1]} \
     -pin_name U18 \
     -fixed true \
     -DIRECTION INPUT
 
-set_io -port_name SW2 \
+set_io -port_name {Switches[2]} \
     -pin_name W19 \
     -fixed true \
     -DIRECTION INPUT
     
-set_io -port_name SW3 \
+set_io -port_name {Switches[3]} \
     -pin_name W18 \
     -fixed true \
     -DIRECTION INPUT
 
-set_io -port_name LED0 \
+set_io -port_name {Led[0]} \
     -pin_name V14 \
     -fixed true \
     -DIRECTION OUTPUT
     
-set_io -port_name LED1 \
+set_io -port_name {Led[1]} \
     -pin_name U13 \
     -fixed true \
     -DIRECTION OUTPUT
     
-set_io -port_name LED2 \
+set_io -port_name {Led[2]} \
     -pin_name T12 \
     -fixed true \
     -DIRECTION OUTPUT
     
-set_io -port_name LED3 \
+set_io -port_name {Led[3]} \
     -pin_name AB19 \
     -fixed true \
     -DIRECTION OUTPUT
 
-set_io -port_name CLK \
+set_io -port_name Clk \
     -pin_name W12 \
     -fixed true \
     -DIRECTION INPUT
