@@ -1,6 +1,6 @@
 <img src="./doc/Logo.png" alt="Logo" width="400">
 
-![example workflow](https://github.com/obruendl/open-logic/actions/workflows/simulation.yml/badge.svg) 
+![example workflow](https://github.com/obruendl/open-logic/actions/workflows/hdl_check.yml/badge.svg) 
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/version.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/date.json?cacheSeconds=0) [![Join the chat at https://gitter.im/open-logic/general](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/open-logic/general?utm_source=badge&utm_medium=badge&utm_content=badge)
 
@@ -54,7 +54,8 @@ It's suggested that you compile ALL files of the areas you need (plus their depe
   * [Quartus Tutorial](./doc/tutorials/QuartusTutorial.md) - for VHDL and System Verilog
   * [Efinity Tutorial](./doc/tutorials/EfinityTutorial.md) - for VHDL and System Verilog
   * [Questa Tutorial](./doc/tutorials/QuestasimTutorial.md) - for VHDL and System Verilog
-
+  * [Libero Tutorial](./doc/tutorials/LiberoTutorial.md) - for VHDL
+  
 * [Instructions for Contributors](./Contributing.md)
 
 ## Project Philosophy
