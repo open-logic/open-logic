@@ -16,7 +16,7 @@
 
 Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 
-An [Introduction Video](https://www.youtube.com/watch?v=hh3bS1SiIQs&t=6s) to open logic can be found on youtube. If you are new to Open Logic, this is a good starting point.
+An [Introduction Video](https://www.youtube.com/watch?v=hh3bS1SiIQs&t=6s) to open logic can be found on the [Open Logic YouTube channel](https://www.youtube.com/@OpenLogicFPGA). If you are new to Open Logic, this is a good starting point. 
 
 Maintainer: [obruendl](oliver.bruendler@gmx.ch)
 
