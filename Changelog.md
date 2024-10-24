@@ -2,6 +2,38 @@
 
 # Changelog
 
+## 2.3.1
+
+16-Oct-2024
+
+### Added Features
+
+- None
+
+
+
+### Backward Compatible Changes
+
+- None
+
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- **CRITICAL** - Fix wrong clock crossing in *olo_base_fifo_async* (#79)
+  - Reported by: [@aleschx](https://github.com/aleschx)
+
+### Reporters
+
+- [@aleschx](https://github.com/aleschx)
+
+### Contributors
+
+- None
+
 ## 2.3.0 
 
 27-Sep-2024
