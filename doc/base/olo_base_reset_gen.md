@@ -22,6 +22,8 @@ The block comes with automatic constraints. For manual constraining, a `set_max_
 
 **Note:** Automatic constraining currently only works for *AMD* tools (*Vivado*) and the usage in VHDL. Manual constraints are required for Verilog or other tools.
 
+**WARNING:** Reset assertion upon FPGA configuration relies on the **target technology supporting specific FF initialization state**. For the most common target technologies (namely AMD and altera) this is given. However, for technologies which do not support specifying FF initialization state (e.g. Microchip devices) an external reset signal must be connected to *RstIn* - *RstOut* will not be asserted upon FPGA configuration. If in doubt, refer to the the documentation of your target technology or play it safe and connect *RstIn*.
+
 ## Generics
 
 | Name               | Type      | Default | Description                                                  |
@@ -36,7 +38,7 @@ The block comes with automatic constraints. For manual constraining, a `set_max_
 | :----- | :----- | :----- | :-------------------- | :----------------------------------------------------------- |
 | Clk    | in     | 1      | -                     | Clock                                                        |
 | RstOut | out    | 1      | -                     | Reset output (high-active, synchronous to Clk)<br />**Note**: The output is always high-active according to *Open Logic* guidelines. |
-| RstIn  | in     | 1      | not *RstInPolarity_g* | Reset input. The reset is detected asynchronously - any glitches on this signal lead to a reset pulse being generated.<br />The input is optional. If reset shall only be asserted after FPGA configuration, it can be left floating. |
+| RstIn  | in     | 1      | not *RstInPolarity_g* | Reset input. The reset is detected asynchronously - any glitches on this signal lead to a reset pulse being generated.<br />The input is optional. If reset shall only be asserted after FPGA configuration, it can be left floating (limited to target technologies supporting specifying the FF initialization state). |
 
 ## Architecture
 

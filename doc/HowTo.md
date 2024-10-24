@@ -4,6 +4,43 @@
 
 # Open Logic - How To ...
 
+## ... Find what you are looking for
+
+AKA Table of Content
+
+* Tool Integration Related
+  * [... Use Open Logic in a Microchip Libero Project](#...-Use-Open-Logic-in-a-Microchip-Libero-Project)
+  * [... Use Open Logic in a Questasim Simulation](#...-Use-Open-Logic-in-a-Questasim-Simulation)
+  * [... Use Open Logic in a Efinix Efinity Project](#...-Use-Open-Logic-in-a-Efinix-Efinity-Project)
+  * [... Use Open Logic in a AMD Vivado Project](#...-Use-Open-Logic-in-a-AMD-Vivado-Project)
+  * [... Use Open Logic in a altera Quartus Project](#...-Use-Open-Logic-in-a-altera-Quartus-Project)
+  * [... Use Open Logic through FuseSoC](#...-Use-Open-Logic-through-FuseSoC)
+* Contribution Related
+  * [... Use the Linter](#...-Use-the-Linter)
+  * [... Run Simulations](#...-Run-Simulations)
+  * [... Analyze Coverage](#...-Analyze-Coverage)
+  * [... Update Badges](#...-Update-Badges)
+
+## ... Use Open Logic in a Microchip Libero Project
+
+There is a script to import all *Open Logic* sources into a Libero project.
+
+**Note:** The script does not setup automatic constraints because Libero does not support scoped constraints (in contrast to the AMD Vivado tools). For Efinity all constraints must be added manually.
+
+To run the script, follow the steps below:
+
+1. Create a project in Libero (if it does not yet exist)
+2. Use the menu entry *Project > Execute script*
+   ![MenuEntry](./general/libero/import_sources_run.png)
+3. Select the script *\<open-logic-root\>/tools/libero/import_sources.tcl* and press *Run*.
+   
+   **For VHDL, no arguments are required**, which leads to all files being compiled into the default Open Logic library *olo*. If you wish to compile them into another library, pass the argument `lib=<library-name>` 
+   
+   **For Verilog, pass the argument `lib=work`**. When instantiating VHDL entities from Verilog, SynplifyPro only searches for them in the library *work*.
+   ![Dialog](./general/libero/import_sources_dialog.png)
+4. In the *Files* tab you can now see all Open Logic source files showing up. Links are made to the files in their original location, they are not copied into the project. All sources are imported into the library selected (see point 3, default is *olo*) and are available to be used.
+   ![Dialog](./general/libero/import_sources_files.png)
+
 ## ... Use Open Logic in a Questasim Simulation
 
 There is a script to compile all *Open Logic* sources into a library *olo*. To run the script, follow the steps below:
@@ -59,7 +96,7 @@ That's it. Nothing more.
   **Note:** Scoped constraints are always imported but only work for usage from VHDL. For Verilog usage, manual constraints are required. Refer to the documentation of entities that require constraints (clock-crossings, interfaces, etc.)
   ![Constraints](./general/vivado/import_sources_constraints.png)
 
-## ... Use Open Logic in a Intel Quartus Project
+## ... Use Open Logic in a altera Quartus Project
 
 There is a script to import all *Open Logic* sources into a Quartus project.
 
@@ -261,7 +298,7 @@ You can also map this as keyboard shortcut by editing your local *keybindings.js
     },
 ```
 
-## 
+
 
 ## ... Analyze Coverage
 
