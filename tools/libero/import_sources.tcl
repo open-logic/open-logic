@@ -2,6 +2,15 @@
 
 namespace eval olo_import_sources {
 
+	# Parse arguments
+	set target_lib "olo"
+	foreach arg $argv {
+		if {[regexp {lib=(.*)} $arg -> lib]} {
+			set target_lib $lib
+		}
+	}
+	puts "Importing sources into library $target_lib"
+
 	##################################################################
 	# Helper Functions
 	##################################################################
@@ -41,14 +50,16 @@ namespace eval olo_import_sources {
     variable oloRoot [file normalize $fileLoc/../..]
 
 	#Create library
-	add_library -library {olo} 
+	if {$target_lib ne "work"} {
+		add_library -library $target_lib
+	}
 
     #Add all source files
     foreach area {base axi intf} {
         variable files [glob $oloRoot/src/$area/vhdl/*.vhd]
 	    foreach f $files {
 			variable pathRelative [relpath $f [pwd]]
-			create_links -convert_EDN_to_HDL 0 -library {olo} -hdl_source $pathRelative 
+			create_links -convert_EDN_to_HDL 0 -library $target_lib -hdl_source $pathRelative 
 	    }
     }
 }

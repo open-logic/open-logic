@@ -21,8 +21,6 @@ AKA Table of Content
   * [... Analyze Coverage](#...-Analyze-Coverage)
   * [... Update Badges](#...-Update-Badges)
 
-## 
-
 ## ... Use Open Logic in a Microchip Libero Project
 
 There is a script to import all *Open Logic* sources into a Libero project.
@@ -35,8 +33,12 @@ To run the script, follow the steps below:
 2. Use the menu entry *Project > Execute script*
    ![MenuEntry](./general/libero/import_sources_run.png)
 3. Select the script *\<open-logic-root\>/tools/libero/import_sources.tcl* and press *Run*.
+   
+   **For VHDL, no arguments are required**, which leads to all files being compiled into the default Open Logic library *olo*. If you wish to compile them into another library, pass the argument `lib=<library-name>` 
+   
+   **For Verilog, pass the argument `lib=work`**. When instantiating VHDL entities from Verilog, SynplifyPro only searches for them in the library *work*.
    ![Dialog](./general/libero/import_sources_dialog.png)
-4. In the *Files* tab you can now see all Open Logic source files showing up. Links are made to the files in their original location, they are not copied into the project. All sources are imported into the library *olo* and are available to be used.
+4. In the *Files* tab you can now see all Open Logic source files showing up. Links are made to the files in their original location, they are not copied into the project. All sources are imported into the library selected (see point 3, default is *olo*) and are available to be used.
    ![Dialog](./general/libero/import_sources_files.png)
 
 ## ... Use Open Logic in a Questasim Simulation

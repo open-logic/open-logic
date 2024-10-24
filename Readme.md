@@ -54,7 +54,7 @@ It's suggested that you compile ALL files of the areas you need (plus their depe
   * [Quartus Tutorial](./doc/tutorials/QuartusTutorial.md) - for VHDL and System Verilog
   * [Efinity Tutorial](./doc/tutorials/EfinityTutorial.md) - for VHDL and System Verilog
   * [Questa Tutorial](./doc/tutorials/QuestasimTutorial.md) - for VHDL and System Verilog
-  * [Libero Tutorial](./doc/tutorials/LiberoTutorial.md) - for VHDL
+  * [Libero Tutorial](./doc/tutorials/LiberoTutorial.md) - for VHDL and System Verilog
   
 * [Instructions for Contributors](./Contributing.md)
 
@@ -120,6 +120,7 @@ The aim of Open Logic is to simplify designers life - not to rule the world. If 
 * [pulp-platform common-cells](https://github.com/pulp-platform/common_cells)
 * [FPGA Design Elements](https://github.com/laforest/FPGADesignElements)
 * [SURF](https://github.com/slaclab/surf)
+* [PSI Libraries](https://github.com/paulscherrerinstitute/psi_fpga_all)
 
 If you are interested in my opinion what the pros and cons of those libraries are compared to Open Logic, contact me directly: [obruendl](oliver.bruendler@gmx.ch).
 

@@ -36,7 +36,9 @@ Open the dialog to run scripts:
 
 ![Screenshot](./LiberoTutorial/Pictures/integrate_olo_01.png)
 
-Then select the script in *\<open-logic-root>/tools/libero/import_sources.tcl* and run it without any arguments.
+Then select the script in *\<open-logic-root>/tools/libero/import_sources.tcl* and run it **without any arguments for the VHDL** tutorial.
+
+Pass the **argument *lib=work* for the Verilog** tutorial. This is required because Libero resp. SynplifyPro searches for VHDL entities only in the library *work* when they are instantiated from Verilog.
 
 ![Screenshot](./LiberoTutorial/Pictures/integrate_olo_02.png)
 
@@ -101,6 +103,8 @@ After selecting the root, the yellow *Please select a root* warning disappears a
 ### Add Constraints
 
 The required pinout for the ICICLE board is provided int the PDC file  [\<open-logic-root\>/doc/tutorials/LiberoTutorial/Files/pinout.pdc](./LiberoTutorial/Files/pinout.pdc). You can link this file through the same dialog used for the source file already (*File > Link Files > Link Files*). Just make sure you select file type *.pdc in the dialog so you can select the file.
+
+**Note:** For unknown reasons sometimes Libero does not allow to *link* *.pdc files. If you run into this situation just use *File > Import Files > Import Files* instead - be aware that this command creates a copy of the *.pdf file inside the project folder.
 
 ![Design](./LiberoTutorial/Pictures/add_constraints_01.png)
 

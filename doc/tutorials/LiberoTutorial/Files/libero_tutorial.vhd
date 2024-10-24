@@ -43,7 +43,7 @@ begin
 
     i_switches : entity olo.olo_intf_debounce
         generic map (
-            ClkFrequency_g  => 125.0e6,
+            ClkFrequency_g  => 50.0e6,
             DebounceTime_g  => 25.0e-3,
             Width_g         => 4
         )
