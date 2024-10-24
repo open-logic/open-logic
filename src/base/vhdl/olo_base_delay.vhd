@@ -10,6 +10,12 @@
 ---------------------------------------------------------------------------------------------------
 -- This is a delay element. It is either emplemented in BRAM or SRL. The output
 -- is always a fabric register for improved timing.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_delay.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

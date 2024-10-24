@@ -11,6 +11,12 @@
 -- commonly used Valid/Ready handshake.
 -- The clock crossing is not meant to achieve high-performance but to be
 -- simple and safe.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_cc_handshake.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

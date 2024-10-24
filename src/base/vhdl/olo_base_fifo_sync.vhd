@@ -10,6 +10,12 @@
 ---------------------------------------------------------------------------------------------------
 -- This is a very basic synchronous FIFO. It  has optional level- and
 -- almost-full/empty ports.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_fifo_sync.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

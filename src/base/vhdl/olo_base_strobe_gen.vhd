@@ -10,6 +10,12 @@
 ---------------------------------------------------------------------------------------------------
 -- This is a very basic strobe generator. It produces pulses with a duration
 -- of one clock cycle at a given frequency.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_strobe_gen.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

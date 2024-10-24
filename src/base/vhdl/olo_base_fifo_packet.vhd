@@ -13,6 +13,12 @@
 --- The FIFO works in store-and-forward mode.
 --- The FIFO assumes that all packets fit into the FIFO. Cut-through operation
 --- as required to handle packets bigger than the FIFO is not iplemented.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_fifo_packet.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

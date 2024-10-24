@@ -10,6 +10,12 @@
 -- This entity implements an AXI-Lite Slave Interface, which can be used to
 -- access registers and memory. On the user-side it provides a simple
 -- read/write/address/data interface.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/axi/olo_axi_lite_slave.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

@@ -14,6 +14,12 @@
 -- Note that this entity only ensures that all pulses are transferred but not
 -- that pulses arriving in the same clock cycle are transmitted in the same
 -- clock cycle.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_cc_pulse.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

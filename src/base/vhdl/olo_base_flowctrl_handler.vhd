@@ -9,6 +9,12 @@
 ---------------------------------------------------------------------------------------------------
 -- Implements full flow-control handling (including Ready/backpressure) for
 -- processing entities that do not support flow-control natively.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_flowctrl_handler.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

@@ -12,6 +12,12 @@
 -- is always a fabric register for improved timing.
 -- The delay is settable by a input and not fixed as the olo_base_delay.
 -- Changes in delay value are present at the output within less than 5 samlpes.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_delay_cfg.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

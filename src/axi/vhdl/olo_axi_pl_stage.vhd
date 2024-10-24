@@ -9,6 +9,12 @@
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- This entity implements multiple pipeline stages for an axi4 interface.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/axi/olo_axi_pl_stage.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

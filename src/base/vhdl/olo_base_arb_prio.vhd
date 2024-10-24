@@ -10,6 +10,12 @@
 ---------------------------------------------------------------------------------------------------
 -- This entity implements an efficient priority arbiter. The highest index of
 -- the input has priority.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_arb_prio.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

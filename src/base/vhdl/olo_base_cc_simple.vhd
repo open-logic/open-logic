@@ -11,6 +11,12 @@
 -- This is a very basic clock crossing that allows passing single samples of data
 -- from one clock domain to another. It only works if sample rates are significantly
 -- lower than the clock speed of both domains.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_cc_simple.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

@@ -12,6 +12,12 @@
 -- pipeline stage ensures all signals are registered in both directions (including
 -- Ready). This is important to break long logic chains that can occur in the RDY
 -- paths because Rdy is often forwarded asynchronously.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_pl_stage.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

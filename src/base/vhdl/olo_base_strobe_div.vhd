@@ -9,6 +9,12 @@
 ---------------------------------------------------------------------------------------------------
 -- This is a very basic strobe divider. It forwards only every Nth single
 -- cycle pulse to the output.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_strobe_div.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

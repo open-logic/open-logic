@@ -13,6 +13,12 @@
 -- It just executes the transfers requested and splits them into multiple AXI
 -- transactions in order to not burst over 4k boundaries and respect the maximum
 -- transaction size.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/axi/olo_axi_master_simple.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

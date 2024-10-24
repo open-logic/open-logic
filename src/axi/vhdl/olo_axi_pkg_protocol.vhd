@@ -8,6 +8,10 @@
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- Package containing axi protocol definitions
+--
+--
+-- Documentation:
+-- None - This file is not intended to be used directly.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

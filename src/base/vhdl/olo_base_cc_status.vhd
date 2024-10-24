@@ -14,6 +14,12 @@
 -- it does not specify an exact sample point.
 -- The main use cause of this entity is to pass status information or configuration
 -- register values between clock domains.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_cc_status.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

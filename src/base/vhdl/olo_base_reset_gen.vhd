@@ -11,6 +11,12 @@
 -- after FPGA configuration. The reset output is High-Active according to the
 -- Open-Logic definitions. The reset generator also allows synchronizing
 -- asynchronous resets to the output clock domain.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_reset_gen.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

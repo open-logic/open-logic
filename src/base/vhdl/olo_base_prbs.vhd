@@ -10,6 +10,12 @@
 ---------------------------------------------------------------------------------------------------
 -- A generic pseudo random binary sequence based on a linear-feedback shifter
 -- register.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_prbs.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

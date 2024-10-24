@@ -14,6 +14,12 @@
 -- the data interface but not vice versa.
 -- The flexibility of doing unaligned transfers is paid by lower performance for
 -- very small transfers. There is an overhead of some clock cycles per command.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/axi/olo_axi_master_full.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

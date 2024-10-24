@@ -10,6 +10,12 @@
 ---------------------------------------------------------------------------------------------------
 -- This is a simple double-stage synchronizer for synchronizing external
 -- signals to the internal system clock.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/intf/olo_intf_sync.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

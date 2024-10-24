@@ -10,6 +10,12 @@
 ---------------------------------------------------------------------------------------------------
 -- This entity measures the frequency of a clock under the assumption that
 -- the frequency of the main-clock (Clk) is exactly correct.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/intf/olo_intf_clk_meas.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

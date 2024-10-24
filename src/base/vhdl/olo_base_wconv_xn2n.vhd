@@ -10,6 +10,12 @@
 ---------------------------------------------------------------------------------------------------
 -- This entity implements a simple data-width conversion. The input width
 -- must be an integer multiple of the output width (Wi = n*Wo)
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_wconv_xn2n.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

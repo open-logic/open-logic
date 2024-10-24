@@ -9,6 +9,12 @@
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- This entity implements a simple I2C-master (multi master capable)
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/intf/olo_intf_i2c_master.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Package for Interface Simplification

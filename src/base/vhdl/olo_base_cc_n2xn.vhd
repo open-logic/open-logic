@@ -11,6 +11,12 @@
 -- This entity implements a clock crossing between two synchronous clocks where
 -- the input clock period is an integer multiple of the output clock period
 -- (output clock frequency is an integer multiple of the input clock frequency).
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_cc_n2xn.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

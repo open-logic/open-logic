@@ -9,6 +9,12 @@
 ---------------------------------------------------------------------------------------------------
 -- This is a debouncer for button and switch inputs. It contains a
 -- double stage synchronizer to synchronize those inputs to the clock.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/intf/olo_intf_debounce.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

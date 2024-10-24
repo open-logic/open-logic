@@ -10,6 +10,12 @@
 ---------------------------------------------------------------------------------------------------
 -- This entity implements a dynamic shift implemented in multiple stages in
 -- order to achieve good timing.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_dyn_sft.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

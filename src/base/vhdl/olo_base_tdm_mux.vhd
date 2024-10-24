@@ -9,6 +9,12 @@
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- This is a very basic mux for Time Division Multiplxed data input
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_tdm_mux.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries

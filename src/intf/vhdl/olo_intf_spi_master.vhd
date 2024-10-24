@@ -9,6 +9,12 @@
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- This entity implements a simple SPI-master
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/intf/olo_intf_spi_master.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries
