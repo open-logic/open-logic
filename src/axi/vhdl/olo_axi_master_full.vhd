@@ -27,6 +27,7 @@
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
+    use ieee.std_logic_misc.all;
 
 library work;
     use work.olo_base_pkg_math.all;
@@ -543,9 +544,9 @@ begin
                 v.RdAlignReg     := zerosVector(UserDataWidth_g) & r.RdAlignReg(r.RdAlignReg'left downto UserDataWidth_g);
                 v.RdAlignByteVld := zerosVector(DataBytes_c) & r.RdAlignByteVld(r.RdAlignByteVld'left downto DataBytes_c);
                 if r.RdAlignLast = '1' then
-                    RdPl_Vld <= reduceOr(r.RdAlignByteVld(DataBytes_c - 1 downto 0));
+                    RdPl_Vld <= or_reduce(r.RdAlignByteVld(DataBytes_c - 1 downto 0));
                 else
-                    RdPl_Vld <= reduceAnd(r.RdAlignByteVld(DataBytes_c - 1 downto 0));
+                    RdPl_Vld <= and_reduce(r.RdAlignByteVld(DataBytes_c - 1 downto 0));
                 end if;
             end if;
             -- get new data
@@ -556,7 +557,7 @@ begin
             end if;
 
             -- Send data to FIFO (assert Last when no more data is available after this beat)
-            RdPl_Last <= r.RdAlignLast and not (reduceOr(r.RdAlignByteVld(r.RdAlignByteVld'high downto DataBytes_c)));
+            RdPl_Last <= r.RdAlignLast and not (or_reduce(r.RdAlignByteVld(r.RdAlignByteVld'high downto DataBytes_c)));
             RdPl_Data <= r.RdAlignReg(UserDataWidth_g - 1 downto 0);
 
         end if;

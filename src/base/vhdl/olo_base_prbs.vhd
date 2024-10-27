@@ -22,6 +22,7 @@
 ---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
+    use ieee.std_logic_misc.all;
     use ieee.numeric_std.all;
 
 library work;
@@ -93,7 +94,7 @@ begin
                 -- Loop over all bits in symbol
                 for bit in 0 to BitsPerSymbol_g-1 loop
                     LfsrMasked_v := Lfsr_v and Polynomial_g;
-                    NextBit_v    := reduceXor(LfsrMasked_v);
+                    NextBit_v    := xor_reduce(LfsrMasked_v);
                     Lfsr_v       := Lfsr_v(LfsrWidth_g-2 downto 0) & NextBit_v;
                 end loop;
 

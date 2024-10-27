@@ -59,12 +59,6 @@ package olo_base_pkg_logic is
     -- 0010  --> 0011
     function ppcOr (inp : in std_logic_vector) return std_logic_vector;
 
-    function reduceOr (vec : in std_logic_vector) return std_logic;
-
-    function reduceAnd (vec : in std_logic_vector) return std_logic;
-
-    function reduceXor (vec : in std_logic_vector) return std_logic;
-
     function to01X (inp : in std_logic) return std_logic;
 
     function to01X (inp : in std_logic_vector) return std_logic_vector;
@@ -219,45 +213,6 @@ package body olo_base_pkg_logic is
         end loop;
 
         return StageOut_v(Stages_c)(inp'length - 1 downto 0);
-    end function;
-
-    function reduceOr (vec : in std_logic_vector) return std_logic is
-        variable Result_v : std_logic;
-    begin
-        Result_v := '0';
-
-        -- Loop through all bits
-        for i in vec'low to vec'high loop
-            Result_v := Result_v or vec(i);
-        end loop;
-
-        return Result_v;
-    end function;
-
-    function reduceAnd (vec : in std_logic_vector) return std_logic is
-        variable Result_v : std_logic;
-    begin
-        Result_v := '1';
-
-        -- Loop through all bits
-        for i in vec'low to vec'high loop
-            Result_v := Result_v and vec(i);
-        end loop;
-
-        return Result_v;
-    end function;
-
-    function reduceXor (vec : in std_logic_vector) return std_logic is
-        variable Result_v : std_logic;
-    begin
-        Result_v := '0';
-
-        -- Loop through all bits
-        for i in vec'low to vec'high loop
-            Result_v := Result_v xor vec(i);
-        end loop;
-
-        return Result_v;
     end function;
 
     function to01X (inp : in std_logic) return std_logic is
