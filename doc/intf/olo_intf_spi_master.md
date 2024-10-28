@@ -37,8 +37,8 @@ The user interface (FPGA side) is split into a command interface (*Cmd_...*) and
 | SclkFreq_g      | real      | 1.0e6   | SPI clock (*Sclk*) frequency in Hz.                          |
 | MaxTransWidth_g | positive  | 32      | Maximum number of bits to transfer per SPI transaction.<br />The actual number of bits to transfer for every transaction is selected through *Cmd_TransWidth*. If all transactions have the same width, *Cmd_TransWidth* can be left unconnected - in this case always *MaxTransWidth_g* bits are transferred. |
 | CsHighTime_g    | real      | 20e-9   | Minimum *Cs_n* high time between two consecutive transactions in seconds. |
-| SpiCPOL_g       | natural   | 1       | SPI clock polarity, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
-| SpiCPHA_g       | natural   | 1       | SPI clock phase, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
+| SpiCpol_g       | natural   | 1       | SPI clock polarity, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
+| SpiCpha_g       | natural   | 1       | SPI clock phase, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
 | SlaveCnt_g      | positive  | 1       | Number of slaves (number of bits in *SpiCs_n*).              |
 | LsbFirst_g      | boolean   | false   | **True**: Transactions are LSB first (data bit 0 is sent first).<br />**False**: Transactions are MSB first (data bit 0 is sent last) |
 | MosiIdleState_g | std_logic | '0'     | State of *SpiMosi* when no transaction is ongoing. In most cases this does not matter. |

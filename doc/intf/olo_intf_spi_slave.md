@@ -36,8 +36,8 @@ The maximum supported *Spi_Sclk* frequency is 10x less than the *Clk* frequency 
 | Name                      | Type     | Default | Description                                                  |
 | :------------------------ | :------- | ------- | :----------------------------------------------------------- |
 | TransWidth_g              | positive | 32      | Number of bits in every SPI transaction.                     |
-| SpiCPOL_g                 | natural  | 0       | SPI clock polarity, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
-| SpiCPHA_g                 | natural  | 0       | SPI clock phase, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
+| SpiCpol_g                 | natural  | 0       | SPI clock polarity, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
+| SpiCpha_g                 | natural  | 0       | SPI clock phase, see figure in [Overview](#Overview).<br />Range: 0 or 1 |
 | LsbFirst_g                | boolean  | false   | **True**: Transactions are LSB first (data bit 0 is sent first).<br />**False**: Transactions are MSB first (data bit 0 is sent last) |
 | ConsecutiveTransactions_g | boolean  | false   | **True**: Multiple transactions without *CS_n* going high are supported<br />**False**: *CS_n* must go high between transactions<br />Only enable when required - see [Details](#Details) for more information. |
 | InternalTriState_g        | boolean  | true    | **True** = Use internal tri-state buffer (*Spi_Miso* is used). <br />**False** = Use external tri-state buffer (*Spi_Miso_t* and *Spi_Miso_o*) are used). |
@@ -103,7 +103,7 @@ All signals in the response interface are single cycle pulses. The user may also
 
 The generics which are not self-explaining are covered in this section in detail.
 
-#### SpiCPOL_g and SpiCPHA_g
+#### SpiCpol_g and SpiCpha_g
 
 The clock and data phase is configurable according to the SPI standard terminology described in the picture below:
 
@@ -147,7 +147,7 @@ For the TX data interface (*Tx_...*) the following applies:
 * When *Tx_Ready* goes high and the user does not provide TX data (i.e. set *Tx_Valid*='1') before *Tx_Ready* goes low again, zeros are transmitted. The user *CANNOT* provide *Tx_Data* at a later point in time for this specific transaction.
   *Tx_Ready* goes low when it is too late to send the first bit of data in-time for the first transmitting clock edge.
 
-* For the setting *SpiCPHA_g*=0, *Spi_Miso* must become valid after the falling-edge of *Spi_Cs_n* immediately, as visible from the figure in [Overview](#Overview). Therefore in this case, the application of *Tx_Data* must happen immediately. Hence *Tx_Ready* is only pulsed high for one single clock cycle and the user must present *Tx_Data* and apply *Tx_Valid*='1' in this cycle. 
+* For the setting *SpiCpha_g*=0, *Spi_Miso* must become valid after the falling-edge of *Spi_Cs_n* immediately, as visible from the figure in [Overview](#Overview). Therefore in this case, the application of *Tx_Data* must happen immediately. Hence *Tx_Ready* is only pulsed high for one single clock cycle and the user must present *Tx_Data* and apply *Tx_Valid*='1' in this cycle. 
 
 * For consecutive transactions, the comment applies only to the very first transaction after *Spi_Cs_n* going low. For the following transactions, the *Tx_Ready* high phase is longer.
 

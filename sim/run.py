@@ -5,15 +5,20 @@ import os
 import sys
 from enum import Enum
 
+
 class Simulator(Enum):
     GHDL = 1
     MODELSIM = 2
     NVC = 3
 
+#Execute from sim directory
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
 #Argument handling
 argv = sys.argv[1:]
 SIMULATOR = Simulator.GHDL
 USE_COVERAGE = False
+INTERACTIVE_TEST_SELECTION = False
 
 #Simulator Selection
 #.. The environment variable VUNIT_SIMULATOR has precedence over the commandline options.
@@ -31,6 +36,9 @@ if "--coverage" in sys.argv:
     argv.remove("--coverage")
     if SIMULATOR != Simulator.MODELSIM:
         raise "Coverage is only allowed with --modelsim"
+if "--interactive-test-selection" in sys.argv:
+    INTERACTIVE_TEST_SELECTION = True
+    argv.remove("--interactive-test-selection")
 
 # Obviously the simulator must be chosen before sources are added
 if 'VUNIT_SIMULATOR' not in os.environ:
@@ -40,6 +48,21 @@ if 'VUNIT_SIMULATOR' not in os.environ:
         os.environ['VUNIT_SIMULATOR'] = 'nvc'
     else:
         os.environ['VUNIT_SIMULATOR'] = 'modelsim'
+
+# Ask the user for interactive test selection if required
+if INTERACTIVE_TEST_SELECTION:
+    # find test selector (only argument without a leading dash)
+    for idx in range(len(argv)):
+        if argv[idx].startswith('*'):
+            selector_idx = idx
+            break
+    else:
+        raise Exception("No test selector found")
+    print(f'Currently the following test is selected: {argv[selector_idx]}')
+    print(f'Would you like to refine the selection to be {argv[selector_idx]}*<your-input>*?')
+    refinement = input("Enter <your-input> or press enter to skip refinement: ")
+    if refinement:
+        argv[selector_idx] = f"{argv[selector_idx]}*{refinement}*"
 
 # Parse VUnit Arguments
 vu = VUnit.from_argv(compile_builtins=False, argv=argv)
@@ -89,6 +112,8 @@ for tb_name in cc_tbs:
         if N == D and N != 1:
             continue
         named_config(tb, {'ClockRatio_N_g': N, 'ClockRatio_D_g': D})
+    for Stages in [2, 4]:
+        named_config(tb, {'SyncStages_g': Stages})
 
 # Specific cases to cc_handshake
 cc_handshake_tb = 'olo_base_cc_handshake_tb'
@@ -150,6 +175,10 @@ for tb_name in fifo_tbs:
     for AlmFull in [True, False]:
         for AlmEmpty in [True, False]:
             named_config(tb, {"AlmFullOn_g": AlmFull, "AlmEmptyOn_g": AlmEmpty})
+    # For async FIFO, test different sync stagecounts
+    if tb_name == "olo_base_fifo_async_tb":
+        for Stages in [2, 4]:
+            named_config(tb, {"SyncStages_g": Stages})
 
 #Width Converter TBs
 wconv_xn2n_tb = 'olo_base_wconv_xn2n_tb'
@@ -385,28 +414,17 @@ for BusFreq in [int(100e3), int(400e3), int(1e6)]:
 for IntTri in [True, False]:
     named_config(tb, {'InternalTriState_g': IntTri})
 
-# olo_intf_sync - no generics to iterate
+sync_tb = 'olo_intf_sync_tb'
+tb = olo_tb.test_bench(sync_tb)
+for SyncStages in [2, 4]:
+    for ResetLvel in [0, 1]:
+        named_config(tb, {'SyncStages_g': SyncStages, 'RstLevel_g': ResetLvel})
+
 clk_meas_tb = 'olo_intf_clk_meas_tb'
 tb = olo_tb.test_bench(clk_meas_tb)
 freqs = [(100, 100), (123, 7837), (7837, 123)]
 for FreqClk, FreqTest in freqs:
     named_config(tb, {'ClkFrequency_g': FreqClk, 'MaxClkTestFrequency_g': FreqTest})
-
-
-spi_master_tb = 'olo_intf_spi_master_tb'
-tb = olo_tb.test_bench(spi_master_tb)
-for FreqBus in [int(1e6), int(10e6)]:
-    named_config(tb, {'BusFrequency_g': FreqBus})
-for LsbFirst in [False, True]:
-    named_config(tb, {'LsbFirst_g': LsbFirst})
-for CPHA in [0, 1]:
-    for CPOL in [0, 1]:
-        named_config(tb, {'SpiCpha_g': CPHA, 'SpiCpol_g': CPOL})
-
-spi_master_fixsize_tb = 'olo_intf_spi_master_fixsize_tb'
-tb = olo_tb.test_bench(spi_master_fixsize_tb)
-for LsbFirst in [False, True]:
-    named_config(tb, {'LsbFirst_g': LsbFirst})
 
 spi_slave_tb = 'olo_intf_spi_slave_tb'
 tb = olo_tb.test_bench(spi_slave_tb)
@@ -441,6 +459,24 @@ for DataBits in [8, 9]:
 for StopBits in ["1", "1.5", "2"]:
     named_config(tb, {'StopBits_g' : StopBits})
 
+spi_master_tb = 'olo_intf_spi_master_tb'
+tb = olo_tb.test_bench(spi_master_tb)
+for FreqBus in [int(1e6), int(10e6)]:
+    tb.add_config(name=f'F={FreqBus}',
+                  generics={'BusFrequency_g': FreqBus})
+for LsbFirst in [False, True]:
+    tb.add_config(name=f'LF={LsbFirst}',
+                  generics={'LsbFirst_g': LsbFirst})
+for CPHA in [0, 1]:
+    for CPOL in [0, 1]:
+        tb.add_config(name=f'CPHA={CPHA}-CPOL={CPOL}',
+                      generics={'SpiCpha_g': CPHA, 'SpiCpol_g': CPOL})
+
+spi_master_fixsize_tb = 'olo_intf_spi_master_fixsize_tb'
+tb = olo_tb.test_bench(spi_master_fixsize_tb)
+for LsbFirst in [False, True]:
+    tb.add_config(name=f'LF={LsbFirst}',
+                  generics={'LsbFirst_g': LsbFirst})
 
 
 ########################################################################################################################
@@ -448,6 +484,7 @@ for StopBits in ["1", "1.5", "2"]:
 ########################################################################################################################
 
 olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
+olo_tb.set_sim_option('nvc.heap_size', '5000M')
 
 if USE_COVERAGE:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])

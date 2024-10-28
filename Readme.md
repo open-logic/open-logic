@@ -1,6 +1,6 @@
 <img src="./doc/Logo.png" alt="Logo" width="400">
 
-![example workflow](https://github.com/obruendl/open-logic/actions/workflows/simulation.yml/badge.svg) 
+![example workflow](https://github.com/obruendl/open-logic/actions/workflows/hdl_check.yml/badge.svg) 
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/version.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/date.json?cacheSeconds=0) [![Join the chat at https://gitter.im/open-logic/general](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/open-logic/general?utm_source=badge&utm_medium=badge&utm_content=badge)
 
@@ -16,7 +16,7 @@
 
 Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 
-An [Introduction Video](https://www.youtube.com/watch?v=hh3bS1SiIQs&t=6s) to open logic can be found on youtube. If you are new to Open Logic, this is a good starting point.
+An [Introduction Video](https://www.youtube.com/watch?v=hh3bS1SiIQs&t=6s) to open logic can be found on the [Open Logic YouTube channel](https://www.youtube.com/@OpenLogicFPGA). If you are new to Open Logic, this is a good starting point. 
 
 Maintainer: [obruendl](oliver.bruendler@gmx.ch)
 
@@ -54,7 +54,8 @@ It's suggested that you compile ALL files of the areas you need (plus their depe
   * [Quartus Tutorial](./doc/tutorials/QuartusTutorial.md) - for VHDL and System Verilog
   * [Efinity Tutorial](./doc/tutorials/EfinityTutorial.md) - for VHDL and System Verilog
   * [Questa Tutorial](./doc/tutorials/QuestasimTutorial.md) - for VHDL and System Verilog
-
+  * [Libero Tutorial](./doc/tutorials/LiberoTutorial.md) - for VHDL and System Verilog
+  
 * [Instructions for Contributors](./Contributing.md)
 
 ## Project Philosophy
@@ -109,3 +110,18 @@ I decided to create *Open Logic* instead of more actively working on the PSI lib
 
 For users switching from *psi_common* to *Open Logic* there is a [Porting Guide](./doc/PsiCommonPorting.md), which describes the correspondences between the two libraries.
 
+### Other HDL Standard Libraries
+
+The aim of Open Logic is to simplify designers life - not to rule the world. If you do not find certain functionality in Open Logic or you are looking for an alternative HDL standard library for other reasons, you might want to check out the libraries below. **That they are listed here does not imply that they were tested nor does it mean anything regarding code quality, the presence of documentation, state of maintenance or the degree of testing**. The list is meant as a summary of alternative libraries that was reported by users and in replies to Open Logic related social media posts.
+
+* [hdl-modules](https://github.com/hdl-modules/hdl-modules)
+* [Pile of Cores](https://github.com/VLSI-EDA/PoC)
+* [Basejump STL](https://github.com/bespoke-silicon-group/basejump_stl)
+* [pulp-platform common-cells](https://github.com/pulp-platform/common_cells)
+* [FPGA Design Elements](https://github.com/laforest/FPGADesignElements)
+* [SURF](https://github.com/slaclab/surf)
+* [PSI Libraries](https://github.com/paulscherrerinstitute/psi_fpga_all)
+
+If you are interested in my opinion what the pros and cons of those libraries are compared to Open Logic, contact me directly: [obruendl](oliver.bruendler@gmx.ch).
+
+If you are aware of any oder HDL standard libraries, please let me know as well so I can extend the list.

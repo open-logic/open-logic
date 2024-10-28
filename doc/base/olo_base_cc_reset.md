@@ -22,7 +22,9 @@ This block follows the general [clock-crossing principles](clock_crossing_princi
 
 ## Generics
 
-This entity does not have any generics.
+| Name         | Type     | Default | Description                                            |
+| :----------- | :------- | ------- | :----------------------------------------------------- |
+| SyncStages_g | positive | 2       | Number of synchronization stages. <br />Range: 2 ... 4 |
 
 ## Interfaces
 
@@ -38,6 +40,8 @@ This entity does not have any generics.
 ## Architecture
 
 The exact same functionality is built in both directions.
+
+Below figures assume *SyncStages_g=2*.
 
 ![architecture](./clock_crossings/olo_base_cc_reset.svg)
 
@@ -55,7 +59,7 @@ As a result it is guaranteed that during at least one clock cycle both resets ar
 
 ![wave](./clock_crossings/reset_cc_detail.png)
 
-The VHDL code contains all synthesis attributes required to ensure correct behavior of tools (e.g. avoid mapping of the synchronizer FFs into shift registers) for the most common FPGA vendors *AMD* and *Intel*.
+The VHDL code contains all synthesis attributes required to ensure correct behavior of tools (e.g. avoid mapping of the synchronizer FFs into shift registers) for all supported tools/vendors.
 
 Regarding timing constraints, refer to [clock-crossing principles](clock_crossing_principles.md).
 

@@ -1,0 +1,374 @@
+# Rule overlay to match VUnit interface style for verification components (VCs)
+rule:
+    alias_declaration_500:
+        case: lower
+    alias_declaration_501:
+        case: lower
+    alias_declaration_502:
+        case: lower
+    architecture_004:
+        case: lower
+    architecture_009:
+        case: lower 
+    architecture_011:
+        case: lower
+    architecture_013:
+        case: lower
+    architecture_014:
+        case: lower
+    architecture_019:
+        case: lower
+    architecture_020:
+        case: lower
+    architecture_021:
+        case: lower
+    architecture_025:
+        names: ["a"]
+    architecture_028:
+        case: lower
+    assert_500:
+        case: lower
+    assert_501:
+        case: lower
+    assert_502:
+        case: lower
+    attribute_declaration_500:
+        case: lower
+    attribute_declaration_501:
+        case: lower
+    attribute_declaration_502:
+        case: lower
+    attribute_specification_500:
+        case: lower
+    attribute_specification_501:
+        case: lower
+    attribute_specification_502:
+        case: lower
+    attribute_specification_503:
+        case: lower
+    block_500:
+        case: lower
+    block_501:
+        case: lower
+    block_502:  
+        case: lower
+    block_503:
+        case: lower
+    block_504:
+        case: lower
+    block_505:
+        case: lower
+    block_506:
+        case: lower
+    case_014:
+        case: lower
+    case_015:
+        case: lower
+    case_016:
+        case: lower
+    case_017:
+        case: lower
+    case_018:
+        case: lower
+    case_generate_alternative_500:
+        case: lower
+    case_generate_alternative_501:
+        case: lower
+    case_generate_statement_500:
+        case: lower
+    case_generate_statement_501:
+        case: lower
+    component_004:
+        case: lower
+    component_006:
+        case: lower
+    component_008:
+        case: lower
+    component_010:
+        case: lower
+    component_012:
+        case: lower
+    component_014:
+        case: lower
+    conditional_expressions_500:
+        case: lower
+    conditional_expressions_501:
+        case: lower
+    conditional_waveforms_500:
+        case: lower
+    conditional_waveforms_501:
+        case: lower
+    constant_002:
+        case: lower
+    constant_004:
+        case: lower
+    constant_600:
+        disable: true
+    context_012:
+        case: lower
+    context_013:
+        case: lower
+    context_014:
+        case: lower
+    context_015:
+        case: lower
+    context_016:
+        case: lower
+    context_ref_003:
+        case: lower
+    context_ref_500:
+        case: lower
+    context_ref_501:
+        case: lower
+    entity_004:
+        case: lower
+    entity_006: 
+        case: lower
+    entity_008:
+        case: lower
+    entity_010:
+        case: lower
+    entity_012:
+        case: lower
+    entity_014:
+        case: lower
+    entity_500:
+        case: lower
+    entity_specification_500:
+        case: lower
+    entity_specification_501:
+        case: lower
+    entity_specification_503:
+        case: lower
+    exponent_500:
+        case: lower 
+    file_002:
+        case: lower
+    for_generate_statement_500:
+        case: lower
+    for_generate_statement_501:
+        case: lower
+    function_004:
+        case: lower
+    function_005:
+        case: lower
+    function_013:
+        case: lower
+    function_014:
+        case: lower
+    function_017:
+        case: lower
+        case_exceptions: []
+    function_501:
+        case: lower
+    function_502:
+        case: lower
+    function_506:
+        case: lower
+    generate_005:
+        case: lower
+    generate_009:
+        case: lower
+    generate_010:
+        case: lower
+    generate_012:
+        case: lower
+    generate_500:
+        case: lower
+    generate_501:
+        case: lower
+    generic_007:
+        case: lower
+    generic_600:
+        disable: true
+    generic_map_001:
+        case: lower
+    generic_map_002:
+        case: lower
+    ieee_500:
+        case: lower
+    if_generate_statement_500:
+        case: lower
+    if_generate_statement_501:
+        case: lower
+    if_generate_statement_502:
+        case: lower
+    if_generate_statement_503:
+        case: lower
+    if_025:
+        case: lower
+    if_026:
+        case: lower
+    if_027:
+        case: lower
+    if_028:
+        case: lower
+    if_029:
+        case: lower
+    if_034:
+        case: lower
+    instantiation_008:
+        case: lower
+    instantiation_009:
+        case: lower
+    instantiation_027:
+        case: lower
+    instantiation_028:
+        case: lower
+    instantiation_031:
+        case: lower
+    iteration_scheme_500:
+        case: lower
+    iteration_scheme_501:
+        case: lower
+    length_002:
+        disable: true # Better long VC files than many short ones
+    library_004:
+        case: lower
+    library_005:
+        case: lower
+    library_500:
+        case: lower
+    logical_operator_500:
+        case: lower
+    loop_statement_500:
+        case: lower
+    loop_statement_501:
+        case: lower
+    loop_statement_502:
+        case: lower
+    loop_statement_503:
+        case: lower
+    loop_statement_504:
+        case: lower
+    package_004:
+        case: lower
+    package_006: 
+        case: lower
+    package_008:
+        case: lower
+    package_010:
+        case: lower
+    package_013:
+        case: lower
+    package_018:
+        case: lower
+    package_body_500:
+        case: lower
+    package_body_501: 
+        case: lower
+    package_body_502:
+        case: lower
+    package_body_503:
+        case: lower
+    package_body_504:
+        case: lower
+    package_body_505:
+        case: lower
+    package_body_506:
+        case: lower
+    package_body_507:
+        case: lower
+    port_010:
+        case: lower
+    port_017:
+        case: lower
+    port_018:
+        case: lower
+    port_019:
+        case: lower
+    port_map_001:
+        case: lower
+    port_map_002:
+        case: lower
+    procedure_500:
+        case: lower
+    procedure_501:
+        case: lower
+    procedure_502:
+        case: lower
+    procedure_503:
+        case: lower
+    procedure_504:
+        case: lower
+    procedure_505:
+        case: lower
+    procedure_506:
+        case: lower
+    procedure_call_500:
+        case: lower
+    procedure_call_501:
+        case: lower
+    process_004:
+        case: lower
+    process_005:
+        case: lower
+    process_008:
+        case: lower
+    process_009:
+        case: lower
+    process_013:
+        case: lower
+    process_017:
+        case: lower
+    process_019:
+        case: lower
+    process_036:
+        disable: true
+    range_001:
+        case: lower
+    range_002:
+        case: lower
+    record_type_definition_500:
+        case: lower
+    record_type_definition_501:
+        case: lower
+    record_type_definition_502:
+        case: lower
+    report_statement_500:
+        case: lower
+    report_statement_501:
+        case: lower
+    return_statement_500: 
+        case: lower
+    selected_assignment_500:
+        case: lower
+    selected_assignment_501:
+        case: lower
+    selected_assignment_502:
+        case: lower
+    selected_assignment_503:
+        case: lower
+    signal_002:
+        case: lower
+    signal_004:
+        case: lower
+    subtype_500:
+        case: lower
+    subtype_501:
+        case: lower
+    subtype_502:
+        case: lower
+    type_002:
+        case: lower
+    type_004:
+        case: lower
+    type_013:
+        case: lower
+    type_500:
+        case: lower
+    use_clause_500:
+        case: lower
+    use_clause_501:
+        case: lower
+    use_clause_502:
+        case: lower
+    use_clause_503:
+        case: lower
+    variable_002:
+        case: lower
+    variable_004:
+        case: lower
+        suffix_exceptions: []
+    variable_600:
+        disable: true

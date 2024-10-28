@@ -17,15 +17,11 @@ runs:
       shell: bash
       run: |
         cd ./sim
-        python3 run.py --${{ inputs.simulator }} --xunit-xml sim_report.xml -p 16
+        python3 run.py --${{ inputs.simulator }} --xunit-xml sim_report_${{ inputs.simulator }}.xml -p 16
     - name: Upload sim results
+      if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: VUnit Tests --${{ inputs.simulator }}
-        path: sim/sim_report.xml
-    - name: Publish sim results
-      uses: EnricoMi/publish-unit-test-result-action@v2
-      if: always()
-      with:
-        files: sim/sim_report.xml  
+        name: simulation-${{ inputs.simulator }}-artifacts
+        path: sim/sim_report_${{ inputs.simulator }}.xml
 

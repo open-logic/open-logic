@@ -1,74 +1,79 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bründler, Switzerland
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
 library vunit_lib;
-	context vunit_lib.vunit_context;
+    context vunit_lib.vunit_context;
 
 library olo;
     use olo.olo_base_pkg_array.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
 entity olo_base_pkg_array_tb is
     generic (
         runner_cfg     : string
     );
-end entity olo_base_pkg_array_tb;
+end entity;
 
 architecture sim of olo_base_pkg_array_tb is
 
 begin
 
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB Control
-    -------------------------------------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a package TB
     test_runner_watchdog(runner, 1 ms);
-    p_control : process
-        variable aint : t_ainteger(0 to 2);
-        variable areal : t_areal(0 to 2);
-        variable abool : t_abool(0 to 2);
-        variable stdlv : std_logic_vector(0 to 2);
+
+    p_control : process is
+        variable IntArr_v  : IntegerArray_t(0 to 2);
+        variable RealArr_v : RealArray_t(0 to 2);
+        variable BoolArr_v : BoolArray_t(0 to 2);
+        variable Stdlv_v   : std_logic_vector(0 to 2);
     begin
         test_runner_setup(runner, runner_cfg);
 
         wait for 1 ns;
 
         while test_suite loop
-    
-            if run("aInteger2aReal") then
-                aint := (1, -2, 3);
-                areal := aInteger2aReal(aint);
-                check_equal(areal(0), 1.0, "aInteger2aReal->0", 0.001);
-                check_equal(areal(1), -2.0, "aInteger2aReal->1", 0.001);
-                check_equal(areal(2), 3.0, "aInteger2aReal->2", 0.001);
 
-            elsif run("stdlv2aBool") then
-                stdlv := "011";
-                abool := stdlv2aBool(stdlv);
-                check_equal(abool(0), false, "stdlv2aBool->0");
-                check_equal(abool(1), true,  "stdlv2aBool->1");
-                check_equal(abool(2), true,  "stdlv2aBool->2");
+            if run("arrayInteger2Real") then
+                IntArr_v  := (1,
+                              -2,
+                              3);
+                RealArr_v := arrayInteger2Real(IntArr_v);
+                check_equal(RealArr_v(0), 1.0, "arrayInteger2Real->0", 0.001);
+                check_equal(RealArr_v(1), -2.0, "arrayInteger2Real->1", 0.001);
+                check_equal(RealArr_v(2), 3.0, "arrayInteger2Real->2", 0.001);
 
-            elsif run("aBool2stdlv") then
-                abool := (true, true, false);
-                stdlv := aBool2stdlv(abool);
-                check_equal(stdlv(0), '1',  "aBool2stdlv->0");
-                check_equal(stdlv(1), '1',  "aBool2stdlv->1");
-                check_equal(stdlv(2), '0',  "aBool2stdlv->2");
+            elsif run("arrayStdl2Bool") then
+                Stdlv_v   := "011";
+                BoolArr_v := arrayStdl2Bool(Stdlv_v);
+                check_equal(BoolArr_v(0), false, "arrayStdl2Bool->0");
+                check_equal(BoolArr_v(1), true,  "arrayStdl2Bool->1");
+                check_equal(BoolArr_v(2), true,  "arrayStdl2Bool->2");
+
+            elsif run("arrayBool2Stdl") then
+                BoolArr_v := (true,
+                              true,
+                              false);
+                Stdlv_v   := arrayBool2Stdl(BoolArr_v);
+                check_equal(Stdlv_v(0), '1',  "arrayBool2Stdl->0");
+                check_equal(Stdlv_v(1), '1',  "arrayBool2Stdl->1");
+                check_equal(Stdlv_v(2), '0',  "arrayBool2Stdl->2");
 
             end if;
 
@@ -80,4 +85,4 @@ begin
         test_runner_cleanup(runner);
     end process;
 
-end sim;
+end architecture;

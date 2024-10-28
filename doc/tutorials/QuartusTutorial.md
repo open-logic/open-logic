@@ -4,7 +4,7 @@
 
 ## Introduction
 
-The aim of this tutorial is give users a kick-start on creating Intel Quartus projects using *Open Logic*.
+The aim of this tutorial is give users a kick-start on creating altera Quartus projects using *Open Logic*.
 
 The tutorial covers project setup and implementation up to the production of a running bitstream for a small design. The design is rather hardware independent but all examples and pinout constraints are given for a [DE0-CV](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=163&No=921) evaluation board. If want to use it on some other hardware, just change pinout and the target device accordingly.
 

@@ -1,19 +1,25 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This is a very basic synchronous FIFO. It  has optional level- and
 -- almost-full/empty ports.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_fifo_sync.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -21,51 +27,49 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_fifo_sync is
-    generic ( 
-        Width_g         : positive;                   
-        Depth_g         : positive;                  
-        AlmFullOn_g     : boolean   := false;        
-        AlmFullLevel_g  : natural   := 0;                   
-        AlmEmptyOn_g    : boolean   := false;        
-        AlmEmptyLevel_g : natural   := 0;                   
-        RamStyle_g      : string    := "auto";       
-        RamBehavior_g   : string    := "RBW";        
+    generic (
+        Width_g         : positive;
+        Depth_g         : positive;
+        AlmFullOn_g     : boolean   := false;
+        AlmFullLevel_g  : natural   := 0;
+        AlmEmptyOn_g    : boolean   := false;
+        AlmEmptyLevel_g : natural   := 0;
+        RamStyle_g      : string    := "auto";
+        RamBehavior_g   : string    := "RBW";
         ReadyRstState_g : std_logic := '1'
     );
-    port (    
+    port (
         -- Control Ports
-          Clk           : in  std_logic;
-          Rst           : in  std_logic;
-          -- Input Data
-          In_Data       : in  std_logic_vector(Width_g - 1 downto 0);
-          In_Valid      : in  std_logic                                             := '1';
-          In_Ready      : out std_logic;
-          In_Level      : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
-          -- Output Data
-          Out_Data      : out std_logic_vector(Width_g - 1 downto 0);
-          Out_Valid     : out std_logic;
-          Out_Ready     : in  std_logic                                             := '1';
-          Out_Level     : out std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
-          -- Status
-          Full          : out std_logic; 
-          AlmFull       : out std_logic;
-          Empty         : out std_logic; 
-          AlmEmpty      : out std_logic
-          
+        Clk           : in    std_logic;
+        Rst           : in    std_logic;
+        -- Input Data
+        In_Data       : in    std_logic_vector(Width_g - 1 downto 0);
+        In_Valid      : in    std_logic := '1';
+        In_Ready      : out   std_logic;
+        In_Level      : out   std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
+        -- Output Data
+        Out_Data      : out   std_logic_vector(Width_g - 1 downto 0);
+        Out_Valid     : out   std_logic;
+        Out_Ready     : in    std_logic := '1';
+        Out_Level     : out   std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
+        -- Status
+        Full          : out   std_logic;
+        AlmFull       : out   std_logic;
+        Empty         : out   std_logic;
+        AlmEmpty      : out   std_logic
     );
 end entity;
 
-
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_fifo_sync is
 
-    type two_process_r is record
+    type TwoProcess_r is record
         WrLevel : std_logic_vector(In_Level'range);
         RdLevel : std_logic_vector(Out_Level'range);
         RdUp    : std_logic;
@@ -74,15 +78,15 @@ architecture rtl of olo_base_fifo_sync is
         RdAddr  : std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
     end record;
 
-    signal r, r_next : two_process_r;
+    signal r, r_next : TwoProcess_r;
 
     signal RamWr     : std_logic;
     signal RamRdAddr : std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
 
 begin
 
-    p_comb : process(In_Valid, Out_Ready, Rst, r)
-        variable v : two_process_r;
+    p_comb : process (In_Valid, Out_Ready, Rst, r) is
+        variable v : TwoProcess_r;
     begin
         -- hold variables stable
         v := r;
@@ -107,11 +111,11 @@ begin
 
         -- Write side status
         if unsigned(r.WrLevel) = Depth_g then
-            In_Ready  <= '0';
-            Full <= '1';
+            In_Ready <= '0';
+            Full     <= '1';
         else
-            In_Ready  <= '1';
-            Full <= '0';
+            In_Ready <= '1';
+            Full     <= '0';
         end if;
         -- Artificially keep InRdy low during reset if required
         if (ReadyRstState_g = '0') and (Rst = '1') then
@@ -125,7 +129,7 @@ begin
         end if;
 
         -- Read side
-        v.WrDown  := '0';
+        v.WrDown := '0';
         if unsigned(r.RdLevel) /= 0 and Out_Ready = '1' then
             if unsigned(r.RdAddr) /= Depth_g - 1 then
                 v.RdAddr := std_logic_vector(unsigned(r.RdAddr) + 1);
@@ -143,11 +147,11 @@ begin
 
         -- Read side status
         if unsigned(r.RdLevel) > 0 then
-            Out_Valid   <= '1';
-            Empty <= '0';
+            Out_Valid <= '1';
+            Empty     <= '0';
         else
-            Out_Valid   <= '0';
-            Empty <= '1';
+            Out_Valid <= '0';
+            Empty     <= '1';
         end if;
 
         if AlmEmptyOn_g and unsigned(r.RdLevel) <= AlmEmptyLevel_g then
@@ -165,7 +169,7 @@ begin
     Out_Level <= r.RdLevel;
     In_Level  <= r.WrLevel;
 
-    p_seq : process(Clk)
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;
@@ -187,7 +191,7 @@ begin
             RamStyle_g      => RamStyle_g,
             RamBehavior_g   => RamBehavior_g
         )
-        port map(
+        port map (
             Clk         => Clk,
             Wr_Addr     => r.WrAddr,
             Wr_Ena      => RamWr,

@@ -38,7 +38,7 @@ The user has three main interfaces:
     -   *SEND* Send a data byte (only allowed if the bus is not idle). 
         The data to send is provided along with the command.
 
-    -   *REC* Receive a data byte (only allowed if the bus is not idle)
+    -   *RECEIVE* Receive a data byte (only allowed if the bus is not idle)
         The ACK to send is provided along with the command.
 
 -   On the response interface (*Resp_...*), the user receives one response per command as soon as the command is completed. More information like
@@ -78,9 +78,9 @@ For constants containing the command codes, a package *olo_intf_i2c_master_pkg* 
 | :---------- | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Cmd_Ready   | out    | 1      | N/A     | AXI-S handshaking signal for *Cmd_...*                       |
 | Cmd_Valid   | in     | 1      | -       | AXI-S handshaking signal for *Cmd_...*                       |
-| Cmd_Command | in     | 3      | -       | Command to execute (*olo_intf_i2c_master_pkg*  constant names in brackets)<br />"000" =\> Send startcondition (*CMD\_START*)<br />"001" =\> Send stop condition (*CMD\_STOP*)<br />"010" =\> Send rep. start condition"  (*CMD\_REPSTART)*   <br />"011" =\> Send data  byte (*CMD\_SEND)* <br />"100" =\> Receive data byte  (*CMD\_REC*) |
-| Cmd_Data    | in     | 8      | -       | Data to send (only for *CMD\_SEND*  resp. *Cmd_Command="011"*). |
-| Cmd_Ack     | in     | 1      |         | Acknowledge to send (only for *CMD\_REC* resp. *Cmd_Command="100").*<br />**'1'** =\> send ACK , **'0'** =\> send NACK. <br />**Note that polarity is inverted compared to the acknowledge bit on the I2C bus.** |
+| Cmd_Command | in     | 3      | -       | Command to execute (*olo_intf_i2c_master_pkg*  constant names in brackets)<br />"000" =\> Send startcondition (*I2cCmd_Start_c*)<br />"001" =\> Send stop condition (*I2cCmd_Stop_c*)<br />"010" =\> Send rep. start condition"  (*I2cCmd_RepStart_c*)   <br />"011" =\> Send data  byte (*I2cCmd_Send_c*) <br />"100" =\> Receive data byte  (*I2cCmd_Receive_c*) |
+| Cmd_Data    | in     | 8      | -       | Data to send (only for *I2cCmd_Send_c*  resp. *Cmd_Command="011"*). |
+| Cmd_Ack     | in     | 1      |         | Acknowledge to send (only for *I2cCmd_Receive_c* resp. *Cmd_Command="100").*<br />**'1'** =\> send ACK , **'0'** =\> send NACK. <br />**Note that polarity is inverted compared to the acknowledge bit on the I2C bus.** |
 
 ### Response Interface
 
@@ -88,10 +88,10 @@ For constants containing the command codes, a package *olo_intf_i2c_master_pkg* 
 | :----------- | :----- | :----- | ------------------------------------------------------------ | :---------- |
 | Resp_Valid   | out    | 1      | AXI-S handshaking signal for *Resp_...*<br />The response interface does not support backpressure. Hence no *Ready* signal is provided. |             |
 | Resp_Command | out    | 3      | Type of the command that completed. See *Cmd_Command* for details. |             |
-| Resp_Data    | out    | 8      | Received data <br />Only utilized for *CMD\_REC* resp.  *CmdType="100"* |             |
-| Resp_Ack     | out    | 1      | **1** =\> ACK received, **0** =\> NACK received <br />Note that polarity is inverted compared to the acknowledge bit on the I2C bus.<br />Only utilized for *CMD\_SEND* resp.  *CmdType="011"* |             |
+| Resp_Data    | out    | 8      | Received data <br />Only utilized for *I2cCmd_Receive_c* resp.  *CmdType="100"* |             |
+| Resp_Ack     | out    | 1      | **1** =\> ACK received, **0** =\> NACK received <br />Note that polarity is inverted compared to the acknowledge bit on the I2C bus.<br />Only utilized for *I2cCmd_Send_c* resp.  *CmdType="011"* |             |
 | Resp_ArbLost | out    | 1      | '1' indicates that the command failed because arbitration was lost. |             |
-| Resp_SeqErr  | out    | 1      | The command failed because of wrong command sequence (e.g. attempt to do a *CMD\_START* in the middle of an ongoing transfer). |             |
+| Resp_SeqErr  | out    | 1      | The command failed because of wrong command sequence (e.g. attempt to do a *I2cCmd_Start_c* in the middle of an ongoing transfer). |             |
 
 ### Status Interface
 
@@ -124,72 +124,72 @@ For constants containing the command codes, a package *olo_intf_i2c_master_pkg* 
 
  #### Two Byte Read
 
- -   CMD\_START -- send start condition
- -   CMD\_SEND -- send address byte (slave responds with ACK)
- -   CMD\_REC -- receive data and send ACK
- -   CMD\_REC -- receive data and send NACK
- -   CMD\_STOP -- send stop condition
+ -   I2cCmd_Start_c -- send start condition
+ -   I2cCmd_Send_c -- send address byte (slave responds with ACK)
+ -   I2cCmd_Receive_c -- receive data and send ACK
+ -   I2cCmd_Receive_c -- receive data and send NACK
+ -   I2cCmd_Stop_c -- send stop condition
 
-| **Order** | **CmdType** | **CmdData** | **CmdAck** | **RspType** | **RspData** | **RspAck** | **RspArbLost** | **RespSeq** |
-| --------- | ----------- | ----------- | ---------- | ----------- | ----------- | ---------- | -------------- | ----------- |
-| 1         | CMD\_START  | N/A         | N/A        | CMD\_START  | N/A         | N/A        | 0              | 0           |
-| 2         | CMD\_SEND   | Addr + R/W  | N/A        | CMD\_SEND   | N/A         | 1          | 0              | 0           |
-| 3         | CMD\_REC    | N/A         | 1          | CMD\_REC    | Data        | N/A        | 0              | 0           |
-| 4         | CMD\_REC    | N/A         | 0          | CMD\_REC    | Data        | N/A        | 0              | 0           |
-| 5         | CMD\_STOP   | N/A         | N/A        | CMD\_STOP   | N/A         | N/A        | 0              | 0           |
+| **Order** | **CmdType**      | **CmdData** | **CmdAck** | **RspType**      | **RspData** | **RspAck** | **RspArbLost** | **RespSeq** |
+| --------- | ---------------- | ----------- | ---------- | ---------------- | ----------- | ---------- | -------------- | ----------- |
+| 1         | I2cCmd_Start_c   | N/A         | N/A        | I2cCmd_Start_c   | N/A         | N/A        | 0              | 0           |
+| 2         | I2cCmd_Send_c    | Addr + R/W  | N/A        | I2cCmd_Send_c    | N/A         | 1          | 0              | 0           |
+| 3         | I2cCmd_Receive_c | N/A         | 1          | I2cCmd_Receive_c | Data        | N/A        | 0              | 0           |
+| 4         | I2cCmd_Receive_c | N/A         | 0          | I2cCmd_Receive_c | Data        | N/A        | 0              | 0           |
+| 5         | I2cCmd_Stop_c    | N/A         | N/A        | I2cCmd_Stop_c    | N/A         | N/A        | 0              | 0           |
 
 
  ### Two Byte Write
 
- -   CMD\_START -- send start condition
- -   CMD\_SEND -- send address byte (slave responds with ACK)
- -   CMD\_SEND -- send data (slave responds with ACK)
- -   CMD\_SEND -- send data (slave responds with NACK)
- -   CMD\_STOP -- send stop condition
+ -   I2cCmd_Start_c -- send start condition
+ -   I2cCmd_Send_c -- send address byte (slave responds with ACK)
+ -   I2cCmd_Send_c -- send data (slave responds with ACK)
+ -   I2cCmd_Send_c -- send data (slave responds with NACK)
+ -   I2cCmd_Stop_c -- send stop condition
 
 
-| **Order** | **CmdType** | **CmdData** | **CmdAck** | **RspType** | **RspData** | **RspAck** | **RspArbLost** | **RespSeq** |
-| --------- | ----------- | ----------- | ---------- | ----------- | ----------- | ---------- | -------------- | ----------- |
-| 1         | CMD\_START  | N/A         | N/A        | CMD\_START  | N/A         | N/A        | 0              | 0           |
-| 2         | CMD\_SEND   | Addr + R/W  | N/A        | CMD\_SEND   | N/A         | 1          | 0              | 0           |
-| 3         | CMD\_SEND   | Data        | N/A        | CMD\_SEND   | N/A         | 1          | 0              | 0           |
-| 4         | CMD\_SEND   | Data        | N/A        | CMD\_SEND   | N/A         | 0          | 0              | 0           |
-| 5         | CMD\_STOP   | N/A         | N/A        | CMD\_STOP   | N/A         | N/A        | 0              | 0           |
+| **Order** | **CmdType**    | **CmdData** | **CmdAck** | **RspType**    | **RspData** | **RspAck** | **RspArbLost** | **RespSeq** |
+| --------- | -------------- | ----------- | ---------- | -------------- | ----------- | ---------- | -------------- | ----------- |
+| 1         | I2cCmd_Start_c | N/A         | N/A        | I2cCmd_Start_c | N/A         | N/A        | 0              | 0           |
+| 2         | I2cCmd_Send_c  | Addr + R/W  | N/A        | I2cCmd_Send_c  | N/A         | 1          | 0              | 0           |
+| 3         | I2cCmd_Send_c  | Data        | N/A        | I2cCmd_Send_c  | N/A         | 1          | 0              | 0           |
+| 4         | I2cCmd_Send_c  | Data        | N/A        | I2cCmd_Send_c  | N/A         | 0          | 0              | 0           |
+| 5         | I2cCmd_Stop_c  | N/A         | N/A        | I2cCmd_Stop_c  | N/A         | N/A        | 0              | 0           |
 
  ### One Byte Write followed by One Byte Read (with Repeated Start)
 
- -   CMD\_START -- send start condition
- -   CMD\_SEND -- send address byte (slave responds with ACK)
- -   CMD\_SEND -- send data (slave responds with ACK)
- -   CMD\_REPSTART -- Repeated start
- -   CMD\_REC -- receive data and send NACK
- -   CMD\_STOP -- send stop condition
+ -   I2cCmd_Start_c -- send start condition
+ -   I2cCmd_Send_c -- send address byte (slave responds with ACK)
+ -   I2cCmd_Send_c -- send data (slave responds with ACK)
+ -   I2cCmd_RepStart_c -- Repeated start
+ -   I2cCmd_Receive_c -- receive data and send NACK
+ -   I2cCmd_Stop_c -- send stop condition
 
-| Order | CmdType     | CmdData    | CmdAck | RspType       | RspData | RspAck | RspArbLost | RespSeq |
-| ----- | ----------- | ---------- | ------ | ------------- | ------- | ------ | ---------- | ------- |
-| 1     | CMD\_START  | N/A        | N/A    | CMD\_START    | N/A     | N/A    | 0          | 0       |
-| 2     | CMD\_SEND   | Addr + R/W | N/A    | CMD\_SEND     | N/A     | 1      | 0          | 0       |
-| 3     | CMD\_SEND   | Data       | N/A    | CMD\_REC      | N/A     | 1      | 0          | 0       |
-| 4     | CMD\_REPST. | N/A        | N/A    | CMD\_REPSTART | N/A     | N/A    | 0          | 0       |
-| 4     | CMD\_REC    | N/A        | 0      | CMD\_REC      | Data    | N/A    | 0          | 0       |
-| 5     | CMD\_STOP   | N/A        | N/A    | CMD\_STOP     | N/A     | N/A    | 0          | 0       |
+| Order | CmdType           | CmdData    | CmdAck | RspType           | RspData | RspAck | RspArbLost | RespSeq |
+| ----- | ----------------- | ---------- | ------ | ----------------- | ------- | ------ | ---------- | ------- |
+| 1     | I2cCmd_Start_c    | N/A        | N/A    | I2cCmd_Start_c    | N/A     | N/A    | 0          | 0       |
+| 2     | I2cCmd_Send_c     | Addr + R/W | N/A    | I2cCmd_Send_c     | N/A     | 1      | 0          | 0       |
+| 3     | I2cCmd_Send_c     | Data       | N/A    | I2cCmd_Send_c     | N/A     | 1      | 0          | 0       |
+| 4     | I2cCmd_RepStart_c | N/A        | N/A    | I2cCmd_RepStart_c | N/A     | N/A    | 0          | 0       |
+| 4     | I2cCmd_Receive_c  | N/A        | 0      | I2cCmd_Receive_c  | Data    | N/A    | 0          | 0       |
+| 5     | I2cCmd_Stop_c     | N/A        | N/A    | I2cCmd_Stop_c     | N/A     | N/A    | 0          | 0       |
 
  #### Arbitration Lost
 
- -   CMD\_START -- send start condition
- -   CMD\_SEND -- send address byte (slave responds with ACK)
- -   CMD\_SEND -- send data (arbitration is lost during this byte)
- -   CMD\_REPSTART -- Repeated start
+ -   I2cCmd_Start_c -- send start condition
+ -   I2cCmd_Send_c -- send address byte (slave responds with ACK)
+ -   I2cCmd_Send_c -- send data (arbitration is lost during this byte)
+ -   I2cCmd_RepStart_c -- Repeated start
      -   This command is ignored (RespSeq='1') because it is illegal when the bus is not owned
 
 
 
-| **Order** | **CmdType** | **CmdData** | **CmdAck** | **RspType**   | **RspData** | **RspAck** | **RspArbLost** | **RespSeq** |
-| --------- | ----------- | ----------- | ---------- | ------------- | ----------- | ---------- | -------------- | ----------- |
-| 1         | CMD\_START  | N/A         | N/A        | CMD\_START    | N/A         | N/A        | 0              | 0           |
-| 2         | CMD\_SEND   | Addr + R/W  | N/A        | CMD\_SEND     | N/A         | 1          | 0              | 0           |
-| 3         | CMD\_SEND   | Data        | N/A        | CMD\_REC      | N/A         | N/A        | 1              | 0           |
-| 4         | CMD\_REPST. | N/A         | N/A        | CMD\_REPSTART | N/A         | N/A        | 0              | 1           |
+| **Order** | **CmdType**        | **CmdData** | **CmdAck** | **RspType**       | **RspData** | **RspAck** | **RspArbLost** | **RespSeq** |
+| --------- | ------------------ | ----------- | ---------- | ----------------- | ----------- | ---------- | -------------- | ----------- |
+| 1         | I2cCmd_Start_c     | N/A         | N/A        | I2cCmd_Start_c    | N/A         | N/A        | 0              | 0           |
+| 2         | I2cCmd_Send_c      | Addr + R/W  | N/A        | I2cCmd_Send_c     | N/A         | 1          | 0              | 0           |
+| 3         | I2cCmd_Send_c      | Data        | N/A        | I2cCmd_Send_c     | N/A         | N/A        | 1              | 0           |
+| 4         | I2cCmd_RepStart_c. | N/A         | N/A        | I2cCmd_RepStart_c | N/A         | N/A        | 0              | 1           |
 
 
  ### Example Waveform

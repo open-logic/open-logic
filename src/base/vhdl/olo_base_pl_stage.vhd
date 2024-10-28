@@ -1,169 +1,186 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2023-2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Oliver Bruendler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2023-2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This entity implements a pipelinestage with handshaking (AXI-S Ready/Valild). The
 -- pipeline stage ensures all signals are registered in both directions (including
 -- Ready). This is important to break long logic chains that can occur in the RDY
 -- paths because Rdy is often forwarded asynchronously.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_pl_stage.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 
 library ieee;
-use ieee.std_logic_1164.all;
+    use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_pl_stage is
     generic (
         Width_g     : positive;
-        UseReady_g  : boolean   := true;
-        Stages_g    : natural   := 1
-    ); 
-    port (   
+        UseReady_g  : boolean := true;
+        Stages_g    : natural := 1
+    );
+    port (
         -- Control Ports
-        Clk         : in  std_logic;                              
-        Rst         : in  std_logic;    
-        -- Input                          
-        In_Valid    : in  std_logic := '1';                              
-        In_Ready    : out std_logic;                              
-        In_Data     : in  std_logic_vector(Width_g-1 downto 0); 
+        Clk         : in    std_logic;
+        Rst         : in    std_logic;
+        -- Input
+        In_Valid    : in    std_logic := '1';
+        In_Ready    : out   std_logic;
+        In_Data     : in    std_logic_vector(Width_g-1 downto 0);
         -- Output
-        Out_Valid   : out std_logic;                              
-        Out_Ready   : in  std_logic := '1';                       
-        Out_Data    : out std_logic_vector(Width_g-1 downto 0)
+        Out_Valid   : out   std_logic;
+        Out_Ready   : in    std_logic := '1';
+        Out_Data    : out   std_logic_vector(Width_g-1 downto 0)
     );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_pl_stage is
+
     -- Single Stage Entity forward-declaration (defined later in this file)
     component olo_base_pl_stage_single is
         generic (
             Width_g     : positive;
             UseReady_g  : boolean   := true
-        ); 
-        port (   
-            Clk         : in  std_logic;                              
-            Rst         : in  std_logic;                             
-            In_Valid    : in  std_logic;                              
-            In_Ready    : out std_logic;                              
-            In_Data     : in  std_logic_vector(Width_g-1 downto 0); 
-            Out_Valid   : out std_logic;                              
-            Out_Ready   : in  std_logic := '1';                       
-            Out_Data    : out std_logic_vector(Width_g-1 downto 0)
+        );
+        port (
+            Clk         : in    std_logic;
+            Rst         : in    std_logic;
+            In_Valid    : in    std_logic;
+            In_Ready    : out   std_logic;
+            In_Data     : in    std_logic_vector(Width_g-1 downto 0);
+            Out_Valid   : out   std_logic;
+            Out_Ready   : in    std_logic := '1';
+            Out_Data    : out   std_logic_vector(Width_g-1 downto 0)
         );
     end component;
-    -- Signals
+
+    -- Types
     type Data_t is array (natural range <>) of std_logic_vector(Width_g - 1 downto 0);
-    signal data_s : Data_t(0 to Stages_g);
-    signal valid_s  : std_logic_vector(0 to Stages_g);
-    signal ready_s  : std_logic_vector(0 to Stages_g);
+
+    -- Signals
+    signal Data  : Data_t(0 to Stages_g);
+    signal Valid : std_logic_vector(0 to Stages_g);
+    signal Ready : std_logic_vector(0 to Stages_g);
+
 begin
+
     -- *** On or more stages required ***
     g_nonzero : if Stages_g > 0 generate
-        valid_s(0)  <= In_Valid;
-        In_Ready    <= ready_s(0);
-        data_s(0)   <= In_Data;
+        Valid(0) <= In_Valid;
+        In_Ready <= Ready(0);
+        Data(0)  <= In_Data;
 
         g_stages : for i in 0 to Stages_g - 1 generate
+
+            -- Signle pipeline stage instance
             i_stg : component olo_base_pl_stage_single
-                generic map(
-                    Width_g   => Width_g,
+                generic map (
+                    Width_g    => Width_g,
                     UseReady_g => UseReady_g
                 )
-                port map(
-                    Clk => Clk,
-                    Rst => Rst,
-                    In_Valid => valid_s(i),
-                    In_Ready => ready_s(i),
-                    In_Data => data_s(i),
-                    Out_Valid => valid_s(i + 1),
-                    Out_Ready => ready_s(i + 1),
-                    Out_Data => data_s(i + 1)
+                port map (
+                    Clk       => Clk,
+                    Rst       => Rst,
+                    In_Valid  => Valid(i),
+                    In_Ready  => Ready(i),
+                    In_Data   => Data(i),
+                    Out_Valid => Valid(i + 1),
+                    Out_Ready => Ready(i + 1),
+                    Out_Data  => Data(i + 1)
                 );
+
         end generate;
 
-        Out_Valid           <= valid_s(Stages_g);
-        ready_s(Stages_g)   <= Out_Ready;
-        Out_Data            <= data_s(Stages_g);
+        Out_Valid       <= Valid(Stages_g);
+        Ready(Stages_g) <= Out_Ready;
+        Out_Data        <= Data(Stages_g);
     end generate;
 
     -- *** Zero stages ***
     g_zero : if Stages_g = 0 generate
-        Out_Valid    <= In_Valid;
-        Out_Data    <= In_Data;
-        In_Ready <= Out_Ready;
+        Out_Valid <= In_Valid;
+        Out_Data  <= In_Data;
+        In_Ready  <= Out_Ready;
     end generate;
 
-end;
+end architecture;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 
 library ieee;
-use ieee.std_logic_1164.all;
+    use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Single Stage Entity
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_pl_stage_single is
     generic (
         Width_g     : positive;
-        UseReady_g  : boolean   := true
-    ); 
-    port (   
+        UseReady_g  : boolean := true
+    );
+    port (
         -- Control Ports
-        Clk         : in  std_logic;                              
-        Rst         : in  std_logic;    
-        -- Input                          
-        In_Valid    : in  std_logic;                              
-        In_Ready    : out std_logic;                              
-        In_Data     : in  std_logic_vector(Width_g-1 downto 0); 
+        Clk         : in    std_logic;
+        Rst         : in    std_logic;
+        -- Input
+        In_Valid    : in    std_logic;
+        In_Ready    : out   std_logic;
+        In_Data     : in    std_logic_vector(Width_g-1 downto 0);
         -- Output
-        Out_Valid   : out std_logic;                              
-        Out_Ready   : in  std_logic := '1';                       
-        Out_Data    : out std_logic_vector(Width_g-1 downto 0)
+        Out_Valid   : out   std_logic;
+        Out_Ready   : in    std_logic := '1';
+        Out_Data    : out   std_logic_vector(Width_g-1 downto 0)
     );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_pl_stage_single is
+
     -- two process method
-    type tp_r is record
+    type TwoProcess_r is record
         DataMain    : std_logic_vector(Width_g - 1 downto 0);
         DataMainVld : std_logic;
         DataShad    : std_logic_vector(Width_g - 1 downto 0);
         DataShadVld : std_logic;
-        In_Ready       : std_logic;
+        In_Ready    : std_logic;
     end record;
-    signal r, r_next : tp_r;
+
+    signal r, r_next : TwoProcess_r;
 
 begin
-  
+
     -- *** Pipeline Stage with RDY ***
     g_rdy : if UseReady_g generate
 
-        p_comb : process(In_Valid, In_Data, Out_Ready, r)
-            variable v         : tp_r;
+        p_comb : process (In_Valid, In_Data, Out_Ready, r) is
+            variable v         : TwoProcess_r;
             variable IsStuck_v : boolean;
         begin
             -- *** Hold variables stable ***
@@ -203,28 +220,28 @@ begin
             r_next <= v;
         end process;
 
-        In_Ready <= r.In_Ready;
+        In_Ready  <= r.In_Ready;
         Out_Valid <= r.DataMainVld;
-        Out_Data <= r.DataMain;
+        Out_Data  <= r.DataMain;
 
-        p_seq : process(Clk)
+        p_seq : process (Clk) is
         begin
             if rising_edge(Clk) then
                 r <= r_next;
                 if Rst = '1' then
                     r.DataMainVld <= '0';
                     r.DataShadVld <= '0';
-                    r.In_Ready       <= '1';
+                    r.In_Ready    <= '1';
                 end if;
             end if;
         end process;
+
     end generate;
 
-  
     -- *** Pipeline Stage without RDY ***
     g_nrdy : if not UseReady_g generate
-        signal VldReg   : std_logic;
-        signal DataReg  : std_logic_vector(Width_g-1 downto 0);
+        signal VldReg  : std_logic;
+        signal DataReg : std_logic_vector(Width_g-1 downto 0);
 
         -- Synthesis attributes AMD (Vivado)
         attribute shreg_extract : string;
@@ -239,36 +256,36 @@ begin
         -- Synthesis attributes Altera (Quartus)
         attribute dont_merge : boolean;
         attribute dont_merge of VldReg : signal is true;
-        attribute dont_merge of DataReg : signal is true;   
+        attribute dont_merge of DataReg : signal is true;
 
         attribute preserve : boolean;
         attribute preserve of VldReg : signal is true;
-        attribute preserve of DataReg : signal is true;     
-        
+        attribute preserve of DataReg : signal is true;
+
         -- Synchthesis attributes for Synopsis (Lattice, Microchip, Efinity)
         attribute syn_keep : boolean;
         attribute syn_keep of VldReg : signal is true;
-        attribute syn_keep of DataReg : signal is true;   
+        attribute syn_keep of DataReg : signal is true;
 
         attribute syn_preserve : boolean;
         attribute syn_preserve of VldReg : signal is true;
-        attribute syn_preserve of DataReg : signal is true;     
+        attribute syn_preserve of DataReg : signal is true;
 
     begin
-        
-        p_stg : process(Clk)
+
+        p_stg : process (Clk) is
         begin
             if rising_edge(Clk) then
                 DataReg <= In_Data;
-                VldReg <= In_Valid;
+                VldReg  <= In_Valid;
                 if Rst = '1' then
                     VldReg <= '0';
                 end if;
             end if;
         end process;
 
-        In_Ready <= '1'; -- Not used!
-        Out_Data <= DataReg;
+        In_Ready  <= '1'; -- Not used!
+        Out_Data  <= DataReg;
         Out_Valid <= VldReg;
 
     end generate;

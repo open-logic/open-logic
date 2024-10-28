@@ -65,16 +65,6 @@ Computation of the OR parallel prefix, which is useful for implementing arbiters
 ppcOr(inp : in std_logic_vector) return std_logic_vector;
 ```
 
-### reduceOr() / reduceAnd() / reduceXor()
-
-OR, AND or XOR all bits in a *std_logic_vector*.
-
-```
-reduceOr(vec : in std_logic_vector) return std_logic;
-reduceAnd(vec : in std_logic_vector) return std_logic;
-reduceXor(vec : in std_logic_vector) return std_logic;
-```
-
 ### to01X()
 
 Convert a *std_logic* resp all bits in a *std_logic_vector* to '0', '1' or 'X'.

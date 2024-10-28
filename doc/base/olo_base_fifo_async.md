@@ -34,7 +34,8 @@ An asynchronous FIFO is a clock-crossing and hence this block follows the genera
 | AlmEmptyLevel_g | natural   | 0       | Level to generate *AlmEmpty* flag at. <br>Has no effect if *AlmEmptyOn_g* = false |
 | RamStyle_g      | string    | "auto"  | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes *ram_style* and *ramstyle* which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 | RamBehavior_g   | string    | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
-| ReadyRstState_g | std_logic | '1'     | Controls the status of the *In_Ready* signal in during reset.<br> Choose '1' for minimal logic on the (often timing-critical) *In_Ready* path. <br |
+| ReadyRstState_g | std_logic | '1'     | Controls the status of the *In_Ready* signal in during reset.<br> Choose '1' for minimal logic on the (often timing-critical) *In_Ready* path. |
+| SyncStages_g    | positive  | 2       | Number of synchronization stages. <br />Note that more synchronization stages also mean a higher latency until written data is visible on the read side.<br />Range: 2 ... 4 |
 
 ## Interfaces
 
@@ -47,6 +48,7 @@ An asynchronous FIFO is a clock-crossing and hence this block follows the genera
 | In_RstOut | out    | 1         | N/A     | Reset output (see [clock-crossing principles](clock_crossing_principles.md), synchronous to *In_Clk*)) |
 | In_Data   | in     | *Width_g* | -       | Input data (synchronous to *In_Clk*)                         |
 | In_Valid  | in     | 1         | '1'     | AXI4-Stream handshaking signal for *In_Data* (synchronous to *In_Clk*) |
+| In_Ready  | out    | 1         | N/A     | AXI4-Stream handshaking signal for *In_Data* (synchronous to *In_Clk*) |
 
 ### Output Data
 
@@ -85,7 +87,7 @@ The rough architecture of the FIFO is shown in the figure below. Note that the f
 
 ![Architecture](./fifo/olo_base_fifo_async.png)
 
-Read and write address counters are handled in their corresponding clock domain. The current address counter value is then transferred to the other clock-domain by converting it to gray code, synchronizing it using a double-stage synchronizer (using [olo_base_cc_bits](./olo_base_cc_bits.md)) and convert it back to a two's complement number. This approach ensures that a correct value is received, even if the clock edges are aligned in a way that causes metastability on the first flip-flop. Because the data is transferred in gray code, in this case either the correct value before an increment of the counter or the correct value after the increment is received, so the result is always correct.
+Read and write address counters are handled in their corresponding clock domain. The current address counter value is then transferred to the other clock-domain by converting it to gray code, synchronizing it using aa synchronizer (using [olo_base_cc_bits](./olo_base_cc_bits.md)) and convert it back to a two's complement number. Because the data is transferred in gray code, in this case either the correct value before an increment of the counter or the correct value after the increment is received, so the result is always correct.
 
 The gray-encoding approach only works for power of two FIFO depths. For any other FIFO depths, the gray encoded counter value would toggle more than one bit during the overflow and hence the clock domain crossing would not work safely. 
 

@@ -1,19 +1,25 @@
-------------------------------------------------------------------------------
---  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
---  Copyright (c) 2024 by Oliver Bründler
---  All rights reserved.
---  Authors: Benoit Stef, Oliver Bründler
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2024 by Oliver Bründler
+-- All rights reserved.
+-- Authors: Benoit Stef, Oliver Bründler
+---------------------------------------------------------------------------------------------------
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Description
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- This is a very basic strobe generator. It produces pulses with a duration
 -- of one clock cycle at a given frequency.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_strobe_gen.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Libraries
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -22,54 +28,58 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Entity Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 entity olo_base_strobe_gen is
-    generic(
-        FreqClkHz_g      : real; 
+    generic (
+        FreqClkHz_g      : real;
         FreqStrobeHz_g   : real;
         FractionalMode_g : boolean := false
-    ); 
-    port (   
-        Clk         : in  std_logic;  
-        Rst         : in  std_logic;       
-        In_Sync     : in  std_logic     := '0';
-        Out_Valid   : out std_logic;
-        Out_Ready   : in  std_logic     := '1'
-    );      
+    );
+    port (
+        Clk         : in    std_logic;
+        Rst         : in    std_logic;
+        In_Sync     : in    std_logic := '0';
+        Out_Valid   : out   std_logic;
+        Out_Ready   : in    std_logic := '1'
+    );
 end entity;
 
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 -- Architecture Declaration
-------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_strobe_gen is
+
     -- Counter Period
-    constant PeriodCountsFractional_c : integer                      := integer(round(FreqClkHz_g*100.0 / FreqStrobeHz_g));
-    constant PeriodCountsInteger_c    : integer                      := integer(round(FreqClkHz_g / FreqStrobeHz_g));
-    constant PeriodCounts_c           : integer                      := choose(FractionalMode_g, PeriodCountsFractional_c, PeriodCountsInteger_c);
+    constant PeriodCountsFractional_c : integer := integer(round(FreqClkHz_g*100.0 / FreqStrobeHz_g));
+    constant PeriodCountsInteger_c    : integer := integer(round(FreqClkHz_g / FreqStrobeHz_g));
+    constant PeriodCounts_c           : integer := choose(FractionalMode_g, PeriodCountsFractional_c, PeriodCountsInteger_c);
+
     -- Fractional mode increments by 100 every cycle
-    constant Increment_c              : integer                      := choose(FractionalMode_g, 100, 1);
-    constant WrapBorder               : integer                      := PeriodCounts_c - Increment_c;
+    constant Increment_c  : integer := choose(FractionalMode_g, 100, 1);
+    constant WrapBorder_c : integer := PeriodCounts_c - Increment_c;
+
     -- Signal Declarations
-    signal Count     : integer range 0 to PeriodCounts_c-1 := 0;
-    signal SyncLast  : std_logic                    := '0';
+    signal Count    : integer range 0 to PeriodCounts_c-1;
+    signal SyncLast : std_logic;
+
 begin
 
-    p_strobe : process(Clk)
+    p_strobe : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- Sync
             if (In_Sync = '1') and (SyncLast = '0') then
-                Count <= 0;
-                Out_Valid   <= '1';
+                Count     <= 0;
+                Out_Valid <= '1';
             -- Wraparound
-            elsif Count >= WrapBorder then
-                Out_Valid   <= '1';
+            elsif Count >= WrapBorder_c then
+                Out_Valid <= '1';
                 if FractionalMode_g then
-                    Count   <= Count - WrapBorder;
+                    Count <= Count - WrapBorder_c;
                 else
-                    Count   <= 0;
+                    Count <= 0;
                 end if;
             -- Increment
             else
@@ -77,15 +87,15 @@ begin
                 if Out_Ready = '1' then
                     Out_Valid <= '0';
                 end if;
-                Count  <= Count + Increment_c;
+                Count <= Count + Increment_c;
             end if;
             SyncLast <= In_Sync;
 
             -- Reset
             if Rst = '1' then
-                Count       <= 0;
-                Out_Valid   <= '0';
-                SyncLast    <= '0';
+                Count     <= 0;
+                Out_Valid <= '0';
+                SyncLast  <= '0';
             end if;
         end if;
     end process;
