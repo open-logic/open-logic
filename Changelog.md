@@ -2,6 +2,58 @@
 
 # Changelog
 
+## 3.0.0
+
+28-Oct-2024
+
+### Added Features
+
+- Microchip Libero integration
+  * Script to automatically import all *Open Logic* features into a *Libero* project
+  * *Libero* tutorial (see [LiberoTutorial](./doc/tutorials/LiberoTutorial.md))
+- Addition of VSG linter to ensure adherence to coding conventions (#43)
+  - See [HowTo](./doc/HowTo.md) for documentation about how to use it
+  - Co-authored by: [patrick-studer](https://github.com/patrick-studer)
+
+- VSCode integration of VSG linter and VUnit simulation
+  - See [HowTo](./doc/HowTo.md) for documentation about how to use it
+
+- Extension of CI workflow
+  - Addition of VSG linting
+  - Addition of job to aggregate all results and report them in the GitHub Pull-Request
+
+
+### Backward Compatible Changes
+
+- Various documentation improvements
+- Addition of generic to configure number of synchronization stages in all clock-crossings. This allows satisfying very high MTBF requirements.
+  - Modified entities: *olo_base_cc_...* and *olo_base_fifo_async*
+
+
+### Non Backward Compatible Changes
+
+All entities are backward compatible. Non backward compatible changes were applied to packages only.
+
+- Modifications to packages to follow coding conventions. 
+  - Affected entities: *olo_base_pkg_array*, , *olo_axi_pkg_protocol*, *olo_intf_i2c_master_pkg* 
+
+- Removal of reducing logic functions from *olo_base_pkg_logic* (#85)
+  - The reducing logic functions from *ieee.std_logic_misc* shall be used instead
+  - Reported by: [andkae](https://github.com/andkae)
+
+### Bugfixes (Backward Compatible)
+
+* Fix heap-size issue for NVC simulator
+
+### Reporters
+
+- [andkae](https://github.com/andkae)
+- [tasgomes](https://github.com/tasgomes) 
+
+### Contributors
+
+- [patrick-studer](https://github.com/patrick-studer)
+
 ## 2.3.1
 
 16-Oct-2024
@@ -9,8 +61,6 @@
 ### Added Features
 
 - None
-
-
 
 ### Backward Compatible Changes
 
@@ -24,11 +74,12 @@
 ### Bugfixes (Backward Compatible)
 
 - **CRITICAL** - Fix wrong clock crossing in *olo_base_fifo_async* (#79)
-  - Reported by: [@aleschx](https://github.com/aleschx)
+  - Reported by: [aleschx](https://github.com/aleschx)
 
 ### Reporters
 
-- [@aleschx](https://github.com/aleschx)
+- [aleschx](https://github.com/aleschx)
+- [tasgomes](https://github.com/tasgomes) 
 
 ### Contributors
 
@@ -66,7 +117,7 @@
 
 - Various documentation improvements
 - *olo_intf_spi_slave* 
-  - Suppress needless MISO toggling at the end of a transaction (#68, reported by [@betocool-prog](https://github.com/betocool-prog) )
+  - Suppress needless MISO toggling at the end of a transaction (#68, reported by [betocool-prog](https://github.com/betocool-prog) )
 
 
 ### Non Backward Compatible Changes
@@ -82,7 +133,7 @@
 
 #### Reporters
 
-- [@betocool-prog](https://github.com/betocool-prog)
+- [betocool-prog](https://github.com/betocool-prog)
 
 #### Contributors
 

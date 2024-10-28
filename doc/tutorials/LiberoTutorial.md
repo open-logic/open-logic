@@ -296,7 +296,7 @@ If you should want to build the tutorial project without many manual mouse click
   For Verilog:
   
   ```
-  libero script_scripted_build_sv.tcl
+  libero script:scripted_build_sv.tcl
   ```
 
 Note: replace \<open-logic-root\> with the root folder of your *Open Logic* working copy.
