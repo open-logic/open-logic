@@ -359,7 +359,7 @@ for ImplRead in [True, False]:
         if (not ImplRead) and (not ImplWrite): continue
         for AddrWidth in [16, 20, 32]:
             named_config(tb, {'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiAddrWidth_g': AddrWidth})
-        for DataWidth in [16, 32, 64]:
+        for DataWidth in [8, 32, 64]:
             named_config(tb, {'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiDataWidth_g': DataWidth})
 
 axi_master_full_tb = 'olo_axi_master_full_tb'

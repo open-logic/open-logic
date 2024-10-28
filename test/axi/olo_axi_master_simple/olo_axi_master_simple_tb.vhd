@@ -33,7 +33,7 @@ library work;
 entity olo_axi_master_simple_tb is
     generic (
         AxiAddrWidth_g              : natural range 16 to 64 := 32;
-        AxiDataWidth_g              : natural range 16 to 64 := 32;
+        AxiDataWidth_g              : natural range 8 to 64  := 32;
         AxiMaxOpenTransactions_g    : natural range 1 to 8   := 2;
         ImplRead_g                  : boolean                := true;
         ImplWrite_g                 : boolean                := true;
