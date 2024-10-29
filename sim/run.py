@@ -359,8 +359,10 @@ for ImplRead in [True, False]:
         if (not ImplRead) and (not ImplWrite): continue
         for AddrWidth in [16, 20, 32]:
             named_config(tb, {'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiAddrWidth_g': AddrWidth})
-        for DataWidth in [8, 32, 64]:
+        for DataWidth in [16, 32, 64]:
             named_config(tb, {'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiDataWidth_g': DataWidth})
+#Case reported by customer
+named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiAddrWidth_g': 12, 'AxiDataWidth_g': 8, 'AxiMaxOpenTransactions_g': 1})
 
 axi_master_full_tb = 'olo_axi_master_full_tb'
 tb = olo_tb.test_bench(axi_master_full_tb)
