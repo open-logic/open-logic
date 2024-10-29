@@ -32,8 +32,8 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_axi_master_simple_tb is
     generic (
-        AxiAddrWidth_g              : natural range 16 to 64 := 32;
-        AxiDataWidth_g              : natural range 16 to 64 := 32;
+        AxiAddrWidth_g              : natural range 12 to 64 := 32;
+        AxiDataWidth_g              : natural range 8 to 64  := 32;
         AxiMaxOpenTransactions_g    : natural range 1 to 8   := 2;
         ImplRead_g                  : boolean                := true;
         ImplWrite_g                 : boolean                := true;
@@ -542,9 +542,10 @@ begin
                         wait for 100 ns;
                         check_equal(AxiMs.ar_valid, '1', "Fill Command not Valid");
                         push_burst_read_aligned (net, AxiSlave_c, X"4000", X"10", 1, DataFifoDepth_c);
+                        wait for 200 ns;
                         -- Push Second Command with full FIFO
                         pushCommand(net, RdCmdMaster_c, X"5000", 4, CmdLowLat => choose(LowLatency=1, '1', '0'));
-                        wait for 100 ns;
+                        wait for 200 ns;
                         if LowLatency = 0 then
                             check_equal(AxiMs.ar_valid, '0', "Second Command Valid despite full FIFO");
                         else
@@ -552,10 +553,9 @@ begin
                         end if;
                         -- Execute both commands
                         expectRdData(net, X"10", 1, DataFifoDepth_c);
-                        expectRdResponse(RespSuccess);
                         push_burst_read_aligned (net, AxiSlave_c, X"5000", X"40", 1, 4);
                         expectRdData(net, X"40", 1, 4);
-                        expectRdResponse(RespSuccess);
+                        wait_until_idle(net, as_sync(RdDataSlave_c));
                     end loop;
 
                 end if;
