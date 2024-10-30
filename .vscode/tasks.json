@@ -7,7 +7,7 @@
             "description" : "Enter a string to narrow down the test-case (test-cases will be filtered to contain this string): ",
             "default": ""
         }
-    ]
+    ],
     "tasks": [
         {
             "label": "Run VSG Lint",
