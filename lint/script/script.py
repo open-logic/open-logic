@@ -17,12 +17,15 @@ DIR = '../..'
 # Not linted files
 NOT_LINTED = ["RbExample.vhd"] # Docmentation example, incomplete VHDL
 
+def root_is_vc(root):
+    return root.endswith('test/tb') or root.endswith('test\\tb')
+
 def find_normal_vhd_files(directory):
     vhd_files = []
     for root, _, files in os.walk(directory):
         for file in files:
             # Skip VC files
-            if root.endswith('test/tb'):
+            if root_is_vc(root):
                 continue
             # Skip non VHD files
             if not file.endswith('.vhd'):
@@ -39,7 +42,7 @@ def find_vc_vhd_files(directory):
     for root, _, files in os.walk(directory):
         for file in files:
             # Only add VC files
-            if root.endswith('test/tb'):
+            if root_is_vc(root):
                 vhd_files.append(os.path.abspath(os.path.join(root, file)))
     return vhd_files
 
@@ -53,19 +56,19 @@ if args.syntastic:
 vhd_files_list = find_normal_vhd_files(DIR)
 vc_files_list = find_vc_vhd_files(DIR)
 
-#print("Normal VHDL Files")
-#print("\n".join(vhd_files_list))
-#print()
-#print("VC VHDL Files")
-#print("\n".join(vc_files_list))
-#exit()
+print("Normal VHDL Files")
+print("\n".join(vhd_files_list))
+print()
+print("VC VHDL Files")
+print("\n".join(vc_files_list))
+exit()
 
 error_occurred = False
 
 # Execute linting for normal VHD files
 if args.debug:
     for file in vhd_files_list:
-        print(f"Linting {file}")
+        print(f"Linting {file}: Normal Config")
         result = os.system(f'vsg -c ../config/vsg_config.yml -f {file} {otutput_format}')
         if result != 0:
             raise Exception(f"Error: Linting of {file} failed - check report")
@@ -78,13 +81,13 @@ else:
 # Execute linting for VC VHD files
 if args.debug:
     for file in vc_files_list:
-        print(f"Linting {file}")
+        print(f"Linting {file}: VC Config")
         result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml -f {file} {otutput_format}')
         if result != 0:
             raise Exception(f"Error: Linting of {file} failed - check report")
 else:
     all_files = " ".join(vc_files_list) 
-    result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml  -f {all_files} --junit ../report/vsg_vc_vhdl.xml --all_phases {otutput_format}')
+    result = os.system(f'vsg -c ../config/vsg_config.yml ../config/vsg_config_overlay_vc.yml -f {all_files} --junit ../report/vsg_vc_vhdl.xml --all_phases {otutput_format}')
     if result != 0:
         error_occurred = True
 
