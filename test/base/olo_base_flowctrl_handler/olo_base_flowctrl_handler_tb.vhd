@@ -71,10 +71,10 @@ architecture sim of olo_base_flowctrl_handler_tb is
     signal InPausesBurst : integer   := 1; -- Assert pause only after N samples
 
     procedure checkOutput (
-            OutputSize       : integer;
-            OutPauses        : integer;
-            signal Out_Ready : out std_logic;
-            OutPausesBurst   : integer := 1) is
+        OutputSize       : integer;
+        OutPauses        : integer;
+        signal Out_Ready : out std_logic;
+        OutPausesBurst   : integer := 1) is
     begin
 
         -- Loop through samples

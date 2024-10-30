@@ -99,8 +99,8 @@ architecture sim of olo_intf_spi_slave_tb is
     signal RxCheckOngoing : boolean    := false;
 
     procedure expectRx (
-            Data : std_logic_vector(TransWidth_g - 1 downto 0);
-            msg  : string := "") is
+        Data : std_logic_vector(TransWidth_g - 1 downto 0);
+        msg  : string := "") is
         variable Msg_v : msg_t := new_msg(RxMsg_c);
     begin
         push(Msg_v, Data);
@@ -108,8 +108,7 @@ architecture sim of olo_intf_spi_slave_tb is
         push(RxQueue_c, Msg_v);
     end procedure;
 
-    procedure waitUntilRxDone (
-            Dummy : boolean := false) is -- Linter fails on procedures without arguments
+    procedure waitUntilRxDone is
     begin
         if (not is_empty(RxQueue_c)) or RxCheckOngoing then
             wait until is_empty(RxQueue_c) and (not RxCheckOngoing) and rising_edge(Clk);
@@ -122,9 +121,9 @@ architecture sim of olo_intf_spi_slave_tb is
     signal RespCheckOngoing : boolean    := false;
 
     procedure expectResp (
-            Sent     : std_logic := '0';
-            Aborted  : std_logic := '0';
-            CleanEnd : std_logic := '0') is
+        Sent     : std_logic := '0';
+        Aborted  : std_logic := '0';
+        CleanEnd : std_logic := '0') is
         variable Msg_v : msg_t := new_msg(RespMsg_c);
     begin
         push(Msg_v, Sent);
@@ -133,8 +132,7 @@ architecture sim of olo_intf_spi_slave_tb is
         push(RespQueue_c, Msg_v);
     end procedure;
 
-    procedure waitUntilRespDone (
-            Dummy : boolean := false) is -- Linter fails on procedures without arguments
+    procedure waitUntilRespDone is
     begin
         if (not is_empty(RespQueue_c)) or RespCheckOngoing then
             wait until is_empty(RespQueue_c) and (not RespCheckOngoing) and rising_edge(Clk);
@@ -147,9 +145,9 @@ architecture sim of olo_intf_spi_slave_tb is
     signal TxCheckOngoing : boolean    := false;
 
     procedure applyTx (
-            Data        : std_logic_vector(TransWidth_g - 1 downto 0);
-            DelayCycles : integer := 0;
-            msg         : string  := "") is
+        Data        : std_logic_vector(TransWidth_g - 1 downto 0);
+        DelayCycles : integer := 0;
+        msg         : string  := "") is
         variable Msg_v : msg_t := new_msg(TxMsg_c);
     begin
         push(Msg_v, Data);
@@ -158,8 +156,7 @@ architecture sim of olo_intf_spi_slave_tb is
         push(TxQueue_c, Msg_v);
     end procedure;
 
-    procedure waitUntilTxDone (
-            Dummy : boolean := false) is -- Linter fails on procedures without arguments
+    procedure waitUntilTxDone is
     begin
         if (not is_empty(TxQueue_c)) or TxCheckOngoing then
             wait until is_empty(TxQueue_c) and (not TxCheckOngoing) and rising_edge(Clk);

@@ -47,12 +47,12 @@ architecture sim of olo_base_ram_tdp_tb is
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
     procedure write (
-            address       : natural;
-            data          : natural;
-            signal Clk    : in std_logic;
-            signal Addr   : out std_logic_vector;
-            signal WrData : out std_logic_vector;
-            signal WrEna  : out std_logic) is
+        address       : natural;
+        data          : natural;
+        signal Clk    : in std_logic;
+        signal Addr   : out std_logic_vector;
+        signal WrData : out std_logic_vector;
+        signal WrEna  : out std_logic) is
     begin
         wait until rising_edge(Clk);
         Addr   <= toUslv(address, Addr'length);
@@ -65,12 +65,12 @@ architecture sim of olo_base_ram_tdp_tb is
     end procedure;
 
     procedure check (
-            address       : natural;
-            data          : natural;
-            signal Clk    : in std_logic;
-            signal Addr   : out std_logic_vector;
-            signal RdData : in std_logic_vector;
-            message       : string) is
+        address       : natural;
+        data          : natural;
+        signal Clk    : in std_logic;
+        signal Addr   : out std_logic_vector;
+        signal RdData : in std_logic_vector;
+        message       : string) is
     begin
         wait until rising_edge(Clk);
         Addr <= toUslv(address, Addr'length);
@@ -86,14 +86,14 @@ architecture sim of olo_base_ram_tdp_tb is
     end procedure;
 
     procedure basicCheck (
-            signal Wr_Clk  : in std_logic;
-            signal Wr_Addr : out std_logic_vector;
-            signal Wr_Data : out std_logic_vector;
-            signal Wr_Ena  : out std_logic;
-            signal Wr_Be   : out std_logic_vector;
-            signal Rd_Clk  : in std_logic;
-            signal Rd_Addr : out std_logic_vector;
-            signal Rd_Data : in std_logic_vector) is
+        signal Wr_Clk  : in std_logic;
+        signal Wr_Addr : out std_logic_vector;
+        signal Wr_Data : out std_logic_vector;
+        signal Wr_Ena  : out std_logic;
+        signal Wr_Be   : out std_logic_vector;
+        signal Rd_Clk  : in std_logic;
+        signal Rd_Addr : out std_logic_vector;
+        signal Rd_Data : in std_logic_vector) is
     begin
         if UseByteEnable_g then
             Wr_Be <= toSslv(-1, Wr_Be'length); -- BE not checked -> all ones
@@ -109,15 +109,15 @@ architecture sim of olo_base_ram_tdp_tb is
     end procedure;
 
     procedure byteEnableCheck (
-            signal Wr_Clk    : in std_logic;
-            signal Wr_Addr   : out std_logic_vector;
-            signal Wr_Data   : out std_logic_vector;
-            signal Wr_Ena    : out std_logic;
-            signal Wr_Be     : out std_logic_vector;
-            signal Wr_RdData : in std_logic_vector;
-            signal Rd_Clk    : in std_logic;
-            signal Rd_Addr   : out std_logic_vector;
-            signal Rd_Data   : in std_logic_vector) is
+        signal Wr_Clk    : in std_logic;
+        signal Wr_Addr   : out std_logic_vector;
+        signal Wr_Data   : out std_logic_vector;
+        signal Wr_Ena    : out std_logic;
+        signal Wr_Be     : out std_logic_vector;
+        signal Wr_RdData : in std_logic_vector;
+        signal Rd_Clk    : in std_logic;
+        signal Rd_Addr   : out std_logic_vector;
+        signal Rd_Data   : in std_logic_vector) is
     begin
         if UseByteEnable_g and (Width_g mod 8 = 0) and (Width_g > 8) then
 
@@ -141,12 +141,12 @@ architecture sim of olo_base_ram_tdp_tb is
     end procedure;
 
     procedure readDuringWrite (
-            signal Clk    : in std_logic;
-            signal Addr   : out std_logic_vector;
-            signal WrData : out std_logic_vector;
-            signal WrEna  : out std_logic;
-            signal Be     : out std_logic_vector;
-            signal RdData : in std_logic_vector) is
+        signal Clk    : in std_logic;
+        signal Addr   : out std_logic_vector;
+        signal WrData : out std_logic_vector;
+        signal WrEna  : out std_logic;
+        signal Be     : out std_logic_vector;
+        signal RdData : in std_logic_vector) is
     begin
 
         -- Initialize

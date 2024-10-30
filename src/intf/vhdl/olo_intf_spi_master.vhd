@@ -137,11 +137,11 @@ architecture rtl of olo_intf_spi_master is
     end function;
 
     procedure shiftReg (
-            signal BeforeShift  : in std_logic_vector(MaxTransWidth_g-1 downto 0);
-            variable AfterShift : out std_logic_vector(MaxTransWidth_g-1 downto 0);
-            signal InputBit     : in std_logic;
-            variable OutputBit  : out std_logic;
-            TransWidth          : in integer range 0 to MaxTransWidth_g) is
+        signal BeforeShift  : in std_logic_vector(MaxTransWidth_g-1 downto 0);
+        variable AfterShift : out std_logic_vector(MaxTransWidth_g-1 downto 0);
+        signal InputBit     : in std_logic;
+        variable OutputBit  : out std_logic;
+        TransWidth          : in integer range 0 to MaxTransWidth_g) is
     begin
         if LsbFirst_g then
             OutputBit                := BeforeShift(0);

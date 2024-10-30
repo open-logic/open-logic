@@ -40,104 +40,104 @@ package olo_test_i2c_pkg is
 
     -- Send start (and switch to master operation mode)
     procedure i2c_push_start (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            delay      : time   := 0 ns;
-            msg        : string := "");
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        delay      : time   := 0 ns;
+        msg        : string := "");
 
     -- Send repeated start
     procedure i2c_push_repeated_start (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            delay      : time   := 0 ns;
-            msg        : string := "");
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        delay      : time   := 0 ns;
+        msg        : string := "");
 
     -- Send stop (and switch to idle operation mode)
     procedure i2c_push_stop (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            delay      : time   := 0 ns;
-            msg        : string := "");
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        delay      : time   := 0 ns;
+        msg        : string := "");
 
     -- Send address
     procedure i2c_push_addr_start (
-            signal net   : inout network_t;
-            i2c          : olo_test_i2c_t;
-            address      : integer;
-            is_read      : boolean;
-            addr_bits    : natural range 7 to 10 := 7;
-            expected_ack : std_logic             := i2c_ack;
-            delay        : time                  := 0 ns;
-            msg          : string                := "");
+        signal net   : inout network_t;
+        i2c          : olo_test_i2c_t;
+        address      : integer;
+        is_read      : boolean;
+        addr_bits    : natural range 7 to 10 := 7;
+        expected_ack : std_logic             := i2c_ack;
+        delay        : time                  := 0 ns;
+        msg          : string                := "");
 
     -- *** Slave Operations ***
     -- Wait for start (and switch to slave operation mode)
     procedure i2c_expect_start (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            timeout    : time   := 1 ms;
-            msg        : string := "");
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        timeout    : time   := 1 ms;
+        msg        : string := "");
 
     -- Wait for repeated start
     procedure i2c_expect_repeated_start (
-            signal net  : inout network_t;
-            i2c         : olo_test_i2c_t;
-            timeout     : time   := 1 ms;
-            clk_stretch : time   := 0 ns;
-            msg         : string := "");
+        signal net  : inout network_t;
+        i2c         : olo_test_i2c_t;
+        timeout     : time   := 1 ms;
+        clk_stretch : time   := 0 ns;
+        msg         : string := "");
 
     -- Wait for stop (and switch to idle operation mode)
     procedure i2c_expect_stop (
-            signal net  : inout network_t;
-            i2c         : olo_test_i2c_t;
-            timeout     : time   := 1 ms;
-            clk_stretch : time   := 0 ns;
-            msg         : string := "");
+        signal net  : inout network_t;
+        i2c         : olo_test_i2c_t;
+        timeout     : time   := 1 ms;
+        clk_stretch : time   := 0 ns;
+        msg         : string := "");
 
     -- Expect address
     procedure i2c_expect_addr (
-            signal net  : inout network_t;
-            i2c         : olo_test_i2c_t;
-            address     : integer;
-            is_read     : boolean;
-            addr_bits   : natural range 7 to 10 := 7;
-            ack_output  : std_logic             := i2c_ack;
-            timeout     : time                  := 1 ms;
-            clk_stretch : time                  := 0 ns;
-            msg         : string                := "");
+        signal net  : inout network_t;
+        i2c         : olo_test_i2c_t;
+        address     : integer;
+        is_read     : boolean;
+        addr_bits   : natural range 7 to 10 := 7;
+        ack_output  : std_logic             := i2c_ack;
+        timeout     : time                  := 1 ms;
+        clk_stretch : time                  := 0 ns;
+        msg         : string                := "");
 
     -- *** General Operations ***
 
     -- Send TX Byte
     procedure i2c_push_tx_byte (
-            signal net   : inout network_t;
-            i2c          : olo_test_i2c_t;
-            data         : integer range -128 to 255;
-            expected_ack : std_logic := i2c_ack;
-            clk_stretch  : time      := 0 ns; -- only allowed in slave mode
-            delay        : time      := 0 ns; -- only allowed in master mode
-            msg          : string    := "");
+        signal net   : inout network_t;
+        i2c          : olo_test_i2c_t;
+        data         : integer range -128 to 255;
+        expected_ack : std_logic := i2c_ack;
+        clk_stretch  : time      := 0 ns; -- only allowed in slave mode
+        delay        : time      := 0 ns; -- only allowed in master mode
+        msg          : string    := "");
 
     -- Receive RX Byte
     procedure i2c_expect_rx_byte (
-            signal net  : inout network_t;
-            i2c         : olo_test_i2c_t;
-            expData     : integer range -128 to 255;
-            ack_output  : std_logic := i2c_ack;
-            clk_stretch : time      := 0 ns; -- only allowed in slave mode
-            msg         : string    := "");
+        signal net  : inout network_t;
+        i2c         : olo_test_i2c_t;
+        expData     : integer range -128 to 255;
+        ack_output  : std_logic := i2c_ack;
+        clk_stretch : time      := 0 ns; -- only allowed in slave mode
+        msg         : string    := "");
 
     -- Force I2C VC in slave mode to master operation mode
     procedure i2c_force_master_mode (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            msg        : string := "");
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        msg        : string := "");
 
     -- Force releasing of the bus
     procedure i2c_force_bus_release (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            msg        : string := "");
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        msg        : string := "");
 
     -- *** VUnit Operations ***
 
@@ -163,8 +163,8 @@ package olo_test_i2c_pkg is
 
     -- I2c Pullup
     procedure i2c_pull_up (
-            signal scl : inout std_logic;
-            signal sda : inout std_logic);
+        signal scl : inout std_logic;
+        signal sda : inout std_logic);
 
 end package;
 
@@ -174,10 +174,10 @@ package body olo_test_i2c_pkg is
 
     -- Send start (and switch to master operation mode)
     procedure i2c_push_start (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            delay      : time   := 0 ns;
-            msg        : string := "") is
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        delay      : time   := 0 ns;
+        msg        : string := "") is
         variable msg_v : msg_t := new_msg(i2c_push_start_msg);
     begin
         push(msg_v, delay);
@@ -187,10 +187,10 @@ package body olo_test_i2c_pkg is
 
     -- Send repeated start (and switch to master operation mode)
     procedure i2c_push_repeated_start (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            delay      : time   := 0 ns;
-            msg        : string := "") is
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        delay      : time   := 0 ns;
+        msg        : string := "") is
         variable msg_v : msg_t := new_msg(i2c_push_repeated_start_msg);
     begin
         push(msg_v, delay);
@@ -200,10 +200,10 @@ package body olo_test_i2c_pkg is
 
     -- Send stop (and switch to idle operation mode)
     procedure i2c_push_stop (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            delay      : time   := 0 ns;
-            msg        : string := "") is
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        delay      : time   := 0 ns;
+        msg        : string := "") is
         variable msg_v : msg_t := new_msg(i2c_push_stop_msg);
     begin
         push(msg_v, delay);
@@ -213,14 +213,14 @@ package body olo_test_i2c_pkg is
 
     -- Send address
     procedure i2c_push_addr_start (
-            signal net   : inout network_t;
-            i2c          : olo_test_i2c_t;
-            address      : integer;
-            is_read      : boolean;
-            addr_bits    : natural range 7 to 10 := 7;
-            expected_ack : std_logic             := i2c_ack;
-            delay        : time                  := 0 ns;
-            msg          : string                := "") is
+        signal net   : inout network_t;
+        i2c          : olo_test_i2c_t;
+        address      : integer;
+        is_read      : boolean;
+        addr_bits    : natural range 7 to 10 := 7;
+        expected_ack : std_logic             := i2c_ack;
+        delay        : time                  := 0 ns;
+        msg          : string                := "") is
         variable msg_v : msg_t := new_msg(i2c_push_addr_msg);
     begin
         push(msg_v, address);
@@ -236,10 +236,10 @@ package body olo_test_i2c_pkg is
 
     -- Wait for start (and switch to slave operation mode)
     procedure i2c_expect_start (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            timeout    : time   := 1 ms;
-            msg        : string := "") is
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        timeout    : time   := 1 ms;
+        msg        : string := "") is
         variable msg_v : msg_t := new_msg(i2c_expect_start_msg);
     begin
         push(msg_v, timeout);
@@ -249,11 +249,11 @@ package body olo_test_i2c_pkg is
 
     -- Wait for repeated start
     procedure i2c_expect_repeated_start (
-            signal net  : inout network_t;
-            i2c         : olo_test_i2c_t;
-            timeout     : time   := 1 ms;
-            clk_stretch : time   := 0 ns;
-            msg         : string := "") is
+        signal net  : inout network_t;
+        i2c         : olo_test_i2c_t;
+        timeout     : time   := 1 ms;
+        clk_stretch : time   := 0 ns;
+        msg         : string := "") is
         variable msg_v : msg_t := new_msg(i2c_expect_repeated_start_msg);
     begin
         push(msg_v, timeout);
@@ -264,11 +264,11 @@ package body olo_test_i2c_pkg is
 
     -- Wait for stop (and switch to idle operation mode)
     procedure i2c_expect_stop (
-            signal net  : inout network_t;
-            i2c         : olo_test_i2c_t;
-            timeout     : time   := 1 ms;
-            clk_stretch : time   := 0 ns;
-            msg         : string := "") is
+        signal net  : inout network_t;
+        i2c         : olo_test_i2c_t;
+        timeout     : time   := 1 ms;
+        clk_stretch : time   := 0 ns;
+        msg         : string := "") is
         variable msg_v : msg_t := new_msg(i2c_expect_stop_msg);
     begin
         push(msg_v, timeout);
@@ -279,15 +279,15 @@ package body olo_test_i2c_pkg is
 
     -- Expect address
     procedure i2c_expect_addr (
-            signal net  : inout network_t;
-            i2c         : olo_test_i2c_t;
-            address     : integer;
-            is_read     : boolean;
-            addr_bits   : natural range 7 to 10 := 7;
-            ack_output  : std_logic             := i2c_ack;
-            timeout     : time                  := 1 ms;
-            clk_stretch : time                  := 0 ns;
-            msg         : string                := "") is
+        signal net  : inout network_t;
+        i2c         : olo_test_i2c_t;
+        address     : integer;
+        is_read     : boolean;
+        addr_bits   : natural range 7 to 10 := 7;
+        ack_output  : std_logic             := i2c_ack;
+        timeout     : time                  := 1 ms;
+        clk_stretch : time                  := 0 ns;
+        msg         : string                := "") is
         variable msg_v : msg_t := new_msg(i2c_expect_addr_msg);
     begin
         push(msg_v, address);
@@ -304,13 +304,13 @@ package body olo_test_i2c_pkg is
 
     -- Send TX Byte
     procedure i2c_push_tx_byte (
-            signal net   : inout network_t;
-            i2c          : olo_test_i2c_t;
-            data         : integer range -128 to 255;
-            expected_ack : std_logic := i2c_ack;
-            clk_stretch  : time      := 0 ns;  -- only allowed in slave mode
-            delay        : time      := 0 ns; -- only allowed in master mode
-            msg          : string    := "") is
+        signal net   : inout network_t;
+        i2c          : olo_test_i2c_t;
+        data         : integer range -128 to 255;
+        expected_ack : std_logic := i2c_ack;
+        clk_stretch  : time      := 0 ns;  -- only allowed in slave mode
+        delay        : time      := 0 ns; -- only allowed in master mode
+        msg          : string    := "") is
         variable msg_v : msg_t := new_msg(i2c_push_tx_byte_msg);
     begin
         push(msg_v, data);
@@ -323,12 +323,12 @@ package body olo_test_i2c_pkg is
 
     -- Receive RX Byte
     procedure i2c_expect_rx_byte (
-            signal net  : inout network_t;
-            i2c         : olo_test_i2c_t;
-            expData     : integer range -128 to 255;
-            ack_output  : std_logic := i2c_ack;
-            clk_stretch : time      := 0 ns;  -- only allowed in slave mode
-            msg         : string    := "") is
+        signal net  : inout network_t;
+        i2c         : olo_test_i2c_t;
+        expData     : integer range -128 to 255;
+        ack_output  : std_logic := i2c_ack;
+        clk_stretch : time      := 0 ns;  -- only allowed in slave mode
+        msg         : string    := "") is
         variable msg_v : msg_t := new_msg(i2c_expect_rx_byte_msg);
     begin
         push(msg_v, expData);
@@ -340,9 +340,9 @@ package body olo_test_i2c_pkg is
 
     -- Force I2C VC in slave mode to master operation mode
     procedure i2c_force_master_mode (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            msg        : string := "") is
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        msg        : string := "") is
         variable msg_v : msg_t := new_msg(i2c_force_master_mode_msg);
     begin
         push_string(msg_v, msg);
@@ -351,9 +351,9 @@ package body olo_test_i2c_pkg is
 
     -- Force releasing of the bus
     procedure i2c_force_bus_release (
-            signal net : inout network_t;
-            i2c        : olo_test_i2c_t;
-            msg        : string := "") is
+        signal net : inout network_t;
+        i2c        : olo_test_i2c_t;
+        msg        : string := "") is
         variable msg_v : msg_t := new_msg(i2c_force_bus_release_msg);
     begin
         push_string(msg_v, msg);
@@ -364,8 +364,8 @@ package body olo_test_i2c_pkg is
 
     -- Pull Up
     procedure i2c_pull_up (
-            signal scl : inout std_logic;
-            signal sda : inout std_logic) is
+        signal scl : inout std_logic;
+        signal sda : inout std_logic) is
     begin
         scl <= 'H';
         sda <= 'H';
@@ -373,7 +373,7 @@ package body olo_test_i2c_pkg is
 
     -- Constructor
     impure function new_olo_test_i2c (
-            bus_frequency : real    := 100.0e3) return olo_test_i2c_t is
+        bus_frequency : real    := 100.0e3) return olo_test_i2c_t is
     begin
         return (p_actor => new_actor,
                 bus_frequency => bus_frequency);
@@ -424,9 +424,9 @@ architecture a of olo_test_i2c_vc is
 
     -- **** Local procedures and functions ***
     procedure level_check (
-            signal sig : std_logic;
-            expected   : std_logic;
-            msg        : string) is
+        signal sig : std_logic;
+        expected   : std_logic;
+        msg        : string) is
         variable sig_v : std_logic;
     begin
         sig_v := to01X(sig);
@@ -434,10 +434,10 @@ architecture a of olo_test_i2c_vc is
     end procedure;
 
     procedure level_wait (
-            signal sig : std_logic;
-            expected   : std_logic;
-            msg        : string;
-            timeout    : time := 1 ms) is
+        signal sig : std_logic;
+        expected   : std_logic;
+        msg        : string;
+        timeout    : time := 1 ms) is
         variable correct : boolean;
     begin
         if expected = '0' then
@@ -455,31 +455,28 @@ architecture a of olo_test_i2c_vc is
     end procedure;
 
     -- *** Time Calculations ***
-    impure function clk_period (
-            dummy : boolean := false) return time is -- Linter fails on procedures without arguments
+    impure function clk_period return time is
     begin
         return (1 sec) / instance.bus_frequency;
     end function;
 
-    impure function clk_half_period (
-            dummy : boolean := false) return time is -- Linter fails on procedures without arguments
+    impure function clk_half_period return time is
     begin
         return (0.5 sec) / instance.bus_frequency;
     end function;
 
-    impure function clk_quart_period (
-            dummy : boolean := false) return time is -- Linter fails on procedures without arguments
+    impure function clk_quart_period return time is
     begin
         return (0.25 sec) / instance.bus_frequency;
     end function;
 
     -- *** Bit Transfers ***
     procedure send_bit_incl_clock (
-            data       : in    std_logic;
-            signal scl : inout std_logic;
-            signal sda : inout std_logic;
-            msg        : in    string;
-            timeout    : in    time := 1 ms) is
+        data       : in    std_logic;
+        signal scl : inout std_logic;
+        signal sda : inout std_logic;
+        msg        : in    string;
+        timeout    : in    time := 1 ms) is
     begin
         -- Initial Check
         level_check(scl, '0', msg & " - SCL is HIGH but was expected LOW here [send_bit_incl_clock]");
@@ -504,11 +501,11 @@ architecture a of olo_test_i2c_vc is
     end procedure;
 
     procedure receive_bit_incl_clock (
-            variable data : out   std_logic;
-            signal scl    : inout std_logic;
-            signal sda    : inout std_logic;
-            msg           : in    string;
-            timeout       : in    time := 1 ms) is
+        variable data : out   std_logic;
+        signal scl    : inout std_logic;
+        signal sda    : inout std_logic;
+        msg           : in    string;
+        timeout       : in    time := 1 ms) is
     begin
         -- Initial Check
         level_check(scl, '0', msg & " - SCL is HIGH but was expected LOW here [receive_bit_incl_clock]");
@@ -528,12 +525,12 @@ architecture a of olo_test_i2c_vc is
     end procedure;
 
     procedure send_bit_excl_clock (
-            data        : in    std_logic;
-            signal scl  : inout std_logic;
-            signal sda  : inout std_logic;
-            msg         : in    string;
-            timeout     : in    time := 1 ms;
-            clk_stretch : in    time := 0 ns) is
+        data        : in    std_logic;
+        signal scl  : inout std_logic;
+        signal sda  : inout std_logic;
+        msg         : in    string;
+        timeout     : in    time := 1 ms;
+        clk_stretch : in    time := 0 ns) is
         variable stretched : boolean := false;
     begin
         -- Initial Check
@@ -570,12 +567,12 @@ architecture a of olo_test_i2c_vc is
     end procedure;
 
     procedure receive_bit_excl_clock (
-            data        : out   std_logic;
-            signal scl  : inout std_logic;
-            signal sda  : inout std_logic;
-            msg         : in    string;
-            timeout     : in    time := 1 ms;
-            clk_stretch : in    time := 0 ns) is
+        data        : out   std_logic;
+        signal scl  : inout std_logic;
+        signal sda  : inout std_logic;
+        msg         : in    string;
+        timeout     : in    time := 1 ms;
+        clk_stretch : in    time := 0 ns) is
     begin
         -- Initial Check
         level_check(scl, '0', msg & " - SCL is HIGH but was expected LOW here [receive_bit_excl_clock]");
@@ -601,10 +598,10 @@ architecture a of olo_test_i2c_vc is
 
     -- *** Byte Transfers ***
     procedure send_byte_incl_clock (
-            data       : in    std_logic_vector(7 downto 0);
-            signal scl : inout std_logic;
-            signal sda : inout std_logic;
-            msg        : in    string) is
+        data       : in    std_logic_vector(7 downto 0);
+        signal scl : inout std_logic;
+        signal sda : inout std_logic;
+        msg        : in    string) is
     begin
 
         -- Do bits
@@ -615,11 +612,11 @@ architecture a of olo_test_i2c_vc is
     end procedure;
 
     procedure send_byte_excl_clock (
-            data        : in    std_logic_vector(7 downto 0);
-            signal scl  : inout std_logic;
-            signal sda  : inout std_logic;
-            msg         : in    string;
-            clk_stretch : in    time := 0 ns) is
+        data        : in    std_logic_vector(7 downto 0);
+        signal scl  : inout std_logic;
+        signal sda  : inout std_logic;
+        msg         : in    string;
+        clk_stretch : in    time := 0 ns) is
     begin
 
         -- Do bits
@@ -630,10 +627,10 @@ architecture a of olo_test_i2c_vc is
     end procedure;
 
     procedure expect_byte_incl_clock (
-            ExpData    : in    std_logic_vector(7 downto 0);
-            signal scl : inout std_logic;
-            signal sda : inout std_logic;
-            msg        : in    string) is
+        ExpData    : in    std_logic_vector(7 downto 0);
+        signal scl : inout std_logic;
+        signal sda : inout std_logic;
+        msg        : in    string) is
         variable rx_byte : std_logic_vector(7 downto 0) := (others => 'X');
     begin
 
@@ -646,11 +643,11 @@ architecture a of olo_test_i2c_vc is
     end procedure;
 
     procedure expect_byte_excl_clock (
-            ExpData     : in    std_logic_vector(7 downto 0);
-            signal scl  : inout std_logic;
-            signal sda  : inout std_logic;
-            msg         : in    string;
-            clk_stretch : in    time := 0 ns) is
+        ExpData     : in    std_logic_vector(7 downto 0);
+        signal scl  : inout std_logic;
+        signal sda  : inout std_logic;
+        msg         : in    string;
+        clk_stretch : in    time := 0 ns) is
         variable rx_byte : std_logic_vector(7 downto 0) := (others => 'X');
     begin
 
@@ -665,16 +662,16 @@ architecture a of olo_test_i2c_vc is
     -- *** Utilities ***
     -- Calculate adddress
     function i2c_get_addr (
-            addr   : in integer;
-            is_read : in boolean) return integer is
+        addr   : in integer;
+        is_read : in boolean) return integer is
     begin
         return addr*2+choose(is_read, 1, 0);
     end function;
 
     -- Free Bus
     procedure i2c_bus_free (
-            signal scl : inout std_logic;
-            signal sda : inout std_logic) is
+        signal scl : inout std_logic;
+        signal sda : inout std_logic) is
     begin
         scl <= 'Z';
         sda <= 'Z';

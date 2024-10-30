@@ -36,16 +36,14 @@ package olo_base_pkg_logic is
     function onesVector (size : in natural) return std_logic_vector;
 
     function shiftLeft (
-            arg  : in std_logic_vector;
-            bits : in integer;
-            fill : in std_logic := '0')
-                            return std_logic_vector;
+        arg  : in std_logic_vector;
+        bits : in integer;
+        fill : in std_logic := '0') return std_logic_vector;
 
     function shiftRight (
-            arg  : in std_logic_vector;
-            bits : in integer;
-            fill : in std_logic := '0')
-                            return std_logic_vector;
+        arg  : in std_logic_vector;
+        bits : in integer;
+        fill : in std_logic := '0') return std_logic_vector;
 
     function binaryToGray (binary : in std_logic_vector) return std_logic_vector;
 
@@ -126,9 +124,9 @@ package body olo_base_pkg_logic is
 
     -- *** ShiftLeft ***
     function shiftLeft (
-            arg  : in std_logic_vector;
-            bits : in integer;
-            fill : in std_logic := '0') return std_logic_vector is
+        arg  : in std_logic_vector;
+        bits : in integer;
+        fill : in std_logic := '0') return std_logic_vector is
         constant ArgDownto_c : std_logic_vector(arg'high downto arg'low) := arg;
         variable Vector_v    : std_logic_vector(ArgDownto_c'range);
     begin
@@ -143,9 +141,9 @@ package body olo_base_pkg_logic is
 
     -- *** ShiftRight ***
     function shiftRight (
-            arg  : in std_logic_vector;
-            bits : in integer;
-            fill : in std_logic := '0') return std_logic_vector is
+        arg  : in std_logic_vector;
+        bits : in integer;
+        fill : in std_logic := '0') return std_logic_vector is
         constant ArgDownto_c : std_logic_vector(arg'high downto arg'low) := arg;
         variable Vector_v    : std_logic_vector(ArgDownto_c'range);
     begin

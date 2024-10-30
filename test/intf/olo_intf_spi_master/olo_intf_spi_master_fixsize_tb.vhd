@@ -88,10 +88,10 @@ architecture sim of olo_intf_spi_master_fixsize_tb is
     );
 
     procedure sendCommand (
-            SlaveIdx         : integer;
-            TxData           : std_logic_vector;
-            signal Cmd_Valid : out std_logic;
-            signal Cmd_Data  : out std_logic_vector) is
+        SlaveIdx         : integer;
+        TxData           : std_logic_vector;
+        signal Cmd_Valid : out std_logic;
+        signal Cmd_Data  : out std_logic_vector) is
     begin
         wait until rising_edge(Clk);
         check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
@@ -107,7 +107,7 @@ architecture sim of olo_intf_spi_master_fixsize_tb is
     end procedure;
 
     procedure checkResponse (
-            RxData : std_logic_vector) is
+        RxData : std_logic_vector) is
     begin
         wait until rising_edge(Clk) and Resp_Valid = '1';
         check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");

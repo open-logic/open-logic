@@ -38,14 +38,14 @@ package olo_test_spi_master_pkg is
 
     -- Transaction
     procedure spi_master_push_transaction (
-            signal net       : inout network_t;
-            spi              : olo_test_spi_master_t;
-            transaction_bits : positive;
-            data_mosi        : std_logic_vector := "X";
-            data_miso        : std_logic_vector := "X";
-            csn_first        : boolean          := false; -- CSn is operated before sclk at beginning/end of transaction
-            timeout          : time             := 1 ms;
-            msg              : string           := "");
+        signal net       : inout network_t;
+        spi              : olo_test_spi_master_t;
+        transaction_bits : positive;
+        data_mosi        : std_logic_vector := "X";
+        data_miso        : std_logic_vector := "X";
+        csn_first        : boolean          := false; -- CSn is operated before sclk at beginning/end of transaction
+        timeout          : time             := 1 ms;
+        msg              : string           := "");
 
     -- *** VUnit Operations ***
     -- Message Types
@@ -53,11 +53,11 @@ package olo_test_spi_master_pkg is
 
     -- Constructor
     impure function new_olo_test_spi_master (
-            bus_frequency   : real    := 1.0e6;
-            lsb_first       : boolean := false;
-            max_trans_width : natural := 32;
-            cpha            : integer range 0 to 1 := 0;
-            cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t;
+        bus_frequency   : real    := 1.0e6;
+        lsb_first       : boolean := false;
+        max_trans_width : natural := 32;
+        cpha            : integer range 0 to 1 := 0;
+        cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t;
 
     -- Casts
     impure function as_sync (instance : olo_test_spi_master_t) return sync_handle_t;
@@ -70,14 +70,14 @@ package body olo_test_spi_master_pkg is
 
     -- Transaction
     procedure spi_master_push_transaction (
-            signal net       : inout network_t;
-            spi              : olo_test_spi_master_t;
-            transaction_bits : positive;
-            data_mosi        : std_logic_vector := "X";
-            data_miso        : std_logic_vector := "X";
-            csn_first        : boolean          := false;
-            timeout          : time             := 1 ms;
-            msg              : string           := "") is
+        signal net       : inout network_t;
+        spi              : olo_test_spi_master_t;
+        transaction_bits : positive;
+        data_mosi        : std_logic_vector := "X";
+        data_miso        : std_logic_vector := "X";
+        csn_first        : boolean          := false;
+        timeout          : time             := 1 ms;
+        msg              : string           := "") is
         variable msg_v  : msg_t                                            := new_msg(spi_master_push_transaction_msg);
         variable mosi_v : std_logic_vector(spi.max_trans_width-1 downto 0) := (others => '0');
         variable miso_v : std_logic_vector(spi.max_trans_width-1 downto 0) := (others => 'X');
@@ -106,11 +106,11 @@ package body olo_test_spi_master_pkg is
 
     -- Constructor
     impure function new_olo_test_spi_master (
-            bus_frequency   : real                 := 1.0e6;
-            lsb_first       : boolean              := false;
-            max_trans_width : natural              := 32;
-            cpha            : integer range 0 to 1 := 0;
-            cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t is
+        bus_frequency   : real                 := 1.0e6;
+        lsb_first       : boolean              := false;
+        max_trans_width : natural              := 32;
+        cpha            : integer range 0 to 1 := 0;
+        cpol            : integer range 0 to 1 := 0) return olo_test_spi_master_t is
     begin
         return (p_actor => new_actor,
                 lsb_first => lsb_first,

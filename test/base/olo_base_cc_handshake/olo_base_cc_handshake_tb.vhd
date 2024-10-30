@@ -72,8 +72,8 @@ architecture sim of olo_base_cc_handshake_tb is
 
     -- *** Procedures ***
     procedure pushValues (
-            signal net : inout network_t;
-            values     : integer := 100) is
+        signal net : inout network_t;
+        values     : integer := 100) is
     begin
 
         -- Loop over values
@@ -87,8 +87,8 @@ architecture sim of olo_base_cc_handshake_tb is
     end procedure;
 
     procedure checkValues (
-            signal net : inout network_t;
-            values     : integer := 100) is
+        signal net : inout network_t;
+        values     : integer := 100) is
     begin
 
         -- Loop over values

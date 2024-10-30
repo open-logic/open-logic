@@ -46,12 +46,12 @@ architecture sim of olo_base_ram_sp_tb is
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
     procedure write (
-            address       : natural;
-            data          : natural;
-            signal Clk    : in std_logic;
-            signal Addr   : out std_logic_vector;
-            signal WrData : out std_logic_vector;
-            signal WrEna  : out std_logic) is
+        address       : natural;
+        data          : natural;
+        signal Clk    : in std_logic;
+        signal Addr   : out std_logic_vector;
+        signal WrData : out std_logic_vector;
+        signal WrEna  : out std_logic) is
     begin
         wait until rising_edge(Clk);
         Addr   <= toUslv(address, Addr'length);
@@ -64,12 +64,12 @@ architecture sim of olo_base_ram_sp_tb is
     end procedure;
 
     procedure check (
-            address       : natural;
-            data          : natural;
-            signal Clk    : in std_logic;
-            signal Addr   : out std_logic_vector;
-            signal RdData : in std_logic_vector;
-            message       : string) is
+        address       : natural;
+        data          : natural;
+        signal Clk    : in std_logic;
+        signal Addr   : out std_logic_vector;
+        signal RdData : in std_logic_vector;
+        message       : string) is
     begin
         wait until rising_edge(Clk);
         Addr <= toUslv(address, Addr'length);
