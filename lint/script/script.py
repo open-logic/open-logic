@@ -61,7 +61,8 @@ print("\n".join(vhd_files_list))
 print()
 print("VC VHDL Files")
 print("\n".join(vc_files_list))
-exit()
+print()
+print("Start Linting")
 
 error_occurred = False
 
