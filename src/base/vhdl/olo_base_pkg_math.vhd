@@ -39,83 +39,83 @@ package olo_base_pkg_math is
     function isPower2 (arg : in natural) return boolean;
 
     function max (
-            a : in integer;
-            b : in integer) return integer;
+        a : in integer;
+        b : in integer) return integer;
 
     function min (
-            a : in integer;
-            b : in integer) return integer;
+        a : in integer;
+        b : in integer) return integer;
 
     function max (
-            a : in real;
-            b : in real) return real;
+        a : in real;
+        b : in real) return real;
 
     function min (
-            a : in real;
-            b : in real) return real;
+        a : in real;
+        b : in real) return real;
 
     -- choose t if s=true else f
     function choose (
-            s : in boolean;
-            t : in std_logic;
-            f : in std_logic) return std_logic;
+        s : in boolean;
+        t : in std_logic;
+        f : in std_logic) return std_logic;
 
     function choose (
-            s : in boolean;
-            t : in std_logic_vector;
-            f : in std_logic_vector) return std_logic_vector;
+        s : in boolean;
+        t : in std_logic_vector;
+        f : in std_logic_vector) return std_logic_vector;
 
     function choose (
-            s : in boolean;
-            t : in integer;
-            f : in integer) return integer;
+        s : in boolean;
+        t : in integer;
+        f : in integer) return integer;
 
     function choose (
-            s : in boolean;
-            t : in string;
-            f : in string) return string;
+        s : in boolean;
+        t : in string;
+        f : in string) return string;
 
     function choose (
-            s : in boolean;
-            t : in real;
-            f : in real) return real;
+        s : in boolean;
+        t : in real;
+        f : in real) return real;
 
     function choose (
-            s : in boolean;
-            t : in unsigned;
-            f : in unsigned) return unsigned;
+        s : in boolean;
+        t : in unsigned;
+        f : in unsigned) return unsigned;
 
     function choose (
-            s : in boolean;
-            t : in boolean;
-            f : in boolean) return boolean;
+        s : in boolean;
+        t : in boolean;
+        f : in boolean) return boolean;
 
     function choose (
-            s : in boolean;
-            t : in RealArray_t;
-            f : in RealArray_t) return RealArray_t;
+        s : in boolean;
+        t : in RealArray_t;
+        f : in RealArray_t) return RealArray_t;
 
     -- count occurence of a value inside an array
     function count (
-            a : in IntegerArray_t;
-            v : in integer) return integer;
+        a : in IntegerArray_t;
+        v : in integer) return integer;
 
     function count (
-            a : in BoolArray_t;
-            v : in boolean) return integer;
+        a : in BoolArray_t;
+        v : in boolean) return integer;
 
     function count (
-            a : in std_logic_vector;
-            v : in std_logic) return integer;
+        a : in std_logic_vector;
+        v : in std_logic) return integer;
 
     -- conversion function int to slv
     function toUslv (
-            input : integer;
-            len   : integer) return std_logic_vector;
+        input : integer;
+        len   : integer) return std_logic_vector;
 
     function toSslv (
-            input : integer;
-            len   : integer) return std_logic_vector;
+        input : integer;
+        len   : integer) return std_logic_vector;
 
     function toStdl (input : integer range 0 to 1) return std_logic;
 
@@ -208,8 +208,8 @@ package body olo_base_pkg_math is
 
     -- *** Max ***
     function max (
-            a : in integer;
-            b : in integer) return integer is
+        a : in integer;
+        b : in integer) return integer is
     begin
         if a > b then
             return a;
@@ -219,8 +219,8 @@ package body olo_base_pkg_math is
     end function;
 
     function max (
-            a : in real;
-            b : in real) return real is
+        a : in real;
+        b : in real) return real is
     begin
         if a > b then
             return a;
@@ -231,8 +231,8 @@ package body olo_base_pkg_math is
 
     -- *** Min ***
     function min (
-            a : in integer;
-            b : in integer) return integer is
+        a : in integer;
+        b : in integer) return integer is
     begin
         if a > b then
             return b;
@@ -242,8 +242,8 @@ package body olo_base_pkg_math is
     end function;
 
     function min (
-            a : in real;
-            b : in real) return real is
+        a : in real;
+        b : in real) return real is
     begin
         if a > b then
             return b;
@@ -254,9 +254,9 @@ package body olo_base_pkg_math is
 
     -- *** Choose (std_logic) ***
     function choose (
-            s : in boolean;
-            t : in std_logic;
-            f : in std_logic) return std_logic is
+        s : in boolean;
+        t : in std_logic;
+        f : in std_logic) return std_logic is
     begin
         if s then
             return t;
@@ -267,9 +267,9 @@ package body olo_base_pkg_math is
 
     -- *** Choose (std_logic_vector) ***
     function choose (
-            s : in boolean;
-            t : in std_logic_vector;
-            f : in std_logic_vector) return std_logic_vector is
+        s : in boolean;
+        t : in std_logic_vector;
+        f : in std_logic_vector) return std_logic_vector is
     begin
         if s then
             return t;
@@ -280,9 +280,9 @@ package body olo_base_pkg_math is
 
     -- *** Choose (integer) ***
     function choose (
-            s : in boolean;
-            t : in integer;
-            f : in integer) return integer is
+        s : in boolean;
+        t : in integer;
+        f : in integer) return integer is
     begin
         if s then
             return t;
@@ -293,9 +293,9 @@ package body olo_base_pkg_math is
 
     -- *** Choose (string) ***
     function choose (
-            s : in boolean;
-            t : in string;
-            f : in string) return string is
+        s : in boolean;
+        t : in string;
+        f : in string) return string is
     begin
         if s then
             return t;
@@ -306,9 +306,9 @@ package body olo_base_pkg_math is
 
     -- *** Choose (real) ***
     function choose (
-            s : in boolean;
-            t : in real;
-            f : in real) return real is
+        s : in boolean;
+        t : in real;
+        f : in real) return real is
     begin
         if s then
             return t;
@@ -319,9 +319,9 @@ package body olo_base_pkg_math is
 
     -- *** Choose (unsigned) ***
     function choose (
-            s : in boolean;
-            t : in unsigned;
-            f : in unsigned) return unsigned is
+        s : in boolean;
+        t : in unsigned;
+        f : in unsigned) return unsigned is
     begin
         if s then
             return t;
@@ -332,9 +332,9 @@ package body olo_base_pkg_math is
 
     -- *** Choose (boolean) ***
     function choose (
-            s : in boolean;
-            t : in boolean;
-            f : in boolean) return boolean is
+        s : in boolean;
+        t : in boolean;
+        f : in boolean) return boolean is
     begin
         if s then
             return t;
@@ -345,9 +345,9 @@ package body olo_base_pkg_math is
 
     -- *** Choose (RealArray_t) ***
     function choose (
-            s : in boolean;
-            t : in RealArray_t;
-            f : in RealArray_t) return RealArray_t is
+        s : in boolean;
+        t : in RealArray_t;
+        f : in RealArray_t) return RealArray_t is
     begin
         if s then
             return t;
@@ -358,8 +358,8 @@ package body olo_base_pkg_math is
 
     -- *** count (integer) ***
     function count (
-            a : in IntegerArray_t;
-            v : in integer) return integer is
+        a : in IntegerArray_t;
+        v : in integer) return integer is
         variable Cnt_v : integer := 0;
     begin
 
@@ -375,8 +375,8 @@ package body olo_base_pkg_math is
 
     -- *** count (bool) ***
     function count (
-            a : in BoolArray_t;
-            v : in boolean) return integer is
+        a : in BoolArray_t;
+        v : in boolean) return integer is
         variable Cnt_v : integer := 0;
     begin
 
@@ -392,8 +392,8 @@ package body olo_base_pkg_math is
 
     -- *** count (std_logic) ***
     function count (
-            a : in std_logic_vector;
-            v : in std_logic) return integer is
+        a : in std_logic_vector;
+        v : in std_logic) return integer is
         variable Cnt_v : integer := 0;
     begin
 
@@ -409,16 +409,16 @@ package body olo_base_pkg_math is
 
     -- *** integer to unsigned slv  ***
     function toUslv (
-            input : integer;
-            len   : integer) return std_logic_vector is
+        input : integer;
+        len   : integer) return std_logic_vector is
     begin
         return std_logic_vector(to_unsigned(input, len));
     end function;
 
     -- *** integer to signed slv  ***
     function toSslv (
-            input : integer;
-            len   : integer) return std_logic_vector is
+        input : integer;
+        len   : integer) return std_logic_vector is
     begin
         return std_logic_vector(to_signed(input, len));
     end function;

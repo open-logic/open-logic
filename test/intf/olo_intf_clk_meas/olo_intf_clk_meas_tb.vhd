@@ -61,8 +61,8 @@ architecture sim of olo_intf_clk_meas_tb is
     -- Procedures
     -----------------------------------------------------------------------------------------------
     procedure checkFrequency (
-            Frquency                 : real;
-            signal TestFrequencyReal : out real) is
+        Frquency                 : real;
+        signal TestFrequencyReal : out real) is
         variable IntFreq_v        : integer;
         variable IntMaxTestFreq_v : integer;
     begin

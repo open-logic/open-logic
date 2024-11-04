@@ -79,13 +79,13 @@ architecture sim of olo_base_cam_tb is
 
     -- *** Procedures ***
     procedure pushConfigIn (
-            signal net : inout network_t;
-            Content    : integer := 0;
-            Addr       : integer := 0;
-            Write      : boolean := false;
-            Clear      : boolean := false;
-            ClearAll   : boolean := false;
-            Blocking   : boolean := false) is
+        signal net : inout network_t;
+        Content    : integer := 0;
+        Addr       : integer := 0;
+        Write      : boolean := false;
+        Clear      : boolean := false;
+        ClearAll   : boolean := false;
+        Blocking   : boolean := false) is
         variable Data_v : std_logic_vector(ConfigInStrWidth_c - 1 downto 0);
     begin
         Data_v(WrAddr_c)     := toUslv(Addr, log2ceil(Addresses_g));
@@ -100,13 +100,13 @@ architecture sim of olo_base_cam_tb is
     end procedure;
 
     procedure readCam (
-            signal net : inout network_t;
-            Content    : integer;
-            Addr       : integer          := 0;
-            Found      : boolean          := true;
-            Blocking   : boolean          := false;
-            OneHot     : std_logic_vector := "X";
-            Msg        : string           := "") is
+        signal net : inout network_t;
+        Content    : integer;
+        Addr       : integer          := 0;
+        Found      : boolean          := true;
+        Blocking   : boolean          := false;
+        OneHot     : std_logic_vector := "X";
+        Msg        : string           := "") is
         variable Addr_v       : std_logic_vector(log2ceil(Addresses_g)-1 downto 0) := (others => '0');
         variable AddrOneHot_v : std_logic_vector(Addresses_g-1 downto 0)           := (others => '0');
         variable Found_v      : std_logic_vector(0 downto 0)                       := "0";

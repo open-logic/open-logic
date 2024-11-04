@@ -146,11 +146,11 @@ architecture sim of olo_axi_master_simple_tb is
     );
 
     procedure pushCommand (
-            signal net : inout network_t;
-            CmdMaster  : axi_stream_master_t;
-            CmdAddr    : unsigned;
-            CmdSize    : integer;
-            CmdLowLat  : std_logic := '0') is
+        signal net : inout network_t;
+        CmdMaster  : axi_stream_master_t;
+        CmdAddr    : unsigned;
+        CmdSize    : integer;
+        CmdLowLat  : std_logic := '0') is
         variable TData_v : std_logic_vector(CmdLowLat_c downto 0);
     begin
         TData_v(CmdAddrRange_c) := std_logic_vector(resize(CmdAddr, AxiAddrWidth_g));
@@ -160,12 +160,12 @@ architecture sim of olo_axi_master_simple_tb is
     end procedure;
 
     procedure pushWrData (
-            signal net : inout network_t;
-            startValue : unsigned;
-            increment  : natural          := 1;
-            beats      : natural          := 1;
-            firstStrb  : std_logic_vector := onesVector(AxiDataWidth_g/8);
-            lastStrb   : std_logic_vector := onesVector(AxiDataWidth_g/8)) is
+        signal net : inout network_t;
+        startValue : unsigned;
+        increment  : natural          := 1;
+        beats      : natural          := 1;
+        firstStrb  : std_logic_vector := onesVector(AxiDataWidth_g/8);
+        lastStrb   : std_logic_vector := onesVector(AxiDataWidth_g/8)) is
         variable TData_v : std_logic_vector(DatBeRange_c'high downto 0);
         variable Data_v  : unsigned(AxiDataWidth_g-1 downto 0);
     begin
@@ -188,10 +188,10 @@ architecture sim of olo_axi_master_simple_tb is
     end procedure;
 
     procedure expectRdData (
-            signal net : inout network_t;
-            startValue : unsigned;
-            increment  : natural := 1;
-            beats      : natural := 1) is
+        signal net : inout network_t;
+        startValue : unsigned;
+        increment  : natural := 1;
+        beats      : natural := 1) is
         variable Data_v : unsigned(AxiDataWidth_g-1 downto 0);
         variable Last_v : std_logic := '0';
     begin

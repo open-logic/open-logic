@@ -70,10 +70,10 @@ architecture sim of olo_base_wconv_n2xn_tb is
     end function;
 
     procedure pushCounterValue (
-            signal  net : inout network_t;
-            start       : integer;
-            count       : integer;
-            last        : std_logic) is
+        signal  net : inout network_t;
+        start       : integer;
+        count       : integer;
+        last        : std_logic) is
         variable LastCheck_v : std_logic := '0';
     begin
 

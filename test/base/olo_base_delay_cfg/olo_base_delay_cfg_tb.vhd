@@ -73,8 +73,8 @@ architecture sim of olo_base_delay_cfg_tb is
 
     -- *** Procedures ***
     procedure pushSamples (
-            signal net : inout network_t;
-            count      : integer) is
+        signal net : inout network_t;
+        count      : integer) is
     begin
         wait for 0.1 ns; -- make sure Delay signal is updated
         StartChecking_v := max(DataCounter_v + 5, fromUslv(Delay)); -- start checking on 5th sample or delay (the bigger, output must be valid)

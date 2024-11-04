@@ -219,10 +219,10 @@ indent:
                 token: current
         function_specification:
             close_parenthesis:
-                after: "-1"
+                after: "current"
                 token: "-1"
             function_keyword:
-                after: "+2"
+                after: "+1"
                 token: current
             impure_keyword:
                 after: current
@@ -393,10 +393,10 @@ indent:
                 token: current
         procedure_specification:
             close_parenthesis:
-                after: "-1"
+                after: "current"
                 token: "-1"
             procedure_keyword:
-                after: "+2"
+                after: "+1"
                 token: current
         process_statement:
             begin_keyword:
