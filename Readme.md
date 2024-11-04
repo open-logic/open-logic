@@ -8,7 +8,7 @@
 
 # Open Logic - A VHDL Standard Library
 
-*Open Logic* aims to be for HDL projects what what *stdlib* is for C/C++ projects. 
+*Open Logic* aims to be for HDL projects what *stdlib* is for C/C++ projects. 
 
 *Open Logic* implements commonly used components in a reusable and vendor/tool-independent way and provide them under a permissive open source license (LGPL modified for FPGA usage, see [License.txt](./License.txt)), so the code can be used in commercial projects. 
 
