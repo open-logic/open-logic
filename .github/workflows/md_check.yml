@@ -1,0 +1,25 @@
+name: MD-Check
+run-name: ${{ github.actor }} triggered MD Check
+
+# Set the permissions for the workflow
+permissions:
+  checks: write
+  pull-requests: write
+
+#Set Triggers
+on: push
+
+#Jobs
+jobs:
+  markdown-lint:
+    runs-on: ubuntu-latest
+    steps:
+
+      #General Setup
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      #Run markdownlint
+      - name: Run markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v17
+        with:
+          globs: '**/*.md'
