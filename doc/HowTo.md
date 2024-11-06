@@ -9,19 +9,19 @@
 AKA Table of Content
 
 * Tool Integration Related
-  * [... Use Open Logic in a Microchip Libero Project](#...-Use-Open-Logic-in-a-Microchip-Libero-Project)
-  * [... Use Open Logic in a Questasim Simulation](#...-Use-Open-Logic-in-a-Questasim-Simulation)
-  * [... Use Open Logic in a Efinix Efinity Project](#...-Use-Open-Logic-in-a-Efinix-Efinity-Project)
-  * [... Use Open Logic in a AMD Vivado Project](#...-Use-Open-Logic-in-a-AMD-Vivado-Project)
-  * [... Use Open Logic in a altera Quartus Project](#...-Use-Open-Logic-in-a-altera-Quartus-Project)
-  * [... Use Open Logic through FuseSoC](#...-Use-Open-Logic-through-FuseSoC)
+  * [Use Open Logic in a Microchip Libero Project](#use-open-logic-in-a-microchip-libero-project)
+  * [Use Open Logic in a Questasim Simulation](#use-open-logic-in-a-questasim-simulation)
+  * [Use Open Logic in a Efinix Efinity Project](#use-open-logic-in-a-efinix-efinity-project)
+  * [Use Open Logic in a AMD Vivado Project](#use-open-logic-in-a-amd-vivado-project)
+  * [Use Open Logic in a altera Quartus Project](#use-open-logic-in-a-altera-quartus-project)
+  * [Use Open Logic through FuseSoC](#use-open-logic-through-fusesoc)
 * Contribution Related
-  * [... Use the Linter](#...-Use-the-Linter)
-  * [... Run Simulations](#...-Run-Simulations)
-  * [... Analyze Coverage](#...-Analyze-Coverage)
-  * [... Update Badges](#...-Update-Badges)
+  * [Use the Linter](#use-the-linter)
+  * [Run Simulations](#run-simulations)
+  * [Analyze Coverage](#analyze-coverage)
+  * [Update Badges](#update-badges)
 
-## ... Use Open Logic in a Microchip Libero Project
+## Use Open Logic in a Microchip Libero Project
 
 There is a script to import all *Open Logic* sources into a Libero project.
 
@@ -41,7 +41,7 @@ To run the script, follow the steps below:
 4. In the *Files* tab you can now see all Open Logic source files showing up. Links are made to the files in their original location, they are not copied into the project. All sources are imported into the library selected (see point 3, default is *olo*) and are available to be used.
    ![Dialog](./general/libero/import_sources_files.png)
 
-## ... Use Open Logic in a Questasim Simulation
+## Use Open Logic in a Questasim Simulation
 
 There is a script to compile all *Open Logic* sources into a library *olo*. To run the script, follow the steps below:
 
@@ -55,7 +55,7 @@ That's it. Nothing more.
 
 
 
-## ... Use Open Logic in a Efinix Efinity Project
+## Use Open Logic in a Efinix Efinity Project
 
 There is a script to import all *Open Logic* sources into a Efinity project.
 
@@ -78,7 +78,7 @@ Two more notes:
 * You can get help regarding the *import_sources.py* script by calling `python3 ./import_sources.py -h`
 * The *import_sources.py* script does create a backup of the project file, so you can restore it if something goes wrong. The backup file is stored under *\<name\>.xml.backup*.
 
-## ... Use Open Logic in a AMD Vivado Project
+## Use Open Logic in a AMD Vivado Project
 
 There is a script to import all *Open Logic* sources into a Vivado project and apply all automatic constraints. To run the script, follow the steps below:
 
@@ -96,7 +96,7 @@ That's it. Nothing more.
   **Note:** Scoped constraints are always imported but only work for usage from VHDL. For Verilog usage, manual constraints are required. Refer to the documentation of entities that require constraints (clock-crossings, interfaces, etc.)
   ![Constraints](./general/vivado/import_sources_constraints.png)
 
-## ... Use Open Logic in a altera Quartus Project
+## Use Open Logic in a altera Quartus Project
 
 There is a script to import all *Open Logic* sources into a Quartus project.
 
@@ -117,7 +117,7 @@ That's it. Nothing more.
 
 Because Quartus does not support scoped constraints, **NO** constraints are important. They have to be created manually - more information can be found in the documentation of individual *Open Logic* entities which require constraints.
 
-## ... Use Open Logic through FuseSoC
+## Use Open Logic through FuseSoC
 
 [FuseSoC](https://github.com/olofk/fusesoc) is a package manager and build system for HDL projects. Open Logic supports fuse-soc. To use Open Logic through fusesoc, just add open logic as a library:
 
@@ -144,7 +144,7 @@ open-logic:tutorials:vivado_tutorial:1.0  :      empty : vivado tutorial for ope
 
 **Note:** Like for all other tool integrations, Open Logic entities are compiled into the library *olo* and can be instantiated using e.g. `i_fifo : entity olo.olo_base_fifo_sync`.
 
-## ... Use the Linter
+## Use the Linter
 
 ### Introduction
 
@@ -220,7 +220,7 @@ You can also map this as keyboard shortcut by editing your local *keybindings.js
     }
 ```
 
-## ... Run Simulations
+## Run Simulations
 
 ### Introduction
 
@@ -300,7 +300,7 @@ You can also map this as keyboard shortcut by editing your local *keybindings.js
 
 
 
-## ... Analyze Coverage
+## Analyze Coverage
 
 To analyze code-coverage, the Questasim simulator must be used and coverage must be enabled. After simulations with coverage enabled are ran, the coverage can be reported nicely formated in the console by running the corresponding python script.
 
@@ -315,7 +315,7 @@ You should now see a clean summary of the statement coverage:
 
 ![simulation](./general/Coverage.png)
 
-## ... Update Badges
+## Update Badges
 
 The issue badges are updated every night using a GitHub workflow.
 
