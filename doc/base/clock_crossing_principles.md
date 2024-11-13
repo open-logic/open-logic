@@ -44,3 +44,37 @@ Any logic that must be reset when the clock crossing is reset shall be connected
 
 ![Reset CC](./clock_crossings/reset_cc.png)
 
+## Selection Table
+
+Every clock crossing has certain pros and cons. The table below aims to summarize them
+
+| Entity                                              | Async. Clocks | Data | Multi Bits | Valid (Sampled) | Ready | Reset Crossing | 100% Perf. | No RAM |
+| --------------------------------------------------- | :-----------: | :--: | :--------: | :-------------: | :---: | :------------: | :--------: | :----: |
+| [olo_base_cc_reset](./olo_base_cc_reset.md)         |       x       |      |            |                 |       |       x        |            |   x    |
+| [olo_base_cc_bits](./olo_base_cc_bits.md)           |       x       |  x   |            |                 |       |                |     x      |   x    |
+| [olo_base_cc_pulse](./olo_base_cc_pulse.md)         |       x       |      |            |        x        |       |       x        |     x      |   x    |
+| [olo_base_cc_simple](./olo_base_cc_simple.md)       |       x       |  x   |     x      |        x        |       |       x        |            |   x    |
+| [olo_base_cc_status](./olo_base_cc_status.md)       |       x       |  x   |     x      |                 |       |       x        |            |   x    |
+| [olo_base_cc_handshake](./olo_base_cc_handshake.md) |       x       |  x   |     x      |        x        |   x   |       x        |            |   x    |
+| [olo_base_fifo_async](./olo_base_fifo_async.md)     |       x       |  x   |     x      |        x        |   x   |       x        |     x      |        |
+| [olo_base_cc_n2xn](./olo_base_cc_n2xn.md)           |               |  x   |     x      |        x        |   x   |                |     x      |   x    |
+| [olo_base_cc_xn2n](./olo_base_cc_xn2n.md)           |               |  x   |     x      |        x        |   x   |                |     x      |   x    |
+
+The meanings of the columns are as follows:
+
+* Async. Clocks
+  * Allows fully asynchronous (not phase locked) clocks
+* Data
+  * Allows transferring data (not only events)
+* Multi Bits
+  * Allows transferring multi-bits signals safely
+* Valid (Samples)
+  * Comes with a valid signal (i.e. allows transferring samples without duplication)
+* Ready
+  * Comes with a ready signal (i.e. supports backpressure)
+* Reset Crossing
+  * Contains a reset clock crossing
+* 100% Perf.
+  * Does not enforce any idle cycles.
+* No RAM
+  * Does not require any RAM resources

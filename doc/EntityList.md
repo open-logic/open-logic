@@ -22,6 +22,8 @@ Packages with type declarations and functions used in *Open Logic* internally or
 
 Clock crossings are a key topic and they all follow the same [clock crossing principles](./base/clock_crossing_principles.md). 
 
+A selection table summarizing the pros and cons of all the different clock crossings is also provided in [clock crossing principles](./base/clock_crossing_principles.md). If unsure which entity to select, refer to this table.
+
 | Entity                                                   | Description                                                  |
 | -------------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_base_cc_reset](./base/olo_base_cc_reset.md)         | Synchronization of resets between two clock domains (bi-directional) |
