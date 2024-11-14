@@ -4,9 +4,12 @@
 
 ## Introduction
 
-The aim of this tutorial is give users a kick-start on creating Efinix Efinity projects using *Open Logic*.
+The aim of this tutorial is give users a kick-start on creating Efinix Efinity projects using _Open Logic_.
 
-The tutorial covers project setup and implementation up to the production of a running bitstream for a small design. The design is rather hardware independent but all examples and pinout constraints are given for a [Trion T20 BGA256 Development Kit](https://www.efinixinc.com/products-devkits-triont20.html). If want to use it on some other hardware, just change pinout and the target device accordingly.
+The tutorial covers project setup and implementation up to the production of a running bitstream for a small design.
+The design is rather hardware independent but all examples and pinout constraints are given for a
+[Trion T20 BGA256 Development Kit](https://www.efinixinc.com/products-devkits-triont20.html). If want to use it on some
+other hardware, just change pinout and the target device accordingly.
 
 The steps should be very much independent of the Efinity version but all screenshots are taken with version 2024.1.
 
@@ -24,21 +27,24 @@ No other settings are required, you can immediately close the dialog by pressing
 
 ## Step 2: Integrate Open Logic
 
-We follow the steps described also in the [HowTo...](../HowTo.md) document. They are repeated here, so you do not have to open the *HowTo* document separately.
+We follow the steps described also in the [HowTo...](../HowTo.md) document. They are repeated here, so you do not have
+to open the _HowTo_ document separately.
 
-Close the Efinity project. This is required because the script to add *Open Logic* does modify the project file.
+Close the Efinity project. This is required because the script to add _Open Logic_ does modify the project file.
 
 ![Screenshot](./EfinityTutorial/Pictures/integrate_olo_01.png)
 
-Open a terminal window and navigate to *\<open-logic-root\>/tools/efinity*. The execute the import script. There are a few notes for this step:
+Open a terminal window and navigate to _\<open-logic-root\>/tools/efinity_. The execute the import script. There are a
+few notes for this step:
 
-* Python3 must be installed on your PC
-* Use forward slashes (/) as path-separator, also if your PC is a windows PC.
-* For windows, you have to use the command *python* or *py -3* instead of *python3* by default
-* For the VHDL tutorial, use `--library olo` as in the example below. For the verilog tutorial use `--library default`.
-* Replace `<path-to-project-xml>`by the full path to the project XML file, including the file-name (e.g. `/some/path/my_project.xml`)
+- Python3 must be installed on your PC
+- Use forward slashes (/) as path-separator, also if your PC is a windows PC.
+- For windows, you have to use the command _python_ or _py -3_ instead of _python3_ by default
+- For the VHDL tutorial, use `--library olo` as in the example below. For the verilog tutorial use `--library default`.
+- Replace `<path-to-project-xml>`by the full path to the project XML file, including the file-name (e.g.
+  `/some/path/my_project.xml`)
 
-```
+```shell
 python3 ./import_sources.py --project <path-to-project-xml> --library olo
 ```
 
@@ -54,11 +60,12 @@ If you are interested to see into which library the files are compiled, open the
 
 ![Screenshot](./EfinityTutorial/Pictures/integrate_olo_04.png)
 
-You can then see which files are compiled into which library. Keep in mind that for the VHDL tutorial, the library should be *olo* and for the verilog tutorial it shall be *default*.
+You can then see which files are compiled into which library. Keep in mind that for the VHDL tutorial, the library
+should be _olo_ and for the verilog tutorial it shall be _default_.
 
 ![Screenshot](./EfinityTutorial/Pictures/integrate_olo_05.png)
 
-That's it,  *Open Logic* is now ready to be used.
+That's it, _Open Logic_ is now ready to be used.
 
 ## Step 3: Build FPGA Design
 
@@ -68,33 +75,41 @@ In this tutorial we will build the following design:
 
 ![Design](./VivadoTutorial/Pictures/design.svg)
 
-All *Open Logic* blocks are shown in grey. Custom logic is shown in blue.
+All _Open Logic_ blocks are shown in grey. Custom logic is shown in blue.
 
-The design does de-bounce two buttons and four switches. Every time the user presses button 0, the state of the switches is written into a FIFO (4 bits wide, 4096 entries deep). Every time the user presses button 1, one FIFO entry is read and applied to the LEDs. Note that clock and reset are not shown in the figure for simplicity reasons.
+The design does de-bounce two buttons and four switches. Every time the user presses button 0, the state of the switches
+is written into a FIFO (4 bits wide, 4096 entries deep). Every time the user presses button 1, one FIFO entry is read
+and applied to the LEDs. Note that clock and reset are not shown in the figure for simplicity reasons.
 
-The de-bouncing is required to ensure that a button press really only produces one edge (and hence one read/write transaction to the FIFO). For the switches, de-bouncing is not strictly required but good style.
+The de-bouncing is required to ensure that a button press really only produces one edge (and hence one read/write
+transaction to the FIFO). For the switches, de-bouncing is not strictly required but good style.
 
-The design is super simple - it is not meant for demonstrating the coolest features of *Open Logic* but for being the simplest possible example of a design making use of *Open Logic*.
+The design is super simple - it is not meant for demonstrating the coolest features of _Open Logic_ but for being the
+simplest possible example of a design making use of _Open Logic_.
 
 ### Add Source Code
 
-The VHDL code is provided in the file [\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/efinity_tutorial.vhd](./EfinityTutorial/Files/efinity_tutorial.vhd). 
+The VHDL code is provided in the file
+[\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/efinity_tutorial.vhd](./EfinityTutorial/Files/efinity_tutorial.vhd).
 
-If you are using Verilog, use the system verilog source file: [\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/efinity_tutorial.sv](./EfinityTutorial/Files/efinity_tutorial.sv). 
+If you are using Verilog, use the system verilog source file:
+[\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/efinity_tutorial.sv](./EfinityTutorial/Files/efinity_tutorial.sv).
 
-Open the add file dialog from the right-click menu on *Design*.
+Open the add file dialog from the right-click menu on _Design_.
 
 ![Design](./EfinityTutorial/Pictures/add_source_01.png)
 
+Navigate to the file
+[\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/efinity_tutorial.vhd](./EfinityTutorial/Files/efinity_tutorial.vhd)
+and add it.
 
-
-Navigate to the file [\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/efinity_tutorial.vhd](./EfinityTutorial/Files/efinity_tutorial.vhd) and add it. 
-
-For the verilog variant of the tutorial, add the file [\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/efinity_tutorial.sv](./EfinityTutorial/Files/efinity_tutorial.sv) instead.
+For the verilog variant of the tutorial, add the file
+[\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/efinity_tutorial.sv](./EfinityTutorial/Files/efinity_tutorial.sv)
+instead.
 
 ![Design](./EfinityTutorial/Pictures/add_source_02.png)
 
-And finally select *efinity_tutorial* as the top-level module:
+And finally select _efinity_tutorial_ as the top-level module:
 
 ![Screenshot](./EfinityTutorial/Pictures/add_source_03.png)
 
@@ -102,27 +117,33 @@ And finally select *efinity_tutorial* as the top-level module:
 
 ### Add Constraints
 
-First timing constraints are added through the right-click menu of the *Constraints* entry:
+First timing constraints are added through the right-click menu of the _Constraints_ entry:
 
 ![Design](./EfinityTutorial/Pictures/add_constraints_01.png)
 
-A basic timing constraint file specifying the clock frequency is provided in the file [\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/timing.sdc](./EfinityTutorial/Files/timing.sdc). The constraint file only defines the clock frequency in this case - not what is state of the art for a real design but sufficient for the tutorial.
+A basic timing constraint file specifying the clock frequency is provided in the file
+[\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/timing.sdc](./EfinityTutorial/Files/timing.sdc). The constraint
+file only defines the clock frequency in this case - not what is state of the art for a real design but sufficient for
+the tutorial.
 
 ![Design](./EfinityTutorial/Pictures/add_constraints_02.png)
 
 ### Add Interface
 
-In Efinity tools, the pinout is specified as interface. A file containing the pinout for the [Trion T20 BGA256 Development Kit](https://www.efinixinc.com/products-devkits-triont20.html) is provided - if you target another board, just edit the pins used accordingly.
+In Efinity tools, the pinout is specified as interface. A file containing the pinout for the
+[Trion T20 BGA256 Development Kit](https://www.efinixinc.com/products-devkits-triont20.html) is provided - if you target
+another board, just edit the pins used accordingly.
 
 The interface file provided can be added to the project through the Interface Designer:
 
 ![Design](./EfinityTutorial/Pictures/add_interface_01.png)
 
-Starting the interface designer may take a little time. In the Interface Designer, the *Import Design* option has to be used:
+Starting the interface designer may take a little time. In the Interface Designer, the _Import Design_ option has to be
+used:
 
 ![Design](./EfinityTutorial/Pictures/add_interface_02.png)
 
-The pinout is provided as *.isf* file.
+The pinout is provided as _*.isf_ file.
 
 ![Design](./EfinityTutorial/Pictures/add_interface_03.png)
 
@@ -130,7 +151,8 @@ Open the file selection dialog.
 
 ![Design](./EfinityTutorial/Pictures/add_interface_04.png)
 
-Select the file [\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/pinout.isf](./EfinityTutorial/Files/pinout.isf).
+Select the file
+[\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/pinout.isf](./EfinityTutorial/Files/pinout.isf).
 
 ![Design](./EfinityTutorial/Pictures/add_interface_05.png)
 
@@ -154,13 +176,14 @@ The tool will run all following steps automatically (see green checkmarks on all
 
 ![Design](./EfinityTutorial/Pictures/build_02.png)
 
-
-
 ### Analyze Resource Utilization
 
-From the resource utilization it is obvious that the FIFO was correctly mapped to Block-RAM. Because RAM blocks in Trion devices are relatively small (5kb), four RAM blocks are required.
+From the resource utilization it is obvious that the FIFO was correctly mapped to Block-RAM. Because RAM blocks in Trion
+devices are relatively small (5kb), four RAM blocks are required.
 
-Also note that the *Logic Element* utilization is higher than for the [Vivado Tutorial](./VivadoTutorial.md) and the [Quartus Tutorial](./QuartusTutorial.md). This is causes by the fact that the Trion Device only has 4-input LUTs (while AMD/Altera use 6-input LUTs).
+Also note that the _Logic Element_ utilization is higher than for the [Vivado Tutorial](./VivadoTutorial.md) and the
+[Quartus Tutorial](./QuartusTutorial.md). This is causes by the fact that the Trion Device only has 4-input LUTs
+(while AMD/Altera use 6-input LUTs).
 
 Overall the resource consumption is as expected and Open Logic is proven to be efficient.
 
@@ -170,14 +193,12 @@ Overall the resource consumption is as expected and Open Logic is proven to be e
 
 Timing is easily met - as one would expect for such a simple design.
 
-
 ![Design](./EfinityTutorial/Pictures/timing_01.png)
-
-
 
 ## Step 4: Try it on Hardware
 
-Now connect your [Trion T20 BGA256 Development Kit](https://www.efinixinc.com/products-devkits-triont20.html) hardware to your PC using the USB cable.
+Now connect your [Trion T20 BGA256 Development Kit](https://www.efinixinc.com/products-devkits-triont20.html) hardware
+to your PC using the USB cable.
 
 Open the Programmer:
 
@@ -187,7 +208,7 @@ You should see the target board being detected and you can select the bitstream 
 
 ![Design](./EfinityTutorial/Pictures/run_02.png)
 
-Select the *.bit* file:
+Select the _*.bit_ file:
 
 ![Design](./EfinityTutorial/Pictures/run_03.png)
 
@@ -195,23 +216,29 @@ JTAG is used as programming mode. Then press the programming button.
 
 ![Design](./EfinityTutorial/Pictures/run_04.png)
 
-You can now dial in values using the DIP switches (*SW3*) and write them into the FIFO by pressing *SW5*. After that they can be read from the FIFO and displayed one by one by pressing *SW6*. 
+You can now dial in values using the DIP switches (_SW3_) and write them into the FIFO by pressing _SW5_. After that
+they can be read from the FIFO and displayed one by one by pressing _SW6_.
 
-Because there are only three DIP switches, the fourth *Switch* input is mapped to the button *SW4*. This might be a bit unusual but the value of keeping the design the same for all tutorials was prioritized over an intuitive usage. You can easily try out the design without even using *SW4*.
+Because there are only three DIP switches, the fourth _Switch_ input is mapped to the button _SW4_. This might be a bit
+unusual but the value of keeping the design the same for all tutorials was prioritized over an intuitive usage. You can
+easily try out the design without even using _SW4_.
 
 ## Step 5: Discussion of the VHDL Source Code
 
-The source code can be found in the file [\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/efinity_tutorial.vhd](./EfinityTutorial/Files/efinity_tutorial.vhd). 
+The source code can be found in the file
+[\<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/efinity_tutorial.vhd](./EfinityTutorial/Files/efinity_tutorial.vhd).
 
-Not every line of the source code is discussed. It is simple and implements the design described earlier. Only a few details worth mentioning are discussed.
+Not every line of the source code is discussed. It is simple and implements the design described earlier. Only a few
+details worth mentioning are discussed.
 
-The source code samples given are VHDL - however, for the verilog example file the code looks very much the same and the comments apply as well.
+The source code samples given are VHDL - however, for the verilog example file the code looks very much the same and the
+comments apply as well.
 
 ### Omitting Unused Generics
 
 The FIFO instance only sets two generics:
 
-```
+```vhdl
     i_fifo : entity olo.olo_base_fifo_sync
         generic map ( 
             Width_g         => 4,               
@@ -220,9 +247,10 @@ The FIFO instance only sets two generics:
         ...
 ```
 
-The *olo_base_fifo_sync* entity would have much more generics but due to the concept of providing default values for optional generics, it is not necessary to obfuscate source-code with many lines of actually unused generics.
+The _olo_base_fifo_sync_ entity would have much more generics but due to the concept of providing default values for
+optional generics, it is not necessary to obfuscate source-code with many lines of actually unused generics.
 
-```
+```vhdl
 entity olo_base_fifo_sync is
     generic ( 
         Width_g         : positive;                   
@@ -240,9 +268,10 @@ entity olo_base_fifo_sync is
 
 ### Omitting Unused Ports
 
-The same concept applies to unused ports. In this case we do neither require full handshaking nor status signals like Full/Empty/Level - hence all these signals can be omitted:
+The same concept applies to unused ports. In this case we do neither require full handshaking nor status signals like
+Full/Empty/Level - hence all these signals can be omitted:
 
-```
+```vhdl
     i_fifo : entity olo.olo_base_fifo_sync
         ...
         port map (    
@@ -255,9 +284,10 @@ The same concept applies to unused ports. In this case we do neither require ful
         );
 ```
 
-Again compared to the full list of signals the *olo_base_fifo_sync* provides many lines of obfuscating code can be omitted because all optional input ports come with default values.
+Again compared to the full list of signals the _olo_base_fifo_sync_ provides many lines of obfuscating code can be
+omitted because all optional input ports come with default values.
 
-```
+```vhdl
 entity olo_base_fifo_sync is
     ...
     port (    
@@ -285,34 +315,34 @@ entity olo_base_fifo_sync is
 
 ### Inversions
 
-You may notice that the *Buttons* inputs as well as the *Led* outputs are inverted. This is required because some I/Os on the target HW are low-active.
+You may notice that the _Buttons_ inputs as well as the _Led_ outputs are inverted. This is required because some I/Os
+on the target HW are low-active.
 
 ## Notes
 
-If you should want to build the tutorial project without many manual mouse clicks, you can do so by following the steps below:
+If you should want to build the tutorial project without many manual mouse clicks, you can do so by following the steps
+below:
 
-* Open a shell/terminal
+- Open a shell/terminal
+- In the terminal, navigate to the directory \<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/prj_vhdl
 
-* In the terminal, navigate to the directory \<open-logic-root\>/doc/tutorials/EfinityTutorial/Files/prj_vhdl
+  - For verilog, just replace _prj_vhdl_ by _prj_verilog_ in all paths and file-names
 
-  * For verilog, just replace *prj_vhdl* by *prj_verilog* in all paths and file-names
-
-
-  ```
+  ```shell
   cd <open-logic-root>/doc/tutorials/EfinityTutorial/Files/prj_vhdl
   ```
 
-* Run the project build from command line
+- Run the project build from command line<br>
   For Linux:
 
-  ```
+  ```shell
   efx_run --prj ./prj_vhdl.xml
   ```
 
   For Windows:
 
-  ```
+  ```shell
   efx_run.bat --prj ./prj_vhdl.xml
   ```
 
-Note: replace \<open-logic-root\> with the root folder of your *Open Logic* working copy.
+Note: replace \<open-logic-root\> with the root folder of your _Open Logic_ working copy.

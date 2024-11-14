@@ -9,8 +9,8 @@
 ### Added Features
 
 - Microchip Libero integration
-  - Script to automatically import all *Open Logic* features into a *Libero* project
-  - *Libero* tutorial (see [LiberoTutorial](./doc/tutorials/LiberoTutorial.md))
+  - Script to automatically import all _Open Logic_ features into a _Libero_ project
+  - _Libero_ tutorial (see [LiberoTutorial](./doc/tutorials/LiberoTutorial.md))
 - Addition of VSG linter to ensure adherence to coding conventions (#43)
   - See [HowTo](./doc/HowTo.md) for documentation about how to use it
   - Co-authored by: [patrick-studer](https://github.com/patrick-studer)
@@ -27,17 +27,17 @@
 - Various documentation improvements
 - Addition of generic to configure number of synchronization stages in all clock-crossings.
   This allows satisfying very high MTBF requirements.
-  - Modified entities: *olo_base_cc_...* and *olo_base_fifo_async*
+  - Modified entities: _olo_base_cc_..._ and _olo_base_fifo_async_
 
 ### Non Backward Compatible Changes
 
 All entities are backward compatible. Non backward compatible changes were applied to packages only.
 
 - Modifications to packages to follow coding conventions.
-  - Affected entities: *olo_base_pkg_array*, , *olo_axi_pkg_protocol*, *olo_intf_i2c_master_pkg*
+  - Affected entities: _olo_base_pkg_array, , _olo_axi_pkg_protocol_, _olo_intf_i2c_master_pkg_
 
-- Removal of reducing logic functions from *olo_base_pkg_logic* (#85)
-  - The reducing logic functions from *ieee.std_logic_misc* shall be used instead
+- Removal of reducing logic functions from _olo_base_pkg_logic_ (#85)
+  - The reducing logic functions from _ieee.std_logic_misc_ shall be used instead
   - Reported by: [andkae](https://github.com/andkae)
 
 ### Bugfixes (Backward Compatible)
@@ -71,7 +71,7 @@ All entities are backward compatible. Non backward compatible changes were appli
 
 ### Bugfixes (Backward Compatible)
 
-- **CRITICAL** - Fix wrong clock crossing in *olo_base_fifo_async* (#79)
+- **CRITICAL** - Fix wrong clock crossing in _olo_base_fifo_async_ (#79)
   - Reported by: [aleschx](https://github.com/aleschx)
 
 ### Reporters
@@ -93,28 +93,28 @@ All entities are backward compatible. Non backward compatible changes were appli
   - Examples of Synplify based toolchains: Lattice ICECube, Microchip
 
 - Setup of Github Sponsors profile for funding the project
-- *olo_base_packet_fifo*
+- _olo_base_packet_fifo_
   - Store and forward packet FIFO
   - Allows to drop packets while writing them (even after some data was written)
   - Allows skipping and repeating packets when reading them
 
-- *olo_intf_uart*
+- _olo_intf_uart_
   - UART interface
 
-- *olo_base_decode_firstbit*
+- _olo_base_decode_firstbit_
   - Timing optimal first-bit decoder
 
-- *olo_base_cam*
+- _olo_base_cam_
   - Content addressable memory
 
-- *olo_base_strobe_gen*
+- _olo_base_strobe_gen_
   - Added fractional mode - dynamically extend/shorten period by one clock cycle to meet the requested average
     strobe frequency.
 
 ### Backward Compatible Changes
 
 - Various documentation improvements
-- *olo_intf_spi_slave*
+- _olo_intf_spi_slave_
   - Suppress needless MISO toggling at the end of a transaction (#68, reported by
     [betocool-prog](https://github.com/betocool-prog) )
 
@@ -124,7 +124,7 @@ All entities are backward compatible. Non backward compatible changes were appli
 
 ### Bugfixes (Backward Compatible)
 
-- Fixed documentation of *olo_intf_spi_slave*.
+- Fixed documentation of _olo_intf_spi_slave_.
   - Maximum SCLK frequency is 8x lower than Clk frequency (not 6x)
 
 ### Credits
@@ -148,24 +148,24 @@ All entities are backward compatible. Non backward compatible changes were appli
   - Added NVC simulator to CI scripts
   - Co-authored by nickg
 - Questa integration
-  - Script to automatically compile all *Open Logic* features in *Questa*
-  - *Questa* tutorial (VHDL and Verilog)
-- Addition of *to01()* functions to *olo_base_pkg_logic*
-- *olo_intf_spi_slave*
+  - Script to automatically compile all _Open Logic_ features in _Questa_
+  - _Questa_ tutorial (VHDL and Verilog)
+- Addition of _to01()_ functions to _olo_base_pkg_logic_
+- _olo_intf_spi_slave_
   - SPI slave
-- *olo_base_cc_handshake*
+- _olo_base_cc_handshake_
   - Clock crossing with fully Read/Valid handshake but without need for distributed RAM (in contrast to
-    *olo_base_fifo_async*)
+    _olo_base_fifo_async_)
 
 ### Backward Compatible Changes
 
 - Various documentation improvements
-  - Clarification regarding omission of ID signals in *olo_axi_master_...* (#50, contributed by
+  - Clarification regarding omission of ID signals in _olo_axi_master_..._ (#50, contributed by
     [kuriousd](https://github.com/kuriousd) )
-  - Remove duplicated *Ready* signal from figures in Conventions (#54, reported by
+  - Remove duplicated _Ready_ signal from figures in Conventions (#54, reported by
     [tasgomes](https://github.com/tasgomes) )
 - Various optimizations on the CI/CD infrastructure
-- Reduction of the latency of *olo_base_cc_pulse* by one clock cycle
+- Reduction of the latency of _olo_base_cc_pulse_ by one clock cycle
 
 ### Non Backward Compatible Changes
 
@@ -193,11 +193,11 @@ All entities are backward compatible. Non backward compatible changes were appli
 ### Added Features
 
 - Efinix Efinity integration
-  - Script to automatically import all *Open Logic* features into an *Efinity* project
-  - Addition of synthesis attributes for *Efinity*
-  - *Efinity* tutorial
-- Added *FuseSoC* package manager support
-- *olo_intf_spi_master*
+  - Script to automatically import all _Open Logic_ features into an _Efinity_ project
+  - Addition of synthesis attributes for _Efinity_
+  - _Efinity_ tutorial
+- Added _FuseSoC_ package manager support
+- _olo_intf_spi_master_
   - SPI master
 
 ### Backward Compatible Changes
@@ -211,10 +211,10 @@ All entities are backward compatible. Non backward compatible changes were appli
 
 ### Bugfixes (Backward Compatible)
 
-- Fixed sensitivity list in *olo_axi_master_simple* (#41)
-  - *M_Axi_RResp* was missing
+- Fixed sensitivity list in _olo_axi_master_simple_ (#41)
+  - _M_Axi_RResp_ was missing
   - Credits to [kuriousd](https://github.com/kuriousd) for reporting
-- Process scoped constraints *late* for AMD Vivado
+- Process scoped constraints _late_ for AMD Vivado
   - User constraints must be processed before scoped constraints, otherwise clocks are not known to scoped constraints
 
 ## Credits
@@ -234,15 +234,14 @@ All entities are backward compatible. Non backward compatible changes were appli
 ### Added Features
 
 - Altera Quartus integration
-  - Script to automatically import all *Open Logic* features into a Quartus project
+  - Script to automatically import all _Open Logic_ features into a Quartus project
 - Added tutorials
   - Vivado Verilog tutorial
   - Quartus VHDL tutorial
   - Quartus Verilog tutorial
-
-- *olo_base_reset_gen*
+- _olo_base_reset_gen_
   - Reset generator (and synchronizer)
-- *olo_base_flowctrl_handler*
+- _olo_base_flowctrl_handler_
   - Allows to add flow-control (ready) around entities without flow-control (valid only)
 
 ### Backward Compatible Changes
@@ -251,7 +250,7 @@ All entities are backward compatible. Non backward compatible changes were appli
 
 ### Non Backward Compatible Changes
 
-- Removed *t_aslv* (array of unconstrained std_logic_vector) from *olo_base_pkg_array*
+- Removed _t_aslv_ (array of unconstrained std_logic_vector) from _olo_base_pkg_array_
   - Arrays of unconstrained types are not accepted by Quartus
 
 ### Bugfixes (Backward Compatible)
@@ -265,11 +264,11 @@ All entities are backward compatible. Non backward compatible changes were appli
 ### Added Features
 
 - AMD Vivado integration
-  - Script to automatically import all *Open Logic* features into a Vivado project
+  - Script to automatically import all _Open Logic_ features into a Vivado project
   - Vivado tutorial
-- *olo_intf_clk_meas*
+- _olo_intf_clk_meas_
   - Measure the frequency of a clock signal (based on a clock with a known frequency)
-- *olo_intf_debounce*
+- _olo_intf_debounce_
   - Debouncing for external signals (e.g. inputs from switches or buttons)
 
 ### Backward Compatible Changes
@@ -284,11 +283,11 @@ All entities are backward compatible. Non backward compatible changes were appli
 
 ### Bugfixes (Backward Compatible)
 
-- Fix scoped constraints for *olo_intf_sync*
+- Fix scoped constraints for _olo_intf_sync_
   - Incomplete input delays were reported before the fix
-- Fix inconsistencies of *olo_intf_i2c_master* generic default values compared to documentation
-  - There was a mismatch for *CmdTimeout_g*
-  - *ClkFrequency_g* had a default value in the implementation before the change (which is wrong because the clock is
+- Fix inconsistencies of _olo_intf_i2c_master_ generic default values compared to documentation
+  - There was a mismatch for _CmdTimeout_g_
+  - _ClkFrequency_g_ had a default value in the implementation before the change (which is wrong because the clock is
     specific to the design)
 
 ## 1.1.0
@@ -297,20 +296,20 @@ All entities are backward compatible. Non backward compatible changes were appli
 
 ### Added Features
 
-- *olo_intf_i2c_master*
+- _olo_intf_i2c_master_
   - I2C master
   - Multi-Master and clock-stretching capable
-- *olo_intf_sync*
+- _olo_intf_sync_
   - Double stage synchronizer for asynchronous external signals
   - Includes scoped timing constraints
-- *olo_axi_master_full*
+- _olo_axi_master_full_
   - AXI Master with support for unaligned and odd-sized transfers (other sizes than multiple of AXI words)
 
 ### Backward Compatible Changes
 
 - Various documentation improvements
-- Added *Rd_Last* signal to *olo_axi_master_simple* to simplify handling of read-data.
-- *olo_base_wconv_n2xn* now supports InWidth=OutWidth
+- Added _Rd_Last_ signal to _olo_axi_master_simple_ to simplify handling of read-data.
+- _olo_base_wconv_n2xn_ now supports InWidth=OutWidth
 
 ### Non Backward Compatible Changes
 
@@ -318,15 +317,15 @@ All entities are backward compatible. Non backward compatible changes were appli
 
 ### Bugfixes (Backward Compatible)
 
-- Change default *UserTransactionSizeBits_g* in *olo_axi_master_simple* to 24 bits
+- Change default _UserTransactionSizeBits_g_ in _olo_axi_master_simple_ to 24 bits
   - The combination of default values before was illegal
   - Backwards compatible because the default values had to be overwritten for successful compilation before the change
     anyways.
-- Change default values of *AlmFullLevel_g* and *AlmEmptyLevel_g* to 0
-  - Using another generic (*Depth_g*) as default value for generics is illegal.
+- Change default values of _AlmFullLevel_g_ and _AlmEmptyLevel_g_ to 0
+  - Using another generic (_Depth_g_) as default value for generics is illegal.
   - Backwards compatible because the default values had to be overwritten for successful compilation before the change
     anyways.
-- Fix *AxiDataWidth_g* related assertions in *olo_axi_lite_slave*
+- Fix _AxiDataWidth_g_ related assertions in _olo_axi_lite_slave_
   - Backwards compatible because the change only adds error messages for anyways illegal generics combinations
 
 ## 1.0.0

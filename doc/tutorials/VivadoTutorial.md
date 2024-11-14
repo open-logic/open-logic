@@ -4,9 +4,12 @@
 
 ## Introduction
 
-The aim of this tutorial is give users a kick-start on creating AMD Vivado projects using *Open Logic*.
+The aim of this tutorial is give users a kick-start on creating AMD Vivado projects using _Open Logic_.
 
-The tutorial covers project setup and implementation up to the production of a running bitstream for a small design. The design is rather hardware independent but all examples and pinout constraints are given for a [Zybo Z7-10](https://digilent.com/shop/zybo-z7-zynq-7000-arm-fpga-soc-development-board/). If want to use it on some other hardware, just change pinout and the target device accordingly.
+The tutorial covers project setup and implementation up to the production of a running bitstream for a small design. The
+design is rather hardware independent but all examples and pinout constraints are given for a
+[Zybo Z7-10](https://digilent.com/shop/zybo-z7-zynq-7000-arm-fpga-soc-development-board/). If want to use it on some
+other hardware, just change pinout and the target device accordingly.
 
 The steps should be very much independent of the Vivado version but all screenshots are taken with version 2023.1.
 
@@ -22,7 +25,8 @@ On the third page, it is important to create an **RTL Project**
 
 ![Screenshot](./VivadoTutorial/Pictures/create_project_02.png)
 
-You do not have to add any sources at this point but it is important that you set the language you target (VHDL or Verilog). The tutorial works for both languages.
+You do not have to add any sources at this point but it is important that you set the language you target (VHDL or
+Verilog). The tutorial works for both languages.
 
 ![Screenshot](./VivadoTutorial/Pictures/create_project_04.png)
 
@@ -34,11 +38,12 @@ As part, choose the FPGA on the Z7-10: **xc7z010clg400-1**
 
 ## Step 2: Integrate Open Logic
 
-We follow the steps described also in the [HowTo...](../HowTo.md) document. They are repeated here, so you do not have to open the *HowTo* document separately.
+We follow the steps described also in the [HowTo...](../HowTo.md) document. They are repeated here, so you do not have
+to open the _HowTo_ document separately.
 
 Open the Vivado TCL console and execute the command below:
 
-```
+```tcl
 source <open-logic-root>/tools/vivado/import_sources.tcl
 ```
 
@@ -46,11 +51,12 @@ In the screenshot below the path on my local PC is shown - the path on your syst
 
 ![Screenshot](./VivadoTutorial/Pictures/integrate_olo_01.png)
 
-You should now see one constraints file and many source files in the library *olo*. The exact number of source files may vary as *Open Logic* still grows.
+You should now see one constraints file and many source files in the library _olo_. The exact number of source files may
+vary as _Open Logic_ still grows.
 
 ![Screenshot](./VivadoTutorial/Pictures/integrate_olo_02.png)
 
-That's it,  *Open Logic* is now ready to be used.
+That's it,  _Open Logic_ is now ready to be used.
 
 ## Step 3: Build FPGA Design
 
@@ -60,33 +66,37 @@ In this tutorial we will build the following design:
 
 ![Design](./VivadoTutorial/Pictures/design.svg)
 
-All *Open Logic* blocks are shown in grey. Custom logic is shown in blue.
+All _Open Logic_ blocks are shown in grey. Custom logic is shown in blue.
 
-The design does de-bounce two buttons and four switches. Every time the user presses button 0, the state of the switches is written into a FIFO (4 bits wide, 4096 entries deep). Every time the user presses button 1, one FIFO entry is read and applied to the LEDs. Note that clock and reset are not shown in the figure for simplicity reasons.
+The design does de-bounce two buttons and four switches. Every time the user presses button 0, the state of the switches
+is written into a FIFO (4 bits wide, 4096 entries deep). Every time the user presses button 1, one FIFO entry is read
+and applied to the LEDs. Note that clock and reset are not shown in the figure for simplicity reasons.
 
-The de-bouncing is required to ensure that a button press really only produces one edge (and hence one read/write transaction to the FIFO). For the switches, de-bouncing is not strictly required but good style.
+The de-bouncing is required to ensure that a button press really only produces one edge (and hence one read/write
+transaction to the FIFO). For the switches, de-bouncing is not strictly required but good style.
 
-The design is super simple - it is not meant for demonstrating the coolest features of *Open Logic* but for being the simplest possible example of a design making use of *Open Logic*.
+The design is super simple - it is not meant for demonstrating the coolest features of _Open Logic_ but for being the
+simplest possible example of a design making use of _Open Logic_.
 
 ### Add Source Code
 
-The VHDL code is provided in the file [\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd). 
+The VHDL code is provided in the file
+[\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd).
 
-If you are using Verilog, use the system verilog source file: [\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.sv](./VivadoTutorial/Files/vivado_tutorial.sv). 
+If you are using Verilog, use the system verilog source file:
+[\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.sv](./VivadoTutorial/Files/vivado_tutorial.sv).
 
 Add this file to the project as follows:
 
 ![Design](./VivadoTutorial/Pictures/add_source_01.png)
 
-
-
 ![Design](./VivadoTutorial/Pictures/add_source_02.png)
-
-
 
 ![Design](./VivadoTutorial/Pictures/add_source_03.png)
 
-Navigate to the file [\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd) and add it.
+Navigate to the file
+[\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd)
+and add it.
 
 ![Design](./VivadoTutorial/Pictures/add_source_04.png)
 
@@ -98,13 +108,16 @@ And finally select this file as top-module for the project through the right-cli
 
 ### Add Constraints
 
-A basic constraints set (pinout + clock) is provided in the file [\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/pinout.xdc](./VivadoTutorial/Files/pinout.xdc). Add this file through the same steps as described in [Add Source Code](#Add-Source-Code) but as constraints file:
+A basic constraints set (pinout + clock) is provided in the file
+[\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/pinout.xdc](./VivadoTutorial/Files/pinout.xdc). Add this file
+through the same steps as described in [Add Source Code](#add-source-code) but as constraints file:
 
 ![Design](./VivadoTutorial/Pictures/add_constraints_01.png)
 
 ### Build Design
 
-Build the design and generate a bitstream. You can just press the *Generate Bitstream* button - Vivado will detect automatically that the design must be built before the bitstream can be generated.
+Build the design and generate a bitstream. You can just press the _Generate Bitstream_ button - Vivado will detect
+automatically that the design must be built before the bitstream can be generated.
 
 ![Design](./VivadoTutorial/Pictures/build_01.png)
 
@@ -114,7 +127,10 @@ Open the implemented design when the build is done and Vivado asks you if you wa
 
 From the resource utilization it is obvious that the FIFO was correctly mapped to Block-RAM.
 
-The LUT usage also demonstrates the efficiency of *Open Logic*: If the de-bouncing would be implemented in the most simple form (one counter per signal running on the system clock directly), the de-bouncing alone would use 132 LUTs (6 signals x 25ms x 125 MHz --> 132 counter bits). The overall LUT count of the design is only 120 - and this includes the FIFO.
+The LUT usage also demonstrates the efficiency of _Open Logic_: If the de-bouncing would be implemented in the most
+simple form (one counter per signal running on the system clock directly), the de-bouncing alone would use 132 LUTs (6
+signals x 25ms x 125 MHz --> 132 counter bits). The overall LUT count of the design is only 120 - and this includes the
+FIFO.
 
 ![Design](./VivadoTutorial/Pictures/resource_01.png)
 
@@ -122,18 +138,20 @@ The LUT usage also demonstrates the efficiency of *Open Logic*: If the de-bounci
 
 The timing report shows two things:
 
-* Output delays are missing. This makes sense because we let a FIFO drive outputs directly and no output delay was constrained. For LEDs this is tolerable but in a productive design of course you would want to add those constraints manually.
-* **No** missing input delays are reported. The *olo_intf_sync* input synchronizer comes with scoped constraints and adds these constraints automatically. This demonstrates the usefulness of scoped constraints *Open Logic* provides wherever possible.
-  * For Verilog **there are** missing input delays, because scoped constraints only work for VHDL at the moment.
-
+- Output delays are missing. This makes sense because we let a FIFO drive outputs directly and no output delay was
+  constrained. For LEDs this is tolerable but in a productive design of course you would want to add those constraints
+  manually.
+- **No** missing input delays are reported. The _olo_intf_sync_ input synchronizer comes with scoped constraints and
+  adds these constraints automatically. This demonstrates the usefulness of scoped constraints _Open Logic_ provides
+  wherever possible.
+  - For Verilog **there are** missing input delays, because scoped constraints only work for VHDL at the moment.
 
 ![Design](./VivadoTutorial/Pictures/timing_01.png)
 
-
-
 ## Step 4: Try it on Hardware
 
-Now connect your [Zybo Z7-10](https://digilent.com/shop/zybo-z7-zynq-7000-arm-fpga-soc-development-board/) hardware to your PC using the USB cable.
+Now connect your [Zybo Z7-10](https://digilent.com/shop/zybo-z7-zynq-7000-arm-fpga-soc-development-board/) hardware to
+your PC using the USB cable.
 
 Open the Hardware Manager:
 
@@ -147,21 +165,25 @@ Program the device:
 
 ![Design](./VivadoTutorial/Pictures/run_03.png)
 
-You can now dial in values using the *Switches* and write them into the FIFO by pressing *Button 0* (on the very right). After that they can be read from the FIFO and displayed one by one by pressing *Button 1* (second from the right).
+You can now dial in values using the _Switches_ and write them into the FIFO by pressing _Button 0_ (on the very right).
+After that they can be read from the FIFO and displayed one by one by pressing _Button 1_ (second from the right).
 
 ## Step 5: Discussion of the VHDL Source Code
 
-The source code can be found in the file [\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd). 
+The source code can be found in the file
+[\<open-logic-root\>/doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd](./VivadoTutorial/Files/vivado_tutorial.vhd).
 
-Not every line of the source code is discussed. It is simple and implements the design described earlier. Only a few details worth mentioning are discussed.
+Not every line of the source code is discussed. It is simple and implements the design described earlier. Only a few
+details worth mentioning are discussed.
 
-The source code samples given are VHDL - however, for the verilog example file the code looks very much the same and the comments apply as well.
+The source code samples given are VHDL - however, for the verilog example file the code looks very much the same and the
+comments apply as well.
 
 ### Omitting Unused Generics
 
 The FIFO instance only sets two generics:
 
-```
+```vhdl
     i_fifo : entity olo.olo_base_fifo_sync
         generic map ( 
             Width_g         => 4,               
@@ -170,9 +192,10 @@ The FIFO instance only sets two generics:
         ...
 ```
 
-The *olo_base_fifo_sync* entity would have much more generics but due to the concept of providing default values for optional generics, it is not necessary to obfuscate source-code with many lines of actually unused generics.
+The _olo_base_fifo_sync_ entity would have much more generics but due to the concept of providing default values for
+optional generics, it is not necessary to obfuscate source-code with many lines of actually unused generics.
 
-```
+```vhdl
 entity olo_base_fifo_sync is
     generic ( 
         Width_g         : positive;                   
@@ -190,9 +213,10 @@ entity olo_base_fifo_sync is
 
 ### Omitting Unused Ports
 
-The same concept applies to unused ports. In this case we do neither require full handshaking nor status signals like Full/Empty/Level - hence all these signals can be omitted:
+The same concept applies to unused ports. In this case we do neither require full handshaking nor status signals like
+Full/Empty/Level - hence all these signals can be omitted:
 
-```
+```vhdl
     i_fifo : entity olo.olo_base_fifo_sync
         ...
         port map (    
@@ -205,9 +229,10 @@ The same concept applies to unused ports. In this case we do neither require ful
         );
 ```
 
-Again compared to the full list of signals the *olo_base_fifo_sync* provides many lines of obfuscating code can be omitted because all optional input ports come with default values.
+Again compared to the full list of signals the _olo_base_fifo_sync_ provides many lines of obfuscating code can be
+omitted because all optional input ports come with default values.
 
-```
+```vhdl
 entity olo_base_fifo_sync is
     ...
     port (    
@@ -233,30 +258,30 @@ entity olo_base_fifo_sync is
     );
 ```
 
-
-
 ## Notes
 
-If you should want to build the tutorial project without many manual mouse clicks, you can do so by following the steps below:
+If you should want to build the tutorial project without many manual mouse clicks, you can do so by following the steps
+below:
 
-* Open Vivado
-
-* In the TCL console, navigate to the directory \<open-logic-root\>/doc/tutorials/VivadoTutorial/Files
-  ```
+- Open Vivado
+- In the TCL console, navigate to the directory \<open-logic-root\>/doc/tutorials/VivadoTutorial/Files
+  
+  ```tcl
   cd <open-logic-root>/doc/tutorials/VivadoTutorial/Files
   ```
 
-* Run the script [scripted_build.tcl](./VivadoTutorial/Files/scripted_build.tcl), which creates and builds the tutorial project: 
+- Run the script [scripted_build.tcl](./VivadoTutorial/Files/scripted_build.tcl), which creates and builds the tutorial
+  project: <br>
   For VHDL:
   
-  ```
+  ```tcl
   source scripted_build.tcl
   ```
   
   For Verilog:
   
-  ```
+  ```tcl
   source scripted_build_sv.tcl
   ```
 
-Note: replace \<open-logic-root\> with the root folder of your *Open Logic* working copy.
+Note: replace \<open-logic-root\> with the root folder of your _Open Logic_ working copy.
