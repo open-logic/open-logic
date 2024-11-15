@@ -28,4 +28,4 @@ jobs:
         uses: DavidAnson/markdownlint-cli2-action@v17
         with:
           globs: '**/*.md'
-          config: 'markdownlint.json'
+          config: '.markdownlint.json'
