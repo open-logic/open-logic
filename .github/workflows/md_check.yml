@@ -9,9 +9,6 @@ permissions:
 #Set Triggers
 on:
   push:
-    branches:
-      - main
-      - develop
   workflow_dispatch:
   pull_request:
   schedule:
