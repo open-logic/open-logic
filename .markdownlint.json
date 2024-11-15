@@ -1,0 +1,17 @@
+{
+  "default": true,
+  "MD004": { 
+    "style": "dash" 
+  },
+  "MD013": { 
+    "line_length" : 120,
+    "tables" : false,
+    "stern" : true
+  },
+  "MD024" : false,  
+  "MD033" : false,
+  "MD041" : false,
+  "MD049" : {
+    "style" : "underscore"
+  }
+}
