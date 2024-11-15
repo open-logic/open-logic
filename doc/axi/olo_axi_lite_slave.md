@@ -84,7 +84,7 @@ unpredictable way.
 
 ### Register Bank Example
 
-Below code snippet shows an example for the code of a register bank attached to the _olo_axi_lite_slave_:
+Below code snippet shows an example for the code of a register bank attached to the *olo_axi_lite_slave*:
 
 ```vhdl
 p_rb : process(Clk)
