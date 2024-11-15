@@ -232,3 +232,15 @@ lot.
 
 A code coverage of 100% is the goal. For code with generics, a representable set of combinations of generics shall be
 simulated.
+
+## Documentation
+
+Documentation is written in Markdown. Conventions are checked using markdownlint, it's best to install the VSCode
+plugin, so linting errors can be seen while editing files.
+
+The following conventions are important to rembmer:
+
+- For unordered lists, dashes (`-`) are used
+- For _emphasizing_ underscores (`_`) are used
+
+The markdown linting is executed automatically and pull-requests are only accepted if there are no errors reported.
