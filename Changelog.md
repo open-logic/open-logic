@@ -2,6 +2,45 @@
 
 # Changelog
 
+## 3.0.1
+
+26-Nov-2024
+
+### Added Features
+
+- Addition of Markdown linter to ensure adherence to markdown conventions (#93)
+  - See [Conventions](./doc/Conventions.md#documentation) for documentation about how to use it
+  - Co-authored by: [gckoeppel](https://github.com/gckoeppel)
+
+### Backward Compatible Changes
+
+- Various documentation improvements
+  - Some of them contribured by: [gckoeppel](https://github.com/gckoeppel), [Monish-VR](https://github.com/Monish-VR)
+
+- Improve linter configuration
+  - Workaround for procedures and functions without arguments was removed
+
+- Improvements on VSCode integration
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- Fix _olo_axi_master_simple_ for _AxiAddrWidth_g_ < log2(_AxiMaxBeats_g_+1) (#87)
+  - Reported by: [daielkraak](https://github.com/daielkraak)
+
+### Reporters
+
+- [daielkraak](https://github.com/daielkraak)
+- [gckoeppel](https://github.com/gckoeppel)
+
+### Contributors
+
+- [gckoeppel](https://github.com/gckoeppel)
+- [Monish-VR](https://github.com/Monish-VR)
+
 ## 3.0.0
 
 28-Oct-2024
