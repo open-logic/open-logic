@@ -106,12 +106,12 @@ architecture sim of olo_intf_i2c_master_tb is
     constant CmdMsg_c   : msg_type_t := new_msg_type("I2C Command");
 
     procedure pushCommand (
-            Command : std_logic_vector(2 downto 0);
-            SetData : boolean                      := false;
-            Data    : std_logic_vector(7 downto 0) := (others => '0');
-            SetAck  : boolean                      := false;
-            Ack     : std_logic                    := '1';
-            Delay   : time                         := 0 ns) is
+        Command : std_logic_vector(2 downto 0);
+        SetData : boolean                      := false;
+        Data    : std_logic_vector(7 downto 0) := (others => '0');
+        SetAck  : boolean                      := false;
+        Ack     : std_logic                    := '1';
+        Delay   : time                         := 0 ns) is
         variable Msg_v : msg_t := new_msg(CmdMsg_c);
     begin
         push(Msg_v, Command);
@@ -126,12 +126,12 @@ architecture sim of olo_intf_i2c_master_tb is
     constant NoData_c : std_logic_vector(7 downto 0) := (others => 'X');
 
     procedure checkResp (
-            Command : std_logic_vector(2 downto 0);
-            Data    : std_logic_vector(7 downto 0) := NoData_c;
-            Ack     : std_logic                    := 'X';
-            ArbLost : std_logic                    := '0';
-            SeqErr  : std_logic                    := '0';
-            Msg     : string                       := "") is
+        Command : std_logic_vector(2 downto 0);
+        Data    : std_logic_vector(7 downto 0) := NoData_c;
+        Ack     : std_logic                    := 'X';
+        ArbLost : std_logic                    := '0';
+        SeqErr  : std_logic                    := '0';
+        Msg     : string                       := "") is
     begin
         wait until rising_edge(Clk) and Resp_Valid = '1';
         check_equal(Resp_Command, Command, "Wrong Resp_Command - " & Msg);

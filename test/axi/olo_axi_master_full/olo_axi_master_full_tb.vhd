@@ -153,11 +153,11 @@ architecture sim of olo_axi_master_full_tb is
 
     -- Apply a Command
     procedure pushCommand (
-            signal net : inout network_t;
-            CmdMaster  : axi_stream_master_t;
-            CmdAddr    : unsigned;
-            CmdSize    : integer;
-            CmdLowLat  : std_logic := '0') is
+        signal net : inout network_t;
+        CmdMaster  : axi_stream_master_t;
+        CmdAddr    : unsigned;
+        CmdSize    : integer;
+        CmdLowLat  : std_logic := '0') is
         variable TData_v : std_logic_vector(CmdLowLat_c downto 0);
     begin
         TData_v(CmdAddrRange_c) := std_logic_vector(resize(CmdAddr, AxiAddrWidth_g));
@@ -168,10 +168,10 @@ architecture sim of olo_axi_master_full_tb is
 
     -- Apply Write Data
     procedure pushWrData (
-            signal net : inout network_t;
-            startValue : unsigned;
-            increment  : natural := 1;
-            beats      : natural := 1) is
+        signal net : inout network_t;
+        startValue : unsigned;
+        increment  : natural := 1;
+        beats      : natural := 1) is
         variable Data_v : unsigned(UserDataWidth_g-1 downto 0);
     begin
         Data_v := resize(startValue, UserDataWidth_g);
@@ -186,10 +186,10 @@ architecture sim of olo_axi_master_full_tb is
 
     -- Check REad DAta
     procedure expectRdData (
-            signal net : inout network_t;
-            startValue : unsigned;
-            increment  : natural := 1;
-            beats      : natural := 1) is
+        signal net : inout network_t;
+        startValue : unsigned;
+        increment  : natural := 1;
+        beats      : natural := 1) is
         variable Data_v : unsigned(UserDataWidth_g-1 downto 0);
         variable Last_v : std_logic := '0';
     begin
@@ -243,9 +243,9 @@ architecture sim of olo_axi_master_full_tb is
 
     -- Convert counter data to a continuous vector (as required by the olo_axi_slave_vc)
     function dataAsVector (
-            startValue      : unsigned;
-            increment       : natural               := 1;
-            beats           : natural               := 1) return unsigned is
+        startValue      : unsigned;
+        increment       : natural               := 1;
+        beats           : natural               := 1) return unsigned is
         variable Vector_v : unsigned(beats*UserDataWidth_g-1 downto 0) := (others => '0');
         variable Data_v   : unsigned(UserDataWidth_g-1 downto 0)       := startValue;
     begin
@@ -262,10 +262,10 @@ architecture sim of olo_axi_master_full_tb is
     -- convert coutner data to a AXI aligned vector (as required by the olo_axi_slave_vc)
     -- The vector contains all AXI transactions (including bytes prior and after the addressed range)
     function dataAsVectorAligned (
-            address         : unsigned;
-            startValue      : unsigned;
-            increment       : natural               := 1;
-            bytes           : natural               := 1) return unsigned is
+        address         : unsigned;
+        startValue      : unsigned;
+        increment       : natural               := 1;
+        bytes           : natural               := 1) return unsigned is
         -- constants
         constant Beats_c        : natural  := (bytes+UserBytes_c-1)/UserBytes_c;
         constant PrependBytes_c : natural  := to_integer(address(log2(AxiBytes_c)-1 downto 0));
@@ -281,8 +281,8 @@ architecture sim of olo_axi_master_full_tb is
 
     -- Generate strobes aligned with DataAsVectorAligned()
     function strbAsVectorAligned (
-            address         : unsigned;
-            bytes           : natural) return std_logic_vector is
+        address         : unsigned;
+        bytes           : natural) return std_logic_vector is
         -- Constants
         constant PrependBytes_c : natural := to_integer(address(log2(AxiBytes_c)-1 downto 0));
         constant AppendBytes_c  : natural := (AxiBytes_c-((bytes+PrependBytes_c) mod AxiBytes_c)) mod AxiBytes_c;

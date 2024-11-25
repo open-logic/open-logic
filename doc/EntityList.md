@@ -10,17 +10,21 @@ Note that components are split into categories.
 
 ### Packages (olo_base_pkg_\<...\>)
 
-Packages with type declarations and functions used in *Open Logic* internally or on its interfaces. 
+Packages with type declarations and functions used in _Open Logic_ internally or on its interfaces.
 
 | Package                                            | Description                                                |
 | -------------------------------------------------- | ---------------------------------------------------------- |
-| [olo_base_pkg_array](./base/olo_base_pkg_array.md) | Array type definitions (e.g. arrays of *std_logic_vector*) |
-| [olo_base_pkg_math](./base/olo_base_pkg_math.md)   | Mathematic functions (e.g. *log2*)                         |
-| [olo_base_pkg_logic](./base/olo_base_pkg_logic.md) | Mathematic functions (e.g. *binaryToGray*)                 |
+| [olo_base_pkg_array](./base/olo_base_pkg_array.md) | Array type definitions (e.g. arrays of _std_logic_vector_) |
+| [olo_base_pkg_math](./base/olo_base_pkg_math.md)   | Mathematic functions (e.g. _log2_)                         |
+| [olo_base_pkg_logic](./base/olo_base_pkg_logic.md) | Mathematic functions (e.g. _binaryToGray_)                 |
 
-### Clock Crossings (*olo_base_cc_\<...\>*)
+### Clock Crossings (_olo_base_cc_\<...\>_)
 
-Clock crossings are a key topic and they all follow the same [clock crossing principles](./base/clock_crossing_principles.md). 
+Clock crossings are a key topic and they all follow the same
+[clock crossing principles](./base/clock_crossing_principles.md).
+
+A selection table summarizing the pros and cons of all the different clock crossings is also provided in
+[clock crossing principles](./base/clock_crossing_principles.md). If unsure which entity to select, refer to this table.
 
 | Entity                                                   | Description                                                  |
 | -------------------------------------------------------- | ------------------------------------------------------------ |
@@ -31,7 +35,7 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 | [olo_base_cc_status](./base/olo_base_cc_status.md)       | Transfer status and configuration information from one clock domain to another clock domain. The update rate is relatively low but consistency is guaranteed |
 | [olo_base_cc_n2xn](./base/olo_base_cc_n2xn.md)           | Transfer data from a slower clock to a faster phase aligned clock (output clock frequency is an exact integer multiple of the input clock frequency and the clocks are phase aligned). |
 | [olo_base_cc_xn2n](./base/olo_base_cc_xn2n.md)           | Transfer data from a faster clock to a slower phase aligned clock (input clock frequency is an exact integer multiple of the output clock frequency and the clocks are phase aligned). |
-| [olo_base_cc_handshake](./base/olo_base_cc_handshake.md) | Transfer data from one clock domain to another clock domain using the standard *Valid*/*Ready* handshaking.<br />For technologies with distributed RAM (LUT can be used as small RAM), [olo_base_fifo_async](./base/olo_base_fifo_async.md) in most cases is preferred over this entity. |
+| [olo_base_cc_handshake](./base/olo_base_cc_handshake.md) | Transfer data from one clock domain to another clock domain using the standard _Valid/Ready_ handshaking.<br />For technologies with distributed RAM (LUT can be used as small RAM), [olo_base_fifo_async](./base/olo_base_fifo_async.md) in most cases is preferred over this entity. |
 | [olo_base_fifo_async](./base/olo_base_fifo_async.md)     | Asynchronous FIFO (separate write and read clocks)<br />This is not a pure clock-crossing entity but it can be used as such. |
 
 ### RAM Implementations (olo_base_ram_\<...\>)
@@ -54,8 +58,8 @@ Clock crossings are a key topic and they all follow the same [clock crossing pri
 
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
-| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Increase word width by an integer factor (*OutWidth = InWidth x N*)<br />Convert from TDM to parallel (see [Conventions](./Conventions.md)) |
-| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Decrease word width by an integer factor (*OutWidth = InWidth / N*)<br />Convert from parallel to TDM (see [Conventions](./Conventions.md)) |
+| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Increase word width by an integer factor (_OutWidth = InWidth x N_)<br />Convert from TDM to parallel (see [Conventions](./Conventions.md)) |
+| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Decrease word width by an integer factor (_OutWidth = InWidth / N_)<br />Convert from parallel to TDM (see [Conventions](./Conventions.md)) |
 
 ### Arbiters (olo_base_arb_\<...\>)
 
@@ -74,7 +78,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Convert from TDM to parallel (see [Conventions](./Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
 | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Convert from parallel to TDM (see [Conventions](./Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
 
-### Miscellaneous 
+### Miscellaneous
 
 | Entity                                                       | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -96,16 +100,20 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | ------------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_axi_pl_stage](./axi/olo_axi_pl_stage.md)           | Implements a AXI4 pipeline stage, registering all signals of an AXI4 interface.<br />Can be used for AXI4-Lite as well. |
 | [olo_axi_lite_slave](./axi/olo_axi_lite_slave.md)       | Interface to attach user register banks and memories to the AXI4-Lite bus. |
-| [olo_axi_master_simple](./axi/olo_axi_master_simple.md) | AXI4 master - does execute arbitrarily sized transfer over AXI4. The *_simple* version of the master does only allow access to word-aligned addresses and sizes. |
+| [olo_axi_master_simple](./axi/olo_axi_master_simple.md) | AXI4 master - does execute arbitrarily sized transfer over AXI4. The __simple_ version of the master does only allow access to word-aligned addresses and sizes. |
 | [olo_axi_master_full](./axi/olo_axi_master_full.md)     | AXI4 master - Same as [olo_axi_master_simple](./axi/olo_axi_master_simple.md) but does allow access that are not word-aligned (in terms of start address, size or both). |
 
-**Note:** *Open Logic* focuses on providing utilities for development of AXI endpoints (masters and slaves). *Open Logic* does not aim to provide AXI interconnect infrastructure (e.g. crossbars, interconnects, ...). Often the vendor IPs are used (for tool integration reasons) for these aspects. If you are looking for a pure VHDL implementation of AXI interconnects, it's suggested that you use one of the following libraries:
+**Note:** _Open Logic_ focuses on providing utilities for development of AXI endpoints (masters and slaves).
+_Open Logic_ does not aim to provide AXI interconnect infrastructure (e.g. crossbars, interconnects, ...). Often the
+vendor IPs are used (for tool integration reasons) for these aspects. If you are looking for a pure VHDL implementation
+of AXI interconnects, it's suggested that you use one of the following libraries:
 
-* [hdl-modules](https://github.com/hdl-modules)
-  * hdl-modules utilizes VHDL-2008 which has limited support in some tools (namely the Standard and Lite versions of Quartus Prime)
-  * hdl-modules currently does only contain synthesis attributes for AMD (Vivado)
-* [SURF](https://github.com/slaclab/surf)
-  * SURF currently does only target AMD (Vivado) and Altera (Quartus Prime)
+- [hdl-modules](https://github.com/hdl-modules)
+  - hdl-modules utilizes VHDL-2008 which has limited support in some tools (namely the Standard and Lite versions of
+    Quartus Prime)
+  - hdl-modules currently does only contain synthesis attributes for AMD (Vivado)
+- [SURF](https://github.com/slaclab/surf)
+  - SURF currently does only target AMD (Vivado) and Altera (Quartus Prime)
 
 ## intf
 
@@ -118,4 +126,3 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_intf_uart](./intf/olo_intf_uart.md)             | UART                                                         |
 | [olo_intf_debounce](./intf/olo_intf_debounce.md)     | Debouncer (for bouncing signals from buttons and switches) - Includes double-stage synchronizers. |
 | [olo_intf_clk_meas](./intf/olo_intf_clk_meas.md)     | Measure the frequency of a clock.                            |
-

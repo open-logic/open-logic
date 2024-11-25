@@ -85,8 +85,7 @@ architecture rtl of olo_intf_uart is
         end if;
     end function;
 
-    function stopStrobeCount (
-            Dummy : boolean := false) return natural is -- dummy because linting fails for parameterless functions
+    function stopStrobeCount return natural is
     begin
         if StopBits_g = "1" then
             return 2;
@@ -97,8 +96,7 @@ architecture rtl of olo_intf_uart is
         end if;
     end function;
 
-    function transmitBits (
-            Dummy : boolean := false) return natural is -- dummy because linting fails for parameterless functions
+    function transmitBits return natural is
         variable Bits_v : natural := DataBits_g;
     begin
         -- Start Bit

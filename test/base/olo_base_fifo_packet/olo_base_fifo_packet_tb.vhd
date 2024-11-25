@@ -77,12 +77,12 @@ architecture sim of olo_base_fifo_packet_tb is
     );
 
     procedure pushPacket (
-            signal  net : inout network_t;
-            size        : integer;
-            startVal    : integer := 1;
-            dropAt      : integer := integer'high;
-            isDroppedAt : integer := integer'high;
-            blocking    : boolean := false) is
+        signal  net : inout network_t;
+        size        : integer;
+        startVal    : integer := 1;
+        dropAt      : integer := integer'high;
+        isDroppedAt : integer := integer'high;
+        blocking    : boolean := false) is
         variable Tlast_v     : std_logic := '0';
         variable Drop_v      : std_logic := '0';
         variable IsDropped_v : std_logic_vector(0 downto 0);
@@ -121,13 +121,13 @@ architecture sim of olo_base_fifo_packet_tb is
     end procedure;
 
     procedure checkPacket (
-            signal  net : inout network_t;
-            size        : integer;
-            startVal    : integer := 1;
-            nextAt      : integer := -1;
-            repeatAt    : integer := -1;
-            pktSize     : integer := -1; -- if not specified "size" is used
-            blocking    : boolean := false) is
+        signal  net : inout network_t;
+        size        : integer;
+        startVal    : integer := 1;
+        nextAt      : integer := -1;
+        repeatAt    : integer := -1;
+        pktSize     : integer := -1; -- if not specified "size" is used
+        blocking    : boolean := false) is
         variable Tlast_v          : std_logic := '0';
         variable Next_v, Repeat_v : std_logic := '0';
         variable Size_v           : std_logic_vector(log2ceil(Depth_c+1) - 1 downto 0);
@@ -166,9 +166,9 @@ architecture sim of olo_base_fifo_packet_tb is
     end procedure;
 
     procedure testPacket (
-            signal  net : inout network_t;
-            size        : integer;
-            startVal    : integer := 1) is
+        signal  net : inout network_t;
+        size        : integer;
+        startVal    : integer := 1) is
     begin
         checkPacket(net, size, startVal);
         pushPacket(net, size, startVal);

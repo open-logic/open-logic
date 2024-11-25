@@ -72,9 +72,9 @@ architecture sim of olo_base_dyn_sft_tb is
 
     -- *** Procedures ***
     procedure testShift (
-            signal net : inout network_t;
-            value      : in integer;
-            shift      : in integer) is
+        signal net : inout network_t;
+        value      : in integer;
+        shift      : in integer) is
         variable OutValue_v   : integer;
         variable InUnsigned_v : integer;
     begin
