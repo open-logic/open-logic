@@ -17,7 +17,7 @@ VHDL Source: [olo_base_reset_gen](../../src/base/vhdl/olo_base_reset_gen.vhd)
 This component generates reset pulses of a specified minimum duration after FPGA configuration and optionally upon
 request (reset input).
 
-The component dues guarantee synchronous de-assertion of the reset. It might assert the reset asynchronously.
+The component does guarantee synchronous de-assertion of the reset. It might assert the reset asynchronously.
 
 **Note:** Because the reset input is detected asynchronously, it is important that this input is glitch-free.
 
@@ -39,7 +39,7 @@ documentation of your target technology or play it safe and connect _RstIn_.
 | :----------------- | :-------- | ------- | :----------------------------------------------------------- |
 | RstPulseCycles_g   | positive  | 3       | Minimum duration of the reset pulse in clock cycles<br />Range: 3 ... 2^31-1 |
 | RstInPolarity_g    | std_logic | '1'     | Polarity of _RstIn_.<br />'1' - Active High<br />'0' - Active Low |
-| AsyncResetOutput_g | boolean   | false   | True = _RstOut_ is asserted asynchronously (_RstIn_ is forwarded even in absence of _Clk_ activity)<br />False = _RstOut_ may be asserted synchronously (upon _Clk_ rising edge).<br />Note that for short reset pulses (_RstPulseCycles_g_=3) the output is always asserted synchronously. The generic is meant to enforce asynchronous assertion even for longer pulses. |
+| AsyncResetOutput_g | boolean   | false   | True = _RstOut_ is asserted asynchronously (_RstIn_ is forwarded even in absence of _Clk_ activity)<br />False = _RstOut_ may be asserted synchronously (upon _Clk_ rising edge).<br />Note that for short reset pulses (_RstPulseCycles_g_=3) the output is always asserted asynchronously. The generic is meant to enforce asynchronous assertion even for longer pulses. |
 
 ## Interfaces
 
