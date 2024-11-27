@@ -53,7 +53,7 @@ _olo_base_cc_simple_.
 
 The logic on the main clock domain does forward the result to the output and additionally detects if no new measurement
 arrives between two 1 Hz pulses - in this case the measured clock obviously is stopped and the _Freq_Hz_ output is set
-to zero. In case of a stopped clock no new measurement value is sent by the _Measurement Clock Logic_ because this 
+to zero. In case of a stopped clock no new measurement value is sent by the _Measurement Clock Logic_ because this
 logic is synchronous to _ClkTest_ and hence does not show any activity if this clock is stopped.
 
 Due to the clock crossings and the internal logic, a certain minimum clock frequency is required for correct
