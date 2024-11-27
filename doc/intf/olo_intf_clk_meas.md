@@ -15,7 +15,7 @@ VHDL Source: [olo_intf_clk_meas](../../src/intf/vhdl/olo_intf_clk_meas.vhd)
 ## Description
 
 This entity measures the frequency of a clock under the assumption that the frequency of the main-clock is exactly
-correct. Generally the system cock comes from PS, the block is useful to verify if other clock are set the correct
+correct. Generally the system clock comes from PS, the block is useful to verify if other clocks are set to the correct
 frequency.
 
 This block contains _Open Logic_ clock crossings, refer to
@@ -52,10 +52,10 @@ domain the number of clock cycles between two pulses is counted and transferred 
 _olo_base_cc_simple_.
 
 The logic on the main clock domain does forward the result to the output and additionally detects if no new measurement
-arrives between to 1 Hz pulses - in this case the measured clock obviously is stopped and the _Freq_Hz_ output is set to
-zero. In case of a stopped clock no new measurement value is sent by the _Measurement Clock Logic_ because this logic is
-synchronous to _ClkTest_ and hence does not show any activity if this clock is stopped.
+arrives between two 1 Hz pulses - in this case the measured clock obviously is stopped and the _Freq_Hz_ output is set
+to zero. In case of a stopped clock no new measurement value is sent by the _Measurement Clock Logic_ because this
+logic is synchronous to _ClkTest_ and hence does not show any activity if this clock is stopped.
 
 Due to the clock crossings and the internal logic, a certain minimum clock frequency is required for correct
-measurements. Main clocks (_Cl_) below 100 Hz are not supported and measurement values below that threshold may be
+measurements. Main clocks (_Clk_) below 100 Hz are not supported and measurement values below that threshold may be
 imprecise.
