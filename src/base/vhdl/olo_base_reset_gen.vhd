@@ -50,7 +50,7 @@ end entity;
 architecture struct of olo_base_reset_gen is
 
     -- Reset Synchronizer
-    signal RstSyncChain : std_logic_vector(2 downto 0) := (others => '1');
+    signal RstSyncChain : std_logic_vector(3 downto 0) := "1110";
     signal RstSync      : std_logic;
 
     -- Pulse prolongation
@@ -64,7 +64,13 @@ begin
     p_rstsync : process (Clk, RstIn) is
     begin
         if RstIn = RstInPolarity_g then
-            RstSyncChain <= (others => '1');
+            -- For asynchronous reset, set left most bits, so the reset is asserted immediately (asynchronously)
+            if AsyncResetOutput_g then
+                RstSyncChain <= "1110";
+            -- for synchronous reset, do not set the left most bit, so the reset is asserted on the next edge (synchronously)
+            else
+                RstSyncChain(2 downto 0) <= "111";
+            end if;          
         elsif rising_edge(Clk) then
             RstSyncChain <= RstSyncChain(RstSyncChain'left - 1 downto 0) & '0';
         end if;
