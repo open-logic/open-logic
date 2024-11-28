@@ -41,6 +41,7 @@ documentation of your target technology or play it safe and connect _RstIn_.
 | RstPulseCycles_g   | positive  | 3       | Minimum duration of the reset pulse in clock cycles<br />Range: 3 ... 2^31-1 |
 | RstInPolarity_g    | std_logic | '1'     | Polarity of _RstIn_.<br />'1' - Active High<br />'0' - Active Low |
 | AsyncResetOutput_g | boolean   | false   | True = _RstOut_ is asserted asynchronously (_RstIn_ is forwarded even in absence of _Clk_ activity)<br />False = _RstOut_ may is asserted synchronously (upon _Clk_ rising edge). |
+| SyncStages_g       | positive  | 2       | Number of synchronization stages for the multi-stage synchronizer in case of _AsyncResetOutput_g_=false. <br />This generic is not having any effect for _AsyncResetOutput_g_=true.<br>Range: 2 ... 4 |
 
 ## Interfaces
 
@@ -57,8 +58,8 @@ The architecture of the block for _AsyncResetOutput_g_=false is shown in the fig
 ![architecture](./misc/olo_base_reset_gen_sync.svg)
 
 The reset is detected asynchronously. If the _RstIn_ input matches _RstInPolarity_g_, the reset synchronizer FFs are
-asynchronously set. The last FF stay unchanged, to ensure any metastability would be removed by the last FF in the
-chain. A synchronous counter is then used to prolong the reset pulse to the required duraton.
+asynchronously set. The reset assertion is then synchronized using a multi-stage synchronizer. A synchronous counter is
+then used to prolong the reset pulse to the required duraton.
 
 The architecture for _AsyncResetOutput_g_=true is relatively similar,
 just with the last (metastability remover) FF in the synchronizer chain being omitted. Additionally, because the
