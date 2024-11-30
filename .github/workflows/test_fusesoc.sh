@@ -21,5 +21,5 @@ fusesoc library add open-logic https://github.com/open-logic/open-logic
 fusesoc run --tool vivado --target zybo_z7 open-logic:tutorials:vivado_tutorial:$1
 
 # Build Quartus
-fusesoc run --tool quartus --target de0_cv open-logic:tutorials:quartus_tutorial:$
+fusesoc run --tool quartus --target de0_cv open-logic:tutorials:quartus_tutorial:$1
 
