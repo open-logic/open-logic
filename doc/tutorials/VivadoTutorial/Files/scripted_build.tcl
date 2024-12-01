@@ -12,3 +12,4 @@ add_files -fileset constrs_1 -norecurse ./pinout.xdc
 #Build
 set_property top vivado_tutorial [current_fileset]
 launch_runs impl_1 -to_step write_bitstream -jobs 3
+wait_on_run -timeout 15 impl_1

@@ -138,7 +138,7 @@ begin
             end if;
 
             -- *** Reset ***
-            if Rst = '1' then
+            if Rst_T = '1' then
                 CntrTest_T    <= 0;
                 ResultValid_T <= '0';
             end if;

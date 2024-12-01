@@ -42,7 +42,8 @@ To run the script, follow the steps below:
 4. In the _Files_ tab you can now see all Open Logic source files showing up. Links are made to the files in their
    original location, they are not copied into the project. All sources are imported into the library selected (see
    point 3, default is _olo_) and are available to be used.<br>
-   ![Dialog](./general/libero/import_sources_files.png)
+   In case you do not need all open-logic files and you don't want to clutter the project, just manually remove the
+   filesp you do not need.![Dialog](./general/libero/import_sources_files.png)
 
 ## Use Open Logic in a Questasim Simulation
 
@@ -72,8 +73,9 @@ To run the script, follow the steps below:
    Replace `<path-to-project-xml>` by the path to the project file (to the _project.xml_ file,
    NOT the _project.peri.xml_).<br>
    Replace `<library-name>` by the library to compile open-logic sources into (_olo_ for VHDL, _default_ for Verilog)
-5. Open the project in Efinity again. You should now see all _Open Logic_ sources being added
-   ![Sources](./general/efinity/import_sources.png)
+5. Open the project in Efinity again. You should now see all _Open Logic_ sources being added.<br>
+   In case you do not need all open-logic files and you don't want to clutter the project, just manually remove the
+   files you do not need.![Sources](./general/efinity/import_sources.png)
 
 Two more notes:
 
@@ -93,7 +95,9 @@ the script, follow the steps below:
 1. Open Vivado and create a project (if not existing yet)
 2. Open the TCL shell in Vivado
 3. Execute the command `source <open-logic-root>/tools/vivado/import_sources.tcl`
-   Replace `<open-logic-root>` by the path of your _Open Logic_ working copy.
+   Replace `<open-logic-root>` by the path of your _Open Logic_ working copy.<br>
+   In case you do not need all open-logic files and you don't want to clutter the project, just manually remove the
+   files you do not need.
 
 That's it. Nothing more.
 
@@ -120,7 +124,9 @@ To run the script, follow the steps below:
 2. Open the TCL shell in Quartus
    ![Sources](./general/quartus/launch_tcl_shell.png)
 3. Execute the command `source <open-logic-root>/tools/quartus/import_sources.tcl`
-   Replace `<open-logic-root>` by the path of your _Open Logic_ working copy.
+   Replace `<open-logic-root>` by the path of your _Open Logic_ working copy.<br>
+   In case you do not need all open-logic files and you don't want to clutter the project, just manually remove the
+   files you do not need.
 
 That's it. Nothing more.
 

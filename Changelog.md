@@ -2,6 +2,41 @@
 
 # Changelog
 
+## 3.0.2
+
+01-Dec-2024
+
+### Added Features
+
+- None
+
+### Backward Compatible Changes
+
+- Added synchronous assertion to _olo_base_reset_gen_ (#101)
+  - Synchronous assertion is used for _AsyncResetOutput_g_=true
+
+  - Number of synchronization stages is configurable through SyncStages_g
+
+  - Reported by: [tasgomes](https://github.com/tasgomes)
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- Fix reset CDC in _olo_intf_clk_meas_ (#99)
+  - Added proper reset CDC from _Clk_ to _ClkMeas_
+  - Reported by: [tasgomes](https://github.com/tasgomes)
+
+### Reporters
+
+- [tasgomes](https://github.com/tasgomes)
+
+### Contributors
+
+- None
+
 ## 3.0.1
 
 26-Nov-2024

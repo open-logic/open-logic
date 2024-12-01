@@ -35,7 +35,8 @@ entity olo_base_reset_gen is
     generic (
         RstPulseCycles_g    : positive range 3 to positive'high := 3;
         RstInPolarity_g     : std_logic                         := '1';
-        AsyncResetOutput_g  : boolean                           := false
+        AsyncResetOutput_g  : boolean                           := false;
+        SyncStages_g        : positive range 2 to 4             := 2
     );
     port (
         Clk         : in    std_logic;
@@ -50,13 +51,39 @@ end entity;
 architecture struct of olo_base_reset_gen is
 
     -- Reset Synchronizer
-    signal RstSyncChain : std_logic_vector(2 downto 0) := (others => '1');
+    signal RstSyncChain : std_logic_vector(2 downto 0)              := "111";
     signal RstSync      : std_logic;
+    signal DsSync       : std_logic_vector(SyncStages_g-1 downto 0) := (others => '1');
 
     -- Pulse prolongation
     constant PulseCntMax_c : natural                          := max(RstPulseCycles_g-4, 0);
     signal PulseCnt        : integer range 0 to PulseCntMax_c := 0;
     signal RstPulse        : std_logic                        := '1';
+
+    -- Synthesis attributes AMD (Vivado)
+    attribute shreg_extract : string;
+    attribute shreg_extract of DsSync : signal is "no";
+
+    -- Synthesis attributes for AMD (Vivado) and Efinix (Efinity)
+    attribute async_reg : boolean;
+    attribute async_reg of DsSync : signal is true;
+
+    attribute syn_srlstyle : string;
+    attribute syn_srlstyle of DsSync : signal is "registers";
+
+    -- Synthesis attributes Altera (Quartus)
+    attribute dont_merge : boolean;
+    attribute dont_merge of DsSync : signal is true;
+
+    attribute preserve : boolean;
+    attribute preserve of DsSync : signal is true;
+
+    -- Synchthesis attributes for Synopsis (Lattice, Microchip)
+    attribute syn_preserve : boolean;
+    attribute syn_preserve of DsSync : signal is true;
+
+    attribute syn_keep : boolean;
+    attribute syn_keep of DsSync : signal is true;
 
 begin
 
@@ -70,7 +97,24 @@ begin
         end if;
     end process;
 
-    RstSync <= RstSyncChain(RstSyncChain'left);
+    -- Asynchronous assertion
+    g_async : if AsyncResetOutput_g generate
+        RstSync <= RstSyncChain(RstSyncChain'left);
+    end generate;
+
+    -- Synchronous assertion
+    g_sync : if not AsyncResetOutput_g generate
+
+        -- Synchronizer for synchronous assertion
+        p_sync : process (Clk) is
+        begin
+            if rising_edge(Clk) then
+                DsSync <= DsSync(DsSync'left - 1 downto 0) & RstSyncChain(RstSyncChain'left);
+            end if;
+        end process;
+
+        RstSync <= DsSync(DsSync'left);
+    end generate;
 
     -- Prolong reset pulse
     g_prolong : if RstPulseCycles_g > 3 generate
@@ -94,12 +138,13 @@ begin
             end if;
         end process;
 
-        -- Asynchronous Output
+        -- Asynchronous output
         g_async : if AsyncResetOutput_g generate
             RstOut <= RstPulse or RstSync;
+
         end generate;
 
-        -- Synchronous Output
+        -- Synchronous output
         g_sync : if not AsyncResetOutput_g generate
             RstOut <= RstPulse;
         end generate;

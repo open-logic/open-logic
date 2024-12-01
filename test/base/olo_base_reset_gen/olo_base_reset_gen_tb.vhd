@@ -96,6 +96,11 @@ begin
             wait until rising_edge(Clk);
         end loop;
 
+        -- On synchronous assertion removal takes longer due to the synchronizer
+        if not AsyncResetOutput_g then
+            wait for 2*Clk_Period_c;
+        end if;
+
         -- Check removal
         wait for 0.1*Clk_Period_c;
         check_equal(RstOut, '0', "reset removal after power-up");
@@ -133,6 +138,11 @@ begin
                     check_equal(RstOut, '1', "reset removed early");
                     wait until rising_edge(Clk);
                 end loop;
+
+                -- On synchronous assertion removal takes longer due to the synchronizer
+                if not AsyncResetOutput_g then
+                    wait for Clk_Period_c;
+                end if;
 
                 wait for 0.1*Clk_Period_c;
                 check_equal(RstOut, '0', "reset removed late");
