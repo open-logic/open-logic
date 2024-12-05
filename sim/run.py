@@ -160,6 +160,8 @@ for tb_name in fifo_tbs:
     if tb_name == "olo_base_fifo_async_tb":
         for Stages in [2, 4]:
             named_config(tb, {"SyncStages_g": Stages})
+        for Opt in ["SPEED", "LATENCY"]:
+            named_config(tb, {"Optimization_g": Opt})
 
 #Width Converter TBs
 wconv_xn2n_tb = 'olo_base_wconv_xn2n_tb'

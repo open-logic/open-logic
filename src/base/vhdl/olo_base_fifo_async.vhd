@@ -42,6 +42,7 @@ entity olo_base_fifo_async is
         RamStyle_g      : string                := "auto";
         RamBehavior_g   : string                := "RBW";
         ReadyRstState_g : std_logic             := '1';
+        Optimization_g  : string                := "SPEED"; -- SPEED or LATENCY
         SyncStages_g    : positive range 2 to 4 := 2
     );
     port (
@@ -86,6 +87,9 @@ architecture rtl of olo_base_fifo_async is
         WrAddr     : unsigned(AddrWidth_c-1 downto 0); -- One additional bit for full/empty detection
         WrAddrGray : std_logic_vector(AddrWidth_c-1 downto 0);
         RdAddr     : unsigned(AddrWidth_c-1 downto 0);
+        WrAddrReg  : unsigned(AddrWidth_c-1 downto 0);
+        RamWr      : std_logic;
+        DataReg    : std_logic_vector(Width_g-1 downto 0);
     end record;
 
     type TwoProcessOut_r is record
@@ -97,19 +101,25 @@ architecture rtl of olo_base_fifo_async is
 
     signal ri, ri_next : TwoProcessIn_r  := (WrAddr          => (others => '0'),
                                               WrAddrGray     => (others => '0'),
-                                              RdAddr         => (others => '0'));
+                                              RdAddr         => (others => '0'),
+                                              WrAddrReg      => (others => '0'),
+                                              RamWr          => '0',
+                                              DataReg        => (others => '0'));
     signal ro, ro_next : TwoProcessOut_r := (RdAddr          => (others => '0'),
                                               RdAddrGray     => (others => '0'),
                                               WrAddr         => (others => '0'),
                                               OutLevel       => (others => '0'));
 
-    signal RstInInt   : std_logic;
-    signal RstOutInt  : std_logic;
-    signal RamWr      : std_logic;
-    signal RamRdAddr  : std_logic_vector(RamAddrWidth_c-1 downto 0);
-    signal RamWrAddr  : std_logic_vector(RamAddrWidth_c-1 downto 0);
-    signal WrAddrGray : std_logic_vector(AddrWidth_c-1 downto 0);
-    signal RdAddrGray : std_logic_vector(AddrWidth_c-1 downto 0);
+    signal RstInInt     : std_logic;
+    signal RstOutInt    : std_logic;
+    signal RamRdAddr    : std_logic_vector(RamAddrWidth_c-1 downto 0);
+    signal RamWrAddr    : std_logic_vector(RamAddrWidth_c-1 downto 0);
+    signal RamWr        : std_logic;
+    signal RamWrData    : std_logic_vector(Width_g-1 downto 0);
+    signal WrAddrGray   : std_logic_vector(AddrWidth_c-1 downto 0);
+    signal RdAddrGray   : std_logic_vector(AddrWidth_c-1 downto 0);
+    signal WrAddrGrayIn : std_logic_vector(AddrWidth_c-1 downto 0);
+    signal RdAddrGrayIn : std_logic_vector(AddrWidth_c-1 downto 0);
 
 begin
 
@@ -117,7 +127,7 @@ begin
         report "###ERROR###: olo_base_fifo_async: only power of two Depth_g is allowed"
         severity error;
 
-    p_comb : process (In_Valid, Out_Ready, ri, ro, RstInInt, WrAddrGray, RdAddrGray) is
+    p_comb : process (In_Valid, Out_Ready, ri, ro, RstInInt, WrAddrGray, RdAddrGray, In_Data) is
         variable vi        : TwoProcessIn_r;
         variable vo        : TwoProcessOut_r;
         variable InLevel_v : unsigned(log2ceil(Depth_g) downto 0);
@@ -133,7 +143,8 @@ begin
         In_Empty    <= '0';
         In_AlmFull  <= '0';
         In_AlmEmpty <= '0';
-        RamWr       <= '0';
+        vi.RamWr    := '0';
+        
 
         -- Level Detection
         InLevel_v := ri.WrAddr - ri.RdAddr;
@@ -151,7 +162,7 @@ begin
             -- Execute Write
             if In_Valid = '1' then
                 vi.WrAddr := ri.WrAddr + 1;
-                RamWr     <= '1';
+                vi.RamWr  := '1';
             end if;
         end if;
         -- Artificially keep InRdy low during reset if required
@@ -169,6 +180,10 @@ begin
         if InLevel_v <= AlmEmptyLevel_g and AlmEmptyOn_g then
             In_AlmEmpty <= '1';
         end if;
+
+        -- Pipeline registers for speed optimization
+        vi.WrAddrReg := ri.WrAddr;
+        vi.DataReg   := In_Data;
 
         -- *** Read Side ***
         -- Defaults
@@ -235,6 +250,7 @@ begin
                 ri.WrAddr     <= (others => '0');
                 ri.WrAddrGray <= (others => '0');
                 ri.RdAddr     <= (others => '0');
+                ri.RamWr      <= '0';
             end if;
         end if;
     end process;
@@ -252,7 +268,11 @@ begin
         end if;
     end process;
 
-    RamWrAddr <= std_logic_vector(ri.WrAddr(log2ceil(Depth_g) - 1 downto 0));
+    -- Optional pipeline stage for speed optimization
+    RamWrAddr <= std_logic_vector(ri.WrAddr(log2ceil(Depth_g) - 1 downto 0)) when Optimization_g = "LATENCY" else
+                 std_logic_vector(ri.WrAddrReg(log2ceil(Depth_g) - 1 downto 0));
+    RamWr <= ri_next.RamWr when Optimization_g = "LATENCY" else ri.RamWr;
+    RamWrData <= In_Data when Optimization_g = "LATENCY" else ri.DataReg;
 
     i_ram : entity work.olo_base_ram_sdp
         generic map (
@@ -266,13 +286,15 @@ begin
             Clk         => In_Clk,
             Wr_Addr     => RamWrAddr,
             Wr_Ena      => RamWr,
-            Wr_Data     => In_Data,
+            Wr_Data     => RamWrData,
             Rd_Clk      => Out_Clk,
             Rd_Addr     => RamRdAddr,
             Rd_Data     => Out_Data
         );
 
     -- Wr -> Rd Sync
+    WrAddrGrayIn <= ri_next.WrAddrGray when Optimization_g = "LATENCY" else ri.WrAddrGray; -- optional register stage
+
     i_cc_wr_rd : entity work.olo_base_cc_bits
         generic map (
             Width_g      => AddrWidth_c,
@@ -281,13 +303,15 @@ begin
         port map (
             In_Clk   => In_Clk,
             In_Rst   => RstInInt,
-            In_Data  => ri_next.WrAddrGray, -- use unregistered signal because CC contains register
+            In_Data  => WrAddrGrayIn,
             Out_Clk  => Out_Clk,
             Out_Rst  => RstOutInt,
             Out_Data => WrAddrGray
         );
 
     -- Rd -> Wr Sync
+    RdAddrGrayIn <= ro_next.RdAddrGray when Optimization_g = "LATENCY" else ro.RdAddrGray; -- optional register stage
+
     i_cc_rd_wr : entity work.olo_base_cc_bits
         generic map (
             Width_g      => AddrWidth_c,
@@ -296,7 +320,7 @@ begin
         port map (
             In_Clk   => Out_Clk,
             In_Rst   => RstOutInt,
-            In_Data  => ro_next.RdAddrGray, -- use unregistered signal because CC contains register
+            In_Data  => RdAddrGrayIn, -- use unregistered signal because CC contains register
             Out_Clk  => In_Clk,
             Out_Rst  => RstInInt,
             Out_Data => RdAddrGray

@@ -29,18 +29,19 @@ An asynchronous FIFO is a clock-crossing and hence this block follows the genera
 
 ## Generics
 
-| Name            | Type      | Default | Description                                                  |
-| :-------------- | :-------- | ------- | :----------------------------------------------------------- |
-| Widht_g         | positive  | -       | Number of bits per FIFO entry (word-width)                   |
-| Depth_g         | positive  | -       | Number of FIFO entries. <br />This **must** be a power of two. See [Architecture](#architecture) for more details. |
-| AlmFullOn_g     | boolean   | false   | If set to true, the _AlmFull_ (almost full) status flag is generated (otherwise it is omitted) |
-| AlmFullLevel_g  | natural   | 0       | Level to generate _AlmFull_ flag at. <br>Has no effect if _AlmFullOn_g_ = false |
-| AlmEmptyOn_g    | boolean   | false   | If set to true, the _AlmEmpty_ (almost empty) status flag is generated (otherwise it is omitted) |
-| AlmEmptyLevel_g | natural   | 0       | Level to generate _AlmEmpty_ flag at. <br>Has no effect if _AlmEmptyOn_g_ = false |
-| RamStyle_g      | string    | "auto"  | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes _ram_style_ and _ramstyle_ which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
-| RamBehavior_g   | string    | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
-| ReadyRstState_g | std_logic | '1'     | Controls the status of the _In_Ready_ signal in during reset.<br> Choose '1' for minimal logic on the (often timing-critical) _In_Ready_ path. |
-| SyncStages_g    | positive  | 2       | Number of synchronization stages. <br />Note that more synchronization stages also mean a higher latency until written data is visible on the read side.<br />Range: 2 ... 4 |
+| Name            | Type      | Default   | Description                                                  |
+| :-------------- | :-------- | --------- | :----------------------------------------------------------- |
+| Widht_g         | positive  | -         | Number of bits per FIFO entry (word-width)                   |
+| Depth_g         | positive  | -         | Number of FIFO entries. <br />This **must** be a power of two. See [Architecture](#architecture) for more details. |
+| AlmFullOn_g     | boolean   | false     | If set to true, the _AlmFull_ (almost full) status flag is generated (otherwise it is omitted) |
+| AlmFullLevel_g  | natural   | 0         | Level to generate _AlmFull_ flag at. <br>Has no effect if _AlmFullOn_g_ = false |
+| AlmEmptyOn_g    | boolean   | false     | If set to true, the _AlmEmpty_ (almost empty) status flag is generated (otherwise it is omitted) |
+| AlmEmptyLevel_g | natural   | 0         | Level to generate _AlmEmpty_ flag at. <br>Has no effect if _AlmEmptyOn_g_ = false |
+| RamStyle_g      | string    | "auto"    | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes _ram_style_ and _ramstyle_ which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
+| RamBehavior_g   | string    | "RBW"     | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
+| ReadyRstState_g | std_logic | '1'       | Controls the status of the _In_Ready_ signal in during reset.<br> Choose '1' for minimal logic on the (often timing-critical) _In_Ready_ path. |
+| Optimization_g  | string    | "LATENCY" | "LATENCY" - optimize for minimum time until a word written is showing up at the output<br />"SPEED" - optimize for highest possible clock speed (at the cost of more latency) |
+| SyncStages_g    | positive  | 2         | Number of synchronization stages. <br />Note that more synchronization stages also mean a higher latency until written data is visible on the read side.<br />Range: 2 ... 4 |
 
 ## Interfaces
 
