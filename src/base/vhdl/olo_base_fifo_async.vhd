@@ -140,7 +140,11 @@ begin
         In_Level  <= std_logic_vector(InLevel_v);
 
         -- Full
-        if InLevel_v = Depth_g then
+        -- if InLevel_v = Depth_g then --> Below if-condition implements this in a more timing optimal way
+        -- .. by avoiding relying on the carry chain for InLevel_v. Equivalence is given becasue FIFO
+        -- .. depth is power of two.
+        if (ri.WrAddr(ri.WrAddr'left) /= ri.RdAddr(ri.RdAddr'left)) and
+           (ri.WrAddr(ri.WrAddr'left-1 downto 0) = ri.RdAddr(ri.RdAddr'left-1 downto 0)) then
             In_Full <= '1';
         else
             In_Ready <= '1';
