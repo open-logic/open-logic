@@ -31,6 +31,7 @@ entity olo_base_fifo_async_tb is
         Depth_g         : natural              := 32;
         RamBehavior_g   : string               := "RBW";
         ReadyRstState_g : integer range 0 to 1 := 1;
+        Optimization_g  : string               := "LATENCY";
         SyncStages_g    : integer range 2 to 4 := 2
     );
 end entity;
@@ -93,6 +94,7 @@ begin
             AlmEmptyLevel_g => AlmEmptyLevel_c,
             RamBehavior_g   => RamBehavior_g,
             ReadyRstState_g => toStdl(ReadyRstState_g),
+            Optimization_g  => Optimization_g,
             SyncStages_g    => SyncStages_g
         )
         port map (
@@ -208,7 +210,7 @@ begin
                 check_equal(In_Level, 2, "In_Level not 2");
 
                 -- Pause 2
-                for i in 0 to 4 loop
+                for i in 0 to 5 loop
                     wait until falling_edge(In_Clk);
                     wait until falling_edge(Out_Clk);
                 end loop;
