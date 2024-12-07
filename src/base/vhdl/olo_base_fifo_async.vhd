@@ -99,12 +99,13 @@ architecture rtl of olo_base_fifo_async is
         OutLevel   : unsigned(AddrWidth_c-1 downto 0);
     end record;
 
-    signal ri, ri_next : TwoProcessIn_r  := (WrAddr          => (others => '0'),
-                                              WrAddrGray     => (others => '0'),
-                                              RdAddr         => (others => '0'),
-                                              WrAddrReg      => (others => '0'),
-                                              RamWr          => '0',
-                                              DataReg        => (others => '0'));
+    signal ri, ri_next : TwoProcessIn_r := (WrAddr          => (others => '0'),
+                                             WrAddrGray     => (others => '0'),
+                                             RdAddr         => (others => '0'),
+                                             WrAddrReg      => (others => '0'),
+                                             RamWr          => '0',
+                                            DataReg         => (others => '0'));
+
     signal ro, ro_next : TwoProcessOut_r := (RdAddr          => (others => '0'),
                                               RdAddrGray     => (others => '0'),
                                               WrAddr         => (others => '0'),
@@ -144,7 +145,6 @@ begin
         In_AlmFull  <= '0';
         In_AlmEmpty <= '0';
         vi.RamWr    := '0';
-        
 
         -- Level Detection
         InLevel_v := ri.WrAddr - ri.RdAddr;
@@ -271,7 +271,7 @@ begin
     -- Optional pipeline stage for speed optimization
     RamWrAddr <= std_logic_vector(ri.WrAddr(log2ceil(Depth_g) - 1 downto 0)) when Optimization_g = "LATENCY" else
                  std_logic_vector(ri.WrAddrReg(log2ceil(Depth_g) - 1 downto 0));
-    RamWr <= ri_next.RamWr when Optimization_g = "LATENCY" else ri.RamWr;
+    RamWr     <= ri_next.RamWr when Optimization_g = "LATENCY" else ri.RamWr;
     RamWrData <= In_Data when Optimization_g = "LATENCY" else ri.DataReg;
 
     i_ram : entity work.olo_base_ram_sdp
