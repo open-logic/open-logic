@@ -1,7 +1,7 @@
 CAPI=2:
 
-name : open-logic:open-logic:{{area}}:{{version}}
-description : {{description}} see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#{{area}}
+name : open-logic:{{library}}:{{area}}:{{version}}
+description : {{codebase}}; {{description}} see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#{{area}}
 
 filesets:
   rtl:
@@ -14,7 +14,7 @@ filesets:
     {%- if dependencies %}
     depend :
     {%- for dep in dependencies %}
-      - "^open-logic:open-logic:{{dep}}:{{version}}"
+      - "^open-logic:{{library}}:{{dep}}:{{version}}"
     {%- endfor %}
     {%- endif %}
 
@@ -24,9 +24,12 @@ targets:
     filesets :
       - rtl
       
+{%- if library == "open-logic" %}
+
 provider:
   name    : github
   user    : open-logic
   repo    : open-logic
   version : {{version}}
+{%- endif %}
   

@@ -29,4 +29,3 @@ targets:
         device : 5CEBA4F23C7
         board_device_index : 2
     toplevel: quartus_tutorial
-

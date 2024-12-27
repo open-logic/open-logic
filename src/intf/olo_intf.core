@@ -23,7 +23,7 @@ targets:
   default:
     filesets :
       - rtl
-      
+
 provider:
   name    : github
   user    : open-logic
