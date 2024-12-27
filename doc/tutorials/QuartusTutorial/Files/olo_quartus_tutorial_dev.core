@@ -1,6 +1,6 @@
 CAPI=2:
-name : open-logic:tutorials:quartus_tutorial:3.0.2
-description : official release (stable); quartus tutorial for open-logic, targetting DE0-CV board
+name : open-logic:tutorials-dev:quartus_tutorial:3.0.2
+description : local files (release plus WIP); quartus tutorial for open-logic, targetting DE0-CV board
 
 filesets:
 
@@ -12,8 +12,8 @@ filesets:
   rtl:
     files: [quartus_tutorial.vhd : {file_type : vhdlSource}]
     depend :
-      - "open-logic:open-logic:base"
-      - "open-logic:open-logic:intf"
+      - "open-logic:open-logic-dev:base"
+      - "open-logic:open-logic-dev:intf"
 
 targets:
   default: &default
@@ -30,8 +30,3 @@ targets:
         board_device_index : 2
     toplevel: quartus_tutorial
 
-provider:
-  name    : github
-  user    : open-logic
-  repo    : open-logic
-  version : 3.0.2
