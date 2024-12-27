@@ -146,22 +146,44 @@ fuse-soc. To use Open Logic through fusesoc, just add open logic as a library:
 fusesoc library add open-logic https://github.com/open-logic/open-logic
 ```
 
+Open Logic is also published into the [FuseSoC standard core library](https://github.com/fusesoc/fusesoc-cores) hence
+you can also use Open Logic by adding the standard core library:
+
+```shell
+fusesoc library add fusesoc-cores https://github.com/fusesoc/fusesoc-cores
+```
+
+**Note:** Sometimes there is some lag in pull-requests to the _fusesoc-cores_ repo and as a result the Open Logic
+version available through _fusesoc-cores_ may be a few releases behind. Add Open Logic directly (see above) if you want
+to be sure to use the latest release.
+
 You should now get one package listed for every area in Open Logic. You can us them independently (dependencies are
 modelled in FuseSoC correctly and resolved automatically). You also see the tutorials being available and buildable
 through FuseSoC.
+
+Packages are provided in two libraries:
+
+- Use _open-logic:open-logic_ for downloading the stable release from GitHub
+- Use _open-logic:open-logic-dev_ for using the local files (the release number mentioned plus all work in progress
+  which is not released)
 
 ```shell
 user$ fusesoc core list
 
 Available cores:
 
-Core                                       Cache status  Description
+Core                                             Cache status  Description
 ================================================================================
-open-logic:open-logic:axi:2.0             :      empty : AXI related modules 
-open-logic:open-logic:base:2.0            : downloaded : Basic Circuitry (e.g. FIFOs, CDCs, ...) 
-open-logic:open-logic:intf:2.0            : downloaded : Interfaces (e.g. I2C, synchronizer, SPI, ...) 
-open-logic:tutorials:quartus_tutorial:1.0 :      empty : quartus tutorial for open-logic, targetting DE0-CV board
-open-logic:tutorials:vivado_tutorial:1.0  :      empty : vivado tutorial for open-logic, targetting Zybo Z7-10 board
+open-logic:open-logic-dev:axi:3.0.2             :      local : local files (release plus WIP); AXI related modules ...
+open-logic:open-logic-dev:base:3.0.2            :      local : local files (release plus WIP); Basic Circuitry ...
+open-logic:open-logic-dev:intf:3.0.2            :      local : local files (release plus WIP); Interfaces ...
+open-logic:open-logic:axi:3.0.2                 :      empty : official release (stable); AXI related modules ...
+open-logic:open-logic:base:3.0.2                : downloaded : official release (stable); Basic Circuitry ...
+open-logic:open-logic:intf:3.0.2                : downloaded : official release (stable); Interfaces ...
+open-logic:tutorials-dev:quartus_tutorial:3.0.2 :      local : local files (release plus WIP); quartus tutorial ...
+open-logic:tutorials-dev:vivado_tutorial:3.0.2  :      local : local files (release plus WIP); vivado tutorial ...
+open-logic:tutorials:quartus_tutorial:3.0.2     :      empty : official release (stable); quartus tutorial ...
+open-logic:tutorials:vivado_tutorial:3.0.2      : downloaded : official release (stable); vivado tutorial ...
 
 ```
 
