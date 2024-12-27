@@ -28,9 +28,3 @@ targets:
       vivado:
         part : xc7z010clg400-1
     toplevel : vivado_tutorial
-
-provider:
-  name    : github
-  user    : open-logic
-  repo    : open-logic
-  version : 3.0.2
