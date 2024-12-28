@@ -1,6 +1,6 @@
 CAPI=2:
 name : open-logic:tutorials:vivado_tutorial:3.0.2
-description : official release (stable); vivado tutorial for open-logic, targetting Zybo Z7-10 board
+description : stable release (downloaded from GitHub); vivado tutorial for open-logic, targetting Zybo Z7-10 board
 
 filesets:
 

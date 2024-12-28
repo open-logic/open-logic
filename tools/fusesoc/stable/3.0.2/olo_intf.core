@@ -1,7 +1,7 @@
 CAPI=2:
 
 name : open-logic:open-logic:intf:3.0.2
-description : official release (stable); Interfaces (e.g. I2C, synchronizer, SPI, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#intf
+description : stable release (downloaded from GitHub); Interfaces (e.g. I2C, synchronizer, SPI, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#intf
 
 filesets:
   rtl:

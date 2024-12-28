@@ -1,6 +1,6 @@
 CAPI=2:
 name : open-logic:tutorials:quartus_tutorial:3.0.2
-description : official release (stable); quartus tutorial for open-logic, targetting DE0-CV board
+description : stable release (downloaded from GitHub); quartus tutorial for open-logic, targetting DE0-CV board
 
 filesets:
 

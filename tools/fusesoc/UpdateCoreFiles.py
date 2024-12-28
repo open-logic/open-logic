@@ -53,7 +53,7 @@ for state in ["dev", "stable"]:
         postfix = "-dev"
         filepostfix = "_dev"
     elif state == "stable":
-        codebase = "official release (stable)"
+        codebase = "stable release (downloaded from GitHub)"
         postfix = ""
         filepostfix = ""
     else:

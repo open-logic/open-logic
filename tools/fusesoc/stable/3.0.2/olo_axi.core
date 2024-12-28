@@ -1,7 +1,7 @@
 CAPI=2:
 
 name : open-logic:open-logic:axi:3.0.2
-description : official release (stable); AXI related modules see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#axi
+description : stable release (downloaded from GitHub); AXI related modules see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#axi
 
 filesets:
   rtl:
