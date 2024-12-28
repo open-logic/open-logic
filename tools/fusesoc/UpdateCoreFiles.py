@@ -41,6 +41,9 @@ os.chdir(f"{repoRoot}/src")
 # Get all subdirectories
 areas = os.listdir()
 
+#Create stable directory
+os.makedirs(f"{repoRoot}/tools/fusesoc/stable/{VERSION}", exist_ok=True)
+
 # Generate dev/stable cores
 for state in ["dev", "stable"]:
 
@@ -74,7 +77,7 @@ for state in ["dev", "stable"]:
             targetDir = "."
         elif state == "stable":
             fileDir = f"src/{area}/vhdl/"
-            targetDir = f"{repoRoot}/tools/fusesoc/stable"
+            targetDir = f"{repoRoot}/tools/fusesoc/stable/{VERSION}"
         else:
             raise ValueError("Invalid state (dev/stable)")
 
@@ -103,8 +106,8 @@ for state in ["dev", "stable"]:
     elif state == "stable":
         vivadoFileDir = "doc/tutorials/VivadoTutorial/Files/"
         quartusFileDir = "doc/tutorials/QuartusTutorial/Files/"
-        vivadoTargetDir = f"{repoRoot}/tools/fusesoc/stable"
-        quartusTargetDir = f"{repoRoot}/tools/fusesoc/stable"
+        vivadoTargetDir = f"{repoRoot}/tools/fusesoc/stable/{VERSION}"
+        quartusTargetDir = f"{repoRoot}/tools/fusesoc/stable/{VERSION}"
     else:
         raise ValueError("Invalid state (dev/stable)")
 

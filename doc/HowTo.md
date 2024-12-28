@@ -157,7 +157,7 @@ fusesoc library add fusesoc-cores https://github.com/fusesoc/fusesoc-cores
 version available through _fusesoc-cores_ may be a few releases behind. Add Open Logic directly (see above) if you want
 to be sure to use the latest release.
 
-You should now get one package listed for every area in Open Logic. You can us them independently (dependencies are
+You should now get one package listed for every area in Open Logic for every release. You can us them independently (dependencies are
 modelled in FuseSoC correctly and resolved automatically). You also see the tutorials being available and buildable
 through FuseSoC.
 
@@ -166,6 +166,8 @@ Packages are provided in two libraries:
 - Use _open-logic:open-logic_ for downloading the stable release from GitHub
 - Use _open-logic:open-logic-dev_ for using the local files (the release number mentioned plus all work in progress
   which is not released)
+
+By default all releases of Open Logic are made available so users can choose which release to use. The downside of this is that the cores list can get very crowded. If you better like to only have one specific version showing up, you can manually import the .core files in the folder _[OpenLogic-Root]/tools/fusesoc/stable/[RELEASE]_.
 
 ```shell
 user$ fusesoc core list
