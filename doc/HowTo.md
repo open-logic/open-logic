@@ -153,21 +153,16 @@ you can also use Open Logic by adding the standard core library:
 fusesoc library add fusesoc-cores https://github.com/fusesoc/fusesoc-cores
 ```
 
+Like for all other tool integrations, Open Logic entities are compiled into the library _olo_ and can be
+instantiated using e.g. `i_fifo : entity olo.olo_base_fifo_sync`.
+
 **Note:** Sometimes there is some lag in pull-requests to the _fusesoc-cores_ repo and as a result the Open Logic
 version available through _fusesoc-cores_ may be a few releases behind. Add Open Logic directly (see above) if you want
 to be sure to use the latest release.
 
-You should now get one package listed for every area in Open Logic for every release. You can us them independently (dependencies are
-modelled in FuseSoC correctly and resolved automatically). You also see the tutorials being available and buildable
-through FuseSoC.
-
-Packages are provided in two libraries:
-
-- Use _open-logic:open-logic_ for downloading the stable release from GitHub
-- Use _open-logic:open-logic-dev_ for using the local files (the release number mentioned plus all work in progress
-  which is not released)
-
-By default all releases of Open Logic are made available so users can choose which release to use. The downside of this is that the cores list can get very crowded. If you better like to only have one specific version showing up, you can manually import the .core files in the folder _[OpenLogic-Root]/tools/fusesoc/stable/[RELEASE]_.
+You should now get one package listed for every area in Open Logic for every release. You can use the areas
+independently (dependencies are modeled in FuseSoC correctly and resolved automatically). You also see the tutorials
+being available and buildable through FuseSoC.
 
 ```shell
 user$ fusesoc core list
@@ -189,8 +184,34 @@ open-logic:tutorials:vivado_tutorial:3.0.2      : downloaded : official release 
 
 ```
 
-**Note:** Like for all other tool integrations, Open Logic entities are compiled into the library _olo_ and can be
-instantiated using e.g. `i_fifo : entity olo.olo_base_fifo_sync`.
+Packages are provided in two libraries:
+
+- Use **open-logic:open-logic** for **downloading the stable release from GitHub**
+- Use **open-logic:open-logic-dev** for using the **local files** (the release number mentioned plus all work in
+  progress which is not released)
+  - This option also allows using content of a feature branch that is checked out.
+
+By default all releases of Open Logic are made available so users can choose which release to use. The downside of this
+is that the cores list can get very crowded. If you better like to only have one specific version showing up, you can
+manually add only the .core files in the folder _[OpenLogic-Root]/tools/fusesoc/stable/[RELEASE]_. See example below.
+
+```shell
+git clone https://github.com/open-logic/open-logic open-logic-root
+fusesoc library add open-logic open-logic-root/tools/fusesoc/stable/3.0.2
+```
+
+For adding only the _open-logic:open-logic-dev_ library, a similar approach can be used. By adding the folder
+_[OpenLogic-Root]/src_, all stable releases are ignored and only the local files are added. This approach can
+be useful in cases where Open Logic is patched before being used or if unreleased changes shall be included as shown
+in the example below.
+
+```shell
+git clone https://github.com/open-logic/open-logic open-logic-root
+cd open-logic-root
+git checkout develop
+cd ..
+fusesoc library add open-logic open-logic-root/src
+```
 
 ## Use the Linter
 
