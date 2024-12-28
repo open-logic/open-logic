@@ -7,7 +7,7 @@ filesets:
   rtl:
     files:
     {%- for file in vhdlFiles %}
-      - vhdl/{{file}}
+      - {{fileDir}}{{file}}
     {%- endfor %}
     file_type : vhdlSource
     logical_name : olo
