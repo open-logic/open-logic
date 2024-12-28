@@ -6,8 +6,8 @@ filesets:
 
   de0_cv:
     files:
-      - timing.sdc  : {file_type : SDC}
-      - pinout.tcl  : {file_type : tclSource}
+      - doc/tutorials/QuartusTutorial/Files/timing.sdc  : {file_type : SDC}
+      - doc/tutorials/QuartusTutorial/Files/pinout.tcl  : {file_type : tclSource}
       
   rtl:
     files: [quartus_tutorial.vhd : {file_type : vhdlSource}]

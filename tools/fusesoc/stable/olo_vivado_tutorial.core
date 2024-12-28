@@ -6,8 +6,8 @@ filesets:
 
   zybo_z7:
     files:
-      - vivado_tutorial.vhd : {file_type : vhdlSource}
-      - pinout.xdc : {file_type : xdc}
+      - doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd : {file_type : vhdlSource}
+      - doc/tutorials/VivadoTutorial/Files/pinout.xdc : {file_type : xdc}
       
   rtl:
     files: [vivado_tutorial.vhd : {file_type : vhdlSource}]
