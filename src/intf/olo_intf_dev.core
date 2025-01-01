@@ -1,7 +1,7 @@
 CAPI=2:
 
-name : open-logic:open-logic:intf:3.0.2
-description : Interfaces (e.g. I2C, synchronizer, SPI, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#intf
+name : open-logic:open-logic-dev:intf:3.0.2
+description : local files (release plus WIP); Interfaces (e.g. I2C, synchronizer, SPI, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#intf
 
 filesets:
   rtl:
@@ -16,17 +16,11 @@ filesets:
     file_type : vhdlSource
     logical_name : olo
     depend :
-      - "^open-logic:open-logic:base:3.0.2"
+      - "^open-logic:open-logic-dev:base:3.0.2"
 
 
 targets:
   default:
     filesets :
       - rtl
-      
-provider:
-  name    : github
-  user    : open-logic
-  repo    : open-logic
-  version : 3.0.2
   

@@ -146,27 +146,108 @@ fuse-soc. To use Open Logic through fusesoc, just add open logic as a library:
 fusesoc library add open-logic https://github.com/open-logic/open-logic
 ```
 
-You should now get one package listed for every area in Open Logic. You can us them independently (dependencies are
-modelled in FuseSoC correctly and resolved automatically). You also see the tutorials being available and buildable
-through FuseSoC.
+Open Logic is also published into the [FuseSoC standard core library](https://github.com/fusesoc/fusesoc-cores) hence
+you can also use Open Logic by adding the standard core library:
+
+```shell
+fusesoc library add fusesoc-cores https://github.com/fusesoc/fusesoc-cores
+```
+
+Like for all other tool integrations, Open Logic entities are compiled into the library _olo_ and can be
+instantiated using e.g. `i_fifo : entity olo.olo_base_fifo_sync`.
+
+**Note:** Sometimes there is some lag in pull-requests to the _fusesoc-cores_ repo and as a result the Open Logic
+version available through _fusesoc-cores_ may be a few releases behind. Add Open Logic directly (see above) if you want
+to be sure to use the latest release.
+
+You should now get one package listed for every area in Open Logic. You can use the areas
+independently (dependencies are modeled in FuseSoC correctly and resolved automatically). You also see the tutorials
+being available and buildable through FuseSoC.
 
 ```shell
 user$ fusesoc core list
 
 Available cores:
 
-Core                                       Cache status  Description
+Core                                             Cache status  Description
 ================================================================================
-open-logic:open-logic:axi:2.0             :      empty : AXI related modules 
-open-logic:open-logic:base:2.0            : downloaded : Basic Circuitry (e.g. FIFOs, CDCs, ...) 
-open-logic:open-logic:intf:2.0            : downloaded : Interfaces (e.g. I2C, synchronizer, SPI, ...) 
-open-logic:tutorials:quartus_tutorial:1.0 :      empty : quartus tutorial for open-logic, targetting DE0-CV board
-open-logic:tutorials:vivado_tutorial:1.0  :      empty : vivado tutorial for open-logic, targetting Zybo Z7-10 board
+open-logic:open-logic-dev:axi:3.0.2             :      local : local files (release plus WIP); AXI related modules ...
+open-logic:open-logic-dev:base:3.0.2            :      local : local files (release plus WIP); Basic Circuitry ...
+open-logic:open-logic-dev:intf:3.0.2            :      local : local files (release plus WIP); Interfaces ...
+open-logic:open-logic:axi:3.0.2                 :      empty : stable release (downloaded from GitHub); AXI related ...
+open-logic:open-logic:base:3.0.2                : downloaded : stable release (downloaded from GitHub); Basic  ...
+open-logic:open-logic:intf:3.0.2                : downloaded : stable release (downloaded from GitHub); Interfaces ...
+open-logic:tutorials-dev:quartus_tutorial:3.0.2 :      local : local files (release plus WIP); quartus tutorial ...
+open-logic:tutorials-dev:vivado_tutorial:3.0.2  :      local : local files (release plus WIP); vivado tutorial ...
+open-logic:tutorials:quartus_tutorial:3.0.2     :      empty : stable release (downloaded from GitHub); quartus ...
+open-logic:tutorials:vivado_tutorial:3.0.2      : downloaded : stable release (downloaded from GitHub); vivado ...
 
 ```
 
-**Note:** Like for all other tool integrations, Open Logic entities are compiled into the library _olo_ and can be
-instantiated using e.g. `i_fifo : entity olo.olo_base_fifo_sync`.
+Packages are provided in two libraries:
+
+- Use **open-logic:open-logic** for **downloading the stable release from GitHub**
+- Use **open-logic:open-logic-dev** for using the **local files** (the release number mentioned plus all work in
+  progress which is not released)
+  - This option also allows using content of a feature branch that is checked out.
+
+The commands listed at the very beginning of the section will add the latest release of Open Logic. However, this is not
+always exactly what is wanted. Therefore a few alternative scenarios are described below. The `--sync_version` switch
+allows selecting the exact version to add.
+
+### Adding a Specific Release
+
+In cases where a project uses a specific release of Open Logic, exactly this version shall be added and not the latest
+one. This especially is true in cases where the latest release contains non-backward compatible changes (major version
+number increments). Adding a specific version of Open Logic can be achieved be the command below (the example adds
+version 2.3.0):
+
+```shell
+fusesoc library add --sync-version 2.3.0 open-logic https://github.com/open-logic/open-logic
+```
+
+For releases, _open-logic_ and _open-logic-dev_ contain the same files. Normally using **open-logic** is most safe and
+therefore recommended.
+
+### Using Newest (not yet Released) Features
+
+In case you want to use features which are not released yet, you can add the corresponding branch. A common case is to
+use the _develop_ branch, on which features are integrated prior to release. This can be achieved by below command:
+
+```shell
+fusesoc library add --sync-version develop open-logic https://github.com/open-logic/open-logic
+```
+
+In this case, the local files - **open-logic-dev** must be used - because this branch is not a stable release.
+
+### Adding Multiple Versions
+
+If you should want to add multiple versions of Open Logic to FuseSoC for any reasons, this can be achieved by using
+different names:
+
+```shell
+fusesoc library add --sync-version 3.0.1 open-logic-3 https://github.com/open-logic/open-logic
+fusesoc library add --sync-version 2.3.0 open-logic-2 https://github.com/open-logic/open-logic
+```
+
+### Open Logic Modifications
+
+There are cases where you want to use a modified version of Open Logic through FuseSoC. One example is when actively
+working on Open Logic and adding new features. Another case might be if specific patches shall be added to Open Logic,
+
+This can be achieved by manually cloning Open Logic and adding the local copy to FuseSoC. In below example, it is
+assumed that a new feature will be implemented on Open Logic on a feature branch.
+
+```shell
+git clone https://github.com/open-logic/open-logic open-logic-work
+cd open-logic-work
+git checkout -b feature/some-new-feature
+cd ..
+fusesoc library add open-logic open-logic-work
+```
+
+In this case, the local files - **open-logic-dev** must be used. It is explicitly required to use the local files.
+Downloading a release from GitHub would be exactly what is NOT wanted in this scenario.
 
 ## Use the Linter
 
