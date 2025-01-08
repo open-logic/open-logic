@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- Copyright (c) 2024-2025 by Oliver Bründler, Switzerland
 -- All rights reserved.
 -- Authors: Oliver Bruendler, Franz Herzog
 ---------------------------------------------------------------------------------------------------
@@ -27,6 +27,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_attribute.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -101,23 +102,13 @@ architecture rtl of olo_intf_spi_master is
     -- Signal required for automatic constraining
     signal SpiMiso_i : std_logic;
 
-    -- Synthesis attributes Altera (Quartus)
-    attribute dont_merge : boolean;
-    attribute dont_merge of SpiMiso_i : signal is true;
-    attribute preserve : boolean;
-    attribute preserve of SpiMiso_i   : signal is true;
-
-    -- Synthesis attributes for AMD (Vivado)
-    attribute keep : string;
-    attribute keep of SpiMiso_i       : signal is "TRUE";
-    attribute dont_touch : string;
-    attribute dont_touch of SpiMiso_i : signal is "TRUE";
-
-    -- Synthesis attributes for Synopsis (Lattice, Microchip), Efinity and Gowin
-    -- Note: integer is also confirmed to work for Synopsys/Efinity although documentation only states boolean. Chose
-    --       integer because Gowin only accepts integer.
-    attribute syn_keep : integer;
-    attribute syn_keep of SpiMiso_i : signal is 1;
+    -- Synthesis attributes - preserve register
+    attribute dont_merge of SpiMiso_i   : signal is DontMerge_SuppressChanges_c;
+    attribute preserve of SpiMiso_i     : signal is Preserve_SuppressChanges_c;
+    attribute keep of SpiMiso_i         : signal is Keep_SuppressChanges_c;
+    attribute dont_touch of SpiMiso_i   : signal is DontTouch_SuppressChanges_c;
+    attribute syn_keep of SpiMiso_i     : signal is SynKeep_SuppressChanges_c;
+    attribute syn_preserve of SpiMiso_i : signal is SynPreserve_SuppressChanges_c;
 
     -- *** Functions and procedures ***
     function getClockLevel (ClkActive : boolean) return std_logic is

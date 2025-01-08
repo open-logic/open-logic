@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024 by Oliver Bründler
+-- Copyright (c) 2024-2025 by Oliver Bründler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -26,6 +26,7 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_attribute.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -69,18 +70,12 @@ architecture rtl of olo_base_ram_sdp is
     -- Read registers
     signal RdPipe : Data_t(1 to RdLatency_g);
 
-    -- AMD RAM implementation attributes
-    attribute ram_style : string;
-    attribute ram_style of Mem_v      : variable is RamStyle_g;
-    attribute shreg_extract : string;
-    attribute shreg_extract of RdPipe : signal is "no";
+    -- Synthesis attributes - suppress shift register extraction
+    attribute shreg_extract of RdPipe : signal is ShregExtract_SuppressExtraction_c;
 
-    -- Altera RAM implementation attributes
-    attribute ramstyle : string;
-    attribute ramstyle of Mem_v : variable is RamStyle_g;
-
-    -- Efinix RAM implementation attributes, also for Synplify (Lattice, Microchip), also for Gowin
-    attribute syn_ramstyle : string;
+    -- Synthesis attributes - control RAM style
+    attribute ram_style of Mem_v    : variable is RamStyle_g;
+    attribute ramstyle of Mem_v     : variable is RamStyle_g;
     attribute syn_ramstyle of Mem_v : variable is RamStyle_g;
 
 begin

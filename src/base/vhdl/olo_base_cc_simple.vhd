@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024 by Oliver Bründler
+-- Copyright (c) 2024-2025 by Oliver Bründler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -24,6 +24,9 @@
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
+
+library work;
+    use work.olo_base_pkg_attribute.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -63,10 +66,8 @@ architecture struct of olo_base_cc_simple is
 
     -- Synthesis attributes AMD (Vivado)
     -- .. required for automatic constraining only, therefore for vivado only
-    attribute dont_touch             : boolean;
-    attribute keep                   : string;
-    attribute dont_touch of Out_Data_Sig : signal is true;
-    attribute keep of Out_Data_Sig       : signal is "yes";
+    attribute dont_touch of Out_Data_Sig : signal is DontTouch_SuppressChanges_c;
+    attribute keep of Out_Data_Sig       : signal is Keep_SuppressChanges_c;
 
 begin
 

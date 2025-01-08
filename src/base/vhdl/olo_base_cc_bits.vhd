@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024 by Oliver Bründler
+-- Copyright (c) 2024-2025 by Oliver Bründler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -25,6 +25,9 @@
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
+
+library work;
+    use work.olo_base_pkg_attribute.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -61,55 +64,43 @@ architecture struct of olo_base_cc_bits is
     signal Reg0  : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
     signal RegN  : SyncStages_t                           := (others => (others => '0'));
 
-    -- Synthesis attributes AMD (Vivado)
-    attribute shreg_extract : string;
-    attribute shreg_extract of Reg0  : signal is "no";
-    attribute shreg_extract of RegN  : signal is "no";
-    attribute shreg_extract of RegIn : signal is "no";
+    -- Synthesis attributes - shiftregister extraction
+    attribute shreg_extract of Reg0  : signal is ShregExtract_SuppressExtraction_c;
+    attribute shreg_extract of RegN  : signal is ShregExtract_SuppressExtraction_c;
+    attribute shreg_extract of RegIn : signal is ShregExtract_SuppressExtraction_c;
 
-    -- Synthesis attributes for AMD (Vivado) and Efinix (Efinity)
-    attribute async_reg : boolean;
-    attribute async_reg of Reg0  : signal is true;
-    attribute async_reg of RegN  : signal is true;
-    attribute async_reg of RegIn : signal is true;
+    attribute syn_srlstyle of Reg0  : signal is SynSrlstyle_FlipFlops_c;
+    attribute syn_srlstyle of RegN  : signal is SynSrlstyle_FlipFlops_c;
+    attribute syn_srlstyle of RegIn : signal is SynSrlstyle_FlipFlops_c;
 
-    -- Synthesis attributes for AMD (Vivado) and Efinix (Efinity) and Gowin
-    attribute syn_srlstyle : string;
-    attribute syn_srlstyle of Reg0  : signal is "registers";
-    attribute syn_srlstyle of RegN  : signal is "registers";
-    attribute syn_srlstyle of RegIn : signal is "registers";
+    -- Synthesis attributes - preserve registers
+    attribute dont_merge of Reg0  : signal is DontMerge_SuppressChanges_c;
+    attribute dont_merge of RegN  : signal is DontMerge_SuppressChanges_c;
+    attribute dont_merge of RegIn : signal is DontMerge_SuppressChanges_c;
 
-    -- Synthesis attributes Altera (Quartus)
-    attribute dont_merge : boolean;
-    attribute dont_merge of Reg0  : signal is true;
-    attribute dont_merge of RegN  : signal is true;
-    attribute dont_merge of RegIn : signal is true;
+    attribute preserve of Reg0  : signal is Preserve_SuppressChanges_c;
+    attribute preserve of RegN  : signal is Preserve_SuppressChanges_c;
+    attribute preserve of RegIn : signal is Preserve_SuppressChanges_c;
 
-    attribute preserve : boolean;
-    attribute preserve of Reg0  : signal is true;
-    attribute preserve of RegN  : signal is true;
-    attribute preserve of RegIn : signal is true;
+    attribute syn_preserve of Reg0  : signal is SynPreserve_SuppressChanges_c;
+    attribute syn_preserve of RegN  : signal is SynPreserve_SuppressChanges_c;
+    attribute syn_preserve of RegIn : signal is SynPreserve_SuppressChanges_c;
 
-    -- Synthesis attributes for Synopsis (Lattice, Microchip), Efinity and Gowin
-    -- Note: integer is also confirmed to work for Synopsys/Efinity although documentation only states boolean. Chose
-    --       integer because Gowin only accepts integer.
-    attribute syn_preserve : integer;
-    attribute syn_preserve of Reg0  : signal is 1;
-    attribute syn_preserve of RegN  : signal is 1;
-    attribute syn_preserve of RegIn : signal is 1;
+    attribute syn_keep of Reg0  : signal is SynKeep_SuppressChanges_c;
+    attribute syn_keep of RegN  : signal is SynKeep_SuppressChanges_c;
+    attribute syn_keep of RegIn : signal is SynKeep_SuppressChanges_c;
 
-    attribute syn_keep : integer;
-    attribute syn_keep of Reg0  : signal is 1;
-    attribute syn_keep of RegN  : signal is 1;
-    attribute syn_keep of RegIn : signal is 1;
+    -- Synthesis attributes - async registers
+    attribute async_reg of Reg0  : signal is AsyncReg_TreatAsync_c;
+    attribute async_reg of RegN  : signal is AsyncReg_TreatAsync_c;
+    attribute async_reg of RegIn : signal is AsyncReg_TreatAsync_c;
 
+    -- Input clock (required for automatic constraining in vivado)
     signal In_Clk_Sig : std_logic;
 
     -- Synthesis attributes automatic constraining (AMD only)
-    attribute dont_touch               : boolean;
-    attribute keep                     : string;
-    attribute dont_touch of In_Clk_Sig : signal is true;
-    attribute keep of In_Clk_Sig       : signal is "yes";
+    attribute dont_touch of In_Clk_Sig : signal is DontTouch_SuppressChanges_c;
+    attribute keep of In_Clk_Sig       : signal is Keep_SuppressChanges_c;
 
 begin
 

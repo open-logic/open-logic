@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024 by Oliver Bründler
+-- Copyright (c) 2024-2025 by Oliver Bründler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -27,6 +27,7 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_attribute.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -60,33 +61,18 @@ architecture struct of olo_base_reset_gen is
     signal PulseCnt        : integer range 0 to PulseCntMax_c := 0;
     signal RstPulse        : std_logic                        := '1';
 
-    -- Synthesis attributes AMD (Vivado)
-    attribute shreg_extract : string;
-    attribute shreg_extract of DsSync : signal is "no";
+    -- Synthesis attributes - Suppress shift register extraction
+    attribute shreg_extract of DsSync : signal is ShregExtract_SuppressExtraction_c;
+    attribute syn_srlstyle of DsSync  : signal is SynSrlstyle_FlipFlops_c;
 
-    -- Synthesis attributes for AMD (Vivado) and Efinix (Efinity)
-    attribute async_reg : boolean;
-    attribute async_reg of DsSync : signal is true;
+    -- Synthesis attributes - Preserve regsiters
+    attribute dont_merge of DsSync   : signal is DontMerge_SuppressChanges_c;
+    attribute preserve of DsSync     : signal is Preserve_SuppressChanges_c;
+    attribute syn_preserve of DsSync : signal is SynPreserve_SuppressChanges_c;
+    attribute syn_keep of DsSync     : signal is SynKeep_SuppressChanges_c;
 
-    -- Synthesis attributes for AMD (Vivado) and Efinix (Efinity) and gowin
-    attribute syn_srlstyle : string;
-    attribute syn_srlstyle of DsSync : signal is "registers";
-
-    -- Synthesis attributes Altera (Quartus)
-    attribute dont_merge : boolean;
-    attribute dont_merge of DsSync : signal is true;
-
-    attribute preserve : boolean;
-    attribute preserve of DsSync : signal is true;
-
-    -- Synthesis attributes for Synopsis (Lattice, Microchip), Efinity and Gowin
-    -- Note: integer is also confirmed to work for Synopsys/Efinity although documentation only states boolean. Chose
-    --       integer because Gowin only accepts integer.
-    attribute syn_preserve : integer;
-    attribute syn_preserve of DsSync : signal is 1;
-
-    attribute syn_keep : integer;
-    attribute syn_keep of DsSync : signal is 1;
+    -- Synthesis attributes - asynchronous register
+    attribute async_reg of DsSync : signal is AsyncReg_TreatAsync_c;
 
 begin
 
