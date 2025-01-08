@@ -113,10 +113,11 @@ architecture rtl of olo_intf_spi_master is
     attribute dont_touch : string;
     attribute dont_touch of SpiMiso_i : signal is "TRUE";
 
-    -- Efinix RAM implementation attributes
-    -- Same attribute works for Synplify (Lattice, Microchip)
-    attribute syn_keep : boolean;
-    attribute syn_keep of SpiMiso_i : signal is true;
+    -- Synthesis attributes for Synopsis (Lattice, Microchip), Efinity and Gowin
+    -- Note: integer is also confirmed to work for Synopsys/Efinity although documentation only states boolean. Chose
+    --       integer because Gowin only accepts integer.
+    attribute syn_keep : integer;
+    attribute syn_keep of SpiMiso_i : signal is 1;
 
     -- *** Functions and procedures ***
     function getClockLevel (ClkActive : boolean) return std_logic is

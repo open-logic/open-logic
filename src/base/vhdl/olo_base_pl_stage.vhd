@@ -248,7 +248,7 @@ begin
         attribute shreg_extract of VldReg : signal is "no";
         attribute shreg_extract of DataReg : signal is "no";
 
-        -- Synthesis attributes AMD (Vivado) and Efinix (Efinity)
+        -- Synthesis attributes AMD (Vivado) and Efinix (Efinity) and gowin
         attribute syn_srlstyle : string;
         attribute syn_srlstyle of VldReg : signal is "registers";
         attribute syn_srlstyle of DataReg : signal is "registers";
@@ -262,14 +262,16 @@ begin
         attribute preserve of VldReg : signal is true;
         attribute preserve of DataReg : signal is true;
 
-        -- Synchthesis attributes for Synopsis (Lattice, Microchip, Efinity)
-        attribute syn_keep : boolean;
-        attribute syn_keep of VldReg : signal is true;
-        attribute syn_keep of DataReg : signal is true;
+        -- Synthesis attributes for Synopsis (Lattice, Microchip), Efinity and Gowin
+        -- Note: integer is also confirmed to work for Synopsys/Efinity although documentation only states boolean. Chose
+        --       integer because Gowin only accepts integer.
+        attribute syn_keep : integer;
+        attribute syn_keep of VldReg : signal is 1;
+        attribute syn_keep of DataReg : signal is 1;
 
-        attribute syn_preserve : boolean;
-        attribute syn_preserve of VldReg : signal is true;
-        attribute syn_preserve of DataReg : signal is true;
+        attribute syn_preserve : integer;
+        attribute syn_preserve of VldReg : signal is 1;
+        attribute syn_preserve of DataReg : signal is 1;
 
     begin
 

@@ -73,6 +73,7 @@ architecture struct of olo_base_cc_bits is
     attribute async_reg of RegN  : signal is true;
     attribute async_reg of RegIn : signal is true;
 
+    -- Synthesis attributes for AMD (Vivado) and Efinix (Efinity) and Gowin
     attribute syn_srlstyle : string;
     attribute syn_srlstyle of Reg0  : signal is "registers";
     attribute syn_srlstyle of RegN  : signal is "registers";
@@ -89,16 +90,18 @@ architecture struct of olo_base_cc_bits is
     attribute preserve of RegN  : signal is true;
     attribute preserve of RegIn : signal is true;
 
-    -- Synchthesis attributes for Synopsis (Lattice, Microchip)
-    attribute syn_preserve : boolean;
-    attribute syn_preserve of Reg0  : signal is true;
-    attribute syn_preserve of RegN  : signal is true;
-    attribute syn_preserve of RegIn : signal is true;
+    -- Synthesis attributes for Synopsis (Lattice, Microchip), Efinity and Gowin
+    -- Note: integer is also confirmed to work for Synopsys/Efinity although documentation only states boolean. Chose
+    --       integer because Gowin only accepts integer.
+    attribute syn_preserve : integer;
+    attribute syn_preserve of Reg0  : signal is 1;
+    attribute syn_preserve of RegN  : signal is 1;
+    attribute syn_preserve of RegIn : signal is 1;
 
-    attribute syn_keep : boolean;
-    attribute syn_keep of Reg0  : signal is true;
-    attribute syn_keep of RegN  : signal is true;
-    attribute syn_keep of RegIn : signal is true;
+    attribute syn_keep : integer;
+    attribute syn_keep of Reg0  : signal is 1;
+    attribute syn_keep of RegN  : signal is 1;
+    attribute syn_keep of RegIn : signal is 1;
 
     signal In_Clk_Sig : std_logic;
 

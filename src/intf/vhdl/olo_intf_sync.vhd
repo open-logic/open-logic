@@ -67,6 +67,7 @@ architecture struct of olo_intf_sync is
     attribute async_reg of Reg0 : signal is true;
     attribute async_reg of RegN : signal is true;
 
+    -- Synthesis attributes for AMD (Vivado) and Efinitx (Efinity) and gowin
     attribute syn_srlstyle : string;
     attribute syn_srlstyle of Reg0 : signal is "registers";
     attribute syn_srlstyle of RegN : signal is "registers";
@@ -80,14 +81,16 @@ architecture struct of olo_intf_sync is
     attribute preserve of Reg0 : signal is true;
     attribute preserve of RegN : signal is true;
 
-    -- Synthesis attributes for Synopsys (Lattice, Actel)
-    attribute syn_keep : boolean;
-    attribute syn_keep of Reg0 : signal is true;
-    attribute syn_keep of RegN : signal is true;
+    -- Synthesis attributes for Synopsis (Lattice, Microchip), Efinity and Gowin
+    -- Note: integer is also confirmed to work for Synopsys/Efinity although documentation only states boolean. Chose
+    --       integer because Gowin only accepts integer.
+    attribute syn_keep : integer;
+    attribute syn_keep of Reg0 : signal is 1;
+    attribute syn_keep of RegN : signal is 1;
 
-    attribute syn_preserve : boolean;
-    attribute syn_preserve of Reg0 : signal is true;
-    attribute syn_preserve of RegN : signal is true;
+    attribute syn_preserve : integer;
+    attribute syn_preserve of Reg0 : signal is 1;
+    attribute syn_preserve of RegN : signal is 1;
 
 begin
 

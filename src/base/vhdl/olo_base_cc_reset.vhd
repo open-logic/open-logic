@@ -65,13 +65,14 @@ architecture struct of olo_base_cc_reset is
     attribute shreg_extract of RstRqstA2B : signal is "no";
     attribute shreg_extract of RstAckA2B  : signal is "no";
 
-    -- Synthesis attributes AMD (Vivado) and Efinix (Efinity)
+    -- Synthesis attributes AMD (Vivado) and Efinix (Efinity) and gowin
     attribute syn_srlstyle : string;
     attribute syn_srlstyle of RstRqstB2A : signal is "registers";
     attribute syn_srlstyle of RstAckB2A  : signal is "registers";
     attribute syn_srlstyle of RstRqstA2B : signal is "registers";
     attribute syn_srlstyle of RstAckA2B  : signal is "registers";
 
+    -- Synthesis attributes AMD (Vivado) and Efinix (Efinity)
     attribute async_reg : boolean;
     attribute async_reg of RstRqstB2A : signal is true;
     attribute async_reg of RstAckB2A  : signal is true;
@@ -91,18 +92,20 @@ architecture struct of olo_base_cc_reset is
     attribute preserve of RstRqstA2B : signal is true;
     attribute preserve of RstAckA2B  : signal is true;
 
-    -- Synchthesis attributes for Synopsis (Lattice, Microchip)
-    attribute syn_keep : boolean;
-    attribute syn_keep of RstRqstB2A : signal is true;
-    attribute syn_keep of RstAckB2A  : signal is true;
-    attribute syn_keep of RstRqstA2B : signal is true;
-    attribute syn_keep of RstAckA2B  : signal is true;
+    -- Synthesis attributes for Synopsis (Lattice, Microchip), Efinity and Gowin
+    -- Note: integer is also confirmed to work for Synopsys/Efionity although documentation only states boolean. Chose
+    --       integer because Gowin only accepts integer.
+    attribute syn_keep : integer;
+    attribute syn_keep of RstRqstB2A : signal is 1;
+    attribute syn_keep of RstAckB2A  : signal is 1;
+    attribute syn_keep of RstRqstA2B : signal is 1;
+    attribute syn_keep of RstAckA2B  : signal is 1;
 
-    attribute syn_preserve : boolean;
-    attribute syn_preserve of RstRqstB2A : signal is true;
-    attribute syn_preserve of RstAckB2A  : signal is true;
-    attribute syn_preserve of RstRqstA2B : signal is true;
-    attribute syn_preserve of RstAckA2B  : signal is true;
+    attribute syn_preserve : integer;
+    attribute syn_preserve of RstRqstB2A : signal is 1;
+    attribute syn_preserve of RstAckB2A  : signal is 1;
+    attribute syn_preserve of RstRqstA2B : signal is 1;
+    attribute syn_preserve of RstAckA2B  : signal is 1;
 
 begin
 

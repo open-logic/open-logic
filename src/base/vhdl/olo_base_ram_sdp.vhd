@@ -79,7 +79,7 @@ architecture rtl of olo_base_ram_sdp is
     attribute ramstyle : string;
     attribute ramstyle of Mem_v : variable is RamStyle_g;
 
-    -- Efinix RAM implementation attributes, also for Synplify (Lattice, Microchip)
+    -- Efinix RAM implementation attributes, also for Synplify (Lattice, Microchip), also for Gowin
     attribute syn_ramstyle : string;
     attribute syn_ramstyle of Mem_v : variable is RamStyle_g;
 

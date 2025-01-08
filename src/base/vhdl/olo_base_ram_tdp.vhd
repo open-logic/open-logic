@@ -82,6 +82,7 @@ architecture rtl of olo_base_ram_tdp is
 
     -- Efinix RAM implementation attributes
     -- Same attribute works for Synplify (Lattice, Microchip)
+    -- Same attribute works for Gowin
     attribute syn_ramstyle : string;
     attribute syn_ramstyle of Mem_v : variable is RamStyle_g;
 

@@ -68,6 +68,7 @@ architecture struct of olo_base_reset_gen is
     attribute async_reg : boolean;
     attribute async_reg of DsSync : signal is true;
 
+    -- Synthesis attributes for AMD (Vivado) and Efinix (Efinity) and gowin
     attribute syn_srlstyle : string;
     attribute syn_srlstyle of DsSync : signal is "registers";
 
@@ -78,12 +79,14 @@ architecture struct of olo_base_reset_gen is
     attribute preserve : boolean;
     attribute preserve of DsSync : signal is true;
 
-    -- Synchthesis attributes for Synopsis (Lattice, Microchip)
-    attribute syn_preserve : boolean;
-    attribute syn_preserve of DsSync : signal is true;
+    -- Synthesis attributes for Synopsis (Lattice, Microchip), Efinity and Gowin
+    -- Note: integer is also confirmed to work for Synopsys/Efinity although documentation only states boolean. Chose
+    --       integer because Gowin only accepts integer.
+    attribute syn_preserve : integer;
+    attribute syn_preserve of DsSync : signal is 1;
 
-    attribute syn_keep : boolean;
-    attribute syn_keep of DsSync : signal is true;
+    attribute syn_keep : integer;
+    attribute syn_keep of DsSync : signal is 1;
 
 begin
 
