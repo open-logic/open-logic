@@ -14,8 +14,8 @@ source $oloRoot/tools/gowin/import_sources.tcl
 
 #Add Files
 add_file -type verilog "$oloRoot/doc/tutorials/GowinTutorial/Files/gowin_tutorial.sv"
-add_file -type cst "$oloRoot/doc/tutorials/GowinTutorial/Files/gowin_tutorial.cst"
-add_file -type sdc "$oloRoot/doc/tutorials/GowinTutorial/Files/constraints.sdc"
+add_file -type cst "$oloRoot/doc/tutorials/GowinTutorial/Files/pinout.cst"
+add_file -type sdc "$oloRoot/doc/tutorials/GowinTutorial/Files/timing.sdc"
 
 #Build
 set_option -top_module gowin_tutorial
