@@ -38,7 +38,8 @@ You can now forward through the last pages without changes and simply press the 
 We follow the steps described also in the [HowTo...](../HowTo.md) document. They are repeated here, so you do not have
 to open the _HowTo_ document separately.
 
-In the Gowin TCL console, execute the following command (_\<open-logic-root\>_ must be replaced by the path to Open Logic on your machine):
+In the Gowin TCL console, execute the following command (_\<open-logic-root\>_ must be replaced by the path to
+Open Logic on your machine):
 
 ```tcl
 source <open-logic-root>/tools/gowin/import_sources.tcl
@@ -48,7 +49,8 @@ In the screenshot below the path on my local PC is shown - the path on your syst
 
 ![Screenshot](./GowinTutorial/Pictures/integrate_olo_01.png)
 
-Note that the script does _automatically change the VHDL language standard for your project to **VHDL2008**_ because this is required with Gowin tools for Open Logic to work correctly.
+Note that the script does _automatically change the VHDL language standard for your project to **VHDL2008**_ because
+this is required with Gowin tools for Open Logic to work correctly.
 
 You should now see a number of source files being added to the project - all of them compiled into the library _olo_.
 The exact number of source files may vary as _Open Logic_ still grows.
@@ -98,7 +100,8 @@ If you are using Verilog, use the system verilog source file:
 
 ![Design](./GowinTutorial/Pictures/add_sources_02.png)
 
-The software asks you if you want to copy the source file into the project. Normally copies shall be avoided and the source files shall be used from where it is - hence we select _No_ here.
+The software asks you if you want to copy the source file into the project. Normally copies shall be avoided and the
+source files shall be used from where it is - hence we select _No_ here.
 
 ![Design](./GowinTutorial/Pictures/add_sources_03.png)
 
@@ -116,13 +119,16 @@ The entity name of the top-level module must be entered in the dialog manually.
 
 ### Add Constraints
 
-The required pinout for the [DK_START_GW1N-LV4LQ144C615_V1.1](https://www.gowinsemi.com/en/support/devkits_detail/1/) board is provided in the file [\<open-logic-root\>/doc/tutorials/GowinTutorial/Files/pinout.cst](./GowinTutorial/Files/pinout.cst). You can simply add the file through the _Add Files_ dialog (see [Add Source Code](#add-source-code)).
+The required pinout for the [DK_START_GW1N-LV4LQ144C615_V1.1](https://www.gowinsemi.com/en/support/devkits_detail/1/)
+board is provided in the file
+[\<open-logic-root\>/doc/tutorials/GowinTutorial/Files/pinout.cst](./GowinTutorial/Files/pinout.cst).You can simply add
+the file through the _Add Files_ dialog (see [Add Source Code](#add-source-code)).
 
-To visualize the constraints loaded, first synthesis must be run (otherwise the *Floorplanner* tool does not start).
+To visualize the constraints loaded, first synthesis must be run (otherwise the _Floorplanner_ tool does not start).
 
 ![Design](./GowinTutorial/Pictures/add_constraints_01.png)
 
-Gowin synthesis is blazing fast, this only takes seconds. 
+Gowin synthesis is blazing fast, this only takes seconds.
 
 The pinout can then be viewed through the _Floorplanner_ tool:
 
@@ -139,7 +145,7 @@ not what is state of the art for a real design but sufficient for the tutorial.
 
 This is done by adding the file
 [\<open-logic-root\>/doc/tutorials/GowinTutorial/Files/timing.sdc](./GowinTutorial/Files/timing.sdc) through the
-_Add Files_ dialog (see [Add Source Code](#add-source-code)). 
+_Add Files_ dialog (see [Add Source Code](#add-source-code)).
 
 ### Build Design
 
@@ -169,24 +175,44 @@ project.
 
 ## Step 4: Try it on Hardware
 
-Now connect your [DE0-CV](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=163&No=921)
-hardware to your PC using the USB cable.
+Now connect your [DK_START_GW1N-LV4LQ144C615_V1.1](https://www.gowinsemi.com/en/support/devkits_detail/1/)
+hardware to your PC using the USB cable and enable power (if LEDs are on, the board is ready).
 
-Open the Programmer:
+Open the Programmer. 
 
-![Design](./QuartusTutorial/Pictures/run_01.png)
+Theoretically the programmer could be launched from within GowinEDA but at least on my test system (Ubuntu), I had to launch the programmer independently and with root privileges. 
 
-Program the device:
+**Note:** Cable drivers must be installed before launching the programmer for the tool to work correctly.
 
-![Design](./QuartusTutorial/Pictures/run_02.png)
+First, the programmer can be detected automatically:
 
-You can now dial in values using the _Switches_ and write them into the FIFO by pressing _Button 0_ (on the very right).
-After that they can be read from the FIFO and displayed one by one by pressing _Button 1_ (second from the right).
+![Design](./GowinTutorial/Pictures/run_01.png)
+
+Select the correct series *GW1N* and device _GW1N-4D_. The corresponding fields have drop-down menus that show up when you click inside the field.
+
+![Design](./GowinTutorial/Pictures/run_02.png)
+
+The dialog to select the operation to execute can be opened by double-clicking the _Operation_ field. 
+
+Select:
+
+- Access Mode: **SRAM Mode**
+- Operation: **SRAM Program**
+- File name: \<your-project-folder\>/impl/pnr/\<your-project-name>.fs
+
+![Design](./GowinTutorial/Pictures/run_03.png)
+
+Then program the device using the _Configure/Program_ button:
+
+![Design](./GowinTutorial/Pictures/run_04.png)
+
+You can now dial in values using the _Switches_ and write them into the FIFO by pressing _Key 2_ (second from the left).
+After that they can be read from the FIFO and displayed one by one by pressing _Key 1_ (on the very left).
 
 ## Step 5: Discussion of the VHDL Source Code
 
 The source code can be found in the file
-[\<open-logic-root\>/doc/tutorials/QuartusTutorial/Files/quartus_tutorial.vhd](./QuartusTutorial/Files/quartus_tutorial.vhd).
+[\<open-logic-root\>/doc/tutorials/GowinTutorial/Files/gowin_tutorial.vhd](./GowinTutorial/Files/gowin_tutorial.vhd).
 
 Not every line of the source code is discussed. It is simple and implements the design described earlier. Only a few
 details worth mentioning are discussed.
@@ -278,15 +304,15 @@ entity olo_base_fifo_sync is
 If you should want to build the tutorial project without many manual mouse clicks, you can do so by following the steps
 below:
 
-- Open Quartus
-- Open the TCL console - as described in the tutorial
-- In the TCL console, navigate to the directory \<open-logic-root\>/doc/tutorials/QuartusTutorial/Files
+- Open GowinEDA
+
+- In the TCL console, navigate to the directory \<open-logic-root\>/doc/tutorials/GowinTutorial/Files
   
   ```tcl
-  cd <open-logic-root>/doc/tutorials/QuartusTutorial/Files
+  cd <open-logic-root>/doc/tutorials/GowinTutorial/Files
   ```
 
-- Run the script [scripted_build.tcl](./VivadoTutorial/Files/scripted_build.tcl), which creates and builds the tutorial
+- Run the script [scripted_build.tcl](./GowinTutorial/Files/scripted_build.tcl), which creates and builds the tutorial
   project: <br>
   For VHDL:
   
@@ -299,5 +325,7 @@ below:
   ```tcl
   source scripted_build_sv.tcl
   ```
+  
+  The script launches another GowinEDA, which can be closed. This is an unwanted side-effect of the TCL command for creating new projects.
 
 Note: replace \<open-logic-root\> with the root folder of your _Open Logic_ working copy.

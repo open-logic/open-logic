@@ -1,6 +1,6 @@
 #Create Project
 set oloRoot [file normalize "[file dirname [info script]]/../../../.."]
-create_project -name tutorial_prj_sv -dir . -pn GW1N-LV4LQ144C6/I5 -device_version D -force
+create_project -name tutorial_prj_sv -dir . -pn GW1N-LV4LQ144C6/I5 -device_version D
 after 5000
 open_project ./tutorial_prj_sv/tutorial_prj_sv.gprj
 set_option -synthesis_tool gowinsynthesis
