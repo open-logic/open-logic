@@ -178,9 +178,10 @@ project.
 Now connect your [DK_START_GW1N-LV4LQ144C615_V1.1](https://www.gowinsemi.com/en/support/devkits_detail/1/)
 hardware to your PC using the USB cable and enable power (if LEDs are on, the board is ready).
 
-Open the Programmer. 
+Open the Programmer.
 
-Theoretically the programmer could be launched from within GowinEDA but at least on my test system (Ubuntu), I had to launch the programmer independently and with root privileges. 
+Theoretically the programmer could be launched from within GowinEDA but at least on my test system (Ubuntu), I had to
+launch the programmer independently and with root privileges.
 
 **Note:** Cable drivers must be installed before launching the programmer for the tool to work correctly.
 
@@ -188,11 +189,12 @@ First, the programmer can be detected automatically:
 
 ![Design](./GowinTutorial/Pictures/run_01.png)
 
-Select the correct series *GW1N* and device _GW1N-4D_. The corresponding fields have drop-down menus that show up when you click inside the field.
+Select the correct series _GW1N_ and device _GW1N-4D_. The corresponding fields have drop-down menus that show up when
+you click inside the field.
 
 ![Design](./GowinTutorial/Pictures/run_02.png)
 
-The dialog to select the operation to execute can be opened by double-clicking the _Operation_ field. 
+The dialog to select the operation to execute can be opened by double-clicking the _Operation_ field.
 
 Select:
 
@@ -326,6 +328,7 @@ below:
   source scripted_build_sv.tcl
   ```
   
-  The script launches another GowinEDA, which can be closed. This is an unwanted side-effect of the TCL command for creating new projects.
+  The script launches another GowinEDA, which can be closed. This is an unwanted side-effect of the TCL command for
+  creating new projects.
 
 Note: replace \<open-logic-root\> with the root folder of your _Open Logic_ working copy.
