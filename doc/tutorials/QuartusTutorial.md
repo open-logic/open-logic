@@ -47,7 +47,6 @@ For following the screenshots most closely, it is best if you navigate to the di
 paths for TCL commands accordingly.
 
 ```tcl
-source <open-logic-root>/tools/quartus/import_sources.tcl
 cd <open-logic-root>/doc/tutorials/QuartusTutorial/Files
 ```
 
@@ -300,7 +299,7 @@ below:
   cd <open-logic-root>/doc/tutorials/QuartusTutorial/Files
   ```
 
-- Run the script [scripted_build.tcl](./VivadoTutorial/Files/scripted_build.tcl), which creates and builds the tutorial
+- Run the script [scripted_build.tcl](./QuartusTutorial/Files/scripted_build.tcl), which creates and builds the tutorial
   project: <br>
   For VHDL:
   
