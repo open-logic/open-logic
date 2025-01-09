@@ -1,8 +1,13 @@
+# Build Verilog tutorial from TCL shell in GowinEDA GUI
+
 #Create Project
 set oloRoot [file normalize "[file dirname [info script]]/../../../.."]
 create_project -name tutorial_prj_sv -dir . -pn GW1N-LV4LQ144C6/I5 -device_version D
-after 5000
-open_project ./tutorial_prj_sv/tutorial_prj_sv.gprj
+# The console in the GUI does not open the project upon "create_project", but the shell version does.
+if {![info exists RunFromShell]} {
+    after 5000
+    open_project ./tutorial_prj_sv/tutorial_prj_sv.gprj
+}
 set_option -synthesis_tool gowinsynthesis
 set_option -output_base_name gowin_tutorial
 set_option -vhdl_std vhd2008
