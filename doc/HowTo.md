@@ -9,6 +9,7 @@
 AKA Table of Content
 
 - Tool Integration Related
+  - [Use Open Logic in a Gowin Project](#use-open-logic-in-a-gowin-project)
   - [Use Open Logic in a Microchip Libero Project](#use-open-logic-in-a-microchip-libero-project)
   - [Use Open Logic in a Questasim Simulation](#use-open-logic-in-a-questasim-simulation)
   - [Use Open Logic in a Efinix Efinity Project](#use-open-logic-in-a-efinix-efinity-project)
@@ -20,6 +21,36 @@ AKA Table of Content
   - [Run Simulations](#run-simulations)
   - [Analyze Coverage](#analyze-coverage)
   - [Update Badges](#update-badges)
+
+## Use Open Logic in a Gowin Project
+
+There is a script to import all _Open Logic_ sources into a Gowin project.
+
+**Note:** The script does not setup automatic constraints because Gowin does not support scoped constraints (in
+contrast to the AMD Vivado tools). For Gowin all constraints must be added manually.
+
+To run the script, follow the steps below:
+
+1. Create a project in Gowin (if it does not yet exist)
+2. Set the VHDL language standard to _VHDL2008_.
+   Gowin does not recognize the _ieee.math_real_ package for VHDL1993 - which renders many components of Open Logic
+   useless.<br>
+   ![MenuEntry](./general/gowin/vhdl2008-1.png)<br><br>
+   ![MenuEntry](./general/gowin/vhdl2008-2.png)
+3. Execute the command `source <open-logic-root>/tools/gowin/import_sources.tcl`
+   Replace `<open-logic-root>` by the path of your _Open Logic_ working copy.<br>
+   In case you do not need all open-logic files and you don't want to clutter the project, just manually remove the
+   files you do not need.<br>
+   ![MenuEntry](./general/gowin/import_sources.png)
+
+That's it. Nothing more.
+
+- All _Open Logic_ sources are configured to be compiled into the library _olo_
+  ![Sources](./general/gowin/result.png)
+
+Because Gowin does not support scoped constraints, **NO** constraints are imported. They have to be created
+manually - more information can be found in the documentation of individual _Open Logic_ entities which require
+constraints.
 
 ## Use Open Logic in a Microchip Libero Project
 
@@ -133,7 +164,7 @@ That's it. Nothing more.
 - All _Open Logic_ sources are configured to be compiled into the library _olo_
   ![Sources](./general/quartus/import_sources.png)
 
-Because Quartus does not support scoped constraints, **NO** constraints are important. They have to be created
+Because Quartus does not support scoped constraints, **NO** constraints are imported. They have to be created
 manually - more information can be found in the documentation of individual _Open Logic_ entities which require
 constraints.
 

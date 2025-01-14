@@ -33,3 +33,9 @@ cd $OLO_ROOT/doc/tutorials/LiberoTutorial/Files
 libero script:scripted_build.tcl
 libero script:scripted_build_sv.tcl
 
+# Gowin
+cd $OLO_ROOT/doc/tutorials/GowinTutorial/Files
+export LD_PRELOAD=/lib/x86_64-linux-gnu/libfreetype.so.6 #Workaround for Ubuntu 24.04 issue
+gw_sh scripted_build_sh.tcl
+gw_sh scripted_build_sv_sh.tcl
+

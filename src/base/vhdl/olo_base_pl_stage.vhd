@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2023-2024 by Oliver Bründler
+-- Copyright (c) 2023-2025 by Oliver Bründler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -135,6 +135,9 @@ library ieee;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
 
+library work;
+    use work.olo_base_pkg_attribute.all;
+
 ---------------------------------------------------------------------------------------------------
 -- Single Stage Entity
 ---------------------------------------------------------------------------------------------------
@@ -243,33 +246,25 @@ begin
         signal VldReg  : std_logic;
         signal DataReg : std_logic_vector(Width_g-1 downto 0);
 
-        -- Synthesis attributes AMD (Vivado)
-        attribute shreg_extract : string;
-        attribute shreg_extract of VldReg : signal is "no";
-        attribute shreg_extract of DataReg : signal is "no";
+        -- Synthesis attributes - suppress shift register extraction
+        attribute shreg_extract of VldReg  : signal is ShregExtract_SuppressExtraction_c;
+        attribute shreg_extract of DataReg : signal is ShregExtract_SuppressExtraction_c;
 
-        -- Synthesis attributes AMD (Vivado) and Efinix (Efinity)
-        attribute syn_srlstyle : string;
-        attribute syn_srlstyle of VldReg : signal is "registers";
-        attribute syn_srlstyle of DataReg : signal is "registers";
+        attribute syn_srlstyle of VldReg  : signal is SynSrlstyle_FlipFlops_c;
+        attribute syn_srlstyle of DataReg : signal is SynSrlstyle_FlipFlops_c;
 
-        -- Synthesis attributes Altera (Quartus)
-        attribute dont_merge : boolean;
-        attribute dont_merge of VldReg : signal is true;
-        attribute dont_merge of DataReg : signal is true;
+        -- Synthesis attributes - preserve registers
+        attribute dont_merge of VldReg  : signal is DontMerge_SuppressChanges_c;
+        attribute dont_merge of DataReg : signal is DontMerge_SuppressChanges_c;
 
-        attribute preserve : boolean;
-        attribute preserve of VldReg : signal is true;
-        attribute preserve of DataReg : signal is true;
+        attribute preserve of VldReg  : signal is Preserve_SuppressChanges_c;
+        attribute preserve of DataReg : signal is Preserve_SuppressChanges_c;
 
-        -- Synchthesis attributes for Synopsis (Lattice, Microchip, Efinity)
-        attribute syn_keep : boolean;
-        attribute syn_keep of VldReg : signal is true;
-        attribute syn_keep of DataReg : signal is true;
+        attribute syn_keep of VldReg  : signal is SynKeep_SuppressChanges_c;
+        attribute syn_keep of DataReg : signal is SynKeep_SuppressChanges_c;
 
-        attribute syn_preserve : boolean;
-        attribute syn_preserve of VldReg : signal is true;
-        attribute syn_preserve of DataReg : signal is true;
+        attribute syn_preserve of VldReg  : signal is SynPreserve_SuppressChanges_c;
+        attribute syn_preserve of DataReg : signal is SynPreserve_SuppressChanges_c;
 
     begin
 

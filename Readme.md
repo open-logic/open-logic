@@ -59,6 +59,7 @@ user-code.
   - [Efinity Tutorial](./doc/tutorials/EfinityTutorial.md) - for VHDL and System Verilog
   - [Questa Tutorial](./doc/tutorials/QuestasimTutorial.md) - for VHDL and System Verilog
   - [Libero Tutorial](./doc/tutorials/LiberoTutorial.md) - for VHDL and System Verilog
+  - [Gowin Tutorial](./doc/tutorials/GowinTutorial.md) - for VHDL and System Verilog
 - [Instructions for Contributors](./Contributing.md)
 
 ## Project Philosophy
