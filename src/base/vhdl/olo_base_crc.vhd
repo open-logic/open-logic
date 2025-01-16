@@ -30,14 +30,11 @@ library work;
 -- Enforce "downto" for Polynomial_g and InitialValue_g
 -- Add "strobe" (for Nx8 only)
 -- Doc: No flip output, no xor output (do external, suggest functions)
-       -- Or still do them?
+-- Or still do them?
 -- Test Valid Low
 -- Test: Different initial values
--- Test: Different bit orders
--- Add "byte order" (for Nx8 only)
--- test: different byte orders
 -- Test synthesis
-
+-- Backpressure?
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -49,8 +46,7 @@ entity olo_base_crc is
         InitialValue_g : std_logic_vector;
         DataWidth_g    : positive;
         BitOrder_g     : string := "MSB_FIRST"; -- "MSB_FIRST" or "LSB_FIRST"
-        ByteOrder_g    : string := "NONE"       -- "NONE", "MSB_FIRST" or "LSB_FIRST"  
-
+        ByteOrder_g    : string := "NONE"       -- "NONE", "MSB_FIRST" or "LSB_FIRST"
     );
     port (
         -- Control Ports
@@ -86,35 +82,33 @@ begin
         severity error;
     assert BitOrder_g = "MSB_FIRST" or BitOrder_g = "LSB_FIRST"
         report "###ERROR###: olo_base_crc - Illegal value for BitOrder_g"
-        severity error; 
-    assert ByteOrder_g = "NONE" or ByteOrder_g = "LSB_FIRST" or ByteOrder_g = "MSB_FIRST" 
+        severity error;
+    assert ByteOrder_g = "NONE" or ByteOrder_g = "LSB_FIRST" or ByteOrder_g = "MSB_FIRST"
         report "###ERROR###: olo_base_crc - Illegal value for ByteOrder_g"
-        severity error;        
+        severity error;
     assert ByteOrder_g = "NONE" or DataWidth_g mod 8 = 0
         report "###ERROR###: olo_base_crc - For DataWidth_g not being a multiple of 8, only ByteOrder_g=NONE is allowed"
         severity error;
 
     p_lfsr : process (Clk) is
-        variable Input_v      : std_logic_vector(In_Data'range);
-        variable Lfsr_v       : std_logic_vector(LfsrReg'range);
-        variable InBit_v      : std_logic;
-        variable Idx_v        : integer range 0 to DataWidth_g-1;
+        variable Input_v : std_logic_vector(In_Data'range);
+        variable Lfsr_v  : std_logic_vector(LfsrReg'range);
+        variable InBit_v : std_logic;
+        variable Idx_v   : integer range 0 to DataWidth_g-1;
     begin
         if rising_edge(Clk) then
             -- Handle Input permutation (LFFSR always processes MSB first)
+            Input_v := In_Data;
             if BitOrder_g = "MSB_FIRST" then
                 if ByteOrder_g = "LSB_FIRST" then
-                    Input_v := invertByteOrder(In_Data);
-                else
-                    Input_v := In_Data;
+                    Input_v := invertByteOrder(Input_v);
                 end if;
             else
                 if ByteOrder_g = "MSB_FIRST" then
-                    Input_v := invertByteOrder(In_Data);
+                    Input_v := invertByteOrder(Input_v);
                 end if;
                 Input_v := invertBitOrder(Input_v);
             end if;
-
 
             -- Normal Operation
             if In_Valid = '1' then
@@ -127,10 +121,10 @@ begin
 
                 -- Loop over all bits in symbol
                 for bit in DataWidth_g-1 downto 0 loop
- 
+
                     -- Input Handling
                     InBit_v := Input_v(bit) xor Lfsr_v(Lfsr_v'high);
-                    
+
                     -- XOR hanling
                     Lfsr_v := Lfsr_v(Lfsr_v'high-1 downto 0) & '0';
                     if InBit_v = '1' then
@@ -153,8 +147,8 @@ begin
 
             -- Reset
             if Rst = '1' then
-                LfsrReg <= InitialValue_g;
-                Out_Crc <= (others => '0');
+                LfsrReg   <= InitialValue_g;
+                Out_Crc   <= (others => '0');
                 Out_Valid <= '0';
             end if;
 

@@ -330,6 +330,12 @@ tb = olo_tb.test_bench(crc_tb)
 for CrcWidth in [5, 8, 16]:
     for DataWidth in [5, 8, 16]:
         named_config(tb, {'CrcWidth_g': CrcWidth, 'DataWidth_g': DataWidth})
+for BitOrder in ["MSB_FIRST", "LSB_FIRST"]:
+    named_config(tb, {'CrcWidth_g': 8, 'DataWidth_g': 5, 'BitOrder_g': BitOrder})
+for DataWidth in [8, 16]:
+    for BitOrder in ["MSB_FIRST", "LSB_FIRST"]:
+        for ByteOrder in ["MSB_FIRST", "LSB_FIRST", "NONE"]:
+            named_config(tb, {'CrcWidth_g': 8, 'DataWidth_g': DataWidth, 'BitOrder_g': BitOrder, 'ByteOrder_g': ByteOrder})
 
 ########################################################################################################################
 # olo_axi TBs

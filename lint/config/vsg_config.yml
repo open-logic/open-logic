@@ -1224,6 +1224,7 @@ rule:
         phase: 1
     case_200:
         # This rule checks for a blank line below the => keyword.
+        disable: true #Conflicts with case_007
         fixable: true
         phase: 3
         style: no_blank_line
