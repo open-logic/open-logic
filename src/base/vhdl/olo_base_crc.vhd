@@ -30,11 +30,8 @@ library work;
 -- Enforce "downto" for Polynomial_g and InitialValue_g
 -- Add "strobe" (for Nx8 only)
 -- Doc: No flip output, no xor output (do external, suggest functions)
--- Test: Multi cycle
--- Test: Last, First
--- Test: Different widths
--- Test: Same/different data/crc width
--- Test: Different polynomials
+       -- Or still do them?
+-- Test Valid Low
 -- Test: Different initial values
 -- Test: Different bit orders
 -- Add "byte order" (for Nx8 only)
@@ -51,7 +48,9 @@ entity olo_base_crc is
         Polynomial_g   : std_logic_vector;  -- according to https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin
         InitialValue_g : std_logic_vector;
         DataWidth_g    : positive;
-        BitOrder_g     : string := "MSB_FIRST"
+        BitOrder_g     : string := "MSB_FIRST"; -- "MSB_FIRST" or "LSB_FIRST"
+        ByteOrder_g    : string := "NONE"       -- "NONE", "MSB_FIRST" or "LSB_FIRST"  
+
     );
     port (
         -- Control Ports
@@ -64,8 +63,7 @@ entity olo_base_crc is
         In_First         : in    std_logic := '0';
         -- Output
         Out_Crc          : out   std_logic_vector(CrcWidth_g-1 downto 0);
-        Out_Valid        : out   std_logic;
-        Out_Last         : out   std_logic
+        Out_Valid        : out   std_logic
     );
 end entity;
 
@@ -86,13 +84,38 @@ begin
     assert InitialValue_g'length = CrcWidth_g
         report "###ERROR###: olo_base_crc - InitialValue_g width must match CrcWidth_g"
         severity error;
+    assert BitOrder_g = "MSB_FIRST" or BitOrder_g = "LSB_FIRST"
+        report "###ERROR###: olo_base_crc - Illegal value for BitOrder_g"
+        severity error; 
+    assert ByteOrder_g = "NONE" or ByteOrder_g = "LSB_FIRST" or ByteOrder_g = "MSB_FIRST" 
+        report "###ERROR###: olo_base_crc - Illegal value for ByteOrder_g"
+        severity error;        
+    assert ByteOrder_g = "NONE" or DataWidth_g mod 8 = 0
+        report "###ERROR###: olo_base_crc - For DataWidth_g not being a multiple of 8, only ByteOrder_g=NONE is allowed"
+        severity error;
 
     p_lfsr : process (Clk) is
+        variable Input_v      : std_logic_vector(In_Data'range);
         variable Lfsr_v       : std_logic_vector(LfsrReg'range);
         variable InBit_v      : std_logic;
         variable Idx_v        : integer range 0 to DataWidth_g-1;
     begin
         if rising_edge(Clk) then
+            -- Handle Input permutation (LFFSR always processes MSB first)
+            if BitOrder_g = "MSB_FIRST" then
+                if ByteOrder_g = "LSB_FIRST" then
+                    Input_v := invertByteOrder(In_Data);
+                else
+                    Input_v := In_Data;
+                end if;
+            else
+                if ByteOrder_g = "MSB_FIRST" then
+                    Input_v := invertByteOrder(In_Data);
+                end if;
+                Input_v := invertBitOrder(Input_v);
+            end if;
+
+
             -- Normal Operation
             if In_Valid = '1' then
                 -- First Handling
@@ -103,16 +126,10 @@ begin
                 end if;
 
                 -- Loop over all bits in symbol
-                for bit in 0 to DataWidth_g-1 loop
-                    -- Handle Bit-Order
-                    if BitOrder_g = "LSB_FIRST" then
-                        Idx_v := bit;
-                    else
-                        Idx_v := DataWidth_g-1 - bit;
-                    end if;
-
+                for bit in DataWidth_g-1 downto 0 loop
+ 
                     -- Input Handling
-                    InBit_v := In_Data(Idx_v) xor Lfsr_v(Lfsr_v'high);
+                    InBit_v := Input_v(bit) xor Lfsr_v(Lfsr_v'high);
                     
                     -- XOR hanling
                     Lfsr_v := Lfsr_v(Lfsr_v'high-1 downto 0) & '0';
@@ -132,15 +149,13 @@ begin
             end if;
 
             -- Output Handling
-            Out_Valid <= In_Valid;
-            Out_Last <= In_Last;
+            Out_Valid <= In_Valid and In_Last;
 
             -- Reset
             if Rst = '1' then
                 LfsrReg <= InitialValue_g;
                 Out_Crc <= (others => '0');
                 Out_Valid <= '0';
-                Out_Last <= '0';
             end if;
 
         end if;
