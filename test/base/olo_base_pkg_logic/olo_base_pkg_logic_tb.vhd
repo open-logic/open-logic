@@ -130,7 +130,12 @@ begin
 
             elsif run("invertBitOrder") then
                 Stdlv9_v := "110010101";
-                check_equal(invertBitOrder("101010011"), Stdlv9_v, "to01X(110010101)");
+                check_equal(invertBitOrder("101010011"), Stdlv9_v, "invertBitOrder(110010101)");
+
+            elsif run("invertByteOrder") then
+                check_equal(invertByteOrder(X"12"), 16#12#, "invertByteOrder(0x12)");
+                check_equal(invertByteOrder(X"1234"), 16#3412#, "invertByteOrder(0x1234)");
+                check_equal(invertByteOrder(X"123456"), 16#563412#, "invertByteOrder(0x123456)");
 
             end if;
 

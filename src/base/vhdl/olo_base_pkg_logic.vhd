@@ -67,6 +67,8 @@ package olo_base_pkg_logic is
 
     function invertBitOrder (inp : in std_logic_vector) return std_logic_vector;
 
+    function invertByteOrder (inp : in std_logic_vector) return std_logic_vector;
+
     -- LFSR / CRC / PRBS Polynomials
     -- 1 for the x^n positions used
     constant Polynomial_Prbs2_c  : std_logic_vector( 1 downto 0) := "11";
@@ -270,6 +272,27 @@ package body olo_base_pkg_logic is
         -- Loop through all bits
         for i in 0 to Inp_v'high loop
             Result_v(Result_v'high - i) := Inp_v(i);
+        end loop;
+
+        return Result_v;
+    end function;
+
+    function invertByteOrder (inp : in std_logic_vector) return std_logic_vector is
+        constant Inp_c    : std_logic_vector(inp'length-1 downto 0) := inp;
+        constant Bytes_c  : natural                                 := inp'length/8;
+        variable Result_v : std_logic_vector(Inp_c'range);
+        variable InByte_v : natural;
+    begin
+
+        -- Check input width
+        assert inp'length mod 8 = 0
+            report "invertByteOrder(): Number of bits must be a multiple of 8"
+            severity error;
+
+        -- Invert byte order
+        for byte in 0 to Bytes_c-1 loop
+            InByte_v                         := Bytes_c - 1 - byte;
+            Result_v(byte*8+7 downto byte*8) := Inp_c(InByte_v*8+7 downto InByte_v*8);
         end loop;
 
         return Result_v;

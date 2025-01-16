@@ -109,3 +109,13 @@ Invert bit-order in a _std_logic_vector_.
 ```vhdl
 invertBitOrder(inp : in std_logic_vector) return std_logic_vector;
 ```
+
+### invertByteOrder()
+
+Invert the byte-order in a _std_logic_vector_.
+
+This function is only allowed for number of bits being a multiple of 8, otherwise it asserts an error.
+
+```vhdl
+invertByteOrder(inp : in std_logic_vector) return std_logic_vector;
+```
