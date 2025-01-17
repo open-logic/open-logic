@@ -30,10 +30,10 @@ entity olo_base_crc_tb is
         runner_cfg      : string;
         BitOrder_g      : string   := "MSB_FIRST";
         ByteOrder_g     : string   := "NONE";
-        CrcWidth_g      : positive := 16; -- allowed: 5, 8, 16
-        DataWidth_g     : positive := 5;  -- allowed: 5, 8, 16
+        CrcWidth_g      : positive := 8; -- allowed: 5, 8, 16
+        DataWidth_g     : positive := 8; -- allowed: 5, 8, 16
         BitflipOutput_g : boolean  := false;
-        InvertOutput_g  : boolean  := true
+        InvertOutput_g  : boolean  := false
     );
 end entity;
 
@@ -43,8 +43,7 @@ architecture sim of olo_base_crc_tb is
     -- Constants
     -----------------------------------------------------------------------------------------------
     constant InitialValue_c : std_logic_vector(CrcWidth_g-1 downto 0) := (others => '0');
-    constant XorOutput_c    : std_logic_vector(CrcWidth_g-1 downto 0) :=
-        choose(InvertOutput_g, onesVector(CrcWidth_g), zerosVector(CrcWidth_g));
+    constant XorOutput_c    : std_logic_vector(CrcWidth_g-1 downto 0) := (others => (choose(InvertOutput_g, '1', '0')));
     function getPolynomial (crcWidth : natural) return std_logic_vector is
     begin
 
