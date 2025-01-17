@@ -66,9 +66,9 @@ end entity;
 architecture rtl of olo_base_crc is
 
     -- Constants
-    constant Polynomial_c   : std_logic_vector(Polynomial_g'high downto 0)   := Polynomial_g;   -- fix range direction "downto"
-    constant InitialValue_c : std_logic_vector(InitialValue_g'high downto 0) := InitialValue_g; -- fix range direction "downto"
-    constant XorOutput_c    : std_logic_vector(CrcWidth_g-1 downto 0)        := choose(XorOutput_g = "0", zerosVector(CrcWidth_g), XorOutput_g);
+    constant Polynomial_c   : std_logic_vector(CrcWidth_g-1 downto 0) := Polynomial_g;   -- fix range direction "downto"
+    constant InitialValue_c : std_logic_vector(CrcWidth_g-1 downto 0) := InitialValue_g; -- fix range direction "downto"
+    constant XorOutput_c    : std_logic_vector(CrcWidth_g-1 downto 0) := choose(XorOutput_g = "0", zerosVector(CrcWidth_g), XorOutput_g);
 
     -- Signals
     signal LfsrReg     : std_logic_vector(CrcWidth_g-1 downto 0);
@@ -140,8 +140,6 @@ begin
                         Lfsr_v := Lfsr_v xor Polynomial_c;
                     end if;
 
-                    report "InBit: " & to_string(InBit_v) severity note;
-                    report "LFSR: " & to_string(Lfsr_v) severity note;
                 end loop;
 
                 -- Output Data
