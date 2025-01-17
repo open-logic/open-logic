@@ -28,9 +28,6 @@ library work;
     use work.olo_base_pkg_logic.all;
     use work.olo_base_pkg_math.all;
 
--- Test: Different initial values
--- Test synthesis
-
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
@@ -142,6 +139,9 @@ begin
                     if InBit_v = '1' then
                         Lfsr_v := Lfsr_v xor Polynomial_c;
                     end if;
+
+                    report "InBit: " & to_string(InBit_v) severity note;
+                    report "LFSR: " & to_string(Lfsr_v) severity note;
                 end loop;
 
                 -- Output Data
