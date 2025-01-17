@@ -26,27 +26,24 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_math.all;
 
--- Enforce "downto" for Polynomial_g and InitialValue_g
--- Add "strobe" (for Nx8 only)
--- Doc: No flip output, no xor output (do external, suggest functions)
--- Or still do them?
--- Test Valid Low
 -- Test: Different initial values
 -- Test synthesis
--- Backpressure?
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
 entity olo_base_crc is
     generic (
-        CrcWidth_g     : positive range 2 to natural'high;
-        Polynomial_g   : std_logic_vector;  -- according to https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin
-        InitialValue_g : std_logic_vector;
-        DataWidth_g    : positive;
-        BitOrder_g     : string := "MSB_FIRST"; -- "MSB_FIRST" or "LSB_FIRST"
-        ByteOrder_g    : string := "NONE"       -- "NONE", "MSB_FIRST" or "LSB_FIRST"
+        CrcWidth_g      : positive range 2 to natural'high;
+        Polynomial_g    : std_logic_vector;  -- according to https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin
+        InitialValue_g  : std_logic_vector;
+        DataWidth_g     : positive;
+        BitOrder_g      : string           := "MSB_FIRST"; -- "MSB_FIRST" or "LSB_FIRST"
+        ByteOrder_g     : string           := "NONE";      -- "NONE", "MSB_FIRST" or "LSB_FIRST"
+        BitflipOutput_g : boolean          := false;
+        XorOutput_g     : std_logic_vector := "0"
     );
     port (
         -- Control Ports
@@ -55,11 +52,13 @@ entity olo_base_crc is
         -- Input
         In_Data          : in    std_logic_vector(DataWidth_g-1 downto 0);
         In_Valid         : in    std_logic := '1';
+        In_Ready         : out   std_logic;
         In_Last          : in    std_logic := '0';
         In_First         : in    std_logic := '0';
         -- Output
         Out_Crc          : out   std_logic_vector(CrcWidth_g-1 downto 0);
-        Out_Valid        : out   std_logic
+        Out_Valid        : out   std_logic;
+        Out_Ready        : in    std_logic := '1'
     );
 end entity;
 
@@ -69,8 +68,15 @@ end entity;
 
 architecture rtl of olo_base_crc is
 
+    -- Constants
+    constant Polynomial_c   : std_logic_vector(Polynomial_g'high downto 0)   := Polynomial_g;   -- fix range direction "downto"
+    constant InitialValue_c : std_logic_vector(InitialValue_g'high downto 0) := InitialValue_g; -- fix range direction "downto"
+    constant XorOutput_c    : std_logic_vector(CrcWidth_g-1 downto 0)        := choose(XorOutput_g = "0", zerosVector(CrcWidth_g), XorOutput_g);
+
     -- Signals
-    signal LfsrReg : std_logic_vector(CrcWidth_g-1 downto 0);
+    signal LfsrReg     : std_logic_vector(CrcWidth_g-1 downto 0);
+    signal Out_Valid_I : std_logic;
+    signal In_Ready_I  : std_logic;
 
 begin
 
@@ -95,6 +101,7 @@ begin
         variable Lfsr_v  : std_logic_vector(LfsrReg'range);
         variable InBit_v : std_logic;
         variable Idx_v   : integer range 0 to DataWidth_g-1;
+        variable Out_v   : std_logic_vector(CrcWidth_g-1 downto 0);
     begin
         if rising_edge(Clk) then
             -- Handle Input permutation (LFFSR always processes MSB first)
@@ -110,11 +117,16 @@ begin
                 Input_v := invertBitOrder(Input_v);
             end if;
 
+            -- Reset valid after output transmitted
+            if Out_Valid_I = '1' and Out_Ready = '1' then
+                Out_Valid_I <= '0';
+            end if;
+
             -- Normal Operation
-            if In_Valid = '1' then
+            if In_Valid = '1' and In_Ready_I = '1' then
                 -- First Handling
                 if In_First = '1' then
-                    Lfsr_v := InitialValue_g;
+                    Lfsr_v := InitialValue_c;
                 else
                     Lfsr_v := LfsrReg;
                 end if;
@@ -128,31 +140,40 @@ begin
                     -- XOR hanling
                     Lfsr_v := Lfsr_v(Lfsr_v'high-1 downto 0) & '0';
                     if InBit_v = '1' then
-                        Lfsr_v := Lfsr_v xor Polynomial_g;
+                        Lfsr_v := Lfsr_v xor Polynomial_c;
                     end if;
                 end loop;
 
                 -- Output Data
-                Out_Crc <= Lfsr_v;
+                Out_v := Lfsr_v;
+                if BitflipOutput_g then
+                    Out_v := invertBitOrder(Out_v);
+                end if;
+                Out_Crc <= Out_v xor XorOutput_c;
 
                 -- Last Handling
                 if In_Last = '1' then
-                    Lfsr_v := InitialValue_g;
+                    Lfsr_v      := InitialValue_c;
+                    Out_Valid_I <= '1';
                 end if;
                 LfsrReg <= Lfsr_v;
             end if;
 
-            -- Output Handling
-            Out_Valid <= In_Valid and In_Last;
-
             -- Reset
             if Rst = '1' then
-                LfsrReg   <= InitialValue_g;
-                Out_Crc   <= (others => '0');
-                Out_Valid <= '0';
+                LfsrReg     <= InitialValue_c;
+                Out_Crc     <= (others => '0');
+                Out_Valid_I <= '0';
             end if;
 
         end if;
     end process;
+
+    -- Combinatorial handling
+    In_Ready_I <= Out_Ready or not Out_Valid_I;
+
+    -- Forward internal signal to outputs
+    Out_Valid <= Out_Valid_I;
+    In_Ready  <= In_Ready_I;
 
 end architecture;

@@ -27,11 +27,13 @@ library olo;
 -- vunit: run_all_in_same_sim
 entity olo_base_crc_tb is
     generic (
-        runner_cfg     : string;
-        BitOrder_g     : string   := "MSB_FIRST";
-        ByteOrder_g    : string   := "NONE";
-        CrcWidth_g     : positive := 16; -- allowed: 5, 8, 16
-        DataWidth_g    : positive := 5  -- allowed: 5, 8, 16
+        runner_cfg      : string;
+        BitOrder_g      : string   := "MSB_FIRST";
+        ByteOrder_g     : string   := "NONE";
+        CrcWidth_g      : positive := 16; -- allowed: 5, 8, 16
+        DataWidth_g     : positive := 5;  -- allowed: 5, 8, 16
+        BitflipOutput_g : boolean  := false;
+        InvertOutput_g  : boolean  := true
     );
 end entity;
 
@@ -41,6 +43,8 @@ architecture sim of olo_base_crc_tb is
     -- Constants
     -----------------------------------------------------------------------------------------------
     constant InitialValue_c : std_logic_vector(CrcWidth_g-1 downto 0) := (others => '0');
+    constant XorOutput_c    : std_logic_vector(CrcWidth_g-1 downto 0) :=
+        choose(InvertOutput_g, onesVector(CrcWidth_g), zerosVector(CrcWidth_g));
     function getPolynomial (crcWidth : natural) return std_logic_vector is
     begin
 
@@ -57,7 +61,8 @@ architecture sim of olo_base_crc_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
-    constant ClkPeriod_c : time := 10 ns;
+    constant ClkPeriod_c      : time := 10 ns;
+    shared variable InDelay_v : time := 0 ns;
 
     -- *** Verification Compnents ***
     constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master (
@@ -104,6 +109,13 @@ architecture sim of olo_base_crc_tb is
         return Result_v;
     end function;
 
+    procedure inDelay is
+    begin
+        if InDelay_v > 0 ns then
+            wait for InDelay_v;
+        end if;
+    end procedure;
+
     procedure pushPacket (
         signal  net : inout network_t;
         beats       : natural := 1;
@@ -114,16 +126,21 @@ architecture sim of olo_base_crc_tb is
         constant First_c : std_logic_vector(0 downto 0) := choose(useFirst, "1", "0");
     begin
 
-        -- Push packets (data for 1-3 beats is defined)
+        -- Push packets (data for 1-3 beats is defined);
+        inDelay;
+
         case beats is
             when 1 =>
                 push_axi_stream(net, AxisMaster_c, reorderData(16#13#), tuser => First_c, tlast => Last_c);
             when 2 =>
                 push_axi_stream(net, AxisMaster_c, reorderData(16#13#), tuser => First_c, tlast => '0');
+                inDelay;
                 push_axi_stream(net, AxisMaster_c, reorderData(16#06#), tuser => "0", tlast => Last_c);
             when 3 =>
                 push_axi_stream(net, AxisMaster_c, reorderData(16#11#), tuser => First_c, tlast => '0');
+                inDelay;
                 push_axi_stream(net, AxisMaster_c, reorderData(16#12#), tuser => "0", tlast => '0');
+                inDelay;
                 push_axi_stream(net, AxisMaster_c, reorderData(16#13#), tuser => "0", tlast => Last_c);
             when others => report "Error: Unsupported number of beats" severity error;
         end case;
@@ -131,7 +148,8 @@ architecture sim of olo_base_crc_tb is
     end procedure;
 
     function getResponse (beats       : natural := 1) return std_logic_vector is
-        variable Crc_v : natural := 0;
+        variable Crc_v      : natural := 0;
+        variable CrcStdlv_v : std_logic_vector(CrcWidth_g-1 downto 0);
     begin
 
         -- Responses per CRC
@@ -250,7 +268,14 @@ architecture sim of olo_base_crc_tb is
             when others => report "Error: Unsupported CrcWidth_g" severity error;
         end case;
 
-        return toUslv(Crc_v, CrcWidth_g);
+        CrcStdlv_v := toUslv(Crc_v, CrcWidth_g);
+        if BitflipOutput_g then
+            CrcStdlv_v := invertBitOrder(CrcStdlv_v);
+        end if;
+        if InvertOutput_g then
+            CrcStdlv_v := not CrcStdlv_v;
+        end if;
+        return CrcStdlv_v;
     end function;
 
     -----------------------------------------------------------------------------------------------
@@ -259,10 +284,12 @@ architecture sim of olo_base_crc_tb is
     signal Clk       : std_logic                                  := '0';
     signal Rst       : std_logic                                  := '1';
     signal In_Valid  : std_logic                                  := '0';
+    signal In_Ready  : std_logic                                  := '1';
     signal In_Data   : std_logic_vector(DataWidth_g - 1 downto 0) := (others => '0');
     signal In_Last   : std_logic                                  := '0';
     signal In_First  : std_logic                                  := '0';
     signal Out_Valid : std_logic                                  := '0';
+    signal Out_Ready : std_logic                                  := '1';
     signal Out_Crc   : std_logic_vector(CrcWidth_g - 1 downto 0)  := (others => '0');
 
 begin
@@ -274,11 +301,14 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        variable Data_v : std_logic_vector(DataWidth_g-1 downto 0);
+        variable Data_v   : std_logic_vector(DataWidth_g-1 downto 0);
+        variable Result_v : std_logic_vector(CrcWidth_g-1 downto 0);
     begin
         test_runner_setup(runner, runner_cfg);
 
         while test_suite loop
+
+            InDelay_v := 0 ns;
 
             -- Reset
             wait until rising_edge(Clk);
@@ -311,7 +341,14 @@ begin
                     end if;
                 end if;
                 push_axi_stream(net, AxisMaster_c, Data_v);
-                check_axi_stream(net, AxisSlave_c, getPolynomial(CrcWidth_g), msg => "CRC");
+                Result_v := getPolynomial(CrcWidth_g);
+                if BitflipOutput_g then
+                    Result_v := invertBitOrder(Result_v);
+                end if;
+                if InvertOutput_g then
+                    Result_v := not Result_v;
+                end if;
+                check_axi_stream(net, AxisSlave_c, Result_v, msg => "CRC");
             end if;
 
             if run("Test-SingleBeat") then
@@ -363,6 +400,35 @@ begin
                 check_axi_stream(net, AxisSlave_c, getResponse(beats => 3),  msg => "Pkt2");
             end if;
 
+            if run("Test-Backpressure") then
+                -- Queue 3 packets for input
+                pushPacket(net, beats => 2, useLast => true, useFirst => false);
+                pushPacket(net, beats => 1, useLast => true, useFirst => false);
+                pushPacket(net, beats => 3, useLast => true, useFirst => false);
+
+                -- Check 3 packets with delay
+                wait for 1 us;
+                check_axi_stream(net, AxisSlave_c, getResponse(beats => 2), msg => "Pkt0");
+                wait for 1 us;
+                check_axi_stream(net, AxisSlave_c, getResponse(beats => 1), msg => "Pkt1");
+                wait for 1 us;
+                check_axi_stream(net, AxisSlave_c, getResponse(beats => 3),  msg => "Pkt2");
+            end if;
+
+            if run("Test-InDelay") then
+                InDelay_v := 100 ns;
+
+                -- Packet 0 (2 beats)
+                pushPacket(net, beats => 2, useLast => true, useFirst => false);
+                check_axi_stream(net, AxisSlave_c, getResponse(beats => 2), msg => "Pkt0");
+                -- Packet 1 (1 beat)
+                pushPacket(net, beats => 1, useLast => true, useFirst => false);
+                check_axi_stream(net, AxisSlave_c, getResponse(beats => 1), msg => "Pkt1");
+                -- Packet 2 (3 beats)
+                pushPacket(net, beats => 3, useLast => true, useFirst => false);
+                check_axi_stream(net, AxisSlave_c, getResponse(beats => 3),  msg => "Pkt2");
+            end if;
+
             wait for 1 us;
             wait_until_idle(net, as_sync(AxisMaster_c));
             wait_until_idle(net, as_sync(AxisSlave_c));
@@ -383,22 +449,26 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_crc
         generic map (
-            CrcWidth_g     => CrcWidth_g,
-            Polynomial_g   => getPolynomial(CrcWidth_g),
-            InitialValue_g => InitialValue_c,
-            DataWidth_g    => DataWidth_g,
-            BitOrder_g     => BitOrder_g,
-            ByteOrder_g    => ByteOrder_g
+            CrcWidth_g      => CrcWidth_g,
+            Polynomial_g    => getPolynomial(CrcWidth_g),
+            InitialValue_g  => InitialValue_c,
+            DataWidth_g     => DataWidth_g,
+            BitOrder_g      => BitOrder_g,
+            ByteOrder_g     => ByteOrder_g,
+            BitflipOutput_g => BitflipOutput_g,
+            XorOutput_g     => XorOutput_c
         )
         port map (
             Clk       => Clk,
             Rst       => Rst,
             In_Data   => In_Data,
             In_Valid  => In_Valid,
+            In_Ready  => In_Ready,
             In_Last   => In_Last,
             In_First  => In_First,
             Out_Crc   => Out_Crc,
-            Out_Valid => Out_Valid
+            Out_Valid => Out_Valid,
+            Out_Ready => Out_Ready
         );
 
     -----------------------------------------------------------------------------------------------
@@ -411,6 +481,7 @@ begin
         port map (
             AClk      => Clk,
             TValid    => In_Valid,
+            TReady    => In_Ready,
             TData     => In_Data,
             TUser(0)  => In_First,
             TLast     => In_Last
@@ -423,6 +494,7 @@ begin
         port map (
             AClk   => Clk,
             TValid => Out_Valid,
+            TReady => Out_Ready,
             TData  => Out_Crc
         );
 

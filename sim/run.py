@@ -336,6 +336,9 @@ for DataWidth in [8, 16]:
     for BitOrder in ["MSB_FIRST", "LSB_FIRST"]:
         for ByteOrder in ["MSB_FIRST", "LSB_FIRST", "NONE"]:
             named_config(tb, {'CrcWidth_g': 8, 'DataWidth_g': DataWidth, 'BitOrder_g': BitOrder, 'ByteOrder_g': ByteOrder})
+for BitFlip in [True, False]:
+    for InvertOutput in [True, False]:
+        named_config(tb, {'BitflipOutput_g': BitFlip, 'InvertOutput_g' : InvertOutput})
 
 ########################################################################################################################
 # olo_axi TBs
