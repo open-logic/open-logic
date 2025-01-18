@@ -36,10 +36,10 @@ architecture sim of olo_base_crc_initval_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant CrcWidth_c     : natural                                 := 8;
-    constant DataWidth_c    : natural                                 := 8;
-    constant InitialValue_c : std_logic_vector(CrcWidth_c-1 downto 0) := x"FD";
-    constant Polynomial_c   : std_logic_vector(CrcWidth_c-1 downto 0) := x"1D";
+    constant CrcWidth_c     : natural := 8;
+    constant DataWidth_c    : natural := 8;
+    constant InitialValue_c : natural := 16#FD#;
+    constant Polynomial_c   : natural := 16#1D#;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions

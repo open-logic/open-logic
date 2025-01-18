@@ -30,8 +30,8 @@ entity olo_base_crc_tb is
         runner_cfg      : string;
         BitOrder_g      : string   := "MSB_FIRST";
         ByteOrder_g     : string   := "NONE";
-        CrcWidth_g      : positive := 5; -- allowed: 5, 8, 16
-        DataWidth_g     : positive := 5; -- allowed: 5, 8, 16
+        CrcWidth_g      : positive := 8; -- allowed: 5, 8, 16
+        DataWidth_g     : positive := 8; -- allowed: 5, 8, 16
         BitflipOutput_g : boolean  := false;
         InvertOutput_g  : boolean  := false
     );
@@ -42,16 +42,17 @@ architecture sim of olo_base_crc_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant InitialValue_c : std_logic_vector(CrcWidth_g-1 downto 0) := (others => '0');
-    constant XorOutput_c    : std_logic_vector(CrcWidth_g-1 downto 0) := (others => (choose(InvertOutput_g, '1', '0')));
-    function getPolynomial (crcWidth : natural) return std_logic_vector is
+    constant InitialValue_c : natural := 0;
+    constant XorOutput_c    : natural := choose(InvertOutput_g, 2**CrcWidth_g-1, 0); -- all 1 or all 0
+
+    function getPolynomial (crcWidth : natural) return integer is
     begin
 
         -- Get polinomials from https://crccalc.com
         case crcWidth is
-            when 5 => return "10101";
-            when 8 => return x"D5";
-            when 16 => return x"0589";
+            when 5 => return 2#10101#;
+            when 8 => return 16#D5#;
+            when 16 => return 16#0589#;
             when others => report "Error: unuspoorted CrcWdith_g" severity error;
         end case;
 
@@ -340,7 +341,7 @@ begin
                     end if;
                 end if;
                 push_axi_stream(net, AxisMaster_c, Data_v);
-                Result_v := getPolynomial(CrcWidth_g);
+                Result_v := toUslv(getPolynomial(CrcWidth_g), CrcWidth_g);
                 if BitflipOutput_g then
                     Result_v := invertBitOrder(Result_v);
                 end if;

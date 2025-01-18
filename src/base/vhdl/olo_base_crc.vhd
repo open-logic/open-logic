@@ -34,13 +34,13 @@ library work;
 entity olo_base_crc is
     generic (
         CrcWidth_g      : positive range 2 to natural'high;
-        Polynomial_g    : std_logic_vector;  -- according to https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin
-        InitialValue_g  : std_logic_vector;
         DataWidth_g     : positive;
-        BitOrder_g      : string           := "MSB_FIRST"; -- "MSB_FIRST" or "LSB_FIRST"
-        ByteOrder_g     : string           := "NONE";      -- "NONE", "MSB_FIRST" or "LSB_FIRST"
-        BitflipOutput_g : boolean          := false;
-        XorOutput_g     : std_logic_vector := "0"
+        Polynomial_g    : natural;  -- according to https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin
+        InitialValue_g  : natural := 0;
+        BitOrder_g      : string  := "MSB_FIRST"; -- "MSB_FIRST" or "LSB_FIRST"
+        ByteOrder_g     : string  := "NONE";      -- "NONE", "MSB_FIRST" or "LSB_FIRST"
+        BitflipOutput_g : boolean := false;
+        XorOutput_g     : natural := 0
     );
     port (
         -- Control Ports
@@ -66,9 +66,9 @@ end entity;
 architecture rtl of olo_base_crc is
 
     -- Constants
-    constant Polynomial_c   : std_logic_vector(CrcWidth_g-1 downto 0) := Polynomial_g;   -- fix range direction "downto"
-    constant InitialValue_c : std_logic_vector(CrcWidth_g-1 downto 0) := InitialValue_g; -- fix range direction "downto"
-    constant XorOutput_c    : std_logic_vector(CrcWidth_g-1 downto 0) := choose(XorOutput_g = "0", zerosVector(CrcWidth_g), XorOutput_g);
+    constant Polynomial_c   : std_logic_vector(CrcWidth_g-1 downto 0) := toUslv(Polynomial_g, CrcWidth_g);
+    constant InitialValue_c : std_logic_vector(CrcWidth_g-1 downto 0) := toUslv(InitialValue_g, CrcWidth_g);
+    constant XorOutput_c    : std_logic_vector(CrcWidth_g-1 downto 0) := toUslv(XorOutput_g, CrcWidth_g);
 
     -- Signals
     signal LfsrReg     : std_logic_vector(CrcWidth_g-1 downto 0);
@@ -77,12 +77,6 @@ architecture rtl of olo_base_crc is
 
 begin
 
-    assert Polynomial_g'length = CrcWidth_g
-        report "###ERROR###: olo_base_crc - Polynomial_g width must match CrcWidth_g"
-        severity error;
-    assert InitialValue_g'length = CrcWidth_g
-        report "###ERROR###: olo_base_crc - InitialValue_g width must match CrcWidth_g"
-        severity error;
     assert BitOrder_g = "MSB_FIRST" or BitOrder_g = "LSB_FIRST"
         report "###ERROR###: olo_base_crc - Illegal value for BitOrder_g"
         severity error;
