@@ -324,6 +324,22 @@ for InWidth in [512, 783]:
     for PlRegs in [0, 2]:
         named_config(tb, {'InWidth_g': InWidth, 'PlRegs_g': PlRegs})
 
+#crc
+crc_tb = 'olo_base_crc_tb'
+tb = olo_tb.test_bench(crc_tb)
+for CrcWidth in [5, 8, 16]:
+    for DataWidth in [5, 8, 16]:
+        named_config(tb, {'CrcWidth_g': CrcWidth, 'DataWidth_g': DataWidth})
+for BitOrder in ["MSB_FIRST", "LSB_FIRST"]:
+    named_config(tb, {'CrcWidth_g': 8, 'DataWidth_g': 5, 'BitOrder_g': BitOrder})
+for DataWidth in [8, 16]:
+    for BitOrder in ["MSB_FIRST", "LSB_FIRST"]:
+        for ByteOrder in ["MSB_FIRST", "LSB_FIRST", "NONE"]:
+            named_config(tb, {'CrcWidth_g': 8, 'DataWidth_g': DataWidth, 'BitOrder_g': BitOrder, 'ByteOrder_g': ByteOrder})
+for BitFlip in [True, False]:
+    for InvertOutput in [True, False]:
+        named_config(tb, {'BitflipOutput_g': BitFlip, 'InvertOutput_g' : InvertOutput})
+
 ########################################################################################################################
 # olo_axi TBs
 ########################################################################################################################
