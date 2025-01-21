@@ -74,6 +74,24 @@ begin
                 check_equal(isPower2(2), true,  "islog2(2) wrong");
                 check_equal(isPower2(1), true, "islog2(1) wrong");
 
+            elsif run("greatestCommonFactor") then
+                check_equal(greatestCommonFactor(9, 3), 3, "greatestCommonFactor(9, 3) wrong");
+                check_equal(greatestCommonFactor(3, 9), 3, "greatestCommonFactor(3, 9) wrong");
+                check_equal(greatestCommonFactor(8, 12), 4, "greatestCommonFactor(8, 12) wrong");
+                check_equal(greatestCommonFactor(12, 8), 4, "greatestCommonFactor(12, 8) wrong");
+                check_equal(greatestCommonFactor(3, 5), 1, "greatestCommonFactor(3, 5) wrong");
+                check_equal(greatestCommonFactor(1, 5), 1, "greatestCommonFactor(0, 5) wrong");
+                check_equal(greatestCommonFactor(5, 1), 1, "greatestCommonFactor(5, 0) wrong");
+
+            elsif run("leastCommonMultiple") then
+                check_equal(leastCommonMultiple(9, 3), 9, "leastCommonMultiple(9, 3) wrong");
+                check_equal(leastCommonMultiple(3, 9), 9, "leastCommonMultiple(3, 9) wrong");
+                check_equal(leastCommonMultiple(8, 12), 24, "leastCommonMultiple(8, 12) wrong");
+                check_equal(leastCommonMultiple(7, 5), 35, "leastCommonMultiple(7, 5) wrong");
+                check_equal(leastCommonMultiple(3, 5), 15, "leastCommonMultiple(3, 5) wrong");
+                check_equal(leastCommonMultiple(1, 5), 5, "leastCommonMultiple(0, 5) wrong");
+                check_equal(leastCommonMultiple(5, 1), 5, "leastCommonMultiple(5, 0) wrong");
+
             elsif run("max-integer") then
                 check_equal(max(3,4), 4,    "max(3,4) wrong");
                 check_equal(max(4,3), 4,    "max(3,4) wrong");

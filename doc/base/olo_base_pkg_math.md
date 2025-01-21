@@ -61,6 +61,19 @@ Check if a number is a a power of two.
 function isPower2(arg : in natural) return boolean;
 ```
 
+### leastCommonMultiple()/greatestCommonFactor()
+
+Find the LCM/GCF of two numbers.
+
+```vhdl
+function greatestCommonFactor (
+    a : in positive;
+    b : in positive) return positive;
+function leastCommonMultiple (
+    a : in positive;
+    b : in positive) return positive;
+```
+
 ### max() / min()
 
 Return the smaller or larger value out of two.
