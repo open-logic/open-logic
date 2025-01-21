@@ -38,6 +38,14 @@ package olo_base_pkg_math is
 
     function isPower2 (arg : in natural) return boolean;
 
+    function greatestCommonFactor (
+        a : in positive;
+        b : in positive) return positive;
+
+    function leastCommonMultiple (
+        a : in positive;
+        b : in positive) return positive;
+
     function max (
         a : in integer;
         b : in integer) return integer;
@@ -204,6 +212,31 @@ package body olo_base_pkg_math is
         else
             return false;
         end if;
+    end function;
+
+    -- *** GreatestCommonFactor ***
+    function greatestCommonFactor (
+        a : in positive;
+        b : in positive) return positive is
+        variable Gcd_v : positive := min(a, b);
+    begin
+
+        while Gcd_v > 1 loop
+            if a mod Gcd_v = 0 and b mod Gcd_v = 0 then
+                return Gcd_v;
+            end if;
+            Gcd_v := Gcd_v - 1;
+        end loop;
+
+        return Gcd_v;
+    end function;
+
+    -- *** leastCommonMultiple ***
+    function leastCommonMultiple (
+        a : in positive;
+        b : in positive) return positive is
+    begin
+        return a * b / greatestCommonFactor(a, b);
     end function;
 
     -- *** Max ***
