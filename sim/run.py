@@ -174,6 +174,11 @@ tb = olo_tb.test_bench(wconv_n2xn_tb)
 for Ratio in [1, 2, 3]:
     named_config(tb, {'WidthRatio_g': Ratio})
 
+wconv_n2m_tb = 'olo_base_wconv_n2m_tb'
+tb = olo_tb.test_bench(wconv_n2m_tb)
+for Ratio in [(8, 8), (16, 24), (24, 16), (18, 27), (27, 18)]:
+    named_config(tb, {'InWidth_g': Ratio[0], 'OutWidth_g': Ratio[1]})
+
 #Pipeline TB
 pl_tb = 'olo_base_pl_stage_tb'
 tb = olo_tb.test_bench(pl_tb)

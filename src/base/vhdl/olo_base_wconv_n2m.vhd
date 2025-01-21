@@ -23,13 +23,13 @@ library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
     use ieee.math_real.all;
+    use ieee.std_logic_misc.all;
 
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
 
 -- Optimize barrel shifter to use registered chunkcounter
--- Implement Last Handling
 -- Implement output byte enables
 -- Implement input byte enables (drop incomplete last word)
 -- Test both byte enables (incomplete last word only)
@@ -37,8 +37,7 @@ library work;
 -- Test backpressure
 -- Constrained random test
 -- Test same width
--- Test In > OUt
--- Test OUt > In
+-- Test 7:16 and the likes (separate TB)
 
 
 ---------------------------------------------------------------------------------------------------
@@ -46,8 +45,8 @@ library work;
 ---------------------------------------------------------------------------------------------------
 entity olo_base_wconv_n2m is
     generic (
-        InWidth_g  : positive;
-        OutWidth_g : positive
+        InWidth_g  : positive := 16;
+        OutWidth_g : positive := 24
     );
     port (
         Clk          : in    std_logic;
@@ -79,6 +78,8 @@ architecture rtl of olo_base_wconv_n2m is
     type TwoProcess_r is record
         ChunkCnt    : integer range 0 to SrWidth_c / ChunkSize_c - 1;
         ShiftReg    : std_logic_vector(SrWidth_c - 1 downto 0);
+        LastChunk   : std_logic_vector(SrWidth_c / ChunkSize_c - 1 downto 0);
+        LastPending : std_logic;
     end record;
 
     signal r, r_next    : TwoProcess_r;
@@ -89,34 +90,50 @@ begin
     g_convert : if OutWidth_g /= InWidth_g generate
 
         p_comb : process (r, In_Valid, In_Data, Out_Ready, In_Last, Rst) is
-            variable v           : TwoProcess_r;
-            variable Out_Valid_v : std_logic;
-            variable Offset_v    : natural range 0 to SrWidth_c / ChunkSize_C - 1;
+            variable v            : TwoProcess_r;
+            variable Out_Valid_v  : std_logic;
+            variable Offset_v     : natural range 0 to SrWidth_c - 1;
+            variable IsLastBeat_v : std_logic;
         begin
             -- *** hold variables stable ***
             v := r;
 
             -- Output transaction
             Out_Valid_v := '0';
-            if r.ChunkCnt >= OutChunks_c then
+            IsLastBeat_v := or_reduce(r.LastChunk(OutChunks_c - 1 downto 0));
+            if (r.ChunkCnt >= OutChunks_c) or (IsLastBeat_v = '1') then
                 Out_Valid_v := '1';
             end if;
             if Out_Valid_v = '1' and Out_Ready = '1' then
-                v.ChunkCnt := r.ChunkCnt - OutChunks_c;
-                v.ShiftReg := zerosVector(OutWidth_g) & r.ShiftReg(r.ShiftReg'high downto OutWidth_g);
+                -- Clear after last beat
+                if IsLastBeat_v = '1' then
+                    v.ChunkCnt  := 0;
+                    v.ShiftReg  := (others => '0');
+                    v.LastChunk := (others => '0');
+                    v.LastPending := '0';
+                -- Normal Operation
+                else
+                    v.ChunkCnt  := r.ChunkCnt - OutChunks_c;
+                    v.ShiftReg  := zerosVector(OutWidth_g) & r.ShiftReg(r.ShiftReg'high downto OutWidth_g);
+                    v.LastChunk := zerosVector(OutChunks_c) & r.LastChunk(r.LastChunk'high downto OutChunks_c);                    
+                end if;
             end if;
             Out_Valid <= Out_Valid_v;
             Out_Data <= r.ShiftReg(OutWidth_g - 1 downto 0);
-            Out_Last <= '0';
+            Out_Last <= IsLastBeat_v;
 
             -- Shift in new data if required
             In_Ready <= '0';
-            if v.ChunkCnt < OutChunks_c  then
+            -- On last beat in blockage, do not accept data
+            if (v.ChunkCnt < OutChunks_c) and (v.LastPending = '0') then
+                
                 In_Ready <= not Rst;
                 if In_Valid = '1' then
                     Offset_v := v.ChunkCnt*ChunkSize_c;
                     v.ShiftReg(Offset_v + InWidth_g - 1 downto Offset_v) := In_Data;
+                    v.LastChunk(v.ChunkCnt + InChunks_c-1) := In_Last;
                     v.ChunkCnt := v.ChunkCnt + InChunks_c;
+                    v.LastPending := In_Last;
                 end if;
             end if;
 
@@ -129,8 +146,10 @@ begin
             if rising_edge(Clk) then
                 r <= r_next;
                 if Rst = '1' then
-                    r.ShiftReg <= (others => '0');
-                    r.ChunkCnt <= 0;
+                    r.ShiftReg  <= (others => '0');
+                    r.ChunkCnt  <= 0;
+                    r.LastChunk <= (others => '0');
+                    r.LastPending <= '0';
                 end if;
             end if;
         end process;

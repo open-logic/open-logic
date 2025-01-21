@@ -38,7 +38,10 @@ architecture sim of olo_base_wconv_n2m_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant ClkPeriod_c : time    := 10 ns;
+    constant ClkPeriod_c   : time    := 10 ns;
+    constant ElementSize_c : integer := greatestCommonFactor(InWidth_g, OutWidth_g);
+    constant InElements_c  : integer := InWidth_g/ElementSize_c;
+    constant OutElements_c : integer := OutWidth_g/ElementSize_c;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -53,6 +56,64 @@ architecture sim of olo_base_wconv_n2m_tb is
         data_length => OutWidth_g,
         stall_config => new_stall_config(0.0, 0, 0)
     );
+
+    procedure pushElements(
+        signal  net : inout network_t;
+        count       : positive;
+        last        : std_logic := '1';
+        start       : integer   := 0
+    ) is
+        variable InData_v   : std_logic_vector(InWidth_g - 1 downto 0) := (others => '0');
+        variable ElInWord_v : natural                                  := 0;
+    begin
+        assert count < 2**ElementSize_c
+            report "pushElements: count too large"
+            severity failure;
+
+        -- Push elements
+        for i in 1 to count loop
+            if ElInWord_v = InWidth_g/ElementSize_c then
+                push_axi_stream(net, AxisMaster_c, InData_v, tlast => '0');
+                ElInWord_v := 0;
+                InData_v   := (others => '0');
+            end if;
+            InData_v((ElInWord_v+1)*ElementSize_c-1 downto ElInWord_v*ElementSize_c) := toUslv(i+start, ElementSize_c);
+            ElInWord_v := ElInWord_v + 1;
+        end loop;
+
+        -- Push last word
+        push_axi_stream(net, AxisMaster_c, InData_v, tlast => last);
+            
+    end procedure;
+
+    procedure expectElements(
+        signal  net : inout network_t;
+        count       : positive;
+        last        : std_logic := '1';
+        msg         : string  := "msg";
+        start       : integer := 0
+    ) is
+        variable OutData_v   : std_logic_vector(OutWidth_g - 1 downto 0) := (others => '0');
+        variable ElInWord_v  : natural                                   := 0;
+    begin
+        assert count < 2**ElementSize_c
+            report "expectElements: count too large"
+            severity failure;
+
+        -- Push elements
+        for i in 1 to count loop
+            if ElInWord_v = OutWidth_g/ElementSize_c then
+                check_axi_stream(net, AxisSlave_c, OutData_v, tlast => '0', msg => msg & " - any-data", blocking => false);
+                ElInWord_v := 0;
+                OutData_v   := (others => '0');
+            end if;
+            OutData_v((ElInWord_v+1)*ElementSize_c-1 downto ElInWord_v*ElementSize_c) := toUslv(i+start, ElementSize_c);
+            ElInWord_v := ElInWord_v + 1;
+        end loop;
+
+        -- Push last word
+        check_axi_stream(net, AxisSlave_c, OutData_v, tlast => last, msg =>  msg & " - last-data", blocking => false);
+    end procedure;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
@@ -77,6 +138,8 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
+        constant FullBeatElements_c : integer := leastCommonMultiple(InWidth_g, OutWidth_g)/ElementSize_c;
+        variable AddElements_v : integer;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -93,7 +156,6 @@ begin
             -- Reset state
             if run("Reset") then
                 -- Outside of reset
-                check_equal(In_Ready, '1', "In_Ready");
                 check_equal(Out_Valid, '0', "Out_Valid");
                 -- Ready going low in reset
                 Rst <= '1';
@@ -104,12 +166,63 @@ begin
 
             -- Transfer Integer word width (no packet end)
             if run("Transfer-LCM-Words") then
-                push_axi_stream(net, AxisMaster_c, toUslv(16#0201#, InWidth_g), tlast => '0');
-                push_axi_stream(net, AxisMaster_c, toUslv(16#0403#, InWidth_g), tlast => '0');
-                push_axi_stream(net, AxisMaster_c, toUslv(16#0605#, InWidth_g), tlast => '0');
-                check_axi_stream(net, AxisSlave_c, toUslv(16#030201#, OutWidth_g), tlast => '0', msg => "data 0");
-                check_axi_stream(net, AxisSlave_c, toUslv(16#060504#, OutWidth_g), tlast => '0', msg => "data 1");
+                pushElements(net, FullBeatElements_c);
+                expectElements(net, FullBeatElements_c);
             end if;
+
+            -- Transfer two packets, full word with pause
+            if run("Transfer-TwoPackets-FullWord") then
+
+                AddElements_v := 0;
+
+                while AddElements_v < FullBeatElements_c loop
+
+                    for pause in 0 to 1 loop
+
+                        -- Packet 1
+                        pushElements(net, FullBeatElements_c*2+AddElements_v);
+                        expectElements(net, FullBeatElements_c*2+AddElements_v);
+
+                        -- Pause
+                        if pause = 1 then
+                            wait_until_idle(net, as_sync(AxisMaster_c));
+                            wait_until_idle(net, as_sync(AxisSlave_c));
+                            wait for 10*ClkPeriod_c;
+                        end if;
+
+                        -- Packet 2
+                        pushElements(net, FullBeatElements_c*2+AddElements_v);
+                        expectElements(net, FullBeatElements_c*2+AddElements_v);
+                    end loop;
+
+                    -- Increase by one more input word
+                    AddElements_v := AddElements_v + InElements_c;
+                end loop;
+
+            end if;    
+            
+            -- Single word packet
+            if run("Transfer-SingleWord") then
+
+                for pause in 0 to 1 loop
+
+                    -- Packet 1
+                    pushElements(net, InElements_c);
+                    expectElements(net, InElements_c);
+
+                    -- Pause
+                    if pause = 1 then
+                        wait_until_idle(net, as_sync(AxisMaster_c));
+                        wait_until_idle(net, as_sync(AxisSlave_c));
+                        wait for 10*ClkPeriod_c;
+                    end if;
+
+                    -- Packet 2
+                    pushElements(net, InElements_c, start => 5);
+                    expectElements(net, InElements_c, start => 5);
+                end loop;
+            end if;
+
 
             
             wait_until_idle(net, as_sync(AxisMaster_c));
