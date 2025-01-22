@@ -61,7 +61,8 @@ architecture sim of olo_base_wconv_n2m_tb is
         signal  net : inout network_t;
         count       : positive;
         last        : std_logic := '1';
-        start       : integer   := 0
+        start       : integer   := 0;
+        validDelay  : time      := 0 ns
     ) is
         variable InData_v   : std_logic_vector(InWidth_g - 1 downto 0) := (others => '0');
         variable ElInWord_v : natural                                  := 0;
@@ -73,6 +74,9 @@ architecture sim of olo_base_wconv_n2m_tb is
         -- Push elements
         for i in 1 to count loop
             if ElInWord_v = InWidth_g/ElementSize_c then
+                if validDelay /= 0 ns then
+                    wait for validDelay;
+                end if;
                 push_axi_stream(net, AxisMaster_c, InData_v, tlast => '0');
                 ElInWord_v := 0;
                 InData_v   := (others => '0');
@@ -82,6 +86,9 @@ architecture sim of olo_base_wconv_n2m_tb is
         end loop;
 
         -- Push last word
+        if validDelay /= 0 ns then
+            wait for validDelay;
+        end if;
         push_axi_stream(net, AxisMaster_c, InData_v, tlast => last);
             
     end procedure;
@@ -91,19 +98,24 @@ architecture sim of olo_base_wconv_n2m_tb is
         count       : positive;
         last        : std_logic := '1';
         msg         : string  := "msg";
-        start       : integer := 0
+        start       : integer := 0;
+        readyDelay  : time    := 0 ns 
     ) is
         variable OutData_v   : std_logic_vector(OutWidth_g - 1 downto 0) := (others => '0');
         variable ElInWord_v  : natural                                   := 0;
+        variable Blocking_v  : boolean                                   := choose(readyDelay = 0 ns, false, true);
     begin
         assert count < 2**ElementSize_c
             report "expectElements: count too large"
             severity failure;
 
-        -- Push elements
+        -- Check elements
         for i in 1 to count loop
             if ElInWord_v = OutWidth_g/ElementSize_c then
-                check_axi_stream(net, AxisSlave_c, OutData_v, tlast => '0', msg => msg & " - any-data", blocking => false);
+                if Blocking_v then
+                    wait for readyDelay;
+                end if;
+                check_axi_stream(net, AxisSlave_c, OutData_v, tlast => '0', msg => msg & " - any-data", blocking => Blocking_v);
                 ElInWord_v := 0;
                 OutData_v   := (others => '0');
             end if;
@@ -111,8 +123,11 @@ architecture sim of olo_base_wconv_n2m_tb is
             ElInWord_v := ElInWord_v + 1;
         end loop;
 
-        -- Push last word
-        check_axi_stream(net, AxisSlave_c, OutData_v, tlast => last, msg =>  msg & " - last-data", blocking => false);
+        -- Check last word
+        if Blocking_v then
+            wait for readyDelay;
+        end if;
+        check_axi_stream(net, AxisSlave_c, OutData_v, tlast => last, msg =>  msg & " - last-data", blocking => Blocking_v);
     end procedure;
 
     -----------------------------------------------------------------------------------------------
@@ -223,6 +238,21 @@ begin
                 end loop;
             end if;
 
+            -- Rate Limit Input
+            if run("RateLimit-Input") then
+                expectElements(net, FullBeatElements_c*2);
+                expectElements(net, FullBeatElements_c*2, start => 5);
+                pushElements(net, FullBeatElements_c*2, validDelay => 10*ClkPeriod_c);                
+                pushElements(net, FullBeatElements_c*2, start => 5, validDelay => 10*ClkPeriod_c);
+            end if;
+
+            -- Rate Limit Output
+            if run("RateLimit-Output") then
+                pushElements(net, FullBeatElements_c*2);
+                pushElements(net, FullBeatElements_c*2, start => 5);
+                expectElements(net, FullBeatElements_c*2, readyDelay => 10*ClkPeriod_c);
+                expectElements(net, FullBeatElements_c*2, start => 5, readyDelay => 10*ClkPeriod_c);
+            end if;
 
             
             wait_until_idle(net, as_sync(AxisMaster_c));

@@ -33,11 +33,7 @@ library work;
 -- Implement output byte enables
 -- Implement input byte enables (drop incomplete last word)
 -- Test both byte enables (incomplete last word only)
--- Implement "arbitrary byte enables? or LSB byte enables?"
--- Test backpressure
 -- Constrained random test
--- Test same width
--- Test 7:16 and the likes (separate TB)
 
 
 ---------------------------------------------------------------------------------------------------
