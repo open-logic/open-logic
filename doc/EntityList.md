@@ -61,6 +61,7 @@ A selection table summarizing the pros and cons of all the different clock cross
 | ---------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Increase word width by an integer factor (_OutWidth = InWidth x N_)<br />Convert from TDM to parallel (see [Conventions](./Conventions.md)) |
 | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Decrease word width by an integer factor (_OutWidth = InWidth / N_)<br />Convert from parallel to TDM (see [Conventions](./Conventions.md)) |
+| [olo_base_wconv_n2m](./base/olo_base_wconv_n2m.md)  | Arbitrary word width converter  |
 
 ### Arbiters (olo_base_arb_\<...\>)
 
@@ -94,6 +95,8 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_cam](./base/olo_base_cam.md)                       | Content addressable memory                                   |
 | [olo_base_flowctrl_handler](./base/olo_base_flowctrl_handler.md) | Implements full flow-control (including Ready/back-pressure) around processing entities that do not support Ready/back-pressure natively. |
 | [olo_base_decode_firstbit](./base/olo_base_decode_firstbit.md) | Implements a first-bit decoder (finds the index of the first bit set in a vector). Allows pipelining for operating on very wide vectors at high clock frequencies. |
+| [olo_base_crc](./base/olo_base_crc.md) | CRC calculation engine |
+
 
 ## axi
 
