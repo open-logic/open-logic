@@ -97,7 +97,6 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_decode_firstbit](./base/olo_base_decode_firstbit.md) | Implements a first-bit decoder (finds the index of the first bit set in a vector). Allows pipelining for operating on very wide vectors at high clock frequencies. |
 | [olo_base_crc](./base/olo_base_crc.md) | CRC calculation engine |
 
-
 ## axi
 
 | Entity                                                  | Description                                                  |
