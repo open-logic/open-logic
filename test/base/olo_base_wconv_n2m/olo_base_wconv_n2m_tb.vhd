@@ -57,13 +57,13 @@ architecture sim of olo_base_wconv_n2m_tb is
         stall_config => new_stall_config(0.0, 0, 0)
     );
 
-    procedure pushElements(
+    procedure pushElements (
         signal  net : inout network_t;
         count       : positive;
         last        : std_logic := '1';
         start       : integer   := 0;
-        validDelay  : time      := 0 ns
-    ) is
+        validDelay  : time      := 0 ns) is
+        -- variables
         variable InData_v   : std_logic_vector(InWidth_g - 1 downto 0) := (others => '0');
         variable ElInWord_v : natural                                  := 0;
     begin
@@ -82,7 +82,7 @@ architecture sim of olo_base_wconv_n2m_tb is
                 InData_v   := (others => '0');
             end if;
             InData_v((ElInWord_v+1)*ElementSize_c-1 downto ElInWord_v*ElementSize_c) := toUslv(i+start, ElementSize_c);
-            ElInWord_v := ElInWord_v + 1;
+            ElInWord_v                                                               := ElInWord_v + 1;
         end loop;
 
         -- Push last word
@@ -90,20 +90,20 @@ architecture sim of olo_base_wconv_n2m_tb is
             wait for validDelay;
         end if;
         push_axi_stream(net, AxisMaster_c, InData_v, tlast => last);
-            
+
     end procedure;
 
-    procedure expectElements(
-        signal  net : inout network_t;
-        count       : positive;
-        last        : std_logic := '1';
-        msg         : string  := "msg";
-        start       : integer := 0;
-        readyDelay  : time    := 0 ns 
-    ) is
-        variable OutData_v   : std_logic_vector(OutWidth_g - 1 downto 0) := (others => '0');
-        variable ElInWord_v  : natural                                   := 0;
-        variable Blocking_v  : boolean                                   := choose(readyDelay = 0 ns, false, true);
+    procedure expectElements (
+        signal net : inout network_t;
+        count      : positive;
+        last       : std_logic := '1';
+        msg        : string    := "msg";
+        start      : integer   := 0;
+        readyDelay : time      := 0 ns) is
+        -- variables
+        variable OutData_v  : std_logic_vector(OutWidth_g - 1 downto 0) := (others => '0');
+        variable ElInWord_v : natural                                   := 0;
+        variable Blocking_v : boolean                                   := choose(readyDelay = 0 ns, false, true);
     begin
         assert count < 2**ElementSize_c
             report "expectElements: count too large"
@@ -117,32 +117,32 @@ architecture sim of olo_base_wconv_n2m_tb is
                 end if;
                 check_axi_stream(net, AxisSlave_c, OutData_v, tlast => '0', msg => msg & " - any-data", blocking => Blocking_v);
                 ElInWord_v := 0;
-                OutData_v   := (others => '0');
+                OutData_v  := (others => '0');
             end if;
             OutData_v((ElInWord_v+1)*ElementSize_c-1 downto ElInWord_v*ElementSize_c) := toUslv(i+start, ElementSize_c);
-            ElInWord_v := ElInWord_v + 1;
+            ElInWord_v                                                                := ElInWord_v + 1;
         end loop;
 
         -- Check last word
         if Blocking_v then
             wait for readyDelay;
         end if;
-        check_axi_stream(net, AxisSlave_c, OutData_v, tlast => last, msg =>  msg & " - last-data", blocking => Blocking_v);
+        check_axi_stream(net, AxisSlave_c, OutData_v, tlast => last, msg => msg & " - last-data", blocking => Blocking_v);
     end procedure;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk         : std_logic                                   := '0';
-    signal Rst         : std_logic                                   := '1';
-    signal In_Valid    : std_logic                                   := '0';
-    signal In_Ready    : std_logic                                   := '0';
-    signal In_Data     : std_logic_vector(InWidth_g - 1 downto 0)    := (others => '0');
-    signal In_Last     : std_logic                                   := '0';
-    signal Out_Valid   : std_logic                                   := '0';
-    signal Out_Ready   : std_logic                                   := '0';
-    signal Out_Data    : std_logic_vector(OutWidth_g - 1 downto 0)   := (others => '0');
-    signal Out_Last    : std_logic                                   := '0';
+    signal Clk       : std_logic                                 := '0';
+    signal Rst       : std_logic                                 := '1';
+    signal In_Valid  : std_logic                                 := '0';
+    signal In_Ready  : std_logic                                 := '0';
+    signal In_Data   : std_logic_vector(InWidth_g - 1 downto 0)  := (others => '0');
+    signal In_Last   : std_logic                                 := '0';
+    signal Out_Valid : std_logic                                 := '0';
+    signal Out_Ready : std_logic                                 := '0';
+    signal Out_Data  : std_logic_vector(OutWidth_g - 1 downto 0) := (others => '0');
+    signal Out_Last  : std_logic                                 := '0';
 
 begin
 
@@ -154,7 +154,7 @@ begin
 
     p_control : process is
         constant FullBeatElements_c : integer := leastCommonMultiple(InWidth_g, OutWidth_g)/ElementSize_c;
-        variable AddElements_v : integer;
+        variable AddElements_v      : integer;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -214,8 +214,8 @@ begin
                     AddElements_v := AddElements_v + InElements_c;
                 end loop;
 
-            end if;    
-            
+            end if;
+
             -- Single word packet
             if run("Transfer-SingleWord") then
 
@@ -236,13 +236,14 @@ begin
                     pushElements(net, InElements_c, start => 5);
                     expectElements(net, InElements_c, start => 5);
                 end loop;
+
             end if;
 
             -- Rate Limit Input
             if run("RateLimit-Input") then
                 expectElements(net, FullBeatElements_c*2);
                 expectElements(net, FullBeatElements_c*2, start => 5);
-                pushElements(net, FullBeatElements_c*2, validDelay => 10*ClkPeriod_c);                
+                pushElements(net, FullBeatElements_c*2, validDelay => 10*ClkPeriod_c);
                 pushElements(net, FullBeatElements_c*2, start => 5, validDelay => 10*ClkPeriod_c);
             end if;
 
@@ -254,7 +255,6 @@ begin
                 expectElements(net, FullBeatElements_c*2, start => 5, readyDelay => 10*ClkPeriod_c);
             end if;
 
-            
             wait_until_idle(net, as_sync(AxisMaster_c));
             wait_until_idle(net, as_sync(AxisSlave_c));
             wait for 1 us;

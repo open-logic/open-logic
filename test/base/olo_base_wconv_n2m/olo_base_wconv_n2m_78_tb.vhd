@@ -37,12 +37,12 @@ architecture sim of olo_base_wconv_n2m_78_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant ClkPeriod_c   : time    := 10 ns;
-    constant PacketBits_c  : positive := 56;
-    constant Data1_c       : std_logic_vector(PacketBits_c-1 downto 0) := x"1234567890ABCD";
-    constant Data2_c       : std_logic_vector(PacketBits_c-1 downto 0) := x"1A2B3C4D5E6F78";
-    constant InWidth_c     : positive := choose(Direction_g = "up", 7, 8);
-    constant OutWidth_c    : positive := choose(Direction_g = "up", 8, 7);
+    constant ClkPeriod_c  : time                                      := 10 ns;
+    constant PacketBits_c : positive                                  := 56;
+    constant Data1_c      : std_logic_vector(PacketBits_c-1 downto 0) := x"1234567890ABCD";
+    constant Data2_c      : std_logic_vector(PacketBits_c-1 downto 0) := x"1A2B3C4D5E6F78";
+    constant InWidth_c    : positive                                  := choose(Direction_g = "up", 7, 8);
+    constant OutWidth_c   : positive                                  := choose(Direction_g = "up", 8, 7);
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -58,10 +58,10 @@ architecture sim of olo_base_wconv_n2m_78_tb is
         stall_config => new_stall_config(0.0, 0, 0)
     );
 
-    procedure testPacket(
+    procedure testPacket (
         signal  net : inout network_t;
-        data   : std_logic_vector
-    ) is
+        data        : std_logic_vector) is
+        -- variables
         variable InData_v  : std_logic_vector(InWidth_c-1 downto 0);
         variable OutData_v : std_logic_vector(OutWidth_c-1 downto 0);
         variable IsLast_v  : std_logic;
@@ -77,24 +77,25 @@ architecture sim of olo_base_wconv_n2m_78_tb is
         -- Packet Output
         for i in 0 to PacketBits_c/Outwidth_c-1 loop
             OutData_v := data((i+1)*Outwidth_c-1 downto i*Outwidth_c);
-            IsLast_v := choose(i = PacketBits_c/Outwidth_c-1, '1', '0');
+            IsLast_v  := choose(i = PacketBits_c/Outwidth_c-1, '1', '0');
             check_axi_stream(net, AxisSlave_c, OutData_v, tlast => IsLast_v, blocking => false);
         end loop;
+
     end procedure;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk         : std_logic                                   := '0';
-    signal Rst         : std_logic                                   := '1';
-    signal In_Valid    : std_logic                                   := '0';
-    signal In_Ready    : std_logic                                   := '0';
-    signal In_Data     : std_logic_vector(InWidth_c - 1 downto 0)    := (others => '0');
-    signal In_Last     : std_logic                                   := '0';
-    signal Out_Valid   : std_logic                                   := '0';
-    signal Out_Ready   : std_logic                                   := '0';
-    signal Out_Data    : std_logic_vector(OutWidth_c - 1 downto 0)   := (others => '0');
-    signal Out_Last    : std_logic                                   := '0';
+    signal Clk       : std_logic                                 := '0';
+    signal Rst       : std_logic                                 := '1';
+    signal In_Valid  : std_logic                                 := '0';
+    signal In_Ready  : std_logic                                 := '0';
+    signal In_Data   : std_logic_vector(InWidth_c - 1 downto 0)  := (others => '0');
+    signal In_Last   : std_logic                                 := '0';
+    signal Out_Valid : std_logic                                 := '0';
+    signal Out_Ready : std_logic                                 := '0';
+    signal Out_Data  : std_logic_vector(OutWidth_c - 1 downto 0) := (others => '0');
+    signal Out_Last  : std_logic                                 := '0';
 
 begin
 
@@ -122,7 +123,6 @@ begin
             Rst <= '0';
             wait until rising_edge(Clk);
 
-
             -- Transfer two packets
             if run("Transfer-TwoPackets") then
 
@@ -142,9 +142,8 @@ begin
                     testPacket(net, Data2_c);
                 end loop;
 
-            end if;    
+            end if;
 
-            
             wait_until_idle(net, as_sync(AxisMaster_c));
             wait_until_idle(net, as_sync(AxisSlave_c));
             wait for 1 us;
