@@ -2,6 +2,62 @@
 
 # Changelog
 
+## 3.1.0
+
+27-Jan-2025
+
+### Added Features
+
+- Support for Gowin toolchain
+  - Synthesis attributes
+  - Script to import Open Logic
+  - Tutorial
+
+- Added more functions to _olo_base_pkg_logic_
+  - Added _invertByteOrder()_
+  - Added _greatestCommonFactor()_
+  - Added _leastCommonMultiple()_
+
+- Added _olo_base_wconv_m2n_ 
+  - Arbitrary width converter (any input width to any output width)
+
+- Added _olo_base_crc_
+  - CRC calculation engine
+  - Can calculate multiple input bits per clock cycle
+
+
+### Backward Compatible Changes
+
+- Timing optimization for *olo_base_fifo_async* 
+  - General timing optimization to reach higher clock frequencies
+  - Added generic to select between optimization for latency or speed
+  - Reported by: [svancau](https://github.com/svancau)
+
+- Improved FuseSoC setup (#109)
+  - Users can choose between local files or official releases
+  - _open-logic:open-logic:..._ for  official release (downloaded from GitHub)
+  - _open-logic:open-logic-dev:..._ for local files
+  - Reported by: [rbrglez](https://github.com/rbrglez) 
+
+- Extracted attributes used by Open Logic into _olo_base_pkg_attribute_
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- None
+
+### Reporters
+
+- [svancau](https://github.com/svancau)
+- [rbrglez](https://github.com/rbrglez) 
+
+### Contributors
+
+- None
+
 ## 3.0.2
 
 01-Dec-2024
