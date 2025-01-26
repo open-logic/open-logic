@@ -18,17 +18,16 @@
   - Added _greatestCommonFactor()_
   - Added _leastCommonMultiple()_
 
-- Added _olo_base_wconv_m2n_ 
+- Added _olo_base_wconv_m2n_
   - Arbitrary width converter (any input width to any output width)
 
 - Added _olo_base_crc_
   - CRC calculation engine
   - Can calculate multiple input bits per clock cycle
 
-
 ### Backward Compatible Changes
 
-- Timing optimization for *olo_base_fifo_async* 
+- Timing optimization for _olo_base_fifo_async_
   - General timing optimization to reach higher clock frequencies
   - Added generic to select between optimization for latency or speed
   - Reported by: [svancau](https://github.com/svancau)
@@ -37,7 +36,7 @@
   - Users can choose between local files or official releases
   - _open-logic:open-logic:..._ for  official release (downloaded from GitHub)
   - _open-logic:open-logic-dev:..._ for local files
-  - Reported by: [rbrglez](https://github.com/rbrglez) 
+  - Reported by: [rbrglez](https://github.com/rbrglez)
 
 - Extracted attributes used by Open Logic into _olo_base_pkg_attribute_
 
@@ -52,7 +51,7 @@
 ### Reporters
 
 - [svancau](https://github.com/svancau)
-- [rbrglez](https://github.com/rbrglez) 
+- [rbrglez](https://github.com/rbrglez)
 
 ### Contributors
 
