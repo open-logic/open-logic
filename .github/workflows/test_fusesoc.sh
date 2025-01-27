@@ -17,9 +17,11 @@ mkdir fusesoc
 cd fusesoc
 fusesoc library add open-logic https://github.com/open-logic/open-logic
 
-# Build Vivado
+# Build Vivado (release / dev)
 fusesoc run --tool vivado --target zybo_z7 open-logic:tutorials:vivado_tutorial:$1
+fusesoc run --tool vivado --target zybo_z7 open-logic:tutorials-dev:vivado_tutorial:$1
 
-# Build Quartus
+# Build Quartus (release / dev)
 fusesoc run --tool quartus --target de0_cv open-logic:tutorials:quartus_tutorial:$1
+fusesoc run --tool quartus --target de0_cv open-logic:tutorials-dev:quartus_tutorial:$1
 
