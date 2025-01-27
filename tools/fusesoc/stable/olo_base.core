@@ -1,0 +1,59 @@
+CAPI=2:
+
+name : open-logic:open-logic:base:3.1.0
+description : stable release (downloaded from GitHub); Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base
+
+filesets:
+  rtl:
+    files:
+      - src/base/vhdl/olo_base_crc.vhd
+      - src/base/vhdl/olo_base_cc_n2xn.vhd
+      - src/base/vhdl/olo_base_arb_rr.vhd
+      - src/base/vhdl/olo_base_cc_simple.vhd
+      - src/base/vhdl/olo_base_ram_sdp.vhd
+      - src/base/vhdl/olo_base_delay_cfg.vhd
+      - src/base/vhdl/olo_base_decode_firstbit.vhd
+      - src/base/vhdl/olo_base_ram_tdp.vhd
+      - src/base/vhdl/olo_base_strobe_gen.vhd
+      - src/base/vhdl/olo_base_wconv_n2m.vhd
+      - src/base/vhdl/olo_base_wconv_n2xn.vhd
+      - src/base/vhdl/olo_base_fifo_async.vhd
+      - src/base/vhdl/olo_base_arb_prio.vhd
+      - src/base/vhdl/olo_base_cc_reset.vhd
+      - src/base/vhdl/olo_base_delay.vhd
+      - src/base/vhdl/olo_base_prbs.vhd
+      - src/base/vhdl/olo_base_tdm_mux.vhd
+      - src/base/vhdl/olo_base_cc_handshake.vhd
+      - src/base/vhdl/olo_base_pkg_array.vhd
+      - src/base/vhdl/olo_base_flowctrl_handler.vhd
+      - src/base/vhdl/olo_base_dyn_sft.vhd
+      - src/base/vhdl/olo_base_strobe_div.vhd
+      - src/base/vhdl/olo_base_ram_sp.vhd
+      - src/base/vhdl/olo_base_fifo_sync.vhd
+      - src/base/vhdl/olo_base_cc_pulse.vhd
+      - src/base/vhdl/olo_base_pkg_logic.vhd
+      - src/base/vhdl/olo_base_cam.vhd
+      - src/base/vhdl/olo_base_pkg_attribute.vhd
+      - src/base/vhdl/olo_base_cc_status.vhd
+      - src/base/vhdl/olo_base_reset_gen.vhd
+      - src/base/vhdl/olo_base_pkg_math.vhd
+      - src/base/vhdl/olo_base_wconv_xn2n.vhd
+      - src/base/vhdl/olo_base_fifo_packet.vhd
+      - src/base/vhdl/olo_base_pl_stage.vhd
+      - src/base/vhdl/olo_base_cc_bits.vhd
+      - src/base/vhdl/olo_base_cc_xn2n.vhd
+    file_type : vhdlSource
+    logical_name : olo
+
+
+targets:
+  default:
+    filesets :
+      - rtl
+
+provider:
+  name    : github
+  user    : open-logic
+  repo    : open-logic
+  version : 3.1.0
+  

@@ -1,11 +1,12 @@
 CAPI=2:
 
-name : open-logic:open-logic:base:3.0.2
-description : Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base
+name : open-logic:open-logic-dev:base:3.1.0
+description : local files (release plus WIP); Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base
 
 filesets:
   rtl:
     files:
+      - vhdl/olo_base_crc.vhd
       - vhdl/olo_base_cc_n2xn.vhd
       - vhdl/olo_base_arb_rr.vhd
       - vhdl/olo_base_cc_simple.vhd
@@ -14,6 +15,7 @@ filesets:
       - vhdl/olo_base_decode_firstbit.vhd
       - vhdl/olo_base_ram_tdp.vhd
       - vhdl/olo_base_strobe_gen.vhd
+      - vhdl/olo_base_wconv_n2m.vhd
       - vhdl/olo_base_wconv_n2xn.vhd
       - vhdl/olo_base_fifo_async.vhd
       - vhdl/olo_base_arb_prio.vhd
@@ -31,6 +33,7 @@ filesets:
       - vhdl/olo_base_cc_pulse.vhd
       - vhdl/olo_base_pkg_logic.vhd
       - vhdl/olo_base_cam.vhd
+      - vhdl/olo_base_pkg_attribute.vhd
       - vhdl/olo_base_cc_status.vhd
       - vhdl/olo_base_reset_gen.vhd
       - vhdl/olo_base_pkg_math.vhd
@@ -47,10 +50,4 @@ targets:
   default:
     filesets :
       - rtl
-      
-provider:
-  name    : github
-  user    : open-logic
-  repo    : open-logic
-  version : 3.0.2
   

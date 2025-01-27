@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024 by Oliver Bründler
+-- Copyright (c) 2024-2025 by Oliver Bründler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -26,6 +26,7 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_attribute.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -58,10 +59,6 @@ architecture rtl of olo_base_delay is
     signal MemOut      : std_logic_vector(Width_g - 1 downto 0);
     constant MemTaps_c : natural := work.olo_base_pkg_math.max(Delay_g - 1, 0);
 
-    -- Only AMD attributes, other tools do not do Shreg extraction or don't allow controlling it via attributes
-    attribute shreg_extract : string;
-    attribute srl_style     : string;
-
 begin
 
     -- *** Assertions ***
@@ -82,8 +79,10 @@ begin
 
         -- local signals
         signal SrlSig : Srl_t := (others => (others => '0'));
-        attribute shreg_extract of SrlSig : signal is "true";
-        attribute srl_style of SrlSig     : signal is "srl";
+
+        -- Synthesis attributes
+        attribute shreg_extract of SrlSig : signal is ShregExtract_AllowExtraction_c;
+        attribute srl_style of SrlSig     : signal is SrlStyle_Srl_c;
     begin
 
         p_srl : process (Clk) is

@@ -1,0 +1,32 @@
+CAPI=2:
+
+name : open-logic:open-logic:intf:3.1.0
+description : stable release (downloaded from GitHub); Interfaces (e.g. I2C, synchronizer, SPI, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#intf
+
+filesets:
+  rtl:
+    files:
+      - src/intf/vhdl/olo_intf_spi_slave.vhd
+      - src/intf/vhdl/olo_intf_i2c_master.vhd
+      - src/intf/vhdl/olo_intf_debounce.vhd
+      - src/intf/vhdl/olo_intf_clk_meas.vhd
+      - src/intf/vhdl/olo_intf_spi_master.vhd
+      - src/intf/vhdl/olo_intf_sync.vhd
+      - src/intf/vhdl/olo_intf_uart.vhd
+    file_type : vhdlSource
+    logical_name : olo
+    depend :
+      - "^open-logic:open-logic:base:3.1.0"
+
+
+targets:
+  default:
+    filesets :
+      - rtl
+
+provider:
+  name    : github
+  user    : open-logic
+  repo    : open-logic
+  version : 3.1.0
+  

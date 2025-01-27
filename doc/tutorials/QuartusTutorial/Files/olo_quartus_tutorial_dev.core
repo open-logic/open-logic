@@ -1,0 +1,31 @@
+CAPI=2:
+name : open-logic:tutorials-dev:quartus_tutorial:3.1.0
+description : local files (release plus WIP); quartus tutorial for open-logic, targetting DE0-CV board
+
+filesets:
+
+  de0_cv:
+    files:
+      - timing.sdc  : {file_type : SDC}
+      - pinout.tcl  : {file_type : tclSource}
+      
+  rtl:
+    files: [quartus_tutorial.vhd : {file_type : vhdlSource}]
+    depend :
+      - "open-logic:open-logic-dev:base"
+      - "open-logic:open-logic-dev:intf"
+
+targets:
+  default: &default
+    filesets : [rtl]
+    toplevel: ["is_toplevel? (quartus_tutorial)"]
+
+  de0_cv:
+    default_tool : quartus
+    filesets : [rtl, de0_cv]
+    tools:
+      quartus:
+        family : Cyclone V
+        device : 5CEBA4F23C7
+        board_device_index : 2
+    toplevel: quartus_tutorial

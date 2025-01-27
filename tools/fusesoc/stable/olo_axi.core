@@ -1,0 +1,30 @@
+CAPI=2:
+
+name : open-logic:open-logic:axi:3.1.0
+description : stable release (downloaded from GitHub); AXI related modules see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#axi
+
+filesets:
+  rtl:
+    files:
+      - src/axi/vhdl/olo_axi_master_simple.vhd
+      - src/axi/vhdl/olo_axi_pl_stage.vhd
+      - src/axi/vhdl/olo_axi_master_full.vhd
+      - src/axi/vhdl/olo_axi_lite_slave.vhd
+      - src/axi/vhdl/olo_axi_pkg_protocol.vhd
+    file_type : vhdlSource
+    logical_name : olo
+    depend :
+      - "^open-logic:open-logic:base:3.1.0"
+
+
+targets:
+  default:
+    filesets :
+      - rtl
+
+provider:
+  name    : github
+  user    : open-logic
+  repo    : open-logic
+  version : 3.1.0
+  

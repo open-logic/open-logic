@@ -11,6 +11,7 @@ import argparse
 
 # Init
 curdir = os.path.abspath(os.curdir)
+repoRoot = os.path.abspath(f"{curdir}/../../")
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
@@ -32,60 +33,104 @@ DEPENDENCIES = {
 }
 
 #Jinja setup
-print(curdir)
 env = Environment(loader=FileSystemLoader(curdir))
 
 # Navigate to src
-os.chdir("../../src")
+os.chdir(f"{repoRoot}/src")
 
 # Get all subdirectories
 areas = os.listdir()
 
-# Iterate over all areas
-for area in areas:
-    # Navigate to area
-    os.chdir(area)
-    # Get all VHDL files
-    os.chdir("vhdl")
-    vhdlFiles = os.listdir()
-    # Navigate to area
-    os.chdir("..")
+# Generate dev/stable cores
+for state in ["dev", "stable"]:
 
-    # Generaete core-file
-    template = env.get_template("core.template")
+    # Select library name and codebase
+    if state == "dev":
+        codebase = "local files (release plus WIP)"
+        postfix = "-dev"
+        filepostfix = "_dev"
+    elif state == "stable":
+        codebase = "stable release (downloaded from GitHub)"
+        postfix = ""
+        filepostfix = ""
+    else:
+        raise ValueError("Invalid state (dev/stable)")
+
+    library = "open-logic" + postfix
+    tutorial_library = "tutorials" + postfix
+
+    # Iterate over all areas
+    for area in areas:    
+
+        # Get all VHDL files
+        os.chdir(f"{repoRoot}/src/{area}/vhdl")
+        vhdlFiles = os.listdir()
+        # Navigate to area
+        os.chdir("..")
+
+        # Select proper repo root or .core file as reference
+        if state == "dev":
+            fileDir = "vhdl/"
+            targetDir = "."
+        elif state == "stable":
+            fileDir = f"src/{area}/vhdl/"
+            targetDir = f"{repoRoot}/tools/fusesoc/stable"
+        else:
+            raise ValueError("Invalid state (dev/stable)")
+
+        # Generaete core-file
+        template = env.get_template("core.template")
+        data = {
+            "area" : area,
+            "fileDir" : fileDir,
+            "vhdlFiles" : vhdlFiles,
+            "version" : VERSION,
+            "description" : DESCRIPTIONS[area],
+            "dependencies" : DEPENDENCIES[area],
+            "library" : library,
+            "codebase" : codebase
+        }
+        rendered_template = template.render(data)
+        with open(f"{targetDir}/olo_{area}{filepostfix}.core", "w+") as f:
+            f.write(rendered_template)
+
+    # Select proper repo root or .core file as reference
+    if state == "dev":
+        vivadoFileDir = ""
+        quartusFileDir = ""
+        vivadoTargetDir = "."
+        quartusTargetDir = "."
+    elif state == "stable":
+        vivadoFileDir = "doc/tutorials/VivadoTutorial/Files/"
+        quartusFileDir = "doc/tutorials/QuartusTutorial/Files/"
+        vivadoTargetDir = f"{repoRoot}/tools/fusesoc/stable"
+        quartusTargetDir = f"{repoRoot}/tools/fusesoc/stable"
+    else:
+        raise ValueError("Invalid state (dev/stable)")
+
+    #Tutorials
     data = {
-        "area" : area,
-        "vhdlFiles" : vhdlFiles,
-        "version" : VERSION,
-        "description" : DESCRIPTIONS[area],
-        "dependencies" : DEPENDENCIES[area]
+        "version": VERSION,
+        "library": library,
+        "codebase": codebase,
+        "tutorial_library": tutorial_library
     }
+    # Vivado Tutorial
+    data["fileDir"] = vivadoFileDir
+    os.chdir(f"{repoRoot}/doc/tutorials/VivadoTutorial/Files")
+    template = env.get_template("olo_vivado_tutorial.template")
     rendered_template = template.render(data)
-    with open(f"olo_{area}.core", "w+") as f:
+    with open(f"{vivadoTargetDir}/olo_vivado_tutorial{filepostfix}.core", "w+") as f:
         f.write(rendered_template)
 
+    #Quartus Tutorial
+    data["fileDir"] = quartusFileDir
+    os.chdir(f"{repoRoot}/doc/tutorials/QuartusTutorial/Files")
+    template = env.get_template("olo_quartus_tutorial.template")
+    rendered_template = template.render(data)
+    with open(f"{quartusTargetDir}/olo_quartus_tutorial{filepostfix}.core", "w+") as f:
+        f.write(rendered_template)
 
-    # Navigate to src
-    os.chdir("..")
-
-#Tutorials
-os.chdir("../doc/tutorials")
-data = {
-    "version": VERSION
-}
-# Vivado Tutorial
-os.chdir("VivadoTutorial/Files")
-template = env.get_template("olo_vivado_tutorial.template")
-rendered_template = template.render(data)
-with open(f"olo_vivado_tutorial.core", "w+") as f:
-    f.write(rendered_template)
-os.chdir("../..")
-#Quartus Tutorial
-os.chdir("QuartusTutorial/Files")
-template = env.get_template("olo_quartus_tutorial.template")
-rendered_template = template.render(data)
-with open(f"olo_quartus_tutorial.core", "w+") as f:
-    f.write(rendered_template)
 # Navigate back to tools
 os.chdir(curdir)
 

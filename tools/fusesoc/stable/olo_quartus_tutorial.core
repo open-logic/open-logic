@@ -1,13 +1,13 @@
 CAPI=2:
-name : open-logic:tutorials:quartus_tutorial:3.0.2
-description : quartus tutorial for open-logic, targetting DE0-CV board
+name : open-logic:tutorials:quartus_tutorial:3.1.0
+description : stable release (downloaded from GitHub); quartus tutorial for open-logic, targetting DE0-CV board
 
 filesets:
 
   de0_cv:
     files:
-      - timing.sdc  : {file_type : SDC}
-      - pinout.tcl  : {file_type : tclSource}
+      - doc/tutorials/QuartusTutorial/Files/timing.sdc  : {file_type : SDC}
+      - doc/tutorials/QuartusTutorial/Files/pinout.tcl  : {file_type : tclSource}
       
   rtl:
     files: [quartus_tutorial.vhd : {file_type : vhdlSource}]
@@ -34,4 +34,4 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 3.0.2
+  version : 3.1.0

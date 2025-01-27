@@ -12,11 +12,12 @@ Note that components are split into categories.
 
 Packages with type declarations and functions used in _Open Logic_ internally or on its interfaces.
 
-| Package                                            | Description                                                |
-| -------------------------------------------------- | ---------------------------------------------------------- |
-| [olo_base_pkg_array](./base/olo_base_pkg_array.md) | Array type definitions (e.g. arrays of _std_logic_vector_) |
-| [olo_base_pkg_math](./base/olo_base_pkg_math.md)   | Mathematic functions (e.g. _log2_)                         |
-| [olo_base_pkg_logic](./base/olo_base_pkg_logic.md) | Mathematic functions (e.g. _binaryToGray_)                 |
+| Package                                                    | Description                                                  |
+| ---------------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_base_pkg_array](./base/olo_base_pkg_array.md)         | Array type definitions (e.g. arrays of _std_logic_vector_)   |
+| [olo_base_pkg_math](./base/olo_base_pkg_math.md)           | Mathematic functions (e.g. _log2_)                           |
+| [olo_base_pkg_logic](./base/olo_base_pkg_logic.md)         | Mathematic functions (e.g. _binaryToGray_)                   |
+| [olo_base_pkg_attribute](./base/olo_base_pkg_attribute.md) | Definition of synthesis attributes for different tools. **For internal use within Open Logic only** |
 
 ### Clock Crossings (_olo_base_cc_\<...\>_)
 
@@ -60,6 +61,7 @@ A selection table summarizing the pros and cons of all the different clock cross
 | ---------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Increase word width by an integer factor (_OutWidth = InWidth x N_)<br />Convert from TDM to parallel (see [Conventions](./Conventions.md)) |
 | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Decrease word width by an integer factor (_OutWidth = InWidth / N_)<br />Convert from parallel to TDM (see [Conventions](./Conventions.md)) |
+| [olo_base_wconv_n2m](./base/olo_base_wconv_n2m.md)  | Arbitrary word width converter  |
 
 ### Arbiters (olo_base_arb_\<...\>)
 
@@ -93,6 +95,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_cam](./base/olo_base_cam.md)                       | Content addressable memory                                   |
 | [olo_base_flowctrl_handler](./base/olo_base_flowctrl_handler.md) | Implements full flow-control (including Ready/back-pressure) around processing entities that do not support Ready/back-pressure natively. |
 | [olo_base_decode_firstbit](./base/olo_base_decode_firstbit.md) | Implements a first-bit decoder (finds the index of the first bit set in a vector). Allows pipelining for operating on very wide vectors at high clock frequencies. |
+| [olo_base_crc](./base/olo_base_crc.md) | CRC calculation engine |
 
 ## axi
 

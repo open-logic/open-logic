@@ -1,19 +1,19 @@
 CAPI=2:
-name : open-logic:tutorials:quartus_tutorial:{{version}}
-description : quartus tutorial for open-logic, targetting DE0-CV board
+name : open-logic:{{tutorial_library}}:quartus_tutorial:{{version}}
+description : {{codebase}}; quartus tutorial for open-logic, targetting DE0-CV board
 
 filesets:
 
   de0_cv:
     files:
-      - timing.sdc  : {file_type : SDC}
-      - pinout.tcl  : {file_type : tclSource}
+      - {{fileDir}}timing.sdc  : {file_type : SDC}
+      - {{fileDir}}pinout.tcl  : {file_type : tclSource}
       
   rtl:
     files: [quartus_tutorial.vhd : {file_type : vhdlSource}]
     depend :
-      - "open-logic:open-logic:base"
-      - "open-logic:open-logic:intf"
+      - "open-logic:{{library}}:base"
+      - "open-logic:{{library}}:intf"
 
 targets:
   default: &default
@@ -30,9 +30,12 @@ targets:
         board_device_index : 2
     toplevel: quartus_tutorial
 
+{%- if library == "open-logic" %}
+
 provider:
   name    : github
   user    : open-logic
   repo    : open-logic
   version : {{version}}
+{%- endif %}
 

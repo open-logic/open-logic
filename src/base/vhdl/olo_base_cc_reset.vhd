@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024 by Oliver Bründler
+-- Copyright (c) 2024-2025 by Oliver Bründler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -25,6 +25,9 @@
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
+
+library work;
+    use work.olo_base_pkg_attribute.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -58,51 +61,43 @@ architecture struct of olo_base_cc_reset is
     signal RstRqstA2B : std_logic_vector(2 downto 0) := (others => '0');
     signal RstAckA2B  : std_logic;
 
-    -- Synthesis attributes AMD (Vivado)
-    attribute shreg_extract : string;
-    attribute shreg_extract of RstRqstB2A : signal is "no";
-    attribute shreg_extract of RstAckB2A  : signal is "no";
-    attribute shreg_extract of RstRqstA2B : signal is "no";
-    attribute shreg_extract of RstAckA2B  : signal is "no";
+    -- Synthesis attributes - suppress shift register extraction
+    attribute shreg_extract of RstRqstB2A : signal is ShregExtract_SuppressExtraction_c;
+    attribute shreg_extract of RstAckB2A  : signal is ShregExtract_SuppressExtraction_c;
+    attribute shreg_extract of RstRqstA2B : signal is ShregExtract_SuppressExtraction_c;
+    attribute shreg_extract of RstAckA2B  : signal is ShregExtract_SuppressExtraction_c;
 
-    -- Synthesis attributes AMD (Vivado) and Efinix (Efinity)
-    attribute syn_srlstyle : string;
-    attribute syn_srlstyle of RstRqstB2A : signal is "registers";
-    attribute syn_srlstyle of RstAckB2A  : signal is "registers";
-    attribute syn_srlstyle of RstRqstA2B : signal is "registers";
-    attribute syn_srlstyle of RstAckA2B  : signal is "registers";
+    attribute syn_srlstyle of RstRqstB2A : signal is SynSrlstyle_FlipFlops_c;
+    attribute syn_srlstyle of RstAckB2A  : signal is SynSrlstyle_FlipFlops_c;
+    attribute syn_srlstyle of RstRqstA2B : signal is SynSrlstyle_FlipFlops_c;
+    attribute syn_srlstyle of RstAckA2B  : signal is SynSrlstyle_FlipFlops_c;
 
-    attribute async_reg : boolean;
-    attribute async_reg of RstRqstB2A : signal is true;
-    attribute async_reg of RstAckB2A  : signal is true;
-    attribute async_reg of RstRqstA2B : signal is true;
-    attribute async_reg of RstAckA2B  : signal is true;
+    -- Synthesis attributes - preserve registers
+    attribute dont_merge of RstRqstB2A : signal is DontMerge_SuppressChanges_c;
+    attribute dont_merge of RstAckB2A  : signal is DontMerge_SuppressChanges_c;
+    attribute dont_merge of RstRqstA2B : signal is DontMerge_SuppressChanges_c;
+    attribute dont_merge of RstAckA2B  : signal is DontMerge_SuppressChanges_c;
 
-    -- Synthesis attributes Altera (Quartus)
-    attribute dont_merge : boolean;
-    attribute dont_merge of RstRqstB2A : signal is true;
-    attribute dont_merge of RstAckB2A  : signal is true;
-    attribute dont_merge of RstRqstA2B : signal is true;
-    attribute dont_merge of RstAckA2B  : signal is true;
+    attribute preserve of RstRqstB2A : signal is Preserve_SuppressChanges_c;
+    attribute preserve of RstAckB2A  : signal is Preserve_SuppressChanges_c;
+    attribute preserve of RstRqstA2B : signal is Preserve_SuppressChanges_c;
+    attribute preserve of RstAckA2B  : signal is Preserve_SuppressChanges_c;
 
-    attribute preserve : boolean;
-    attribute preserve of RstRqstB2A : signal is true;
-    attribute preserve of RstAckB2A  : signal is true;
-    attribute preserve of RstRqstA2B : signal is true;
-    attribute preserve of RstAckA2B  : signal is true;
+    attribute syn_keep of RstRqstB2A : signal is SynKeep_SuppressChanges_c;
+    attribute syn_keep of RstAckB2A  : signal is SynKeep_SuppressChanges_c;
+    attribute syn_keep of RstRqstA2B : signal is SynKeep_SuppressChanges_c;
+    attribute syn_keep of RstAckA2B  : signal is SynKeep_SuppressChanges_c;
 
-    -- Synchthesis attributes for Synopsis (Lattice, Microchip)
-    attribute syn_keep : boolean;
-    attribute syn_keep of RstRqstB2A : signal is true;
-    attribute syn_keep of RstAckB2A  : signal is true;
-    attribute syn_keep of RstRqstA2B : signal is true;
-    attribute syn_keep of RstAckA2B  : signal is true;
+    attribute syn_preserve of RstRqstB2A : signal is SynPreserve_SuppressChanges_c;
+    attribute syn_preserve of RstAckB2A  : signal is SynPreserve_SuppressChanges_c;
+    attribute syn_preserve of RstRqstA2B : signal is SynPreserve_SuppressChanges_c;
+    attribute syn_preserve of RstAckA2B  : signal is SynPreserve_SuppressChanges_c;
 
-    attribute syn_preserve : boolean;
-    attribute syn_preserve of RstRqstB2A : signal is true;
-    attribute syn_preserve of RstAckB2A  : signal is true;
-    attribute syn_preserve of RstRqstA2B : signal is true;
-    attribute syn_preserve of RstAckA2B  : signal is true;
+    -- Synthesis attributes - async registers
+    attribute async_reg of RstRqstB2A : signal is AsyncReg_TreatAsync_c;
+    attribute async_reg of RstAckB2A  : signal is AsyncReg_TreatAsync_c;
+    attribute async_reg of RstRqstA2B : signal is AsyncReg_TreatAsync_c;
+    attribute async_reg of RstAckA2B  : signal is AsyncReg_TreatAsync_c;
 
 begin
 

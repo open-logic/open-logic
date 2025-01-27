@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024 by Oliver Bründler
+-- Copyright (c) 2024-2025 by Oliver Bründler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -49,6 +49,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_attribute.all;
     use work.olo_intf_i2c_master_pkg.all;
 
 ---------------------------------------------------------------------------------------------------
@@ -139,8 +140,9 @@ architecture rtl of olo_intf_i2c_master is
     end record;
 
     signal r, r_next : TwoProcess_r;
-    attribute dont_touch : string;
-    attribute dont_touch of r : signal is "true"; -- Required to Fix Vivado 2018.2 Synthesis Bug! Is fixed in Vivado 2019.1 according to Xilinx.
+
+    -- Required to Fix Vivado 2018.2 Synthesis Bug! Is fixed in Vivado 2019.1 according to Xilinx.
+    attribute dont_touch of r : signal is DontTouch_SuppressChanges_c;
 
     -- Tri-state buffer muxing
     signal I2cScl_Input : std_logic;

@@ -160,6 +160,8 @@ for tb_name in fifo_tbs:
     if tb_name == "olo_base_fifo_async_tb":
         for Stages in [2, 4]:
             named_config(tb, {"SyncStages_g": Stages})
+        for Opt in ["SPEED", "LATENCY"]:
+            named_config(tb, {"Optimization_g": Opt})
 
 #Width Converter TBs
 wconv_xn2n_tb = 'olo_base_wconv_xn2n_tb'
@@ -171,6 +173,19 @@ wconv_n2xn_tb = 'olo_base_wconv_n2xn_tb'
 tb = olo_tb.test_bench(wconv_n2xn_tb)
 for Ratio in [1, 2, 3]:
     named_config(tb, {'WidthRatio_g': Ratio})
+
+wconv_n2m_tb = 'olo_base_wconv_n2m_tb'
+tb = olo_tb.test_bench(wconv_n2m_tb)
+for Ratio in [(8, 8), (16, 24), (24, 16), (18, 27), (27, 18)]:
+    named_config(tb, {'InWidth_g': Ratio[0], 'OutWidth_g': Ratio[1]})
+wconv_n2m_78_tb = 'olo_base_wconv_n2m_78_tb'
+tb = olo_tb.test_bench(wconv_n2m_78_tb)
+for Direction in ["up", "down"]:
+    named_config(tb, {'Direction_g': Direction})
+wconv_n2m_be_tb = 'olo_base_wconv_n2m_be_tb'
+tb = olo_tb.test_bench(wconv_n2m_be_tb)
+for Ratio in [(16, 24), (24, 16), (32, 8), (8, 32)]:
+    named_config(tb, {'InWidth_g': Ratio[0], 'OutWidth_g': Ratio[1]})
 
 #Pipeline TB
 pl_tb = 'olo_base_pl_stage_tb'
@@ -321,6 +336,22 @@ for InReg in [True, False]:
 for InWidth in [512, 783]:
     for PlRegs in [0, 2]:
         named_config(tb, {'InWidth_g': InWidth, 'PlRegs_g': PlRegs})
+
+#crc
+crc_tb = 'olo_base_crc_tb'
+tb = olo_tb.test_bench(crc_tb)
+for CrcWidth in [5, 8, 16]:
+    for DataWidth in [5, 8, 16]:
+        named_config(tb, {'CrcWidth_g': CrcWidth, 'DataWidth_g': DataWidth})
+for BitOrder in ["MSB_FIRST", "LSB_FIRST"]:
+    named_config(tb, {'CrcWidth_g': 8, 'DataWidth_g': 5, 'BitOrder_g': BitOrder})
+for DataWidth in [8, 16]:
+    for BitOrder in ["MSB_FIRST", "LSB_FIRST"]:
+        for ByteOrder in ["MSB_FIRST", "LSB_FIRST", "NONE"]:
+            named_config(tb, {'CrcWidth_g': 8, 'DataWidth_g': DataWidth, 'BitOrder_g': BitOrder, 'ByteOrder_g': ByteOrder})
+for BitFlip in [True, False]:
+    for InvertOutput in [True, False]:
+        named_config(tb, {'BitflipOutput_g': BitFlip, 'InvertOutput_g' : InvertOutput})
 
 ########################################################################################################################
 # olo_axi TBs
