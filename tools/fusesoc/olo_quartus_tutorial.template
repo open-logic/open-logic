@@ -10,7 +10,8 @@ filesets:
       - {{fileDir}}pinout.tcl  : {file_type : tclSource}
       
   rtl:
-    files: [quartus_tutorial.vhd : {file_type : vhdlSource}]
+    files:
+      - {{fileDir}}quartus_tutorial.vhd : {file_type : vhdlSource}
     depend :
       - "open-logic:{{library}}:base"
       - "open-logic:{{library}}:intf"
