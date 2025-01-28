@@ -7,7 +7,7 @@
 ## Status Information
 
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_axi_lite_slave.json?cacheSeconds=0)
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_axi_lite_slave?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_axi_lite_slave.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_axi_lite_slave.json?cacheSeconds=0)
 
 VHDL Source: [olo_axi_lite_slave](../../src/axi/vhdl/olo_axi_lite_slave.vhd)
