@@ -57,12 +57,10 @@ architecture sim of olo_base_cc_pulse_tb is
     signal In_RstIn   : std_logic                                  := '1';
     signal In_RstOut  : std_logic;
     signal In_Pulse   : std_logic_vector(NumPulses_c - 1 downto 0) := x"0";
-    signal In_Valid   : std_logic                                  := '0';
     signal Out_Clk    : std_logic                                  := '0';
     signal Out_RstIn  : std_logic                                  := '1';
     signal Out_RstOut : std_logic;
     signal Out_Pulse  : std_logic_vector(NumPulses_c - 1 downto 0);
-    signal Out_Valid  : std_logic;
 
 begin
 

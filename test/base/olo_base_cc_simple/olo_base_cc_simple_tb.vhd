@@ -112,7 +112,6 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        variable Zero_v  : std_logic := '0';
         variable Stdlv_v : std_logic_vector(In_Data'range);
     begin
         test_runner_setup(runner, runner_cfg);
