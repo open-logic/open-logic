@@ -127,8 +127,8 @@ architecture rtl of olo_axi_master_simple is
     -- *** Constants ***
     constant UnusedAddrBits_c : natural := log2(AxiDataWidth_g / 8);
 
-    constant BeatsBits_c       : natural := log2ceil(AxiMaxBeats_g + 1);
-    constant MaxBeatsNoCmd_c   : natural := max(AxiMaxBeats_g * AxiMaxOpenTransactions_g, DataFifoDepth_g);
+    constant BeatsBits_c     : natural := log2ceil(AxiMaxBeats_g + 1);
+    constant MaxBeatsNoCmd_c : natural := max(AxiMaxBeats_g * AxiMaxOpenTransactions_g, DataFifoDepth_g);
 
     -- *** Type Definitions ***
     type WriteTfGen_t is (Idle_s, MaxCalc_s, GenTf_s, WriteTf_s);

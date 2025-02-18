@@ -74,7 +74,7 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        variable Data_v     : std_logic_vector(In_Data'range);
+        variable Data_v : std_logic_vector(In_Data'range);
     begin
         test_runner_setup(runner, runner_cfg);
 
