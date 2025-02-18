@@ -163,7 +163,6 @@ begin
     p_control : process is
         constant FullBeatElements_c : integer := leastCommonMultiple(InWidth_g, OutWidth_g)/ElementSize_c;
         variable AddElements_v      : integer;
-        variable Element_v          : integer;
     begin
         test_runner_setup(runner, runner_cfg);
 

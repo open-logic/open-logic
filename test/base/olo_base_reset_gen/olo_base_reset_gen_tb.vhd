@@ -50,12 +50,6 @@ architecture sim of olo_base_reset_gen_tb is
     signal RstOut : std_logic;
     signal RstIn  : std_logic := not RstPolarityStdl_c;
 
-    -----------------------------------------------------------------------------------------------
-    -- TB Signals
-    -----------------------------------------------------------------------------------------------
-    signal LastRstA : time := 0 ns;
-    signal LastRstB : time := 0 ns;
-
 begin
 
     -----------------------------------------------------------------------------------------------

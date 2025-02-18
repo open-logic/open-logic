@@ -39,7 +39,6 @@ architecture sim of olo_base_cc_reset_tb is
     -- Constants
     -----------------------------------------------------------------------------------------------
     constant ClockRatio_c : real    := real(ClockRatio_N_g) / real(ClockRatio_D_g);
-    constant DataWidth_c  : integer := 8;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions

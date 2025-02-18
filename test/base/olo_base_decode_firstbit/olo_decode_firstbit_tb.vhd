@@ -75,8 +75,6 @@ begin
 
     p_control : process is
         variable Data_v     : std_logic_vector(In_Data'range);
-        variable FirstBit_v : std_logic_vector(Out_FirstBit'range);
-        variable Found_v    : std_logic_vector(0 downto 0);
     begin
         test_runner_setup(runner, runner_cfg);
 
