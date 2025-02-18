@@ -63,7 +63,6 @@ architecture rtl of olo_base_wconv_n2m is
     constant MaxChunkSize_c : positive := greatestCommonFactor(InWidth_g, OutWidth_g);
     constant ChunkSize_c    : positive := choose(UseBe_g, 8, MaxChunkSize_c);
     constant SrWidth_c      : positive := choose(OutWidth_g > InWidth_g, 2*OutWidth_g, OutWidth_g+InWidth_g);
-    constant Period_c       : positive := leastCommonMultiple(InWidth_g, OutWidth_g);
     constant OutChunks_c    : positive := OutWidth_g / ChunkSize_c;
     constant InChunks_c     : positive := InWidth_g / ChunkSize_c;
 
