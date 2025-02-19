@@ -280,6 +280,16 @@ fusesoc library add open-logic open-logic-work
 In this case, the local files - **open-logic-dev** must be used. It is explicitly required to use the local files.
 Downloading a release from GitHub would be exactly what is NOT wanted in this scenario.
 
+## VSCode Integration
+
+Integration of the [Linter](#integrate-linter-with-vscode) and [Simulations](#integrate-simulations-with-vscode) with
+VSCode is described in the corresponding sections.
+
+Additionally a configuration [toml](../vhdl_ls.toml) to use the [VHDL-LS](https://github.com/VHDL-LS/rust_hdl_vscode)
+extension is provided. This extensions allows live syntax checking and things like "go to declaration". To use
+it, simply install the _VHDL-LS_ extension and open the open-logic folder in VSCode. _VHDL-LS_ will automatically
+do its job.
+
 ## Use the Linter
 
 ### Introduction
