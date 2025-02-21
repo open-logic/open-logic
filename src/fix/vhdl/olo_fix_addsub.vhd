@@ -48,13 +48,13 @@ entity olo_fix_addsub is
     );
     port (
         -- Control Ports
-        Clk         : in    std_logic   := '0';
-        Rst         : in    std_logic   := '0';
+        Clk         : in    std_logic := '0';
+        Rst         : in    std_logic := '0';
         -- Input
-        In_Valid    : in    std_logic   := '1';
+        In_Valid    : in    std_logic := '1';
         In_A        : in    std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
         In_B        : in    std_logic_vector(fixFmtWidthFromString(BFmt_g) - 1 downto 0);
-        In_Add      : in    std_logic   := '1';
+        In_Add      : in    std_logic := '1';
         -- Output
         Out_Valid   : out   std_logic;
         Out_Result  : out   std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0)
@@ -64,16 +64,16 @@ end entity;
 architecture rtl of olo_fix_addsub is
 
     -- String to en_cl_fix
-    constant AFmt_c      : FixFormat_t   := cl_fix_format_from_string(AFmt_g);
-    constant BFmt_c      : FixFormat_t   := cl_fix_format_from_string(BFmt_g);
-    
+    constant AFmt_c : FixFormat_t := cl_fix_format_from_string(AFmt_g);
+    constant BFmt_c : FixFormat_t := cl_fix_format_from_string(BFmt_g);
+
     -- Constants
     constant AddSubFmt_c : FixFormat_t := cl_fix_addsub_fmt(AFmt_c, BFmt_c);
 
     -- Signals
-    signal AddSub_Valid     : std_logic;
-    signal AddSub_DataComb  : std_logic_vector(cl_fix_width(AddSubFmt_c) - 1 downto 0);
-    signal AddSub_Data      : std_logic_vector(cl_fix_width(AddSubFmt_c) - 1 downto 0);
+    signal AddSub_Valid    : std_logic;
+    signal AddSub_DataComb : std_logic_vector(cl_fix_width(AddSubFmt_c) - 1 downto 0);
+    signal AddSub_Data     : std_logic_vector(cl_fix_width(AddSubFmt_c) - 1 downto 0);
 
 begin
 
@@ -85,7 +85,7 @@ begin
         generic map (
             Width_g    => cl_fix_width(AddSubFmt_c),
             Stages_g   => OpRegs_g
-        );
+        )
         port map (
             Clk       => Clk,
             Rst       => Rst,

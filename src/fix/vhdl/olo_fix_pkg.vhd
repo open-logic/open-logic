@@ -41,21 +41,21 @@ package olo_fix_pkg is
     constant FixRound_ConvEven_c  : string := "ConvEven_s";
     constant FixRound_ConvOdd_c   : string := "ConvOdd_s";
 
-    constant FixSaturate_None_c   : string := "None_s";
-    constant FixSaturate_Warn_c   : string := "Warn_s";
-    constant FixSaturate_Sat_c    : string := "Sat_s";
-    constant FixSaturate_SatWarn_c: string := "SatWarn_s";
-        
+    constant FixSaturate_None_c    : string := "None_s";
+    constant FixSaturate_Warn_c    : string := "Warn_s";
+    constant FixSaturate_Sat_c     : string := "Sat_s";
+    constant FixSaturate_SatWarn_c : string := "SatWarn_s";
 
     -- Functions
-    function fixFmtWidthFromString(fmt : string) return natural;
+    function fixFmtWidthFromString (fmt : string) return natural;
 
     -- Register is required if:
     -- - logic is present and regMode is "AUTO"
     -- - regMode is "YES"
     -- Meant for internal use only
-    function fixImplementReg( logicPresent : boolean;
-                              regMode      : string);
+    function fixImplementReg (
+        logicPresent : boolean;
+        regMode      : string) return boolean;
 
 end package;
 
@@ -64,15 +64,18 @@ end package;
 ---------------------------------------------------------------------------------------------------
 package body olo_fix_pkg is
 
-    function fixFmtWidthFromString(fmt : string) return natural is
+    function fixFmtWidthFromString (fmt : string) return natural is
         constant FixFmt_c : FixFormat_t := cl_fix_format_from_string(fmt);
     begin
         return cl_fix_width(FixFmt_c);
     end function;
 
-    function fixImplementReg( logicPresent : boolean;
-                           regMode      : string) return boolean is
+    function fixImplementReg (
+        logicPresent : boolean;
+        regMode      : string) return boolean is
     begin
+
+        -- Calculate register requirement
         case toLower(regMode) is
             when "yes" =>
                 return true;
@@ -81,11 +84,12 @@ package body olo_fix_pkg is
             when "no" =>
                 return false;
             when others =>
-                assert false 
-                    report "olo_fix - Invalid register mode '" & regMode & "' - must be YES, NO or AUTO"  
+                assert false
+                    report "olo_fix - Invalid register mode '" & regMode & "' - must be YES, NO or AUTO"
                     severity failure;
                 return false;
         end case;
+
     end function;
 
 end package body;

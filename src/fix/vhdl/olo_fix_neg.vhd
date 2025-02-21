@@ -46,10 +46,10 @@ entity olo_fix_neg is
     );
     port (
         -- Control Ports
-        Clk         : in    std_logic   := '0';
-        Rst         : in    std_logic   := '0';
+        Clk         : in    std_logic := '0';
+        Rst         : in    std_logic := '0';
         -- Input
-        In_Valid    : in    std_logic   := '1';
+        In_Valid    : in    std_logic := '1';
         In_A        : in    std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
         -- Output
         Out_Valid   : out   std_logic;
@@ -60,15 +60,15 @@ end entity;
 architecture rtl of olo_fix_neg is
 
     -- String to en_cl_fix
-    constant AFmt_c      : FixFormat_t   := cl_fix_format_from_string(AFmt_g);
-    
+    constant AFmt_c : FixFormat_t := cl_fix_format_from_string(AFmt_g);
+
     -- Constants
-    constant NegFmt_c         : FixFormat_t := cl_fix_neg_fmt(AFmt_c);
+    constant NegFmt_c : FixFormat_t := cl_fix_neg_fmt(AFmt_c);
 
     -- Signals
-    signal Neg_Valid     : std_logic;
-    signal Neg_DataComb  : std_logic_vector(cl_fix_width(NegFmt_c) - 1 downto 0);
-    signal Neg_Data      : std_logic_vector(cl_fix_width(NegFmt_c) - 1 downto 0);
+    signal Neg_Valid    : std_logic;
+    signal Neg_DataComb : std_logic_vector(cl_fix_width(NegFmt_c) - 1 downto 0);
+    signal Neg_Data     : std_logic_vector(cl_fix_width(NegFmt_c) - 1 downto 0);
 
 begin
 
@@ -80,7 +80,7 @@ begin
         generic map (
             Width_g    => cl_fix_width(NegFmt_c),
             Stages_g   => OpRegs_g
-        );
+        )
         port map (
             Clk       => Clk,
             Rst       => Rst,

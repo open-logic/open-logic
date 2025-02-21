@@ -37,18 +37,18 @@ entity olo_fix_round is
         -- Formats / Round / Saturate
         AFmt_g      : string;
         ResultFmt_g : string;
-        Round_g     : string  := FixRound_Trunc_c;
-        Saturate_g  : string  := FixSaturate_Warn_c;
+        Round_g     : string := FixRound_Trunc_c;
+        Saturate_g  : string := FixSaturate_Warn_c;
         -- Registers
         RoundReg_g  : string := "YES";
         SatReg_g    : string := "YES"
     );
     port (
         -- Control Ports
-        Clk         : in    std_logic   := '0';
-        Rst         : in    std_logic   := '0';
+        Clk         : in    std_logic := '0';
+        Rst         : in    std_logic := '0';
         -- Input
-        In_Valid    : in    std_logic   := '1';
+        In_Valid    : in    std_logic := '1';
         In_A        : in    std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
         -- Output
         Out_Valid   : out   std_logic;
@@ -59,9 +59,9 @@ end entity;
 architecture rtl of olo_fix_round is
 
     -- String to en_cl_fix
-    constant AFmt_c      : FixFormat_t   := cl_fix_format_from_string(AFmt_g);
+    constant AFmt_c      : FixFormat_t := cl_fix_format_from_string(AFmt_g);
     constant ResultFmt_c : FixFormat_t := cl_fix_format_from_string(ResultFmt_g);
-    constant Round_c     : FixRound_t    := cl_fix_round_from_string(Round_g);
+    constant Round_c     : FixRound_t  := cl_fix_round_from_string(Round_g);
 
     -- Constants
     constant RoundFmt_c : FixFormat_t := cl_fix_round_fmt(AFmt_c, ResultFmt_c.F, Round_c);

@@ -40,14 +40,14 @@ entity olo_fix_round is
         Round_g     : string  := FixRound_Trunc_c;
         FmtCheck_g  : boolean := true;
         -- Registers
-        RoundReg_g  : string := "YES";
+        RoundReg_g  : string  := "YES"
     );
     port (
         -- Control Ports
-        Clk         : in    std_logic   := '0';
-        Rst         : in    std_logic   := '0';
+        Clk         : in    std_logic := '0';
+        Rst         : in    std_logic := '0';
         -- Input
-        In_Valid    : in    std_logic   := '1';
+        In_Valid    : in    std_logic := '1';
         In_A        : in    std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
         -- Output
         Out_Valid   : out   std_logic;
@@ -77,17 +77,17 @@ begin
 
     -- Optional Register
     i_reg : entity work.olo_fix_private_optional_reg
-    generic map (
-        Width_g    => cl_fix_width(ResultFmt_c),
-        Stages_g   => OpRegStages_c
-    );
-    port map (
-        Clk       => Clk,
-        Rst       => Rst,
-        In_Valid  => In_Valid,
-        In_Data   => ResultComb,
-        Out_Valid => Out_Valid,
-        Out_Data  => Out_Result
-    );
+        generic map (
+            Width_g    => cl_fix_width(ResultFmt_c),
+            Stages_g   => OpRegStages_c
+        )
+        port map (
+            Clk       => Clk,
+            Rst       => Rst,
+            In_Valid  => In_Valid,
+            In_Data   => ResultComb,
+            Out_Valid => Out_Valid,
+            Out_Data  => Out_Result
+        );
 
 end architecture;

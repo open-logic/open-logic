@@ -37,16 +37,16 @@ entity olo_fix_saturate is
         -- Formats / Round / Saturate
         AFmt_g      : string;
         ResultFmt_g : string;
-        Saturate_g  : string  := FixSaturate_Warn_c;
+        Saturate_g  : string := FixSaturate_Warn_c;
         -- Registers
-        SatReg_g    : string := "YES";
+        SatReg_g    : string := "YES"
     );
     port (
         -- Control Ports
-        Clk         : in    std_logic   := '0';
-        Rst         : in    std_logic   := '0';
+        Clk         : in    std_logic := '0';
+        Rst         : in    std_logic := '0';
         -- Input
-        In_Valid    : in    std_logic   := '1';
+        In_Valid    : in    std_logic := '1';
         In_A        : in    std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
         -- Output
         Out_Valid   : out   std_logic;
@@ -63,8 +63,8 @@ architecture rtl of olo_fix_saturate is
 
     -- Constants
     constant LogicPresent_c : boolean := (AFmt_c.I > ResultFmt_c.I or
-                                         AFmt_c.S > ResultFmt_c.S) and 
-                                         (Saturate_c = Sat_s 
+                                         AFmt_c.S > ResultFmt_c.S) and
+                                         (Saturate_c = Sat_s
                                          or Saturate_c = SatWarn_s);
     constant ImplementReg_c : boolean := fixImplementReg(LogicPresent_c, SatReg_g);
     constant OpRegStages_c  : integer := choose(ImplementReg_c, 1, 0);
@@ -79,17 +79,17 @@ begin
 
     -- Optional Register
     i_reg : entity work.olo_fix_private_optional_reg
-    generic map (
-        Width_g    => cl_fix_width(ResultFmt_c),
-        Stage_g    => OpRegStages_c
-    );
-    port map (
-        Clk       => Clk,
-        Rst       => Rst,
-        In_Valid  => In_Valid,
-        In_Data   => ResultComb,
-        Out_Valid => Out_Valid,
-        Out_Data  => Out_Result
-    );
+        generic map (
+            Width_g    => cl_fix_width(ResultFmt_c),
+            Stage_g    => OpRegStages_c
+        )
+        port map (
+            Clk       => Clk,
+            Rst       => Rst,
+            In_Valid  => In_Valid,
+            In_Data   => ResultComb,
+            Out_Valid => Out_Valid,
+            Out_Data  => Out_Result
+        );
 
 end architecture;

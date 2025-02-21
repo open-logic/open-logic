@@ -42,20 +42,23 @@ entity olo_fix_private_optional_reg is
     );
     port (
         -- Control Ports
-        Clk         : in    std_logic   := '0';
-        Rst         : in    std_logic   := '0';
+        Clk         : in    std_logic := '0';
+        Rst         : in    std_logic := '0';
         -- Input
         In_Valid    : in    std_logic := '1';
-        In_Data     : in    std_logic_vector(Width_g-1 downto 0);        
+        In_Data     : in    std_logic_vector(Width_g-1 downto 0);
         -- Output
         Out_Valid   : out   std_logic;
-        Out_Data  : out   std_logic_vector(Width_g-1 downto 0)
+        Out_Data    : out   std_logic_vector(Width_g-1 downto 0)
     );
 end entity;
 
 architecture rtl of olo_fix_private_optional_reg is
 
+    -- Types
     type Data_t is array (0 to Stages_g-1) of std_logic_vector(In_Data'range);
+
+    -- Signals
     signal Data  : Data_t;
     signal Valid : std_logic_vector(0 to Stages_g-1);
 
@@ -69,13 +72,14 @@ begin
 
     -- ** Registers ***
     g_reg : if Stages > 0 generate
-        p_reg : process(Clk)
+
+        p_reg : process (Clk) is
         begin
             if rising_edge(Clk) then
                 -- First stage
                 Data(0)  <= In_Data;
                 Valid(0) <= In_Valid;
-                
+
                 -- Other stages
                 for stg in 1 to Stages_g-1 loop
                     Data(stg)  <= Data(stg-1);
