@@ -65,37 +65,30 @@ architecture rtl of olo_fix_round is
     -- Constants
     constant LogicPresent_c : boolean := AFmt_c.F > ResultFmt_c.F;
     constant ImplementReg_c : boolean := fixImplementReg(LogicPresent_c, RoundReg_g);
+    constant OpRegStages_c  : integer := choose(ImplementReg_c, 1, 0);
 
     -- Signals
     signal ResultComb : std_logic_vector(cl_fix_width(ResultFmt_c) - 1 downto 0);
-    signal ResultReg  : std_logic_vector(cl_fix_width(ResultFmt_c) - 1 downto 0);
 
 begin
 
     -- Operation
     ResultComb <= cl_fix_round(In_A, AFmt_c, ResultFmt_c, Round_c, FmtCheck_g);
 
-    -- Registered Output
-    g_reg : if ImplementReg_c generate
-        process(Clk)
-        begin
-            if rising_edge(Clk) then
-                -- Normal Operation
-                Out_Valid <= In_Valid;
-                ResultReg <= ResultComb;
-                -- Reset
-                if Rst = '1' then
-                    Out_Valid <= '0';
-                end if;
-            end if;
-        end process;
-        Out_Result <= ResultReg;
-    end generate;
-
-    -- Combinatorial Output
-    g_comb : if not ImplementReg_c generate
-        Out_Valid <= In_Valid;
-        Out_Result <= ResultComb;
-    end generate;
+    -- Optional Register
+    i_reg : entity work.olo_base_pl_stage
+    generic map (
+        Width_g    => cl_fix_width(ResultFmt_c),
+        UseReady_g => false,
+        Stages_g   => OpRegStages_c
+    );
+    port map (
+        Clk       => Clk,
+        Rst       => Rst,
+        In_Valid  => In_Valid,
+        In_Data   => ResultComb,
+        Out_Valid => Out_Valid,
+        Out_Data  => Out_Result
+    );
 
 end architecture;

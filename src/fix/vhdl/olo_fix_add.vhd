@@ -42,7 +42,7 @@ entity olo_fix_add is
         Round_g     : string  := FixRound_Trunc_c;
         Saturate_g  : string  := FixSaturate_Warn_c;
         -- Registers
-        OpReg_g     : string := "YES";
+        OpReg_g     : states := "YES";
         RoundReg_g  : string := "YES";
         SatReg_g    : string := "YES"
     );
@@ -67,8 +67,9 @@ architecture rtl of olo_fix_add is
     constant BFmt_c      : FixFormat_t   := cl_fix_format_from_string(BFmt_g);
     
     -- Constants
-    constant AddFmt_c       : FixFormat_t := cl_fix_add_fmt(AFmt_c, BFmt_c);
-    constant ImplementReg_c : boolean     := fixImplementReg(true, OpReg_g);
+    constant AddFmt_c         : FixFormat_t := cl_fix_add_fmt(AFmt_c, BFmt_c);
+    constant ImplementOpReg_c : boolean     := fixImplementReg(true, OpReg_g);
+    constant OpRegStages_c    : integer     := choose(ImplementOpReg_c, 1, 0);
 
     -- Signals
     signal Add_Valid     : std_logic;
@@ -80,27 +81,21 @@ begin
     -- Operation
     Add_DataComb <= cl_fix_add(In_A, AFmt_c, In_B, BFmt_c, AddFmt_c, Trunc_s, Warn_s);
 
-    -- Registered Add
-    g_reg : if ImplementReg_c generate
-        process(Clk)
-        begin
-            if rising_edge(Clk) then
-                -- Normal Operation
-                Add_Valid <= In_Valid;
-                Add_Data <= Add_DataComb;
-                -- Reset
-                if Rst = '1' then
-                    Add_Valid <= '0';
-                end if;
-            end if;
-        end process;
-    end generate;
-
-    -- Combinatorial Add
-    g_comb : if not ImplementReg_c generate
-        Add_Valid <= In_Valid;
-        Add_Data  <= Add_DataComb;
-    end generate;
+    -- Op Register
+    i_reg : entity work.olo_base_pl_stage
+        generic map (
+            Width_g    => cl_fix_width(AddFmt_c),
+            UseReady_g => false,
+            Stages_g   => OpRegStages_c
+        );
+        port map (
+            Clk       => Clk,
+            Rst       => Rst,
+            In_Valid  => In_Valid,
+            In_Data   => Add_DataComb,
+            Out_Valid => Add_Valid,
+            Out_Data  => Add_Data
+        );
 
     -- Resize
     i_round : entity work.olo_fix_round
