@@ -8,6 +8,8 @@ Note that components are split into categories.
 
 ## base
 
+This area contains all base functionality that is required in most FPGA designs.
+
 ### Packages (olo_base_pkg_\<...\>)
 
 Packages with type declarations and functions used in _Open Logic_ internally or on its interfaces.
@@ -99,6 +101,8 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 
 ## axi
 
+This area contains AXI4 related elements.
+
 | Entity                                                  | Description                                                  |
 | ------------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_axi_pl_stage](./axi/olo_axi_pl_stage.md)           | Implements a AXI4 pipeline stage, registering all signals of an AXI4 interface.<br />Can be used for AXI4-Lite as well. |
@@ -120,6 +124,8 @@ of AXI interconnects, it's suggested that you use one of the following libraries
 
 ## intf
 
+This area contains components related to interfacing to external components.
+
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_intf_sync](./intf/olo_intf_sync.md)             | Double stage synchronizer for external signals.              |
@@ -129,3 +135,19 @@ of AXI interconnects, it's suggested that you use one of the following libraries
 | [olo_intf_uart](./intf/olo_intf_uart.md)             | UART                                                         |
 | [olo_intf_debounce](./intf/olo_intf_debounce.md)     | Debouncer (for bouncing signals from buttons and switches) - Includes double-stage synchronizers. |
 | [olo_intf_clk_meas](./intf/olo_intf_clk_meas.md)     | Measure the frequency of a clock.                            |
+
+## fix
+
+This area contains fixed point mathematic related functionality. 
+
+All fixed point mathematics functions in Open Logic follow a common cent of principles described in [Open Logic Fixed-Point Principles](./fix/olo_fix_principles.md). Read through this document before using the components.
+
+| Entity | Description |
+| ------ | ----------- |
+| x      | y           |
+|        |             |
+|        |             |
+|        |             |
+|        |             |
+|        |             |
+|        |             |
