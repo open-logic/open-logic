@@ -78,10 +78,9 @@ begin
     ResultComb <= cl_fix_saturate(In_A, AFmt_c, ResultFmt_c, Saturate_c);
 
     -- Optional Register
-    i_reg : entity work.olo_base_pl_stage_single
+    i_reg : entity work.olo_fix_private_optional_reg
     generic map (
         Width_g    => cl_fix_width(ResultFmt_c),
-        UseReady_g => false,
         Stage_g    => OpRegStages_c
     );
     port map (

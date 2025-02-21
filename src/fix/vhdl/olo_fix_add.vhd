@@ -42,9 +42,9 @@ entity olo_fix_add is
         Round_g     : string  := FixRound_Trunc_c;
         Saturate_g  : string  := FixSaturate_Warn_c;
         -- Registers
-        OpReg_g     : states := "YES";
-        RoundReg_g  : string := "YES";
-        SatReg_g    : string := "YES"
+        OpRegs_g    : natural := 1;
+        RoundReg_g  : string  := "YES";
+        SatReg_g    : string  := "YES"
     );
     port (
         -- Control Ports
@@ -68,8 +68,6 @@ architecture rtl of olo_fix_add is
     
     -- Constants
     constant AddFmt_c         : FixFormat_t := cl_fix_add_fmt(AFmt_c, BFmt_c);
-    constant ImplementOpReg_c : boolean     := fixImplementReg(true, OpReg_g);
-    constant OpRegStages_c    : integer     := choose(ImplementOpReg_c, 1, 0);
 
     -- Signals
     signal Add_Valid     : std_logic;
@@ -82,11 +80,10 @@ begin
     Add_DataComb <= cl_fix_add(In_A, AFmt_c, In_B, BFmt_c, AddFmt_c, Trunc_s, Warn_s);
 
     -- Op Register
-    i_reg : entity work.olo_base_pl_stage
+    i_reg : entity work.olo_fix_private_optional_reg
         generic map (
             Width_g    => cl_fix_width(AddFmt_c),
-            UseReady_g => false,
-            Stages_g   => OpRegStages_c
+            Stages_g   => OpRegs_g
         );
         port map (
             Clk       => Clk,

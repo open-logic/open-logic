@@ -76,10 +76,9 @@ begin
     ResultComb <= cl_fix_round(In_A, AFmt_c, ResultFmt_c, Round_c, FmtCheck_g);
 
     -- Optional Register
-    i_reg : entity work.olo_base_pl_stage
+    i_reg : entity work.olo_fix_private_optional_reg
     generic map (
         Width_g    => cl_fix_width(ResultFmt_c),
-        UseReady_g => false,
         Stages_g   => OpRegStages_c
     );
     port map (
