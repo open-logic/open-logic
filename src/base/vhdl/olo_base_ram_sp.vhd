@@ -27,6 +27,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_attribute.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -38,7 +39,9 @@ entity olo_base_ram_sp is
         RdLatency_g     : positive := 1;
         RamStyle_g      : string   := "auto";
         RamBehavior_g   : string   := "RBW";
-        UseByteEnable_g : boolean  := false
+        UseByteEnable_g : boolean  := false;
+        InitString_g    : string   := "";
+        InitFormat_g    : string   := "NONE"
     );
     port (
         Clk             : in    std_logic;
@@ -55,13 +58,47 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_ram_sp is
 
+    -- Memory initialization
+    type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
+
+    function getInitContent return Data_t is
+        variable Data_v : Data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
+        constant InitElements_c : natural := countOccurence(InitString_g, ',')+1;
+        variable StartIdx_v : natural := InitString_g'left;
+        variable EndIdx_v   : natural;
+    begin
+        if InitFormat_g /= "NONE" then
+
+            -- Loop through elements
+            for i in 0 to InitElements_c - 1 loop
+                EndIdx_v := StartIdx_v;
+
+                -- Find end of element
+                loop
+                    if InitString_g(EndIdx_v) = ',' then
+                        EndIdx_v := EndIdx_v - 1;
+                        exit;
+                    end if;
+                    if EndIdx_v = InitString_g'right then
+                        exit;
+                    end if;
+                    EndIdx_v := EndIdx_v + 1;
+                end loop;
+
+                Data_v(i) := hex2StdLogicVector(InitString_g(StartIdx_v to EndIdx_v), Width_g, hasPrefix => true);
+                StartIdx_v := EndIdx_v + 2;
+
+            end loop;
+
+        end if;
+        return Data_v;
+    end function;
+
     -- Constants
     constant BeCount_c : integer := Width_g / 8;
 
-    -- Mem_vory array
-    type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
-
-    shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
+    -- Memory array
+    shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := getInitContent;
 
     -- Read registers
     signal RdPipe : Data_t(1 to RdLatency_g);

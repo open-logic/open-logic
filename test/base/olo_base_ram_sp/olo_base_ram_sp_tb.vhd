@@ -28,7 +28,8 @@ entity olo_base_ram_sp_tb is
         Width_g         : positive range 5 to 128 := 32;
         RdLatency_g     : positive range 1 to 2   := 1;
         RamBehavior_g   : string                  := "RBW";
-        UseByteEnable_g : boolean                 := false
+        UseByteEnable_g : boolean                 := false;
+        InitFormat_g    : string                  := "HEX"
     );
 end entity;
 
@@ -37,6 +38,7 @@ architecture sim of olo_base_ram_sp_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
+    constant InitString_c : string  := "0x01, 0x5,0x17";
     constant BeWidth_c    : integer := Width_g/8;
     constant BeSigWidth_c : integer := maximum(BeWidth_c, 2); -- Must be at least 2 bits to avoid compile errors with GHDL.
     -- .. GHDL checks ranges also on code in a not executed if-clause.
@@ -104,7 +106,9 @@ begin
             Width_g         => Width_g,
             RdLatency_g     => RdLatency_g,
             RamBehavior_g   => RamBehavior_g,
-            UseByteEnable_g => UseByteEnable_g
+            UseByteEnable_g => UseByteEnable_g,
+            InitString_g    => InitString_c,
+            InitFormat_g    => InitFormat_g
         )
         port map (
             Clk        => Clk,
@@ -135,6 +139,15 @@ begin
             -- Wait for some time
             wait for 1 us;
             wait until rising_edge(Clk);
+
+            -- test initialization values
+            if run("Init-Values") then
+                if InitFormat_g = "HEX" then
+                    check(0, 1, Clk, Addr, RdData, "Init-Values: 0=0x01");
+                    check(1, 5, Clk, Addr, RdData, "Init-Values: 1=0x05");
+                    check(2, 16#17#, Clk, Addr, RdData, "Init-Values: 2=0x17");
+                end if;
+            end if;
 
             -- write 3 Values, Read back
             if run("Basic") then
