@@ -17,6 +17,7 @@ Packages with type declarations and functions used in _Open Logic_ internally or
 | [olo_base_pkg_array](./base/olo_base_pkg_array.md)         | Array type definitions (e.g. arrays of _std_logic_vector_)   |
 | [olo_base_pkg_math](./base/olo_base_pkg_math.md)           | Mathematic functions (e.g. _log2_)                           |
 | [olo_base_pkg_logic](./base/olo_base_pkg_logic.md)         | Mathematic functions (e.g. _binaryToGray_)                   |
+| [olo_base_pkg_string](./base/olo_base_pkg_string.md)       | String functions (e.g. _toLower_)                            |
 | [olo_base_pkg_attribute](./base/olo_base_pkg_attribute.md) | Definition of synthesis attributes for different tools. **For internal use within Open Logic only** |
 
 ### Clock Crossings (_olo_base_cc_\<...\>_)

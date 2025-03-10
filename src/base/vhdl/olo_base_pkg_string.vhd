@@ -45,12 +45,6 @@ package olo_base_pkg_string is
     function countOccurence (
         a : in string;
         c : in character) return natural;
--- TO DO: Doc pkg
--- TO DO: Doc RAM
--- TO DO: Lint
--- TO DO: Add sdp ram
--- TO DO: Test synthesis noinit
--- TO DO: Test synthesis withinit
 
 end package;
 
@@ -124,12 +118,17 @@ package body olo_base_pkg_string is
         hasPrefix : in boolean := false) return std_logic_vector is
         -- Declarations
         constant Trimmed_c   : string                                   := trim(toLower(a));
-        constant MaxBits_c   : natural                                  := choose(hasPrefix, (Trimmed_c'length-2) * 4, Trimmed_c'length * 4);
+        constant MaxBits_c   : natural                                  := max(choose(hasPrefix, (Trimmed_c'length-2) * 4, Trimmed_c'length * 4), 0);
         variable StdlvFull_v : std_logic_vector(MaxBits_c - 1 downto 0) := (others => '0');
         variable Result_v    : std_logic_vector(bits - 1 downto 0)      := (others => '0');
         variable LowIdx_v    : natural                                  := 0;
         variable Nibble_v    : std_logic_vector(3 downto 0);
     begin
+        -- For empty string return zero
+        if Trimmed_c'length = 0 then
+            return Result_v;
+        end if;
+
         -- Check prefix
         if hasPrefix then
             if Trimmed_c(Trimmed_c'left to Trimmed_c'left+1) /= "0x" then

@@ -29,7 +29,7 @@ entity olo_base_ram_tdp_tb is
         RamBehavior_g   : string                  := "RBW";
         UseByteEnable_g : boolean                 := false;
         RdLatency_g     : positive range 1 to 2   := 1;
-        InitFormat_g    : string                  := "HEX"
+        InitFormat_g    : string                  := "NONE"
     );
 end entity;
 

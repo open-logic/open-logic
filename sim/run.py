@@ -141,6 +141,8 @@ for tb_name in ram_tbs:
         named_config(tb, {'Width_g': Width})
     for Be in [True, False]:
         named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
+    for InitFormat in ["NONE", "HEX"]:
+        named_config(tb, {'InitFormat_g': InitFormat})
 
 #FIFO TBs
 fifo_tbs = ['olo_base_fifo_sync_tb', 'olo_base_fifo_async_tb']
