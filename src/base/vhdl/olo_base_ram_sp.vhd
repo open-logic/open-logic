@@ -62,10 +62,10 @@ architecture rtl of olo_base_ram_sp is
     type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
 
     function getInitContent return Data_t is
-        variable Data_v : Data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
-        constant InitElements_c : natural := countOccurence(InitString_g, ',')+1;
-        variable StartIdx_v : natural := InitString_g'left;
-        variable EndIdx_v   : natural;
+        variable Data_v         : Data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
+        constant InitElements_c : natural                      := countOccurence(InitString_g, ',')+1;
+        variable StartIdx_v     : natural                      := InitString_g'left;
+        variable EndIdx_v       : natural;
     begin
         if InitFormat_g /= "NONE" then
 
@@ -85,7 +85,7 @@ architecture rtl of olo_base_ram_sp is
                     EndIdx_v := EndIdx_v + 1;
                 end loop;
 
-                Data_v(i) := hex2StdLogicVector(InitString_g(StartIdx_v to EndIdx_v), Width_g, hasPrefix => true);
+                Data_v(i)  := hex2StdLogicVector(InitString_g(StartIdx_v to EndIdx_v), Width_g, hasPrefix => true);
                 StartIdx_v := EndIdx_v + 2;
 
             end loop;

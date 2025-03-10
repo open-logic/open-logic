@@ -29,6 +29,7 @@ entity olo_base_pkg_string_tb is
 end entity;
 
 architecture sim of olo_base_pkg_string_tb is
+
 begin
 
     -----------------------------------------------------------------------------------------------
@@ -103,7 +104,6 @@ begin
                 check_equal(countOccurence("Hello", 'H'), 1, "countOccurence 2");
                 check_equal(countOccurence("Hello", 'f'), 0, "countOccurence 3");
             end if;
-            
 
         end loop;
 
