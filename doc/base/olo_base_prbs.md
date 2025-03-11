@@ -16,9 +16,9 @@ VHDL Source: [olo_base_prbs](../../src/base/vhdl/olo_base_prbs.vhd)
 
 This component generates a pseudorandom binary sequence based (PRBS) on a logic feed-back shift register (LFSR) method.
 A set of common polynomials (aiming the maximum cycle possible) is available in
-[olo_base_pkg_logic](./olo_base_pkg_logic.md) and can be passed to _olo_base_prbs_ through the generic _Polynomical_g_.
+[olo_base_pkg_logic](./olo_base_pkg_logic.md) and can be passed to _olo_base_prbs_ through the generic _Polynomial_g_.
 
-The number of bits per symbol which is presented at the output is configurable (up to the width of the LFSR).
+The number of bits per symbol which is presented at the output is configurable.
 
 Polynomials are passed as _std_logic_vector_ where a one denotes every position where x^n is used: "100010000" means
 "x⁹ +x⁵ + 1".
@@ -31,10 +31,9 @@ will stay zero forever.
 
 | Name            | Type             | Default | Description                                                  |
 | :-------------- | :--------------- | ------- | :----------------------------------------------------------- |
-| LfsrWidth_g     | positive         | -       | Width of the LFSR in bits (must be >= 2)                     |
-| Polynomial_g    | std_logic_vector | -       | Polynomial to use. Width according to _LfsrWidth_g_.<br />"100010000" means "x⁴+x⁸". |
-| Seed_g          | std_logic_vector | -       | Initial state of the LFSR. Width according to _LfsrWidth_g_. Must be non-zero. |
-| BitsPerSymbol_g | positive         | 1       | Number of bits of the PRBS sequence to present at the output for every symbol (width of _Out_Data_). <br />Must be smaller or equal to _LfsrWidth_g_. |
+| Polynomial_g    | std_logic_vector | -       | Polynomial to use. <br />"100010000" means "x⁴+x⁸". |
+| Seed_g          | std_logic_vector | -       | Initial state of the LFSR. Needs to be the same width as _Polynomial_g_. Must be non-zero vector. |
+| BitsPerSymbol_g | positive         | 1       | Number of bits of the PRBS sequence to present at the output for every symbol (width of _Out_Data_). <br />Must be at least 1. |
 
 ## Interfaces
 

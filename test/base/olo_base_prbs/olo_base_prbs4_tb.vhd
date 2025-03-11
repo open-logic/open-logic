@@ -162,7 +162,6 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_prbs
         generic map (
-            LfsrWidth_g     => 4,
             Polynomial_g    => Polynomial_Prbs4_c,
             Seed_g          => "1111",
             BitsPerSymbol_g => BitsPerSymbol_g
