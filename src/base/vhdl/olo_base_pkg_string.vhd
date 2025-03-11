@@ -131,10 +131,10 @@ package body olo_base_pkg_string is
 
         -- Check prefix
         if hasPrefix then
-            if Trimmed_c(Trimmed_c'left to Trimmed_c'left+1) /= "0x" then
-                report "Invalid prefix in hex2StdLogicVector() - expected prefix is 0x" severity error;
-                return Result_v;
-            end if;
+            assert Trimmed_c(Trimmed_c'left to Trimmed_c'left+1) = "0x"
+                report "Invalid prefix in hex2StdLogicVector() - expected prefix is 0x - string: " & a
+                severity error;
+            -- coverage
             LowIdx_v := LowIdx_v + 2;
         end if;
 
@@ -159,10 +159,12 @@ package body olo_base_pkg_string is
                 when 'd' => Nibble_v := x"D";
                 when 'e' => Nibble_v := x"E";
                 when 'f' => Nibble_v := x"F";
+                -- coverage off
                 when others =>
-                    report "Invalid character in hex2StdLogicVector() - only 0-9, a-f, A-F are allowed"
+                    report "Invalid character in hex2StdLogicVector() - only 0-9, a-f, A-F are allowed - string: " & a
                         severity error;
                     return Result_v;
+                -- coverage on
             end case;
 
             -- Add nibble to result

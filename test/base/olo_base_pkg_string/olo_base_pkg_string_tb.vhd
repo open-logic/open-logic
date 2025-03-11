@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2025 by Oliver Bründler, Switzerland
+-- Copyright (c) 2025 by Oliver Brï¿½ndler, Switzerland
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -97,6 +97,18 @@ begin
                 Stlv14_v := "01" & x"034";
                 check_equal(hex2StdLogicVector("1034", 14), Stlv14_v, "hex2StdLogicVector 11");
                 check_equal(hex2StdLogicVector("01034", 14), Stlv14_v, "hex2StdLogicVector 12");
+                -- Convert empty string
+                Stlv16_v := x"0000";
+                check_equal(hex2StdLogicVector("", 16), Stlv16_v, "hex2StdLogicVector 13");
+                -- Cover all nibble values
+                Stlv16_v := x"0123";
+                check_equal(hex2StdLogicVector("0123", 16), Stlv16_v, "hex2StdLogicVector 14");
+                Stlv16_v := x"4567";
+                check_equal(hex2StdLogicVector("4567", 16), Stlv16_v, "hex2StdLogicVector 15");
+                Stlv16_v := x"89AB";
+                check_equal(hex2StdLogicVector("89AB", 16), Stlv16_v, "hex2StdLogicVector 14");
+                Stlv16_v := x"CDEF";
+                check_equal(hex2StdLogicVector("CDEF", 16), Stlv16_v, "hex2StdLogicVector 14");
             end if;
 
             if run("countOccurence") then
