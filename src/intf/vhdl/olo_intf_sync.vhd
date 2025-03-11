@@ -84,6 +84,9 @@ architecture struct of olo_intf_sync is
     attribute async_reg of Reg0 : signal is AsyncReg_TreatAsync_c;
     attribute async_reg of RegN : signal is AsyncReg_TreatAsync_c;
 
+    -- Disable TMR for resynchronization
+    attribute syn_radhardlevel of struct: architecture is RadhardLevel_None_c;
+
 begin
 
     -- Synchronizer process

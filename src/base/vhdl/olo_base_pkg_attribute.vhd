@@ -115,6 +115,15 @@ package olo_base_pkg_attribute is
     -- - GowinEDA (Gowin)
     attribute syn_ramstyle : string;
 
+    -- *** Control TMR insertion ***
+    -- This attribute disables TMR, which can be set with a toplevel attribute
+
+    -- Tools:
+    -- - Synplify (Lattice/Mircochip)
+    attribute syn_radhardlevel : string;
+    constant RadhardLevel_None_c : string := "none";
+
+
 end package;
 
 ---------------------------------------------------------------------------------------------------

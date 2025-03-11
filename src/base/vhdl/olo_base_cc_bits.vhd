@@ -102,6 +102,9 @@ architecture struct of olo_base_cc_bits is
     attribute dont_touch of In_Clk_Sig : signal is DontTouch_SuppressChanges_c;
     attribute keep of In_Clk_Sig       : signal is Keep_SuppressChanges_c;
 
+    -- Disable TMR for CDC
+    attribute syn_radhardlevel of struct: architecture is RadhardLevel_None_c;
+
 begin
 
     In_Clk_Sig <= In_Clk;
