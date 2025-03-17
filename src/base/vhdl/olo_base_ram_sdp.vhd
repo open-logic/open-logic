@@ -62,6 +62,146 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_ram_sdp is
 
+    -- constants
+    constant BeCount_c : integer := Width_g / 8;
+
+    -- components
+    component olo_base_ram_sdp_nobe is
+        generic (
+            Depth_g         : positive;
+            Width_g         : positive;
+            IsAsync_g       : boolean  := false;
+            RdLatency_g     : positive := 1;
+            RamStyle_g      : string   := "auto";
+            RamBehavior_g   : string   := "RBW";
+            InitString_g    : string   := "";
+            InitFormat_g    : string   := "NONE"
+        );
+        port (
+            Clk         : in    std_logic;
+            Wr_Addr     : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+            Wr_Ena      : in    std_logic                                  := '1';
+            Wr_Data     : in    std_logic_vector(Width_g - 1 downto 0);
+            Rd_Clk      : in    std_logic                                  := '0';
+            Rd_Addr     : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+            Rd_Ena      : in    std_logic                                  := '1';
+            Rd_Data     : out   std_logic_vector(Width_g - 1 downto 0)
+        );
+    end component;
+
+begin
+
+    -- Assertions
+    assert (Width_g mod 8 = 0) or (not UseByteEnable_g)
+        report "olo_base_ram_sdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
+        severity error;
+
+    -- No BE Implementation
+    g_nobe : if not UseByteEnable_g generate
+
+        i_ram : component olo_base_ram_sdp_nobe
+            generic map (
+                Depth_g         => Depth_g,
+                Width_g         => Width_g,
+                IsAsync_g       => IsAsync_g,
+                RdLatency_g     => RdLatency_g,
+                RamStyle_g      => RamStyle_g,
+                RamBehavior_g   => RamBehavior_g,
+                InitString_g    => InitString_g,
+                InitFormat_g    => InitFormat_g
+            )
+            port map (
+                Clk         => Clk,
+                Wr_Addr     => Wr_Addr,
+                Wr_Ena      => Wr_Ena,
+                Wr_Data     => Wr_Data,
+                Rd_Clk      => Rd_Clk,
+                Rd_Addr     => Rd_Addr,
+                Rd_Ena      => Rd_Ena,
+                Rd_Data     => Rd_Data
+            );
+
+    end generate;
+
+    -- BE Implementation
+    g_be : if UseByteEnable_g generate
+
+        g_byte : for byte in 0 to BeCount_c-1 generate
+            signal Wr_Ena_Byte : std_logic;
+        begin
+            Wr_Ena_Byte <= Wr_Ena and Wr_Be(byte);
+
+            i_ram : component olo_base_ram_sdp_nobe
+                generic map (
+                    Depth_g         => Depth_g,
+                    Width_g         => 8,
+                    IsAsync_g       => IsAsync_g,
+                    RdLatency_g     => RdLatency_g,
+                    RamStyle_g      => RamStyle_g,
+                    RamBehavior_g   => RamBehavior_g,
+                    InitString_g    => InitString_g,
+                    InitFormat_g    => InitFormat_g
+                )
+                port map (
+                    Clk         => Clk,
+                    Wr_Addr     => Wr_Addr,
+                    Wr_Ena      => Wr_Ena_Byte,
+                    Wr_Data     => Wr_Data(byte*8+7 downto byte*8),
+                    Rd_Clk      => Rd_Clk,
+                    Rd_Addr     => Rd_Addr,
+                    Rd_Ena      => Rd_Ena,
+                    Rd_Data     => Rd_Data(byte*8+7 downto byte*8)
+                );
+
+        end generate;
+
+    end generate;
+
+end architecture;
+
+---------------------------------------------------------------------------------------------------
+-- Libraries
+---------------------------------------------------------------------------------------------------
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+
+library work;
+    use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_attribute.all;
+    use work.olo_base_pkg_string.all;
+
+---------------------------------------------------------------------------------------------------
+-- Entity
+---------------------------------------------------------------------------------------------------
+entity olo_base_ram_sdp_nobe is
+    generic (
+        Depth_g         : positive;
+        Width_g         : positive;
+        IsAsync_g       : boolean  := false;
+        RdLatency_g     : positive := 1;
+        RamStyle_g      : string   := "auto";
+        RamBehavior_g   : string   := "RBW";
+        InitString_g    : string   := "";
+        InitFormat_g    : string   := "NONE"
+    );
+    port (
+        Clk         : in    std_logic;
+        Wr_Addr     : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+        Wr_Ena      : in    std_logic := '1';
+        Wr_Data     : in    std_logic_vector(Width_g - 1 downto 0);
+        Rd_Clk      : in    std_logic := '0';
+        Rd_Addr     : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+        Rd_Ena      : in    std_logic := '1';
+        Rd_Data     : out   std_logic_vector(Width_g - 1 downto 0)
+    );
+end entity;
+
+---------------------------------------------------------------------------------------------------
+-- Architecture
+---------------------------------------------------------------------------------------------------
+architecture rtl of olo_base_ram_sdp_nobe is
+
     -- Memory  Type
     type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
 
@@ -127,9 +267,6 @@ begin
     assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR"
         report "olo_base_ram_sdp: RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g
         severity error;
-    assert (Width_g mod 8 = 0) or (not UseByteEnable_g)
-        report "olo_base_ram_sdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
-        severity error;
 
     -- Synchronous Implementation
     g_sync : if not IsAsync_g generate
@@ -143,20 +280,7 @@ begin
                     end if;
                 end if;
                 if Wr_Ena = '1' then
-                    -- Write with byte enables
-                    if UseByteEnable_g then
-
-                        -- Loop over all bytes
-                        for byte in 0 to BeCount_c - 1 loop
-                            if Wr_Be(byte) = '1' then
-                                Mem_v(to_integer(unsigned(Wr_Addr)))(byte * 8 + 7 downto byte * 8) := Wr_Data(byte * 8 + 7 downto byte * 8);
-                            end if;
-                        end loop;
-
-                    -- Write without byte enables
-                    else
-                        Mem_v(to_integer(unsigned(Wr_Addr))) := Wr_Data;
-                    end if;
+                    Mem_v(to_integer(unsigned(Wr_Addr))) := Wr_Data;
                 end if;
                 if RamBehavior_g = "WBR" then
                     if Rd_Ena = '1' then
@@ -179,20 +303,7 @@ begin
         begin
             if rising_edge(Clk) then
                 if Wr_Ena = '1' then
-                    -- Write with byte enables
-                    if UseByteEnable_g then
-
-                        -- Loop over all bytes
-                        for byte in 0 to BeCount_c - 1 loop
-                            if Wr_Be(byte) = '1' then
-                                Mem_v(to_integer(unsigned(Wr_Addr)))(byte * 8 + 7 downto byte * 8) := Wr_Data(byte * 8 + 7 downto byte * 8);
-                            end if;
-                        end loop;
-
-                    -- Write without byte enables
-                    else
-                        Mem_v(to_integer(unsigned(Wr_Addr))) := Wr_Data;
-                    end if;
+                    Mem_v(to_integer(unsigned(Wr_Addr))) := Wr_Data;
                 end if;
             end if;
         end process;
