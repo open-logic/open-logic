@@ -59,7 +59,7 @@ class ToolQuartus(ToolBase):
         return output
 
     def _extract_resource_count(self, line) -> int:
-        return int(line.split(":")[1].split("/")[0].strip())
+        return int(line.split(":")[1].split("/")[0].strip().replace(",",""))
     
     def get_resource_usage(self) -> dict:
         resource_usage = {
