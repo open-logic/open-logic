@@ -7,10 +7,23 @@ import os.path
 
 from TopLevel import TopLevel
 from ToolQuartus import ToolQuartus
+from ToolVivado import ToolVivado
+from ResourceResults import ResourceResults
 import os
 import shutil
+import argparse
 
-# Constnatants
+# Argument parser setup
+parser = argparse.ArgumentParser(description="Run inference tests with specified tools, top-levels, and configurations.")
+parser.add_argument("--tool", type=str, choices=["vivado", "quartus", "gowin", "efinity", "libero"],
+                    help="Specify the tool to use for synthesis (e.g., vivado, quartus, etc.).")
+parser.add_argument("--top_level", type=str,
+                    help="Specify the name of the top-level to test (e.g., test_olo_base_ram_sdp).")
+parser.add_argument("--config", type=str,
+                    help="Specify the configuration to test (e.g., NoBe-NoInit).")
+args = parser.parse_args()
+
+# Constants
 TOP_PATH = os.path.abspath("./top_levels")
 SYN_FILE = os.path.abspath("./test.vhd")
 OUT_PATH = os.path.abspath("./results")
@@ -31,9 +44,22 @@ top_file.add_config("Be-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "
 top_file.add_config("Be-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "true"})
 top_files["test_olo_base_ram_sdp"] = top_file
 
+# Selected top level
+if args.top_level:
+    if args.top_level in top_files:
+        top_files = {args.top_level: top_files[args.top_level]}
+    else:
+        raise ValueError(f"Invalid --top_level: {args.top_level}")
+
 
 # Define all tools
-tools = {"quartus" : ToolQuartus()}
+tools = {"quartus" : ToolQuartus(),
+         "vivado"  : ToolVivado()}
+if args.tool:
+    if args.tool in tools:
+        tools = {args.tool: tools[args.tool]}
+    else:
+        raise ValueError(f"Invalid --tool: {args.tool}")
 
 if __name__ == '__main__':
 
@@ -44,21 +70,36 @@ if __name__ == '__main__':
 
     #Docucment version info
     print("*** Document Verion Info ***")
-    with open(f"{OUT_PATH}/versions.txt", "w+") as f:
+    with open(f"{OUT_PATH}/results.txt", "w+") as f:
         for tool_name, tool in tools.items():
             print(tool_name)
             f.write(f"### {tool_name} ###\n")
             f.write(f"{tool.get_version()}\n\n")
 
-    print("*** Execute Tests ***")
-    for top_file in top_files.values():
-        print(f"> File: {top_file.file_path}")
-        for tool_name, tool in tools.items():
-                print(f"  > Tool: {tool_name}")
-                for config in top_file.get_configs():
-                    print(f"    > Config: {config}")
-                    top_file.create_syn_file(out_file=SYN_FILE, entity_name="test", config_name=config)
-                    tool.sythesize(files=[SYN_FILE], top_entity="test")
-                    print(f"    - Resource Usage: {tool.get_resource_usage()}")
+        print("*** Execute Tests ***")
+        for top_file_name, top_file in top_files.items():
+            print(f"> File: {top_file_name}")
+            for tool_name, tool in tools.items():
+                    print(f"  > Tool: {tool_name}")
+                    resource_results = ResourceResults()
+
+                    #Select config
+                    configs = top_file.get_configs()
+                    if args.config:
+                        if args.config in configs:
+                            configs = [args.config]
+                        else:
+                            raise ValueError(f"Invalid --config: {args.config}")
+                        
+                    # Iterate through configs
+                    for config in configs:
+                        print(f"    > Config: {config}")
+                        top_file.create_syn_file(out_file=SYN_FILE, entity_name="test", config_name=config)
+                        tool.sythesize(files=[SYN_FILE], top_entity="test")
+                        resource_results.add_results(config, tool.get_resource_usage())
+                    print(resource_results.get_table())
+                    f.write(f"### {top_file_name} - {tool_name} ###\n")
+                    f.write(resource_results.get_table().get_string())
+                    f.write("\n\n")
 
     print("*** Done ***")
