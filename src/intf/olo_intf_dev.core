@@ -13,6 +13,7 @@ filesets:
       - vhdl/olo_intf_spi_master.vhd
       - vhdl/olo_intf_sync.vhd
       - vhdl/olo_intf_uart.vhd
+      - vhdl/olo_intf_pwm.vhd
     file_type : vhdlSource
     logical_name : olo
     depend :
