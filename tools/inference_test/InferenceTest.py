@@ -8,6 +8,7 @@ import os.path
 from TopLevel import TopLevel
 from ToolQuartus import ToolQuartus
 from ToolVivado import ToolVivado
+from ToolGowin import ToolGowin
 from ResourceResults import ResourceResults
 import os
 import shutil
@@ -54,7 +55,8 @@ if args.top_level:
 
 # Define all tools
 tools = {"quartus" : ToolQuartus(),
-         "vivado"  : ToolVivado()}
+         "vivado"  : ToolVivado(),
+         "gowin"   : ToolGowin()}
 if args.tool:
     if args.tool in tools:
         tools = {args.tool: tools[args.tool]}

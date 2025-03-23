@@ -1,0 +1,95 @@
+# ---------------------------------------------------------------------------------------------------
+# Copyright (c) 2025 by Oliver Bründler
+# All rights reserved.
+# Authors: Oliver Bruendler
+# ---------------------------------------------------------------------------------------------------
+from typing import List
+from jinja2 import Environment, FileSystemLoader
+from ToolBase import ToolBase
+import os
+import subprocess
+import pexpect
+
+class ToolGowin(ToolBase):
+
+    GOWIN_FOLDER = os.path.abspath("./tools/gowin")
+    IMPORT_SOURCES = os.path.abspath("../gowin/import_sources.tcl")
+
+    def __init__(self):
+        super().__init__()
+
+        # Workaround for ubutu 24.04
+        os.environ["LD_PRELOAD"] = "/lib/x86_64-linux-gnu/libfreetype.so.6"
+
+    def sythesize(self, files : List[str], top_entity : str):
+        # Call parent method
+        super().sythesize(files, top_entity)
+
+        # Sythesize
+        data = {
+            "project_folder" : self.PROJECT_FOLDER,
+            "top_entity" : top_entity,
+            "src_files" : [os.path.abspath(p) for p in files],
+            "import_sources" : self.IMPORT_SOURCES
+        }
+
+        # Create quaruts script
+        env = Environment(loader=FileSystemLoader("/"))
+        template = env.get_template(f"{self.GOWIN_FOLDER}/synthesize.template")
+        rendered_template = template.render(data)
+        with open(f"{self.PROJECT_FOLDER}/synthesize.tcl", "w+") as f:
+            f.write(rendered_template)
+
+        # Call Sythesis
+        cur_dir = os.curdir
+        os.chdir(self.PROJECT_FOLDER)
+        child = pexpect.spawn("gw_sh synthesize.tcl")
+        child.expect(pexpect.EOF, timeout=30*60)
+        with open("gowin.log", "w+") as f:
+            f.write(child.before.decode("utf-8"))
+        child.close()
+        if child.exitstatus != 0:
+            raise RuntimeError(f"Gowin Compilation Failed - see log, code {child.exitstatus}")
+        os.chdir(cur_dir)
+
+    def get_version(self) -> str:
+        return "Gowin: Version cannot be retrieved from commandline."
+
+    def _extract_resource_count(self, line) -> str:
+        field = line.split("|")[1].strip()
+        res_cnt = field.split("/")[0]
+        return str(res_cnt)
+    
+    def get_resource_usage(self) -> dict:
+        resource_usage = {
+            "LUT": 0,
+            "Register": 0,
+            "BSRAM": 0
+        }
+
+        # Find summary ile
+        summary_file = None
+        for root, _, files in os.walk(self.PROJECT_FOLDER):
+            for file in files:
+                if file.endswith(".rpt.txt"):
+                    summary_file = os.path.join(root, file)
+                    break
+            if summary_file:
+                break
+        else:
+            raise FileNotFoundError(f"No .rpt.txtfile found in the {self.PROJECT_FOLDER} directory or its subdirectories.")
+
+        # Extract resource usage
+        with open(summary_file, "r") as f:
+            for line in f:
+                line_nospace = line.replace(" ", "")
+                if "Logic|" in line_nospace:
+                    resource_usage["LUT"] = self._extract_resource_count(line)
+                elif "Register|" in line_nospace:
+                    resource_usage["Register"] = self._extract_resource_count(line)
+                elif "BSRAM|" in line_nospace:
+                    resource_usage["BSRAM"] = self._extract_resource_count(line)
+
+        return resource_usage
+
+    
