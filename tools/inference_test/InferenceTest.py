@@ -9,6 +9,7 @@ from TopLevel import TopLevel
 from ToolQuartus import ToolQuartus
 from ToolVivado import ToolVivado
 from ToolGowin import ToolGowin
+from ToolEfinity import ToolEfinity
 from ResourceResults import ResourceResults
 import os
 import shutil
@@ -56,7 +57,8 @@ if args.top_level:
 # Define all tools
 tools = {"quartus" : ToolQuartus(),
          "vivado"  : ToolVivado(),
-         "gowin"   : ToolGowin()}
+         "gowin"   : ToolGowin(),
+         "efinity" : ToolEfinity()}
 if args.tool:
     if args.tool in tools:
         tools = {args.tool: tools[args.tool]}
