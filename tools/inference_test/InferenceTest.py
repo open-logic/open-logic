@@ -10,6 +10,7 @@ from ToolQuartus import ToolQuartus
 from ToolVivado import ToolVivado
 from ToolGowin import ToolGowin
 from ToolEfinity import ToolEfinity
+from ToolLibero import ToolLibero
 from ResourceResults import ResourceResults
 import os
 import shutil
@@ -58,7 +59,8 @@ if args.top_level:
 tools = {"quartus" : ToolQuartus(),
          "vivado"  : ToolVivado(),
          "gowin"   : ToolGowin(),
-         "efinity" : ToolEfinity()}
+         "efinity" : ToolEfinity(),
+         "libero"  : ToolLibero()}
 if args.tool:
     if args.tool in tools:
         tools = {args.tool: tools[args.tool]}

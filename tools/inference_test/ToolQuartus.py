@@ -69,12 +69,7 @@ class ToolQuartus(ToolBase):
             "Registers": 0
         }
 
-        summary_files = [f for f in os.listdir(self.PROJECT_FOLDER) if f.endswith(".fit.summary")]
-        if not summary_files:
-            raise FileNotFoundError(f"No .fit.summary file found in the {self.PROJECT_FOLDER,} directory.")
-        summary_file = os.path.join(self.PROJECT_FOLDER, summary_files[0])
-        if not os.path.exists(summary_file):
-            raise FileNotFoundError(f"Summary file not found: {summary_file}")
+        summary_file = self._find_file_in_project(".fit.summary")
 
         with open(summary_file, "r") as f:
             for line in f:

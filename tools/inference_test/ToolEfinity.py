@@ -68,16 +68,7 @@ class ToolEfinity(ToolBase):
         }
 
         # Find summary ile
-        summary_file = None
-        for root, _, files in os.walk(self.PROJECT_FOLDER):
-            for file in files:
-                if file.endswith(".res.csv"):
-                    summary_file = os.path.join(root, file)
-                    break
-            if summary_file:
-                break
-        else:
-            raise FileNotFoundError(f"No .res.csv file found in the {self.PROJECT_FOLDER} directory or its subdirectories.")
+        summary_file = self._find_file_in_project(".res.csv")
 
         # Extract resource usage
         with open(summary_file, "r") as f:

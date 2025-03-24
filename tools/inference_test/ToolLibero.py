@@ -10,10 +10,10 @@ import os
 import subprocess
 import pexpect
 
-class ToolVivado(ToolBase):
+class ToolLibero(ToolBase):
 
-    VIVADO_FOLDER = os.path.abspath("./tools/vivado")
-    IMPORT_SOURCES = os.path.abspath("../vivado/import_sources.tcl")
+    LIBERO_FOLDER = os.path.abspath("./tools/libero")
+    IMPORT_SOURCES = os.path.abspath("../libero/import_sources.tcl")
 
     def __init__(self):
         super().__init__()
@@ -30,9 +30,9 @@ class ToolVivado(ToolBase):
             "import_sources" : self.IMPORT_SOURCES
         }
 
-        # Create quaruts script
+        # Create libero script
         env = Environment(loader=FileSystemLoader("/"))
-        template = env.get_template(f"{self.VIVADO_FOLDER}/synthesize.template")
+        template = env.get_template(f"{self.LIBERO_FOLDER}/synthesize.template")
         rendered_template = template.render(data)
         with open(f"{self.PROJECT_FOLDER}/synthesize.tcl", "w+") as f:
             f.write(rendered_template)
@@ -40,50 +40,37 @@ class ToolVivado(ToolBase):
         # Call Sythesis
         cur_dir = os.curdir
         os.chdir(self.PROJECT_FOLDER)
-        child = pexpect.spawn("vivado -mode batch -source synthesize.tcl")
+        child = pexpect.spawn("libero script:synthesize.tcl")
         child.expect(pexpect.EOF, timeout=30*60)
-        with open("vivado.log", "w+") as f:
+        with open("libero.log", "w+") as f:
             f.write(child.before.decode("utf-8"))
         child.close()
         if child.exitstatus != 0:
-            raise RuntimeError(f"Vivado Compilation Failed - see log, code {child.exitstatus}")
+            raise RuntimeError(f"Libero Compilation Failed - see log, code {child.exitstatus}")
         os.chdir(cur_dir)
 
     def get_version(self) -> str:
-        child = pexpect.spawn("vivado -version")
-        child.expect(pexpect.EOF)
-        output = child.before.decode("utf-8").strip()
-        child.close()
-        if child.exitstatus != 0:
-            raise RuntimeError("Failed to retrieve Vivado version. Command returned a non-zero exit status.")
-        return output
-
-    def _extract_resource_count(self, line) -> str:
-        field = line.split("|")[2].strip()
-        return str(field.replace(",",""))
+        return "Efinity: Libero cannot be retrieved from commandline."
     
     def get_resource_usage(self) -> dict:
         resource_usage = {
-            "Block RAM Tile": 0,
+            "Block RAM": 0,
             "DSPs": 0,
-            "Slice LUTs": 0,
-            "Slice Registers": 0
+            "LUTs": 0
         }
 
         # Find summary ile
-        summary_file = self._find_file_in_project("utilization_synth.rpt")
+        summary_file = self._find_file_in_project(".srr")
 
         # Extract resource usage
         with open(summary_file, "r") as f:
             for line in f:
-                if "Slice LUTs*" in line:
-                    resource_usage["Slice LUTs"] = self._extract_resource_count(line)
-                elif "Slice Registers" in line:
-                    resource_usage["Slice Registers"] = self._extract_resource_count(line)
-                elif "| Block RAM Tile" in line:
-                    resource_usage["Block RAM Tile"] = self._extract_resource_count(line)
-                elif "DSPs" in line:
-                    resource_usage["DSPs"] = self._extract_resource_count(line)
+                if "Total Block RAMs " in line:
+                    resource_usage["Block RAM"] = line.split(":")[1].strip().split(" ")[0]
+                elif "Total LUTs" in line:
+                    resource_usage["LUTs"] = line.split(":")[1].strip()
+                elif "DSP Blocks: " in line:
+                    resource_usage["DSPs"] = line.split(":")[1].strip().split(" ")[0]
 
         return resource_usage
 
