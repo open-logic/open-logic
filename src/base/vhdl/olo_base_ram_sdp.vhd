@@ -66,7 +66,7 @@ architecture rtl of olo_base_ram_sdp is
     constant BeCount_c : integer := Width_g / 8;
 
     -- components
-    component olo_base_ram_sdp_nobe is
+    component olo_private_ram_sdp_nobe is
         generic (
             Depth_g         : positive;
             Width_g         : positive;
@@ -75,7 +75,9 @@ architecture rtl of olo_base_ram_sdp is
             RamStyle_g      : string   := "auto";
             RamBehavior_g   : string   := "RBW";
             InitString_g    : string   := "";
-            InitFormat_g    : string   := "NONE"
+            InitFormat_g    : string   := "NONE";
+            InitWidth_g     : positive;
+            InitShift_g     : natural  := 0
         );
         port (
             Clk         : in    std_logic;
@@ -99,7 +101,7 @@ begin
     -- No BE Implementation
     g_nobe : if not UseByteEnable_g generate
 
-        i_ram : component olo_base_ram_sdp_nobe
+        i_ram : component olo_private_ram_sdp_nobe
             generic map (
                 Depth_g         => Depth_g,
                 Width_g         => Width_g,
@@ -108,7 +110,8 @@ begin
                 RamStyle_g      => RamStyle_g,
                 RamBehavior_g   => RamBehavior_g,
                 InitString_g    => InitString_g,
-                InitFormat_g    => InitFormat_g
+                InitFormat_g    => InitFormat_g,
+                InitWidth_g     => Width_g
             )
             port map (
                 Clk         => Clk,
@@ -131,7 +134,7 @@ begin
         begin
             Wr_Ena_Byte <= Wr_Ena and Wr_Be(byte);
 
-            i_ram : component olo_base_ram_sdp_nobe
+            i_ram : component olo_private_ram_sdp_nobe
                 generic map (
                     Depth_g         => Depth_g,
                     Width_g         => 8,
@@ -140,7 +143,9 @@ begin
                     RamStyle_g      => RamStyle_g,
                     RamBehavior_g   => RamBehavior_g,
                     InitString_g    => InitString_g,
-                    InitFormat_g    => InitFormat_g
+                    InitFormat_g    => InitFormat_g,
+                    InitWidth_g     => Width_g,
+                    InitShift_g     => byte*8
                 )
                 port map (
                     Clk         => Clk,
@@ -174,7 +179,7 @@ library work;
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
-entity olo_base_ram_sdp_nobe is
+entity olo_private_ram_sdp_nobe is
     generic (
         Depth_g         : positive;
         Width_g         : positive;
@@ -183,7 +188,9 @@ entity olo_base_ram_sdp_nobe is
         RamStyle_g      : string   := "auto";
         RamBehavior_g   : string   := "RBW";
         InitString_g    : string   := "";
-        InitFormat_g    : string   := "NONE"
+        InitFormat_g    : string   := "NONE";
+        InitWidth_g     : positive;
+        InitShift_g     : natural  := 0
     );
     port (
         Clk         : in    std_logic;
@@ -200,7 +207,7 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 -- Architecture
 ---------------------------------------------------------------------------------------------------
-architecture rtl of olo_base_ram_sdp_nobe is
+architecture rtl of olo_private_ram_sdp_nobe is
 
     -- Memory  Type
     type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
@@ -213,6 +220,7 @@ architecture rtl of olo_base_ram_sdp_nobe is
         constant InitElements_c : natural                      := countOccurence(InitString_g, ',')+1;
         variable StartIdx_v     : natural                      := InitString_g'left;
         variable EndIdx_v       : natural;
+        variable FullInitVal_g  : std_logic_vector(InitWidth_g - 1 downto 0) := (others => '0');
     begin
         if InitFormat_g /= "NONE" then
 
@@ -232,7 +240,8 @@ architecture rtl of olo_base_ram_sdp_nobe is
                     EndIdx_v := EndIdx_v + 1;
                 end loop;
 
-                Data_v(i)  := hex2StdLogicVector(InitString_g(StartIdx_v to EndIdx_v), Width_g, hasPrefix => true);
+                FullInitVal_g := hex2StdLogicVector(InitString_g(StartIdx_v to EndIdx_v), InitWidth_g, hasPrefix => true);
+                Data_v(i) := FullInitVal_g(InitShift_g + Width_g - 1 downto InitShift_g);
                 StartIdx_v := EndIdx_v + 2;
 
             end loop;
