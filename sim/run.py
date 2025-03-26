@@ -141,8 +141,14 @@ for tb_name in ram_tbs:
         named_config(tb, {'Width_g': Width})
     for Be in [True, False]:
         named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
-    for InitFormat in ["NONE", "HEX"]:
-        named_config(tb, {'InitFormat_g': InitFormat})
+    # Check no-init
+    named_config(tb, {'InitFormat_g': 'NONE'})
+    # Check non byte-width
+    named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': 7})
+    # Check init, byte-enables play a role internally
+    for Be in [True, False]:
+        for Width in [8, 16]: 
+            named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': Width, 'UseByteEnable_g' : Be})
 
 #FIFO TBs
 fifo_tbs = ['olo_base_fifo_sync_tb', 'olo_base_fifo_async_tb']
