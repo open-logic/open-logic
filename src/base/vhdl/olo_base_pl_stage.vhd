@@ -58,7 +58,7 @@ end entity;
 architecture rtl of olo_base_pl_stage is
 
     -- Single Stage Entity forward-declaration (defined later in this file)
-    component olo_base_pl_stage_single is
+    component olo_private_pl_stage_single is
         generic (
             Width_g     : positive;
             UseReady_g  : boolean   := true
@@ -94,7 +94,7 @@ begin
         g_stages : for i in 0 to Stages_g - 1 generate
 
             -- Signle pipeline stage instance
-            i_stg : component olo_base_pl_stage_single
+            i_stg : component olo_private_pl_stage_single
                 generic map (
                     Width_g    => Width_g,
                     UseReady_g => UseReady_g
@@ -141,7 +141,7 @@ library work;
 ---------------------------------------------------------------------------------------------------
 -- Single Stage Entity
 ---------------------------------------------------------------------------------------------------
-entity olo_base_pl_stage_single is
+entity olo_private_pl_stage_single is
     generic (
         Width_g     : positive;
         UseReady_g  : boolean := true
@@ -164,7 +164,7 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 -- Architecture
 ---------------------------------------------------------------------------------------------------
-architecture rtl of olo_base_pl_stage_single is
+architecture rtl of olo_private_pl_stage_single is
 
     -- two process method
     type TwoProcess_r is record
