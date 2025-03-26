@@ -165,6 +165,7 @@ begin
                     B_WrData  => B_WrData(8*(byte+1)-1 downto 8*byte),
                     B_RdData  => B_RdData(8*(byte+1)-1 downto 8*byte)
                 );
+
         end generate;
 
     end generate;
@@ -202,13 +203,13 @@ entity olo_private_ram_tdp_nobe is
     port (
         A_Clk     : in    std_logic;
         A_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        A_WrEna   : in    std_logic                                  := '0';
-        A_WrData  : in    std_logic_vector(Width_g - 1 downto 0)     := (others => '0');
+        A_WrEna   : in    std_logic                              := '0';
+        A_WrData  : in    std_logic_vector(Width_g - 1 downto 0) := (others => '0');
         A_RdData  : out   std_logic_vector(Width_g - 1 downto 0);
         B_Clk     : in    std_logic;
         B_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        B_WrEna   : in    std_logic                                  := '0';
-        B_WrData  : in    std_logic_vector(Width_g - 1 downto 0)     := (others => '0');
+        B_WrEna   : in    std_logic                              := '0';
+        B_WrData  : in    std_logic_vector(Width_g - 1 downto 0) := (others => '0');
         B_RdData  : out   std_logic_vector(Width_g - 1 downto 0)
     );
 end entity;
@@ -225,9 +226,9 @@ architecture rtl of olo_private_ram_tdp_nobe is
     -- ... Cannot be moved to a package because VHDL93 (supported by all tools) does not allow
     -- ... unconstrainted arrays as return types.
     function getInitContent return Data_t is
-        variable Data_v         : Data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
-        constant InitElements_c : natural                      := countOccurence(InitString_g, ',')+1;
-        variable StartIdx_v     : natural                      := InitString_g'left;
+        variable Data_v         : Data_t(Depth_g - 1 downto 0)               := (others => (others => '0'));
+        constant InitElements_c : natural                                    := countOccurence(InitString_g, ',')+1;
+        variable StartIdx_v     : natural                                    := InitString_g'left;
         variable EndIdx_v       : natural;
         variable FullInitVal_v  : std_logic_vector(InitWidth_g - 1 downto 0) := (others => '0');
     begin
@@ -251,7 +252,7 @@ architecture rtl of olo_private_ram_tdp_nobe is
 
                 FullInitVal_v := hex2StdLogicVector(InitString_g(StartIdx_v to EndIdx_v), InitWidth_g, hasPrefix => true);
                 Data_v(i)     := FullInitVal_v(InitShift_g + Width_g - 1 downto InitShift_g);
-                StartIdx_v := EndIdx_v + 2;
+                StartIdx_v    := EndIdx_v + 2;
 
             end loop;
 
@@ -288,69 +289,69 @@ begin
 
         -- Port A
         p_porta : process (A_Clk) is
-            begin
-                if rising_edge(A_Clk) then
-                    -- RAM
-                    if A_WrEna = '1' then
-                        Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
-                    end if;
-                    RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
-
-                    -- Read-data pipeline registers
-                    RdPipeA(2 to RdLatency_g) <= RdPipeA(1 to RdLatency_g-1);
+        begin
+            if rising_edge(A_Clk) then
+                -- RAM
+                if A_WrEna = '1' then
+                    Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
                 end if;
-            end process;
-        
-            -- Port B
-            p_portb : process (B_Clk) is
-            begin
-                if rising_edge(B_Clk) then
-                    -- RAM
-                    if B_WrEna = '1' then
-                        Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
-                    end if;
-                    RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
+                RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
 
-                    -- Read-data pipeline registers
-                    RdPipeB(2 to RdLatency_g) <= RdPipeB(1 to RdLatency_g-1);
+                -- Read-data pipeline registers
+                RdPipeA(2 to RdLatency_g) <= RdPipeA(1 to RdLatency_g-1);
+            end if;
+        end process;
+
+        -- Port B
+        p_portb : process (B_Clk) is
+        begin
+            if rising_edge(B_Clk) then
+                -- RAM
+                if B_WrEna = '1' then
+                    Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
                 end if;
-            end process;
-        
-    end generate g_wbr;
+                RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
+
+                -- Read-data pipeline registers
+                RdPipeB(2 to RdLatency_g) <= RdPipeB(1 to RdLatency_g-1);
+            end if;
+        end process;
+
+    end generate;
 
     g_rbw : if RamBehavior_g = "RBW" generate
 
         -- Port A
         p_porta : process (A_Clk) is
-            begin
-                if rising_edge(A_Clk) then
-                    -- RAM
-                    RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
-                    if A_WrEna = '1' then
-                        Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
-                    end if;
-
-                    -- Read-data pipeline registers
-                    RdPipeA(2 to RdLatency_g) <= RdPipeA(1 to RdLatency_g-1);
+        begin
+            if rising_edge(A_Clk) then
+                -- RAM
+                RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
+                if A_WrEna = '1' then
+                    Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
                 end if;
-            end process;
-        
-            -- Port B
-            p_portb : process (B_Clk) is
-            begin
-                if rising_edge(B_Clk) then
-                    -- RAM
-                    RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
-                    if B_WrEna = '1' then
-                        Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
-                    end if;
 
-                    -- Read-data pipeline registers
-                    RdPipeB(2 to RdLatency_g) <= RdPipeB(1 to RdLatency_g-1);
+                -- Read-data pipeline registers
+                RdPipeA(2 to RdLatency_g) <= RdPipeA(1 to RdLatency_g-1);
+            end if;
+        end process;
+
+        -- Port B
+        p_portb : process (B_Clk) is
+        begin
+            if rising_edge(B_Clk) then
+                -- RAM
+                RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
+                if B_WrEna = '1' then
+                    Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
                 end if;
-            end process;
-        
-    end generate g_rbw;
+
+                -- Read-data pipeline registers
+                RdPipeB(2 to RdLatency_g) <= RdPipeB(1 to RdLatency_g-1);
+            end if;
+        end process;
+
+    end generate;
 
     -- Read Data Output
     A_RdData <= RdPipeA(RdLatency_g);
