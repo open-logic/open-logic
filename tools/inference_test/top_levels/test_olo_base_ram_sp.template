@@ -1,0 +1,51 @@
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+
+library olo;
+
+entity {{entity_name}} is
+    port (
+        Clk         : in    std_logic;
+        Addr        : in    std_logic_vector(8 downto 0);
+        WrEna       : in    std_logic                                  := '1';
+        WrData      : in    std_logic_vector(15 downto 0);
+	    Be		    : in    std_logic_vector(1 downto 0);
+        RdData      : out   std_logic_vector(15 downto 0)
+    );
+end entity;
+
+architecture rtl of {{entity_name}} is
+begin
+
+    i_ram : entity olo.olo_base_ram_sp
+{{generics}}
+        port map (
+            Clk        => Clk,
+            Addr       => Addr,
+		    Be		   => Be,
+            WrEna      => WrEna,
+            WrData     => WrData,
+            RdData     => RdData
+        );
+		  
+--	i_ram : entity olo.olo_base_ram_tdp
+--    generic map (
+--        Depth_g         => 512,
+--        Width_g         => 16,
+      --  InitString_g    => "0x1234, 0x5678, 0xDEAD, 0xBEEF",
+      --  InitFormat_g    => "NONE",
+--		  UseByteEnable_g => false
+--    )                                                     -- "RBW" = read-before-write, "WBR" = write-before-read
+--    port map (
+--        A_Clk     => Clk,
+--        A_Addr    => Wr_Addr,
+--        A_Be      => Wr_Be,
+--        A_WrEna   => Wr_Ena,
+ --       A_WrData  => Wr_Data,
+  --      B_Clk     => Clk,
+--        B_Addr    => Rd_Addr,
+--        B_RdData  => Rd_Data
+--    );
+
+end;

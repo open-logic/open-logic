@@ -250,9 +250,6 @@ architecture rtl of olo_private_ram_sdp_nobe is
         return Data_v;
     end function;
 
-    -- constants
-    constant BeCount_c : integer := Width_g / 8;
-
     -- Memory array
     shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := getInitContent;
 

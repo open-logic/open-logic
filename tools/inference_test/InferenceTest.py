@@ -47,6 +47,18 @@ top_file.add_config("Be-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "
 top_file.add_config("Be-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "true"})
 top_files["test_olo_base_ram_sdp"] = top_file
 
+top_file = TopLevel(f"{TOP_PATH}/test_olo_base_ram_sp.template")
+top_file.add_fix_generics({
+    "Depth_g" : "512",
+    "Width_g" : "16",
+    "InitString_g" : "\"0x1234, 0x5678, 0xDEAD, 0xBEEF\""
+})
+top_file.add_config("NoBe-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "false"})
+top_file.add_config("NoBe-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "false"})
+top_file.add_config("Be-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "true"})
+top_file.add_config("Be-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "true"})
+top_files["test_olo_base_ram_sp"] = top_file
+
 # Selected top level
 if args.top_level:
     if args.top_level in top_files:
