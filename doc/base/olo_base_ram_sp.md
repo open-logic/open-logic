@@ -50,7 +50,6 @@ Below figure explains the _RdLatency_g_ generic in detail:
 
 ![RdLatency](./ram/RdLatency_SP.png)
 
-
 ### Byte Enables
 
 Due to tool limitations regarding inference, the usage of byte enables (_UseByteEnable_g=true_) can lead to increased

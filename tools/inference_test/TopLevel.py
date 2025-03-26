@@ -14,10 +14,14 @@ class TopLevel:
         self.file_path = os.path.abspath(file_path)
         self.configs = {}
         self.fixGenerics = {}
+        self.toolGenerics = {}
         self.sub = None
 
     def add_fix_generics(self, fixGenerics : Dict[str, str]):
         self.fixGenerics = fixGenerics
+
+    def add_tool_generics(self, tool : str, generics : Dict[str, str]):
+        self.toolGenerics[tool] = generics
 
     def add_config(self, name : str, config : Dict[str, str]):
         self.configs[name] = config
@@ -25,11 +29,14 @@ class TopLevel:
     def get_configs(self) -> List[str]:
         return list(self.configs.keys())
 
-    def create_syn_file(self, out_file : str, entity_name : str, config_name : str = None):
+    def create_syn_file(self, out_file : str, entity_name : str, config_name : str = None, tool_name : str = None):
         # Get complete generics list
         all_generics = deepcopy(self.fixGenerics)
         if config_name is not None:
             all_generics.update(self.configs[config_name])
+        if tool_name is not None:
+            if tool_name in self.toolGenerics: #Only if generics are set for this tool
+                all_generics.update(self.toolGenerics[tool_name])
         
         # Create generics text
         generics_text = ""

@@ -28,24 +28,5 @@ begin
             WrData     => WrData,
             RdData     => RdData
         );
-		  
---	i_ram : entity olo.olo_base_ram_tdp
---    generic map (
---        Depth_g         => 512,
---        Width_g         => 16,
-      --  InitString_g    => "0x1234, 0x5678, 0xDEAD, 0xBEEF",
-      --  InitFormat_g    => "NONE",
---		  UseByteEnable_g => false
---    )                                                     -- "RBW" = read-before-write, "WBR" = write-before-read
---    port map (
---        A_Clk     => Clk,
---        A_Addr    => Wr_Addr,
---        A_Be      => Wr_Be,
---        A_WrEna   => Wr_Ena,
- --       A_WrData  => Wr_Data,
-  --      B_Clk     => Clk,
---        B_Addr    => Rd_Addr,
---        B_RdData  => Rd_Data
---    );
 
 end;

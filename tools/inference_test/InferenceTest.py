@@ -59,6 +59,20 @@ top_file.add_config("Be-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "
 top_file.add_config("Be-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "true"})
 top_files["test_olo_base_ram_sp"] = top_file
 
+top_file = TopLevel(f"{TOP_PATH}/test_olo_base_ram_tdp.template")
+top_file.add_fix_generics({
+    "Depth_g" : "512",
+    "Width_g" : "16",
+    "InitString_g" : "\"0x1234, 0x5678, 0xDEAD, 0xBEEF\"",
+    "RamBehavior_g" : "\"WBR\""
+})
+top_file.add_config("NoBe-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "false"})
+top_file.add_config("NoBe-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "false"})
+top_file.add_config("Be-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "true"})
+top_file.add_config("Be-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "true"})
+top_file.add_tool_generics("quartus", {"RamBehavior_g" : '"WBR"'})
+top_files["test_olo_base_ram_tdp"] = top_file
+
 # Selected top level
 if args.top_level:
     if args.top_level in top_files:
@@ -112,7 +126,7 @@ if __name__ == '__main__':
                     # Iterate through configs
                     for config in configs:
                         print(f"    > Config: {config}")
-                        top_file.create_syn_file(out_file=SYN_FILE, entity_name="test", config_name=config)
+                        top_file.create_syn_file(out_file=SYN_FILE, entity_name="test", config_name=config, tool_name=tool_name)
                         tool.sythesize(files=[SYN_FILE], top_entity="test")
                         resource_results.add_results(config, tool.get_resource_usage())
                     print(resource_results.get_table())

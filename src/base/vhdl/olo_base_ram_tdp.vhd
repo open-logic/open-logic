@@ -65,6 +65,159 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_ram_tdp is
 
+    -- constants
+    constant BeCount_c : integer := Width_g / 8;
+
+    -- components
+    component olo_private_ram_tdp_nobe is
+        generic (
+            Depth_g         : positive;
+            Width_g         : positive;
+            RdLatency_g     : positive := 1;
+            RamStyle_g      : string   := "auto";
+            RamBehavior_g   : string   := "RBW";
+            InitString_g    : string   := "";
+            InitFormat_g    : string   := "NONE";
+            InitWidth_g     : positive;
+            InitShift_g     : natural  := 0
+        );
+        port (
+            A_Clk     : in    std_logic;
+            A_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+            A_WrEna   : in    std_logic                                  := '0';
+            A_WrData  : in    std_logic_vector(Width_g - 1 downto 0)     := (others => '0');
+            A_RdData  : out   std_logic_vector(Width_g - 1 downto 0);
+            B_Clk     : in    std_logic;
+            B_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+            B_WrEna   : in    std_logic                                  := '0';
+            B_WrData  : in    std_logic_vector(Width_g - 1 downto 0)     := (others => '0');
+            B_RdData  : out   std_logic_vector(Width_g - 1 downto 0)
+        );
+    end component;
+
+begin
+
+    -- Assertions
+    assert (Width_g mod 8 = 0) or (not UseByteEnable_g)
+        report "olo_base_ram_tdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
+        severity error;
+
+    -- No BE Implementation
+    g_nobe : if not UseByteEnable_g generate
+
+        i_ram : component olo_private_ram_tdp_nobe
+            generic map (
+                Depth_g         => Depth_g,
+                Width_g         => Width_g,
+                RdLatency_g     => RdLatency_g,
+                RamStyle_g      => RamStyle_g,
+                RamBehavior_g   => RamBehavior_g,
+                InitString_g    => InitString_g,
+                InitFormat_g    => InitFormat_g,
+                InitWidth_g     => Width_g
+            )
+            port map (
+                A_Clk     => A_Clk,
+                A_Addr    => A_Addr,
+                A_WrEna   => A_WrEna,
+                A_WrData  => A_WrData,
+                A_RdData  => A_RdData,
+                B_Clk     => B_Clk,
+                B_Addr    => B_Addr,
+                B_WrEna   => B_WrEna,
+                B_WrData  => B_WrData,
+                B_RdData  => B_RdData
+            );
+
+    end generate;
+
+    -- BE Implementation
+    g_be : if UseByteEnable_g generate
+
+        g_byte : for byte in 0 to BeCount_c-1 generate
+            signal A_WrEna_Byte : std_logic;
+            signal B_WrEna_Byte : std_logic;
+        begin
+            A_WrEna_Byte <= A_WrEna and A_Be(byte);
+            B_WrEna_Byte <= B_WrEna and B_Be(byte);
+
+            i_ram : component olo_private_ram_tdp_nobe
+                generic map (
+                    Depth_g         => Depth_g,
+                    Width_g         => 8,
+                    RdLatency_g     => RdLatency_g,
+                    RamStyle_g      => RamStyle_g,
+                    RamBehavior_g   => RamBehavior_g,
+                    InitString_g    => InitString_g,
+                    InitFormat_g    => InitFormat_g,
+                    InitWidth_g     => Width_g,
+                    InitShift_g     => 8*byte
+                )
+                port map (
+                    A_Clk     => A_Clk,
+                    A_Addr    => A_Addr,
+                    A_WrEna   => A_WrEna_Byte,
+                    A_WrData  => A_WrData(8*(byte+1)-1 downto 8*byte),
+                    A_RdData  => A_RdData(8*(byte+1)-1 downto 8*byte),
+                    B_Clk     => B_Clk,
+                    B_Addr    => B_Addr,
+                    B_WrEna   => B_WrEna_Byte,
+                    B_WrData  => B_WrData(8*(byte+1)-1 downto 8*byte),
+                    B_RdData  => B_RdData(8*(byte+1)-1 downto 8*byte)
+                );
+        end generate;
+
+    end generate;
+
+end architecture;
+
+---------------------------------------------------------------------------------------------------
+-- Libraries
+---------------------------------------------------------------------------------------------------
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+
+library work;
+    use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_attribute.all;
+    use work.olo_base_pkg_string.all;
+
+---------------------------------------------------------------------------------------------------
+-- Entity
+---------------------------------------------------------------------------------------------------
+-- Test synthesis: Try odd widths without BE, try 3 bits (<8) without BE
+entity olo_private_ram_tdp_nobe is
+    generic (
+        Depth_g         : positive;
+        Width_g         : positive;
+        RdLatency_g     : positive := 1;
+        RamStyle_g      : string   := "auto";
+        RamBehavior_g   : string   := "RBW";
+        InitString_g    : string   := "";
+        InitFormat_g    : string   := "NONE";
+        InitWidth_g     : positive;
+        InitShift_g     : natural  := 0
+    );
+    port (
+        A_Clk     : in    std_logic;
+        A_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+        A_WrEna   : in    std_logic                                  := '0';
+        A_WrData  : in    std_logic_vector(Width_g - 1 downto 0)     := (others => '0');
+        A_RdData  : out   std_logic_vector(Width_g - 1 downto 0);
+        B_Clk     : in    std_logic;
+        B_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+        B_WrEna   : in    std_logic                                  := '0';
+        B_WrData  : in    std_logic_vector(Width_g - 1 downto 0)     := (others => '0');
+        B_RdData  : out   std_logic_vector(Width_g - 1 downto 0)
+    );
+end entity;
+
+---------------------------------------------------------------------------------------------------
+-- Architecture
+---------------------------------------------------------------------------------------------------
+architecture rtl of olo_private_ram_tdp_nobe is
+
     -- Memory Type
     type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
 
@@ -76,6 +229,7 @@ architecture rtl of olo_base_ram_tdp is
         constant InitElements_c : natural                      := countOccurence(InitString_g, ',')+1;
         variable StartIdx_v     : natural                      := InitString_g'left;
         variable EndIdx_v       : natural;
+        variable FullInitVal_v  : std_logic_vector(InitWidth_g - 1 downto 0) := (others => '0');
     begin
         if InitFormat_g /= "NONE" then
 
@@ -95,7 +249,8 @@ architecture rtl of olo_base_ram_tdp is
                     EndIdx_v := EndIdx_v + 1;
                 end loop;
 
-                Data_v(i)  := hex2StdLogicVector(InitString_g(StartIdx_v to EndIdx_v), Width_g, hasPrefix => true);
+                FullInitVal_v := hex2StdLogicVector(InitString_g(StartIdx_v to EndIdx_v), InitWidth_g, hasPrefix => true);
+                Data_v(i)     := FullInitVal_v(InitShift_g + Width_g - 1 downto InitShift_g);
                 StartIdx_v := EndIdx_v + 2;
 
             end loop;
@@ -104,14 +259,10 @@ architecture rtl of olo_base_ram_tdp is
         return Data_v;
     end function;
 
-    -- Constants
-    constant BeCount_c : integer := Width_g / 8;
-
     -- Memory array
     shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := getInitContent;
 
     -- Read registers
-
     signal RdPipeA, RdPipeB : Data_t(1 to RdLatency_g);
 
     -- Synthesis attributes - Suppress shift register extraction
@@ -132,74 +283,77 @@ begin
     assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR"
         report "olo_base_ram_tdp: RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g
         severity error;
-    assert (Width_g mod 8 = 0) or (not UseByteEnable_g)
-        report "olo_base_ram_tdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
-        severity error;
 
-    -- Port A
-    p_porta : process (A_Clk) is
-    begin
-        if rising_edge(A_Clk) then
-            if RamBehavior_g = "RBW" then
-                RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
-            end if;
-            if A_WrEna = '1' then
-                -- Write with byte enables
-                if UseByteEnable_g then
+    g_wbr : if RamBehavior_g = "WBR" generate
 
-                    -- Loop over all bytes
-                    for byte in 0 to BeCount_c - 1 loop
-                        if A_Be(byte) = '1' then
-                            Mem_v(to_integer(unsigned(A_Addr)))(byte * 8 + 7 downto byte * 8) := A_WrData(byte * 8 + 7 downto byte * 8);
-                        end if;
-                    end loop;
+        -- Port A
+        p_porta : process (A_Clk) is
+            begin
+                if rising_edge(A_Clk) then
+                    -- RAM
+                    if A_WrEna = '1' then
+                        Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
+                    end if;
+                    RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
 
-                -- Write without byte enables
-                else
-                    Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
+                    -- Read-data pipeline registers
+                    RdPipeA(2 to RdLatency_g) <= RdPipeA(1 to RdLatency_g-1);
                 end if;
-            end if;
-            if RamBehavior_g = "WBR" then
-                RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
-            end if;
-            -- Read-data pipeline registers
-            RdPipeA(2 to RdLatency_g) <= RdPipeA(1 to RdLatency_g-1);
-        end if;
-    end process;
+            end process;
+        
+            -- Port B
+            p_portb : process (B_Clk) is
+            begin
+                if rising_edge(B_Clk) then
+                    -- RAM
+                    if B_WrEna = '1' then
+                        Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
+                    end if;
+                    RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
 
+                    -- Read-data pipeline registers
+                    RdPipeB(2 to RdLatency_g) <= RdPipeB(1 to RdLatency_g-1);
+                end if;
+            end process;
+        
+    end generate g_wbr;
+
+    g_rbw : if RamBehavior_g = "RBW" generate
+
+        -- Port A
+        p_porta : process (A_Clk) is
+            begin
+                if rising_edge(A_Clk) then
+                    -- RAM
+                    RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
+                    if A_WrEna = '1' then
+                        Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
+                    end if;
+
+                    -- Read-data pipeline registers
+                    RdPipeA(2 to RdLatency_g) <= RdPipeA(1 to RdLatency_g-1);
+                end if;
+            end process;
+        
+            -- Port B
+            p_portb : process (B_Clk) is
+            begin
+                if rising_edge(B_Clk) then
+                    -- RAM
+                    RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
+                    if B_WrEna = '1' then
+                        Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
+                    end if;
+
+                    -- Read-data pipeline registers
+                    RdPipeB(2 to RdLatency_g) <= RdPipeB(1 to RdLatency_g-1);
+                end if;
+            end process;
+        
+    end generate g_rbw;
+
+    -- Read Data Output
     A_RdData <= RdPipeA(RdLatency_g);
-
-    -- Port B
-    p_portb : process (B_Clk) is
-    begin
-        if rising_edge(B_Clk) then
-            if RamBehavior_g = "RBW" then
-                RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
-            end if;
-            if B_WrEna = '1' then
-                -- Write with byte enables
-                if UseByteEnable_g then
-
-                    -- Loop over all bytes
-                    for byte in 0 to BeCount_c - 1 loop
-                        if B_Be(byte) = '1' then
-                            Mem_v(to_integer(unsigned(B_Addr)))(byte * 8 + 7 downto byte * 8) := B_WrData(byte * 8 + 7 downto byte * 8);
-                        end if;
-                    end loop;
-
-                -- Write without byte enables
-                else
-                    Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
-                end if;
-            end if;
-            if RamBehavior_g = "WBR" then
-                RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
-            end if;
-            -- Read-data pipeline registers
-            RdPipeB(2 to RdLatency_g) <= RdPipeB(1 to RdLatency_g-1);
-        end if;
-    end process;
-
     B_RdData <= RdPipeB(RdLatency_g);
 
 end architecture;
