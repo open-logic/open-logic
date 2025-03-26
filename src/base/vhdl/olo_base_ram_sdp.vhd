@@ -216,11 +216,11 @@ architecture rtl of olo_private_ram_sdp_nobe is
     -- ... Cannot be moved to a package because VHDL93 (supported by all tools) does not allow
     -- ... unconstrainted arrays as return types.
     function getInitContent return Data_t is
-        variable Data_v         : Data_t(Depth_g - 1 downto 0) := (others => (others => '0'));
-        constant InitElements_c : natural                      := countOccurence(InitString_g, ',')+1;
-        variable StartIdx_v     : natural                      := InitString_g'left;
+        variable Data_v         : Data_t(Depth_g - 1 downto 0)               := (others => (others => '0'));
+        constant InitElements_c : natural                                    := countOccurence(InitString_g, ',')+1;
+        variable StartIdx_v     : natural                                    := InitString_g'left;
         variable EndIdx_v       : natural;
-        variable FullInitVal_g  : std_logic_vector(InitWidth_g - 1 downto 0) := (others => '0');
+        variable FullInitVal_v  : std_logic_vector(InitWidth_g - 1 downto 0) := (others => '0');
     begin
         if InitFormat_g /= "NONE" then
 
@@ -240,9 +240,9 @@ architecture rtl of olo_private_ram_sdp_nobe is
                     EndIdx_v := EndIdx_v + 1;
                 end loop;
 
-                FullInitVal_g := hex2StdLogicVector(InitString_g(StartIdx_v to EndIdx_v), InitWidth_g, hasPrefix => true);
-                Data_v(i) := FullInitVal_g(InitShift_g + Width_g - 1 downto InitShift_g);
-                StartIdx_v := EndIdx_v + 2;
+                FullInitVal_v := hex2StdLogicVector(InitString_g(StartIdx_v to EndIdx_v), InitWidth_g, hasPrefix => true);
+                Data_v(i)     := FullInitVal_v(InitShift_g + Width_g - 1 downto InitShift_g);
+                StartIdx_v    := EndIdx_v + 2;
 
             end loop;
 
