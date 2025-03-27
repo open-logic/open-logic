@@ -200,7 +200,7 @@ on the _Rd_Data_ interface.
 
 #### Write Transaction
 
-The example below shows a read transaction.
+The example below shows a write transaction.
 
 Note that a high-latency write (AXI commands only sent after data is in buffer) is shown in this figure.
 

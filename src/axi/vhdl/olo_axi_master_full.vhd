@@ -8,7 +8,7 @@
 ---------------------------------------------------------------------------------------------------
 -- Description
 ---------------------------------------------------------------------------------------------------
--- This entity implements a full AXI master. In contrast to olo_axi_master_full,
+-- This entity implements a full AXI master. In contrast to olo_axi_master_simple,
 -- this entity can do unaligned transfers and it supports different width for the
 -- AXI interface than for the data interface. The AXI interface can be wider than
 -- the data interface but not vice versa.
