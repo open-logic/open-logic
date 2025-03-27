@@ -22,7 +22,7 @@ domain, therefore it can only be used for independent single-bit signals. Do not
 (e.g. numbers) where it is important that all the bits are updated in the same clock cycle.
 
 It is suggested to use this entity only for synchronizing external signals. For synchronizing FPGA internal signals
-between clocks, the clock crossings in _bas_ shall be used (_olo_base_cc_..._).
+between clocks, the clock crossings in _base_ shall be used (_olo_base_cc_..._).
 
 For _AMD_ tools (_Vivado_) an automatic constraint file exists, which automatically identifies all _olo_intf_sync_
 instances and constrains them correctly. To use the automatic constraints file, follow the steps described in
