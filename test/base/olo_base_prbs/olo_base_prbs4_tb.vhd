@@ -39,7 +39,7 @@ architecture sim of olo_base_prbs4_tb is
     -- Constants
     -----------------------------------------------------------------------------------------------
     constant PrbsSequence_c    : std_logic_vector(14 downto 0)                        := "010110010001111";
-    constant PrbsSequenceRep_c : std_logic_vector(2*PrbsSequence_c'length-1 downto 0) := PrbsSequence_c & PrbsSequence_c;
+    constant PrbsSequenceRep_c : std_logic_vector(4*PrbsSequence_c'length-1 downto 0) := PrbsSequence_c & PrbsSequence_c & PrbsSequence_c & PrbsSequence_c;
     constant States_c          : StlvArray4_t (0 to PrbsSequence_c'high)              := (
         "1111", "1110", "1100", "1000",
         "0001", "0010", "0100", "1001",
@@ -91,6 +91,7 @@ begin
 
     p_control : process is
         variable StartBit_v : integer;
+        variable StateIdx_v : integer;
         variable Symbol_v   : std_logic_vector(BitsPerSymbol_g-1 downto 0);
     begin
         test_runner_setup(runner, runner_cfg);
@@ -111,9 +112,15 @@ begin
                 StartBit_v := 0;
 
                 while StartBit_v < 15 loop
-                    Symbol_v   := PrbsSequenceRep_c(StartBit_v+BitsPerSymbol_g-1 downto StartBit_v);
+                    Symbol_v := PrbsSequenceRep_c(StartBit_v+BitsPerSymbol_g-1 downto StartBit_v);
                     check_axi_stream(net, AxisSlave_c, Symbol_v, blocking => false, msg => "Wrong Data");
-                    check_axi_stream(net, StateSlave_c, States_c(StartBit_v), blocking => false, msg => "Wrong State");
+                    -- State is updated already before outputting first symbol
+                    if BitsPerSymbol_g > 4 then
+                        StateIdx_v := (StartBit_v + BitsPerSymbol_g - 4) mod States_c'length;
+                    else
+                        StateIdx_v := StartBit_v;
+                    end if;
+                    check_axi_stream(net, StateSlave_c, States_c(StateIdx_v), blocking => false, msg => "Wrong State");
                     StartBit_v := StartBit_v + BitsPerSymbol_g;
                 end loop;
 
@@ -135,9 +142,15 @@ begin
                 StartBit_v := 6;
 
                 while StartBit_v < 15 loop
-                    Symbol_v   := PrbsSequenceRep_c(StartBit_v+BitsPerSymbol_g-1 downto StartBit_v);
+                    Symbol_v := PrbsSequenceRep_c(StartBit_v+BitsPerSymbol_g-1 downto StartBit_v);
                     check_axi_stream(net, AxisSlave_c, Symbol_v, blocking => false, msg => "Wrong Data");
-                    check_axi_stream(net, StateSlave_c, States_c(StartBit_v), blocking => false, msg => "Wrong State");
+                    -- State is updated already before outputting first symbol
+                    if BitsPerSymbol_g > 4 then
+                        StateIdx_v := (StartBit_v + BitsPerSymbol_g - 4) mod States_c'length;
+                    else
+                        StateIdx_v := StartBit_v;
+                    end if;
+                    check_axi_stream(net, StateSlave_c, States_c(StateIdx_v), blocking => false, msg => "Wrong State");
                     StartBit_v := StartBit_v + BitsPerSymbol_g;
                 end loop;
 

@@ -36,7 +36,8 @@ entity olo_base_prbs is
     generic (
         Polynomial_g    : std_logic_vector;
         Seed_g          : std_logic_vector;
-        BitsPerSymbol_g : positive := 1
+        BitsPerSymbol_g : positive := 1;
+        LfsrWidth_g     : natural  := 0 -- Deprecated, not used
     );
     port (
         -- Control Ports
@@ -59,18 +60,46 @@ end entity;
 
 architecture rtl of olo_base_prbs is
 
-    -- Functions
-    function lfsrRegLength (constant PL_c : natural; constant BPS_c : natural) return natural is
-    begin
-        if BPS_c > PL_c then
-            return BPS_c;
-        else
-            return PL_c;
-        end if;
-    end function;
+    -- Constants
+    constant LfsrLenght_c : natural := max(BitsPerSymbol_g, Polynomial_g'length);
 
     -- Signals
-    signal LfsrReg : std_logic_vector(lfsrRegLength(Polynomial_g'length, BitsPerSymbol_g)-1 downto 0);
+    signal LfsrReg : std_logic_vector(LfsrLenght_c-1 downto 0);
+
+    -- Calculate LFSR Update Function
+    function lfsrUpdate (
+        lfsrReg : std_logic_vector(LfsrLenght_c-1 downto 0);
+        bits    : positive) return std_logic_vector is
+        -- Local Variables
+        variable Lfsr_v       : std_logic_vector(LfsrLenght_c-1 downto 0) := lfsrReg;
+        variable LfsrMasked_v : std_logic_vector(Polynomial_g'length-1 downto 0);
+        variable NextBit_v    : std_logic;
+    begin
+
+        -- Update LFSR
+        for bit in 0 to bits - 1 loop
+            LfsrMasked_v := Lfsr_v(Polynomial_g'length-1 downto 0) and Polynomial_g;
+            NextBit_v    := xor_reduce(LfsrMasked_v);
+            Lfsr_v       := Lfsr_v(Lfsr_v'high-1 downto 0) & NextBit_v;
+        end loop;
+
+        return Lfsr_v;
+    end function;
+
+    -- Generate LFSR Initial value
+    function lfsrInitValue return std_logic_vector is
+        variable Lfsr_v : std_logic_vector(LfsrLenght_c-1 downto 0) := (others => '0');
+    begin
+        Lfsr_v(Polynomial_g'length-1 downto 0) := Seed_g;
+
+        -- Create any bits beyond Polynomial-length
+        if LfsrLenght_c > Polynomial_g'length then
+            Lfsr_v := lfsrUpdate(Lfsr_v, LfsrLenght_c - Polynomial_g'length);
+        end if;
+
+        return Lfsr_v;
+
+    end function;
 
 begin
 
@@ -92,35 +121,29 @@ begin
     State_Current <= LfsrReg(State_Current'high downto 0);
 
     p_lfsr : process (Clk) is
-        variable NextBit_v    : std_logic;
-        variable Lfsr_v       : std_logic_vector(LfsrReg'range);
-        variable LfsrMasked_v : std_logic_vector(Polynomial_g'length-1 downto 0);
+        variable Lfsr_v : std_logic_vector(LfsrReg'range);
     begin
         if rising_edge(Clk) then
             -- Normal Operation
             if Out_Ready = '1' then
-                Lfsr_v := LfsrReg;
-
-                -- Loop over all bits in symbol
-                for bit in 0 to BitsPerSymbol_g-1 loop
-                    LfsrMasked_v := Lfsr_v(Polynomial_g'length-1 downto 0) and Polynomial_g;
-                    NextBit_v    := xor_reduce(LfsrMasked_v);
-                    Lfsr_v       := Lfsr_v(Lfsr_v'high-1 downto 0) & NextBit_v;
-                end loop;
-
-                LfsrReg <= Lfsr_v;
+                -- Update LFSR
+                LfsrReg <= lfsrUpdate(LfsrReg, BitsPerSymbol_g);
             end if;
 
             -- Load state
             if State_Set = '1' then
-                LfsrReg                                 <= (others => '0');
-                LfsrReg(Polynomial_g'length-1 downto 0) <= State_New;
+                Lfsr_v                                 := (others => '0');
+                Lfsr_v(Polynomial_g'length-1 downto 0) := State_New;
+                -- For symbol longer than LFSR, calculate remaining bits
+                if LfsrLenght_c > Polynomial_g'length then
+                    Lfsr_v := lfsrUpdate(Lfsr_v, LfsrLenght_c - Polynomial_g'length);
+                end if;
+                LfsrReg <= Lfsr_v;
             end if;
 
             -- Reset
             if Rst = '1' then
-                LfsrReg                                 <= (others => '0');
-                LfsrReg(Polynomial_g'length-1 downto 0) <= Seed_g;
+                LfsrReg <= lfsrInitValue;
             end if;
 
         end if;

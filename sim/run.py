@@ -296,7 +296,7 @@ for Latency in [0, 1]:
 prbs_tbs = ['olo_base_prbs4_tb']
 for tb_name in prbs_tbs:
     tb = olo_tb.test_bench(tb_name)
-    for BitsPerSymbol in [1, 2, 3, 4]:
+    for BitsPerSymbol in [1, 2, 3, 4, 7, 8]:
         named_config(tb, {'BitsPerSymbol_g': BitsPerSymbol})
 
 #reset_gen

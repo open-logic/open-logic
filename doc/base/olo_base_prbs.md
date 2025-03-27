@@ -27,6 +27,10 @@ The initial state of the LFSR can be configured throuh _Seed_g_ at compile time 
 where _State_Set='1'_ is asserted at runtime. Note that the state of an LFSR never should be zero - otherwise the LFSR
 will stay zero forever.
 
+Note that for the case of _BitsPerSymbol_g_ > _width(Polynomial_g)_ the LFSR is shifted _before_ the first symbol is
+produced. Hence _Seed_g_ (after reset) resp. _State_New_ (after setting the state) is ocurring in the highest bits of
+the first _Out_Data_ word - and the lower bits are the first results of the LFSR calculation.
+
 ## Generics
 
 | Name            | Type             | Default | Description                                                  |
@@ -34,6 +38,9 @@ will stay zero forever.
 | Polynomial_g    | std_logic_vector | -       | Polynomial to use. <br />"100010000" means "x⁴+x⁸". |
 | Seed_g          | std_logic_vector | -       | Initial state of the LFSR. Needs to be the same width as _Polynomial_g_. Must be non-zero vector. |
 | BitsPerSymbol_g | positive         | 1       | Number of bits of the PRBS sequence to present at the output for every symbol (width of _Out_Data_). <br />Must be at least 1. |
+| LfsrWidth_g     | natural          | 0       | Deprecated generic - will be removed in next major release <br> Not used anymore, kept only for backward compatibility. |
+
+For new designs, _LfsrWidth_g_ shall be left unassigned.
 
 ## Interfaces
 
@@ -56,9 +63,9 @@ will stay zero forever.
 
 | Name          | In/Out | Length        | Default | Description                                                  |
 | :------------ | :----- | :------------ | ------- | :----------------------------------------------------------- |
-| State_Current | out    | _LfsrWidth_g_ | -       | Current state of the LFSR register                           |
+| State_Current | out    | width of _Polynomial_g_ | -       | Current state of the LFSR register                           |
 | State_Set     | in     | 1             | '0'     | The LFSR content is set to _State_New_ when _State_Set='1'_ is asserted. |
-| State_New     | in     | _LfsrWidth_g_ | 0       | LFSR state to set upon _State_Set='1'_.                      |
+| State_New     | in     | width of _Polynomial_g_ | 0       | LFSR state to set upon _State_Set='1'_.                      |
 
 Note: If the state functionality is not needed, the corresponding signals can be left unconnected.
 
