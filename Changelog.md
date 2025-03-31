@@ -4,7 +4,7 @@
 
 ## 3.2.0
 
-02-Apr-2025
+01-Apr-2025
 
 ### Added Features
 
@@ -18,6 +18,9 @@
   - Some of them reported by: [tasgomes](https://github.com/tasgomes), [rbrglez](https://github.com/rbrglez), [peteut](https://github.com/peteut), [rbrglez](https://github.com/rbrglez)
 - Removal of various needless declarations
   - Contributed by: [the-oeni](https://github.com/the-oeni)
+
+- Allow symbols width bigger than LFSR width in _olo_base_prbs_
+  - Co-authored by: [hh44bbbbyy](https://github.com/hh44bbbbyy)
 
 
 ### Non Backward Compatible Changes
@@ -45,11 +48,15 @@
 
 ### Reporters
 
-- [tasgomes](https://github.com/tasgomes), [rbrglez](https://github.com/rbrglez), [peteut](https://github.com/peteut), [rbrglez](https://github.com/rbrglez)
+- [tasgomes](https://github.com/tasgomes)
+- [rbrglez](https://github.com/rbrglez)
+- [peteut](https://github.com/peteut)
+- [rbrglez](https://github.com/rbrglez)
 
 ### Contributors
 
 - [the-oeni](https://github.com/the-oeni)
+- [hh44bbbbyy](https://github.com/hh44bbbbyy)
 
 ## 3.1.0
 
