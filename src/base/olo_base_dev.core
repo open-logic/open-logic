@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : open-logic:open-logic-dev:base:3.1.0
+name : open-logic:open-logic-dev:base:3.2.0
 description : local files (release plus WIP); Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base
 
 filesets:
@@ -24,6 +24,7 @@ filesets:
       - vhdl/olo_base_prbs.vhd
       - vhdl/olo_base_tdm_mux.vhd
       - vhdl/olo_base_cc_handshake.vhd
+      - vhdl/olo_base_pkg_string.vhd
       - vhdl/olo_base_pkg_array.vhd
       - vhdl/olo_base_flowctrl_handler.vhd
       - vhdl/olo_base_dyn_sft.vhd

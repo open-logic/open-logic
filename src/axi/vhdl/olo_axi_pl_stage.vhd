@@ -148,14 +148,6 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_axi_pl_stage is
 
-    -- AXI constants
-    constant LenWidth_c   : positive := 8;
-    constant SizeWidth_c  : positive := 3;
-    constant BurstWidth_c : positive := 2;
-    constant CacheWidth_c : positive := 4;
-    constant ProtWidth_c  : positive := 3;
-    constant RespWidth_c  : positive := 2;
-
 begin
 
     -- write address channel

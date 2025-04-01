@@ -29,7 +29,8 @@ entity olo_base_ram_sdp_tb is
         RamBehavior_g   : string                  := "RBW";
         UseByteEnable_g : boolean                 := false;
         IsAsync_g       : boolean                 := false;
-        RdLatency_g     : positive range 1 to 2   := 1
+        RdLatency_g     : positive range 1 to 2   := 1;
+        InitFormat_g    : string                  := "NONE"
     );
 end entity;
 
@@ -38,6 +39,7 @@ architecture sim of olo_base_ram_sdp_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
+    constant InitString_c  : string  := "0x01, 0x5,0x1317";
     constant BeWidth_c     : integer := Width_g/8;
     constant BeSigWidth_c  : integer := maximum(BeWidth_c, 2); -- Must be at least 2 bits to avoid compile errors with GHDL.
     -- .. GHDL checks ranges also on code in a not executed if-clause.
@@ -90,14 +92,14 @@ architecture sim of olo_base_ram_sdp_tb is
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
     signal Clk     : std_logic                                 := '0';
-    signal Wr_Addr : std_logic_vector(7 downto 0);
-    signal Wr_Ena  : std_logic                                 := '1';
+    signal Wr_Addr : std_logic_vector(7 downto 0)              := (others => '0');
+    signal Wr_Ena  : std_logic                                 := '0';
     signal Wr_Be   : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
-    signal Wr_Data : std_logic_vector(Width_g - 1 downto 0);
+    signal Wr_Data : std_logic_vector(Width_g - 1 downto 0)    := (others => '0');
     signal Rd_Clk  : std_logic                                 := '0';
-    signal Rd_Addr : std_logic_vector(7 downto 0);
+    signal Rd_Addr : std_logic_vector(7 downto 0)              := (others => '0');
     signal Rd_Ena  : std_logic                                 := '1';
-    signal Rd_Data : std_logic_vector(Width_g - 1 downto 0);
+    signal Rd_Data : std_logic_vector(Width_g - 1 downto 0)    := (others => '0');
 
 begin
 
@@ -111,7 +113,9 @@ begin
             RamBehavior_g   => RamBehavior_g,
             UseByteEnable_g => UseByteEnable_g,
             IsAsync_g       => IsAsync_g,
-            RdLatency_g     => RdLatency_g
+            RdLatency_g     => RdLatency_g,
+            InitString_g    => InitString_c,
+            InitFormat_g    => InitFormat_g
         )
         port map (
             Clk         => Clk,
@@ -138,7 +142,7 @@ begin
     -- TB Control
     -----------------------------------------------------------------------------------------------
     -- TB is not very vunit-ish because it is a ported legacy TB
-    test_runner_watchdog(runner, 1 ms);
+    test_runner_watchdog(runner, 100 us);
 
     p_control : process is
     begin
@@ -149,6 +153,21 @@ begin
             -- Wait for some time
             wait for 1 us;
             wait until rising_edge(Clk);
+
+            -- test initialization values
+            if run("Init-Values") then
+                if InitFormat_g = "HEX" then
+                    if IsAsync_g then
+                        check(0, 1, Rd_Clk, Rd_Addr, Rd_Data, "Init-Values: 0=0x01");
+                        check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "Init-Values: 1=0x05");
+                        check(2, 16#1317#, Rd_Clk, Rd_Addr, Rd_Data, "Init-Values: 2=0x17");
+                    else
+                        check(0, 1, Clk, Rd_Addr, Rd_Data, "Init-Values: 0=0x01");
+                        check(1, 5, Clk, Rd_Addr, Rd_Data, "Init-Values: 1=0x05");
+                        check(2, 16#1317#, Clk, Rd_Addr, Rd_Data, "Init-Values: 2=0x17");
+                    end if;
+                end if;
+            end if;
 
             -- write 3 Values, Read back
             if run("Basic") then

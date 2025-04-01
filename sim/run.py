@@ -124,6 +124,15 @@ for tb_name in ram_tbs:
         named_config(tb, {'Width_g': Width})
     for Be in [True, False]:
         named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
+    # Check no-init
+    named_config(tb, {'InitFormat_g': 'NONE'})
+    # Check non byte-width
+    named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': 7})
+    # Check init, byte-enables play a role internally
+    for Be in [True, False]:
+        for Width in [8, 16]: 
+            named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': Width, 'UseByteEnable_g' : Be})
+
 
 ram_tbs = ['olo_base_ram_sdp_tb']
 for tb_name in ram_tbs:
@@ -139,6 +148,14 @@ for tb_name in ram_tbs:
         named_config(tb, {'Width_g': Width})
     for Be in [True, False]:
         named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
+    # Check no-init
+    named_config(tb, {'InitFormat_g': 'NONE'})
+    # Check non byte-width
+    named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': 7})
+    # Check init, byte-enables play a role internally
+    for Be in [True, False]:
+        for Width in [8, 16]: 
+            named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': Width, 'UseByteEnable_g' : Be})
 
 #FIFO TBs
 fifo_tbs = ['olo_base_fifo_sync_tb', 'olo_base_fifo_async_tb']
@@ -279,7 +296,7 @@ for Latency in [0, 1]:
 prbs_tbs = ['olo_base_prbs4_tb']
 for tb_name in prbs_tbs:
     tb = olo_tb.test_bench(tb_name)
-    for BitsPerSymbol in [1, 2, 3, 4]:
+    for BitsPerSymbol in [1, 2, 3, 4, 7, 8]:
         named_config(tb, {'BitsPerSymbol_g': BitsPerSymbol})
 
 #reset_gen

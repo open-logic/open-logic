@@ -24,7 +24,7 @@ special applications where the CRC has to be checked after every data-word.
 
 The component is highly configurable in order to allow calculating CRC checksums for all known standard protocols
 without any external logic. Regarding the notation of parametrization, the website
-[crccalc.com](https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin) is taken as reference. On this website
+[crccalc.com](https://crccalc.com) is taken as reference. On this website
 many commonly used CRCs are listed.
 
 ## Generics
@@ -33,12 +33,12 @@ many commonly used CRCs are listed.
 | :-------------- | :------- | ----------- | :----------------------------------------------------------- |
 | CrcWidth_g      | positive | -           | Width of the CRC in bits (must be >= 2)                      |
 | DataWidth_g     | positive | -           | Input data width                                             |
-| Polynomial_g    | natural  | -           | CRC Polynomial according to the notation in [crccalc.com](https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin) - which matches the comon-sense.<br />Passed as integer - for good readability use hex notation (e.g. _16#D5#_) <br />For details, see [Architecture](#architecture) |
+| Polynomial_g    | natural  | -           | CRC Polynomial according to the notation in [crccalc.com](https://crccalc.com) - which matches the comon-sense.<br />Passed as integer - for good readability use hex notation (e.g. _16#D5#_) <br />For details, see [Architecture](#architecture) |
 | InitialValue_g  | natural  | 0           | Initial value to load into the LFSR before the first data word arrives.<br />Passed as integer - for good readability use hex notation (e.g. _16#D5#_) |
 | BitOrder_g      | string   | "MSB_FIRST" | The input can be processed "MSB_FIRST" or "LSB_FIRST".<br />"MSB_FIRST" - Most significant bit is shifted into LFSR first<br />"LSB_FIRST" - Least significant bit is shifted into LFSR first |
 | ByteOrder_g     | string   | "NONE"      | This generic allows byte-wise processing of the input if required.<br />"NONE" - No byte-wise processing, the whole input is interpreted as one word<br />"MSB_FIRST" - Most significant byte of the input is shifted into the LFSR first. <br />"MSB_FIRST" -  Least significant byte of the input is shifted into the LFSR first. <br />For any other values than "NONE" the setting of _BitOrder_g_ is applied to the ordering of bits within each byte.<br>**Note:** Other values than "NONE" are only allowed if _DataWidth_g_ is a multiple of 8 |
 | BitflipOutput_g | boolean  | false       | If set to _true_ the LFSR content is bit-flipped (MSB to LSB and vice-versa) for output through _Out_Crc_. |
-| XorOutput_g     | natural  | 0           | XOR mask to apply to the output. This is required for certain standards according to [crccalc.com](https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin). <b> The XOR mask is applied after bitflip in case of _BitFlipOutput_g=true_. |
+| XorOutput_g     | natural  | 0           | XOR mask to apply to the output. This is required for certain standards according to [crccalc.com](https://crccalc.com). <b> The XOR mask is applied after bitflip in case of _BitFlipOutput_g=true_. |
 
 **Note:** For cases where no exact protocol specification must be followed (for user defined protocols) it is suggested
 to leave the following generics on their default value. These generics are only used to match exact protocol
@@ -114,10 +114,10 @@ the figure does not depict the actual implementation but the functionality.
 ![Overview](./misc/olo_base_crc_lfsr.svg)
 
 Below table lists the settings to be used for a set of standard CRCs according to different protocol specifications.
-More standard CRCs can be found on [crccalc.com](https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin).
+More standard CRCs can be found on [crccalc.com](https://crccalc.com).
 All the CRCs listed in below table are also present in
-[crccalc.com](https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin) and hence the mapping of values from
-[crccalc.com](https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin) to _olo_base_crc_ generics is clarified
+[crccalc.com](https://crccalc.com) and hence the mapping of values from
+[crccalc.com](https://crccalc.com) to _olo_base_crc_ generics is clarified
 by the table.
 
 | CRC Standard    | CrcWidth_g | Polynomial_g | InitialValue_g | BitOrder_g  | BitflipOutput_g | XorOutput_g |

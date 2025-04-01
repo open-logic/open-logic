@@ -25,7 +25,7 @@ parser.add_argument("--library", type=str, help=HELP_LIBRARY, required=True)
 args = parser.parse_args()
 
 # Find all *.vhd files in SRC_DIR/.../vhdl
-SRC_DIR = "../../src"
+SRC_DIR = path.join(path.dirname(path.abspath(__file__)), "../../src")
 files_rel = glob.glob(path.join(SRC_DIR, "**/vhdl/*.vhd"), recursive=True)
 
 # Get project directory
