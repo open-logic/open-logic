@@ -33,19 +33,19 @@ TODO
 
 ### Input Interface
 
-| Name      | In/Out | Length                  | Default       | Description                                                                                                                   |
-| :-------- | :----- | :---------------------- | ------------- | :---------------------------------------------------------------------------------------------------------------------------- |
-| In_En     | in     | 1                       | -             | Enable PWM output                                                                                                             |
-| In_Period | in     | _log2Ceil(MaxPeriod_g)_ | MaxPeriod_g   | Period of output PWM signal in clock cycles                                                                                   |
-| In_Duty   | in     | _log2Ceil(MaxPeriod_g)_ | MaxPeriod_g/2 | Duty cycle of PWM signal. <br /> 100% Duty Cycle = MaxPeriod_g <br /> 50% Duty Cycle = MaxPeriod_g/2 <br /> 0% Duty Cycle = 0 |
+| Name      | In/Out | Length                    | Default       | Description                                 |
+| :-------- | :----- | :------------------------ | ------------- | :------------------------------------------ |
+| In_En     | in     | 1                         | -             | Enable PWM output                           |
+| In_Period | in     | _log2Ceil(MaxPeriod_g+1)_ | MaxPeriod_g   | Period of output PWM signal in clock cycles |
+| In_OnTime | in     | _log2Ceil(MaxPeriod_g+1)_ | -             | Number of clock cycles PWM signal is ON.    |
 
 ### Output Interface
 
-| Name            | In/Out  | Length                  | Description                                                                                                                  |
-| :-------------- | :------ | :---------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
-| Out_PeriodStart | out     | 1                       | Strobe signal indicating when new PWM period has started                                                                     |
-| Out_PeriodCnt   | out     | _log2Ceil(MaxPeriod_g)_ | Counts from 0 to In_Period - 1, <br /> providing information about the current position within the period of the PWM signal. |
-| Out_Pwm         | out     | 1                       | PWM signal                                                                                                                   |
+| Name            | In/Out  | Length                    | Description                                                                                                                  |
+| :-------------- | :------ | :------------------------ | :--------------------------------------------------------------------------------------------------------------------------- |
+| Out_PeriodStart | out     | 1                         | Strobe signal indicating when new PWM period has started                                                                     |
+| Out_PeriodCnt   | out     | _log2Ceil(MaxPeriod_g+1)_ | Counts from 0 to In_Period - 1, <br /> providing information about the current position within the period of the PWM signal. |
+| Out_Pwm         | out     | 1                         | PWM signal                                                                                                                   |
 
 ## Detailed Description
 
