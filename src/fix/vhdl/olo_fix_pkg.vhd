@@ -25,7 +25,7 @@ library ieee;
 
 library work;
     use work.en_cl_fix_pkg.all;
-    use work.en_cl_fix_prviate_pkg.all;
+    use work.en_cl_fix_private_pkg.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Header
@@ -73,22 +73,22 @@ package body olo_fix_pkg is
     function fixImplementReg (
         logicPresent : boolean;
         regMode      : string) return boolean is
+        constant RegMode_c : string := toLower(regMode);
     begin
 
         -- Calculate register requirement
-        case toLower(regMode) is
-            when "yes" =>
-                return true;
-            when "auto" =>
-                return logicPresent;
-            when "no" =>
-                return false;
-            when others =>
-                assert false
-                    report "olo_fix - Invalid register mode '" & regMode & "' - must be YES, NO or AUTO"
-                    severity failure;
-                return false;
-        end case;
+        if RegMode_c = "yes" then
+            return true;
+        elsif RegMode_c = "no" then
+            return false;
+        elsif RegMode_c = "auto" then
+            return logicPresent;
+        else
+            assert false
+                report "olo_fix - Invalid register mode '" & regMode & "' - must be YES, NO or AUTO"
+                severity failure;
+            return false;
+        end if;
 
     end function;
 

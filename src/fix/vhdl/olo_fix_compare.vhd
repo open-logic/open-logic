@@ -33,7 +33,7 @@ library work;
 -- Entity Declaration
 ---------------------------------------------------------------------------------------------------
 
-entity olo_fix_add is
+entity olo_fix_compare is
     generic (
         -- Formats / Round / Saturate
         AFmt_g       : string;
@@ -56,7 +56,7 @@ entity olo_fix_add is
     );
 end entity;
 
-architecture rtl of olo_fix_add is
+architecture rtl of olo_fix_compare is
 
     -- String to en_cl_fix
     constant AFmt_c : FixFormat_t := cl_fix_format_from_string(AFmt_g);
@@ -65,13 +65,14 @@ architecture rtl of olo_fix_add is
     -- Signals
     signal Comp_Valid    : std_logic;
     signal Comp_DataComb : std_logic;
-    signal Comp_Data     : std_logic;
+    signal Comp_DataBool : boolean;
 
 begin
 
     -- Operation
-    Comp_DataComb <= cl_fix_compare(Comparison_g, In_A, AFmt_c, In_B, BFmt_c);
-
+    Comp_DataBool <= cl_fix_compare(Comparison_g, In_A, AFmt_c, In_B, BFmt_c);
+    Comp_DataComb <= '1' when Comp_DataBool else '0';
+    
     -- Op Register
     i_reg : entity work.olo_fix_private_optional_reg
         generic map (
@@ -79,12 +80,12 @@ begin
             Stages_g   => OpRegs_g
         )
         port map (
-            Clk       => Clk,
-            Rst       => Rst,
-            In_Valid  => In_Valid,
-            In_Data   => Comp_DataComb,
-            Out_Valid => Out_Valid,
-            Out_Data  => Out_Result
+            Clk          => Clk,
+            Rst          => Rst,
+            In_Valid     => In_Valid,
+            In_Data(0)   => Comp_DataComb,
+            Out_Valid    => Out_Valid,
+            Out_Data(0)  => Out_Result
         );
 
 end architecture;

@@ -95,9 +95,9 @@ begin
         );
 
     -- Resize
-    i_round : entity work.olo_fix_round
+    i_round : entity work.olo_fix_resize
         generic map (
-            AFmt_g      => AddFmt_c,
+            AFmt_g      => to_string(AddFmt_c),
             ResultFmt_g => ResultFmt_g,
             Round_g     => Round_g,
             Saturate_g  => Saturate_g,

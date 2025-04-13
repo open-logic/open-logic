@@ -47,10 +47,12 @@ entity olo_fix_to_real is
 end entity;
 
 architecture rtl of olo_fix_to_real is
+    -- String to en_cl_fix
+    constant AFmt_c : FixFormat_t := cl_fix_format_from_string(AFmt_g);
 
 begin
 
     -- Convert real to fix
-    Out_Value <= cl_fix_to_real(In_A, AFmt_g);
+    Out_Value <= cl_fix_to_real(In_A, AFmt_c);
 
 end architecture;

@@ -71,7 +71,7 @@ begin
     end generate;
 
     -- ** Registers ***
-    g_reg : if Stages > 0 generate
+    g_reg : if Stages_g > 0 generate
 
         p_reg : process (Clk) is
         begin

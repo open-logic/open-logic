@@ -81,7 +81,7 @@ begin
     i_reg : entity work.olo_fix_private_optional_reg
         generic map (
             Width_g    => cl_fix_width(ResultFmt_c),
-            Stage_g    => OpRegStages_c
+            Stages_g   => OpRegStages_c
         )
         port map (
             Clk       => Clk,

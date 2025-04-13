@@ -32,7 +32,7 @@ library work;
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
 ---------------------------------------------------------------------------------------------------
-entity olo_fix_round is
+entity olo_fix_resize is
     generic (
         -- Formats / Round / Saturate
         AFmt_g      : string;
@@ -56,7 +56,7 @@ entity olo_fix_round is
     );
 end entity;
 
-architecture rtl of olo_fix_round is
+architecture rtl of olo_fix_resize is
 
     -- String to en_cl_fix
     constant AFmt_c      : FixFormat_t := cl_fix_format_from_string(AFmt_g);
@@ -76,7 +76,7 @@ begin
     i_round : entity work.olo_fix_round
         generic map (
             AFmt_g      => AFmt_g,
-            ResultFmt_g => RoundFmt_c,
+            ResultFmt_g => to_string(RoundFmt_c),
             Round_g     => Round_g,
             RoundReg_g  => RoundReg_g
         )
@@ -92,7 +92,7 @@ begin
     -- Saturate
     i_saturate : entity work.olo_fix_saturate
         generic map (
-            AFmt_g      => RoundFmt_c,
+            AFmt_g      => to_string(RoundFmt_c),
             ResultFmt_g => ResultFmt_g,
             Saturate_g  => Saturate_g,
             SatReg_g    => SatReg_g
