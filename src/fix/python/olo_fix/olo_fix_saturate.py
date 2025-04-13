@@ -7,34 +7,30 @@
 # ---------------------------------------------------------------------------------------------------
 # Imports
 # ---------------------------------------------------------------------------------------------------
-
-# Import en_cl_fix
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../3rdParty/en_cl_fix/bittrue/models/python")))
-
-# Import the necessary modules
 from en_cl_fix_pkg import *
 
 # ---------------------------------------------------------------------------------------------------
 # Class
 # ---------------------------------------------------------------------------------------------------
-class olo_fix_from_real:
+class olo_fix_saturate:
     """
-    Model of olo_fix_from_real entity
+    Model of olo_fix_saturate entity
     """
 
     # ---------------------------------------------------------------------------------------------------
     # Constructor
     # ---------------------------------------------------------------------------------------------------
     def __init__(self,
+                 a_fmt : FixFormat,
                  result_fmt : FixFormat,
                  saturate : FixSaturate = FixSaturate.Warn_s):
         """
-        Constructor for the olo_fix_abs class.
+        Constructor for the olo_fix_resize class.
+        :param a_fmt: Format of the a input
         :param result_fmt: Format of the result
         :param saturate: Saturation mode
         """
+        self._a_fmt = a_fmt
         self._result_fmt = result_fmt
         self._saturate = saturate
 
@@ -50,7 +46,7 @@ class olo_fix_from_real:
         :param a: Input a
         :return: Processed result
         """
-        return cl_fix_from_real(a, self._result_fmt, self._saturate)
+        return cl_fix_saturate(a, self._a_fmt, self._result_fmt, self._saturate)
 
     def process(self, a):
         """

@@ -13,7 +13,7 @@ import unittest
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from olo_fix_sub import olo_fix_sub
+from olo_fix import olo_fix_sub
 from en_cl_fix_pkg import *
 
 # Note: Test coverage is OK for the Open Logic code, it does not cover all numerics because

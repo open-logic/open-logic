@@ -7,21 +7,14 @@
 # ---------------------------------------------------------------------------------------------------
 # Imports
 # ---------------------------------------------------------------------------------------------------
-
-# Import en_cl_fix
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../3rdParty/en_cl_fix/bittrue/models/python")))
-
-# Import the necessary modules
 from en_cl_fix_pkg import *
 
 # ---------------------------------------------------------------------------------------------------
 # Class
 # ---------------------------------------------------------------------------------------------------
-class olo_fix_neg:
+class olo_fix_abs:
     """
-    Model of olo_fix_neg entity
+    Model of olo_fix_abs entity
     """
 
     # ---------------------------------------------------------------------------------------------------
@@ -33,7 +26,7 @@ class olo_fix_neg:
                  round : FixRound = FixRound.Trunc_s,
                  saturate : FixSaturate = FixSaturate.Warn_s):
         """
-        Constructor for the olo_fix_neg class.
+        Constructor for the olo_fix_abs class.
         :param a_fmt: Format of the a input
         :param result_fmt: Format of the result
         :param round: Rounding mode
@@ -56,7 +49,7 @@ class olo_fix_neg:
         :param a: Input a
         :return: Processed result
         """
-        return cl_fix_neg(a, self._a_fmt, self._result_fmt, self._round, self._saturate)
+        return cl_fix_abs(a, self._a_fmt, self._result_fmt, self._round, self._saturate)
 
     def process(self, a):
         """

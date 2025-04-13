@@ -7,21 +7,14 @@
 # ---------------------------------------------------------------------------------------------------
 # Imports
 # ---------------------------------------------------------------------------------------------------
-
-# Import en_cl_fix
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../3rdParty/en_cl_fix/bittrue/models/python")))
-
-# Import the necessary modules
 from en_cl_fix_pkg import *
 
 # ---------------------------------------------------------------------------------------------------
 # Class
 # ---------------------------------------------------------------------------------------------------
-class olo_fix_resize:
+class olo_fix_compare:
     """
-    Model of olo_fix_resize entity
+    Model of olo_fix_compare entity
     """
 
     # ---------------------------------------------------------------------------------------------------
@@ -29,20 +22,19 @@ class olo_fix_resize:
     # ---------------------------------------------------------------------------------------------------
     def __init__(self,
                  a_fmt : FixFormat,
-                 result_fmt : FixFormat,
-                 round : FixRound = FixRound.Trunc_s,
-                 saturate : FixSaturate = FixSaturate.Warn_s):
+                 b_fmt : FixFormat,
+                 comparison : str):
         """
-        Constructor for the olo_fix_resize class.
+        Constructor of the olo_fix_add class
         :param a_fmt: Format of the a input
-        :param result_fmt: Format of the result
-        :param round: Rounding mode
-        :param saturate: Saturation mode
+        :param b_fmt: Format of the b input
+        :param comparison: Comparison type (">", "<", "=", "!=", ">=", "<=")
         """
         self._a_fmt = a_fmt
-        self._result_fmt = result_fmt
-        self._round = round
-        self._saturate = saturate
+        self._b_fmt = b_fmt
+        self._comparison = comparison
+        assert comparison in [">", "<", "=", "!=", ">=", "<="], \
+            "Comparison type must be one of [>, <, =, !=, >=, <=]"
 
     def reset(self):
         """
@@ -50,19 +42,39 @@ class olo_fix_resize:
         """
         pass #Does not have state
 
-    def next(self, a):
+    def next(self, a, b):
         """
         Process next N samples
         :param a: Input a
-        :return: Processed result
+        :param b: Input b
+        :return: Result
         """
-        return cl_fix_resize(a, self._a_fmt, self._result_fmt, self._round, self._saturate)
+        #Convert a and b to np.array is they are lists
+        if isinstance(a, list):
+            a = np.array(a)
+        if isinstance(b, list):
+            b = np.array(b)
+        if self._comparison == ">":
+            return a > b
+        elif self._comparison == "<":
+            return a < b
+        elif self._comparison == "=":
+            return a == b
+        elif self._comparison == "!=":
+            return a != b
+        elif self._comparison == ">=":
+            return a >= b
+        elif self._comparison == "<=":
+            return a <= b
+        else:
+            raise ValueError(f"Unknown comparison type: {self._comparison}")
 
-    def process(self, a):
+    def process(self, a, b):
         """
         Process samples (without preserving previous state)
         :param a: Input a
-        :return: Processed result
+        :param b: Input b
+        :return: Result
         """
         self.reset()
-        return self.next(a)
+        return self.next(a, b)

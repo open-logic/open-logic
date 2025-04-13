@@ -7,22 +7,14 @@
 # ---------------------------------------------------------------------------------------------------
 # Imports
 # ---------------------------------------------------------------------------------------------------
-
-# Import en_cl_fix
-import sys
-import os
-import numpy as np
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../3rdParty/en_cl_fix/bittrue/models/python")))
-
-# Import the necessary modules
 from en_cl_fix_pkg import *
 
 # ---------------------------------------------------------------------------------------------------
 # Class
 # ---------------------------------------------------------------------------------------------------
-class olo_fix_compare:
+class olo_fix_add:
     """
-    Model of olo_fix_compare entity
+    Model of olo_fix_add entity
     """
 
     # ---------------------------------------------------------------------------------------------------
@@ -31,18 +23,22 @@ class olo_fix_compare:
     def __init__(self,
                  a_fmt : FixFormat,
                  b_fmt : FixFormat,
-                 comparison : str):
+                 result_fmt : FixFormat,
+                 round : FixRound = FixRound.Trunc_s,
+                 saturate : FixSaturate = FixSaturate.Warn_s):
         """
         Constructor of the olo_fix_add class
         :param a_fmt: Format of the a input
         :param b_fmt: Format of the b input
-        :param comparison: Comparison type (">", "<", "=", "!=", ">=", "<=")
+        :param result_fmt: Format of the result
+        :param round: Rounding mode
+        :param saturate: Saturation mode
         """
         self._a_fmt = a_fmt
         self._b_fmt = b_fmt
-        self._comparison = comparison
-        assert comparison in [">", "<", "=", "!=", ">=", "<="], \
-            "Comparison type must be one of [>, <, =, !=, >=, <=]"
+        self._result_fmt = result_fmt
+        self._round = round
+        self._saturate = saturate
 
     def reset(self):
         """
@@ -57,25 +53,9 @@ class olo_fix_compare:
         :param b: Input b
         :return: Result
         """
-        #Convert a and b to np.array is they are lists
-        if isinstance(a, list):
-            a = np.array(a)
-        if isinstance(b, list):
-            b = np.array(b)
-        if self._comparison == ">":
-            return a > b
-        elif self._comparison == "<":
-            return a < b
-        elif self._comparison == "=":
-            return a == b
-        elif self._comparison == "!=":
-            return a != b
-        elif self._comparison == ">=":
-            return a >= b
-        elif self._comparison == "<=":
-            return a <= b
-        else:
-            raise ValueError(f"Unknown comparison type: {self._comparison}")
+        return cl_fix_add(a, self._a_fmt, 
+                          b, self._b_fmt, 
+                          self._result_fmt, self._round, self._saturate)
 
     def process(self, a, b):
         """

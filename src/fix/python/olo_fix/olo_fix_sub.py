@@ -7,21 +7,14 @@
 # ---------------------------------------------------------------------------------------------------
 # Imports
 # ---------------------------------------------------------------------------------------------------
-
-# Import en_cl_fix
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../3rdParty/en_cl_fix/bittrue/models/python")))
-
-# Import the necessary modules
 from en_cl_fix_pkg import *
 
 # ---------------------------------------------------------------------------------------------------
 # Class
 # ---------------------------------------------------------------------------------------------------
-class olo_fix_add:
+class olo_fix_sub:
     """
-    Model of olo_fix_add entity
+    Model of olo_fix_sub entity
     """
 
     # ---------------------------------------------------------------------------------------------------
@@ -34,7 +27,7 @@ class olo_fix_add:
                  round : FixRound = FixRound.Trunc_s,
                  saturate : FixSaturate = FixSaturate.Warn_s):
         """
-        Constructor of the olo_fix_add class
+        Constructor of the olo_fix_sub class
         :param a_fmt: Format of the a input
         :param b_fmt: Format of the b input
         :param result_fmt: Format of the result
@@ -60,7 +53,7 @@ class olo_fix_add:
         :param b: Input b
         :return: Result
         """
-        return cl_fix_add(a, self._a_fmt, 
+        return cl_fix_sub(a, self._a_fmt, 
                           b, self._b_fmt, 
                           self._result_fmt, self._round, self._saturate)
 

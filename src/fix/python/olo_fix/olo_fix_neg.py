@@ -7,21 +7,14 @@
 # ---------------------------------------------------------------------------------------------------
 # Imports
 # ---------------------------------------------------------------------------------------------------
-
-# Import en_cl_fix
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../3rdParty/en_cl_fix/bittrue/models/python")))
-
-# Import the necessary modules
 from en_cl_fix_pkg import *
 
 # ---------------------------------------------------------------------------------------------------
 # Class
 # ---------------------------------------------------------------------------------------------------
-class olo_fix_addsub:
+class olo_fix_neg:
     """
-    Model of olo_fix_addsub entity
+    Model of olo_fix_neg entity
     """
 
     # ---------------------------------------------------------------------------------------------------
@@ -29,20 +22,17 @@ class olo_fix_addsub:
     # ---------------------------------------------------------------------------------------------------
     def __init__(self,
                  a_fmt : FixFormat,
-                 b_fmt : FixFormat,
                  result_fmt : FixFormat,
                  round : FixRound = FixRound.Trunc_s,
                  saturate : FixSaturate = FixSaturate.Warn_s):
         """
-        Constructor of the olo_fix_add class
+        Constructor for the olo_fix_neg class.
         :param a_fmt: Format of the a input
-        :param b_fmt: Format of the b input
         :param result_fmt: Format of the result
         :param round: Rounding mode
         :param saturate: Saturation mode
         """
         self._a_fmt = a_fmt
-        self._b_fmt = b_fmt
         self._result_fmt = result_fmt
         self._round = round
         self._saturate = saturate
@@ -53,26 +43,19 @@ class olo_fix_addsub:
         """
         pass #Does not have state
 
-    def next(self, a, b, add):
+    def next(self, a):
         """
         Process next N samples
         :param a: Input a
-        :param b: Input b
-        :param add: True for addition, False for subtraction (single boolean or boolean array)
-        :return: Result
+        :return: Processed result
         """
-        return cl_fix_addsub(a, self._a_fmt, 
-                             b, self._b_fmt, 
-                             add,
-                             self._result_fmt, self._round, self._saturate)
+        return cl_fix_neg(a, self._a_fmt, self._result_fmt, self._round, self._saturate)
 
-    def process(self, a, b, add):
+    def process(self, a):
         """
         Process samples (without preserving previous state)
         :param a: Input a
-        :param b: Input b
-        :param add: True for addition, False for subtraction (single boolean or boolean array)
-        :return: Result
+        :return: Processed result
         """
         self.reset()
-        return self.next(a, b, add)
+        return self.next(a)

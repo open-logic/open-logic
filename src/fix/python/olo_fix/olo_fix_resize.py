@@ -7,21 +7,14 @@
 # ---------------------------------------------------------------------------------------------------
 # Imports
 # ---------------------------------------------------------------------------------------------------
-
-# Import en_cl_fix
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../3rdParty/en_cl_fix/bittrue/models/python")))
-
-# Import the necessary modules
 from en_cl_fix_pkg import *
 
 # ---------------------------------------------------------------------------------------------------
 # Class
 # ---------------------------------------------------------------------------------------------------
-class olo_fix_round:
+class olo_fix_resize:
     """
-    Model of olo_fix_round entity
+    Model of olo_fix_resize entity
     """
 
     # ---------------------------------------------------------------------------------------------------
@@ -30,16 +23,19 @@ class olo_fix_round:
     def __init__(self,
                  a_fmt : FixFormat,
                  result_fmt : FixFormat,
-                 round : FixRound = FixRound.Trunc_s):
+                 round : FixRound = FixRound.Trunc_s,
+                 saturate : FixSaturate = FixSaturate.Warn_s):
         """
-        Constructor for the olo_fix_round class.
+        Constructor for the olo_fix_resize class.
         :param a_fmt: Format of the a input
         :param result_fmt: Format of the result
         :param round: Rounding mode
+        :param saturate: Saturation mode
         """
         self._a_fmt = a_fmt
         self._result_fmt = result_fmt
         self._round = round
+        self._saturate = saturate
 
     def reset(self):
         """
@@ -53,7 +49,7 @@ class olo_fix_round:
         :param a: Input a
         :return: Processed result
         """
-        return cl_fix_round(a, self._a_fmt, self._result_fmt, self._round)
+        return cl_fix_resize(a, self._a_fmt, self._result_fmt, self._round, self._saturate)
 
     def process(self, a):
         """
