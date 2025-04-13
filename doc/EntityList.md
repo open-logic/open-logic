@@ -138,16 +138,32 @@ This area contains components related to interfacing to external components.
 
 ## fix
 
-This area contains fixed point mathematic related functionality. 
+This area contains fixed point mathematic related functionality.
 
-All fixed point mathematics functions in Open Logic follow a common cent of principles described in [Open Logic Fixed-Point Principles](./fix/olo_fix_principles.md). Read through this document before using the components.
+All fixed point mathematics functions in Open Logic follow a common cent of principles described in
+[Open Logic Fixed-Point Principles](./fix/olo_fix_principles.md). Read through this document before using the
+components.
 
 | Entity | Description |
 | ------ | ----------- |
-| x      | y           |
-|        |             |
-|        |             |
-|        |             |
-|        |             |
-|        |             |
-|        |             |
+| [en_cl_fix_pkg](../3rdParty/en_cl_fix/README.md) | 3rd Party Package for fixed-point mathematics. <br> Original source [Enclustra GitHub](https://github.com/enclustra/en_cl_fix) |
+| [olo_fix_pkg](./fix/olo_fix_pkg.md)              | Package with various Open Logic specific definitions (e.g. common options of string-type generics) |
+| [olo_fix_round](./fix/olo_fix_round.md)          | Rounding to a number format with less fractional bits.<br>Instead of this component, the _cl_fix_round()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_saturate](./fix/olo_fix_saturate.md)    | Saturate to a number format with less integer bits<br>Instead of this component, the _cl_fix_saturate()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_resize](./fix/olo_fix_resize.md)        | Resize to a different number format. <br>Instead of this component, the _cl_fix_resize()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_from_real](./fix/olo_fix_from_real.md)  | Convert real number to fixed-point representation. <br>Instead of this component, the _cl_fix_from_real()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_to_real](./fix/olo_fix_to_real.md)      | Convert fixed-point number to real representation. <br>Instead of this component, the _cl_fix_to_real()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_add](./fix/olo_fix_add.md)              | Add two fixed point numbers. <br>Instead of this component, the _cl_fix_add()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_sub](./fix/olo_fix_sub.md)              | Subtract two fixed point numbers. <br>Instead of this component, the _cl_fix_sub()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_addsub](./fix/olo_fix_addsub.md)        | Selectively add or subtract two fixed point numbers. <br>Instead of this component, the _cl_fix_addsub()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_mult](./fix/olo_fix_mult.md)            | Multiply two fixed point numbers. <br>Instead of this component, the _cl_fix_mult()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_neg](./fix/olo_fix_neg.md)              | Negate a fixed point number. <br>Instead of this component, the _cl_fix_neg()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_abs](./fix/olo_fix_abs.md)              | Get the absolute value of a fixed point number. <br>Instead of this component, the _cl_fix_abs()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_compare](./fix/olo_fix_compare.md)      | Compare two fixed point numbers. <br>Instead of this component, the _cl_fix_compare()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+
+**Note:** For basic fixed point functionality either components from _Open Logic_ of functions from _en_cl_fix_pkg_ can
+be used. For deciding which option to use, the following considerations shall be taken into account:
+
+- Functions cannot be called from Verilog - hence _Open Logic_ components are the only option for Verilog
+- _Open Logic_ components include pipeline register stages - for fast clock speeds, this can lead to more readable code
+- _en_cl_fix_pkg_ functions allow packing several steps into one process, which can lead to more compact code
