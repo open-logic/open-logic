@@ -13,37 +13,51 @@ import unittest
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from olo_fix_add import olo_fix_add
+from olo_fix_resize import olo_fix_resize
 from en_cl_fix_pkg import *
 
 # Note: Test coverage is OK for the Open Logic code, it does not cover all numerics because
 #       this is covered by en_cl_fix_pkg tests already.
-class TestOloFixAdd(unittest.TestCase):
+class TestOloFixResize(unittest.TestCase):
 
     def setUp(self):
-        self.dut = olo_fix_add(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 8, 8))
-        self.a = [-5.5, 3.25, -1.0, 0.0, 4.5]
-        self.b = [1.5, -2.25, 0.5, 0.0, -4.5]
-        self.expected = [-4.0, 1.0, -0.5, 0.0, 0.0]
+        self.dut = olo_fix_resize(a_fmt=FixFormat(1, 8, 8), result_fmt=FixFormat(0, 2, 2), round=FixRound.NonSymPos_s, saturate=FixSaturate.Sat_s)
+        self.a = []
+        self.expected = []
+        # Append test no change
+        self.a.append(2.25)
+        self.expected.append(2.25)
+        # Append test round
+        self.a.append(2.95)
+        self.expected.append(3.00)
+        # Append test saturate
+        self.a.append(5.0)
+        self.expected.append(3.75)
+        # Append test saturate by round
+        self.a.append(3.95)
+        self.expected.append(3.75)
+        # Append test sign removal
+        self.a.append(-3.95)
+        self.expected.append(0.0)
 
     def test_scalar(self):
-        self.assertEqual(self.dut.process(self.a[0], self.b[0]), self.expected[0])
-        self.assertEqual(self.dut.process(self.a[1], self.b[1]), self.expected[1])
+        self.assertEqual(self.dut.process(self.a[0]), self.expected[0])
+        self.assertEqual(self.dut.process(self.a[1]), self.expected[1])
 
     def test_array(self):
-        result = self.dut.process(self.a, self.b)
+        result = self.dut.process(self.a)
         self.assertListEqual(list(result), list(self.expected))
 
     def test_next_scalar(self):
         result = []
-        for sa, sb in zip(self.a, self.b):
-            result.append(self.dut.next(sa, sb))
+        for sample in self.a:
+            result.append(self.dut.next(sample))
         self.assertListEqual(result, self.expected)
 
     def test_next_list(self):
         result = []
-        result.extend(self.dut.next(self.a[:2], self.b[:2]))
-        result.extend(self.dut.next(self.a[2:], self.b[2:]))
+        result.extend(self.dut.next(self.a[:2]))
+        result.extend(self.dut.next(self.a[2:]))
         self.assertListEqual(result, self.expected)
 
 

@@ -13,18 +13,18 @@ import unittest
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from olo_fix_add import olo_fix_add
+from olo_fix_mult import olo_fix_mult
 from en_cl_fix_pkg import *
 
 # Note: Test coverage is OK for the Open Logic code, it does not cover all numerics because
 #       this is covered by en_cl_fix_pkg tests already.
-class TestOloFixAdd(unittest.TestCase):
+class TestOloFixMult(unittest.TestCase):
 
     def setUp(self):
-        self.dut = olo_fix_add(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 8, 8))
+        self.dut = olo_fix_mult(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 8, 2), round=FixRound.NonSymPos_s)
         self.a = [-5.5, 3.25, -1.0, 0.0, 4.5]
         self.b = [1.5, -2.25, 0.5, 0.0, -4.5]
-        self.expected = [-4.0, 1.0, -0.5, 0.0, 0.0]
+        self.expected = [-8.25, -7.25, -0.5, 0.0, -20.25]
 
     def test_scalar(self):
         self.assertEqual(self.dut.process(self.a[0], self.b[0]), self.expected[0])
