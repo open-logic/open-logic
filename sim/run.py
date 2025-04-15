@@ -505,11 +505,6 @@ for LsbFirst in [False, True]:
 ########################################################################################################################
 fix_vc_tb = 'olo_fix_vc_tb'
 tb = olo_tb.test_bench(fix_vc_tb)
-# Test signed/unsigned
-# Test even/odd number of bits
-# Test large > 60 bit numbers
-# Format from string (olo_fix)
-# Format from string (en_cl_fix)
 for S in ['0', '1']:
     for F in ['0', '61']: #Ensure numbeers > double precision (53 bits)
         named_config(tb, {'Fmt_g': f'({S},15,{F})', 'FileIn_g' : 'File.fix', 'FileOut_g' : 'File.fix'}, 

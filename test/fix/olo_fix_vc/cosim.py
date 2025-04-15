@@ -14,7 +14,7 @@ import numpy as np
 
 #Import olo_fix
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../src/fix/python")))
-from olo_fix import olo_fix_cosim
+from olo_fix import olo_fix_cosim, olo_fix_utils
 from en_cl_fix_pkg import *
 
 def cosim(output_path : str = None, generics : dict = None):
@@ -25,6 +25,7 @@ def cosim(output_path : str = None, generics : dict = None):
     fmt_str = Format_g.strip("()").replace(" ", "")
     a, b, c = map(int, fmt_str.split(","))
     fmt = FixFormat(a, b, c)
+    fimt = olo_fix_utils.fix_format_from_string(Format_g)
 
     writer = olo_fix_cosim(output_path)
     # For small formats, use narrow-fix
