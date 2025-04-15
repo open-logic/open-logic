@@ -5,6 +5,11 @@ import os
 import sys
 from enum import Enum
 
+# Import for fix cosimulations
+sys.path.append(os.path.join(os.path.dirname(__file__), '../test'))
+from fix import *
+
+
 
 class Simulator(Enum):
     GHDL = 1
@@ -75,8 +80,10 @@ vu.add_compile_option('nvc.a_flags', ['--relaxed'])
 ########################################################################################################################
 # Shared Functions
 ########################################################################################################################
-def named_config(tb, map : dict):
+def named_config(tb, map : dict, pre_config = None):
     cfg_name = "-".join([f"{k}={v}" for k, v in map.items()])
+    if pre_config is not None:
+        cfg_name.add_pre_config(pre_config)
     tb.add_config(name=cfg_name, generics = map)
 
 ########################################################################################################################
@@ -492,6 +499,15 @@ tb = olo_tb.test_bench(spi_master_fixsize_tb)
 for LsbFirst in [False, True]:
     tb.add_config(name=f'LF={LsbFirst}',
                   generics={'LsbFirst_g': LsbFirst})
+    
+########################################################################################################################
+# olo_fix TBs
+########################################################################################################################
+fix_vc_tb = 'olo_fix_vc_tb'
+tb = olo_tb.test_bench(fix_vc_tb)
+tb.add_config(name="16-bit-signed", 
+              generics={'Fmt_g': '(1,15,0)'},
+              pre_config=olo_fix_vc.cosim.cosim)
 
 
 ########################################################################################################################
