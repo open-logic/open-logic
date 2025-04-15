@@ -57,6 +57,7 @@ olo_tb = vu.add_library('olo_tb')
 
 # Add all source VHDL files
 files = glob('../src/**/*.vhd', recursive=True)
+files += glob('../3rdParty/en_cl_fix/hdl/*.vhd', recursive=True)
 olo.add_source_files(files)
 
 # Add test helpers
