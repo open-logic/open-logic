@@ -166,6 +166,8 @@ begin
         -- Initialize
         if is_timing_master then
             ready <= '0';
+        else
+            ready <= 'Z';
         end if;
         random_v.InitSeed(random_v'instance_name);
 
@@ -186,7 +188,7 @@ begin
 
                 -- Open file and check format
                 file_open(data_file, to_string(file_path_p), read_mode);
-                line_number := 0;
+                line_number := 1;
 
                 -- Check format (first line)
                 readline(data_file, line_v);
@@ -206,6 +208,7 @@ begin
                         stall_random := random_v.RandReal(0.0, 1.0);
                         if stall_random < stall_probability then
                             ready <= '0';
+                            report "Stall: Yes";
 
                             -- Wait for stall
                             stall_cycles := random_v.RandInt(stall_min_cycles, stall_max_cycles);
@@ -215,9 +218,9 @@ begin
                             end loop;
 
                             wait until falling_edge(clk);
-                            ready <= '1';
-                            wait until rising_edge(clk) and valid = '1';
                         end if;
+                        ready <= '1';
+                        wait until rising_edge(clk) and valid = '1';
                     else
                         wait until rising_edge(clk) and ready = '1' and valid = '1';
                     end if;
@@ -230,7 +233,9 @@ begin
                         severity error;
 
                     -- Apply Data
-                    check_equal(data, data_slv, "olo_test_fix - " & to_string(msg_p) & " - line " & to_string(line_number));
+                    check_equal(data, data_slv, "olo_test_fix - " & to_string(msg_p) & 
+                                                " - file " & to_string(file_path_p) &
+                                                " - line " & to_string(line_number));
                     line_number := line_number + 1;
 
                 end loop;
@@ -239,7 +244,9 @@ begin
                 file_close(data_file);
 
                 -- Idle output
-                ready <= '0';
+                if is_timing_master then
+                    ready <= '0';
+                end if;
 
             elsif msg_type = wait_until_idle_msg then
                 handle_wait_until_idle(net, msg_type, request_msg);

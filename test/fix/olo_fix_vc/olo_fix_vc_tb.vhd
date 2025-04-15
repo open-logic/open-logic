@@ -56,14 +56,21 @@ architecture sim of olo_fix_vc_tb is
     signal Valid         : std_logic;
     signal Ready         : std_logic;
     signal Data          : std_logic_vector(fixFmtWidthFromString(Fmt_g) - 1 downto 0);
+    signal DataSlave     : std_logic_vector(fixFmtWidthFromString(Fmt_g) - 1 downto 0);
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
 
     -- *** Verification Compnents ***
-    constant Stimuli_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant Checker_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant Stimuli_c      : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant Checker_c      : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant StimuliSlave_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant CheckerSlave_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
+
+    -- *** Constants ***
+    constant FileIn_c  : string := output_path(runner_cfg) & FileIn_g;
+    constant FileOut_c : string := output_path(runner_cfg) & FileOut_g;
 
 begin
 
@@ -87,29 +94,57 @@ begin
 
         while test_suite loop
 
-            -- Add Slave mode
-            -- Add stall in
-            -- add stall out
-            -- add stall both
-
-
-
-            -- *** Basics ***
+            -- *** First Run ***
             if run("First-Run") then
-                --fix_stimuli_play_file (net, Stimuli_c, FileIn_g);
-                --fix_checker_check_file (net, Checker_c, FileOut_g);
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c);
+                fix_checker_check_file (net, Checker_c, FileOut_c);
             end if;
 
-            -- *** Simple Transaction ***
-            if run("Second-Run") then
-                --fix_stimuli_play_file (net, Stimuli_c, FileIn_g);
-                --fix_checker_check_file (net, Checker_c, FileOut_g);    
+            -- *** Second run with delay ***
+            if run("Second-Run-delay") then
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c);
+                fix_checker_check_file (net, Checker_c, FileOut_c);    
             end if;
-         
+
+            -- *** Third run immediate ***
+            if run("Thrid-Run-immediate") then
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c);
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c);
+                fix_checker_check_file (net, Checker_c, FileOut_c);    
+                fix_checker_check_file (net, Checker_c, FileOut_c);
+            end if;
+
+            -- *** Stimuli Stall ***
+            if run("Stimuli-Stall") then
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
+                fix_checker_check_file (net, Checker_c, FileOut_c);    
+            end if;
+
+            -- *** Check Stall ***
+            if run("Check-Stall") then
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c);
+                fix_checker_check_file (net, Checker_c, FileOut_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);    
+            end if;
+
+            -- *** Both Stall ***
+            if run("Both-Stall") then
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);
+                fix_checker_check_file (net, Checker_c, FileOut_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);    
+            end if;
+
+            -- *** Check Slaves ***
+            if run("Timing-Slave") then
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);
+                fix_checker_check_file (net, Checker_c, FileOut_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);  
+                fix_stimuli_play_file (net, StimuliSlave_c, FileIn_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);
+                fix_checker_check_file (net, CheckerSlave_c, FileOut_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);   
+            end if;
 
             -- *** Wait until done ***
             wait_until_idle(net, as_sync(Stimuli_c));
             wait_until_idle(net, as_sync(Checker_c));
+            wait_until_idle(net, as_sync(StimuliSlave_c));
+            wait_until_idle(net, as_sync(CheckerSlave_c));
             wait for 1 us;
 
         end loop;
@@ -152,6 +187,34 @@ begin
             Ready    => Ready,
             Valid    => Valid,
             Data     => Data
+        );
+
+    vc_stimuli_slave : entity work.olo_test_fix_stimuli_vc
+        generic map (
+            Instance         => StimuliSlave_c,
+            Is_Timing_Master => false,   
+            Fmt              => cl_fix_format_from_string(Fmt_g)
+        )
+        port map (
+            Clk      => Clk,
+            Rst      => Rst,
+            Ready    => Ready,
+            Valid    => Valid,
+            Data     => DataSlave
+        );
+
+    vc_checker_slave : entity work.olo_test_fix_checker_vc
+        generic map (
+            Instance         => CheckerSlave_c,
+            Is_Timing_Master => false,   
+            Fmt              => cl_fix_format_from_string(Fmt_g)
+        )
+        port map (
+            Clk      => Clk,
+            Rst      => Rst,
+            Ready    => Ready,
+            Valid    => Valid,
+            Data     => DataSlave
         );
    
 

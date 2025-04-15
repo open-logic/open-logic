@@ -26,7 +26,7 @@ def cosim(output_path : str = None, generics : dict = None):
     fmt = FixFormat(a, b, c)
 
     writer = olo_fix_cosim(output_path)
-    arr = np.array([1, 2, 3, 4, 5])
+    arr = np.arange(cl_fix_min_value(fmt), cl_fix_max_value(fmt), 100)
     writer.write_cosim_file(arr, fmt, FileIn_g)
     writer.write_cosim_file(arr+1, fmt, "FileWrong.fix")
 

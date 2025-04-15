@@ -37,4 +37,6 @@ class olo_fix_cosim:
         """
         hex_digits = (format.width + 3) // 4 
         fmt = str(format).replace(" ", "")
-        np.savetxt(join(self._directory, file_name), data, fmt=f"%0{hex_digits}X", header=fmt, comments='')
+        data_int = cl_fix_to_integer(data, format)
+        data_int = np.where(data_int < 0, data_int + 2**cl_fix_width(format), data_int)
+        np.savetxt(join(self._directory, file_name), data_int, fmt=f"%0{hex_digits}X", header=fmt, comments='')

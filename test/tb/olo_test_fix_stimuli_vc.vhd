@@ -165,6 +165,8 @@ begin
         -- Initialize
         if is_timing_master then
             valid <= '0';
+        else
+            valid <= 'Z';
         end if;
         data <= (others => 'U');
         random_v.InitSeed(random_v'instance_name);
@@ -239,7 +241,9 @@ begin
                 file_close(data_file);
 
                 -- Idle output
-                valid <= '0';
+                if is_timing_master then
+                    valid <= '0';
+                end if;
                 data  <= (others => 'U');
 
             elsif msg_type = wait_until_idle_msg then

@@ -505,6 +505,11 @@ for LsbFirst in [False, True]:
 ########################################################################################################################
 fix_vc_tb = 'olo_fix_vc_tb'
 tb = olo_tb.test_bench(fix_vc_tb)
+# Test signed/unsigned
+# Test even/odd number of bits
+# Test large > 60 bit numbers
+# Format from string (olo_fix)
+# Format from string (en_cl_fix)
 named_config(tb, {'Fmt_g': '(1,15,0)', 'FileIn_g' : 'File.fix', 'FileOut_g' : 'File.fix'}, 
              pre_config=olo_fix_vc.cosim.cosim)
 
