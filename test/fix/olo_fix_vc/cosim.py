@@ -1,5 +1,34 @@
+# ---------------------------------------------------------------------------------------------------
+# Copyright (c) 2025 by Oliver Bründler
+# All rights reserved.
+# Authors: Oliver Bruendler
+# ---------------------------------------------------------------------------------------------------
 
-def cosim(generics : dict = None):
-    print("Hello from cosim.py 2")
-    print(generics)
+# ---------------------------------------------------------------------------------------------------
+# Imports
+# ---------------------------------------------------------------------------------------------------
+# Import python packages
+import sys
+import os
+
+#Import olo_fix
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../src/fix/python")))
+from olo_fix import olo_fix_cosim
+from en_cl_fix_pkg import *
+
+def cosim(output_path : str = None, generics : dict = None):
+
+    Format_g = generics["Fmt_g"] 
+    FileIn_g = generics["FileIn_g"]
+
+    fmt_str = Format_g.strip("()").replace(" ", "")
+    a, b, c = map(int, fmt_str.split(","))
+    fmt = FixFormat(a, b, c)
+
+    writer = olo_fix_cosim(output_path)
+    arr = np.array([1, 2, 3, 4, 5])
+    writer.write_cosim_file(arr, fmt, FileIn_g)
+    writer.write_cosim_file(arr+1, fmt, "FileWrong.fix")
+
+
     return True

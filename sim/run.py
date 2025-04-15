@@ -505,7 +505,8 @@ for LsbFirst in [False, True]:
 ########################################################################################################################
 fix_vc_tb = 'olo_fix_vc_tb'
 tb = olo_tb.test_bench(fix_vc_tb)
-named_config(tb, {'Fmt_g': '(1,15,0)'}, pre_config=olo_fix_vc.cosim.cosim)
+named_config(tb, {'Fmt_g': '(1,15,0)', 'FileIn_g' : 'File.fix', 'FileOut_g' : 'File.fix'}, 
+             pre_config=olo_fix_vc.cosim.cosim)
 
 ########################################################################################################################
 # Execution
