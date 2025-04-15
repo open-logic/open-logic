@@ -244,7 +244,7 @@ begin
                 if is_timing_master then
                     valid <= '0';
                 end if;
-                data  <= (others => 'U');
+                data <= (others => 'U');
 
             elsif msg_type = wait_until_idle_msg then
                 handle_wait_until_idle(net, msg_type, request_msg);

@@ -232,7 +232,7 @@ begin
                         severity error;
 
                     -- Apply Data
-                    check_equal(data, data_slv, "olo_test_fix - " & to_string(msg_p) & 
+                    check_equal(data, data_slv, "olo_test_fix - " & to_string(msg_p) &
                                                 " - file " & to_string(file_path_p) &
                                                 " - line " & to_string(line_number));
                     line_number := line_number + 1;

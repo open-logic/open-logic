@@ -33,10 +33,10 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_fix_vc_tb is
     generic (
-        Fmt_g                   : string                 := "(1,15,0)";
-        FileIn_g                  : string               := "Input.fix";
-        FileOut_g                 : string               := "Output.fix";
-        runner_cfg                  : string
+        Fmt_g      : string := "(1,15,0)";
+        FileIn_g   : string := "Input.fix";
+        FileOut_g  : string := "Output.fix";
+        runner_cfg : string
     );
 end entity;
 
@@ -51,12 +51,12 @@ architecture sim of olo_fix_vc_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk           : std_logic                                   := '0';
-    signal Rst           : std_logic;
-    signal Valid         : std_logic;
-    signal Ready         : std_logic;
-    signal Data          : std_logic_vector(fixFmtWidthFromString(Fmt_g) - 1 downto 0);
-    signal DataSlave     : std_logic_vector(fixFmtWidthFromString(Fmt_g) - 1 downto 0);
+    signal Clk       : std_logic := '0';
+    signal Rst       : std_logic;
+    signal Valid     : std_logic;
+    signal Ready     : std_logic;
+    signal Data      : std_logic_vector(fixFmtWidthFromString(Fmt_g) - 1 downto 0);
+    signal DataSlave : std_logic_vector(fixFmtWidthFromString(Fmt_g) - 1 downto 0);
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -84,13 +84,13 @@ begin
     begin
         test_runner_setup(runner, runner_cfg);
 
-            -- Reset
-            wait until rising_edge(Clk);
-            Rst <= '1';
-            wait for 1 us;
-            wait until rising_edge(Clk);
-            Rst <= '0';
-            wait until rising_edge(Clk);
+        -- Reset
+        wait until rising_edge(Clk);
+        Rst <= '1';
+        wait for 1 us;
+        wait until rising_edge(Clk);
+        Rst <= '0';
+        wait until rising_edge(Clk);
 
         while test_suite loop
 
@@ -103,41 +103,41 @@ begin
             -- *** Second run with delay ***
             if run("Second-Run-delay") then
                 fix_stimuli_play_file (net, Stimuli_c, FileIn_c);
-                fix_checker_check_file (net, Checker_c, FileOut_c);    
+                fix_checker_check_file (net, Checker_c, FileOut_c);
             end if;
 
             -- *** Third run immediate ***
             if run("Thrid-Run-immediate") then
                 fix_stimuli_play_file (net, Stimuli_c, FileIn_c);
                 fix_stimuli_play_file (net, Stimuli_c, FileIn_c);
-                fix_checker_check_file (net, Checker_c, FileOut_c);    
+                fix_checker_check_file (net, Checker_c, FileOut_c);
                 fix_checker_check_file (net, Checker_c, FileOut_c);
             end if;
 
             -- *** Stimuli Stall ***
             if run("Stimuli-Stall") then
                 fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
-                fix_checker_check_file (net, Checker_c, FileOut_c);    
+                fix_checker_check_file (net, Checker_c, FileOut_c);
             end if;
 
             -- *** Check Stall ***
             if run("Check-Stall") then
                 fix_stimuli_play_file (net, Stimuli_c, FileIn_c);
-                fix_checker_check_file (net, Checker_c, FileOut_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);    
+                fix_checker_check_file (net, Checker_c, FileOut_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
             end if;
 
             -- *** Both Stall ***
             if run("Both-Stall") then
-                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);
-                fix_checker_check_file (net, Checker_c, FileOut_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);    
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
+                fix_checker_check_file (net, Checker_c, FileOut_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
             end if;
 
             -- *** Check Slaves ***
             if run("Timing-Slave") then
-                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);
-                fix_checker_check_file (net, Checker_c, FileOut_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);  
-                fix_stimuli_play_file (net, StimuliSlave_c, FileIn_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);
-                fix_checker_check_file (net, CheckerSlave_c, FileOut_c, Stall_Probability=>0.5, Stall_Max_Cycles => 4);   
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
+                fix_checker_check_file (net, Checker_c, FileOut_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
+                fix_stimuli_play_file (net, StimuliSlave_c, FileIn_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
+                fix_checker_check_file (net, CheckerSlave_c, FileOut_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
             end if;
 
             -- *** Wait until done ***
@@ -164,7 +164,7 @@ begin
     vc_stimuli : entity work.olo_test_fix_stimuli_vc
         generic map (
             Instance         => Stimuli_c,
-            Is_Timing_Master => true,   
+            Is_Timing_Master => true,
             Fmt              => cl_fix_format_from_string(Fmt_g)
         )
         port map (
@@ -178,7 +178,7 @@ begin
     vc_checker : entity work.olo_test_fix_checker_vc
         generic map (
             Instance         => Checker_c,
-            Is_Timing_Master => true,   
+            Is_Timing_Master => true,
             Fmt              => cl_fix_format_from_string(Fmt_g)
         )
         port map (
@@ -192,7 +192,7 @@ begin
     vc_stimuli_slave : entity work.olo_test_fix_stimuli_vc
         generic map (
             Instance         => StimuliSlave_c,
-            Is_Timing_Master => false,   
+            Is_Timing_Master => false,
             Fmt              => cl_fix_format_from_string(Fmt_g)
         )
         port map (
@@ -206,7 +206,7 @@ begin
     vc_checker_slave : entity work.olo_test_fix_checker_vc
         generic map (
             Instance         => CheckerSlave_c,
-            Is_Timing_Master => false,   
+            Is_Timing_Master => false,
             Fmt              => cl_fix_format_from_string(Fmt_g)
         )
         port map (
@@ -216,6 +216,5 @@ begin
             Valid    => Valid,
             Data     => DataSlave
         );
-   
 
 end architecture;

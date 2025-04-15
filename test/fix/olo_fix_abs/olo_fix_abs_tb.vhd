@@ -33,16 +33,16 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_fix_abs_tb is
     generic (
-        AFmt_g                   : string                 := "(1,15,0)";
-        ResultFmt_g              : string                 := "(0,1,8)";
-        Round_g                  : string                 := "NonSymPos_s";
-        Saturate_g               : string                 := "Sat_s";
-        AFile_g                  : string                 := "Input.fix";
-        ResultFile_g             : string                 := "Output.fix";
-        OpRegs_g                 : natural                := 1;
-        RoundReg_g               : string                 := "YES";
-        SatReg_g                 : string                 := "YES";
-        runner_cfg               : string
+        AFmt_g       : string  := "(1,15,0)";
+        ResultFmt_g  : string  := "(0,1,8)";
+        Round_g      : string  := "NonSymPos_s";
+        Saturate_g   : string  := "Sat_s";
+        AFile_g      : string  := "Input.fix";
+        ResultFile_g : string  := "Output.fix";
+        OpRegs_g     : natural := 1;
+        RoundReg_g   : string  := "YES";
+        SatReg_g     : string  := "YES";
+        runner_cfg   : string
     );
 end entity;
 
@@ -57,24 +57,24 @@ architecture sim of olo_fix_abs_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk           : std_logic                                   := '0';
-    signal Rst           : std_logic;
-    signal In_Valid      : std_logic;
-    signal In_A          : std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
-    signal Out_Valid     : std_logic;
-    signal Out_Result    : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
+    signal Clk        : std_logic := '0';
+    signal Rst        : std_logic;
+    signal In_Valid   : std_logic;
+    signal In_A       : std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
+    signal Out_Valid  : std_logic;
+    signal Out_Result : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
 
     -- *** Verification Compnents ***
-    constant Stimuli_c      : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant Checker_c      : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant Stimuli_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant Checker_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
 
     -- *** Constants ***
     constant AFile_c      : string := output_path(runner_cfg) & AFile_g;
-    constant ResultFile_c : string := output_path(runner_cfg) & ResultFile_G;
+    constant ResultFile_c : string := output_path(runner_cfg) & ResultFile_g;
 
 begin
 
@@ -107,7 +107,7 @@ begin
             -- *** Second run with delay ***
             if run("Throttled") then
                 fix_stimuli_play_file (net, Stimuli_c, AFile_c);
-                fix_checker_check_file (net, Checker_c, ResultFile_c);    
+                fix_checker_check_file (net, Checker_c, ResultFile_c);
             end if;
 
             -- *** Wait until done ***
@@ -153,7 +153,7 @@ begin
     -----------------------------------------------------------------------------------------------
     vc_stimuli : entity work.olo_test_fix_stimuli_vc
         generic map (
-            Instance         => Stimuli_c, 
+            Instance         => Stimuli_c,
             Fmt              => cl_fix_format_from_string(AFmt_g)
         )
         port map (
@@ -174,7 +174,5 @@ begin
             Valid    => Out_Valid,
             Data     => Out_Result
         );
-
-   
 
 end architecture;
