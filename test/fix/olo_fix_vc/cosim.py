@@ -10,6 +10,7 @@
 # Import python packages
 import sys
 import os
+import numpy as np
 
 #Import olo_fix
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../src/fix/python")))
@@ -26,9 +27,23 @@ def cosim(output_path : str = None, generics : dict = None):
     fmt = FixFormat(a, b, c)
 
     writer = olo_fix_cosim(output_path)
-    arr = np.arange(cl_fix_min_value(fmt), cl_fix_max_value(fmt), 100)
+    # For small formats, use narrow-fix
+    if cl_fix_width(fmt) < 32:
+        arr = np.arange(cl_fix_min_value(fmt), cl_fix_max_value(fmt), 100)
+        arr = cl_fix_from_real(arr, fmt)
+    # For wide formats, use wide-fix from int conversion
+    else:
+        min = cl_fix_min_value(fmt)
+        max = cl_fix_max_value(fmt)
+        N = 100
+        step = (max-min)//100
+        wide_fix_list = []
+        for i in range(N):
+            int_val = min+i*step
+            wide_fix_list.append(WideFix(int_val, fmt))
+        arr = np.array(wide_fix_list, dtype=object)
+
     writer.write_cosim_file(arr, fmt, FileIn_g)
-    writer.write_cosim_file(arr+1, fmt, "FileWrong.fix")
-
-
     return True
+
+cosim(".", {'Fmt_g' : '(1,61,5)', 'FileIn_g' : "File.fix"})

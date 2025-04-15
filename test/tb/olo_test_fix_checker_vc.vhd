@@ -208,7 +208,6 @@ begin
                         stall_random := random_v.RandReal(0.0, 1.0);
                         if stall_random < stall_probability then
                             ready <= '0';
-                            report "Stall: Yes";
 
                             -- Wait for stall
                             stall_cycles := random_v.RandInt(stall_min_cycles, stall_max_cycles);

@@ -510,8 +510,10 @@ tb = olo_tb.test_bench(fix_vc_tb)
 # Test large > 60 bit numbers
 # Format from string (olo_fix)
 # Format from string (en_cl_fix)
-named_config(tb, {'Fmt_g': '(1,15,0)', 'FileIn_g' : 'File.fix', 'FileOut_g' : 'File.fix'}, 
-             pre_config=olo_fix_vc.cosim.cosim)
+for S in ['0', '1']:
+    for F in ['0', '61']: #Ensure numbeers > double precision (53 bits)
+        named_config(tb, {'Fmt_g': f'({S},15,{F})', 'FileIn_g' : 'File.fix', 'FileOut_g' : 'File.fix'}, 
+                          pre_config=olo_fix_vc.cosim.cosim)
 
 ########################################################################################################################
 # Execution
