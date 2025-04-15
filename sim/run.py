@@ -4,12 +4,11 @@ from glob import glob
 import os
 import sys
 from enum import Enum
+from functools import partial
 
 # Import for fix cosimulations
 sys.path.append(os.path.join(os.path.dirname(__file__), '../test'))
 from fix import *
-
-
 
 class Simulator(Enum):
     GHDL = 1
@@ -80,11 +79,16 @@ vu.add_compile_option('nvc.a_flags', ['--relaxed'])
 ########################################################################################################################
 # Shared Functions
 ########################################################################################################################
+
+def xxx():
+    print("hello")
+    return True
+
 def named_config(tb, map : dict, pre_config = None):
     cfg_name = "-".join([f"{k}={v}" for k, v in map.items()])
     if pre_config is not None:
-        cfg_name.add_pre_config(pre_config)
-    tb.add_config(name=cfg_name, generics = map)
+        pre_config = partial(pre_config, generics=map)
+    tb.add_config(name=cfg_name, generics = map, pre_config=pre_config)
 
 ########################################################################################################################
 # olo_base TBs
@@ -294,7 +298,7 @@ for tb_name in prbs_tbs:
 reset_gen_tb = 'olo_base_reset_gen_tb'
 tb = olo_tb.test_bench(reset_gen_tb)
 for Cycles in [3, 5, 50, 64]:
-    tb.add_config(name=f'C={Cycles}', generics={'RstPulseCycles_g': Cycles})
+    named_config(tb, {'RstPulseCycles_g': Cycles})
 for Cycles in [3, 5]:
     for Polarity in [0, 1]:
         for AsyncOutput in [True, False]:
@@ -484,31 +488,24 @@ for StopBits in ["1", "1.5", "2"]:
 spi_master_tb = 'olo_intf_spi_master_tb'
 tb = olo_tb.test_bench(spi_master_tb)
 for FreqBus in [int(1e6), int(10e6)]:
-    tb.add_config(name=f'F={FreqBus}',
-                  generics={'BusFrequency_g': FreqBus})
+    named_config(tb, {'BusFrequency_g': FreqBus})
 for LsbFirst in [False, True]:
-    tb.add_config(name=f'LF={LsbFirst}',
-                  generics={'LsbFirst_g': LsbFirst})
+    named_config(tb, {'LsbFirst_g': LsbFirst})
 for CPHA in [0, 1]:
     for CPOL in [0, 1]:
-        tb.add_config(name=f'CPHA={CPHA}-CPOL={CPOL}',
-                      generics={'SpiCpha_g': CPHA, 'SpiCpol_g': CPOL})
+        named_config(tb, {'SpiCpha_g': CPHA, 'SpiCpol_g': CPOL})
 
 spi_master_fixsize_tb = 'olo_intf_spi_master_fixsize_tb'
 tb = olo_tb.test_bench(spi_master_fixsize_tb)
 for LsbFirst in [False, True]:
-    tb.add_config(name=f'LF={LsbFirst}',
-                  generics={'LsbFirst_g': LsbFirst})
+    named_config(tb, {'LsbFirst_g': LsbFirst})
     
 ########################################################################################################################
 # olo_fix TBs
 ########################################################################################################################
 fix_vc_tb = 'olo_fix_vc_tb'
 tb = olo_tb.test_bench(fix_vc_tb)
-tb.add_config(name="16-bit-signed", 
-              generics={'Fmt_g': '(1,15,0)'},
-              pre_config=olo_fix_vc.cosim.cosim)
-
+named_config(tb, {'Fmt_g': '(1,15,0)'}, pre_config=olo_fix_vc.cosim.cosim)
 
 ########################################################################################################################
 # Execution
