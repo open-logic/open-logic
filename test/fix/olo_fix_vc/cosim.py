@@ -22,10 +22,7 @@ def cosim(output_path : str = None, generics : dict = None):
     Format_g = generics["Fmt_g"] 
     FileIn_g = generics["FileIn_g"]
 
-    fmt_str = Format_g.strip("()").replace(" ", "")
-    a, b, c = map(int, fmt_str.split(","))
-    fmt = FixFormat(a, b, c)
-    fimt = olo_fix_utils.fix_format_from_string(Format_g)
+    fmt = olo_fix_utils.fix_format_from_string(Format_g)
 
     writer = olo_fix_cosim(output_path)
     # For small formats, use narrow-fix
@@ -46,5 +43,3 @@ def cosim(output_path : str = None, generics : dict = None):
 
     writer.write_cosim_file(arr, fmt, FileIn_g)
     return True
-
-cosim(".", {'Fmt_g' : '(1,61,5)', 'FileIn_g' : "File.fix"})

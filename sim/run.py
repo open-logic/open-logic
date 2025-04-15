@@ -509,6 +509,35 @@ for S in ['0', '1']:
     for F in ['0', '61']: #Ensure numbeers > double precision (53 bits)
         named_config(tb, {'Fmt_g': f'({S},15,{F})', 'FileIn_g' : 'File.fix', 'FileOut_g' : 'File.fix'}, 
                           pre_config=olo_fix_vc.cosim.cosim)
+        
+fix_abs_tb = 'olo_fix_abs_tb'
+tb = olo_tb.test_bench(fix_abs_tb)
+#Test formats and round/sat modes
+default_generics = {
+    'AFmt_g': '(1,8,8)',
+    'ResultFmt_g': '(0,8,4)',
+    'Round_g': 'NonSymPos_s',
+    'Saturate_g': 'Sat_s',
+    'AFile_g': 'A.fix',
+    'ResultFile_g': 'Result.fix',
+    'OpRegs_g': 1,
+    'RoundReg_g': "YES",
+    'SatReg_g': "YES"
+}
+# Different math
+for Round in ['NonSymPos_s', 'Trunc_s']:
+    for Sat in ['Sat_s', 'None_s']:
+        named_config(tb, default_generics  | {'Round_g': Round, 'Saturate_g': Sat},
+                        pre_config=olo_fix_abs.cosim.cosim)
+# Different register settings
+for OpRegs in [0, 4]:
+    named_config(tb, default_generics | {'OpRegs_g': OpRegs}, pre_config=olo_fix_abs.cosim.cosim)
+for RoundReg in ['NO', 'AUTO']:
+    named_config(tb, default_generics | {'RoundReg_g': RoundReg}, pre_config=olo_fix_abs.cosim.cosim)
+for SatReg in ['NO', 'AUTO']:
+    named_config(tb, default_generics | {'SatReg_g': SatReg}, pre_config=olo_fix_abs.cosim.cosim)
+    
+
 
 ########################################################################################################################
 # Execution

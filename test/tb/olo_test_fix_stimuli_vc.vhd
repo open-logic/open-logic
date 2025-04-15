@@ -125,7 +125,7 @@ entity olo_test_fix_stimuli_vc is
     port (
         clk      : in    std_logic;
         rst      : in    std_logic;
-        ready    : in    std_logic;
+        ready    : in    std_logic := '1';
         valid    : inout std_logic; -- input for slave, output for master
         data     : out   std_logic_vector(cl_fix_width(fmt)-1 downto 0)
     );
