@@ -17,7 +17,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.
 from olo_fix import olo_fix_cosim, olo_fix_utils
 from en_cl_fix_pkg import *
 
-def cosim(output_path : str = None, generics : dict = None):
+def cosim(output_path : str = None, generics : dict = None, cosim_mode : bool = True):
 
     Format_g = generics["Fmt_g"] 
     FileIn_g = generics["FileIn_g"]
@@ -35,11 +35,17 @@ def cosim(output_path : str = None, generics : dict = None):
         max = cl_fix_max_value(fmt)
         N = 100
         step = (max-min)//100
-        wide_fix_list = []
-        for i in range(N):
-            int_val = min+i*step
-            wide_fix_list.append(WideFix(int_val, fmt))
-        arr = np.array(wide_fix_list, dtype=object)
-
-    writer.write_cosim_file(arr, fmt, FileIn_g)
+        arr = WideFix(np.array([min+i*step for i in range(N)], dtype=object), fmt)
+    
+    #Write Files
+    if cosim_mode:
+        writer.write_cosim_file(arr, fmt, FileIn_g)
     return True
+
+if __name__ == "__main__":
+    # Example usage
+    generics = {
+        "Fmt_g": "(1, 51, 51)",
+        "FileIn_g": "test_input.txt"
+    }
+    cosim(generics=generics, cosim_mode=False)

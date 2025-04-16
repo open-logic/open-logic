@@ -29,11 +29,8 @@ class olo_fix_utils:
         Returns:
             np.ndarray: The converted integer data.
         """
-        if type(data[0])==WideFix:
-            int_list = []
-            # For wide-fix, no array operation was found, workaround is looping through elements
-            int_list = [int(x.data) for x in data]
-            return np.array(int_list, dtype=object)
+        if type(data)==WideFix:
+          return data.data
         else:
             return cl_fix_to_integer(data, format)
         
