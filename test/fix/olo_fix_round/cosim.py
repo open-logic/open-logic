@@ -11,11 +11,10 @@
 import sys
 import os
 import numpy as np
-from matplotlib import pyplot as plt
 
 #Import olo_fix
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../src/fix/python")))
-from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_abs
+from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_round
 from en_cl_fix_pkg import *
 
 def cosim(output_path : str = None, 
@@ -26,20 +25,16 @@ def cosim(output_path : str = None,
     AFmt_g = olo_fix_utils.fix_format_from_string(generics["AFmt_g"])
     ResultFmt_g = olo_fix_utils.fix_format_from_string(generics["ResultFmt_g"])
     Round_g = FixRound[generics["Round_g"]]
-    Saturate_g = FixSaturate[generics["Saturate_g"]]
 
     #Calculation
     in_data = np.linspace(cl_fix_min_value(AFmt_g), cl_fix_max_value(AFmt_g), 100)
     in_data = cl_fix_from_real(in_data, AFmt_g)
-    abs = olo_fix_abs(AFmt_g, ResultFmt_g, Round_g, Saturate_g)
+    abs = olo_fix_round(AFmt_g, ResultFmt_g, Round_g)
     out_data = abs.process(in_data)
 
     # Plot if enabled
     if not cosim_mode:
-        olo_fix_utils.plot_a_b_err(a=out_data, a_name="Output Data", 
-                                   b=in_data, b_name="Input Data", 
-                                   plot_error = False)
-
+        olo_fix_utils.plot_a_b_err(out_data, in_data)
 
     #Write Files
     if cosim_mode:
@@ -57,9 +52,8 @@ def cosim(output_path : str = None,
 if __name__ == "__main__":
     # Example usage
     generics = {
-        "AFmt_g": "(1, 2, 10)",
-        "ResultFmt_g": "(0, 1, 8)",
-        "Round_g": "NonSymPos_s",
-        "Saturate_g": "Sat_s"
+        "AFmt_g": "(1, 2, 4)",
+        "ResultFmt_g": "(1, 3, 1)",
+        "Round_g": "NonSymPos_s"
     }
     cosim(generics=generics, cosim_mode=False)

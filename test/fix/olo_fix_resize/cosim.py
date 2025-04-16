@@ -15,7 +15,7 @@ from matplotlib import pyplot as plt
 
 #Import olo_fix
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../src/fix/python")))
-from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_abs
+from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_resize
 from en_cl_fix_pkg import *
 
 def cosim(output_path : str = None, 
@@ -31,15 +31,12 @@ def cosim(output_path : str = None,
     #Calculation
     in_data = np.linspace(cl_fix_min_value(AFmt_g), cl_fix_max_value(AFmt_g), 100)
     in_data = cl_fix_from_real(in_data, AFmt_g)
-    abs = olo_fix_abs(AFmt_g, ResultFmt_g, Round_g, Saturate_g)
+    abs = olo_fix_resize(AFmt_g, ResultFmt_g, Round_g, Saturate_g)
     out_data = abs.process(in_data)
 
     # Plot if enabled
     if not cosim_mode:
-        olo_fix_utils.plot_a_b_err(a=out_data, a_name="Output Data", 
-                                   b=in_data, b_name="Input Data", 
-                                   plot_error = False)
-
+        olo_fix_utils.plot_a_b_err(a=out_data, b=in_data, a_name="Output Data", b_name="Input Data")
 
     #Write Files
     if cosim_mode:

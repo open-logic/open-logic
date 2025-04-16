@@ -21,8 +21,6 @@ from en_cl_fix_pkg import *
 def cosim(output_path : str = None, 
           generics : dict = None, 
           cosim_mode : bool = True):
-    
-    print("Stated")
 
     #Parse Generics
     AFmt_g = olo_fix_utils.fix_format_from_string(generics["AFmt_g"])
@@ -38,14 +36,9 @@ def cosim(output_path : str = None,
 
     # Plot if enabled
     if not cosim_mode:
-        fig, ax = plt.subplots()  # Create a Figure and Axes object
-        ax.plot(in_data, label="Input Data", color="blue")  # Plot in_data in blue
-        ax.plot(out_data, label="Output Data", color="red")  # Plot out_data in red
-        ax.set_title("Input vs Output Data")  # Set the title
-        ax.set_xlabel("Sample")  # Set the x-axis label
-        ax.set_ylabel("Value")  # Set the y-axis label
-        ax.legend()  # Add a legend
-        plt.show()  # Display the plot
+        olo_fix_utils.plot_a_b_err(a=out_data, a_name="Output Data", 
+                                   b=in_data, b_name="Input Data", 
+                                   plot_error = False)
 
 
     #Write Files

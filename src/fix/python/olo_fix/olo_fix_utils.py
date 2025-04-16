@@ -9,6 +9,7 @@
 # ---------------------------------------------------------------------------------------------------
 from en_cl_fix_pkg import *
 import numpy as np
+from matplotlib import pyplot as plt
 
 # ---------------------------------------------------------------------------------------------------
 # Helper Functions
@@ -48,3 +49,45 @@ class olo_fix_utils:
         format_str = format_str.strip("()").replace(" ", "")
         a, b, c = map(int, format_str.split(","))
         return FixFormat(a, b, c)
+    
+    @staticmethod
+    def plot_a_b_err(a : np.ndarray, b : np.ndarray, show : bool = True,
+                     a_name : str = "a", b_name : str = "b", plot_error : bool = True) -> None:
+        """
+        Plot the a data, b data, and optionally the difference (a-b).
+
+        Args:
+            a (np.ndarray): The first data array to plot.
+            b (np.ndarray): The second data array to plot.
+            show (bool): If True, display the plot. Defaults to True.
+            a_name (str): Name for the first data array in the plot title. Defaults to "a".
+            b_name (str): Name for the second data array in the plot title. Defaults to "b".
+            plot_error (bool): If True, plot the error (a-b). Defaults to True.
+        """
+        fig, axes = plt.subplots(2 if plot_error else 1, 1, figsize=(8, 10))  # Adjust number of subplots based on plot_error
+
+        if not plot_error:
+            axes = [axes]  # Ensure axes is always a list for consistency
+
+        # First plot: Input vs Output Data
+        ax1 = axes[0]
+        ax1.plot(a, label=a_name, color="blue")  # Plot in_data in blue
+        ax1.plot(b, label=b_name, color="red")  # Plot out_data in red
+        ax1.set_title("Data")  # Set the title
+        ax1.set_xlabel("Sample")  # Set the x-axis label
+        ax1.set_ylabel("Value")  # Set the y-axis label
+        ax1.legend()  # Add a legend
+
+        # Second plot: Error (if enabled)
+        if plot_error:
+            err = a - b
+            ax2 = axes[1]
+            ax2.plot(err, label=f"Error ({a_name} - {b_name})", color="green")  # Plot err in green
+            ax2.set_title("Difference")  # Set the title
+            ax2.set_xlabel("Sample")  # Set the x-axis label
+            ax2.set_ylabel("Difference Value")  # Set the y-axis label
+            ax2.legend()  # Add a legend
+
+        plt.tight_layout()  # Adjust layout to prevent overlap
+        if show:
+            plt.show()
