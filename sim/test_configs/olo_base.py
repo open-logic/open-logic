@@ -19,7 +19,7 @@ def add_base_configs(olo_tb):
     :param olo_tb: Testbench library
     """
 
-    # Clock Crossings
+    ### olo_base_cc_... ###
     cc_tbs = ['olo_base_cc_simple_tb', 'olo_base_cc_status_tb', 'olo_base_cc_bits_tb', 'olo_base_cc_pulse_tb', 'olo_base_cc_reset_tb', 'olo_base_cc_handshake_tb']
     for tb_name in cc_tbs:
         tb = olo_tb.test_bench(tb_name)
@@ -33,7 +33,7 @@ def add_base_configs(olo_tb):
         for Stages in [2, 4]:
             named_config(tb, {'SyncStages_g': Stages})
 
-    # Specific cases to cc_handshake
+    ### olo_base_cc_handshake ###
     cc_handshake_tb = 'olo_base_cc_handshake_tb'
     tb = olo_tb.test_bench(cc_handshake_tb)
     for ReadyRst in [0, 1]:
@@ -42,14 +42,14 @@ def add_base_configs(olo_tb):
         named_config(tb, {'RandomStall_g': RandomStall})
 
 
-    # Sync Clock Crossings
+    ### olo_base_cc_... sync ###
     scc_tbs = ['olo_base_cc_xn2n_tb', 'olo_base_cc_n2xn_tb']
     for tb_name in scc_tbs:
         tb = olo_tb.test_bench(tb_name)
         for R in [2, 3, 19]:
             named_config(tb, {'ClockRatio_g': R})
 
-    # RAM TBs
+    ### olo_base_ram_... dualport ###
     ram_tbs = ['olo_base_ram_sp_tb', 'olo_base_ram_tdp_tb']
     for tb_name in ram_tbs:
         tb = olo_tb.test_bench(tb_name)
@@ -62,6 +62,7 @@ def add_base_configs(olo_tb):
         for Be in [True, False]:
             named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
 
+    ### olo_base_ram_... singleport ###
     ram_tbs = ['olo_base_ram_sdp_tb']
     for tb_name in ram_tbs:
         tb = olo_tb.test_bench(tb_name)
@@ -77,7 +78,7 @@ def add_base_configs(olo_tb):
         for Be in [True, False]:
             named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
 
-    #FIFO TBs
+    ### olo_base_fifo_... non-packet ###
     fifo_tbs = ['olo_base_fifo_sync_tb', 'olo_base_fifo_async_tb']
     for tb_name in fifo_tbs:
         tb = olo_tb.test_bench(tb_name)
@@ -100,17 +101,19 @@ def add_base_configs(olo_tb):
             for Opt in ["SPEED", "LATENCY"]:
                 named_config(tb, {"Optimization_g": Opt})
 
-    #Width Converter TBs
+    ### olo_base_wconv_xn2n ###
     wconv_xn2n_tb = 'olo_base_wconv_xn2n_tb'
     tb = olo_tb.test_bench(wconv_xn2n_tb)
     for Ratio in [2, 3]:
         named_config(tb, {'WidthRatio_g': Ratio})
 
+    ### olo_base_wconv_n2xn ###
     wconv_n2xn_tb = 'olo_base_wconv_n2xn_tb'
     tb = olo_tb.test_bench(wconv_n2xn_tb)
     for Ratio in [1, 2, 3]:
         named_config(tb, {'WidthRatio_g': Ratio})
 
+    ### olo_base_wconv_n2m ###
     wconv_n2m_tb = 'olo_base_wconv_n2m_tb'
     tb = olo_tb.test_bench(wconv_n2m_tb)
     for Ratio in [(8, 8), (16, 24), (24, 16), (18, 27), (27, 18)]:
@@ -124,7 +127,7 @@ def add_base_configs(olo_tb):
     for Ratio in [(16, 24), (24, 16), (32, 8), (8, 32)]:
         named_config(tb, {'InWidth_g': Ratio[0], 'OutWidth_g': Ratio[1]})
 
-    #Pipeline TB
+    ### olo_base_pl_stage ###
     pl_tb = 'olo_base_pl_stage_tb'
     tb = olo_tb.test_bench(pl_tb)
     for Stages in [0, 1, 5]:
@@ -132,7 +135,7 @@ def add_base_configs(olo_tb):
             RandomStall = True
             named_config(tb, {'Stages_g': Stages, 'UseReady_g': UseReady, 'RandomStall_g': RandomStall})
 
-    #Delay TB
+    ### olo_base_delay ###
     delay_tb = 'olo_base_delay_tb'
     tb = olo_tb.test_bench(delay_tb)
     BramThreshold = 16
@@ -151,7 +154,6 @@ def add_base_configs(olo_tb):
     Resource = "SRL"
     for Delay in [1, 2, 3, 30, 32]:
         named_config(tb, {'Delay_g': Delay, 'Resource_g': Resource, 'RandomStall_g': RandomStall})
-
     # Test State Reset
     RstState = True
     for Resource in ["BRAM", "SRL"]:
@@ -160,7 +162,7 @@ def add_base_configs(olo_tb):
                 named_config(tb, {'Delay_g': Delay, 'Resource_g': Resource, 'RandomStall_g': RandomStall,
                                     'RstState_g': RstState})
 
-    #DelayCfg TB
+    ### olo_base_delay_cfg ###
     delay_cfg_tb = 'olo_base_delay_cfg_tb'
     tb = olo_tb.test_bench(delay_cfg_tb)
     for SupportZero in [True, False]:
@@ -170,7 +172,7 @@ def add_base_configs(olo_tb):
             named_config(tb, {'SupportZero_g': SupportZero, 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
 
 
-    #Dynamic Shift TB
+    ### olo_base_dyn_sft ###
     dyn_sft_tb = 'olo_base_dyn_sft_tb'
     tb = olo_tb.test_bench(dyn_sft_tb)
     for Direction in ["LEFT", "RIGHT"]:
@@ -184,22 +186,24 @@ def add_base_configs(olo_tb):
                     named_config(tb, {'Direction_g': Direction, 'SelBitsPerStage_g': BitsPerStage,
                                         'MaxShift_g': MaxShift, 'SignExtend_g': SignExt})
 
-    #Arbiters
+    ### olo_base_arb_prio ###
     arb_prio_tb = 'olo_base_arb_prio_tb'
     tb = olo_tb.test_bench(arb_prio_tb)
     for Latency in [0, 1, 3]:
         named_config(tb, {'Latency_g': Latency})
+
+    ### olo_base_arb_rr ###
     arb_rr_tb = 'olo_base_arb_rr_tb'
     #Only one config required, hence no "add_config" looping
 
-    #strobe generator
+    ### olo_base_strobe_gen ###
     strobe_gen_tb = 'olo_base_strobe_gen_tb'
     tb = olo_tb.test_bench(strobe_gen_tb)
     for Freq in ["10.0e6", "13.2e6"]:
         for FMode in [False, True]:
             named_config(tb, {'FreqStrobeHz_g': Freq, 'FractionalMode_g' : FMode})
 
-    #strobe divider
+    ### olo_base_strobe_div ###
     strobe_div_tbs = ['olo_base_strobe_div_tb', 'olo_base_strobe_div_backpressonly_tb']
     for tb_name in strobe_div_tbs:
         tb = olo_tb.test_bench(tb_name)
@@ -212,14 +216,14 @@ def add_base_configs(olo_tb):
             named_config(tb, {'Latency_g': Latency, 'Ratio_g' : Ratio})
 
 
-    #prbs
+    ### olo_base_prbs ###
     prbs_tbs = ['olo_base_prbs4_tb']
     for tb_name in prbs_tbs:
         tb = olo_tb.test_bench(tb_name)
         for BitsPerSymbol in [1, 2, 3, 4]:
             named_config(tb, {'BitsPerSymbol_g': BitsPerSymbol})
 
-    #reset_gen
+    ### olo_base_reset_gen ###
     reset_gen_tb = 'olo_base_reset_gen_tb'
     tb = olo_tb.test_bench(reset_gen_tb)
     for Cycles in [3, 5, 50, 64]:
@@ -229,7 +233,7 @@ def add_base_configs(olo_tb):
             for AsyncOutput in [True, False]:
                 named_config(tb, {'RstPulseCycles_g': Cycles, 'RstInPolarity_g': Polarity, 'AsyncResetOutput_g': AsyncOutput})
 
-    #fifo_packet
+    ### olo_base_fifo_packet ###
     fifo_packet_tb = 'olo_base_fifo_packet_tb'
     tb = olo_tb.test_bench(fifo_packet_tb)
     #Choose settings for short runtim
@@ -237,7 +241,7 @@ def add_base_configs(olo_tb):
     named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': False}) #Some checks require non-random stall
     #fifo_packet_hs_tb does not have generics
 
-    #cam
+    ### olo_base_cam ###
     cam_tb = 'olo_base_cam_tb'
     tb = olo_tb.test_bench(cam_tb)
     #Content smaller or bitter than RAM AddrBits
@@ -263,7 +267,7 @@ def add_base_configs(olo_tb):
         for InReg in [False, True]:
             named_config(tb, {'ClearAfterReset_g': ClearAfterReset, 'RegisterInput_g': InReg})
 
-    #first bit decoder
+    ### olo_base_decode_firstbit ###
     decode_firstbit_tb = 'olo_base_decode_firstbit_tb'
     tb = olo_tb.test_bench(decode_firstbit_tb)
     for InReg in [True, False]:
@@ -274,7 +278,7 @@ def add_base_configs(olo_tb):
         for PlRegs in [0, 2]:
             named_config(tb, {'InWidth_g': InWidth, 'PlRegs_g': PlRegs})
 
-    #crc
+    ### olo_base_crc ###
     crc_tb = 'olo_base_crc_tb'
     tb = olo_tb.test_bench(crc_tb)
     for CrcWidth in [5, 8, 16]:

@@ -61,7 +61,6 @@ architecture rtl of olo_fix_round is
     constant Round_c     : FixRound_t  := cl_fix_round_from_string(Round_g);
     constant AFmt_c      : FixFormat_t := cl_fix_format_from_string(AFmt_g);
     constant ResultFmt_c : FixFormat_t := cl_fix_format_from_string(ResultFmt_g);
-    constant RoundFmt_c  : FixFormat_t := cl_fix_round_fmt(AFmt_c, ResultFmt_c.F, Round_c);
     
     -- Constants
     constant LogicPresent_c : boolean := AFmt_c.F > ResultFmt_c.F;
@@ -69,17 +68,12 @@ architecture rtl of olo_fix_round is
     constant OpRegStages_c  : integer := choose(ImplementReg_c, 1, 0);
 
     -- Signals
-    signal RndResult  : std_logic_vector(cl_fix_width(RoundFmt_c) - 1 downto 0);
     signal ResultComb : std_logic_vector(cl_fix_width(ResultFmt_c) - 1 downto 0);
 
 begin
 
     -- Operation
-    RndResult <= cl_fix_round(In_A, AFmt_c, RoundFmt_c, Round_c, FmtCheck_g);
-
-    -- Resize required for output format having more integer bits than minimally required. This is not accepted
-    -- by cl_fix_round natively. Does not add any logic, only bit extension.
-    ResultComb <= cl_fix_resize(RndResult, RoundFmt_c, ResultFmt_c);
+    ResultComb <= cl_fix_round(In_A, AFmt_c, ResultFmt_c, Round_c, FmtCheck_g);
 
     -- Optional Register
     i_reg : entity work.olo_fix_private_optional_reg

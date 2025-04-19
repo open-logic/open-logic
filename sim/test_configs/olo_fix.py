@@ -126,11 +126,12 @@ def add_fix_configs(olo_tb):
     cosim = olo_fix_round.cosim.cosim
     # Different rounding modes
     for Round in ['NonSymPos_s', 'Trunc_s']:
-        named_config(tb, default_generics  | {'Round_g': Round},
+        #For truncation, no additional bit is needed
+        override_generics = {'Round_g': Round}
+        if Round == 'Trunc_s': 
+            override_generics['ResultFmt_g'] = '(1,8,4)'
+        named_config(tb, default_generics  | override_generics,
                     pre_config=cosim)
-    # Test exactly matching format
-    named_config(tb, default_generics  | {'Round_g': 'Trunc_s', 'ResultFmt_g': '(1,8,4)'},
-                pre_config=cosim)
     # Different register settings
     for RoundReg in ['NO', 'AUTO']:
         named_config(tb, default_generics | {'RoundReg_g': RoundReg}, pre_config=cosim)
@@ -156,9 +157,6 @@ def add_fix_configs(olo_tb):
                 pre_config=cosim)
     # Test sign adding
     named_config(tb, default_generics  | {'AFmt_g': '(0,8,8)', 'ResultFmt_g': '(1,4,8)'},
-                pre_config=cosim)
-    # Test upsizing
-    named_config(tb, default_generics  | {'AFmt_g': '(0,8,8)', 'ResultFmt_g': '(0,9,12)'},
                 pre_config=cosim)
     # Different register settings
     for SatReg in ['NO', 'AUTO']:

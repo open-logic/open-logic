@@ -18,14 +18,14 @@ def add_axi_configs(olo_tb):
     Add all axi testbench configurations to the VUnit Library
     :param olo_tb: Testbench library
     """
-
-
+    ### olo_axi_lite_slave ###
     axi_lite_slave_tb = 'olo_axi_lite_slave_tb'
     tb = olo_tb.test_bench(axi_lite_slave_tb)
     for AxiAddrWidth in [8, 12, 16, 32]:
         for AxiDataWidth in [8, 16, 32, 128]:
             named_config(tb, {'AxiAddrWidth_g': AxiAddrWidth, 'AxiDataWidth_g': AxiDataWidth})
 
+    ### olo_axi_master_simple ###
     axi_master_simple_tb = 'olo_axi_master_simple_tb'
     tb = olo_tb.test_bench(axi_master_simple_tb)
     for ImplRead in [True, False]:
@@ -39,6 +39,7 @@ def add_axi_configs(olo_tb):
     #Case reported by customer
     named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiAddrWidth_g': 12, 'AxiDataWidth_g': 8, 'AxiMaxOpenTransactions_g': 1})
 
+    ### olo_axi_master_full ###
     axi_master_full_tb = 'olo_axi_master_full_tb'
     tb = olo_tb.test_bench(axi_master_full_tb)
     #Check Widths
@@ -57,7 +58,7 @@ def add_axi_configs(olo_tb):
             #Skip illegal case where no functionality is implemented
             if (not ImplRead) and (not ImplWrite): continue
 
-
+    ### olo_axi_pl_stage ###
     axi_pl_stage_tb = 'olo_axi_pl_stage_tb'
     tb = olo_tb.test_bench(axi_pl_stage_tb)
     for AddrWidth in [32, 64]:
