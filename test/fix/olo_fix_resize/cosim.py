@@ -40,15 +40,9 @@ def cosim(output_path : str = None,
 
     #Write Files
     if cosim_mode:
-        #Generics
-        AFile_g = generics["AFile_g"]
-        ResultFile_g = generics["ResultFile_g"]
-
-        #Write Files
         writer = olo_fix_cosim(output_path)
-        writer.write_cosim_file(in_data, AFmt_g, AFile_g)
-        writer.write_cosim_file(out_data, ResultFmt_g, ResultFile_g)
-        print("Written")
+        writer.write_cosim_file(in_data, AFmt_g, "A.fix")
+        writer.write_cosim_file(out_data, ResultFmt_g, "Result.fix")
     return True
 
 if __name__ == "__main__":

@@ -34,8 +34,6 @@ library work;
 entity olo_fix_vc_tb is
     generic (
         Fmt_g      : string := "(1,15,0)";
-        FileIn_g   : string := "Input.fix";
-        FileOut_g  : string := "Output.fix";
         runner_cfg : string
     );
 end entity;
@@ -69,8 +67,8 @@ architecture sim of olo_fix_vc_tb is
     constant CheckerSlave_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
 
     -- *** Constants ***
-    constant FileIn_c  : string := output_path(runner_cfg) & FileIn_g;
-    constant FileOut_c : string := output_path(runner_cfg) & FileOut_g;
+    constant FileIn_c  : string := output_path(runner_cfg) & "Data.fix";
+    constant FileOut_c : string := output_path(runner_cfg) & "Data.fix";
 
 begin
 

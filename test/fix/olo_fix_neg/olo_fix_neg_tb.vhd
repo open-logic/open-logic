@@ -37,8 +37,6 @@ entity olo_fix_neg_tb is
         ResultFmt_g  : string  := "(0,1,8)";
         Round_g      : string  := "NonSymPos_s";
         Saturate_g   : string  := "Sat_s";
-        AFile_g      : string  := "Input.fix";
-        ResultFile_g : string  := "Output.fix";
         OpRegs_g     : natural := 1;
         RoundReg_g   : string  := "YES";
         SatReg_g     : string  := "YES";
@@ -76,8 +74,8 @@ architecture sim of olo_fix_neg_tb is
     constant Checker_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
 
     -- *** Constants ***
-    constant AFile_c      : string := output_path(runner_cfg) & AFile_g;
-    constant ResultFile_c : string := output_path(runner_cfg) & ResultFile_g;
+    constant AFile_c      : string := output_path(runner_cfg) & "A.fix";
+    constant ResultFile_c : string := output_path(runner_cfg) & "Result.fix";
 
 begin
 

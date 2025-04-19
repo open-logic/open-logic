@@ -24,13 +24,16 @@ def add_fix_configs(olo_tb):
     Add all fix testbench configurations to the VUnit Library
     :param olo_tb: Testbench library
     """
+
+    ### VC ###
     fix_vc_tb = 'olo_fix_vc_tb'
     tb = olo_tb.test_bench(fix_vc_tb)
     for S in ['0', '1']:
         for F in ['0', '61']: #Ensure numbeers > double precision (53 bits)
-            named_config(tb, {'Fmt_g': f'({S},15,{F})', 'FileIn_g' : 'File.fix', 'FileOut_g' : 'File.fix'}, 
+            named_config(tb, {'Fmt_g': f'({S},15,{F})'}, 
                             pre_config=olo_fix_vc.cosim.cosim)
 
+    ### olo_fix_abs ###
     fix_abs_tb = 'olo_fix_abs_tb'
     tb = olo_tb.test_bench(fix_abs_tb)
     #Test formats and round/sat modes
@@ -39,8 +42,6 @@ def add_fix_configs(olo_tb):
         'ResultFmt_g': '(0,8,4)',
         'Round_g': 'NonSymPos_s',
         'Saturate_g': 'Sat_s',
-        'AFile_g': 'A.fix',
-        'ResultFile_g': 'Result.fix',
         'OpRegs_g': 1,
         'RoundReg_g': "YES",
         'SatReg_g': "YES"
@@ -59,6 +60,7 @@ def add_fix_configs(olo_tb):
     for SatReg in ['NO', 'AUTO']:
         named_config(tb, default_generics | {'SatReg_g': SatReg}, pre_config=cosim)
 
+    ### olo_fix_neg ###
     fix_neg_tb = 'olo_fix_neg_tb'
     tb = olo_tb.test_bench(fix_neg_tb)
     #Test formats and round/sat modes
@@ -67,8 +69,6 @@ def add_fix_configs(olo_tb):
         'ResultFmt_g': '(0,8,4)',
         'Round_g': 'NonSymPos_s',
         'Saturate_g': 'Sat_s',
-        'AFile_g': 'A.fix',
-        'ResultFile_g': 'Result.fix',
         'OpRegs_g': 1,
         'RoundReg_g': "YES",
         'SatReg_g': "YES"
@@ -87,6 +87,7 @@ def add_fix_configs(olo_tb):
     for SatReg in ['NO', 'AUTO']:
         named_config(tb, default_generics | {'SatReg_g': SatReg}, pre_config=cosim)
         
+    ### olo_fix_resize ###
     fix_resize_tb = 'olo_fix_resize_tb'
     tb = olo_tb.test_bench(fix_resize_tb)
     #Test formats and round/sat modes
@@ -95,8 +96,6 @@ def add_fix_configs(olo_tb):
         'ResultFmt_g': '(0,4,4)',
         'Round_g': 'NonSymPos_s',
         'Saturate_g': 'Sat_s',
-        'AFile_g': 'A.fix',
-        'ResultFile_g': 'Result.fix',
         'RoundReg_g': "YES",
         'SatReg_g': "YES"
     }
@@ -112,6 +111,7 @@ def add_fix_configs(olo_tb):
     for SatReg in ['NO', 'AUTO']:
         named_config(tb, default_generics | {'SatReg_g': SatReg}, pre_config=cosim)
 
+    ### olo_fix_round ###
     fix_round_tb = 'olo_fix_round_tb'
     tb = olo_tb.test_bench(fix_round_tb)
     #Test formats and round/sat modes
@@ -119,8 +119,6 @@ def add_fix_configs(olo_tb):
         'AFmt_g': '(1,8,8)',
         'ResultFmt_g': '(1,9,4)',
         'Round_g': 'NonSymPos_s',
-        'AFile_g': 'A.fix',
-        'ResultFile_g': 'Result.fix',
         'RoundReg_g': "YES"
     }
     cosim = olo_fix_round.cosim.cosim
@@ -136,6 +134,7 @@ def add_fix_configs(olo_tb):
     for RoundReg in ['NO', 'AUTO']:
         named_config(tb, default_generics | {'RoundReg_g': RoundReg}, pre_config=cosim)
 
+    ### olo_fix_saturate ###
     fix_saturate_tb = 'olo_fix_saturate_tb'
     tb = olo_tb.test_bench(fix_saturate_tb)
     #Test formats and round/sat modes
@@ -143,8 +142,6 @@ def add_fix_configs(olo_tb):
         'AFmt_g': '(1,8,8)',
         'ResultFmt_g': '(1,4,8)',
         'Saturate_g': 'Sat_s',
-        'AFile_g': 'A.fix',
-        'ResultFile_g': 'Result.fix',
         'SatReg_g': "YES"
     }
     cosim = olo_fix_saturate.cosim.cosim

@@ -36,8 +36,6 @@ entity olo_fix_saturate_tb is
         AFmt_g       : string  := "(1,15,0)";
         ResultFmt_g  : string  := "(0,8,0)";
         Saturate_g   : string  := "Sat_s";
-        AFile_g      : string  := "Input.fix";
-        ResultFile_g : string  := "Output.fix";
         SatReg_g     : string  := "YES";
         runner_cfg   : string
     );
@@ -73,8 +71,8 @@ architecture sim of olo_fix_saturate_tb is
     constant Checker_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
 
     -- *** Constants ***
-    constant AFile_c      : string := output_path(runner_cfg) & AFile_g;
-    constant ResultFile_c : string := output_path(runner_cfg) & ResultFile_g;
+    constant AFile_c      : string := output_path(runner_cfg) & "A.fix";
+    constant ResultFile_c : string := output_path(runner_cfg) & "Result.fix";
 
 begin
 

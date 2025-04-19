@@ -20,7 +20,6 @@ from en_cl_fix_pkg import *
 def cosim(output_path : str = None, generics : dict = None, cosim_mode : bool = True):
 
     Format_g = generics["Fmt_g"] 
-    FileIn_g = generics["FileIn_g"]
 
     fmt = olo_fix_utils.fix_format_from_string(Format_g)
 
@@ -39,7 +38,7 @@ def cosim(output_path : str = None, generics : dict = None, cosim_mode : bool = 
     
     #Write Files
     if cosim_mode:
-        writer.write_cosim_file(arr, fmt, FileIn_g)
+        writer.write_cosim_file(arr, fmt, "Data.fix")
     return True
 
 if __name__ == "__main__":
