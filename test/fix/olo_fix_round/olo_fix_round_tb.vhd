@@ -39,7 +39,6 @@ entity olo_fix_round_tb is
         AFile_g      : string  := "Input.fix";
         ResultFile_g : string  := "Output.fix";
         RoundReg_g   : string  := "YES";
-        SatReg_g     : string  := "YES";
         runner_cfg   : string
     );
 end entity;
@@ -56,7 +55,9 @@ architecture sim of olo_fix_round_tb is
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
     signal Clk        : std_logic := '0';
-    signal Rst        : std_logic;
+    signal Rst        : std_logic := '0';
+    signal ClkDut     : std_logic := '0';
+    signal RstDut     : std_logic := '0';
     signal In_Valid   : std_logic;
     signal In_A       : std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
     signal Out_Valid  : std_logic;
@@ -65,6 +66,7 @@ architecture sim of olo_fix_round_tb is
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
+    constant HasRegs_c : boolean := (RoundReg_g /= "NO");
 
     -- *** Verification Compnents ***
     constant Stimuli_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
@@ -127,6 +129,18 @@ begin
     -----------------------------------------------------------------------------------------------
     -- DUT
     -----------------------------------------------------------------------------------------------
+    -- Clk and Rst are only needed for implementations with register, for cases where they are not
+    -- needed, they are not applied to check if DUT works unclocked.
+    g_regs : if HasRegs_c generate
+        ClkDut <= transport Clk after 100 ps; -- delay to avoid delta-cycle problems
+        RstDut <= Rst;
+    end generate;
+    g_nregs : if not HasRegs_c generate
+        ClkDut <= '0';
+        RstDut <= '0';
+    end generate;
+
+    -- DUT
     i_dut : entity olo.olo_fix_round
         generic map (
             AFmt_g      => AFmt_g,
@@ -135,8 +149,8 @@ begin
             RoundReg_g  => RoundReg_g
         )
         port map (
-            Clk         => Clk,
-            Rst         => Rst,
+            Clk         => ClkDut,
+            Rst         => RstDut,
             In_Valid    => In_Valid,
             In_A        => In_A,
             Out_Valid   => Out_Valid,
