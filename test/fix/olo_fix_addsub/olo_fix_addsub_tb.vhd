@@ -149,6 +149,7 @@ begin
         ClkDut <= transport Clk after 100 ps; -- delay to avoid delta-cycle problems
         RstDut <= Rst;
     end generate;
+
     g_nregs : if not HasRegs_c generate
         ClkDut <= '0';
         RstDut <= '0';

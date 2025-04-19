@@ -143,6 +143,7 @@ begin
         ClkDut <= transport Clk after 100 ps; -- delay to avoid delta-cycle problems
         RstDut <= Rst;
     end generate;
+
     g_nregs : if not HasRegs_c generate
         ClkDut <= '0';
         RstDut <= '0';
@@ -184,7 +185,7 @@ begin
             Data     => In_A
         );
 
-        vc_stimulib : entity work.olo_test_fix_stimuli_vc
+    vc_stimulib : entity work.olo_test_fix_stimuli_vc
         generic map (
             Instance         => StimuliB_c,
             Fmt              => cl_fix_format_from_string(BFmt_g),

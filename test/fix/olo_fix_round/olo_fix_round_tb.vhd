@@ -33,10 +33,10 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_fix_round_tb is
     generic (
-        AFmt_g       : string  := "(1,15,8)";
-        ResultFmt_g  : string  := "(1,16,2)";
-        Round_g      : string  := "NonSymPos_s";
-        RoundReg_g   : string  := "YES";
+        AFmt_g       : string := "(1,15,8)";
+        ResultFmt_g  : string := "(1,16,2)";
+        Round_g      : string := "NonSymPos_s";
+        RoundReg_g   : string := "YES";
         runner_cfg   : string
     );
 end entity;
@@ -133,6 +133,7 @@ begin
         ClkDut <= transport Clk after 100 ps; -- delay to avoid delta-cycle problems
         RstDut <= Rst;
     end generate;
+
     g_nregs : if not HasRegs_c generate
         ClkDut <= '0';
         RstDut <= '0';
