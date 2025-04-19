@@ -158,3 +158,37 @@ def add_fix_configs(olo_tb):
     # Different register settings
     for SatReg in ['NO', 'AUTO']:
         named_config(tb, default_generics | {'SatReg_g': SatReg}, pre_config=cosim)
+
+    ### olo_fix_add / sub ###
+    fix_addsubb_tbs = {'olo_fix_add_tb' : olo_fix_add.cosim.cosim, 
+                       'olo_fix_sub_tb' : olo_fix_sub.cosim.cosim}
+    for tb_name, cosim in fix_addsubb_tbs.items():
+        tb = olo_tb.test_bench(tb_name)
+        #Test formats and round/sat modes
+        default_generics = {
+            'AFmt_g': '(1,8,4)',
+            'BFmt_g': '(1,5,7)',
+            'ResultFmt_g': '(0,6,3)',
+            'Round_g': 'NonSymPos_s',
+            'Saturate_g': 'Sat_s',
+            'OpRegs_g': 1,
+            'RoundReg_g': "YES",
+            'SatReg_g': "YES"
+        }
+        # Different rounding
+        for Round in ['NonSymPos_s', 'Trunc_s']:
+            for Sat in ['Sat_s', 'None_s']:
+                named_config(tb, default_generics  | {'Round_g': Round, 'Saturate_g': Sat},
+                                pre_config=cosim)
+        #Different formats
+        for AFmt in ['(0,8,4)', '(1,3,12)']:
+            for BFmt in ['(0,5,7)', '(1,3,15)']:
+                named_config(tb, default_generics  | {'AFmt_g': AFmt, 'BFmt_g': BFmt},
+                                pre_config=cosim)
+        # Different register settings
+        for OpRegs in [0, 4]:
+            named_config(tb, default_generics | {'OpRegs_g': OpRegs}, pre_config=cosim)
+        for RoundReg in ['NO', 'AUTO']:
+            named_config(tb, default_generics | {'RoundReg_g': RoundReg}, pre_config=cosim)
+        for SatReg in ['NO', 'AUTO']:
+            named_config(tb, default_generics | {'SatReg_g': SatReg}, pre_config=cosim)
