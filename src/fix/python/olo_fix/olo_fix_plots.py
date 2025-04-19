@@ -45,6 +45,6 @@ class olo_fix_plots:
             ax.set_ylabel("Value")  # Set the y-axis label
             ax.legend()  # Add a legend
 
-        plt.tight_layout(pad=3.0)  # Adjust layout to prevent overlap
+        fig.subplots_adjust(hspace=0.5)  # Adjust vertical spacing between subplots
         if show:
             plt.show()
