@@ -80,10 +80,6 @@ vu.add_compile_option('nvc.a_flags', ['--relaxed'])
 # Shared Functions
 ########################################################################################################################
 
-def xxx():
-    print("hello")
-    return True
-
 def named_config(tb, map : dict, pre_config = None):
     cfg_name = "-".join([f"{k}={v}" for k, v in map.items()])
     if pre_config is not None:
