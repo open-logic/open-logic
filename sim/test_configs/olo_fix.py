@@ -19,7 +19,7 @@ from fix import *
 # Functionality
 # ---------------------------------------------------------------------------------------------------
 
-def add_fix_configs(olo_tb):
+def add_configs(olo_tb):
     """
     Add all fix testbench configurations to the VUnit Library
     :param olo_tb: Testbench library

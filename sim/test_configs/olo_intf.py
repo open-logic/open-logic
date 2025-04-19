@@ -13,7 +13,7 @@ from .utils import named_config
 # Functionality
 # ---------------------------------------------------------------------------------------------------
 
-def add_intf_configs(olo_tb):
+def add_configs(olo_tb):
     """
     Add all intf testbench configurations to the VUnit Library
     :param olo_tb: Testbench library

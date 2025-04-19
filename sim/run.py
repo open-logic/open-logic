@@ -1,4 +1,6 @@
-
+########################################################################################################################
+# Imports
+########################################################################################################################
 from vunit import VUnit
 from glob import glob
 import os
@@ -8,11 +10,11 @@ from functools import partial
 
 # Import open-logic test configurations
 # .. they are in separate files to keep the size of run.py in range
-from test_configs.utils import named_config
-from test_configs.olo_base import add_base_configs
-from test_configs.olo_axi import add_axi_configs
-from test_configs.olo_intf import add_intf_configs
-from test_configs.olo_fix import add_fix_configs
+from test_configs import olo_axi, olo_intf, olo_fix, olo_base
+
+########################################################################################################################
+# Setup
+########################################################################################################################
 
 class Simulator(Enum):
     GHDL = 1
@@ -80,17 +82,13 @@ olo_tb.add_source_files(files)
 vu.add_compile_option('ghdl.a_flags', ['-frelaxed-rules', '-Wno-hide', '-Wno-shared'])
 vu.add_compile_option('nvc.a_flags', ['--relaxed'])
 
+########################################################################################################################
+# Test bench configurations
+########################################################################################################################
+
 # olo_base TBs
-add_base_configs(olo_tb)
-
-# olo_axi TBs
-add_axi_configs(olo_tb)
-
-# olo_intf TBs
-add_intf_configs(olo_tb)
-    
-# olo_fix TBs
-add_fix_configs(olo_tb)
+for area in [olo_base, olo_axi, olo_intf, olo_fix]:
+    area.add_configs(olo_tb)
 
 ########################################################################################################################
 # Execution

@@ -13,7 +13,7 @@ from .utils import named_config
 # Functionality
 # ---------------------------------------------------------------------------------------------------
 
-def add_base_configs(olo_tb):
+def add_configs(olo_tb):
     """
     Add all base testbench configurations to the VUnit Library
     :param olo_tb: Testbench library
