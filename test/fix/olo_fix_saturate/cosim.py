@@ -14,7 +14,7 @@ import numpy as np
 
 #Import olo_fix
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../src/fix/python")))
-from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_saturate
+from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_saturate, olo_fix_plots
 from en_cl_fix_pkg import *
 
 def cosim(output_path : str = None, 
@@ -34,7 +34,8 @@ def cosim(output_path : str = None,
 
     # Plot if enabled
     if not cosim_mode:
-        olo_fix_utils.plot_a_b_err(out_data, in_data)
+        olo_fix_plots.plot_subplots({"In/Out" : {"Input" : in_data, "Output" : out_data},
+                                     "Error" : {"Error" : out_data - in_data}})
 
     #Write Files
     if cosim_mode:
