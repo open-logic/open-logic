@@ -86,7 +86,7 @@ vu.add_compile_option('nvc.a_flags', ['--relaxed'])
 # Test bench configurations
 ########################################################################################################################
 
-# olo_base TBs
+# Load all TB configs. For the exact configurations, see the test_configs folder.
 for area in [olo_base, olo_axi, olo_intf, olo_fix]:
     area.add_configs(olo_tb)
 
