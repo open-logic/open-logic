@@ -33,6 +33,7 @@ class olo_fix_saturate:
         self._a_fmt = a_fmt
         self._result_fmt = result_fmt
         self._saturate = saturate
+        self._sat_fmt = FixFormat(result_fmt.S, result_fmt.I, a_fmt.F)
 
     def reset(self):
         """
@@ -46,7 +47,11 @@ class olo_fix_saturate:
         :param a: Input a
         :return: Processed result
         """
-        return cl_fix_saturate(a, self._a_fmt, self._result_fmt, self._saturate)
+        result_sat = cl_fix_saturate(a, self._a_fmt, self._sat_fmt, self._saturate)
+
+        # Resize required for output format having more fractional bits than input required. This is not accepted
+        # by cl_fix_saturate natively. Does not add any logic, only bit extension.
+        return cl_fix_resize(result_sat, self._sat_fmt, self._result_fmt)
 
     def process(self, a):
         """

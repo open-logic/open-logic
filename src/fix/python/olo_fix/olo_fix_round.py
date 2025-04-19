@@ -33,6 +33,7 @@ class olo_fix_round:
         self._a_fmt = a_fmt
         self._result_fmt = result_fmt
         self._round = round
+        self._round_fmt = cl_fix_round_fmt(a_fmt, result_fmt.F, round)
 
     def reset(self):
         """
@@ -46,7 +47,11 @@ class olo_fix_round:
         :param a: Input a
         :return: Processed result
         """
-        return cl_fix_round(a, self._a_fmt, self._result_fmt, self._round)
+        result_round = cl_fix_round(a, self._a_fmt, self._round_fmt, self._round)
+
+        # Resize required for output format having more integer bits than minimally required. This is not accepted
+        # by cl_fix_round natively. Does not add any logic, only bit extension.
+        return cl_fix_resize(result_round, self._round_fmt, self._result_fmt)
 
     def process(self, a):
         """

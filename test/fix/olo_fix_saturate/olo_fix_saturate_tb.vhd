@@ -31,22 +31,19 @@ library work;
 -- Entity
 ---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_fix_neg_tb is
+entity olo_fix_saturate_tb is
     generic (
         AFmt_g       : string  := "(1,15,0)";
-        ResultFmt_g  : string  := "(0,1,8)";
-        Round_g      : string  := "NonSymPos_s";
+        ResultFmt_g  : string  := "(0,8,0)";
         Saturate_g   : string  := "Sat_s";
         AFile_g      : string  := "Input.fix";
         ResultFile_g : string  := "Output.fix";
-        OpRegs_g     : natural := 1;
-        RoundReg_g   : string  := "YES";
         SatReg_g     : string  := "YES";
         runner_cfg   : string
     );
 end entity;
 
-architecture sim of olo_fix_neg_tb is
+architecture sim of olo_fix_saturate_tb is
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -129,14 +126,11 @@ begin
     -----------------------------------------------------------------------------------------------
     -- DUT
     -----------------------------------------------------------------------------------------------
-    i_dut : entity olo.olo_fix_neg
+    i_dut : entity olo.olo_fix_saturate
         generic map (
             AFmt_g      => AFmt_g,
             ResultFmt_g => ResultFmt_g,
-            Round_g     => Round_g,
             Saturate_g  => Saturate_g,
-            OpRegs_g    => OpRegs_g,
-            RoundReg_g  => RoundReg_g,
             SatReg_g    => SatReg_g
         )
         port map (

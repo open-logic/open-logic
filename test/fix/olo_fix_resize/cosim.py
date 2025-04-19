@@ -54,8 +54,8 @@ def cosim(output_path : str = None,
 if __name__ == "__main__":
     # Example usage
     generics = {
-        "AFmt_g": "(1, 2, 10)",
-        "ResultFmt_g": "(0, 1, 8)",
+        "AFmt_g": "(1, 8, 8)",
+        "ResultFmt_g": "(0, 8, 4)",
         "Round_g": "NonSymPos_s",
         "Saturate_g": "Sat_s"
     }

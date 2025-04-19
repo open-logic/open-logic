@@ -60,6 +60,7 @@ architecture rtl of olo_fix_saturate is
     constant AFmt_c      : FixFormat_t   := cl_fix_format_from_string(AFmt_g);
     constant ResultFmt_c : FixFormat_t   := cl_fix_format_from_string(ResultFmt_g);
     constant Saturate_c  : FixSaturate_t := cl_fix_saturate_from_string(Saturate_g);
+    constant SatFmt_c    : FixFormat_t   := (ResultFmt_c.S, ResultFmt_c.I, AFmt_c.F);
 
     -- Constants
     constant LogicPresent_c : boolean := (AFmt_c.I > ResultFmt_c.I or
@@ -70,12 +71,17 @@ architecture rtl of olo_fix_saturate is
     constant OpRegStages_c  : integer := choose(ImplementReg_c, 1, 0);
 
     -- Signals
+    signal SatResult  : std_logic_vector(cl_fix_width(SatFmt_c) - 1 downto 0);
     signal ResultComb : std_logic_vector(cl_fix_width(ResultFmt_c) - 1 downto 0);
 
 begin
 
     -- Operation
-    ResultComb <= cl_fix_saturate(In_A, AFmt_c, ResultFmt_c, Saturate_c);
+    SatResult <= cl_fix_saturate(In_A, AFmt_c, SatFmt_c, Saturate_c);
+
+    -- Resize required for output format having more fractional bits than the input. This is not accepted
+    -- by cl_fix_saturate natively. Does not add any logic, only bit extension.
+    ResultComb <= cl_fix_resize(SatResult, SatFmt_c, ResultFmt_c);
 
     -- Optional Register
     i_reg : entity work.olo_fix_private_optional_reg

@@ -106,7 +106,7 @@ begin
 
             -- *** Second run with delay ***
             if run("Throttled") then
-                fix_stimuli_play_file (net, Stimuli_c, AFile_c);
+                fix_stimuli_play_file (net, Stimuli_c, AFile_c, stall_probability => 0.5, stall_max_cycles => 10);
                 fix_checker_check_file (net, Checker_c, ResultFile_c);
             end if;
 
@@ -135,9 +135,9 @@ begin
             ResultFmt_g => ResultFmt_g,
             Round_g     => Round_g,
             Saturate_g  => Saturate_g,
-            OpRegs_g    => 1,
-            RoundReg_g  => "YES",
-            SatReg_g    => "YES"
+            OpRegs_g    => OpRegs_g,
+            RoundReg_g  => RoundReg_g,
+            SatReg_g    => SatReg_g
         )
         port map (
             Clk         => Clk,
