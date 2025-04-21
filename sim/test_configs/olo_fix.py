@@ -206,3 +206,20 @@ def add_configs(olo_tb):
     # Different register settings
     for OpRegs in [0, 4]:
         named_config(tb, default_generics | {'OpRegs_g': OpRegs}, pre_config=cosim)
+
+    ### olo_fix_from_real ###
+    tb = olo_tb.test_bench('olo_fix_from_real_tb')
+    #Test formats and round/sat modes
+    for Format in ['(1,4,4)', '(0,4,4)', '(0,4,0)', '(0,0,4)']:
+        for Value in ['1.0', '1.33', '0.5', '-0.25', '0.125']:
+            named_config(tb, {'ResultFmt_g': Format, 'Value_g': Value})
+
+    ### olo_fix_to_real ###
+    tb = olo_tb.test_bench('olo_fix_to_real_tb')
+    #Test formats and round/sat modes
+    for Format in ['(1,4,4)', '(0,4,4)', '(0,4,0)', '(0,0,4)']:
+        for Value in ['1.0', '1.33', '0.5', '-0.25', '0.125']:
+            named_config(tb, {'AFmt_g': Format, 'Value_g': Value})
+
+    ### olo_fix_pkg ###
+    # Does not need configuration
