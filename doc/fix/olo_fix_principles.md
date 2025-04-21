@@ -48,8 +48,11 @@ The [en_cl_fix pkg](./en_cl_fix_pkg.md) defines a number of custom types:
   - Form (\<S\>, \<I\>, \<F\>) where _S_=Sign, _I_=Integer-Bits, _F_=Fractional-Bits (e.g. _(1, 8, 23)_)
 - FixRound_t
   - An enum type defining different rounding options
+  - Options: _Trunc_s, NonSymPos_s, NonSymNeg_s, SymInf_s, SymZero_s, ConvEven_s, ConvOdd_s_
+  - Most common: _Trunc_s_ (truncate) and _NonSymPos_s_ (nearest rounding) 
 - FixSaturate_t
   - An enum type defining different saturation options
+  - Options: _Sat_s, None_s, SatWarn_s, Warn_s_
 
 Custom types are generally not supported when instantiating VHDL from Verilog. Some tools allow it to some extend but no
 common ground between all the tools supported by Open Logic. Hence using those types on interfaces of Open Logic
