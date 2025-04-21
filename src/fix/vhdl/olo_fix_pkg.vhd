@@ -83,11 +83,14 @@ package body olo_fix_pkg is
             return false;
         elsif RegMode_c = "auto" then
             return logicPresent;
+        -- coverage off
+        -- unrechable
         else
             assert false
                 report "olo_fix - Invalid register mode '" & regMode & "' - must be YES, NO or AUTO"
                 severity failure;
             return false;
+        -- coverage on
         end if;
 
     end function;

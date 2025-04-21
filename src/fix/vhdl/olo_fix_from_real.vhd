@@ -50,8 +50,9 @@ entity olo_fix_from_real is
 end entity;
 
 architecture rtl of olo_fix_from_real is
+
     -- String to en_cl_fix
-    constant ResultFmt_c : FixFormat_t := cl_fix_format_from_string(ResultFmt_g);
+    constant ResultFmt_c : FixFormat_t   := cl_fix_format_from_string(ResultFmt_g);
     constant Saturate_c  : FixSaturate_t := cl_fix_saturate_from_string(Saturate_g);
 
 begin

@@ -61,7 +61,7 @@ architecture rtl of olo_fix_round is
     constant Round_c     : FixRound_t  := cl_fix_round_from_string(Round_g);
     constant AFmt_c      : FixFormat_t := cl_fix_format_from_string(AFmt_g);
     constant ResultFmt_c : FixFormat_t := cl_fix_format_from_string(ResultFmt_g);
-    
+
     -- Constants
     constant LogicPresent_c : boolean := AFmt_c.F > ResultFmt_c.F;
     constant ImplementReg_c : boolean := fixImplementReg(LogicPresent_c, RoundReg_g);

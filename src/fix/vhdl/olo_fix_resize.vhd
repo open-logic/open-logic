@@ -70,7 +70,13 @@ architecture rtl of olo_fix_resize is
     signal Round_Valid : std_logic;
     signal Round_Data  : std_logic_vector(cl_fix_width(RoundFmt_c) - 1 downto 0);
 
+    -- Dummy signal to enforce the entity being mentioned in coverage report
+    signal Dummy : std_logic;
+
 begin
+
+    -- Dummy signal to enforce the entity being mentioned in coverage report
+    Dummy <= '0'; 
 
     -- Round
     i_round : entity work.olo_fix_round

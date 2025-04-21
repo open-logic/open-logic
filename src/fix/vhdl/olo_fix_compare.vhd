@@ -72,7 +72,7 @@ begin
     -- Operation
     Comp_DataBool <= cl_fix_compare(Comparison_g, In_A, AFmt_c, In_B, BFmt_c);
     Comp_DataComb <= '1' when Comp_DataBool else '0';
-    
+
     -- Op Register
     i_reg : entity work.olo_fix_private_optional_reg
         generic map (

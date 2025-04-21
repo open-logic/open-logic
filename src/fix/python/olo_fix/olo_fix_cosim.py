@@ -39,7 +39,7 @@ class olo_fix_cosim:
         hex_digits = (format.width + 3) // 4 
         fmt = str(format).replace(" ", "")
 
-        data_int = olo_fix_utils.fix_to_integer(data, format)
+        data_int = cl_fix_to_integer(data, format)
 
         # Convert to unsigned for proper hex writing
         data_int = np.where(data_int < 0, data_int + 2**cl_fix_width(format), data_int)

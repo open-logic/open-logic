@@ -43,7 +43,7 @@ architecture sim of olo_fix_to_real_tb is
     constant AFmt_c         : FixFormat_t                                       := cl_fix_format_from_string(AFmt_g);
     constant ValueReal_c    : real                                              := real'value(Value_g);
     constant ValueFix_c     : std_logic_vector(cl_fix_width(AFmt_c)-1 downto 0) := cl_fix_from_real(ValueReal_c, AFmt_c, Sat_s);
-    constant ValueRealRnd_c : real := cl_fix_to_real(ValueFix_c, AFmt_c);
+    constant ValueRealRnd_c : real                                              := cl_fix_to_real(ValueFix_c, AFmt_c);
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals

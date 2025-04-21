@@ -49,7 +49,7 @@ architecture sim of olo_fix_from_real_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal In_Value         : real      := 0.0;
+    signal In_Value         : real := 0.0;
     signal Out_ValuePort    : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
     signal Out_ValueGeneric : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
 

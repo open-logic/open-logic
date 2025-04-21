@@ -34,7 +34,7 @@ def cosim(output_path : str = None, generics : dict = None, cosim_mode : bool = 
         max = cl_fix_max_value(fmt)
         N = 100
         step = (max-min)//100
-        arr = WideFix(np.array([min+i*step for i in range(N)], dtype=object), fmt)
+        arr = cl_fix_from_integer([min+i*step for i in range(N)], fmt)
     
     #Write Files
     if cosim_mode:
