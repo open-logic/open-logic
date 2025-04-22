@@ -27,7 +27,8 @@ Format examples:
 - _AFmt_g="(1,2,4)"_, _ResultFmt_g="(1,**2**,3)"_, _Round_g="Trunc_s"_
   - Does not required an additional integer bit because truncation does never lead to higher output than input
 
-For details about the fixed-point number format used in _Open Logic_, refer to the [fixed point principles](./olo_fix_principles.md).
+For details about the fixed-point number format used in _Open Logic_, refer to the
+[fixed point principles](./olo_fix_principles.md).
 
 ## Generics
 
@@ -64,4 +65,5 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ## Detail
 
-No detailed description required. All details that could be mentioned here are already covered by [fixed point principles](./olo_fix_principles.md).
+No detailed description required. All details that could be mentioned here are already covered by
+[fixed point principles](./olo_fix_principles.md).

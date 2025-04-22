@@ -16,12 +16,13 @@ Bit-true Model: [olo_fix_compare](../../src/fix/python/olo_fix/olo_fix_compare.p
 ## Description
 
 This entity performs a comparison of two fixed-point numbers. The comparison to execute can be selected through
-generics. 
+generics.
 
-Input A is on the left hand side of the operator, Input B on the right hand side. E.g. for _Comparison_g=">"_, the 
-comparison implemented is _A > B_.
+Input A is on the left hand side of the operator, Input B on the right hand side. E.g. for _Comparison_g=">"_,
+the comparison implemented is _A > B_.
 
-For details about the fixed-point number format used in _Open Logic_, refer to the [fixed point principles](./olo_fix_principles.md).
+For details about the fixed-point number format used in _Open Logic_, refer to the
+[fixed point principles](./olo_fix_principles.md).
 
 ## Generics
 
@@ -58,4 +59,5 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ## Detail
 
-No detailed description required. All details that could be mentioned here are already covered by [fixed point principles](./olo_fix_principles.md).
+No detailed description required. All details that could be mentioned here are already covered by
+[fixed point principles](./olo_fix_principles.md).

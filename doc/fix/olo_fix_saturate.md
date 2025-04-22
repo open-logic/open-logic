@@ -20,7 +20,8 @@ This entity allows reducing the number of integer bits in a fixed-point number a
 **Note:** The output format _MUST_ be one that _ONLY_ requires saturation. It is not allowed to select any other number
 of fractional bits than the input format has.
 
-For details about the fixed-point number format used in _Open Logic_, refer to the [fixed point principles](./olo_fix_principles.md).
+For details about the fixed-point number format used in _Open Logic_, refer to the
+[fixed point principles](./olo_fix_principles.md).
 
 ## Generics
 
@@ -56,4 +57,5 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ## Detail
 
-No detailed description required. All details that could be mentioned here are already covered by [fixed point principles](./olo_fix_principles.md).
+No detailed description required. All details that could be mentioned here are already covered by
+[fixed point principles](./olo_fix_principles.md).

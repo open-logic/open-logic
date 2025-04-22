@@ -17,7 +17,8 @@ Bit-true Model: [olo_fix_abs](../../src/fix/python/olo_fix/olo_fix_abs.py)
 
 This entity calculates the absolute value of a fixed-point number.
 
-For details about the fixed-point number format used in _Open Logic_, refer to the [fixed point principles](./olo_fix_principles.md).
+For details about the fixed-point number format used in _Open Logic_, refer to the
+[fixed point principles](./olo_fix_principles.md).
 
 ## Generics
 
@@ -56,4 +57,5 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ## Detail
 
-No detailed description required. All details that could be mentioned here are already covered by [fixed point principles](./olo_fix_principles.md).
+No detailed description required. All details that could be mentioned here are already covered by
+[fixed point principles](./olo_fix_principles.md).
