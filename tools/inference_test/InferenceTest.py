@@ -73,6 +73,11 @@ top_file.add_config("Be-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "tru
 top_file.add_tool_generics("quartus", {"RamBehavior_g" : '"WBR"'})
 top_files["test_olo_base_ram_tdp"] = top_file
 
+top_file = TopLevel(f"{TOP_PATH}/test_olo_fix_macc_inference.template")
+top_file.add_config("process", {"UseComponents_g": "false"})
+top_file.add_config("components", {"UseComponents_g": "true"})
+top_files["test_olo_fix_macc_inference"] = top_file
+
 # Selected top level
 if args.top_level:
     if args.top_level in top_files:
