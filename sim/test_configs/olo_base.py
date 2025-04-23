@@ -61,6 +61,15 @@ def add_configs(olo_tb):
             named_config(tb, {'Width_g': Width})
         for Be in [True, False]:
             named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
+        # Check no-init
+        named_config(tb, {'InitFormat_g': 'NONE'})
+        # Check non byte-width
+        named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': 7})
+        # Check init, byte-enables play a role internally
+        for Be in [True, False]:
+            for Width in [8, 16]: 
+                named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': Width, 'UseByteEnable_g' : Be})
+
 
     ### olo_base_ram_... singleport ###
     ram_tbs = ['olo_base_ram_sdp_tb']
@@ -77,6 +86,14 @@ def add_configs(olo_tb):
             named_config(tb, {'Width_g': Width})
         for Be in [True, False]:
             named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
+        # Check no-init
+        named_config(tb, {'InitFormat_g': 'NONE'})
+        # Check non byte-width
+        named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': 7})
+        # Check init, byte-enables play a role internally
+        for Be in [True, False]:
+            for Width in [8, 16]: 
+                named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': Width, 'UseByteEnable_g' : Be})
 
     ### olo_base_fifo_... non-packet ###
     fifo_tbs = ['olo_base_fifo_sync_tb', 'olo_base_fifo_async_tb']

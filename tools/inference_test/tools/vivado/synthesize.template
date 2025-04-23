@@ -1,0 +1,16 @@
+#Create Project
+create_project tutorial_prj {{project_folder}} -part xc7z010clg400-1
+set_property target_language VHDL [current_project]
+
+#Add OLO
+source {{import_sources}}
+
+#Add Files
+{%- for src_file in src_files %}
+add_files {{src_file}}
+{%- endfor %}
+
+#Build
+set_property top {{top_entity}} [current_fileset]
+launch_runs synth_1 -to_step synth_design -jobs 3
+wait_on_run -timeout 15 synth_1

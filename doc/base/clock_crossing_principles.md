@@ -11,8 +11,8 @@
 All clock-crossings require the following constraints:
 
 ```tcl
-set_max_delay -from [get_clocks <src-clock>] to [get_clocks <dst-clock>] -datapath_only <period-of-faster-clock>
-set_max_delay -from [get_clocks <dst-clock>] to [get_clocks <src-clock>] -datapath_only <period-of-faster-clock>
+set_max_delay -from [get_clocks <src-clock>] -to [get_clocks <dst-clock>] -datapath_only <period-of-faster-clock>
+set_max_delay -from [get_clocks <dst-clock>] -to [get_clocks <src-clock>] -datapath_only <period-of-faster-clock>
 ```
 
 **Note:** For altera Quartus, manual constraints are required because automatic constraining (scoped constraints) is not

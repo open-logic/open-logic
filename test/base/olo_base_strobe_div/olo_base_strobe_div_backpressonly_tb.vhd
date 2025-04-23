@@ -61,7 +61,6 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        variable Time1_v : time;
     begin
         test_runner_setup(runner, runner_cfg);
 

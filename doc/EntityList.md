@@ -19,6 +19,7 @@ Packages with type declarations and functions used in _Open Logic_ internally or
 | [olo_base_pkg_array](./base/olo_base_pkg_array.md)         | Array type definitions (e.g. arrays of _std_logic_vector_)   |
 | [olo_base_pkg_math](./base/olo_base_pkg_math.md)           | Mathematic functions (e.g. _log2_)                           |
 | [olo_base_pkg_logic](./base/olo_base_pkg_logic.md)         | Mathematic functions (e.g. _binaryToGray_)                   |
+| [olo_base_pkg_string](./base/olo_base_pkg_string.md)       | String functions (e.g. _toLower_)                            |
 | [olo_base_pkg_attribute](./base/olo_base_pkg_attribute.md) | Definition of synthesis attributes for different tools. **For internal use within Open Logic only** |
 
 ### Clock Crossings (_olo_base_cc_\<...\>_)
@@ -90,7 +91,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_delay](./base/olo_base_delay.md)                   | Fixed duration delay (fixed number of data-beats)            |
 | [olo_base_delay_cfg](./base/olo_base_delay_cfg.md)           | Configurable duration delay (runtime configurable number of data-beats) |
 | [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)               | Dynamic barrel shifter (number of bits to shift is configurable per sample at runtime) |
-| [olo_base_prbs](./base/olo_base_brbs.md)                     | PRBS (pseudo random binary sequence) generator based on linear feedback shift register (LFSR) implementation. |
+| [olo_base_prbs](./base/olo_base_prbs.md)                     | PRBS (pseudo random binary sequence) generator based on linear feedback shift register (LFSR) implementation. |
 | [olo_base_strobe_gen](./base/olo_base_strobe_gen.md)         | Strobe generator. Generate pulses at a fixed frequency       |
 | [olo_base_strobe_div](./base/olo_base_strobe_div.md)         | Strobe divider. Only forward every N'th pulse (divide event frequency). <br />Can also be used to convert single-cycle pulses to acknowledged events (pulse stays active until acknowledged). |
 | [olo_base_reset_gen](./base/olo_base_reset_gen.md)           | Reset generator - Generates reset pulses of specified duration after configuration and upon request |

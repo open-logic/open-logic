@@ -20,3 +20,6 @@ _info
 *.qpg
 *.qtl
 _vmake
+
+#Backup files
+*.bak

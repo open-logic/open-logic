@@ -2,6 +2,60 @@
 
 # Changelog
 
+## 3.2.0
+
+01-Apr-2025
+
+### Added Features
+
+- Added option to initialize RAM
+  - Affected entities: _olo_base_ram_tdp_, _olo_base_ram_sdp_ and _olo_base_ram_sp_
+
+### Backward Compatible Changes
+
+- Various documentation improvements
+  - Some of them reported by: [tasgomes](https://github.com/tasgomes), [rbrglez](https://github.com/rbrglez),
+    [peteut](https://github.com/peteut), [rbrglez](https://github.com/rbrglez)
+- Removal of various needless declarations
+  - Contributed by: [the-oeni](https://github.com/the-oeni)
+
+- Allow symbols width bigger than LFSR width in _olo_base_prbs_
+  - Co-authored by: [hh44bbbbyy](https://github.com/hh44bbbbyy)
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- Fixed RAM inference with byte-enables for Quartus Prime Standard
+
+  - Affected entities: _olo_base_ram_tdp_, _olo_base_ram_sdp_ and _olo_base_ram_sp_
+
+- Fixed RAM inference for Gowin EDA:
+
+  - Affected entities: _olo_base_ram_tdp_
+
+- Fixed wrong wrong positive for assertions in _olo_axi_master_simple_
+
+  - Only the assertion was changed, no synthesis relevant code was modified
+
+  - Affected entites: _olo_axi_master_simple_, _olo_axi_master_full_
+
+    Rreported by: [rbrglez](https://github.com/rbrglez)
+
+### Reporters
+
+- [tasgomes](https://github.com/tasgomes)
+- [rbrglez](https://github.com/rbrglez)
+- [peteut](https://github.com/peteut)
+- [rbrglez](https://github.com/rbrglez)
+
+### Contributors
+
+- [the-oeni](https://github.com/the-oeni)
+- [hh44bbbbyy](https://github.com/hh44bbbbyy)
+
 ## 3.1.0
 
 27-Jan-2025

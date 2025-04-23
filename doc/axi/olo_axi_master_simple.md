@@ -29,7 +29,7 @@ For each command there are two operation modes:
   - The AXI-master only starts the command after sufficient data (write-case) or space (read-case) is available in
     the corresponding data FIFO
   - This ensures that commands can be executed without blocking the AXI bus.
-  - This approach leads to more latency, since he user has to handle data before the command is sent.
+  - This approach leads to more latency, since the user has to handle data before the command is sent.
   - Suggested default.
 - Low Latency
   - The AXI-master starts the transaction immediately, with no regard on FIFO states.
@@ -57,7 +57,7 @@ producing access patterns with many single-beat transactions.**
 | AxiDataWidth_g            | positive | 32      | AXI data width (must be a power of 2 of bytes)<br />Range: 8 ... 1024 |
 | AxiMaxBeats_g             | positive | 256     | Maximum number of beats in one AXI transaction. <br />Values given by the AXI specification are 16 for AXI-3 and 256 for AXI-4. However, the user may choose any other number for scheduling reasons.<br />Range: 1 ... 256 |
 | AxiMaxOpenTransactions_g  | positive | 8       | Maximum number of AXI commands (AW/AR-channel) to send before the first command is completed (outstanding transactions).<br />Range: 1 ... 8 |
-| UserTransactionSizeBits_g | positive | 24      | Number of bits used to specify the number of beats to transfer on the user command interface. This is the only limiting factor for the transfer size requested.<br />This value must be chosen in a way that a signle user transaction cannot exceed the AXI address range:  _UserTransactionSizeBits_g <= AxiAddrWidth_g-log2(AxiDataWidth_g/8)_ |
+| UserTransactionSizeBits_g | positive | 24      | Number of bits used to specify the number of beats to transfer on the user command interface. This is the only limiting factor for the transfer size requested.<br />This value must be chosen in a way that a single user transaction cannot exceed the AXI address range:  _UserTransactionSizeBits_g <= AxiAddrWidth_g-log2(AxiDataWidth_g/8)_ |
 | DataFifoDepth_g           | positive | 1024    | Number of entries in the read/write data FIFOs (in words, not bytes).<br />Suggested value is at least _2 x AxiMaxBeats_g_. <br />Values smaller than _AxiMaxBeats_g_ can block the entity completely if non-low-latency transfers are requested (because the FIFO never can hold all data of one maximum size burst). The suggestion is _2 x AxiMaxBeats_g_ to allow continuous read data-transfer in non-low-latency transfers - with values the next read transaction could only be started after the last transaction is fully read from the FIFO (see [Read FIFO full with High Latency (Default)](#read-fifo-full-with-high-latency-default)), which would limit bandwidth. |
 | ImplRead_g                | boolean  | true    | Implement read functionality (can be disabled to save resources) |
 | ImplWrite_g               | boolean  | true    | Implement write functionality (can be disabled to save resources) |
@@ -84,7 +84,7 @@ master interface to the slave interface.
 #### Note about AXI Id Signals
 
 The following signals are not included in the olo_axi_master_simple interface but they could be mandatory for some
-pplications or tools:
+applications or tools:
 
 - M_Axi_AwId
 - M_Axi_BId
