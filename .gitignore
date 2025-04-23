@@ -1,7 +1,6 @@
 #Pycharm files
 **/*/.idea/
 **/*/__pycache__/
-.idea/
 __pycache__/
 
 #Vunit files
