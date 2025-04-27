@@ -25,13 +25,16 @@ def add_configs(olo_tb):
     :param olo_tb: Testbench library
     """
 
-    ### VC ###
-    tb = olo_tb.test_bench('olo_fix_vc_tb')
-    for S in ['0', '1']:
-        for F in ['0', '61']: #Ensure numbeers > double precision (53 bits)
-            named_config(tb, {'Fmt_g': f'({S},15,{F})'}, 
-                            pre_config=olo_fix_vc.cosim.cosim)
-
+    ### VC / olo_fix_sim_stimuli / olo_fix_sim_checker ###
+    vc_tbs = {'olo_fix_vc_tb'          : olo_fix_vc.cosim.cosim,
+              'olo_fix_sim_stimuli_tb' : olo_fix_sim_stimuli.cosim.cosim,}
+    for tb_name, cosim in vc_tbs.items():
+        tb = olo_tb.test_bench(tb_name)
+        for S in ['0', '1']:
+            for F in ['0', '61']: #Ensure numbeers > double precision (53 bits)
+                named_config(tb, {'Fmt_g': f'({S},15,{F})'}, 
+                                pre_config=cosim)
+            
     ### olo_fix_abs ###
     tb = olo_tb.test_bench('olo_fix_abs_tb')
     #Test formats and round/sat modes
