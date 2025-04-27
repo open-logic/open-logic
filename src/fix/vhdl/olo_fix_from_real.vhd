@@ -37,7 +37,7 @@ entity olo_fix_from_real is
     generic (
         -- Formats / Saturate
         ResultFmt_g : string;
-        Saturate_g  : string := FixSaturate_Warn_c;
+        Saturate_g  : string := FixSaturate_SatWarn_c;
         -- Value can be passed as generic or port
         Value_g     : real   := 0.0
     );

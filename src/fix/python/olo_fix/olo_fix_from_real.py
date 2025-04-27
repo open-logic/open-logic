@@ -22,7 +22,7 @@ class olo_fix_from_real:
     # ---------------------------------------------------------------------------------------------------
     def __init__(self,
                  result_fmt : FixFormat,
-                 saturate : FixSaturate = FixSaturate.Warn_s):
+                 saturate : FixSaturate = FixSaturate.SatWarn_s):
         """
         Constructor for the olo_fix_abs class.
         :param result_fmt: Format of the result
