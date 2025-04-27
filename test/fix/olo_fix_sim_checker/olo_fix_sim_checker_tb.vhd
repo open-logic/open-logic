@@ -31,14 +31,14 @@ library work;
 -- Entity
 ---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_fix_sim_stimuli_tb is
+entity olo_fix_sim_checker_tb is
     generic (
         Fmt_g      : string := "(1,15,0)";
         runner_cfg : string
     );
 end entity;
 
-architecture sim of olo_fix_sim_stimuli_tb is
+architecture sim of olo_fix_sim_checker_tb is
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -61,8 +61,8 @@ architecture sim of olo_fix_sim_stimuli_tb is
     -----------------------------------------------------------------------------------------------
 
     -- *** Verification Compnents ***
-    constant Checker_c      : olo_test_fix_checker_t := new_olo_test_fix_checker;
-    constant CheckerSlave_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant Stimuli_c      : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant StimuliSlave_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
 
     -- *** Constants ***
     constant FileIn_c  : string := output_path(runner_cfg) & "Data.fix";
@@ -92,13 +92,13 @@ begin
 
             -- *** Test ***
             if run("Test") then
-                fix_checker_check_file (net, Checker_c, FileOut_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
-                fix_checker_check_file (net, CheckerSlave_c, FileOut_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
+                fix_stimuli_play_file (net, StimuliSlave_c, FileIn_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
             end if;
 
             -- *** Wait until done ***
-            wait_until_idle(net, as_sync(Checker_c));
-            wait_until_idle(net, as_sync(CheckerSlave_c));
+            wait_until_idle(net, as_sync(Stimuli_c));
+            wait_until_idle(net, as_sync(StimuliSlave_c));
             wait for 1 us;
 
         end loop;
@@ -115,9 +115,10 @@ begin
     -----------------------------------------------------------------------------------------------
     -- DUT
     -----------------------------------------------------------------------------------------------
-    i_dut_timing_master : entity olo.olo_fix_sim_stimuli
+
+    i_dut_timing_master : entity olo.olo_fix_sim_checker
         generic map (
-            FilePath_g         => FileIn_c,
+            FilePath_g         => FileOut_c,
             Fmt_g              => Fmt_g,
             StallProbability_g => 0.5,
             StallMaxCycles_g   => 4
@@ -130,9 +131,9 @@ begin
             Data     => Data
         );
 
-    i_dut_timing_slave : entity olo.olo_fix_sim_stimuli
+    i_dut_timing_slave : entity olo.olo_fix_sim_checker
         generic map (
-            FilePath_g         => FileIn_c,
+            FilePath_g         => FileOut_c,
             IsTimingMaster_g   => false,
             Fmt_g              => Fmt_g,
             StallProbability_g => 0.5,
@@ -149,9 +150,9 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Verification Components
     -----------------------------------------------------------------------------------------------
-    vc_checker : entity work.olo_test_fix_checker_vc
+    vc_stimuli : entity work.olo_test_fix_stimuli_vc
         generic map (
-            Instance         => Checker_c,
+            Instance         => Stimuli_c,
             Is_Timing_Master => true,
             Fmt              => cl_fix_format_from_string(Fmt_g)
         )
@@ -163,9 +164,9 @@ begin
             Data     => Data
         );
 
-    vc_checker_slave : entity work.olo_test_fix_checker_vc
+    vc_stimuli_slave : entity work.olo_test_fix_stimuli_vc
         generic map (
-            Instance         => CheckerSlave_c,
+            Instance         => StimuliSlave_c,
             Is_Timing_Master => false,
             Fmt              => cl_fix_format_from_string(Fmt_g)
         )

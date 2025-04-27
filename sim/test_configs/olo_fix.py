@@ -27,7 +27,8 @@ def add_configs(olo_tb):
 
     ### VC / olo_fix_sim_stimuli / olo_fix_sim_checker ###
     vc_tbs = {'olo_fix_vc_tb'          : olo_fix_vc.cosim.cosim,
-              'olo_fix_sim_stimuli_tb' : olo_fix_sim_stimuli.cosim.cosim,}
+              'olo_fix_sim_stimuli_tb' : olo_fix_sim_stimuli.cosim.cosim,
+              'olo_fix_sim_checker_tb' : olo_fix_sim_checker.cosim.cosim}
     for tb_name, cosim in vc_tbs.items():
         tb = olo_tb.test_bench(tb_name)
         for S in ['0', '1']:
