@@ -145,7 +145,7 @@ All fixed point mathematics functions in Open Logic follow a common cent of prin
 [Open Logic Fixed-Point Principles](./fix/olo_fix_principles.md). Read through this document before using the
 components.
 
-### Packages 
+### Packages
 
 Below packages contain basic definitions like number format types etc.
 
@@ -154,7 +154,7 @@ Below packages contain basic definitions like number format types etc.
 | [en_cl_fix_pkg](../3rdParty/en_cl_fix/README.md) | 3rd Party Package for fixed-point mathematics. <br> Original source [Enclustra GitHub](https://github.com/enclustra/en_cl_fix) |
 | [olo_fix_pkg](./fix/olo_fix_pkg.md)              | Package with various Open Logic specific definitions (e.g. common options of string-type generics) |
 
-### Basic Operations 
+### Basic Operations
 
 | Entity                                          | Description                                                  |
 | ----------------------------------------------- | ------------------------------------------------------------ |
@@ -177,3 +177,9 @@ be used. For deciding which option to use, the following considerations shall be
 - Functions cannot be called from Verilog - hence _Open Logic_ components are the only option for Verilog
 - _Open Logic_ components include pipeline register stages - for fast clock speeds, this can lead to more readable code
 - _en_cl_fix_pkg_ functions allow packing several steps into one process, which can lead to more compact code
+
+### Simple Mathematics
+
+| Entity                                          | Description                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| [olo_fix_limit](./fix/olo_fix_limit.md)         | Limit a value between an upper and a lower bound             |

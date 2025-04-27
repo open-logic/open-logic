@@ -223,3 +223,37 @@ def add_configs(olo_tb):
 
     ### olo_fix_pkg ###
     # Does not need configuration
+
+    ### olo_fix_limit ###
+    tb = olo_tb.test_bench('olo_fix_limit_tb')
+    #Test formats and round/sat modes
+    default_generics = {
+        'InFmt_g': '(1,8,8)',
+        'LimLoFmt_g': '(1,8,8)',
+        'LimHiFmt_g': '(0,8,8)',
+        'ResultFmt_g': '(1,8,8)',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'UseFixedLimits_g': False,
+        'FixedLimLo_g': '0.0',
+        'FixedLimHi_g': '0.0'
+    }
+    cosim = olo_fix_limit.cosim.cosim
+    # default
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+    # Fixed limits
+    fix_generics = default_generics.copy()
+    fix_generics.pop('LimLoFmt_g', None)
+    fix_generics.pop('LimHiFmt_g', None)
+    named_config(tb, fix_generics | {'UseFixedLimits_g': 'True', 'FixedLimLo_g': '-3.25', 'FixedLimHi_g': '5.0'},
+                 pre_config=cosim, short_name='fixed_limits')
+    # Different formats
+    for LimLoFmt in ['(1,8,4)', '(1,3,12)']:
+        for LimHiFmt in ['(0,8,4)', '(1,3,12)']:
+            named_config(tb, default_generics  | {'LimLoFmt_g': LimLoFmt, 'LimHiFmt_g': LimHiFmt},
+                         pre_config=cosim, short_name=f'diff-formats-Lo={LimLoFmt}-Hi={LimHiFmt}')
+    # Different register settings
+    for RoundReg in ['NO', 'AUTO']:
+        for SatReg in ['NO', 'AUTO']:
+            named_config(tb, default_generics | {'RoundReg_g': RoundReg, 'SatReg_g': SatReg},
+                         pre_config=cosim, short_name=f'diff-regs-RoundReg={RoundReg}-SatReg={SatReg}')
