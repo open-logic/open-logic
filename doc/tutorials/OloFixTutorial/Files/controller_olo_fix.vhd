@@ -44,7 +44,6 @@ end entity;
 architecture rtl of olo_fix_tutorial_controller is
     -- Static
     signal ILimNeg    : std_logic_vector(cl_fix_width(FmtIlimNeg_c) - 1 downto 0);
-    signal IlimNegRes : std_logic_vector(cl_fix_width(FmtI_c) - 1 downto 0);
 
     -- Dynamic
     signal Error            : std_logic_vector(cl_fix_width(FmtErr_c) - 1 downto 0);
