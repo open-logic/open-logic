@@ -22,7 +22,7 @@ library olo;
 -- Entity Declaration
 ---------------------------------------------------------------------------------------------------
 
-entity controller_olo_fix is
+entity olo_fix_tutorial_controller is
     port (
         -- Control Ports
         Clk         : in    std_logic;
@@ -41,9 +41,9 @@ entity controller_olo_fix is
     );
 end entity;
 
-architecture rtl of controller_olo_fix is
+architecture rtl of olo_fix_tutorial_controller is
     -- Static
-    signal ILimNeg    : std_logic_vector(cl_fix_width(FmtIlimNeg_c) - 1 downto 0);¨
+    signal ILimNeg    : std_logic_vector(cl_fix_width(FmtIlimNeg_c) - 1 downto 0);
     signal IlimNegRes : std_logic_vector(cl_fix_width(FmtI_c) - 1 downto 0);
 
     -- Dynamic
@@ -77,30 +77,6 @@ begin
             Out_Result  => ILimNeg
         );
 
-    i_ilim_res : entity olo.olo_fix.resize 
-        generic map (
-            AFmt_g      => to_string(FmtIlim_c),
-            ResultFmt_g => to_string(FmtI_c)
-        )
-        port map (
-            Clk         => Clk,
-            Rst         => Rst,
-            In_A        => Cfg_Ilim,
-            Out_Result  => ILimRes
-        );
-
-    i_ilim_neg_res : entity olo.olo_fix.resize
-        generic map (
-            AFmt_g      => to_string(FmtIlimNeg_c),
-            ResultFmt_g => to_string(FmtI_c)
-        )
-        port map (
-            Clk         => Clk,
-            Rst         => Rst,
-            In_A        => ILimNeg,
-            Out_Result  => IlimNegRes
-        );
-
     -----------------------------------------------------------------------------------------------
     -- Dynamic Calculations
     -----------------------------------------------------------------------------------------------
@@ -109,15 +85,15 @@ begin
     i_error_sub : entity olo.olo_fix_sub
         generic map (
             AFmt_g      => to_string(FmtIn_c),
-            BFmt_g      => to_string(FmtIn_c)
+            BFmt_g      => to_string(FmtIn_c),
             ResultFmt_g => to_string(FmtErr_c)
         )
         port map (
             Clk         => Clk,
             Rst         => Rst,
             In_Valid    => In_Valid,
-            In_A        => In_Target
-            In_B        => In_Actual
+            In_A        => In_Target,
+            In_B        => In_Actual,
             Out_Valid   => Error_Valid,
             Out_Result  => Error
         );
@@ -127,8 +103,10 @@ begin
         generic map (
             AFmt_g      => to_string(FmtErr_c),
             BFmt_g      => to_string(FmtKp_c),
-            OpRegs_g    => 6,
-            ResultFmt_g => to_string(FmtPpart_c)
+            OpRegs_g    => 9,
+            ResultFmt_g => to_string(FmtPpart_c),
+            Round_g     => FixRound_NonSymPos_c,
+            Saturate_g  => FixSaturate_Sat_c
         )
         port map (
             Clk         => Clk,
@@ -177,7 +155,7 @@ begin
         generic map (
             InFmt_g          => to_string(FmtI_c),
             LimLoFmt_g       => to_string(FmtIlimNeg_c),
-            LimHiFmt_g       => to_string(FmtIlim_c)
+            LimHiFmt_g       => to_string(FmtIlim_c),
             ResultFmt_g      => to_string(FmtI_c)
         )
         port map (

@@ -22,7 +22,7 @@ library olo;
 -- Entity Declaration
 ---------------------------------------------------------------------------------------------------
 
-entity controller_olo_fix is
+entity olo_fix_tutorial_controller is
     port (
         -- Control Ports
         Clk         : in    std_logic;
@@ -41,9 +41,9 @@ entity controller_olo_fix is
     );
 end entity;
 
-architecture rtl of controller_olo_fix is
+architecture rtl of olo_fix_tutorial_controller is
     -- Static
-    signal ILimNeg : std_logic_vector(cl_fix_width(FmtIlimNeg_c) - 1 downto 0);¨
+    signal ILimNeg : std_logic_vector(cl_fix_width(FmtIlimNeg_c) - 1 downto 0);
 
     -- Dynamic
     signal Error_1      : std_logic_vector(cl_fix_width(FmtErr_c) - 1 downto 0);
@@ -72,21 +72,21 @@ begin
             Vld_1 <= In_Valid;
 
             -- Stg 2
-            Ppart_2 <= cl_fix_mult(Error_1, FmtErr_c, Cfg_Kp, FmtKp_c, FmtPpart_cFixRound_NonSymPos_c, FixSaturate_Sat_c); 
+            Ppart_2 <= cl_fix_mult(Error_1, FmtErr_c, Cfg_Kp, FmtKp_c, FmtPpart_c, NonSymPos_s, Sat_s); 
             I1_2 <= cl_fix_mult(Error_1, FmtErr_c, Cfg_Ki, FmtKi_c, FmtImult_c);
             Vld_2 <= Vld_1;
 
             -- Stg 3
-            IPresat_3 <= cl_fix_add(Integrator, FmtI_c, I1_2, FmtImult_c, FmtI_c);
+            IPresat_3 <= cl_fix_add(Integrator_4, FmtI_c, I1_2, FmtImult_c, FmtI_c);
             Ppart_3 <= Ppart_2;
             Vld_3 <= Vld_2;
 
             -- Stg 4
             if Vld_3 = '1' then
-                if cl_fix_compare(IPresat_3, FmtI_c, Cfg_Ilim, FmtIlim_c, ">") = '1' then
-                    Integrator_4 <= cl_fix_resize(CfgIlim, FmtIlim_c, FmtIc);
-                elsif cl_fix_compare(IPresat_3, FmtI_c, ILimNeg, FmtIlimNeg_c, "<") = '1' then
-                    Integrator_4 <= cl_fix_resize(ILimNeg, FmtIlimNeg_c, FmtIc);
+                if cl_fix_compare(">", IPresat_3, FmtI_c, Cfg_Ilim, FmtIlim_c) then
+                    Integrator_4 <= cl_fix_resize(Cfg_Ilim, FmtIlim_c, FmtI_c);
+                elsif cl_fix_compare("<", IPresat_3, FmtI_c, ILimNeg, FmtIlimNeg_c) then
+                    Integrator_4 <= cl_fix_resize(ILimNeg, FmtIlimNeg_c, FmtI_c);
                 else
                 Integrator_4 <= IPresat_3;
                 end if;
@@ -95,7 +95,7 @@ begin
             Vld_4 <= Vld_3;
 
             -- Stg 5
-            Out_Result <= cl_fix_add(Integrator_4, FmtI_c, Ppart_4, FmtPpart_c, FmtOut_c, FixRound_NonSymPos_c, FixSaturate_Sat_c);
+            Out_Result <= cl_fix_add(Integrator_4, FmtI_c, Ppart_4, FmtPpart_c, FmtOut_c, NonSymPos_s, Sat_s);
             Out_Valid <= Vld_4;
 
             -- Reset

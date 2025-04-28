@@ -18,6 +18,7 @@ from matplotlib import pyplot as plt
 from PlantModel import Plant
 from Controller import *
 from en_cl_fix_pkg import *
+from olo_fix import olo_fix_cosim
 
 # ---------------------------------------------------------------------------------------------------
 # Constants
@@ -39,6 +40,8 @@ controllers = {"Float"    : ControllerFloat(kp=KP, ki=KI, ilim=ILIM),
 # Prepare Input
 target = np.concatenate([np.zeros(10), np.ones(300)*1.5, np.zeros(100)])
 control_values = {}
+control_values_model = {}
+actual_values = {}
 debug = {}
 
 # Execute all controller models
@@ -47,6 +50,8 @@ for name, controller in controllers.items():
     # Prepare arrays to fetch data used later on to plot
     output = np.zeros_like(target)
     control_value = np.zeros_like(target)
+    control_value_model = np.zeros_like(target)
+    actual_value = np.zeros_like(target)
 
     # Set up the plant model
     plant = Plant(TS)
@@ -57,12 +62,15 @@ for name, controller in controllers.items():
 
         #quantize input
         ctrl_in = cl_fix_from_real(v_actual, FMT_IN)
+        actual_value[i] = ctrl_in
 
         #Simulate
+        controller.set_target(ix)
         ctrl_out = controller.simulate(ctrl_in)
         control_value[i] = np.clip(ctrl_out,0, 5)
+        control_value_model[i] = ctrl_out
         output[i] = v_actual= plant.simulate(control_value[i])
-        controller.set_target(ix)
+        
 
         # Change R2 at runtime
         if i == 150:
@@ -77,6 +85,8 @@ for name, controller in controllers.items():
 
     # Store controller output for comparison
     control_values[name] = control_value
+    actual_values[name] = actual_value
+    control_values_model[name] = control_value_model
 
 # Plot to compare outputs of different controller models
 plt.figure("output diff")
@@ -84,3 +94,12 @@ plt.plot(control_values["EnClFix"]-control_values["Float"], color="r", label="En
 plt.plot(control_values["OloFix"]-control_values["EnClFix"], color="b", label="OloFix - EnClFix")
 plt.legend()
 plt.show()
+
+#Write cosimulation files
+out_dir = os.path.abspath(os.path.dirname(__file__))
+writer = olo_fix_cosim(out_dir)
+writer.write_cosim_file(actual_values["EnClFix"], FMT_IN, "InputActual.fix")
+writer.write_cosim_file(target, FMT_IN, "InputTarget.fix")
+writer.write_cosim_file(control_values_model["EnClFix"], FMT_OUT, "Output.fix")
+
+
