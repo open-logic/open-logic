@@ -150,6 +150,12 @@ any effort is invested into an HDL implementation. Python offers powerful toolbo
 printing FFTs, using NumPy/SciPy, various plotting libraries) and therefore is a much more productive environment for
 developing the algorithm and an HDL simulator.
 
+Open Logic also provides python and HDL components to exchange inputs and expected outputs between Python and the HDL
+simulation. This allows easily verifying if the HDL implementation of an algorithm really exactly matches its Python
+model.
+
+![Image](./principles/olo_fix_cosim.drawio.png)
+
 Note that Python models only model the mathematical behavior but not the timing (e.g. latency or maximum sample rate).
 
 Again, [en_cl_fix](https://github.com/enclustra/en_cl_fix) functions can be used - independently of whether in HDL basic
