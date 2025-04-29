@@ -8,6 +8,9 @@
 # ---------------------------------------------------------------------------------------------------
 # Imports
 # ---------------------------------------------------------------------------------------------------
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../src/fix/python")))
 from olo_fix import *
 from en_cl_fix_pkg import *
 
@@ -133,9 +136,6 @@ class ControllerOloFix (ControllerBase):
         self._i_add = olo_fix_add(FMT_I, FMT_IMULT, FMT_I)
         self._i_limit = olo_fix_limit(FMT_I, FMT_ILIM_NEG, FMT_ILIM, FMT_I)
         self._out_add = olo_fix_add(FMT_I, FMT_PPART, FMT_OUT, round=FixRound.NonSymPos_s, saturate=FixSaturate.Sat_s)
-
-    def set_target(self, value):
-        self._target = olo_fix_from_real(FMT_IN).process(value)
 
     def simulate(self, actual) -> float:
         # Error
