@@ -24,6 +24,9 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
+# ---------------------------------------------------------------------------------------------------
+# Implementation
+# ---------------------------------------------------------------------------------------------------
 # Class definition
 class Plant:
 
@@ -52,10 +55,19 @@ class Plant:
         Returns:
             float: Output voltage of the plant.
         """
+        #The voltage over R2/C is given by the charge in the capacitor and its capacitance
         v_c_r2 = self._c_charge / self.C_FIX
+
+        # The current in R1 is given by the voltage over R1 and its resistance
         i_r1 = (v_in - v_c_r2)/self.R1_FIX
+
+        # The current in R2 is given by the voltage over R2 and its resistance
         i_r2 = v_c_r2 / self._r2
+
+        # Calculate the change in charge in the capacitor
         self._c_charge += (i_r1-i_r2)*self._dt
+
+        # Return output voltage
         return v_c_r2
 
     def set_r2(self, value : float):
