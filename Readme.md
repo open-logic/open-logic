@@ -60,6 +60,10 @@ user-code.
   - [Questa Tutorial](./doc/tutorials/QuestasimTutorial.md) - for VHDL and System Verilog
   - [Libero Tutorial](./doc/tutorials/LiberoTutorial.md) - for VHDL and System Verilog
   - [Gowin Tutorial](./doc/tutorials/GowinTutorial.md) - for VHDL and System Verilog
+  - [Fixed Point Mathematics Tutorial](./doc/tutorials/OloFixTutorial.md)
+    - Fixed-point bit-true modeling in Python
+    - _Open Logic_ based fixed-point implementation in HDL
+    - Python / VHDL / Verilog co-simulation
 - [Instructions for Contributors](./Contributing.md)
 
 ## Project Philosophy
