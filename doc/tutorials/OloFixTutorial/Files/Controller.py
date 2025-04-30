@@ -26,7 +26,8 @@ FMT_ILIM_NEG = FixFormat(1, FMT_ILIM.I, FMT_ILIM.F)
 FMT_ERR = cl_fix_sub_fmt(FMT_IN, FMT_IN)
 FMT_PPART = FMT_OUT #No need to go beyond what saturates the output.
 FMT_IMULT = cl_fix_mult_fmt(FMT_ERR, FMT_KI)
-FMT_I = cl_fix_add_fmt(FMT_ILIM, FMT_IMULT)
+FMT_IADD = cl_fix_add_fmt(FMT_ILIM, FMT_IMULT)
+FMT_I = FixFormat(FMT_IADD.S, FMT_ILIM.I, FMT_IADD.F) # Output can never be > ILIM
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -84,13 +85,13 @@ class ControllerFloat(ControllerBase):
         # Error
         error = self._target - actual
 
-        # Part
+        # P Part
         p_part = error*self._kp
 
         # I Part
         i_1 = error*self._ki
         self._integrator += i_1
-        self._integrator = max(min(self._integrator, +self._ilim), -self._ilim)
+        self._integrator = np.clip(-self._ilim, +self._ilim, self._integrator)
 
         # Output
         return self._integrator + p_part
@@ -112,13 +113,13 @@ class ControllerEnClFix(ControllerBase):
 
         # I Part
         i_1 = cl_fix_mult(error, FMT_ERR, self._ki, FMT_KI, FMT_IMULT)
-        i_presat = cl_fix_add(self._integrator, FMT_I, i_1, FMT_IMULT, FMT_I)
+        i_presat = cl_fix_add(self._integrator, FMT_I, i_1, FMT_IMULT, FMT_IADD)
         if (i_presat > self._ilim):
             self._integrator = cl_fix_resize(self._ilim, FMT_ILIM, FMT_I)
         elif (i_presat < self._ilim_neg):
             self._integrator = cl_fix_resize(self._ilim_neg, FMT_ILIM_NEG, FMT_I)
         else:
-            self._integrator = i_presat
+            self._integrator = cl_fix_resize(i_presat, FMT_IADD, FMT_I)
 
         # Output
         return cl_fix_add(self._integrator, FMT_I, p_part, FMT_PPART, FMT_OUT, rnd=FixRound.NonSymPos_s, sat=FixSaturate.Sat_s)
@@ -133,8 +134,8 @@ class ControllerOloFix (ControllerBase):
         self._error_sub = olo_fix_sub(FMT_IN, FMT_IN, FMT_ERR)
         self._p_mult = olo_fix_mult(FMT_ERR, FMT_KP, FMT_PPART, round=FixRound.NonSymPos_s, saturate=FixSaturate.Sat_s)
         self._i_mult = olo_fix_mult(FMT_ERR, FMT_KI, FMT_IMULT)
-        self._i_add = olo_fix_add(FMT_I, FMT_IMULT, FMT_I)
-        self._i_limit = olo_fix_limit(FMT_I, FMT_ILIM_NEG, FMT_ILIM, FMT_I)
+        self._i_add = olo_fix_add(FMT_I, FMT_IMULT, FMT_IADD)
+        self._i_limit = olo_fix_limit(FMT_IADD, FMT_ILIM_NEG, FMT_ILIM, FMT_I)
         self._out_add = olo_fix_add(FMT_I, FMT_PPART, FMT_OUT, round=FixRound.NonSymPos_s, saturate=FixSaturate.Sat_s)
 
     def simulate(self, actual) -> float:

@@ -24,9 +24,9 @@ module olo_fix_tutorial_controller (
     wire I1_Valid;
     wire [21:0] IPresat; // (1, 9, 12)
     wire IPresat_Valid;
-    wire [21:0] ILimited; // (1, 9, 12)
+    wire [16:0] ILimited; // (1, 4, 12)
     wire ILimited_Valid;
-    reg [21:0] Integrator; // (1, 9, 12)
+    reg [16:0] Integrator; // (1, 9, 12)
     reg Integrator_Valid;
 
     // Formats
@@ -39,7 +39,8 @@ module olo_fix_tutorial_controller (
     localparam string FmtErr_c     = "(1, 4, 8)";
     localparam string FmtPpart_c   = "(1, 3, 8)";
     localparam string FmtImult_c   = "(1, 8, 12)";
-    localparam string FmtI_c       = "(1, 9, 12)";
+    localparam string FmtIadd_c    = "(1, 9, 12)";
+    localparam string FmtI_c       = "(1, 4, 12)";
 
     //--------------------------------------------
     // Static Calculations
@@ -109,7 +110,7 @@ module olo_fix_tutorial_controller (
     \olo.olo_fix_add #(                  
         .AFmt_g(FmtI_c),
         .BFmt_g(FmtImult_c),
-        .ResultFmt_g(FmtI_c)
+        .ResultFmt_g(FmtIadd_c)
     ) i_i_add (
         .Clk(Clk),
         .Rst(Rst),
@@ -121,7 +122,7 @@ module olo_fix_tutorial_controller (
     );
 
     \olo.olo_fix_limit #(                  
-        .InFmt_g(FmtI_c),
+        .InFmt_g(FmtIadd_c),
         .LimLoFmt_g(FmtIlimNeg_c),
         .LimHiFmt_g(FmtIlim_c),
         .ResultFmt_g(FmtI_c)
@@ -144,7 +145,7 @@ module olo_fix_tutorial_controller (
         Integrator_Valid <= ILimited_Valid;
         // Reset
         if (Rst) begin
-            Integrator <= 22'b0;
+            Integrator <= 17'b0;
             Integrator_Valid <= 1'b0;
         end
     end

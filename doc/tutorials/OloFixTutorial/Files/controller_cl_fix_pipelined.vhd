@@ -58,7 +58,7 @@ architecture rtl of olo_fix_tutorial_controller is
     signal I1_2         : std_logic_vector(cl_fix_width(FmtImult_c) - 1 downto 0);
     signal Vld_2        : std_logic;
     signal PRound_3     : std_logic_vector(cl_fix_width(PRoundFmt_c) - 1 downto 0);
-    signal IPresat_3    : std_logic_vector(cl_fix_width(FmtI_c) - 1 downto 0);
+    signal IPresat_3    : std_logic_vector(cl_fix_width(FmtIadd_c) - 1 downto 0);
     signal Vld_3        : std_logic;
     signal Integrator_4 : std_logic_vector(cl_fix_width(FmtI_c) - 1 downto 0);
     signal Ppart_4      : std_logic_vector(cl_fix_width(FmtPpart_c) - 1 downto 0);
@@ -88,17 +88,17 @@ begin
 
             -- Stg 3
             PRound_3 <= cl_fix_round(PMult_2, PMultFmt_c, PRoundFmt_c, NonSymPos_s);
-            IPresat_3 <= cl_fix_add(Integrator_4, FmtI_c, I1_2, FmtImult_c, FmtI_c);
+            IPresat_3 <= cl_fix_add(Integrator_4, FmtI_c, I1_2, FmtImult_c, FmtIadd_c);
             Vld_3 <= Vld_2;
 
             -- Stg 4
             if Vld_3 = '1' then
-                if cl_fix_compare(">", IPresat_3, FmtI_c, Cfg_Ilim, FmtIlim_c) then
+                if cl_fix_compare(">", IPresat_3, FmtIadd_c, Cfg_Ilim, FmtIlim_c) then
                     Integrator_4 <= cl_fix_resize(Cfg_Ilim, FmtIlim_c, FmtI_c);
-                elsif cl_fix_compare("<", IPresat_3, FmtI_c, ILimNeg, FmtIlimNeg_c) then
+                elsif cl_fix_compare("<", IPresat_3, FmtIadd_c, ILimNeg, FmtIlimNeg_c) then
                     Integrator_4 <= cl_fix_resize(ILimNeg, FmtIlimNeg_c, FmtI_c);
                 else
-                Integrator_4 <= IPresat_3;
+                Integrator_4 <= cl_fix_resize(IPresat_3, FmtIadd_c, FmtI_c);
                 end if;
             end if;
             Ppart_4 <= cl_fix_saturate(PRound_3, PRoundFmt_c, FmtPpart_c, Sat_s);

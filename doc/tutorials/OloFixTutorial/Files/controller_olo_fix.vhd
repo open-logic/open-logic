@@ -52,7 +52,7 @@ architecture rtl of olo_fix_tutorial_controller is
     signal Ppart_Valid      : std_logic;
     signal I1               : std_logic_vector(cl_fix_width(FmtImult_c) - 1 downto 0);
     signal I1_Valid         : std_logic;
-    signal IPresat          : std_logic_vector(cl_fix_width(FmtI_c) - 1 downto 0);
+    signal IPresat          : std_logic_vector(cl_fix_width(FmtIadd_c) - 1 downto 0);
     signal IPresat_Valid    : std_logic;
     signal ILimited         : std_logic_vector(cl_fix_width(FmtI_c) - 1 downto 0);
     signal ILimited_Valid   : std_logic;
@@ -138,7 +138,7 @@ begin
         generic map (
             AFmt_g      => to_string(FmtI_c),
             BFmt_g      => to_string(FmtImult_c),
-            ResultFmt_g => to_string(FmtI_c)
+            ResultFmt_g => to_string(FmtIadd_c)
         )
         port map (
             Clk         => Clk,
@@ -152,7 +152,7 @@ begin
 
     i_limit : entity olo.olo_fix_limit
         generic map (
-            InFmt_g          => to_string(FmtI_c),
+            InFmt_g          => to_string(FmtIadd_c),
             LimLoFmt_g       => to_string(FmtIlimNeg_c),
             LimHiFmt_g       => to_string(FmtIlim_c),
             ResultFmt_g      => to_string(FmtI_c)

@@ -28,7 +28,8 @@ package fix_formats_pkg is
     constant FmtErr_c     : FixFormat_t := cl_fix_sub_fmt(FmtIn_c, FmtIn_c);
     constant FmtPpart_c   : FixFormat_t := FmtOut_c;
     constant FmtImult_c   : FixFormat_t := cl_fix_mult_fmt(FmtErr_c, FmtKi_c);
-    constant FmtI_c       : FixFormat_t := cl_fix_add_fmt(FmtIlim_c, FmtImult_c);
+    constant FmtIadd_c    : FixFormat_t := cl_fix_add_fmt(FmtIlim_c, FmtImult_c);
+    constant FmtI_c       : FixFormat_t := (FmtIadd_c.S, FmtIlim_c.I, FmtIadd_c.F);
     
 end package;
 
