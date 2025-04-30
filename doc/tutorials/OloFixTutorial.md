@@ -8,9 +8,11 @@ The aim of this tutorial is give users a kick-start on using _Open Logic_ fixed 
 
 The idea of the infrastructure and components provided by _Open Logic_ is that users model their algorithm in Python. This allows for efficient algorithm development because extensive mathematics libraries like _numpy_ or _scipy_ are available and results can easily be analyzed (plots, FFTs, etc.).
 
-The models produces are bittrue - this means they include all quantization effects. The exact same mathematics can then be built in HDL using the _olo_fix_ components and equlivalence is checked in a co-simulation.
+The models produced are bit-true - this means they include all quantization effects. The exact same mathematics can then be built in HDL using the _olo_fix_ components and equlivalence is checked in a co-simulation.
 
 This tutorial walks the user through this process.
+
+Before you start into the tutorial, it is strongly suggested that you read through [en_cl_fix documentation](https://github.com/open-logic/en_cl_fix/blob/open-logic/README.md) and [olo_fix_principles](../fix/olo_fix_principles.md) now, which are applicable to _Open Logic_ fixed point mathematics. 
 
 **Note:** All files mentioned in the tutorial are stored in the folder _\<open-logic-root\>/doc/tutorials/OploFixTutorial/Files_.
 
@@ -20,7 +22,11 @@ The tutorial implements a PI controller to control the voltage over a variable r
 
 Below figure depicts the system implemented.
 
-**!!!Figure!!!**
+![float-controller](./OloFixTutorial/Pictures/system.drawio.png)
+
+Note that the mindset is that *Target-Voltage* is a dynamic value (changing every sample). All parameters (_KP, I, ILIM_) are static parameters (e.g. configured through registers) - they shall not be treated as compile-time constants but they are not expected to change while the controller is running.
+
+The controller is running at 1 MSPS (i.e. calculates one sample every microsecond).
 
 ## Step 1: Plant Model
 
@@ -158,7 +164,20 @@ The outputs related to the fixed point controller implementations can be ignored
 
 In this step, the controller is converted from floating point to fixed point. This is best explained based on a block diagram including the number formats.
 
-**!!!! IMAGE !!!!**
+From here on many fixed-point formats are used. If you are not familiar to them yet, it is strongly suggested that you go through [en_cl_fix documentation](https://github.com/open-logic/en_cl_fix/blob/open-logic/README.md) and [olo_fix_principles](../fix/olo_fix_principles.md) now.
+
+![fixed](./OloFixTutorial/Pictures/fixed.drawio.png)
+
+Note that the formats choosen are not very realistic. The resolution is chosen very low on purpose to visualize quantization effects in the tutorial. Also is there not really a reason for rounding after the KP multiplier - again this definition is only chosen for tutorial purposes. 
+
+Two questions that might arise are:
+
+* Why is no rounding required for the adder in the I-part loop ([1,8,12]+[1,9,12]=[1,9,12])?
+  * By only looking at the formats, one more integer bit on the result would be expected.
+  * However, because there is a limitation in the loop to [1,4,4], the feedback input with the format [1,9,12] will never exceed a value of 16.0 and hence one more integer bit than the [1,8,12] input is sufficient.
+* Why is the output of the limiter defined as [1,9,12] and not as [1,4,12]?
+  * This really is not needed from a theoretic perspective
+  * It is implemented that way to keep the code readable (less conversions) in order to not overload the tutorial
 
 ## Step 5: olo_fix Model
 
@@ -280,6 +299,8 @@ However, between the transients the differences are relatively small (but still 
 
 ## Step 6: olo_fix RTL Implementation
 
+### Algorithm Implementation
+
 Note that number formats are described in a package [fix_formats_pkg.vhd](./OloFixTutorial/Files/fix_formats_pkg.vhd). because they are used in multiple places (two RTL implementations and testbench).
 
 The content of this package is easy to map to the number format definitions in python discussed before. For two examples the python code is given as comment.
@@ -391,7 +412,24 @@ _olo_fix_ entities are fully pipelined. They can take one sample every clock cyc
 ...
 ```
 
-**!!! Discuss pipeline equalization !!!**
+### Pipeline Equalization
+
+You might have noticed that the P-part multiplier has 9 register stages for the multiplication, which is a significant difference from any other blocks that all come with the default of one operation register.
+
+```vhdl
+    -- P Part
+    i_p_mult : entity olo.olo_fix_mult
+        generic map (
+            AFmt_g      => to_string(FmtErr_c),
+            BFmt_g      => to_string(FmtKp_c),
+            OpRegs_g    => 9,                     -- <<---- This line
+            ResultFmt_g => to_string(FmtPpart_c),
+            Round_g     => FixRound_NonSymPos_c,
+            Saturate_g  => FixSaturate_Sat_c
+        )
+```
+
+
 
 ### Synthesis Results
 
@@ -405,17 +443,316 @@ The code was synthesized for a Zynq-7010 device (relatively slow Artix7 fabric) 
 
 ## Step 7: VHDL Testbench
 
+Up to now we implemented a Python model of a controller and a VHDL implementation of it. This basically is the normal development flow. Where Open Logic _olo_fix_ really shines is co-simulations - where it is easy to check if the VHDL implementation really exactly (down to the very last bit) behaves the same as the python model. How to achieve this is discussed in this section.
+
+The general idea is writing input and output data from the python simulation into files and using those files as stimulus and reference to compare the output of the RTL implementation against as depicted below.
+
+![Image](../fix/principles/olo_fix_cosim.drawio.png)
+
+### Write Co-Simulation Files from Python
+
+You may already have noticed that running the python simulation produced some *.fix files in the _\<open-logic-root\>/doc/tutorials/OploFixTutorial/Files_ folder. These are the co-simulation files written by below python code in [Simulation.py](./OloFixTutorial/Files/Simulation.py):
+
+```python
+#Write cosimulation files
+out_dir = os.path.abspath(os.path.dirname(__file__))
+writer = olo_fix_cosim(out_dir)
+writer.write_cosim_file(actual_values["EnClFix"], FMT_IN, "InputActual.fix")
+writer.write_cosim_file(target, FMT_IN, "InputTarget.fix")
+writer.write_cosim_file(control_values["EnClFix"], FMT_OUT, "Output.fix")
+```
+
+Each _write_cosim_file()_ call writes a numy _np.ndarray_ of data into a file. The format is used to ensure the data is properly quantized - and it is written into the file as well to check if it matches the expected number format on the VHDL side.
+
+A short look into the _Output.fix_ file reveals that besides the format, data is stored as hex with one sample per line. Note that below a few "000" lines are omitted to keep the snippet short.
+
+```text
+(1,3,8)
+000
+000
+7FF
+7FF
+```
+
+### Read Co-Simulation Files from VHDL
+
+For the VHDL testbench [controller_tb.vhd](./OloFixTutorial/Files/controller_tb.vhd) not every line is discussed. It is assumed that the reader is familiar with VHDL testbenching in general.
+
+What is discussed, is the part of the testbench responsible for handling data-exchange with python. One [olo_fix_sim_stimuli](../fix/olo_fix_sim_stimuli.md) entity is instantiated to provide the target value stream to the DUT.
+
+```vhdl
+    constant InFileTarget_c  : string := "InputTarget.fix";
+...    
+    vc_stimuli_target : entity olo.olo_fix_sim_stimuli
+        generic map (
+            FilePath_g         => InFileTarget_c,
+            Fmt_g              => to_string(FmtIn_c),
+            StallProbability_g => 1.0, -- Always stall to create the desired sample rate
+            StallMaxCycles_g   => CyclesPerSample_c-1,
+            StallMinCycles_g   => CyclesPerSample_c-1
+        )
+        port map (
+            Clk      => Clk,
+            Rst      => Rst,
+            Valid    => In_Valid,
+            Data     => In_Target
+        );
+```
+
+This entity reads the content of the *.fix file and applies it to the VHDL signal _In_Target_ . Additionally it controls the _In_Valid_ signal and produces the sample rate of 1 MSPS - this is achieved by always stalling (_StallProbability_g => 1.0_ ) and making the number of stall cycles constant by using the same value for upper and lower limit.
+
+The controller requires a second input (the _In_Actual_ value). For this another [olo_fix_sim_stimuli](../fix/olo_fix_sim_stimuli.md) entity is instantiated but this time in timig-slave mode (_IsTimingMaser_g => false_). This means that the entity does not drive _In_Valid_ but only observe the _Valid_ and _Ready_ inputs and produce _In_Actual_ with respective timing. 
+
+```vhdl
+    vc_stimuli_actual : entity olo.olo_fix_sim_stimuli
+        generic map (
+            FilePath_g         => InFileActual_c,
+            Fmt_g              => to_string(FmtIn_c),
+            IsTimingMaster_g   => false
+        )
+        port map (
+            Clk      => Clk,
+            Rst      => Rst,
+            Valid    => In_Valid,
+            Ready    => In_Valid,
+            Data     => In_Actual
+        );
+```
+
+And last but not least a [olo_fix_sim_checker](../fix/olo_fix_sim_checker.md) entity is used to check if the produced output matches the expected value produced by the python simulation exactly. The entity would report errors if this is not the case.
+
+```vhdl
+    vc_checker : entity olo.olo_fix_sim_checker
+        generic map (
+            FilePath_g         => OutFile_c,
+            Fmt_g              => to_string(FmtOut_c)
+        )
+        port map (
+            Clk      => Clk,
+            Rst      => Rst,
+            Valid    => Out_Valid,
+            Data     => Out_Result
+        );
+```
+
+Note that VUnit variants of the two entities mentioned exist. See the documentation of the entities for details.
+
 ## Step 8: Simulation
+
+Let's now run the simulation. The python simulation was already executed before, so the *.fix files exist already. Only the HDL simulation must be launched here. Note that the tutorial is written for _Questasim_ only - the same code works in other simulators but for simplicity reasons only one simulator is described here.
+
+Open _Questasim_ and navigate to the directory navigate to _\<olo-root\>/doc/tutorials/OloFixTutorialFiles_. Then execute the tutorial script in the TCL shell of Questasim:
+
+```tcl
+source ./scripted_run.tcl
+```
+
+The script [scripted_run.tcl](./OloFixTutorial/Files/scripted_run.tcl) does compile the whole _Open Logic_ library plus the tutorial files. It also defines a function to compile a specific version of the controller and execute the simulation. We want to simulate the _olo_fix_ variant, so we execute:
+
+```tcl
+olo_fix_tutorial controller_olo_fix
+```
+
+You can now see the results displayed in the waveform window and no error messages in the log (which means the results are exactly as expected). Note that in below screenshot the representation settings of _Out_Result_ are changed to more closely ressemble the python plot (_Radix=Decimal_, _Format=Analog_).
+
+![float-controller](./OloFixTutorial/Pictures/Wave.png)
+
+If you do not trust errors being thrown in case of mismatches, just edit the _Output.fix_ file and see if an error is reported if you re-run the simulation. You should get an error in the form below:
+
+```shell
+ ** Error: olo_fix_sim_checker - Data mismatch: expected 011111110011, got 011111111111 - file Output.fix - line 12
+#    Time: 11205 ns  Iteration: 0  Instance: /controller_tb/vc_checker
+```
 
 ## Appendix A: cl_fix Model
 
+As described in [olo_fix_principles](../fix/olo_fix_principles.md), for basic operations either _olo_fix_ entities or _cl_fix_ functions can be used. They behave mathematically equivalent.
+
+As demonstration the very same functionality as described in the tutorial is also implemented with _cl_fix_ functions. 
+
+The python model is described in [Controller.py](./OloFixTutorial/Files/Controller.py), class `ControllerEnClFix`.
+
+The blue line in the plot from the Python simulation shows the difference between `ControllerEnClFix` and `ControllerOloFix` - which for obvious reasons is always zero. They really behave exactly the same.
+
+![float-controller](./OloFixTutorial/Pictures/DiffOloEnCl.png)
+
+### Conclusion
+
+ _olo_fix_ and _cl_fix_ can be used interchangeably to model fixed-point VHDL implementations based on _cl_fix_ or _olo_fix_. You can also combine _olo_fix_ VHDL implementations with _cl_fix_ models and vice versa or you can mix and match _olo_fix_ and _cl_fix_ (e.g. use _cl_fix_ for basic operations and _olo_fix_ for higher level functions like filters which do not exist in _cl_fix_).
+
 ## Appendix B: cl_fix RTL Implementation
+
+### Basic Version
+
+The VHDL implementation is given in [controller_cl_fix.vhd](./OloFixTutorial/Files/controller_cl_fix.vhd). Note that instead of entity instantiations, function calls are used to implement the fixed-point mathematics.
+
+```vhdl
+            -- Stg 1
+            Error_1 <= cl_fix_sub(In_Target, FmtIn_c, In_Actual, FmtIn_c, FmtErr_c);
+            Vld_1 <= In_Valid;
+```
+
+Executing the co-simulation in _Questasim_ is working exactly as described before, just with a different argument passed to the _olo_fix_tutorial_ procedure:
+
+```
+olo_fix_tutorial controller_cl_fix
+```
+
+### Synthesis Results Basic Version
+
+The code was synthesized for a Zynq-7010 device (relatively slow Artix7 fabric) with the following results. 
+
+| LUT  |  FF  | DSP48 |  Fmax   | Critical Path                                        |
+| :--: | :--: | :---: | :-----: | :--------------------------------------------------- |
+| 127  | 106  |   2   | 116 MHz | P-part multiplier incl. saturation/round (14 levels) |
+
+It is easy to spot that significantly less FFs are used than for the _olo_fix_ version and that the clock frequency is less than half the one for _olo_fix_. The reason for this is that with _cl_fix_ functions it is most natural to execute a operation including rounding and saturation on one line. This of course leads to long logic paths. 
+
+In contrast for _olo_fix_ it is most natural to have all optional pipeline stages enabled (see [olo_fix_principles](../fix/olo_fix_principles.md)). Defaults are chosen accordingly to encourage proper pipelining. 
+
+However, it is possible to achieve the very same logic with both approaches. It is just that in _cl_fix_ adding pipeline needs added code and in _olo_fix_ removing it needs added code.
+
+### Pipelined Version
+
+A properly pipelined _cl_fix_ implementation is given in [controller_cl_fix_pipelined.vhd](./OloFixTutorial/Files/controller_cl_fix_pipelined.vhd). The important difference to the basic version is that any operations that require saturation and rounding are split into three steps (operation, rounding, saturation) and the number formats between them are chosen accordingly. This is explained based on the example of the P-part multiplication.
+
+```vhdl
+architecture rtl of olo_fix_tutorial_controller is
+    ....
+    constant PMultFmt_c    : FixFormat_t := cl_fix_mult_fmt(FmtErr_c, FmtKp_c);
+    constant PRoundFmt_c   : FixFormat_t := cl_fix_round_fmt(PMultFmt_c, FmtPpart_c.F, NonSymPos_s);
+    ...
+    signal Vld_2        : std_logic;
+    signal PMult_2      :  std_logic_vector(cl_fix_width(PMultFmt_c) - 1 downto 0);
+    ...
+    signal Vld_3        : std_logic;
+    signal PRound_3     : std_logic_vector(cl_fix_width(PRoundFmt_c) - 1 downto 0);
+    ...
+    signal Vld_4        : std_logic;
+    signal Ppart_4      : std_logic_vector(cl_fix_width(FmtPpart_c) - 1 downto 0);
+    ....
+begin
+    
+    p_calc : process(Clk)
+    begin
+        if rising_edge(Clk) then
+            ....
+            -- Stg 2
+            PMult_2 <= cl_fix_mult(Error_1, FmtErr_c, Cfg_Kp, FmtKp_c, PMultFmt_c);
+            Vld_2 <= Vld_1;
+        
+            -- Stg 3
+            PRound_3 <= cl_fix_round(PMult_2, PMultFmt_c, PRoundFmt_c, NonSymPos_s);
+            Vld_3 <= Vld_2;
+
+			-- Stg 4
+            ...
+            Ppart_4 <= cl_fix_saturate(PRound_3, PRoundFmt_c, FmtPpart_c, Sat_s);
+            Vld_4 <= Vld_3;
+            ...            
+```
+
+This does improve timing but it also means all number formats must be defined explicitly. 
+
+Note that the splitting the operation into the three sub-steps does not change numerical behavior. The very same python model stil holds true - but alternatively the three steps could be modelled separately. The result is the same in both cases.
+
+Executing the co-simulation in _Questasim_ is working exactly as described before, just with a different argument passed to the _olo_fix_tutorial_ procedure:
+
+```
+olo_fix_tutorial controller_cl_fix_pipelined
+```
+
+### Synthesis Results Basic Version
+
+The code was synthesized for a Zynq-7010 device (relatively slow Artix7 fabric) with the following results. 
+
+| LUT  |  FF  | DSP48 |  Fmax   | Critical Path               |
+| :--: | :--: | :---: | :-----: | :-------------------------- |
+| 136  | 147  |   2   | 229 MHz | WP-part rounding (6 levels) |
+
+Note that the timing performance increased (at the cost of more FFs) but still is a bit below _olo_fix_ because _olo_fix_ adds more pipelining on all operations, not only on the ones that require rounding and saturation. The same could be achieved with _cl_fix_ with additional effort to find out where additional pipeline stages are required to increase performance.
+
+### Conclusion
+
+_olo_fix_ and _cl_fix_ can be used interchangeably for fixed-point VHDL implementations. You can also combine _olo_fix_ VHDL implementations with _cl_fix_ models and vice versa or you can mix and match _olo_fix_ and _cl_fix_ (e.g. use _cl_fix_ for basic operations and _olo_fix_ for higher level functions like filters which do not exist in _cl_fix_).
 
 ## Appendix C: Verilog RTL Implementation
 
+Open Logic is comitted to being usable from verilog as well. Hence _olo_fix_ can also be used from Verilog - in contrast to _cl_fix_ which is not accessible for verilog users.
+
+An _olo_fix_ based verilog implementation of the same controller is given in [controller_verilog.sv](./OloFixTutorial/Files/controller_verilog.sv). 
+
+Unfortunately no option was found to define port and signal widths based on fixed-point formats. Therefore ports and signals must be declared with the correct width manually.
+
+**Note: If you are an experienced verilog user, any contributions to improve this would be highly appreciated!**
+
+```verilog
+odule olo_fix_tutorial_controller (
+    input wire Clk,
+    input wire Rst,
+    input wire [7:0] Cfg_Ki,    // (0, 4, 4)
+    input wire [11:0] Cfg_Kp,   // (0, 8, 4)
+    input wire [7:0] Cfg_ILim,  // (0, 4, 4)
+    ...
+);
+
+    // Static Signals
+    wire [8:0] ILimNeg; // (1, 4, 4)
+
+    // Dynamic Signals
+    wire [12:0] Error; // (1, 4, 8)
+    wire Error_Valid;
+    ....
+```
+
+Fixed point formats are defined as strings:
+
+```verilog
+    // Formats
+    localparam string FmtIn_c      = "(1, 3, 8)";
+    localparam string FmtOut_c     = "(1, 3, 8)";
+    ...
+    localparam string FmtImult_c   = "(1, 8, 12)"; // Define manually, functions like cl_fix_mult_fmt are not available
+```
+
+As mentioned, the format definition and signal/port declaration is a bit more manual (and hence more error prone than in VHDL). However, instantiation looks rather similar then.
+
+```verilog
+    \olo.olo_fix_neg #(                  
+        .AFmt_g(FmtIlim_c),
+        .ResultFmt_g(FmtIlimNeg_c)
+    ) i_ilim_neg (
+        .Clk(Clk),
+        .Rst(Rst),
+        .In_A(Cfg_ILim),
+        .Out_Result(ILimNeg)
+    );
+```
+
+Executing the co-simulation in _Questasim_ is working exactly as described before, just with a different argument passed to the _olo_fix_tutorial_ procedure:
+
+```
+olo_fix_tutorial controller_verilog
+```
+
+Synthesis results are exactly equal to the _olo_fix_ based VHDL implementation.
+
+For users that are used to both languages, VHDL is suggested as language for fixed point mathematics because declarations and format definitions are less error prone thanks to _cl_fix_ functions.
+
 ## Appendix D: olo_fix vs. cl_fix
 
+As mentioned before, for basic operations _olo_fix_ and _cl_fix_ are behaving identical. Blow lists give advantages of both options and hence serve as a help for deciding which one to use.
 
+Advantages of _olo_fix_:
 
+* Is NOT limited to basic operations (i.e. contains higher level functionality such as filters)
+* By default adds more pipelining, which results in better timing performance
+* Can be used from Verilog (cross language instantiation is possible)
 
+Advantages of _cl_fix_:
+
+* Leads to more concise code (especially in VHDL but also in Python)
+* By default adds no pipelining, which results in less latency and FF usage
+
+As discussed before, the two options can also be freely combined.
 

@@ -102,7 +102,7 @@ begin
         generic map (
             AFmt_g      => to_string(FmtErr_c),
             BFmt_g      => to_string(FmtKp_c),
-            OpRegs_g    => 9,
+            OpRegs_g    => 8,
             ResultFmt_g => to_string(FmtPpart_c),
             Round_g     => FixRound_NonSymPos_c,
             Saturate_g  => FixSaturate_Sat_c
@@ -196,8 +196,8 @@ begin
         port map (
             Clk         => Clk,
             Rst         => Rst,
-            In_Valid    => Integrator_Valid,
-            In_A        => Integrator,
+            In_Valid    => ILimited_Valid,
+            In_A        => ILimited,
             In_B        => Ppart,
             Out_Valid   => Out_Valid,
             Out_Result  => Out_Result

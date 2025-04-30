@@ -29,7 +29,7 @@ module olo_fix_tutorial_controller (
     reg [21:0] Integrator; // (1, 9, 12)
     reg Integrator_Valid;
 
-    // Constants
+    // Formats
     localparam string FmtIn_c      = "(1, 3, 8)";
     localparam string FmtOut_c     = "(1, 3, 8)";
     localparam string FmtKp_c      = "(0, 8, 4)";
@@ -77,7 +77,7 @@ module olo_fix_tutorial_controller (
     \olo.olo_fix_mult #(                  
         .AFmt_g(FmtErr_c),
         .BFmt_g(FmtKp_c),
-        .OpRegs_g(9),
+        .OpRegs_g(8),
         .ResultFmt_g(FmtPpart_c),
         .Round_g("NonSymPos_s"),
         .Saturate_g("Sat_s")
@@ -159,8 +159,8 @@ module olo_fix_tutorial_controller (
     ) i_out_add (
         .Clk(Clk),
         .Rst(Rst),
-        .In_Valid(Integrator_Valid),
-        .In_A(Integrator),
+        .In_Valid(ILimited_Valid),
+        .In_A(ILimited),
         .In_B(Ppart),
         .Out_Valid(Out_Valid),
         .Out_Result(Out_Result)
