@@ -29,6 +29,32 @@ such as **workshops** and **priority support**. Click the button below to visit 
 
 [![sponsors](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/open-logic)
 
+## Get It
+
+_Open Logic_ includes the submodules below. To make sure submodule sources are included in _Open Logic_, get it according to the instructions below.
+
+Submodules used:
+
+* [en_cl_fix](https://github.com/enclustra/en_cl_fix) - MIT License
+
+### GIT Clone
+
+To include submodules, it is important to use the _--recursive_ switch:
+
+```shell
+git clone --recurse-submodules https://github.com/open-logic/open-logic.git
+```
+
+### Download Archive
+
+When downloading the archive from the release page, make sure you download _CompleteSources.zip_ and not one of the auto-generated archives (in those, submodules are missing):
+
+![download](./doc/general/Download.png)
+
+### FuseSoC
+
+When using FuseSoC (see [HowTo](./doc/HowTo.md)), all dependencies are resolved automatically and not special actions are required.
+
 ## Structure
 
 _Open Logic_ is split into the following areas. You might use all of them or only the ones you need.
@@ -38,6 +64,8 @@ _Open Logic_ is split into the following areas. You might use all of them or onl
   - requires: _base_
 - [intf](./doc/EntityList.md#intf)  - any logic related to device external interfaces
   - requires: _base_
+- [fix](./doc/EntityList.md#FIX)  - fixed point mathematics incl. bit-true models and co-simulation support
+  - requires: _base_ and _en_cl_fix_ ( [./3rdParty/en_cl_fix](./3rdParty/en_cl_fix))
 
 It's suggested that you compile ALL files of the areas you need (plus their dependencies) into one VHDL library. You are
 free to choose any library name and you are also free to use the same single library for _Open Logic_ files and
