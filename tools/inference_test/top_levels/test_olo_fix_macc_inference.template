@@ -5,7 +5,7 @@ library ieee;
 library olo;
     use olo.en_cl_fix_pkg.all;
 
-entity macc is
+entity macc_test is
     generic (
         UseComponents_g : boolean := false
     );
@@ -18,7 +18,7 @@ entity macc is
     );
 end entity;
 
-architecture rtl of macc is
+architecture rtl of macc_test is
     constant InFmt_c   : FixFormat_t := (1,0,15);
     constant AddFmt_c  : FixFormat_t := (1,17,30);
 begin
@@ -116,7 +116,7 @@ end entity;
 architecture rtl of {{entity_name}} is
 begin
 
-    i_macc : entity work.macc
+    i_macc : entity work.macc_test
 {{generics}}
         port map (
             Clk       => Clk,

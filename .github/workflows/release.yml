@@ -1,0 +1,26 @@
+name: Include Submodules in Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  include-submodules:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive  # Initialize and update submodules
+    - name: Create ZIP with submodules
+      run: |
+        find . -type d -name .git -exec rm -rf {} +
+        zip -r CompleteSources.zip .
+    - name: Upload CompleteSources.zip to release
+      uses: AButler/upload-release-assets@v3.0
+      with:
+        files: CompleteSources.zip
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
