@@ -134,13 +134,17 @@ for state in ["dev", "stable"]:
     if state == "dev":
         vivadoFileDir = ""
         quartusFileDir = ""
+        fixFiledir = ""
         vivadoTargetDir = "."
         quartusTargetDir = "."
+        fixTargetDir = "."
     elif state == "stable":
         vivadoFileDir = "doc/tutorials/VivadoTutorial/Files/"
         quartusFileDir = "doc/tutorials/QuartusTutorial/Files/"
+        fixFiledir = "doc/tutorials/OloFixTutorial/Files/"
         vivadoTargetDir = f"{repoRoot}/tools/fusesoc/stable"
         quartusTargetDir = f"{repoRoot}/tools/fusesoc/stable"
+        fixTargetDir = f"{repoRoot}/tools/fusesoc/stable"
     else:
         raise ValueError("Invalid state (dev/stable)")
 
@@ -165,6 +169,14 @@ for state in ["dev", "stable"]:
     template = env.get_template("olo_quartus_tutorial.template")
     rendered_template = template.render(data)
     with open(f"{quartusTargetDir}/olo_quartus_tutorial{filepostfix}.core", "w+") as f:
+        f.write(rendered_template)
+
+    #OLO FIX Tutorial
+    data["fileDir"] = fixFiledir
+    os.chdir(f"{repoRoot}/doc/tutorials/OloFixTutorial/Files")
+    template = env.get_template("olo_fix_tutorial.template")
+    rendered_template = template.render(data)
+    with open(f"{fixTargetDir}/olo_fix_tutorial{filepostfix}.core", "w+") as f:
         f.write(rendered_template)
 
 # Navigate back to tools

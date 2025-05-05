@@ -130,11 +130,14 @@ begin
                 severity error;
 
             -- Check Data
-            assert Data = DataSlv_v
+            -- Some tools have problems with to_string(). Because this is not needed for synthesis, I disable it.
+            -- pragma translate_off
+            assert Data = DataSlv_v                
                 report "olo_fix_sim_checker - Data mismatch: expected " & to_string(DataSlv_v) &
                         ", got " & to_string(Data) & " - file " & FilePath_g &
                         " - line " & to_string(LineNumber_v)
                 severity error;
+            -- pragma translate_on
             LineNumber_v := LineNumber_v + 1;
 
         end loop;
