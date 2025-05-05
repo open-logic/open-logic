@@ -6,11 +6,14 @@
 
 ## Based on en_cl_fix
 
-All fixed-point mathematics related functionality in Open Logic is based on the
+All fixed-point mathematics related functionality in _Open Logic_ is based on the
 [en_cl_fix](https://github.com/enclustra/en_cl_fix) library provided by [Enclustra](https://www.enclustra.com/en/home/)
 and maintained by Dr. Harry Commin. **It is strongly recommended to read through
 [en_cl_fix documentation](../../3rdParty/en_cl_fix/README.md)** before using any Open Logic fixed-point related
 components.
+
+Note that _Open Logic_ refers to a fork of [_en_cl_fix_](https://github.com/open-logic/en_cl_fix) which is under
+control of _Open Logic_.
 
 The best starting point is watching the related [Webinar](https://www.youtube.com/watch?v=DajbzQurjqI&t=346). It
 explains the concepts of _en_cl_fix_ well, which are to be found everywhere in _olo_fix_.
@@ -19,13 +22,13 @@ explains the concepts of _en_cl_fix_ well, which are to be found everywhere in _
 
 ## Instantiation from Verilog and VHDL
 
-[en_cl_fix](https://github.com/enclustra/en_cl_fix) is VHDL only. Open Logic _olo_fix_ - like all other Open Logic
-content - aims to be fully usable from Verilog and VHDL, which leads to a few changes.
+[en_cl_fix](https://github.com/enclustra/en_cl_fix) is targeted to VHDL only. Open Logic _olo_fix_ - like all other
+_Open Logic_ content - aims to be fully usable from Verilog and VHDL, which leads to a few changes.
 
 ### Components vs. Functions
 
 The core functionality provided by [en_cl_fix](https://github.com/enclustra/en_cl_fix) are a set of functions provided
-by [en_cl_fix pkg](./en_cl_fix_pkg.md), which allow to implement fixed point mathematics in a very concise and
+by [en_cl_fix pkg](./en_cl_fix_pkg.md), which allow to implement fixed-point mathematics in a very concise and
 well-readable way. Functionally they are exactly what is needed but unfortunately functions from VHDL packages cannot be
 called from Verilog.
 
@@ -33,7 +36,7 @@ Therefore Open Logic wraps all basic functions like [resize](./olo_fix_resize.md
 [multiply](./olo_fix_mult.md) into entities. In contrast to VHDL functions, entities can be instantiated from Verilog
 easily.
 
- Beyond simply wrapping the functions, the entities allow to add [pipeline registers](#pipeline-registers) where needed.
+Beyond simply wrapping the functions, the entities allow to add [pipeline registers](#pipeline-registers) where needed.
 
 Verilog users are limited to using the entities provided by Open Logic. VHDL users are free to either use those entities
 or to write their own processes using the [en_cl_fix pkg](./en_cl_fix_pkg.md) directly. Both options are fully supported
@@ -54,9 +57,9 @@ The [en_cl_fix pkg](./en_cl_fix_pkg.md) defines a number of custom types:
   - An enum type defining different saturation options
   - Options: _Sat_s, None_s, SatWarn_s, Warn_s_
 
-Custom types are generally not supported when instantiating VHDL from Verilog. Some tools allow it to some extend but no
-common ground between all the tools supported by Open Logic. Hence using those types on interfaces of Open Logic
-components is avoided to ensure all Open Logic components can be instantiated in Verilog.
+Custom types are generally not supported when instantiating VHDL from Verilog. Some tools allow it to some extent but no
+common ground is present between all the tools supported by _Open Logic_. Hence using those types on interfaces of
+_Open Logic_ components is avoided to ensure all _Open Logic_ components can be instantiated in Verilog.
 
 Instead of using custom types for generics/parameters, they are passed as strings. The notation is exactly the same as
 in VHDL natively, just with quotes around it.
@@ -90,7 +93,7 @@ constant saturate : string := "Sat_s";
 Note that in VHDL it is easily possible to convert the custom types defined in [en_cl_fix pkg](./en_cl_fix_pkg.md) to
 their string representation using the _to_string()_ function as shown below. This is especially useful when working in
 VHDL and using _en_cl_fix_ functions and types in your custom code for converting the types to string for instantiating
-Open Logic entities.
+_Open Logic_ entities.
 
 ```vhdl
 -- Convert FixFormat_t to string
@@ -128,6 +131,8 @@ For **rounding** and **saturation** the user can configure pipelining through a 
     does neither require rounding nor saturation)
   - Advantage: High clock speed and fixed latency (independent of number formats)
   - Disadvantage: Needless latency for cases where there is no rounding/saturation logic needed
+  - This is the **default** option because it allows for fastest clock-speeds, which often is critical in typical
+    fixed-point mathematics applications like video processing or digital signal processing
 - "NO"
   - No pipeline register is implemented
   - Advantage: low and constant latency (independent of number formats)
@@ -144,13 +149,13 @@ therefore the option to configure the number freely is provided.
 
 ## Co-Simulation
 
-All Open Logic fixed-point components come with Python models. This principle is inherited from
+All _Open Logic_ fixed-point components come with Python models. This principle is inherited from
 [en_cl_fix](https://github.com/enclustra/en_cl_fix) and allows analyzing the behavior of an algorithm in Python before
 any effort is invested into an HDL implementation. Python offers powerful toolboxes for analyzing algorithms (e.g.
 printing FFTs, using NumPy/SciPy, various plotting libraries) and therefore is a much more productive environment for
 developing the algorithm and an HDL simulator.
 
-Open Logic also provides python and HDL components to exchange inputs and expected outputs between Python and the HDL
+_Open Logic_ also provides python and HDL components to exchange inputs and expected outputs between Python and the HDL
 simulation. This allows easily verifying if the HDL implementation of an algorithm really exactly matches its Python
 model.
 
@@ -162,8 +167,8 @@ Again, [en_cl_fix](https://github.com/enclustra/en_cl_fix) functions can be used
 operations are coded as [en_cl_fix](https://github.com/enclustra/en_cl_fix) functions or by using the _olo_fix_
 components.
 
-All Open Logic components (including the ones for basic operations) come with object oriented models that have a common
-set of functions:
+All _Open Logic_ components (including the ones for basic operations) come with object oriented models that have a
+common set of functions:
 
 - Constructor
   - All formats and configuration values are passed to the constructor
