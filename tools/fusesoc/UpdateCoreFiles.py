@@ -16,20 +16,25 @@ repoRoot = os.path.abspath(f"{curdir}/../../")
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="Specify the version", required=True)
+parser.add_argument("--cl-fix-version", help="Specify the version for cl_fix", required=False)
 args = parser.parse_args()
+
 
 
 #Constants
 VERSION = args.version
+CL_FIX_VERSION = args.cl_fix_version
 DESCRIPTIONS = {
     "base" : "Basic Circuitry (e.g. FIFOs, CDCs, ...)",
     "axi" : "AXI related modules",
-    "intf" : "Interfaces (e.g. I2C, synchronizer, SPI, ...)"
+    "intf" : "Interfaces (e.g. I2C, synchronizer, SPI, ...)",
+    "fix" : "Fixed point mathematics"
 }
 DEPENDENCIES = {
     "base" : [],
     "axi" : ["base"],
-    "intf" : ["base"]
+    "intf" : ["base"],
+    "fix" : ["base"]
 }
 
 #Jinja setup
@@ -90,9 +95,40 @@ for state in ["dev", "stable"]:
             "library" : library,
             "codebase" : codebase
         }
+        # Add external dependencies where required
+        if area == "fix":
+            data["ext_dependencies"] = [f"^open-logic:{library}:en_cl_fix:{CL_FIX_VERSION}"]
         rendered_template = template.render(data)
         with open(f"{targetDir}/olo_{area}{filepostfix}.core", "w+") as f:
             f.write(rendered_template)
+
+    # 3rd party repo en_cl_fix
+    # Get all VHDL files
+    os.chdir(f"{repoRoot}/3rdParty/en_cl_fix/hdl")
+    vhdlFiles = os.listdir()
+    # Navigate to cl_fix root
+    os.chdir("..")
+    # Select proper repo root or .core file as reference
+    fileDir = "hdl/"
+    if state == "dev":   
+        targetDir = "."
+    elif state == "stable":
+        targetDir = f"{repoRoot}/tools/fusesoc/stable"
+    else:
+        raise ValueError("Invalid state (dev/stable)")
+    # Generaete core-file
+    template = env.get_template("en_cl_fix.template")
+    data = {
+        "submodule" : "en_cl_fix",
+        "fileDir" : fileDir,
+        "vhdlFiles" : vhdlFiles,
+        "version" : CL_FIX_VERSION,
+        "library" : library,
+        "codebase" : codebase,
+    }
+    rendered_template = template.render(data)
+    with open(f"{targetDir}/en_cl_fix{filepostfix}.core", "w+") as f:
+        f.write(rendered_template)
 
     # Select proper repo root or .core file as reference
     if state == "dev":
