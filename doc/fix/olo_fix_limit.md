@@ -18,8 +18,8 @@ Bit-true Model: [olo_fix_limit](../../src/fix/python/olo_fix/olo_fix_limit.py)
 This entity limits a signal to a specified range. The range can be given through generics (at compile-time) or through
 ports (at runtime).
 
-Latency of this entity is two clock cycles plus optional rounding and saturation registers. The default generics lead
-to a latency of 4 clock cycles.
+**Latency** of this entity is two clock cycles plus optional rounding and saturation registers. The default generics
+lead to a latency of 4 clock cycles.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).

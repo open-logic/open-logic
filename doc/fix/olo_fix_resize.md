@@ -18,6 +18,9 @@ Bit-true Model: [olo_fix_resize](../../src/fix/python/olo_fix/olo_fix_resize.py)
 This entity changes the format of a fixed-point number. It optionally can execute saturation (if the number of integer
 bits on the output is reduced) and rounding (if the number of fractional bits is reduced).
 
+**Latency** of this entity is given by the optional rounding and saturation registers. The default generics lead
+to a latency of 2 clock cycles.
+
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
 
@@ -57,5 +60,6 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ## Detail
 
-No detailed description required. All details that could be mentioned here are already covered by
-[fixed point principles](./olo_fix_principles.md).
+Below figure shows the implementation of _olo_fix_resize_
+
+![impl](./entities/olo_fix_resize.drawio.png)

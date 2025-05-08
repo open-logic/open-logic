@@ -21,6 +21,9 @@ generics.
 Input A is on the left hand side of the operator, Input B on the right hand side. E.g. for _Comparison_g=">"_,
 the comparison implemented is _A > B_.
 
+**Latency** of this entity is _OpRegs_g_. The default generics lead
+to a latency of 1 clock cycle.
+
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
 

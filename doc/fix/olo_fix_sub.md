@@ -17,6 +17,9 @@ Bit-true Model: [olo_fix_sub](../../src/fix/python/olo_fix/olo_fix_sub.py)
 
 This entity performs subtraction of two fixed-point numbers.
 
+**Latency** of this entity is _OpRegs_g_ clock cycles plus optional rounding and saturation registers. The default
+generics leadbto a latency of 3 clock cycles.
+
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
 
@@ -59,5 +62,6 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ## Detail
 
-No detailed description required. All details that could be mentioned here are already covered by
-[fixed point principles](./olo_fix_principles.md).
+Below figure shows the implementation of _olo_fix_sub_
+
+![impl](./entities/olo_fix_sub.drawio.png)

@@ -27,6 +27,9 @@ Format examples:
 - _AFmt_g="(1,2,4)"_, _ResultFmt_g="(1,**2**,3)"_, _Round_g="Trunc_s"_
   - Does not required an additional integer bit because truncation does never lead to higher output than input
 
+**Latency** of this entity is given by the optional rounding register. The default generics lead
+to a latency of 1 clock cycle.
+
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
 

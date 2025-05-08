@@ -20,6 +20,9 @@ This entity allows reducing the number of integer bits in a fixed-point number a
 **Note:** The output format _MUST_ be one that _ONLY_ requires saturation. It is not allowed to select any other number
 of fractional bits than the input format has.
 
+**Latency** of this entity is given by the optional saturation register. The default generics lead
+to a latency of 1 clock cycle.
+
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
 
