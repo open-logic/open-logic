@@ -50,13 +50,14 @@ jobs:
           aws ec2 wait instance-running --instance-ids i-08d60c6d6d93c636b
 
   do-something:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, aws]
     needs: start-instance
     steps:
       # Placeholder
       - name: Do work
         run: |
-          echo "placeholder - do some work"
+          ifconfig
+          echo "echo from AWS istance"
 
   stop-instance:
     runs-on: ubuntu-latest
