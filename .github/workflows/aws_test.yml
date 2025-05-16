@@ -37,7 +37,7 @@ jobs:
       # Use linux ping to instance
       - name: Ping EC2 instance
         run: |
-          ping -c 4 63.178.121.76
+          ping -c 4 18.156.120.233
 
   stop-instance:
     runs-on: ubuntu-latest
