@@ -53,6 +53,9 @@ jobs:
     runs-on: [self-hosted, aws]
     needs: start-instance
     steps:
+      # Checkout the repository
+      - name: Checkout repo
+        uses: actions/checkout@v4
       # Placeholder
       - name: Do work
         run: |
