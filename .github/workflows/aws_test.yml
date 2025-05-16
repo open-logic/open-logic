@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_DEFAULT_REGION: eu-central-1
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET }}  
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}  
     steps:
       # Installing AWS CLI is not required (pre-installed in the GitHub Actions environment)
       # Start EC2 instance
@@ -44,8 +44,8 @@ jobs:
     needs: ping-instance
     env:
       AWS_DEFAULT_REGION: eu-central-1
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_KEY }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET }}  
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}  
     steps:
       # Installing AWS CLI is not required (pre-installed in the GitHub Actions environment)
       # Stop EC2 instance
