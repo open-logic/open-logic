@@ -21,10 +21,30 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}  
     steps:
       # Installing AWS CLI is not required (pre-installed in the GitHub Actions environment)
-      # Start EC2 instance
+      # Start EC2 instance safely
       - name: Start EC2 instance
         run: |
-          aws ec2 start-instances --instance-ids i-08d60c6d6d93c636b
+        run: |
+          INSTANCE_ID="i-08d60c6d6d93c636b"
+          INSTANCE_STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].State.Name" --output text)
+          
+          echo "Current instance state: $INSTANCE_STATE"
+          
+          if [ "$INSTANCE_STATE" == "running" ]; then
+            echo "Instance is already running. No action needed."
+          elif [ "$INSTANCE_STATE" == "stopped" ]; then
+            echo "Instance is stopped. Starting it now..."
+            aws ec2 start-instances --instance-ids $INSTANCE_ID
+            aws ec2 wait instance-running --instance-ids $INSTANCE_ID
+            echo "Instance is now running."
+          else
+            echo "Instance is in state '$INSTANCE_STATE'. Waiting until it can be started..."
+            aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID
+            echo "Instance is now stopped. Starting it..."
+            aws ec2 start-instances --instance-ids $INSTANCE_ID
+            aws ec2 wait instance-running --instance-ids $INSTANCE_ID
+            echo "Instance is now running."
+          fi
       # Wait until the instance is running
       - name: Wait for instance to be running
         run: |
