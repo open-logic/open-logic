@@ -24,7 +24,6 @@ jobs:
       # Start EC2 instance safely
       - name: Start EC2 instance
         run: |
-        run: |
           INSTANCE_ID="i-08d60c6d6d93c636b"
           INSTANCE_STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].State.Name" --output text)
           
