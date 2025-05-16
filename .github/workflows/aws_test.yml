@@ -1,0 +1,68 @@
+name: AWS-TEST
+run-name: ${{ github.actor }} triggered AWS-TEST
+
+# Set the permissions for the workflow
+permissions:
+  checks: write
+  pull-requests: write
+
+#Set Triggers
+on:
+  workflow_dispatch:
+  pull_request:
+  
+#Jobs  
+jobs:
+  start-instance:
+    runs-on: ubuntu-latest
+    env:
+      AWS_DEFAULT_REGION: eu-central-1
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET }}  
+    steps:
+      # Install AWS CLI
+      - name: Install AWS CLI
+        run: |
+          curl "https://d1wni41l8t5v8a.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+      # Start EC2 instance
+      - name: Start EC2 instance
+        run: |
+          aws ec2 start-instances --instance-ids i-08d60c6d6d93c636b
+      # Wait until the instance is running
+      - name: Wait for instance to be running
+        run: |
+          aws ec2 wait instance-running --instance-ids i-08d60c6d6d93c636b
+
+  ping-instance:
+    runs-on: ubuntu-latest
+    needs: start-instance
+    steps:
+      # Use linux ping to instance
+      - name: Ping EC2 instance
+        run: |
+          ping -c 4 63.178.121.76
+
+  stop-instance:
+    runs-on: ubuntu-latest
+    needs: ping-instance
+    env:
+      AWS_DEFAULT_REGION: eu-central-1
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET }}  
+    steps:
+      # Install AWS CLI
+      - name: Install AWS CLI
+        run: |
+          curl "https://d1wni41l8t5v8a.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+      # Stop EC2 instance
+      - name: Stop EC2 instance
+        run: |
+          aws ec2 stop-instances --instance-ids i-08d60c6d6d93c636b
+      # Wait until the instance is stopped
+      - name: Wait for instance to be stopped
+        run: |
+          aws ec2 wait instance-stopped --instance-ids i-08d60c6d6d93c636b
