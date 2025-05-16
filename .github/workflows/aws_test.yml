@@ -58,6 +58,8 @@ jobs:
         run: |
           ifconfig
           echo "echo from AWS istance"
+          pwd
+          ls
           cd ./doc/tutorials/VivadoTutorial/Files
           vivado -mode batch -source scripted_build.tcl
 
