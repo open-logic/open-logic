@@ -49,7 +49,7 @@ jobs:
         run: |
           aws ec2 wait instance-running --instance-ids i-08d60c6d6d93c636b
 
-  do-something::
+  do-something:
     runs-on: ubuntu-latest
     needs: start-instance
     steps:
