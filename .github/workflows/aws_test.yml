@@ -60,7 +60,7 @@ jobs:
 
   stop-instance:
     runs-on: ubuntu-latest
-    needs: ping-instance
+    needs: do-something
     env:
       AWS_DEFAULT_REGION: eu-central-1
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET }}
