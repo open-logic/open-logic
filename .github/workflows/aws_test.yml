@@ -58,6 +58,8 @@ jobs:
         run: |
           ifconfig
           echo "echo from AWS istance"
+          cd ./doc/tutorials/VivadoTutorial/Files
+          vivado -mode batch -source scripted_build.tcl
 
   stop-instance:
     runs-on: ubuntu-latest
