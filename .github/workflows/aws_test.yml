@@ -39,6 +39,7 @@ jobs:
           submodules: true
       # Questa Test
       - name: questa test
+        run: |
           source $LOCAL_TOOLS
           cd ./sim
           python3 run.py --modelsim --coverage
