@@ -12,6 +12,7 @@ on:
   pull_request:
   
 #Jobs  
+jobs:
   start-instance:
     runs-on: ubuntu-latest
     steps:
