@@ -60,7 +60,8 @@ jobs:
       - name: Do work
         run: |
           ifconfig
-          echo "echo from AWS istance"
+          echo "path from AWS istance"
+          echo $PATH
           pwd
           ls
           cd ./doc/tutorials/VivadoTutorial/Files
