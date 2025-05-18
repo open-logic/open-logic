@@ -27,7 +27,7 @@ runs:
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
         AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}  
       run: |
-        INSTANCE_ID=${{ inputs.simulator }}
+        INSTANCE_ID=${{ inputs.instance_id }}
         INSTANCE_STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].State.Name" --output text)
         
         echo "Current instance state: $INSTANCE_STATE"
