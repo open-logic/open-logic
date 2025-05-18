@@ -52,8 +52,8 @@ runs:
       shell: bash
       env:
         AWS_DEFAULT_REGION: ${{ inputs.region }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}  
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}   
       run: |
         aws ec2 wait instance-running --instance-ids i-08d60c6d6d93c636b
 
