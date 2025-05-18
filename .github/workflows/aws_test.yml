@@ -60,8 +60,9 @@ jobs:
       - name: Do work
         run: |
           ifconfig
-          echo "path from AWS istance"
-          echo $PATH
+          echo "Instance ENV"
+          printenv
+          echo "pwd"
           pwd
           ls
           cd ./doc/tutorials/VivadoTutorial/Files
