@@ -41,13 +41,10 @@ jobs:
       # Placeholder
       - name: Do work
         run: |
+          source $LOCAL_TOOLS
           ifconfig
           echo "Instance ENV"
           printenv
-          echo "pwd"
-          pwd
-          ls
-          source $LOCAL_TOOLS
           cd ./doc/tutorials/VivadoTutorial/Files
           vivado -mode batch -source scripted_build.tcl
 
