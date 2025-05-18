@@ -37,10 +37,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      # Add local tools to path
-      - name: Add local tools
-        run: |
-          echo $LOCAL_TOOLS >> $GITHUB_PATH
+      # echo $LOCAL_TOOLS >> $GITHUB_PATH
       # Placeholder
       - name: Do work
         run: |
@@ -50,6 +47,7 @@ jobs:
           echo "pwd"
           pwd
           ls
+          source $LOCAL_TOOLS
           cd ./doc/tutorials/VivadoTutorial/Files
           vivado -mode batch -source scripted_build.tcl
 
