@@ -37,14 +37,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      # echo $LOCAL_TOOLS >> $GITHUB_PATH
-      # Placeholder
-      - name: Do work
+      # Questa Test
+      - name: questa test
+          source $LOCAL_TOOLS
+          cd ./sim
+          python3 run.py --modelsim --coverage
+          cd ..   
+      # Vivado Test
+      - name: vivado test
         run: |
           source $LOCAL_TOOLS
-          ifconfig
-          echo "Instance ENV"
-          printenv
           cd ./doc/tutorials/VivadoTutorial/Files
           vivado -mode batch -source scripted_build.tcl
 
