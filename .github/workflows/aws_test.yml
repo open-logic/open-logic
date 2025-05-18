@@ -52,6 +52,8 @@ jobs:
   do-something:
     runs-on: [self-hosted, aws]
     needs: start-instance
+    env:
+      GITHUB_PATH: $LOCAL_TOOLS
     steps:
       # Checkout the repository
       - name: Checkout repo
