@@ -25,6 +25,8 @@ jobs:
         with:
           instance_id: i-08d60c6d6d93c636b
           region: eu-central-1
+          aws_secret_access_key: ${{ secrets.AWS_SECRET }}
+          aws_access_key_id: ${{ secrets.AWS_KEY }}
 
   do-something:
     runs-on: [self-hosted, aws]

@@ -8,6 +8,12 @@ inputs:
   region:
     description: 'AWS region where the instance is located'
     required: true
+  aws_access_key_id:
+    description: 'AWS Access Key ID'
+    required: true
+  aws_secret_access_key:
+    description: 'AWS Secret Access Key'
+    required: true
 
 runs:
   using: 'composite'
@@ -18,8 +24,8 @@ runs:
       shell: bash
       env:
         AWS_DEFAULT_REGION: ${{ inputs.region }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY }}  
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}  
       run: |
         INSTANCE_ID=${{ inputs.simulator }}
         INSTANCE_STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].State.Name" --output text)
