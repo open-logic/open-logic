@@ -16,7 +16,10 @@ jobs:
   start-instance:
     runs-on: ubuntu-latest
     steps:
-      #Run Simulation
+      #General Setup
+      - name: Checkout actions
+        uses: actions/checkout@v4
+      #Start AWS Instance
       - name: Start Instance
         uses: ./.github/actions/start-aws-instance
         with:
