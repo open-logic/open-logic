@@ -56,6 +56,8 @@ jobs:
       # Checkout the repository
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          submodules: true
       # Add local tools to path
       - name: Add local tools
         run: |
