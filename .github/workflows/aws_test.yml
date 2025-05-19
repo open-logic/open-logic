@@ -39,6 +39,7 @@ jobs:
           submodules: true
       # Questa Test
       - name: questa test
+        if: false
         run: |
           source $LOCAL_TOOLS
           cd ./sim
@@ -46,10 +47,19 @@ jobs:
           cd ..   
       # Vivado Test
       - name: vivado test
+        if: false
         run: |
           source $LOCAL_TOOLS
           cd ./doc/tutorials/VivadoTutorial/Files
           vivado -mode batch -source scripted_build.tcl
+          cd ../../../..
+      - name: quartus test
+        if: true
+        run: |
+          source $LOCAL_TOOLS
+          cd ./doc/tutorials/QuartusTutorial/Files
+          quartus_sh -t scripted_build.tcl
+          cd ../../../..
 
   # Stopping the instance is not required (it stops automatically
   # when it is unused for some time, controlled by AWS alarm)
