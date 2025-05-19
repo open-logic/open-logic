@@ -53,13 +53,22 @@ jobs:
           cd ./doc/tutorials/VivadoTutorial/Files
           vivado -mode batch -source scripted_build.tcl
           cd ../../../..
+      # Quartus Test
       - name: quartus test
-        if: true
+        if: false
         run: |
           source $LOCAL_TOOLS
           cd ./doc/tutorials/QuartusTutorial/Files
           quartus_sh -t scripted_build.tcl
           cd ../../../..
+      # Efinity Test
+      - name: efinity test
+        if: true
+        run: |
+          source $LOCAL_TOOLS
+          cd ./doc/tutorials/EfinityTutorial/Files/prj_vhdl
+          efx_run --prj ./prj_vhdl.xml
+          cd ../../../../..
 
   # Stopping the instance is not required (it stops automatically
   # when it is unused for some time, controlled by AWS alarm)
