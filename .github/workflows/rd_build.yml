@@ -35,7 +35,7 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET }}
           aws_access_key_id: ${{ secrets.AWS_KEY }}
 
-  do-something:
+  build-rd:
     runs-on: [self-hosted, aws]
     needs: start-instance
     steps:
