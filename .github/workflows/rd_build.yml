@@ -1,5 +1,5 @@
-name: AWS-TEST
-run-name: ${{ github.actor }} triggered AWS-TEST
+name: Reference Design Build
+run-name: ${{ github.actor }} triggered Reference Design Build
 
 # Set the permissions for the workflow
 permissions:
@@ -10,6 +10,13 @@ permissions:
 on:
   workflow_dispatch:
   pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 3 * * *'
   
 #Jobs  
 jobs:
@@ -37,54 +44,72 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      # Questa Test
-      - name: questa test
-        if: false
+      # Questa
+      - name: Questa VHDL
         run: |
           source $LOCAL_TOOLS
-          cd ./sim
-          python3 run.py --modelsim --coverage
-          cd ..   
-      # Vivado Test
-      - name: vivado test
-        if: false
+          cd ./doc/tutorials/QuestasimTutorial/Files
+          vsim <<< "source ./scripted_run.tcl; quit -f" 
+      - name: Questa Verilog
+        run: |
+          source $LOCAL_TOOLS
+          cd ./doc/tutorials/QuestasimTutorial/Files
+          vsim <<< "source ./scripted_run_sv.tcl; quit -f"
+      # Vivado
+      - name: Vivado VHDL
         run: |
           source $LOCAL_TOOLS
           cd ./doc/tutorials/VivadoTutorial/Files
           vivado -mode batch -source scripted_build.tcl
-          cd ../../../..
-      # Quartus Test
-      - name: quartus test
-        if: false
+      - name: Vivado Verilog
+        run: |
+          source $LOCAL_TOOLS
+          cd ./doc/tutorials/VivadoTutorial/Files
+          vivado -mode batch -source scripted_build_sv.tcl
+      # Quartus
+      - name: Quartus VHDL
         run: |
           source $LOCAL_TOOLS
           cd ./doc/tutorials/QuartusTutorial/Files
           quartus_sh -t scripted_build.tcl
-          cd ../../../..
-      # Efinity Test
-      - name: efinity test
-        if: false
+      - name: Quartus Verilog
+        run: |
+          source $LOCAL_TOOLS
+          cd ./doc/tutorials/QuartusTutorial/Files
+          quartus_sh -t scripted_build_sv.tcl
+      # Efinity
+      - name: Efinity VHDL
         run: |
           source $LOCAL_TOOLS
           cd ./doc/tutorials/EfinityTutorial/Files/prj_vhdl
           efx_run --prj ./prj_vhdl.xml
-          cd ../../../../..
+      - name: Efinity Verilog
+        run: |
+          source $LOCAL_TOOLS
+          cd ./doc/tutorials/EfinityTutorial/Files/prj_verilog
+          efx_run --prj ./prj_verilog.xml
       # Gowin
-      - name: gowin test
-        if: false
+      - name: Gowin VHDL
         run: |
           source $LOCAL_TOOLS
           cd ./doc/tutorials/GowinTutorial/Files
           gw_sh scripted_build_sh.tcl
-          cd ../../../..
+      - name: Gowin Verilog
+        run: |
+          source $LOCAL_TOOLS
+          cd ./doc/tutorials/GowinTutorial/Files
+          gw_sh scripted_build_sv.tcl
       # Libero
-      - name: libero test
-        if: true
+      - name: Libero VHDL
         run: |
           source $LOCAL_TOOLS
           cd ./doc/tutorials/LiberoTutorial/Files
           libero script:scripted_build.tcl
-          cd ../../../..
+      - name: Libero Verilog
+        run: |
+          source $LOCAL_TOOLS
+          cd ./doc/tutorials/LiberoTutorial/Files
+          libero script:scripted_build_sv.tcl
 
   # Stopping the instance is not required (it stops automatically
   # when it is unused for some time, controlled by AWS alarm)
