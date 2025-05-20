@@ -55,7 +55,7 @@ jobs:
           python3 ./AnalyzeCoverage.py --min_coverage=95
       # Coverage Simulation (update badges)
       # On main, we want to udpate badges ALWAYS (also if coverage is low)
-      - name: Check Coverage Level
+      - name: Create Coverage Badges
         if: github.event_name == 'push' || github.event_name == 'schedule'
         run: |
           source $LOCAL_TOOLS
