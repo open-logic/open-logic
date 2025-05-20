@@ -138,7 +138,7 @@ begin
 
             -- Reset
             if Rst = '1' then
-                Valid_1 <= '';
+                Valid_1 <= '0';
                 Valid_2 <= '0';
             end if;
         end if;
