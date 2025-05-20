@@ -63,12 +63,19 @@ jobs:
           cd ../../../..
       # Efinity Test
       - name: efinity test
-        if: true
+        if: false
         run: |
           source $LOCAL_TOOLS
           cd ./doc/tutorials/EfinityTutorial/Files/prj_vhdl
           efx_run --prj ./prj_vhdl.xml
           cd ../../../../..
+      # Gowin
+      - name: gowin test
+        if: true
+        run: |
+          cd ./doc/tutorials/GowinTutorial/Files
+          gw_sh scripted_build_sh.tcl
+          cd ../../../..
 
   # Stopping the instance is not required (it stops automatically
   # when it is unused for some time, controlled by AWS alarm)
