@@ -31,11 +31,12 @@ such as **workshops** and **priority support**. Click the button below to visit 
 
 ## Get It
 
-_Open Logic_ includes the submodules below. To make sure submodule sources are included in _Open Logic_, get it according to the instructions below.
+_Open Logic_ includes the submodules below. To make sure submodule sources are included in _Open Logic_, get it
+according to the instructions below.
 
 Submodules used:
 
-* [en_cl_fix](https://github.com/enclustra/en_cl_fix) - MIT License
+- [en_cl_fix](https://github.com/enclustra/en_cl_fix) - MIT License
 
 ### GIT Clone
 
@@ -47,13 +48,15 @@ git clone --recurse-submodules https://github.com/open-logic/open-logic.git
 
 ### Download Archive
 
-When downloading the archive from the release page, make sure you download _CompleteSources.zip_ and not one of the auto-generated archives (in those, submodules are missing):
+When downloading the archive from the release page, make sure you download _CompleteSources.zip_ and not one of
+the auto-generated archives (in those, submodules are missing):
 
 ![download](./doc/general/Download.png)
 
 ### FuseSoC
 
-When using FuseSoC (see [HowTo](./doc/HowTo.md)), all dependencies are resolved automatically and not special actions are required.
+When using FuseSoC (see [HowTo](./doc/HowTo.md)), all dependencies are resolved automatically and not special actions
+are required.
 
 ## Structure
 
