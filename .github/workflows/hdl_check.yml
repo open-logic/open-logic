@@ -49,6 +49,8 @@ jobs:
         uses: actions/setup-node@v4
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          submodules: true
       #Setup environment
       - name: Setup environment
         uses: ./.github/actions/setup-environment
