@@ -237,7 +237,7 @@ def add_configs(olo_tb):
     prbs_tbs = ['olo_base_prbs4_tb']
     for tb_name in prbs_tbs:
         tb = olo_tb.test_bench(tb_name)
-        for BitsPerSymbol in [1, 2, 3, 4]:
+        for BitsPerSymbol in [1, 2, 3, 4, 6]:
             named_config(tb, {'BitsPerSymbol_g': BitsPerSymbol})
 
     ### olo_base_reset_gen ###
