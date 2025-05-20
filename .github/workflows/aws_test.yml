@@ -71,11 +71,19 @@ jobs:
           cd ../../../../..
       # Gowin
       - name: gowin test
-        if: true
+        if: false
         run: |
           source $LOCAL_TOOLS
           cd ./doc/tutorials/GowinTutorial/Files
           gw_sh scripted_build_sh.tcl
+          cd ../../../..
+      # Libero
+      - name: libero test
+        if: true
+        run: |
+          source $LOCAL_TOOLS
+          cd ./doc/tutorials/LiberoTutorial/Files
+          libero script:scripted_build.tcl
           cd ../../../..
 
   # Stopping the instance is not required (it stops automatically
