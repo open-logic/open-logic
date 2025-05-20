@@ -42,25 +42,25 @@ architecture sim of controller_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk         : std_logic := '0';
-    signal Rst         : std_logic := '1';
-    signal Cfg_Ki      : std_logic_vector(cl_fix_width(FmtKi_c) - 1 downto 0);
-    signal Cfg_Kp      : std_logic_vector(cl_fix_width(FmtKp_c) - 1 downto 0);
-    signal Cfg_Ilim    : std_logic_vector(cl_fix_width(FmtIlim_c) - 1 downto 0);
-    signal In_Valid    : std_logic;
-    signal In_Actual   : std_logic_vector(cl_fix_width(FmtIn_c) - 1 downto 0);
-    signal In_Target   : std_logic_vector(cl_fix_width(FmtIn_c) - 1 downto 0);
-    signal Out_Valid   : std_logic;
-    signal Out_Result  : std_logic_vector(cl_fix_width(FmtOut_c) - 1 downto 0);
+    signal Clk        : std_logic := '0';
+    signal Rst        : std_logic := '1';
+    signal Cfg_Ki     : std_logic_vector(cl_fix_width(FmtKi_c) - 1 downto 0);
+    signal Cfg_Kp     : std_logic_vector(cl_fix_width(FmtKp_c) - 1 downto 0);
+    signal Cfg_Ilim   : std_logic_vector(cl_fix_width(FmtIlim_c) - 1 downto 0);
+    signal In_Valid   : std_logic;
+    signal In_Actual  : std_logic_vector(cl_fix_width(FmtIn_c) - 1 downto 0);
+    signal In_Target  : std_logic_vector(cl_fix_width(FmtIn_c) - 1 downto 0);
+    signal Out_Valid  : std_logic;
+    signal Out_Result : std_logic_vector(cl_fix_width(FmtOut_c) - 1 downto 0);
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
 
     -- *** Constants ***
-    constant InFileTarget_c  : string := "InputTarget.fix";
-    constant InFileActual_c  : string := "InputActual.fix";
-    constant OutFile_c       : string := "Output.fix";
+    constant InFileTarget_c : string := "InputTarget.fix";
+    constant InFileActual_c : string := "InputActual.fix";
+    constant OutFile_c      : string := "Output.fix";
 
 begin
 
@@ -70,8 +70,8 @@ begin
     p_control : process is
     begin
         -- Apply Configuration
-        Cfg_Kp <= cl_fix_from_real(20.0, FmtKp_c);
-        Cfg_Ki <= cl_fix_from_real(0.4, FmtKi_c);
+        Cfg_Kp   <= cl_fix_from_real(20.0, FmtKp_c);
+        Cfg_Ki   <= cl_fix_from_real(0.4, FmtKi_c);
         Cfg_Ilim <= cl_fix_from_real(3.5, FmtIlim_c);
 
         -- Reset
@@ -86,6 +86,7 @@ begin
         while In_Valid'last_event < 10*SamplePeriod_c loop
             wait for 100*SamplePeriod_c;
         end loop;
+
         TbRunning <= false;
         wait;
 
@@ -112,6 +113,7 @@ begin
             Out_Valid   => Out_Valid,
             Out_Result  => Out_Result
         );
+
     -----------------------------------------------------------------------------------------------
     -- Verification Components
     -----------------------------------------------------------------------------------------------

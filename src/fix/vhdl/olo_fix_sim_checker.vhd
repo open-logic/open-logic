@@ -73,7 +73,6 @@ begin
         variable Seed1_v       : positive := 1;
         variable Seed2_v       : positive := 1;
         variable LineNumber_v  : positive;
-
     begin
 
         -- Initialize
@@ -89,10 +88,10 @@ begin
 
         -- Check format (fiRst line)
         readline(DataFile, Line_v);
-        Fmt_v       := cl_fix_format_from_string(Line_v.all);
+        Fmt_v        := cl_fix_format_from_string(Line_v.all);
         assert Fmt_v = Fmt_c
             report "olo_fix_sim_checker - Format mismatch: expected " & to_string(Fmt_c) &
-                    ", got " & to_string(Fmt_v) & " in file " & FilePath_g
+                   ", got " & to_string(Fmt_v) & " in file " & FilePath_g
             severity error;
         LineNumber_v := LineNumber_v + 1;
 
@@ -132,10 +131,10 @@ begin
             -- Check Data
             -- Some tools have problems with to_string(). Because this is not needed for synthesis, I disable it.
             -- pragma translate_off
-            assert Data = DataSlv_v                
+            assert Data = DataSlv_v
                 report "olo_fix_sim_checker - Data mismatch: expected " & to_string(DataSlv_v) &
-                        ", got " & to_string(Data) & " - file " & FilePath_g &
-                        " - line " & to_string(LineNumber_v)
+                       ", got " & to_string(Data) & " - file " & FilePath_g &
+                       " - line " & to_string(LineNumber_v)
                 severity error;
             -- pragma translate_on
             LineNumber_v := LineNumber_v + 1;

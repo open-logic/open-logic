@@ -76,7 +76,7 @@ architecture rtl of olo_fix_resize is
 begin
 
     -- Dummy signal to enforce the entity being mentioned in coverage report
-    Dummy <= '0'; 
+    Dummy <= '0';
 
     -- Round
     i_round : entity work.olo_fix_round

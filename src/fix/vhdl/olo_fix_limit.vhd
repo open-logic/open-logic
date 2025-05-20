@@ -54,7 +54,7 @@ entity olo_fix_limit is
         Clk        : in    std_logic;
         Rst        : in    std_logic;
         -- Input
-        In_Valid   : in    std_logic := '1';
+        In_Valid   : in    std_logic                                                        := '1';
         In_Data    : in    std_logic_vector(fixFmtWidthFromString(InFmt_g) - 1 downto 0);
         In_LimLo   : in    std_logic_vector(fixFmtWidthFromString(LimLoFmt_g) - 1 downto 0) := (others => '0');
         In_LimHi   : in    std_logic_vector(fixFmtWidthFromString(LimHiFmt_g) - 1 downto 0) := (others => '0');
@@ -67,15 +67,15 @@ end entity;
 architecture rtl of olo_fix_limit is
 
     -- String to en_cl_fix
-    constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
-    constant LimLoFmt_c   : FixFormat_t := choose(UseFixedLimits_g, InFmt_c, cl_fix_format_from_string(LimLoFmt_g));
-    constant LimHiFmt_c   : FixFormat_t := choose(UseFixedLimits_g, InFmt_c, cl_fix_format_from_string(LimHiFmt_g));
-    constant ResultFmt_c  : FixFormat_t := cl_fix_format_from_string(ResultFmt_g);
+    constant InFmt_c     : FixFormat_t := cl_fix_format_from_string(InFmt_g);
+    constant LimLoFmt_c  : FixFormat_t := choose(UseFixedLimits_g, InFmt_c, cl_fix_format_from_string(LimLoFmt_g));
+    constant LimHiFmt_c  : FixFormat_t := choose(UseFixedLimits_g, InFmt_c, cl_fix_format_from_string(LimHiFmt_g));
+    constant ResultFmt_c : FixFormat_t := cl_fix_format_from_string(ResultFmt_g);
 
     -- Constants
-    constant IntFmt_c     : FixFormat_t := ( max(max(InFmt_c.S, LimLoFmt_c.S), LimHiFmt_c.S),
-                                             max(max(InFmt_c.I, LimLoFmt_c.I), LimHiFmt_c.I),
-                                             max(max(InFmt_c.F, LimLoFmt_c.F), LimHiFmt_c.F));
+    constant IntFmt_c : FixFormat_t := (max(max(InFmt_c.S, LimLoFmt_c.S), LimHiFmt_c.S),
+                                        max(max(InFmt_c.I, LimLoFmt_c.I), LimHiFmt_c.I),
+                                        max(max(InFmt_c.F, LimLoFmt_c.F), LimHiFmt_c.F));
 
     -- Types
     type Select_t is (LimLo_s, LimHi_s, Data_s);
@@ -92,36 +92,37 @@ architecture rtl of olo_fix_limit is
     signal ResultFull_2 : std_logic_vector(cl_fix_width(IntFmt_c) - 1 downto 0);
     signal Valid_2      : std_logic;
 
-
 begin
 
     -- Extend all formats to the same and use fixed limits if required
-    InFull_0     <= cl_fix_resize(In_Data, InFmt_c, IntFmt_c);
+    InFull_0 <= cl_fix_resize(In_Data, InFmt_c, IntFmt_c);
+
     g_fix_lim : if UseFixedLimits_g generate
         LimLoFull_0 <= cl_fix_from_real(FixedLimLo_g, IntFmt_c);
         LimHiFull_0 <= cl_fix_from_real(FixedLimHi_g, IntFmt_c);
     end generate;
+
     g_dynamic_lim : if not UseFixedLimits_g generate
         LimLoFull_0 <= cl_fix_resize(In_LimLo, LimLoFmt_c, IntFmt_c);
         LimHiFull_0 <= cl_fix_resize(In_LimHi, LimHiFmt_c, IntFmt_c);
     end generate;
 
     -- limit
-    p_limit : process(Clk)
+    p_limit : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- Stage 1
-            if cl_fix_compare("<", InFull_0, IntFmt_c, LimLoFull_0, IntFmt_c)  then
+            if cl_fix_compare("<", InFull_0, IntFmt_c, LimLoFull_0, IntFmt_c) then
                 Select_1 <= LimLo_s;
             elsif cl_fix_compare(">", InFull_0, IntFmt_c, LimHiFull_0, IntFmt_c) then
                 Select_1 <= LimHi_s;
             else
                 Select_1 <= Data_s;
             end if;
-            InFull_1 <= InFull_0;
+            InFull_1    <= InFull_0;
             LimLoFull_1 <= LimLoFull_0;
             LimHiFull_1 <= LimHiFull_0;
-            Valid_1  <= In_Valid;
+            Valid_1     <= In_Valid;
 
             -- Stage 2
             case Select_1 is
@@ -132,12 +133,13 @@ begin
                 when others => ResultFull_2 <= InFull_1;
                 -- coverage on
             end case;
-            Valid_2      <= Valid_1;
+
+            Valid_2 <= Valid_1;
 
             -- Reset
             if Rst = '1' then
-                Valid_1      <= '0';
-                Valid_2      <= '0';
+                Valid_1 <= '';
+                Valid_2 <= '0';
             end if;
         end if;
     end process;

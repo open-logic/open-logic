@@ -42,8 +42,9 @@ entity olo_fix_tutorial_controller is
 end entity;
 
 architecture rtl of olo_fix_tutorial_controller is
+
     -- Static
-    signal ILimNeg    : std_logic_vector(cl_fix_width(FmtIlimNeg_c) - 1 downto 0);
+    signal ILimNeg : std_logic_vector(cl_fix_width(FmtIlimNeg_c) - 1 downto 0);
 
     -- Dynamic
     signal Error            : std_logic_vector(cl_fix_width(FmtErr_c) - 1 downto 0);
@@ -64,7 +65,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Static Calculations
     -----------------------------------------------------------------------------------------------
-    i_ilim_neg : entity olo.olo_fix_neg 
+    i_ilim_neg : entity olo.olo_fix_neg
         generic map (
             AFmt_g      => to_string(FmtIlim_c),
             ResultFmt_g => to_string(FmtIlimNeg_c)
@@ -168,7 +169,7 @@ begin
             Out_Result => ILimited
         );
 
-    p_feedback : process(Clk)
+    p_feedback : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- Normal Operation
@@ -178,7 +179,7 @@ begin
             Integrator_Valid <= ILimited_Valid;
             -- Reset
             if Rst = '1' then
-                Integrator <= (others => '0');
+                Integrator       <= (others => '0');
                 Integrator_Valid <= '0';
             end if;
         end if;

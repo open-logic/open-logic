@@ -42,6 +42,7 @@ entity olo_fix_tutorial_controller is
 end entity;
 
 architecture rtl of olo_fix_tutorial_controller is
+
     -- Static
     signal ILimNeg : std_logic_vector(cl_fix_width(FmtIlimNeg_c) - 1 downto 0);
 
@@ -60,7 +61,7 @@ architecture rtl of olo_fix_tutorial_controller is
 
 begin
 
-    p_calc : process(Clk)
+    p_calc : process (Clk) is
     begin
         if rising_edge(Clk) then
 
@@ -69,17 +70,17 @@ begin
 
             -- Stg 1
             Error_1 <= cl_fix_sub(In_Target, FmtIn_c, In_Actual, FmtIn_c, FmtErr_c);
-            Vld_1 <= In_Valid;
+            Vld_1   <= In_Valid;
 
             -- Stg 2
-            Ppart_2 <= cl_fix_mult(Error_1, FmtErr_c, Cfg_Kp, FmtKp_c, FmtPpart_c, NonSymPos_s, Sat_s); 
-            I1_2 <= cl_fix_mult(Error_1, FmtErr_c, Cfg_Ki, FmtKi_c, FmtImult_c);
-            Vld_2 <= Vld_1;
+            Ppart_2 <= cl_fix_mult(Error_1, FmtErr_c, Cfg_Kp, FmtKp_c, FmtPpart_c, NonSymPos_s, Sat_s);
+            I1_2    <= cl_fix_mult(Error_1, FmtErr_c, Cfg_Ki, FmtKi_c, FmtImult_c);
+            Vld_2   <= Vld_1;
 
             -- Stg 3
             IPresat_3 <= cl_fix_add(Integrator_4, FmtI_c, I1_2, FmtImult_c, FmtIadd_c);
-            Ppart_3 <= Ppart_2;
-            Vld_3 <= Vld_2;
+            Ppart_3   <= Ppart_2;
+            Vld_3     <= Vld_2;
 
             -- Stg 4
             if Vld_3 = '1' then
@@ -88,25 +89,25 @@ begin
                 elsif cl_fix_compare("<", IPresat_3, FmtIadd_c, ILimNeg, FmtIlimNeg_c) then
                     Integrator_4 <= cl_fix_resize(ILimNeg, FmtIlimNeg_c, FmtI_c);
                 else
-                Integrator_4 <= cl_fix_resize(IPresat_3, FmtIadd_c, FmtI_c);
+                    Integrator_4 <= cl_fix_resize(IPresat_3, FmtIadd_c, FmtI_c);
                 end if;
             end if;
             Ppart_4 <= Ppart_3;
-            Vld_4 <= Vld_3;
+            Vld_4   <= Vld_3;
 
             -- Stg 5
             Out_Result <= cl_fix_add(Integrator_4, FmtI_c, Ppart_4, FmtPpart_c, FmtOut_c, NonSymPos_s, Sat_s);
-            Out_Valid <= Vld_4;
+            Out_Valid  <= Vld_4;
 
             -- Reset
             if Rst = '1' then
                 Integrator_4 <= (others => '0');
-                Vld_1 <= '0';
-                Vld_2 <= '0';
-                Vld_3 <= '0';
-                Vld_4 <= '0';
-                Out_Valid <= '0';
-                Out_Result <= (others => '0');
+                Vld_1        <= '0';
+                Vld_2        <= '0';
+                Vld_3        <= '0';
+                Vld_4        <= '0';
+                Out_Valid    <= '0';
+                Out_Result   <= (others => '0');
             end if;
         end if;
     end process;

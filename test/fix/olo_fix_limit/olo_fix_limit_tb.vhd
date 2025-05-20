@@ -81,7 +81,7 @@ architecture sim of olo_fix_limit_tb is
     constant Checker_c      : olo_test_fix_checker_t := new_olo_test_fix_checker;
 
     -- *** Constants ***
-    constant DataFile_c    : string := output_path(runner_cfg) & "Data.fix";
+    constant DataFile_c   : string := output_path(runner_cfg) & "Data.fix";
     constant LiLoFile_c   : string := output_path(runner_cfg) & "LimLo.fix";
     constant LiHiFile_c   : string := output_path(runner_cfg) & "LimHi.fix";
     constant ResultFile_c : string := output_path(runner_cfg) & "Result.fix";
