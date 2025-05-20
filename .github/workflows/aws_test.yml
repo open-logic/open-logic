@@ -73,6 +73,7 @@ jobs:
       - name: gowin test
         if: true
         run: |
+          source $LOCAL_TOOLS
           cd ./doc/tutorials/GowinTutorial/Files
           gw_sh scripted_build_sh.tcl
           cd ../../../..
