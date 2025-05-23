@@ -196,6 +196,7 @@ summary of alternative libraries that was reported by users and in replies to Op
 - [FPGA Design Elements](https://github.com/laforest/FPGADesignElements)
 - [SURF](https://github.com/slaclab/surf)
 - [PSI Libraries](https://github.com/paulscherrerinstitute/psi_fpga_all)
+- [Colibri](https://gitlab.cern.ch/colibri/colibri)
 
 If you are interested in my opinion what the pros and cons of those libraries are compared to Open Logic, contact me
 directly: [obruendl](oliver.bruendler@gmx.ch).
