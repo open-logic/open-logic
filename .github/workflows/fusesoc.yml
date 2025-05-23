@@ -1,0 +1,112 @@
+name: FuseSoC Tests
+run-name: ${{ github.actor }} triggered FuseSoC Tests
+
+# Set the permissions for the workflow
+permissions:
+  checks: write
+  pull-requests: write
+
+#Set Triggers
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 3 * * *'
+  
+#Jobs  
+jobs:
+  start-instance:
+    runs-on: ubuntu-latest
+    steps:
+      #General Setup
+      - name: Checkout actions
+        uses: actions/checkout@v4
+      #Start AWS Instance
+      - name: Start Instance
+        uses: ./.github/actions/start-aws-instance
+        with:
+          instance_id: i-08d60c6d6d93c636b
+          region: eu-central-1
+          aws_secret_access_key: ${{ secrets.AWS_SECRET }}
+          aws_access_key_id: ${{ secrets.AWS_KEY }}
+
+  # Build Local Cores (always)
+  fusesoc-local:
+    runs-on: [self-hosted, aws]
+    needs: start-instance
+    steps:
+      # Checkout the repository
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      # Setup Fusesoc
+      - name: Setup FuseSoc for Local Cores
+        run: |
+          source $LOCAL_TOOLS
+          mkdir fusesoc_local
+          cd fusesoc_local
+          fusesoc library add open-logic .
+          fusesoc list-cores
+      # Vivado RD
+      - name: Build Vivado RD
+        run: |
+          cd fusesoc_local
+          fusesoc run --tool vivado --target zybo_z7 open-logic:tutorials-dev:vivado_tutorial
+      # Quartus RD
+      - name: Build Quartus RD
+        run: |
+          cd fusesoc_local
+          fusesoc run --tool quartus --target de0_cv open-logic:tutorials-dev:quartus_tutorial
+      # OloFix RD
+      - name: Build OloFis RD
+        run: |
+          cd fusesoc_local
+          fusesoc run --tool vivado --target zybo_z7 open-logic:tutorials-dev:olo_fix_tutorial
+  
+    # Build Stable Cores (only on cron/schedule)
+    # Reason: Only possible after creating the relase
+    # ..hence not on PR and psh because the release is created after the merge only
+  fusesoc-stable:
+    runs-on: [self-hosted, aws]
+    needs: start-instance
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      # Checkout the repository
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      # Setup Fusesoc
+      - name: Setup FuseSoc for Stable Cores
+        run: |
+          source $LOCAL_TOOLS
+          mkdir fusesoc_stable
+          cd fusesoc_stable
+          fusesoc library add open-logic ./tools/fusesoc/stable
+          fusesoc list-cores
+      # Vivado RD
+      - name: Build Vivado RD
+        run: |
+          cd fusesoc_stable
+          fusesoc run --tool vivado --target zybo_z7 open-logic:tutorials:vivado_tutorial
+      # Quartus RD
+      - name: Build Quartus RD
+        run: |
+          cd fusesoc_stable
+          fusesoc run --tool quartus --target de0_cv open-logic:tutorials:quartus_tutorial
+      # OloFix RD
+      - name: Build OloFis RD
+        run: |
+          cd fusesoc_stable
+          fusesoc run --tool vivado --target zybo_z7 open-logic:tutorials:olo_fix_tutorial
+
+
+
+  # Stopping the instance is not required (it stops automatically
+  # when it is unused for some time, controlled by AWS alarm)
