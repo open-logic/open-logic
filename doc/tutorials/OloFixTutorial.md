@@ -22,6 +22,10 @@ Before you start into the tutorial, it is strongly suggested that you read throu
 **Note:** All files mentioned in the tutorial are stored in the folder
 _\<open-logic-root\>/doc/tutorials/OploFixTutorial/Files_.
 
+**Note:** The controller used in this tutorial is very basic hand not meant to be optimal in any way. The most simple
+controller implementation was chosen to let the user focus on the fixed-point aspects that are they key point in this
+tutorial.
+
 ## Example System
 
 The tutorial implements a PI controller to control the voltage over a variable resistor (_R2_) in a RC-strucutre.
