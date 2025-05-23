@@ -11,10 +11,13 @@ filesets:
     {%- endfor %}
     file_type : vhdlSource
     logical_name : olo
-    {%- if dependencies %}
+    {%- if dependencies or ext_dependencies %}
     depend :
     {%- for dep in dependencies %}
       - "^open-logic:{{library}}:{{dep}}:{{version}}"
+    {%- endfor %}
+    {%- for dep in ext_dependencies %}
+      - "{{dep}}"
     {%- endfor %}
     {%- endif %}
 

@@ -64,7 +64,8 @@ class ToolGowin(ToolBase):
         resource_usage = {
             "LUT": 0,
             "Register": 0,
-            "BSRAM": 0
+            "BSRAM": 0,
+            "DSP": 0,
         }
 
         # Find summary ile
@@ -80,6 +81,8 @@ class ToolGowin(ToolBase):
                     resource_usage["Register"] = self._extract_resource_count(line)
                 elif "BSRAM|" in line_nospace:
                     resource_usage["BSRAM"] = self._extract_resource_count(line)
+                elif "DSP|" in line_nospace:
+                    resource_usage["DSP"] = self._extract_resource_count(line)
 
         return resource_usage
 

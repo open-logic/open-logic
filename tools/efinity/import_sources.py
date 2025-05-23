@@ -40,6 +40,7 @@ lib = args.library
 
 #Find all *.vhd files in SRC_DIR/.../vhdl
 files_rel = glob.glob(path.join(SRC_DIR, "**/vhdl/*.vhd"), recursive=True)
+files_rel += glob.glob(path.join(SRC_DIR, "../3rdParty/en_cl_fix/hdl/*.vhd"), recursive=True)
 
 
 # Create file paths relative to project directory
