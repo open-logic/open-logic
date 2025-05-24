@@ -18,6 +18,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 argv = sys.argv[1:]
 SIMULATOR = Simulator.GHDL
 USE_COVERAGE = False
+GENERATE_VHDL_LS_TOML = False
 
 #Simulator Selection
 #.. The environment variable VUNIT_SIMULATOR has precedence over the commandline options.
@@ -35,6 +36,10 @@ if "--coverage" in sys.argv:
     argv.remove("--coverage")
     if SIMULATOR != Simulator.MODELSIM:
         raise "Coverage is only allowed with --modelsim"
+if "--vhdl_ls" in sys.argv:
+    GENERATE_VHDL_LS_TOML = True
+    argv.remove("--vhdl_ls")
+
 
 # Obviously the simulator must be chosen before sources are added
 if 'VUNIT_SIMULATOR' not in os.environ:
@@ -513,6 +518,13 @@ if USE_COVERAGE:
 else:
     def post_run(results):
         pass
+
+# Generate VHDL LS Config if needed
+if GENERATE_VHDL_LS_TOML:
+    from create_vhdl_ls_config import create_configuration
+    from pathlib import Path
+    create_configuration(output_path=Path('..'), vunit_proj=vu)
+    exit(0)
 
 # Run
 vu.main(post_run=post_run)
