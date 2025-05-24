@@ -15,7 +15,7 @@ sim/transcript
 *.dtmp
 
 #VHDL LS Config (temporary)
-./vhdl_ls.toml
+vhdl_ls.toml
 
 #Modelsim files
 *.opt

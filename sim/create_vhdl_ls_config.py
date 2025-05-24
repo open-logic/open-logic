@@ -67,4 +67,9 @@ def create_configuration(  # noqa: C901
         for file_path, library_name in files:
             add_file(file_path=file_path, library_name=library_name)
 
+    # Ignore unused work library statement
+    if "lint" not in toml_data:
+        toml_data["lint"] = {}
+    toml_data["lint"]["unnecessary_work_library"] = False
+
     rtoml.dump(obj=toml_data, file=output_path / "vhdl_ls.toml", pretty=True)
