@@ -198,7 +198,6 @@ begin
         )
         port map (
             Clk      => Clk,
-            Rst      => Rst,
             Valid    => Out_Valid,
             Data(0)  => Out_Result
         );

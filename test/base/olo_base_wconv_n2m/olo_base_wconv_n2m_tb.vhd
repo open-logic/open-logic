@@ -41,7 +41,6 @@ architecture sim of olo_base_wconv_n2m_tb is
     constant ClkPeriod_c   : time    := 10 ns;
     constant ElementSize_c : integer := greatestCommonFactor(InWidth_g, OutWidth_g);
     constant InElements_c  : integer := InWidth_g/ElementSize_c;
-    constant OutElements_c : integer := OutWidth_g/ElementSize_c;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions

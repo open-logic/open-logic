@@ -63,7 +63,6 @@ architecture rtl of olo_fix_compare is
     constant BFmt_c : FixFormat_t := cl_fix_format_from_string(BFmt_g);
 
     -- Signals
-    signal Comp_Valid    : std_logic;
     signal Comp_DataComb : std_logic;
     signal Comp_DataBool : boolean;
 

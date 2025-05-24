@@ -67,10 +67,9 @@ end entity;
 architecture rtl of olo_fix_limit is
 
     -- String to en_cl_fix
-    constant InFmt_c     : FixFormat_t := cl_fix_format_from_string(InFmt_g);
-    constant LimLoFmt_c  : FixFormat_t := choose(UseFixedLimits_g, InFmt_c, cl_fix_format_from_string(LimLoFmt_g));
-    constant LimHiFmt_c  : FixFormat_t := choose(UseFixedLimits_g, InFmt_c, cl_fix_format_from_string(LimHiFmt_g));
-    constant ResultFmt_c : FixFormat_t := cl_fix_format_from_string(ResultFmt_g);
+    constant InFmt_c    : FixFormat_t := cl_fix_format_from_string(InFmt_g);
+    constant LimLoFmt_c : FixFormat_t := choose(UseFixedLimits_g, InFmt_c, cl_fix_format_from_string(LimLoFmt_g));
+    constant LimHiFmt_c : FixFormat_t := choose(UseFixedLimits_g, InFmt_c, cl_fix_format_from_string(LimHiFmt_g));
 
     -- Constants
     constant IntFmt_c : FixFormat_t := (max(max(InFmt_c.S, LimLoFmt_c.S), LimHiFmt_c.S),

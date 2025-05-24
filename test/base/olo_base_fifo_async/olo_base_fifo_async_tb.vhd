@@ -53,8 +53,6 @@ architecture sim of olo_base_fifo_async_tb is
     constant ClockOutFrequency_c : real := 83.333e6;
     constant ClockOutPeriod_c    : time := (1 sec) / ClockOutFrequency_c;
 
-    shared variable CheckNow_v : boolean := False;
-
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
