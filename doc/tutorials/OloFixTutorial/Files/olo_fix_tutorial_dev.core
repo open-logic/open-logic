@@ -1,5 +1,5 @@
 CAPI=2:
-name : open-logic:tutorials-dev:olo_fix_tutorial:3.2.0
+name : open-logic:tutorials-dev:olo_fix_tutorial:3.3.0
 description : local files (release plus WIP); olo_fix tutorial for open-logic, targetting Zybo Z7-10 board
 
 filesets:
