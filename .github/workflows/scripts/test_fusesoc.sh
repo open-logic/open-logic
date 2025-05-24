@@ -6,7 +6,7 @@
 set -ex
 
 # Set root directory
-OLO_ROOT=$(dirname "$(dirname "$(dirname "$(realpath "$0")")")")
+OLO_ROOT=$(dirname "$(dirname "$(dirname "$(dirname "$(realpath "$0")")")")")
 echo "Open-Logic Root: $OLO_ROOT"
 
 # Info
