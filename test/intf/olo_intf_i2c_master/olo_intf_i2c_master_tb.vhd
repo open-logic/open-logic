@@ -155,8 +155,6 @@ begin
 
     p_control : process is
         variable StartTime_v : time;
-        variable Data1_v     : std_logic_vector(7 downto 0);
-        variable Data2_v     : std_logic_vector(7 downto 0);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -732,8 +730,6 @@ begin
             Instance => I2cSlave_c
         )
         port map (
-            Clk   => Clk,
-            Rst   => Rst,
             Scl   => I2c_Scl,
             Sda   => I2c_Sda
         );
@@ -743,8 +739,6 @@ begin
             Instance => I2cMaster_c
         )
         port map (
-            Clk   => Clk,
-            Rst   => Rst,
             Scl   => I2c_Scl,
             Sda   => I2c_Sda
         );

@@ -2,6 +2,48 @@
 
 # Changelog
 
+## 3.3.0
+
+04-May-2025
+
+### Added Features
+
+- Various documentation improvements
+- Added fixed-point mathematics support based on [en_cl_fix](https://github.com/enclustra/en_cl_fix)
+  - Includes bit-true python models
+  - Includes a [tutorial](./doc/tutorials/OloFixTutorial.md) for the fixed-point development flow
+  - Entities added: _olo_fix_abs, olo_fix_add, olo_fix_addsub, olo_fix_compare, olo_fix_from_real, olo_fix_limit,_
+    _olo_fix_mult, olo_fix_neg, olo_fix_pkg, olo_fix_resize, olo_fix_round, olo_fix_saturate, olo_fix_sim_checker,_
+    _olo_fix_sim_stimuli, olo_fix_sub, olo_fix_to_real_
+
+- Added AWS CI runner for synthesis
+  - Executes reference design test builds
+  - Executes fusesoc test builds
+
+- Added support for VHDL_LS
+  - Automatic generation of TOML file (see [HowTo](./doc/HowTo.md))
+  - Allows advanced code-browsing in VSCode
+
+### Backward Compatible Changes
+
+- None
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- None
+
+### Reporters
+
+- [the-oeni](https://github.com/the-oeni)
+
+### Contributors
+
+- None
+
 ## 3.2.0
 
 01-Apr-2025

@@ -55,11 +55,18 @@ namespace eval olo_import_sources {
 	}
 
     #Add all source files
-    foreach area {base axi intf} {
+    foreach area {base axi intf fix} {
         variable files [glob $oloRoot/src/$area/vhdl/*.vhd]
 	    foreach f $files {
 			variable pathRelative [relpath $f [pwd]]
 			create_links -convert_EDN_to_HDL 0 -library $target_lib -hdl_source $pathRelative 
 	    }
     }
+
+	#Add 3rd party files
+	variable files [glob $oloRoot/3rdParty/en_cl_fix/hdl/*.vhd]
+	foreach f $files {
+		variable pathRelative [relpath $f [pwd]]
+		create_links -convert_EDN_to_HDL 0 -library $target_lib -hdl_source $pathRelative 
+	}
 }

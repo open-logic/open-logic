@@ -1,0 +1,28 @@
+CAPI=2:
+
+name : open-logic:{{library}}:{{submodule}}:{{version}}
+description : {{codebase}}; {{description}} see https://github.com/enclustra/en_cl_fix/blob/main/README.md
+
+filesets:
+  rtl:
+    files:
+    {%- for file in vhdlFiles %}
+      - {{fileDir}}{{file}}
+    {%- endfor %}
+    file_type : vhdlSource
+    logical_name : olo
+
+targets:
+  default:
+    filesets :
+      - rtl
+      
+{%- if library == "open-logic" %}
+
+provider:
+  name    : github
+  user    : open-logic
+  repo    : en_cl_fix
+  version : {{version}}
+{%- endif %}
+  

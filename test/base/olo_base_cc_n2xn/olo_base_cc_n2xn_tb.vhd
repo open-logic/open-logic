@@ -46,8 +46,6 @@ architecture sim of olo_base_cc_n2xn_tb is
     constant OutClk_Period_c      : time := (1 sec) / OutClk_Frequency_c;
     constant InClk_Period_c       : time := ClockRatio_g*OutClk_Period_c;
     constant SlowerClock_Period_c : time := maximum(InClk_Period_c, OutClk_Period_c);
-    constant PropagationTime_c    : time := 3.01*SlowerClock_Period_c;
-    constant RemovalTime_c        : time := 10*SlowerClock_Period_c;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions

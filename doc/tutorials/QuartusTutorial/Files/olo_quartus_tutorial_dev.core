@@ -1,5 +1,5 @@
 CAPI=2:
-name : open-logic:tutorials-dev:quartus_tutorial:3.2.0
+name : open-logic:tutorials-dev:quartus_tutorial:3.3.0
 description : local files (release plus WIP); quartus tutorial for open-logic, targetting DE0-CV board
 
 filesets:
