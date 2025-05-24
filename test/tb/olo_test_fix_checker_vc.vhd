@@ -124,7 +124,6 @@ entity olo_test_fix_checker_vc is
     );
     port (
         clk      : in    std_logic;
-        rst      : in    std_logic;
         ready    : inout std_logic; -- input for slave, output for master
         valid    : in    std_logic;
         data     : in    std_logic_vector(cl_fix_width(fmt)-1 downto 0)

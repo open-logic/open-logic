@@ -44,7 +44,6 @@ entity olo_fix_sim_checker is
     );
     port (
         Clk      : in    std_logic;
-        Rst      : in    std_logic;
         Ready    : inout std_logic; -- input for slave, output for master
         Valid    : in    std_logic;
         Data     : in    std_logic_vector(fixFmtWidthFromString(Fmt_g)-1 downto 0)

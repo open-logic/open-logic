@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : open-logic:open-logic:axi:3.2.0
+name : open-logic:open-logic:axi:3.3.0
 description : stable release (downloaded from GitHub); AXI related modules see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#axi
 
 filesets:
@@ -14,7 +14,7 @@ filesets:
     file_type : vhdlSource
     logical_name : olo
     depend :
-      - "^open-logic:open-logic:base:3.2.0"
+      - "^open-logic:open-logic:base:3.3.0"
 
 
 targets:
@@ -26,5 +26,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 3.2.0
+  version : 3.3.0
   

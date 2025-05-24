@@ -88,7 +88,6 @@ architecture sim of olo_intf_spi_master_fixsize_tb is
     );
 
     procedure sendCommand (
-        SlaveIdx         : integer;
         TxData           : std_logic_vector;
         signal Cmd_Valid : out std_logic;
         signal Cmd_Data  : out std_logic_vector) is
@@ -153,7 +152,7 @@ begin
                 spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => Tx8_v, data_miso => Rx8_v);
 
                 -- Send command
-                sendCommand(0, Tx8_v, Cmd_Valid, Cmd_Data);
+                sendCommand(Tx8_v, Cmd_Valid, Cmd_Data);
                 checkResponse(Rx8_v);
             end if;
 

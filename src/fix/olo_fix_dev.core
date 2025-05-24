@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : open-logic:open-logic-dev:fix:3.2.0
+name : open-logic:open-logic-dev:fix:3.3.0
 description : local files (release plus WIP); Fixed point mathematics see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#fix
 
 filesets:
@@ -26,8 +26,8 @@ filesets:
     file_type : vhdlSource
     logical_name : olo
     depend :
-      - "^open-logic:open-logic-dev:base:3.2.0"
-      - "^open-logic:open-logic-dev:en_cl_fix:2.1.1"
+      - "^open-logic:open-logic-dev:base:3.3.0"
+      - "^open-logic:open-logic-dev:en_cl_fix:2.2.0"
 
 
 targets:

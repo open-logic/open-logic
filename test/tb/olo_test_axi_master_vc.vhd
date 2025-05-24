@@ -444,7 +444,6 @@ entity olo_test_axi_master_vc is
     );
     port (
         clk          : in    std_logic;
-        rst          : in    std_logic;
         axi_ms       : out   axi_ms_t;
         axi_sm       : in    axi_sm_t
     );
@@ -457,7 +456,6 @@ begin
     -- Main process
     main : process is
         variable request_msg : msg_t;
-        variable reply_msg   : msg_t;
         variable copy_msg    : msg_t;
         variable msg_type    : msg_type_t;
     begin
@@ -890,7 +888,6 @@ entity olo_test_axi_lite_master_vc is
     );
     port (
         clk           : in    std_logic;
-        rst           : in    std_logic;
         axi_ms        : out   axi_ms_t;
         axi_sm        : in    axi_sm_t
     );
@@ -946,7 +943,6 @@ begin
         )
         port map (
             clk      => clk,
-            rst      => rst,
             -- AXI MS
             axi_ms   => axi_ms_i,
             axi_sm   => axi_sm_i

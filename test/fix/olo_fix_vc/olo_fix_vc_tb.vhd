@@ -181,7 +181,6 @@ begin
         )
         port map (
             Clk      => Clk,
-            Rst      => Rst,
             Ready    => Ready,
             Valid    => Valid,
             Data     => Data
@@ -209,7 +208,6 @@ begin
         )
         port map (
             Clk      => Clk,
-            Rst      => Rst,
             Ready    => Ready,
             Valid    => Valid,
             Data     => DataSlave

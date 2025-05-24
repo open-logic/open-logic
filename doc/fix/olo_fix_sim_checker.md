@@ -62,7 +62,6 @@ every check run the stalling pattern can be configured individually.
 | Name | In/Out | Length | Default | Description                                     |
 | :--- | :----- | :----- | ------- | :---------------------------------------------- |
 | Clk  | in     | 1      | -       | Clock                                           |
-| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_) |
 
 ### Output Data
 
