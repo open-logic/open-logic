@@ -39,6 +39,10 @@ runs:
           aws ec2 start-instances --instance-ids $INSTANCE_ID
           aws ec2 wait instance-running --instance-ids $INSTANCE_ID
           echo "Instance is now running."
+        elif [ "$INSTANCE_STATE" == "pending" ]; then
+          echo "Instance is in the 'pending' state. Waiting until it is running..."
+          aws ec2 wait instance-running --instance-ids $INSTANCE_ID
+          echo "Instance is now running."
         else
           echo "Instance is in state '$INSTANCE_STATE'. Waiting until it can be started..."
           aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID
