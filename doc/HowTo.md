@@ -396,7 +396,9 @@ python3 run.py --vhdl_ls
 
 Note, the command does NOT run simulations. it only creates the TOML file.
 
-When opening the root folder of _Open Logic_ in VSCode, you should now be able to use VHDL_LS. You can try it out by going to a VHDL file and for some signal in the architecture use _"Go to Declaration"_ from the right-click menu, which is provided by VHDL_LS.
+When opening the root folder of _Open Logic_ in VSCode, you should now be able to use VHDL_LS. You can try it out
+by going to a VHDL file and for some signal in the architecture use _"Go to Declaration"_ from the right-click menu,
+which is provided by VHDL_LS.
 
 ## Run Simulations
 
