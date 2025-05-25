@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : open-logic:open-logic-dev:base:3.2.0
+name : open-logic:open-logic-dev:base:3.3.0
 description : local files (release plus WIP); Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base
 
 filesets:

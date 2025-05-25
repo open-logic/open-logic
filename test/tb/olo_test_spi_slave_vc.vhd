@@ -166,7 +166,6 @@ begin
     main : process is
         -- Messaging
         variable request_msg      : msg_t;
-        variable reply_msg        : msg_t;
         variable msg_type         : msg_type_t;
         variable transaction_bits : positive;
         variable data_mosi        : std_logic_vector(instance.max_trans_width-1 downto 0);

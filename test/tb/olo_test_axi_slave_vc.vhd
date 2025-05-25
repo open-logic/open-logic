@@ -559,7 +559,6 @@ entity olo_test_axi_slave_vc is
     );
     port (
         clk          : in    std_logic;
-        rst          : in    std_logic;
         axi_ms       : in    axi_ms_t;
         axi_sm       : out   axi_sm_t
     );
@@ -572,7 +571,6 @@ begin
     -- Main Process
     main : process is
         variable request_msg : msg_t;
-        variable reply_msg   : msg_t;
         variable copy_msg    : msg_t;
         variable msg_type    : msg_type_t;
     begin

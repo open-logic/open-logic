@@ -1,0 +1,37 @@
+CAPI=2:
+
+name : open-logic:open-logic-dev:fix:3.3.0
+description : local files (release plus WIP); Fixed point mathematics see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#fix
+
+filesets:
+  rtl:
+    files:
+      - vhdl/olo_fix_abs.vhd
+      - vhdl/olo_fix_round.vhd
+      - vhdl/olo_fix_limit.vhd
+      - vhdl/olo_fix_sim_stimuli.vhd
+      - vhdl/olo_fix_resize.vhd
+      - vhdl/olo_fix_to_real.vhd
+      - vhdl/olo_fix_pkg.vhd
+      - vhdl/olo_fix_add.vhd
+      - vhdl/olo_fix_private_optional_reg.vhd
+      - vhdl/olo_fix_compare.vhd
+      - vhdl/olo_fix_saturate.vhd
+      - vhdl/olo_fix_sub.vhd
+      - vhdl/olo_fix_mult.vhd
+      - vhdl/olo_fix_addsub.vhd
+      - vhdl/olo_fix_neg.vhd
+      - vhdl/olo_fix_from_real.vhd
+      - vhdl/olo_fix_sim_checker.vhd
+    file_type : vhdlSource
+    logical_name : olo
+    depend :
+      - "^open-logic:open-logic-dev:base:3.3.0"
+      - "^open-logic:open-logic-dev:en_cl_fix:2.2.0"
+
+
+targets:
+  default:
+    filesets :
+      - rtl
+  
