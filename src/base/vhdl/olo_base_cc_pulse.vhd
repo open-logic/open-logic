@@ -53,8 +53,6 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_cc_pulse is
 
-    type Pulse_t is array (natural range <>) of std_logic_vector(NumPulses_g - 1 downto 0);
-
     -- Resets
     signal RstInI  : std_logic;
     signal RstOutI : std_logic;

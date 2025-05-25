@@ -1,0 +1,27 @@
+# Load Quartus Prime Tcl Project package
+package require ::quartus::project
+package require ::quartus::flow
+
+#Create project
+cd {{project_folder}}
+project_new -revision tutorial_prj tutorial_prj
+
+# Project Settings
+set_global_assignment -name FAMILY "Cyclone V"
+set_global_assignment -name DEVICE 5CEBA4F23C7
+set_global_assignment -name TOP_LEVEL_ENTITY {{top_entity}}
+
+#Add top level
+{%- for src_file in src_files %}
+set_global_assignment -name VHDL_FILE "{{src_file}}" -library prj
+{%- endfor %}
+
+#Add OLO
+source {{import_sources}}
+
+# Commit assignments
+export_assignments
+
+# Build project
+execute_flow -compile
+

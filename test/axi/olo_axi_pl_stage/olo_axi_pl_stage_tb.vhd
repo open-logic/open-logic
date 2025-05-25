@@ -368,7 +368,6 @@ begin
         )
         port map (
             Clk    => Clk,
-            Rst    => Rst,
             Axi_Ms => AxiMs_M,
             Axi_Sm => AxiSm_M
         );
@@ -379,7 +378,6 @@ begin
         )
         port map (
             Clk    => Clk,
-            Rst    => Rst,
             Axi_Ms => AxiMs_S,
             Axi_Sm => AxiSm_S
         );

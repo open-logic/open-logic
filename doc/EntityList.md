@@ -8,6 +8,8 @@ Note that components are split into categories.
 
 ## base
 
+This area contains all base functionality that is required in most FPGA designs.
+
 ### Packages (olo_base_pkg_\<...\>)
 
 Packages with type declarations and functions used in _Open Logic_ internally or on its interfaces.
@@ -17,6 +19,7 @@ Packages with type declarations and functions used in _Open Logic_ internally or
 | [olo_base_pkg_array](./base/olo_base_pkg_array.md)         | Array type definitions (e.g. arrays of _std_logic_vector_)   |
 | [olo_base_pkg_math](./base/olo_base_pkg_math.md)           | Mathematic functions (e.g. _log2_)                           |
 | [olo_base_pkg_logic](./base/olo_base_pkg_logic.md)         | Mathematic functions (e.g. _binaryToGray_)                   |
+| [olo_base_pkg_string](./base/olo_base_pkg_string.md)       | String functions (e.g. _toLower_)                            |
 | [olo_base_pkg_attribute](./base/olo_base_pkg_attribute.md) | Definition of synthesis attributes for different tools. **For internal use within Open Logic only** |
 
 ### Clock Crossings (_olo_base_cc_\<...\>_)
@@ -88,7 +91,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_delay](./base/olo_base_delay.md)                   | Fixed duration delay (fixed number of data-beats)            |
 | [olo_base_delay_cfg](./base/olo_base_delay_cfg.md)           | Configurable duration delay (runtime configurable number of data-beats) |
 | [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)               | Dynamic barrel shifter (number of bits to shift is configurable per sample at runtime) |
-| [olo_base_prbs](./base/olo_base_brbs.md)                     | PRBS (pseudo random binary sequence) generator based on linear feedback shift register (LFSR) implementation. |
+| [olo_base_prbs](./base/olo_base_prbs.md)                     | PRBS (pseudo random binary sequence) generator based on linear feedback shift register (LFSR) implementation. |
 | [olo_base_strobe_gen](./base/olo_base_strobe_gen.md)         | Strobe generator. Generate pulses at a fixed frequency       |
 | [olo_base_strobe_div](./base/olo_base_strobe_div.md)         | Strobe divider. Only forward every N'th pulse (divide event frequency). <br />Can also be used to convert single-cycle pulses to acknowledged events (pulse stays active until acknowledged). |
 | [olo_base_reset_gen](./base/olo_base_reset_gen.md)           | Reset generator - Generates reset pulses of specified duration after configuration and upon request |
@@ -98,6 +101,8 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_crc](./base/olo_base_crc.md) | CRC calculation engine |
 
 ## axi
+
+This area contains AXI4 related elements.
 
 | Entity                                                  | Description                                                  |
 | ------------------------------------------------------- | ------------------------------------------------------------ |
@@ -120,6 +125,8 @@ of AXI interconnects, it's suggested that you use one of the following libraries
 
 ## intf
 
+This area contains components related to interfacing to external components.
+
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_intf_sync](./intf/olo_intf_sync.md)             | Double stage synchronizer for external signals.              |
@@ -129,3 +136,57 @@ of AXI interconnects, it's suggested that you use one of the following libraries
 | [olo_intf_uart](./intf/olo_intf_uart.md)             | UART                                                         |
 | [olo_intf_debounce](./intf/olo_intf_debounce.md)     | Debouncer (for bouncing signals from buttons and switches) - Includes double-stage synchronizers. |
 | [olo_intf_clk_meas](./intf/olo_intf_clk_meas.md)     | Measure the frequency of a clock.                            |
+
+## fix
+
+This area contains fixed point mathematic related functionality.
+
+All fixed point mathematics functions in Open Logic follow a common cent of principles described in
+[Open Logic Fixed-Point Principles](./fix/olo_fix_principles.md). Read through this document before using the
+components.
+
+### Packages
+
+Below packages contain basic definitions like number format types etc.
+
+| Entity                                           | Description                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------ |
+| [en_cl_fix_pkg](../3rdParty/en_cl_fix/README.md) | 3rd Party Package for fixed-point mathematics. <br> Original source [Enclustra GitHub](https://github.com/enclustra/en_cl_fix) |
+| [olo_fix_pkg](./fix/olo_fix_pkg.md)              | Package with various Open Logic specific definitions (e.g. common options of string-type generics) |
+
+### Testbench Utilities
+
+| Entity                                              | Description                                                  |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_fix_sim_stimuli](./fix/olo_fix_sim_stimuli.md) | Read co-simulation file generated by Python and apply its content to the DUT in a HDL simulation. |
+| [olo_fix_sim_checker](./fix/olo_fix_sim_checker.md) | Read co-simulation file generated by Python and check outputs of the DUT in a HDL simulation against it. |
+
+### Basic Operations
+
+| Entity                                          | Description                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| [olo_fix_round](./fix/olo_fix_round.md)         | Rounding to a number format with less fractional bits.<br>Instead of this component, the _cl_fix_round()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_saturate](./fix/olo_fix_saturate.md)   | Saturate to a number format with less integer bits<br>Instead of this component, the _cl_fix_saturate()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_resize](./fix/olo_fix_resize.md)       | Resize to a different number format. <br>Instead of this component, the _cl_fix_resize()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_from_real](./fix/olo_fix_from_real.md) | Convert real number to fixed-point representation. <br>Instead of this component, the _cl_fix_from_real()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_to_real](./fix/olo_fix_to_real.md)     | Convert fixed-point number to real representation. <br>Instead of this component, the _cl_fix_to_real()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_add](./fix/olo_fix_add.md)             | Add two fixed point numbers. <br>Instead of this component, the _cl_fix_add()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_sub](./fix/olo_fix_sub.md)             | Subtract two fixed point numbers. <br>Instead of this component, the _cl_fix_sub()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_addsub](./fix/olo_fix_addsub.md)       | Selectively add or subtract two fixed point numbers. <br>Instead of this component, the _cl_fix_addsub()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_mult](./fix/olo_fix_mult.md)           | Multiply two fixed point numbers. <br>Instead of this component, the _cl_fix_mult()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_neg](./fix/olo_fix_neg.md)             | Negate a fixed point number. <br>Instead of this component, the _cl_fix_neg()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_abs](./fix/olo_fix_abs.md)             | Get the absolute value of a fixed point number. <br>Instead of this component, the _cl_fix_abs()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+| [olo_fix_compare](./fix/olo_fix_compare.md)     | Compare two fixed point numbers. <br>Instead of this component, the _cl_fix_compare()_ function from _en_cl_fix_pkg_ can be used alternatively (for usage from VHDL) |
+
+**Note:** For basic fixed point functionality either components from _Open Logic_ of functions from _en_cl_fix_pkg_ can
+be used. For deciding which option to use, the following considerations shall be taken into account:
+
+- Functions cannot be called from Verilog - hence _Open Logic_ components are the only option for Verilog
+- _Open Logic_ components include pipeline register stages - for fast clock speeds, this can lead to more readable code
+- _en_cl_fix_pkg_ functions allow packing several steps into one process, which can lead to more compact code
+
+### Simple Mathematics
+
+| Entity                                          | Description                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| [olo_fix_limit](./fix/olo_fix_limit.md)         | Limit a value between an upper and a lower bound             |

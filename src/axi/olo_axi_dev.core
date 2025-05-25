@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : open-logic:open-logic-dev:axi:3.1.0
+name : open-logic:open-logic-dev:axi:3.3.0
 description : local files (release plus WIP); AXI related modules see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#axi
 
 filesets:
@@ -14,7 +14,7 @@ filesets:
     file_type : vhdlSource
     logical_name : olo
     depend :
-      - "^open-logic:open-logic-dev:base:3.1.0"
+      - "^open-logic:open-logic-dev:base:3.3.0"
 
 
 targets:

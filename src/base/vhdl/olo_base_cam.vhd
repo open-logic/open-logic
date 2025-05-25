@@ -89,9 +89,6 @@ architecture rtl of olo_base_cam is
     constant BlocksParallel_c : positive := integer(ceil(real(ContentWidth_g) / real(BlockAddrBits_c)));
     constant TotalAddrBits_c  : positive := BlocksParallel_c * BlockAddrBits_c;
 
-    -- *** Types ***
-    type Addr_t is array (natural range <>) of std_logic_vector(log2ceil(Addresses_g)-1 downto 0);
-
     -- *** Two Process Method ***
     type TwoProcess_r is record
         -- Stage 0

@@ -26,7 +26,7 @@ github_token = sys.argv[1]
 g = Github(github_token)
 
 # Specify the repository owner, repository name, and tag
-repository_owner = "obruendl"
+repository_owner = "open-logic"
 repository_name = "open-logic"
 
 # Get the repository

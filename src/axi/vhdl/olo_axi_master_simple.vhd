@@ -127,12 +127,8 @@ architecture rtl of olo_axi_master_simple is
     -- *** Constants ***
     constant UnusedAddrBits_c : natural := log2(AxiDataWidth_g / 8);
 
-    constant BeatsBits_c       : natural := log2ceil(AxiMaxBeats_g + 1);
-    subtype Trans_AddrRange_c is natural range CmdWr_Addr'high downto 0;
-    subtype Trans_BurstRange_c is natural range BeatsBits_c + Trans_AddrRange_c'high downto Trans_AddrRange_c'high + 1;
-    constant Trans_LowLatIdx_c : natural := Trans_BurstRange_c'high + 1;
-    constant Trans_Size_c      : natural := Trans_LowLatIdx_c + 1;
-    constant MaxBeatsNoCmd_c   : natural := max(AxiMaxBeats_g * AxiMaxOpenTransactions_g, DataFifoDepth_g);
+    constant BeatsBits_c     : natural := log2ceil(AxiMaxBeats_g + 1);
+    constant MaxBeatsNoCmd_c : natural := max(AxiMaxBeats_g * AxiMaxOpenTransactions_g, DataFifoDepth_g);
 
     -- *** Type Definitions ***
     type WriteTfGen_t is (Idle_s, MaxCalc_s, GenTf_s, WriteTf_s);
@@ -241,7 +237,7 @@ architecture rtl of olo_axi_master_simple is
 
 begin
 
-    -- *** Assertions ***
+    -- *** Static Assertions ***
     assert AxiDataWidth_g mod 8 = 0
         report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be a multiple of 8"
         severity failure;
@@ -251,6 +247,25 @@ begin
     assert UserTransactionSizeBits_g < AxiAddrWidth_g-log2(AxiDataWidth_g/8)
         report "###ERROR###: olo_axi_master_simple UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-log2(AxiDataWidth_g/8), see documentation"
         severity failure;
+
+    -- *** Runtime Assertions ***
+    p_assert : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            -- Unexpected read response
+            if ImplRead_g and RdRespLast = '1' then
+                assert RdRespFifoVld = '1'
+                    report "###ERROR###: olo_axi_master_simple: Unexpected Read Response (RdRespFifo Empty)"
+                    severity error;
+            end if;
+            -- Unexpected write response
+            if ImplWrite_g and M_Axi_BValid = '1' then
+                assert WrRespFifoVld = '1'
+                    report "###ERROR###: olo_axi_master_simple: Unexpected Write Response (WrRespFifo Empty)"
+                    severity error;
+            end if;
+        end if;
+    end process;
 
     -- *** Combinatorial Process ***
     p_comb : process (r, M_Axi_AwReady, M_Axi_BValid, M_Axi_BResp, WrDataFifoORdy, WrDataFifoOVld, WrTransFifoOutVld,
@@ -435,9 +450,6 @@ begin
 
             -- W response FSM
             if M_Axi_BValid = '1' then
-                assert WrRespFifoVld = '1'
-                    report "###ERROR###: olo_axi_master_simple internal error --> WrRespFifo Empty"
-                    severity error;
                 v.WrOpenTrans := v.WrOpenTrans - 1; -- Use v. because it may have been modified above and this modification has not to be overriden
                 if WrRespIsLast = '1' then
                     if (M_Axi_BResp /= AxiResp_Okay_c) then
@@ -568,9 +580,6 @@ begin
 
             -- FSM
             if RdRespLast = '1' then
-                assert RdRespFifoVld = '1'
-                    report "###ERROR###: olo_axi_master_simple internal error --> RdRespFifo Empty"
-                    severity error;
                 v.RdOpenTrans := v.RdOpenTrans - 1; -- Use v. because it may have been modified above and this modification has not to be overriden
                 if RdRespIsLast = '1' then
                     if (M_Axi_RResp /= AxiResp_Okay_c) then

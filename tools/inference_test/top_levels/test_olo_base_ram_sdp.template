@@ -1,0 +1,37 @@
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+
+library olo;
+
+entity {{entity_name}} is
+    port (
+        Clk         : in    std_logic;
+        Wr_Addr     : in    std_logic_vector(8 downto 0);
+        Wr_Ena      : in    std_logic                                  := '1';
+        Wr_Data     : in    std_logic_vector(15 downto 0);
+	    Wr_Be		: in    std_logic_vector(1 downto 0);
+        Rd_Addr     : in    std_logic_vector(8 downto 0);
+        Rd_Ena      : in    std_logic                                  := '1';
+        Rd_Data     : out   std_logic_vector(15 downto 0)
+    );
+end entity;
+
+architecture rtl of {{entity_name}} is
+begin
+
+    i_ram : entity olo.olo_base_ram_sdp
+{{generics}}
+        port map (
+            Clk         => Clk,
+            Wr_Addr     => Wr_Addr,
+		    Wr_Be		=> Wr_Be,
+            Wr_Ena      => Wr_Ena,
+            Wr_Data     => Wr_Data,
+			Rd_Clk      => Clk,
+            Rd_Addr     => Rd_Addr,
+            Rd_Ena      => Rd_Ena,
+            Rd_Data     => Rd_Data
+        );
+
+end;

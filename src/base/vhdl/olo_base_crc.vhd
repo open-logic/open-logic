@@ -91,7 +91,6 @@ begin
         variable Input_v : std_logic_vector(In_Data'range);
         variable Lfsr_v  : std_logic_vector(LfsrReg'range);
         variable InBit_v : std_logic;
-        variable Idx_v   : integer range 0 to DataWidth_g-1;
         variable Out_v   : std_logic_vector(CrcWidth_g-1 downto 0);
     begin
         if rising_edge(Clk) then

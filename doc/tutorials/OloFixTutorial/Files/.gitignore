@@ -1,0 +1,7 @@
+# Cosimulation
+*.fix
+
+# Questa
+*.wlf
+work/
+

@@ -42,7 +42,7 @@ namespace eval olo_import_sources {
     variable oloRoot [file normalize $fileLoc/../..]
 
     #Add all source files
-    foreach area {base axi intf} {
+    foreach area {base axi intf fix} {
         variable files [glob $oloRoot/src/$area/vhdl/*.vhd]
 	    foreach f $files {
 			variable pathRelative [relpath $f $curDir]
@@ -50,6 +50,14 @@ namespace eval olo_import_sources {
 			set_file_prop "$pathRelative" -lib {olo}
 	    }
     }
+
+	#Add 3rd party files
+	variable files [glob $oloRoot/3rdParty/en_cl_fix/hdl/*.vhd]
+	foreach f $files {
+		variable pathRelative [relpath $f $curDir]
+		add_file -type vhdl "$pathRelative"
+		set_file_prop "$pathRelative" -lib {olo}
+	}
 
 	#VHDL 2008 is required for OLO to work
 	set_option -vhdl_std vhd2008
