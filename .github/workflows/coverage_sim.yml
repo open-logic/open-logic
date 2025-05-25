@@ -16,7 +16,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '0 3 10 * *'
   
 #Jobs  
 jobs:
