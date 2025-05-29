@@ -51,7 +51,7 @@ aws cloudwatch put-metric-alarm \
     --threshold 5 \
     --comparison-operator LessThanThreshold \
     --dimensions Name=InstanceId,Value=$INSTANCE_ID \
-    --alarm-actions arn:aws:automate:eu-central-1:ec2:terminate
+    --alarm-actions arn:aws:automate:eu-central-1:ec2:terminate \
     --unit Percent
 
 aws cloudwatch put-metric-alarm \
