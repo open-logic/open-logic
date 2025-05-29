@@ -39,10 +39,10 @@ sleep 5
 aws ec2 attach-network-interface --network-interface-id $ENI_GOWIN --instance-id $INSTANCE_ID --device-index 1
 aws ec2 attach-network-interface --network-interface-id $ENI_MICROCHIP --instance-id $INSTANCE_ID --device-index 2
 
-# Create CloudWatch alarm to stop the instance if CPU utilization is < 5% for 3 consecutive 5-minute periods
+# Create CloudWatch alarm to terminate the instance if CPU utilization is < 5% for 3 consecutive 5-minute periods
 aws cloudwatch put-metric-alarm \
-    --alarm-name "StopOnLowCPU-$INSTANCE_ID" \
-    --alarm-description "Stop instance if CPU < 5% for 15 minutes" \
+    --alarm-name "TerminateOnLowCPU-$INSTANCE_ID" \
+    --alarm-description "TErminate instance if CPU < 5% for 15 minutes" \
     --metric-name CPUUtilization \
     --namespace AWS/EC2 \
     --statistic Average \
@@ -51,12 +51,12 @@ aws cloudwatch put-metric-alarm \
     --threshold 5 \
     --comparison-operator LessThanThreshold \
     --dimensions Name=InstanceId,Value=$INSTANCE_ID \
-    --alarm-actions arn:aws:automate:eu-central-1:ec2:stop \
+    --alarm-actions arn:aws:automate:eu-central-1:ec2:terminate
     --unit Percent
 
 aws cloudwatch put-metric-alarm \
-    --alarm-name "Notify-StopOnLowCPU-$INSTANCE_ID" \
-    --alarm-description "Stop instance if CPU < 5% for 15 minutes" \
+    --alarm-name "Notify-TerminateOnLowCPU-$INSTANCE_ID" \
+    --alarm-description "Notiify if instance if CPU < 5% for 15 minutes" \
     --metric-name CPUUtilization \
     --namespace AWS/EC2 \
     --statistic Average \
@@ -81,19 +81,5 @@ aws cloudwatch put-metric-alarm \
     --comparison-operator GreaterThanOrEqualToThreshold \
     --dimensions Name=InstanceId,Value=$INSTANCE_ID \
     --alarm-actions arn:aws:sns:eu-central-1:$(aws sts get-caller-identity --query Account --output text):OloOnForTooLong
-
-# Create CloudWatch alarm to terminate the instance if it is stopped for more than 8 hours
-aws cloudwatch put-metric-alarm \
-    --alarm-name "TerminateOnStopped8h-$INSTANCE_ID" \
-    --alarm-description "Terminate instance if stopped for more than 8 hours" \
-    --metric-name StatusCheckFailed_System \
-    --namespace AWS/EC2 \
-    --statistic Minimum \
-    --period 28800 \
-    --evaluation-periods 1 \
-    --threshold 1 \
-    --comparison-operator GreaterThanOrEqualToThreshold \
-    --dimensions Name=InstanceId,Value=$INSTANCE_ID \
-    --alarm-actions arn:aws:automate:eu-central-1:ec2:terminate
 
 echo "Instance $INSTANCE_ID is running with ENIs attached."
