@@ -11,6 +11,9 @@ inputs:
   aws_secret_access_key:
     description: 'AWS Secret Access Key'
     required: true
+  aws_build_ami_id:
+    description: 'AMI ID for the AWS instance'
+    required: true
 
 runs:
   using: 'composite'
