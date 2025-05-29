@@ -2,8 +2,14 @@
 #set -e
 
 # Variables
-AMI_ID="ami-060c6da175936ad09"
-INSTANCE_TYPE="t2.large"
+if [ -z "$1" ]; then
+    echo "Usage: $0 <ami-image-id>"
+    exit 1
+fi
+
+echo "Using image: $1"
+AMI_ID="$1"
+INSTANCE_TYPE="t2.2xlarge"
 AVAILABILITY_ZONE="eu-central-1a"
 ENI_QUESTA="eni-0ba2390c78b29ff3d"
 ENI_GOWIN="eni-037106146f437262d"

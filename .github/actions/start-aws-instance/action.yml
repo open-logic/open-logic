@@ -22,7 +22,8 @@ runs:
       env:
         AWS_DEFAULT_REGION: ${{ inputs.region }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
-        AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}  
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}
+        AWS_BUILD_AMI_ID: ${{ inputs.aws_build_ami_id }}
       run: |
         cd ./.github/actions/start-aws-instance
         source ./create_instance.sh
