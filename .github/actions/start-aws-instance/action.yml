@@ -24,6 +24,7 @@ runs:
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
         AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}  
       run: |
+        pwd
         source ./create_instance.sh
 
 
