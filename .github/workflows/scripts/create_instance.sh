@@ -1,0 +1,99 @@
+#!/bin/bash
+#set -e
+
+# Variables
+AMI_ID="ami-060c6da175936ad09"
+INSTANCE_TYPE="t2.large"
+AVAILABILITY_ZONE="eu-central-1a"
+ENI_QUESTA="eni-0ba2390c78b29ff3d"
+ENI_GOWIN="eni-037106146f437262d"
+ENI_MICROCHIP="eni-0e30091a452c7f74b"
+
+# Check if ENI_QUESTA is already attached
+ENI_STATUS=$(aws ec2 describe-network-interfaces --network-interface-ids $ENI_QUESTA --query 'NetworkInterfaces[0].Attachment.InstanceId' --output text)
+if [ "$ENI_STATUS" != "None" ]; then
+    echo "ENI Attached - instance seems running already. Quitting"
+    sleep 5
+    return 0
+fi
+
+# Create the instance with the first ENI as the primary network interface
+INSTANCE_ID=$(aws ec2 run-instances \
+  --image-id $AMI_ID \
+  --instance-type $INSTANCE_TYPE \
+  --placement AvailabilityZone=$AVAILABILITY_ZONE \
+  --query 'Instances[0].InstanceId' \
+  --network-interfaces "DeviceIndex=0,NetworkInterfaceId=$ENI_QUESTA" \
+  --output text)
+
+echo "Created instance: $INSTANCE_ID"
+
+# Start the instance (should already be running, but ensure it)
+aws ec2 start-instances --instance-ids $INSTANCE_ID
+
+# Wait for 20 seconds to ensure the instance is ready to attach additional ENIs
+echo "Waiting for the instance to be ready..."
+sleep 5
+
+# Attach the other ENIs
+aws ec2 attach-network-interface --network-interface-id $ENI_GOWIN --instance-id $INSTANCE_ID --device-index 1
+aws ec2 attach-network-interface --network-interface-id $ENI_MICROCHIP --instance-id $INSTANCE_ID --device-index 2
+
+# Create CloudWatch alarm to stop the instance if CPU utilization is < 4% for 3 consecutive 5-minute periods
+aws cloudwatch put-metric-alarm \
+    --alarm-name "StopOnLowCPU-$INSTANCE_ID" \
+    --alarm-description "Stop instance if CPU < 4% for 15 minutes" \
+    --metric-name CPUUtilization \
+    --namespace AWS/EC2 \
+    --statistic Average \
+    --period 300 \
+    --evaluation-periods 3 \
+    --threshold 4 \
+    --comparison-operator LessThanThreshold \
+    --dimensions Name=InstanceId,Value=$INSTANCE_ID \
+    --alarm-actions arn:aws:automate:eu-central-1:ec2:stop \
+    --unit Percent
+
+# Create CloudWatch alarm to stop the instance if CPU utilization is < 4% for 3 consecutive 5-minute periods
+aws cloudwatch put-metric-alarm \
+    --alarm-name "Notify-StopOnLowCPU-$INSTANCE_ID" \
+    --alarm-description "Stop instance if CPU < 4% for 15 minutes" \
+    --metric-name CPUUtilization \
+    --namespace AWS/EC2 \
+    --statistic Average \
+    --period 300 \
+    --evaluation-periods 3 \
+    --threshold 4 \
+    --comparison-operator LessThanThreshold \
+    --dimensions Name=InstanceId,Value=$INSTANCE_ID \
+    --alarm-actions arn:aws:sns:eu-central-1:612153846898:OloShutdown \
+    --unit Percent
+
+# Create CloudWatch alarm to terminate the instance if it is stopped for more than 8 hours
+aws cloudwatch put-metric-alarm \
+    --alarm-name "TerminateOnStopped8h-$INSTANCE_ID" \
+    --alarm-description "Terminate instance if stopped for more than 8 hours" \
+    --metric-name StatusCheckFailed_System \
+    --namespace AWS/EC2 \
+    --statistic Minimum \
+    --period 28800 \
+    --evaluation-periods 1 \
+    --threshold 1 \
+    --comparison-operator GreaterThanOrEqualToThreshold \
+    --dimensions Name=InstanceId,Value=$INSTANCE_ID \
+    --alarm-actions arn:aws:automate:eu-central-1:ec2:terminate
+
+aws cloudwatch put-metric-alarm \
+    --alarm-name "Notify-TerminateOnStopped8h-$INSTANCE_ID" \
+    --alarm-description "Terminate instance if stopped for more than 8 hours" \
+    --metric-name StatusCheckFailed_System \
+    --namespace AWS/EC2 \
+    --statistic Minimum \
+    --period 28800 \
+    --evaluation-periods 1 \
+    --threshold 1 \
+    --comparison-operator GreaterThanOrEqualToThreshold \
+    --dimensions Name=InstanceId,Value=$INSTANCE_ID \
+    --alarm-actions arn:aws:sns:eu-central-1:$(aws sts get-caller-identity --query Account --output text):OloOnForTooLong
+
+echo "Instance $INSTANCE_ID is running with ENIs attached."
