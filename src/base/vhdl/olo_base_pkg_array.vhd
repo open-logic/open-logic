@@ -26,6 +26,8 @@ library ieee;
 ---------------------------------------------------------------------------------------------------
 package olo_base_pkg_array is
 
+    type SlvArr_t is array (natural range <>) of std_logic_vector;
+
     type StlvArray2_t   is array (natural range <>) of std_logic_vector( 1 downto 0);
     type StlvArray3_t   is array (natural range <>) of std_logic_vector( 2 downto 0);
     type StlvArray4_t   is array (natural range <>) of std_logic_vector( 3 downto 0);
