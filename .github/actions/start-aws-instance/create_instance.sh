@@ -9,7 +9,7 @@ fi
 
 echo "Using image: $1"
 AMI_ID="$1"
-INSTANCE_TYPE="t3.large"
+INSTANCE_TYPE="t3.2xlarge"
 AVAILABILITY_ZONE="eu-central-1a"
 ENI_QUESTA="eni-0ba2390c78b29ff3d"
 ENI_GOWIN="eni-037106146f437262d"
