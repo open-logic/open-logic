@@ -28,6 +28,7 @@ INSTANCE_ID=$(aws ec2 run-instances \
   --image-id $AMI_ID \
   --instance-type $INSTANCE_TYPE \
   --placement AvailabilityZone=$AVAILABILITY_ZONE \
+  --key-name olo-build-aws \
   --query 'Instances[0].InstanceId' \
   --network-interfaces "DeviceIndex=0,NetworkInterfaceId=$ENI_QUESTA" \
   --output text)
