@@ -24,19 +24,19 @@ library work;
 
 entity olo_intf_inc_encoder is
     generic(
-        PulsesPerPhasePerTurn : positive;
-        UpCountingDirection : string := "B trails A");
+        DefaultAngleResolution_g : positive;
+        PositionWidth_g   : positive := 32);
     port(
         Clk             : in  std_logic;
         Rst             : in  std_logic;
         Phase_A         : in  std_logic;
         Phase_B         : in  std_logic;
-        Strobe          : in  std_logic := '0';
-        Position_tdata  : out std_logic_vector(log2ceil(PulsesPerPhasePerTurn * 4) - 1 downto 0);
-        Position_tvalid : out std_logic;
-        Position_tready : in  std_logic := '0';
-        Clear           : in  std_logic := '0';
-        Pulse           : out std_logic;
-        Direction       : out std_logic;
-        Position        : out std_logic_vector(log2ceil(PulsesPerPhasePerTurn * 4) - 1 downto 0));
+        Phase_Z         : in  std_logic := '0';
+        Position        : out std_logic_vector(PositionWidth_g - 1 downto 0);
+        Clear_Position  : in  std_logic := '0';
+        Angle           : out std_logic_vector(PositionWidth_g - 1 downto 0);
+        Clear_Angle     : in  std_logic := '0';
+        AngleResolution : in  std_logic_vector(PositionWidth_g - 1 downto 0) := toUslv(DefaultAngleResolution_g, PositionWidth_g);
+        Pulse_Up        : out std_logic;
+        Pulse_Down      : out std_logic);
     end entity olo_intf_inc_encoder;
