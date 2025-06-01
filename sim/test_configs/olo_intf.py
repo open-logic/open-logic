@@ -102,3 +102,8 @@ def add_configs(olo_tb):
     tb = olo_tb.test_bench(spi_master_fixsize_tb)
     for LsbFirst in [False, True]:
         named_config(tb, {'LsbFirst_g': LsbFirst})
+
+    ### olo_intf_inc_encoder ###
+    inc_encoder_tb = 'olo_intf_inc_encoder_tb'
+    tb = olo_tb.test_bench(inc_encoder_tb)
+    named_config(tb, {'DefaultAngleResolution_g' : 1024, "PositionWidth_g" : 32})
