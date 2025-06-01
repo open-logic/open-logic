@@ -8,7 +8,7 @@
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- Package containing attribute definitions that work for all target vendors. The package is meant
--- for Open Logic internal use and hence not deocumented in detail.
+-- for Open Logic internal use and hence not documented in detail.
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_pkg_attribute.md
