@@ -20,12 +20,24 @@ filesets:
       - "{{dep}}"
     {%- endfor %}
     {%- endif %}
+  {%- if scoped_constraints %}
+  scoped_constraints:
+    files:
+    {%- for file in tclFiles %}
+      - "{{constDir}}{{file}}" : {copyto: "{{area}}/{{file}}"}
+    {%- endfor %}
+      - "{{constDir}}fusesoc_wrapper.tcl" : {copyto: "{{area}}/fusesoc_wrapper.tcl", file_type: "tclSource"}
+    file_type: "user"
+  {%- endif %}
 
 
 targets:
   default:
     filesets :
-      - rtl
+      - "rtl"
+    {%- if scoped_constraints %}
+      - "tool_vivado? (scoped_constraints)"
+    {%- endif %}
       
 {%- if library == "open-logic" %}
 

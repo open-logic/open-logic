@@ -45,10 +45,20 @@ filesets:
       - vhdl/olo_base_cc_xn2n.vhd
     file_type : vhdlSource
     logical_name : olo
+  scoped_constraints:
+    files:
+      - "tcl/constraints_amd.tcl" : {copyto: "base/constraints_amd.tcl"}
+      - "tcl/olo_base_cc_bits.tcl" : {copyto: "base/olo_base_cc_bits.tcl"}
+      - "tcl/olo_base_cc_reset.tcl" : {copyto: "base/olo_base_cc_reset.tcl"}
+      - "tcl/olo_base_cc_simple.tcl" : {copyto: "base/olo_base_cc_simple.tcl"}
+      - "tcl/olo_base_reset_gen.tcl" : {copyto: "base/olo_base_reset_gen.tcl"}
+      - "tcl/fusesoc_wrapper.tcl" : {copyto: "base/fusesoc_wrapper.tcl", file_type: "tclSource"}
+    file_type: "user"
 
 
 targets:
   default:
     filesets :
-      - rtl
+      - "rtl"
+      - "tool_vivado? (scoped_constraints)"
   

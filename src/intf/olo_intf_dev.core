@@ -17,10 +17,18 @@ filesets:
     logical_name : olo
     depend :
       - "^open-logic:open-logic-dev:base:3.3.0"
+  scoped_constraints:
+    files:
+      - "tcl/constraints_amd.tcl" : {copyto: "intf/constraints_amd.tcl"}
+      - "tcl/olo_intf_spi_master.tcl" : {copyto: "intf/olo_intf_spi_master.tcl"}
+      - "tcl/olo_intf_sync.tcl" : {copyto: "intf/olo_intf_sync.tcl"}
+      - "tcl/fusesoc_wrapper.tcl" : {copyto: "intf/fusesoc_wrapper.tcl", file_type: "tclSource"}
+    file_type: "user"
 
 
 targets:
   default:
     filesets :
-      - rtl
+      - "rtl"
+      - "tool_vivado? (scoped_constraints)"
   

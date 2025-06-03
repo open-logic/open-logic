@@ -70,15 +70,28 @@ for state in ["dev", "stable"]:
         # Get all VHDL files
         os.chdir(f"{repoRoot}/src/{area}/vhdl")
         vhdlFiles = os.listdir()
+
+        # TCL files
+        tcldir = f"{repoRoot}/src/{area}/tcl"
+        # Check if tcl directory exists
+        if not os.path.exists(tcldir):
+            tclFiles = []
+        else:
+            os.chdir(tcldir)
+            tclFiles = os.listdir()
+            tclFiles.remove("fusesoc_wrapper.tcl")  # Remove fusesoc wrapper
+
         # Navigate to area
         os.chdir("..")
 
         # Select proper repo root or .core file as reference
         if state == "dev":
             fileDir = "vhdl/"
+            constDir = "tcl/"
             targetDir = "."
         elif state == "stable":
             fileDir = f"src/{area}/vhdl/"
+            constDir = f"src/{area}/tcl/"
             targetDir = f"{repoRoot}/tools/fusesoc/stable"
         else:
             raise ValueError("Invalid state (dev/stable)")
@@ -93,7 +106,10 @@ for state in ["dev", "stable"]:
             "description" : DESCRIPTIONS[area],
             "dependencies" : DEPENDENCIES[area],
             "library" : library,
-            "codebase" : codebase
+            "codebase" : codebase,
+            "scoped_constraints" : len(tclFiles) > 0,
+            "tclFiles" : sorted(tclFiles),
+            "constDir" : constDir
         }
         # Add external dependencies where required
         if area == "fix":

@@ -33,5 +33,5 @@ filesets:
 targets:
   default:
     filesets :
-      - rtl
+      - "rtl"
   
