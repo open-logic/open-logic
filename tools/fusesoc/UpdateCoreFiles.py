@@ -101,7 +101,7 @@ for state in ["dev", "stable"]:
         data = {
             "area" : area,
             "fileDir" : fileDir,
-            "vhdlFiles" : vhdlFiles,
+            "vhdlFiles" : sorted(vhdlFiles),
             "version" : VERSION,
             "description" : DESCRIPTIONS[area],
             "dependencies" : DEPENDENCIES[area],
