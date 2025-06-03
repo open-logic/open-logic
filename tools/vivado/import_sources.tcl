@@ -56,26 +56,15 @@ namespace eval olo_import_sources {
 	#... there for execution).
 	variable projectDir [get_property DIRECTORY [current_project]]
 	variable runDir [file normalize $projectDir/prj.runs/impl_x]
-	variable constraintsTcl [relpath $oloRoot/tools/vivado/all_constraints_amd.tcl $runDir] 
 	variable oloDir $projectDir/open_logic
 	
 	#Create open-logic directory if it does not exist
 	if {![file exists $oloDir]} {
 		file mkdir $oloDir
 	}
-	
-	#Create constraints file
-	variable fileId [open $oloDir/olo_scoped_constraints.tcl "w+"]
-	#puts $fileId $runDir
-	#puts $fileId $oloRoot/tools/vivado/all_constraints_amd.tcl
-	puts $fileId "source $constraintsTcl"
-	close $fileId
-	
-	#Add cosntraints file to project
-	add_files -fileset constrs_1 -norecurse $oloDir/olo_scoped_constraints.tcl
-	set_property used_in_synthesis false [get_files $oloDir/olo_scoped_constraints.tcl]
-	set_property used_in_simulation false [get_files $oloDir/olo_scoped_constraints.tcl]
-	set_property PROCESSING_ORDER LATE [get_files $oloDir/olo_scoped_constraints.tcl]
+		
+	#Add constraints
+	source $oloRoot/tools/vivado/all_constraints_amd.tcl
 }
 
 
