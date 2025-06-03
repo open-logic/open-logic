@@ -66,8 +66,6 @@ namespace eval olo_import_sources {
 	
 	#Create constraints file
 	variable fileId [open $oloDir/olo_scoped_constraints.tcl "w+"]
-	#puts $fileId $runDir
-	#puts $fileId $oloRoot/tools/vivado/all_constraints_amd.tcl
 	puts $fileId "source $constraintsTcl"
 	close $fileId
 	
