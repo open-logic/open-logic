@@ -46,9 +46,17 @@ filesets:
     file_type : vhdlSource
     logical_name : olo
 
+  scoped_constraints:
+    files:
+      - "tcl/olo_base_cc_bits.tcl"         : {copyto: "olo_base_cc_bits.tcl"}
+      - "tcl/olo_base_cc_reset.tcl"        : {copyto: "olo_base_cc_reset.tcl"}
+      - "tcl/olo_base_cc_simple.tcl"       : {copyto: "olo_base_cc_simple.tcl"}
+      - "tcl/olo_base_reset_gen.tcl"       : {copyto: "olo_base_reset_gen.tcl"}
+      - "tcl/olo_base_constraints_amd.tcl" : {copyto: "olo_base_constraints_amd.tcl", file_type: "tclSource"}
+    file_type: "user"
 
 targets:
   default:
     filesets :
-      - rtl
-  
+      - "rtl"
+      - "tool_vivado? (scoped_constraints)"

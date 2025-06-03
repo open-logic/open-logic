@@ -18,9 +18,15 @@ filesets:
     depend :
       - "^open-logic:open-logic-dev:base:3.3.0"
 
-
+  scoped_constraints:
+    files:
+      - "tcl/olo_intf_sync.tcl"            : {copyto: "olo_intf_sync.tcl"}
+      - "tcl/olo_intf_spi_master.tcl"      : {copyto: "olo_intf_spi_master.tcl"}
+      - "tcl/olo_intf_constraints_amd.tcl" : {copyto: "olo_intf_constraints_amd.tcl", file_type: "tclSource"}
+    file_type: "user"
+    
 targets:
   default:
     filesets :
-      - rtl
-  
+      - "rtl"
+      - "tool_vivado? (scoped_constraints)"
