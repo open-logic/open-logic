@@ -13,6 +13,7 @@ from EntityCollection import EntityCollection
 class TopLevel:
     def __init__(self, entity : str):
         self.configs = {}
+        self.omitted_ports = {}
         self.fixGenerics = {}
         self.toolGenerics = {}
         self.entity = entity
@@ -23,8 +24,10 @@ class TopLevel:
     def add_tool_generics(self, tool : str, generics : Dict[str, str]):
         self.toolGenerics[tool] = generics
 
-    def add_config(self, name : str, config : Dict[str, str]):
+    def add_config(self, name : str, config : Dict[str, str], omitted_ports : List[str] = None):
         self.configs[name] = config
+        self.omitted_ports[name] = omitted_ports if omitted_ports is not None else []
+
 
     def get_configs(self) -> List[str]:
         return list(self.configs.keys())
@@ -45,14 +48,21 @@ class TopLevel:
                 for generic, value in self.toolGenerics[tool_name].items():
                     all_generics[generic].default = value
                 
-        # Create file
+        # Get rendering template
         env = Environment(loader=FileSystemLoader("/"))
         template_path = os.path.join(os.path.dirname(__file__), "top.template")
         template = env.get_template(template_path)
+
+        #Get ports (and omit the ones that are not needed)
+        presentPorts = deepcopy(entity.ports)
+        for p in self.omitted_ports[config_name]:
+            presentPorts.pop(p)
+
+        # Render file
         data = {
             "generics" : list(all_generics.values()),
             "entity_name" : self.entity,
-            "ports" : list(entity.ports.values()),
+            "ports" : list(presentPorts.values()),
         }
         rendered_template = template.render(data)
         with open(f"{out_file}", "w+") as f:

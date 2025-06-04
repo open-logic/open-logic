@@ -18,10 +18,13 @@ entities:
   # olo_base_cam
   - entity_name: "olo_base_cam"
     configurations:
-      - name: "d128-w64"
+      - name: "d128-w16"
         generics:
           Addresses_g: 128
-          ContentWidth_g: 64 
+          ContentWidth_g: 16
+        omitted_ports:
+          - Match_Match
+          - Match_Valid
   # olo_base_cc_bits
   - entity_name: "olo_base_cc_bits"
   # olo_base_cc_handshake

@@ -37,6 +37,9 @@ entities:
         generics:
           Mode: "standard"
           Enable: true
+        omitted_ports:
+          - Match_Match
+          - Match_Valid
     tool_generics:
       libero:
         - ClockSpeed: 75
