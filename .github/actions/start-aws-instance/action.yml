@@ -2,9 +2,6 @@ name: Start AWS Instance Action
 description: 'Starts an AWS EC2 instance if not running already'
 
 inputs:
-  instance_id:
-    description: 'ID of the EC2 instance to start'
-    required: true
   region:
     description: 'AWS region where the instance is located'
     required: true
@@ -13,6 +10,9 @@ inputs:
     required: true
   aws_secret_access_key:
     description: 'AWS Secret Access Key'
+    required: true
+  aws_build_ami_id:
+    description: 'AMI ID for the AWS instance'
     required: true
 
 runs:
@@ -25,40 +25,9 @@ runs:
       env:
         AWS_DEFAULT_REGION: ${{ inputs.region }}
         AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
-        AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}  
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}
       run: |
-        INSTANCE_ID=${{ inputs.instance_id }}
-        INSTANCE_STATE=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query "Reservations[0].Instances[0].State.Name" --output text)
-        
-        echo "Current instance state: $INSTANCE_STATE"
-        
-        if [ "$INSTANCE_STATE" == "running" ]; then
-          echo "Instance is already running. No action needed."
-        elif [ "$INSTANCE_STATE" == "stopped" ]; then
-          echo "Instance is stopped. Starting it now..."
-          aws ec2 start-instances --instance-ids $INSTANCE_ID
-          aws ec2 wait instance-running --instance-ids $INSTANCE_ID
-          echo "Instance is now running."
-        elif [ "$INSTANCE_STATE" == "pending" ]; then
-          echo "Instance is in the 'pending' state. Waiting until it is running..."
-          aws ec2 wait instance-running --instance-ids $INSTANCE_ID
-          echo "Instance is now running."
-        else
-          echo "Instance is in state '$INSTANCE_STATE'. Waiting until it can be started..."
-          aws ec2 wait instance-stopped --instance-ids $INSTANCE_ID
-          echo "Instance is now stopped. Starting it..."
-          aws ec2 start-instances --instance-ids $INSTANCE_ID
-          aws ec2 wait instance-running --instance-ids $INSTANCE_ID
-          echo "Instance is now running."
-        fi
-    # Wait until the instance is running
-    - name: Wait for instance to be running
-      shell: bash
-      env:
-        AWS_DEFAULT_REGION: ${{ inputs.region }}
-        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
-        AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}   
-      run: |
-        aws ec2 wait instance-running --instance-ids i-08d60c6d6d93c636b
+        cd ./.github/actions/start-aws-instance
+        source ./create_instance.sh ${{ inputs.aws_build_ami_id }}
 
 
