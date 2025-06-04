@@ -1,0 +1,39 @@
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+
+library olo;
+    use olo.olo_base_pkg_math.all;
+    use olo.olo_base_pkg_logic.all;
+    use olo.olo_base_pkg_array.all;
+    use olo.olo_base_pkg_string.all;
+
+entity test is
+    generic (
+        {%- for generic in generics %}
+        {{generic.name}} : {{generic.type}} := {{generic.default}}{% if not loop.last %};{% endif %}
+        {%- endfor %}
+    );
+    port (
+        {%- for port in ports %}
+        {{port.name}} : {{port.direction}} {{port.type}}{% if not loop.last %};{% endif %}
+        {%- endfor %}
+    );
+end entity;
+
+architecture rtl of test is
+begin
+
+    i_dut : entity olo.{{entity_name}}
+        generic map (
+            {%- for generic in generics %}
+            {{generic.name}} => {{generic.name}}{% if not loop.last %},{% endif %}
+            {%- endfor %}
+        )
+        port map (
+            {%- for port in ports %}
+            {{port.name}} => {{port.name}}{% if not loop.last %},{% endif %}
+            {%- endfor %}
+        );
+
+end;

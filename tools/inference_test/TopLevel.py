@@ -7,15 +7,15 @@ from typing import List, Dict
 import os
 from copy import deepcopy
 from jinja2 import Environment, FileSystemLoader
+from EntityCollection import EntityCollection
 
 
 class TopLevel:
-    def __init__(self, file_path : str):
-        self.file_path = os.path.abspath(file_path)
+    def __init__(self, entity : str):
         self.configs = {}
         self.fixGenerics = {}
         self.toolGenerics = {}
-        self.sub = None
+        self.entity = entity
 
     def add_fix_generics(self, fixGenerics : Dict[str, str]):
         self.fixGenerics = fixGenerics
@@ -29,30 +29,30 @@ class TopLevel:
     def get_configs(self) -> List[str]:
         return list(self.configs.keys())
 
-    def create_syn_file(self, out_file : str, entity_name : str, config_name : str = None, tool_name : str = None):
-        # Get complete generics list
-        all_generics = deepcopy(self.fixGenerics)
+    def create_syn_file(self, out_file : str, entity_collection : EntityCollection, 
+                        config_name : str = None, tool_name : str = None):
+        entity = entity_collection.get_entity(self.entity)
+
+        # Get list of generics
+        all_generics = deepcopy(entity.generics)
+        for generic, value in self.fixGenerics.items():
+            all_generics[generic].default = value
         if config_name is not None:
-            all_generics.update(self.configs[config_name])
+            for generic, value in self.configs[config_name].items():
+                all_generics[generic].default = value
         if tool_name is not None:
             if tool_name in self.toolGenerics: #Only if generics are set for this tool
-                all_generics.update(self.toolGenerics[tool_name])
-        
-        # Create generics text
-        generics_text = ""
-        if len(all_generics) > 0:
-            generics_text +=   "    generic map(\n"
-            generics_lines = [f"        {key} => {value}" for key, value in all_generics.items()]
-            generics_text += ",\n".join(generics_lines)
-            generics_text += "\n    )"
-        
-
+                for generic, value in self.toolGenerics[tool_name].items():
+                    all_generics[generic].default = value
+                
         # Create file
         env = Environment(loader=FileSystemLoader("/"))
-        template = env.get_template(self.file_path)
+        template_path = os.path.join(os.path.dirname(__file__), "top.template")
+        template = env.get_template(template_path)
         data = {
-            "generics" : generics_text,
-            "entity_name" : entity_name
+            "generics" : list(all_generics.values()),
+            "entity_name" : self.entity,
+            "ports" : list(entity.ports.values()),
         }
         rendered_template = template.render(data)
         with open(f"{out_file}", "w+") as f:

@@ -1,0 +1,44 @@
+files:
+  include:
+    - "src/**/*.vhd"  # Glob expressions for files to parse
+    - "lib/**/*.vhd"
+  exclude:
+    - "test_*"        # Exclude entities matching this glob pattern
+    - "debug_*"
+
+entities:
+  - entity_name: "MyEntity1"
+    fixed_generics:
+      Depth_g: 256
+      Width_g: 32
+    configurations:
+      - name: "Config1"
+        generics:
+          Mode: "default"
+          Enable: true
+      - name: "Config2"
+        generics:
+          Mode: "optimized"
+          Enable: false
+    tool_generics:
+      vivado:
+        - ClockSpeed: 100
+        - Optimization: "high"
+      gowin:
+        - ClockSpeed: 50
+      quartus:
+        - Optimization: "low"
+  - entity_name: "MyEntity2"
+    fixed_generics:
+      Depth_g: 128
+      Width_g: 16
+    configurations:
+      - name: "DefaultConfig"
+        generics:
+          Mode: "standard"
+          Enable: true
+    tool_generics:
+      libero:
+        - ClockSpeed: 75
+      efinity:
+        - Optimization: "balanced"

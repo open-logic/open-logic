@@ -4,87 +4,52 @@
 # Authors: Oliver Bruendler
 # ---------------------------------------------------------------------------------------------------
 import os.path
-
-from TopLevel import TopLevel
 from ToolQuartus import ToolQuartus
 from ToolVivado import ToolVivado
 from ToolGowin import ToolGowin
 from ToolEfinity import ToolEfinity
 from ToolLibero import ToolLibero
 from ResourceResults import ResourceResults
+from EntityCollection import EntityCollection
 import os
 import shutil
 import argparse
+from YamlInterpreter import YamlInterpreter
+from datetime import datetime
 
 # Argument parser setup
 parser = argparse.ArgumentParser(description="Run inference tests with specified tools, top-levels, and configurations.")
 parser.add_argument("--tool", type=str, choices=["vivado", "quartus", "gowin", "efinity", "libero"],
-                    help="Specify the tool to use for synthesis (e.g., vivado, quartus, etc.).")
-parser.add_argument("--top_level", type=str,
-                    help="Specify the name of the top-level to test (e.g., test_olo_base_ram_sdp).")
+                    help="Specify the tool to use for synthesis (e.g., vivado, quartus, etc.).", required=False)
+parser.add_argument("--entity", type=str,
+                    help="Specify the name of the entity to test (e.g., test_olo_base_ram_sdp).", required=False)
 parser.add_argument("--config", type=str,
-                    help="Specify the configuration to test (e.g., NoBe-NoInit).")
+                    help="Specify the configuration to test (e.g., NoBe-NoInit).", required=False)
+parser.add_argument("--yml", type=str, required=True,
+                    help="Path to the YAML file describing the test.")
 args = parser.parse_args()
 
 # Constants
-TOP_PATH = os.path.abspath("./top_levels")
 SYN_FILE = os.path.abspath("./test.vhd")
 OUT_PATH = os.path.abspath("./results")
 
-# Define all top files
-top_files = {}
+# Parse the YAML file
+intp = YamlInterpreter(os.path.abspath(args.yml))
 
-# olo_base_ram_sdp
-top_file = TopLevel(f"{TOP_PATH}/test_olo_base_ram_sdp.template")
-top_file.add_fix_generics({
-    "Depth_g" : "512",
-    "Width_g" : "16",
-    "InitString_g" : "\"0x1234, 0x5678, 0xDEAD, 0xBEEF\""
-})
-top_file.add_config("NoBe-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "false"})
-top_file.add_config("NoBe-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "false"})
-top_file.add_config("Be-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "true"})
-top_file.add_config("Be-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "true"})
-top_files["test_olo_base_ram_sdp"] = top_file
+# Get top level files
+top_files = {x.entity : x for x in intp.get_top_levels()}
 
-top_file = TopLevel(f"{TOP_PATH}/test_olo_base_ram_sp.template")
-top_file.add_fix_generics({
-    "Depth_g" : "512",
-    "Width_g" : "16",
-    "InitString_g" : "\"0x1234, 0x5678, 0xDEAD, 0xBEEF\""
-})
-top_file.add_config("NoBe-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "false"})
-top_file.add_config("NoBe-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "false"})
-top_file.add_config("Be-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "true"})
-top_file.add_config("Be-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "true"})
-top_files["test_olo_base_ram_sp"] = top_file
+# Create Entity Collecton
+ec = EntityCollection()
+for file in intp.files:
+    ec.parse_vhdl_file(file)
 
-top_file = TopLevel(f"{TOP_PATH}/test_olo_base_ram_tdp.template")
-top_file.add_fix_generics({
-    "Depth_g" : "512",
-    "Width_g" : "16",
-    "InitString_g" : "\"0x1234, 0x5678, 0xDEAD, 0xBEEF\"",
-    "RamBehavior_g" : "\"WBR\""
-})
-top_file.add_config("NoBe-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "false"})
-top_file.add_config("NoBe-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "false"})
-top_file.add_config("Be-NoInit", {"InitFormat_g": '"NONE"', "UseByteEnable_g": "true"})
-top_file.add_config("Be-Init", {"InitFormat_g": '"HEX"', "UseByteEnable_g": "true"})
-top_file.add_tool_generics("quartus", {"RamBehavior_g" : '"WBR"'})
-top_files["test_olo_base_ram_tdp"] = top_file
-
-top_file = TopLevel(f"{TOP_PATH}/test_olo_fix_macc_inference.template")
-top_file.add_config("process", {"UseComponents_g": "false"})
-top_file.add_config("components", {"UseComponents_g": "true"})
-top_files["test_olo_fix_macc_inference"] = top_file
-
-# Selected top level
-if args.top_level:
-    if args.top_level in top_files:
-        top_files = {args.top_level: top_files[args.top_level]}
+# Selected entity
+if args.entity:
+    if args.entity in top_files:
+        top_files = {args.entity: top_files[args.entity]}
     else:
-        raise ValueError(f"Invalid --top_level: {args.top_level}")
-
+        raise ValueError(f"Invalid --entity: {args.entity}")
 
 # Define all tools
 tools = {"quartus" : ToolQuartus(),
@@ -100,6 +65,8 @@ if args.tool:
 
 if __name__ == '__main__':
 
+    overall_start = datetime.now()
+
     # Clean output folder
     if os.path.exists(OUT_PATH):
         shutil.rmtree(OUT_PATH)
@@ -114,8 +81,8 @@ if __name__ == '__main__':
             f.write(f"{tool.get_version()}\n\n")
 
         print("*** Execute Tests ***")
-        for top_file_name, top_file in top_files.items():
-            print(f"> File: {top_file_name}")
+        for entity_name, top_file in top_files.items():
+            print(f"> File: {entity_name}")
             for tool_name, tool in tools.items():
                     print(f"  > Tool: {tool_name}")
                     resource_results = ResourceResults()
@@ -130,13 +97,25 @@ if __name__ == '__main__':
                         
                     # Iterate through configs
                     for config in configs:
-                        print(f"    > Config: {config}")
-                        top_file.create_syn_file(out_file=SYN_FILE, entity_name="test", config_name=config, tool_name=tool_name)
+                        start = datetime.now()
+                        print(f"    > Config: {config:30} ", end="")
+                        top_file.create_syn_file(out_file=SYN_FILE, entity_collection=ec, config_name=config, tool_name=tool_name)
                         tool.sythesize(files=[SYN_FILE], top_entity="test")
                         resource_results.add_results(config, tool.get_resource_usage())
+                        end = datetime.now()
+                        runtime = end - start
+                        runtime_str = f"{runtime.seconds // 60:02}:{runtime.seconds % 60:02}"
+                        print(f"[{runtime_str}]")
+
                     print(resource_results.get_table())
-                    f.write(f"### {top_file_name} - {tool_name} ###\n")
+                    f.write(f"### {entity_name} - {tool_name} ###\n")
                     f.write(resource_results.get_table().get_string())
                     f.write("\n\n")
+                    f.flush()
+    #Print Runtime
+    overall_end = datetime.now()
+    overall_runtime = overall_end - overall_start
+    overall_runtime_str = f"{overall_runtime.seconds // 60:02}:{overall_runtime.seconds % 60:02}"
+    print(f"Overall Runtime: {overall_runtime_str}\n")
 
     print("*** Done ***")
