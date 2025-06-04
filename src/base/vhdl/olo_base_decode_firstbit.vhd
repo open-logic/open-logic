@@ -8,7 +8,7 @@
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- This entity implements a pipelined first bit decoder. It finds out which
--- is the lowest index of a bit set in the input vecotr.
+-- is the lowest index of a bit set in the input vector.
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_decode_firstbit.md
