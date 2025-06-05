@@ -187,6 +187,10 @@ def add_configs(olo_tb):
             # Random-Stall is sufficient (non-random is only used for debugging purposes)
             RandomStall = True
             named_config(tb, {'SupportZero_g': SupportZero, 'RandomStall_g': RandomStall, 'RamBehavior_g': RamBehav})
+    for MaxDelay in [20, 256]:
+        # Random-Stall is sufficient (non-random is only used for debugging purposes)
+        RandomStall = True
+        named_config(tb, {'MaxDelay_g': MaxDelay, 'RandomStall_g': RandomStall})       
 
 
     ### olo_base_dyn_sft ###
