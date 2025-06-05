@@ -206,7 +206,7 @@ entities:
           UseByteEnable_g: true
     tool_generics:
       quartus:
-        - RamBehavior_g: '"WBR"'
+        RamBehavior_g: '"WBR"'
   # olo_base_reset_gen
   - entity_name: "olo_base_reset_gen"
   # olo_base_strobe_div

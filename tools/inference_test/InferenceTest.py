@@ -27,6 +27,8 @@ parser.add_argument("--config", type=str,
                     help="Specify the configuration to test (e.g., NoBe-NoInit).", required=False)
 parser.add_argument("--yml", type=str, required=True,
                     help="Path to the YAML file describing the test.")
+parser.add_argument("--no-tables", action="store_true",
+                    help="Suppress printing resource tables to stdout.")
 args = parser.parse_args()
 
 # Constants
@@ -107,7 +109,11 @@ if __name__ == '__main__':
                         runtime_str = f"{runtime.seconds // 60:02}:{runtime.seconds % 60:02}"
                         print(f"[{runtime_str}]")
 
-                    print(resource_results.get_table())
+                    # Print to stdout
+                    if not args.no_tables:
+                        print(resource_results.get_table())
+
+                    # Write to results file
                     f.write(f"### {entity_name} - {tool_name} ###\n")
                     f.write(resource_results.get_table().get_string())
                     f.write("\n\n")
@@ -115,7 +121,10 @@ if __name__ == '__main__':
     #Print Runtime
     overall_end = datetime.now()
     overall_runtime = overall_end - overall_start
-    overall_runtime_str = f"{overall_runtime.seconds // 60:02}:{overall_runtime.seconds % 60:02}"
+    hours = overall_runtime.seconds // 3600
+    minutes = (overall_runtime.seconds % 3600) // 60
+    seconds = overall_runtime.seconds % 60
+    overall_runtime_str = f"{hours:02}:{minutes:02}:{seconds:02}"
     print(f"Overall Runtime: {overall_runtime_str}\n")
 
     print("*** Done ***")
