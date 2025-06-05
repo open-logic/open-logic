@@ -133,7 +133,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_comb : process (In_Valid, In_Data, In_Last, In_Drop, Out_Ready, Out_Next, Out_Repeat, Rst, r,
+    p_comb : process (In_Valid, In_Last, In_Drop, Out_Ready, Out_Next, Out_Repeat, r,
                       FifoInReady, RdPacketEnd, RdPacketEndValid) is
         variable v          : TwoProcess_r;
         variable In_Ready_v : std_logic;

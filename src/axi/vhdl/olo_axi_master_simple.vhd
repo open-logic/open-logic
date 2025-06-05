@@ -269,8 +269,8 @@ begin
 
     -- *** Combinatorial Process ***
     p_comb : process (r, M_Axi_AwReady, M_Axi_BValid, M_Axi_BResp, WrDataFifoORdy, WrDataFifoOVld, WrTransFifoOutVld,
-                      WrTransFifoBeats, WrRespIsLast, WrRespFifoVld, CmdWr_Addr, CmdWr_Size, CmdWr_LowLat, CmdWr_Valid,
-                      Wr_Valid, WrData_Rdy_I, M_Axi_ArReady, RdRespIsLast, RdRespFifoVld, RdRespLast, CmdRd_Addr,
+                      WrTransFifoBeats, WrRespIsLast, CmdWr_Addr, CmdWr_Size, CmdWr_LowLat, CmdWr_Valid,
+                      Wr_Valid, WrData_Rdy_I, M_Axi_ArReady, RdRespIsLast, RdRespLast, CmdRd_Addr,
                       CmdRd_Size, CmdRd_LowLat, CmdRd_Valid, Rd_Ready, RdDat_Vld_I, M_Axi_RResp) is
         variable v               : TwoProcess_r;
         variable WrMax4kBeats_v  : unsigned(13 - UnusedAddrBits_c downto 0);

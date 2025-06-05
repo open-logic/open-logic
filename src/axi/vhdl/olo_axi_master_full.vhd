@@ -248,7 +248,7 @@ begin
     -- *** Combinatorial Process ***
     p_comb : process (r,
                       CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat,
-                      AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data,
+                      AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data, AxiRdDat_Last,
                       WrWconv_Rdy, WrPl_Vld, WrData_Vld, WrData_Data, WrData_Last, WrData_We, RdPl_Rdy) is
         variable v              : TwoProcess_r;
         variable WriteBe_v      : std_logic_vector(AxiBytes_c - 1 downto 0);

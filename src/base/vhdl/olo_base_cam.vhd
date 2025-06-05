@@ -139,7 +139,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_cob : process (Rd_Valid, Rd_Content, Wr_Valid, Wr_Content, Wr_Addr, Wr_Write, Wr_Clear,
+    p_cob : process (Rd_Valid, Rd_Content, Wr_Valid, Wr_Content, Wr_Addr, Wr_Write, Wr_Clear, Wr_ClearAll,
                      RamRead_1, Rst, r) is
         variable v                        : TwoProcess_r;
         variable ClearMask_v, SetMask_v   : std_logic_vector(Addresses_g-1 downto 0);
