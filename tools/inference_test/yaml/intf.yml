@@ -33,6 +33,12 @@ entities:
           ClkFreq_g: 100.0e6
   # olo_intf_spi_slave
   - entity_name: "olo_intf_spi_slave"
+    configurations:
+      - name: "ext_tristate"
+        generics:
+          InternalTriState_g: false
+        omitted_ports:
+          - Spi_Miso
   # olo_intf_sync
   - entity_name: "olo_intf_sync"
   # olo_intf_uart
