@@ -29,7 +29,7 @@ declaration (keywords _in_ and _out_).
 
 ### Functions
 
-Functions shall use _lowerCamelCase_.
+Functions and procedures shall use _lowerCamelCase_.
 
 ### Constants
 
@@ -156,7 +156,7 @@ How reset **SHALL** be implemented:
 good : process(Clk)
 begin
     if rising_edge(Clk) then
-        A <= x; 
+        A <= x;
         B <= y;
         if Rst = '1' then
             A <= '0';
