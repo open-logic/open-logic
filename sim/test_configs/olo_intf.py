@@ -106,4 +106,7 @@ def add_configs(olo_tb):
     ### olo_intf_inc_encoder ###
     inc_encoder_tb = 'olo_intf_inc_encoder_tb'
     tb = olo_tb.test_bench(inc_encoder_tb)
-    named_config(tb, {'DefaultAngleResolution_g' : 1024, "PositionWidth_g" : 32})
+    named_config(tb, {
+        'DUT_PositionWidth_g' : 16,
+        'DUT_AngleWidth_g' : 12,
+        'EmulatedEncoder_Resolution_g' : format(4 * 1024, '064b')})

@@ -10,7 +10,10 @@
 -- This entity implements an interface to an incremental encoder.
 --
 -- Documentation:
--- TODO
+-- https://github.com/open-logic/open-logic/blob/main/doc/intf/olo_intf_inc_encoder.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
 -- Package for Interface Simplification
@@ -25,125 +28,138 @@ library work;
 
 entity olo_intf_inc_encoder is
     generic(
-        DefaultAngleResolution_g : positive;
-        PositionWidth_g   : positive := 32);
+        AngleWidth_g    : natural := 0;
+        PositionWidth_g : natural := 0);
     port(
-        Clk             : in  std_logic;
-        Rst             : in  std_logic;
-        Phase_A         : in  std_logic;
-        Phase_B         : in  std_logic;
-        Phase_Z         : in  std_logic := '0';
-        Position        : out std_logic_vector(PositionWidth_g - 1 downto 0);
-        Clear_Position  : in  std_logic := '0';
-        Angle           : out std_logic_vector(PositionWidth_g - 1 downto 0);
-        Clear_Angle     : in  std_logic := '0';
-        AngleResolution : in  std_logic_vector(PositionWidth_g - 1 downto 0) := toUslv(DefaultAngleResolution_g, PositionWidth_g);
-        Event_Up        : out std_logic;
-        Event_Down      : out std_logic;
-        Event_Index     : out std_logic);
-end entity olo_intf_inc_encoder;
+        Clk              : in  std_logic;
+        Rst              : in  std_logic;
+        Encoder_A        : in  std_logic;
+        Encoder_B        : in  std_logic;
+        Encoder_Z        : in  std_logic := '0';
+        Position_Value   : out std_logic_vector(work.olo_base_pkg_math.max(PositionWidth_g - 1, 0) downto 0);
+        Position_Clear   : in  std_logic := '0';
+        Angle_Value      : out std_logic_vector(work.olo_base_pkg_math.max(AngleWidth_g - 1, 0) downto 0);
+        Angle_Clear      : in  std_logic := '0';
+        Angle_Resolution : in  std_logic_vector(AngleWidth_g downto 0) := (AngleWidth_g => '1', others => '0');
+        Event_Up         : out std_logic;
+        Event_Down       : out std_logic;
+        Event_Index      : out std_logic);
+end entity;
 
 architecture rtl of olo_intf_inc_encoder is
-    
+
     -- The values of the encoder phase signals from the prior clock cycle.
-    signal Phase_A_Prior : std_logic;
-    signal Phase_B_Prior : std_logic;
-    signal Phase_Z_Prior : std_logic;
+    signal Encoder_A_Prior : std_logic;
+    signal Encoder_B_Prior : std_logic;
+    signal Encoder_Z_Prior : std_logic;
 
-    -- Encoder position value as a numeric_std.unsigned.
-    signal Position_U : unsigned(Position'range);
+    -- Port 'Position_Value' as a numeric_std unsigned.
+    signal Position_Value_U : unsigned(Position_Value'range);
 
-    -- Encoder angle value as a numeric_std.unsigned.
-    signal Angle_U : unsigned(Angle'range);
+    -- Port 'Angle_Value' as a numeric_std unsigned.
+    signal Angle_Value_U : unsigned(Angle_Value'range);
+
+    -- Heighest value of the angle counter for the given resolution, before a wrap-around.
+    signal Angle_Limit : unsigned(Angle_Value'range);
+
+    -- Maximum valid value of 'Angle_Resolution'.
+    constant Angle_ResolutionMaximum : unsigned(Angle_Resolution'range) := (Angle_Resolution'high => '1', others => '0');
 
 begin
 
-    Position <= std_logic_vector(Position_U);
-    Angle <= std_logic_vector(Angle_U);
-    
+    proc_always : process (all)
+    begin
+
+        -- Verify if the value of 'Angle_Resolution' is valid.
+        assert unsigned(Angle_Resolution) <= Angle_ResolutionMaximum report
+            "The requested angle resolution cannot be represented by the configured angle width."
+            severity error;
+        assert Angle_Resolution(1 downto 0) = "00" report
+            "For a quadrature encoder the resolution must be divisable by 4."
+            severity error;
+
+        -- Convert entity ports to appropriate types.
+        Position_Value <= std_logic_vector(Position_Value_U);
+        Angle_Value <= std_logic_vector(Angle_Value_U);
+
+        -- Calculate the angle limit.
+        Angle_Limit <= resize(unsigned(Angle_Resolution) - 1, Angle_Limit'length);
+
+    end process;
+
     proc_main : process is
-        variable IncrementEventOccurred : boolean;
-        variable DecrementEventOccurred : boolean;
-        variable IndexEventOccurred     : boolean;
+        variable IncrementEventOccurred_v : boolean;
+        variable DecrementEventOccurred_v : boolean;
+        variable IndexEventOccurred_v     : boolean;
     begin
 
         -- Wait for an active clock edge.
         wait until rising_edge(Clk);
 
         -- Check if an increment event has occurred.
-        IncrementEventOccurred :=
-            (Phase_A_Prior = '0' and Phase_A = '1' and Phase_B = '0') or
-            (Phase_B_Prior = '0' and Phase_B = '1' and Phase_A = '1') or
-            (Phase_A_Prior = '1' and Phase_A = '0' and Phase_B = '1') or
-            (Phase_B_Prior = '1' and Phase_B = '0' and Phase_A = '0');
+        IncrementEventOccurred_v := (Encoder_A_Prior = '0' and Encoder_A = '1' and Encoder_B = '0') or
+                                    (Encoder_B_Prior = '0' and Encoder_B = '1' and Encoder_A = '1') or
+                                    (Encoder_A_Prior = '1' and Encoder_A = '0' and Encoder_B = '1') or
+                                    (Encoder_B_Prior = '1' and Encoder_B = '0' and Encoder_A = '0');
 
         -- Check if a decrement event has occured.
-        DecrementEventOccurred :=
-            (Phase_B_Prior = '0' and Phase_B = '1' and Phase_A = '0') or
-            (Phase_A_Prior = '0' and Phase_A = '1' and Phase_B = '1') or
-            (Phase_B_Prior = '1' and Phase_B = '0' and Phase_A = '1') or
-            (Phase_A_Prior = '1' and Phase_A = '0' and Phase_B = '0');
+        DecrementEventOccurred_v := (Encoder_B_Prior = '0' and Encoder_B = '1' and Encoder_A = '0') or
+                                    (Encoder_A_Prior = '0' and Encoder_A = '1' and Encoder_B = '1') or
+                                    (Encoder_B_Prior = '1' and Encoder_B = '0' and Encoder_A = '1') or
+                                    (Encoder_A_Prior = '1' and Encoder_A = '0' and Encoder_B = '0');
 
         -- Check if an index event has occurred.
-        IndexEventOccurred := Phase_Z_Prior = '0' and Phase_Z = '1';
+        IndexEventOccurred_v := Encoder_Z_Prior = '0' and Encoder_Z = '1';
 
         -- Update event output signals.
-        Event_Up    <= '1' when IncrementEventOccurred else '0';
-        Event_Down  <= '1' when DecrementEventOccurred else '0';
-        Event_Index <= '1' when IndexEventOccurred     else '0';
+        Event_Up    <= '1' when IncrementEventOccurred_v else '0';
+        Event_Down  <= '1' when DecrementEventOccurred_v else '0';
+        Event_Index <= '1' when IndexEventOccurred_v     else '0';
 
-        -- Update position counter.
-        if Clear_Position = '1' then
-            Position_U <= (others => '0');
+        -- Update position and angle counters.
 
-        elsif IncrementEventOccurred and DecrementEventOccurred then
-            Position_U <= Position_U;
+        if IncrementEventOccurred_v and not DecrementEventOccurred_v then
+            Position_Value_U <= Position_Value_U + 1;
+            Angle_Value_U <= (others => '0') when Angle_Value_U = Angle_Limit else Angle_Value_U + 1;
 
-        elsif IncrementEventOccurred then
-            Position_U <= Position_U + 1;
-
-        elsif DecrementEventOccurred then
-            Position_U <= Position_U - 1;
+        elsif DecrementEventOccurred_v and not IncrementEventOccurred_v then
+            Position_Value_U <= Position_Value_U - 1;
+            Angle_Value_U <= Angle_Limit when Angle_Value_U = unsigned(zerosVector(Angle_Value_U'length)) else Angle_Value_U - 1;
 
         end if;
 
-        -- Update angle counter.
-        if Clear_Angle = '1' then
-            Angle_U <= (others => '0');
-
-        elsif IndexEventOccurred then
-            Angle_U <= (others => '0');
-
-        elsif IncrementEventOccurred and DecrementEventOccurred then
-            Angle_U <= Angle_U;
-
-        elsif IncrementEventOccurred then
-            Angle_U <=
-                (others => '0') when Angle_U = unsigned(AngleResolution)
-                else Angle_U + 1 ;
-
-        elsif DecrementEventOccurred then
-            Angle_U <=
-                unsigned(AngleResolution) when Angle_U = unsigned(zerosVector(Angle_U'length))
-                else Angle_U - 1;
-
+        if Position_Clear = '1' then
+            Position_Value_U <= (others => '0');
         end if;
 
-        -- Update prior samples of the encoder phase signals.
-        Phase_A_Prior <= Phase_A;
-        Phase_B_Prior <= Phase_B;
-        Phase_Z_Prior <= Phase_Z;
+        if Angle_Clear = '1' or IndexEventOccurred_v then
+            Angle_Value_U <= (others => '0');
+        end if;
+
+        -- Update 'prior' values of the encoder phase signals.
+        Encoder_A_Prior <= Encoder_A;
+        Encoder_B_Prior <= Encoder_B;
+        Encoder_Z_Prior <= Encoder_Z;
+
+        -- Overwrite if position counter has been configured not to be used.
+        if PositionWidth_g = 0 then
+            Position_Value_U <= (others => '0');
+        end if;
+
+        -- Overwrite if angle counter has been configured not to be used.
+        if AngleWidth_g = 1 then
+            Angle_Value_U <= (others => '0');
+        end if;
 
         -- Reset logic.
         if Rst = '1' then
-            Position_U  <= (others => '0');
-            Angle_U     <= (others => '0');
-            Event_Up    <= '0';
-            Event_Down  <= '0';
-            Event_Index <= '0';
+            Position_Value_U <= (others => '0');
+            Angle_Value_U    <= (others => '0');
+            Event_Up         <= '0';
+            Event_Down       <= '0';
+            Event_Index      <= '0';
         end if;
 
-    end process proc_main;
+    end process;
 
-end architecture rtl;
-
+end architecture;
