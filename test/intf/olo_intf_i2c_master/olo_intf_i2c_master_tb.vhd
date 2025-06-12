@@ -673,49 +673,81 @@ begin
     -----------------------------------------------------------------------------------------------
     -- DUT
     -----------------------------------------------------------------------------------------------
-    i_dut : entity olo.olo_intf_i2c_master
-        generic map (
-            ClkFrequency_g      => Clk_Frequency_c,
-            I2cFrequency_g      => real(BusFrequency_g),
-            BusBusyTimeout_g    => BusBusyTimeout_c,
-            CmdTimeout_g        => CmdTimeout_c,
-            InternalTriState_g  => InternalTriState_g,
-            DisableAsserts_g    => true
-        )
-        port map (
-            -- Control Signals
-            Clk             => Clk,
-            Rst             => Rst,
-            -- Command Interface
-            Cmd_Ready       => Cmd_Ready,
-            Cmd_Valid       => Cmd_Valid,
-            Cmd_Command     => Cmd_Command,
-            Cmd_Data        => Cmd_Data,
-            Cmd_Ack         => Cmd_Ack,
-            -- Response Interface
-            Resp_Valid      => Resp_Valid,
-            Resp_Command    => Resp_Command,
-            Resp_Data       => Resp_Data,
-            Resp_Ack        => Resp_Ack,
-            Resp_ArbLost    => Resp_ArbLost,
-            Resp_SeqErr     => Resp_SeqErr,
-            -- Status Interface
-            Status_BusBusy  => Status_BusBusy,
-            Status_CmdTo    => Status_CmdTo,
-            -- I2c Interface with internal Tri-State
-            I2c_Scl         => I2c_Scl,
-            I2c_Sda         => I2c_Sda,
-            -- I2c Interface with external Tri-State
-            I2c_Scl_i       => I2c_Scl_i,
-            I2c_Scl_o       => I2c_Scl_o,
-            I2c_Scl_t       => I2c_Scl_t,
-            I2c_Sda_i       => I2c_Sda_i,
-            I2c_Sda_o       => I2c_Sda_o,
-            I2c_Sda_t       => I2c_Sda_t
-        );
+    g_internal_tristate : if InternalTriState_g = true generate
+        i_dut : entity olo.olo_intf_i2c_master
+            generic map (
+                ClkFrequency_g      => Clk_Frequency_c,
+                I2cFrequency_g      => real(BusFrequency_g),
+                BusBusyTimeout_g    => BusBusyTimeout_c,
+                CmdTimeout_g        => CmdTimeout_c,
+                InternalTriState_g  => InternalTriState_g,
+                DisableAsserts_g    => true
+            )
+            port map (
+                -- Control Signals
+                Clk             => Clk,
+                Rst             => Rst,
+                -- Command Interface
+                Cmd_Ready       => Cmd_Ready,
+                Cmd_Valid       => Cmd_Valid,
+                Cmd_Command     => Cmd_Command,
+                Cmd_Data        => Cmd_Data,
+                Cmd_Ack         => Cmd_Ack,
+                -- Response Interface
+                Resp_Valid      => Resp_Valid,
+                Resp_Command    => Resp_Command,
+                Resp_Data       => Resp_Data,
+                Resp_Ack        => Resp_Ack,
+                Resp_ArbLost    => Resp_ArbLost,
+                Resp_SeqErr     => Resp_SeqErr,
+                -- Status Interface
+                Status_BusBusy  => Status_BusBusy,
+                Status_CmdTo    => Status_CmdTo,
+                -- I2c Interface with internal Tri-State
+                I2c_Scl         => I2c_Scl,
+                I2c_Sda         => I2c_Sda
+            );
+    end generate;
 
     g_external_tristate : if InternalTriState_g = false generate
-        -- Internal Tri-State
+        i_dut : entity olo.olo_intf_i2c_master
+            generic map (
+                ClkFrequency_g      => Clk_Frequency_c,
+                I2cFrequency_g      => real(BusFrequency_g),
+                BusBusyTimeout_g    => BusBusyTimeout_c,
+                CmdTimeout_g        => CmdTimeout_c,
+                InternalTriState_g  => InternalTriState_g,
+                DisableAsserts_g    => true
+            )
+            port map (
+                -- Control Signals
+                Clk             => Clk,
+                Rst             => Rst,
+                -- Command Interface
+                Cmd_Ready       => Cmd_Ready,
+                Cmd_Valid       => Cmd_Valid,
+                Cmd_Command     => Cmd_Command,
+                Cmd_Data        => Cmd_Data,
+                Cmd_Ack         => Cmd_Ack,
+                -- Response Interface
+                Resp_Valid      => Resp_Valid,
+                Resp_Command    => Resp_Command,
+                Resp_Data       => Resp_Data,
+                Resp_Ack        => Resp_Ack,
+                Resp_ArbLost    => Resp_ArbLost,
+                Resp_SeqErr     => Resp_SeqErr,
+                -- Status Interface
+                Status_BusBusy  => Status_BusBusy,
+                Status_CmdTo    => Status_CmdTo,
+                -- I2c Interface with internal Tri-State
+                I2c_Scl_i       => I2c_Scl_i,
+                I2c_Scl_t       => I2c_Scl_t,
+                I2c_Scl_o       => I2c_Scl_o,
+                I2c_Sda_i       => I2c_Sda_i,
+                I2c_Sda_t       => I2c_Sda_t,
+                I2c_Sda_o       => I2c_Sda_o
+            );
+
         I2c_Scl   <= 'Z' when I2c_Scl_t = '1' else I2c_Scl_o;
         I2c_Sda   <= 'Z' when I2c_Sda_t = '1' else I2c_Sda_o;
         I2c_Scl_i <= to01X(I2c_Scl);
