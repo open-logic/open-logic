@@ -674,6 +674,7 @@ begin
     -- DUT
     -----------------------------------------------------------------------------------------------
     g_internal_tristate : if InternalTriState_g = true generate
+
         i_dut : entity olo.olo_intf_i2c_master
             generic map (
                 ClkFrequency_g      => Clk_Frequency_c,
@@ -707,9 +708,11 @@ begin
                 I2c_Scl         => I2c_Scl,
                 I2c_Sda         => I2c_Sda
             );
+
     end generate;
 
     g_external_tristate : if InternalTriState_g = false generate
+
         i_dut : entity olo.olo_intf_i2c_master
             generic map (
                 ClkFrequency_g      => Clk_Frequency_c,
@@ -752,6 +755,7 @@ begin
         I2c_Sda   <= 'Z' when I2c_Sda_t = '1' else I2c_Sda_o;
         I2c_Scl_i <= to01X(I2c_Scl);
         I2c_Sda_i <= to01X(I2c_Sda);
+
     end generate;
 
     -----------------------------------------------------------------------------------------------
