@@ -44,7 +44,7 @@ entity olo_axi_master_full is
         AxiMaxBeats_g              : natural range 1 to 256  := 256;
         AxiMaxOpenTransactions_g   : natural range 1 to 8    := 8;
         -- User Configuration
-        UserTransactionSizeBits_g  : natural                 := 32;
+        UserTransactionSizeBits_g  : natural                 := 24;
         DataFifoDepth_g            : natural                 := 1024;
         UserDataWidth_g            : natural                 := 32;
         ImplRead_g                 : boolean                 := true;
