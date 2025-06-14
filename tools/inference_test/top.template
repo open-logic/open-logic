@@ -7,6 +7,8 @@ library olo;
     use olo.olo_base_pkg_logic.all;
     use olo.olo_base_pkg_array.all;
     use olo.olo_base_pkg_string.all;
+    use olo.olo_fix_pkg.all;
+    use olo.en_cl_fix_pkg.all;
 
 entity test is
     generic (
@@ -15,15 +17,39 @@ entity test is
         {%- endfor %}
     );
     port (
-        {%- for port in ports %}
-        {{port.name}} : {{port.direction}} {{port.type}}{% if not loop.last %};{% endif %}
+        {%- for port in top_ports %}
+        {{port.name}} : {{port.direction}} {{port.type}};
         {%- endfor %}
+        -- Framework Signals
+        {%- if in_reduce %}
+        -- Input reduction signals
+        InReduce_Data : in std_logic;
+        InReduce_Latch : in std_logic;
+        {%- endif %}
+        {%- if out_reduce %}
+        -- Output reduction signals
+        OutReduce_Data : out std_logic;
+        OutReduce_Latch : in std_logic;
+        {%- endif %}
+        -- Some tools crash with no logic, so we always add one FF
+        Framework_Clk : in std_logic;
+        Framework_Din : in std_logic;
+        Framework_Dout : out std_logic
     );
 end entity;
 
 architecture rtl of test is
+    -- Input reduction signals
+    {%- for red in in_reduce %}
+    signal {{red.port}} : std_logic_vector({{red.high}} downto {{red.low}});
+    {%- endfor %}
+    -- Output reduction signals
+    {%- for red in out_reduce %}
+    signal {{red.port}} : std_logic_vector({{red.high}} downto {{red.low}});
+    {%- endfor %}
 begin
 
+    -- Device unter Test
     i_dut : entity olo.{{entity_name}}
         generic map (
             {%- for generic in generics %}
@@ -35,5 +61,45 @@ begin
             {{port.name}} => {{port.name}}{% if not loop.last %},{% endif %}
             {%- endfor %}
         );
+
+    -- Some tools crash with no logic, so we always add one FF
+    i_ff : process (Framework_Clk)
+    begin
+        if rising_edge(Framework_Clk) then
+            Framework_Dout <= Framework_Din;
+        end if;
+    end process;
+
+    {% if in_reduce %}
+    -- Input reduction logic
+    i_in_reduce : entity work.in_reduce
+        generic map (
+            Size_g => {{in_reduce_total}}
+        )
+        port map (
+            Data        => InReduce_Data,
+            Latch       => InReduce_Latch,
+            {%- for red in in_reduce %}
+            DutPorts({{red.high}} downto {{red.low}}) => {{red.port}},
+            {%- endfor %}
+            Clk         => Framework_Clk
+        );
+    {%- endif %}
+
+    {% if out_reduce %}
+    -- Output reduction logic
+    i_out_reduce : entity work.out_reduce
+        generic map (
+            Size_g => {{out_reduce_total}}
+        )
+        port map (
+            Data        => OutReduce_Data,
+            Latch       => OutReduce_Latch,
+            {%- for red in out_reduce %}
+            DutPorts({{red.high}} downto {{red.low}}) => {{red.port}},
+            {%- endfor %}
+            Clk         => Framework_Clk
+        );
+    {%- endif %}
 
 end;

@@ -60,7 +60,7 @@ class ToolVivado(ToolBase):
 
     def _extract_resource_count(self, line) -> str:
         field = line.split("|")[2].strip()
-        return str(field.replace(",",""))
+        return float(field.replace(",",""))
     
     def get_resource_usage(self) -> dict:
         resource_usage = {
@@ -86,5 +86,21 @@ class ToolVivado(ToolBase):
                     resource_usage["DSPs"] = self._extract_resource_count(line)
 
         return resource_usage
+
+    def get_in_reduce_resources(self, size) -> dict:
+        return {
+            "Block RAM Tile": 0,
+            "DSPs": 0,
+            "Slice LUTs": 0,
+            "Slice Registers": size*2
+        }
+    
+    def get_out_reduce_resources(self, size) -> dict:
+        return {
+            "Block RAM Tile": 0,
+            "DSPs": 0,
+            "Slice LUTs": int(0.5 * size),
+            "Slice Registers": size
+        }
 
     

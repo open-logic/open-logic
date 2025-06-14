@@ -33,6 +33,8 @@ args = parser.parse_args()
 
 # Constants
 SYN_FILE = os.path.abspath("./test.vhd")
+IN_REDUCE_FILE = os.path.abspath("./vhdl/in_reduce.vhd")
+OUT_REDUCE_FILE = os.path.abspath("./vhdl/out_reduce.vhd")
 OUT_PATH = os.path.abspath("./results")
 
 # Parse the YAML file
@@ -102,8 +104,13 @@ if __name__ == '__main__':
                         start = datetime.now()
                         print(f"    > Config: {config:30} ", end="")
                         top_file.create_syn_file(out_file=SYN_FILE, entity_collection=ec, config_name=config, tool_name=tool_name)
-                        tool.sythesize(files=[SYN_FILE], top_entity="test")
-                        resource_results.add_results(config, tool.get_resource_usage())
+                        tool.sythesize(files=[SYN_FILE, IN_REDUCE_FILE, OUT_REDUCE_FILE], top_entity="test")
+                        #Calculate real resources
+                        in_red_size, out_red_size = top_file.get_last_syn_reduction()
+                        resources_measured = tool.get_resource_usage()
+                        resources_total = {k: resources_measured[k] - tool.get_in_reduce_resources(in_red_size)[k] - tool.get_out_reduce_resources(out_red_size)[k] for k in resources_measured}
+                        #Result handling
+                        resource_results.add_results(config, resources_total)
                         end = datetime.now()
                         runtime = end - start
                         runtime_str = f"{runtime.seconds // 60:02}:{runtime.seconds % 60:02}"

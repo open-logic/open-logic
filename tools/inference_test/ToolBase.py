@@ -39,3 +39,9 @@ class ToolBase:
 
     def get_resource_usage(self) -> dict:
         pass
+
+    def get_in_reduce_resources(self, size) -> dict:
+        raise NotImplementedError("This method should be implemented by subclasses.")
+    
+    def get_out_reduce_resources(self, size) -> dict:
+        raise NotImplementedError("This method should be implemented by subclasses.")

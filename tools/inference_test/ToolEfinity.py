@@ -56,7 +56,7 @@ class ToolEfinity(ToolBase):
         return "Efinity: Version cannot be retrieved from commandline."
 
     def _extract_resource_count(self, field) -> str:
-        return field.strip().split("(")[0]
+        return float(field.strip().split("(")[0])
     
     def get_resource_usage(self) -> dict:
 
@@ -83,5 +83,21 @@ class ToolEfinity(ToolBase):
                     resource_usage["DSPs"] = self._extract_resource_count(fields[5])
 
         return resource_usage
+    
+    def get_in_reduce_resources(self, size) -> dict:
+        return {
+            "FFs": size*2,
+            "LUTs": 0,
+            "RAMs": 0,
+            "DSPs": 0
+        }
+
+    def get_out_reduce_resources(self, size) -> dict:
+        return {
+            "FFs": size,
+            "LUTs": size,
+            "RAMs": 0,
+            "DSPs": 0
+        }
 
     

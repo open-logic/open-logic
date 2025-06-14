@@ -59,7 +59,7 @@ class ToolQuartus(ToolBase):
         return output
 
     def _extract_resource_count(self, line) -> int:
-        return int(line.split(":")[1].split("/")[0].strip().replace(",",""))
+        return float(line.split(":")[1].split("/")[0].strip().replace(",",""))
     
     def get_resource_usage(self) -> dict:
         resource_usage = {
@@ -83,5 +83,20 @@ class ToolQuartus(ToolBase):
                     resource_usage["Registers"] = self._extract_resource_count(line)
 
         return resource_usage
-
     
+    def get_in_reduce_resources(self, size) -> dict:
+        return {
+            "RAM_blocks": 0,
+            "DSP_blocks": 0,
+            "ALMs": int(0.5 * size),
+            "Registers": int(-1 + 2.24*size)
+        }
+    
+    def get_out_reduce_resources(self, size) -> dict:
+        return {
+            "RAM_blocks": 0,
+            "DSP_blocks": 0,
+            "ALMs": int(0.5 * size),
+            "Registers": size
+        }
+

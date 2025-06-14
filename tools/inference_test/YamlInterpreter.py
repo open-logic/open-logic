@@ -43,10 +43,14 @@ class YamlInterpreter:
                 config_name = config.get("name")
                 generics = config.get("generics", {})
                 omitted_ports = config.get("omitted_ports", [])
+                in_reduce = config.get("in_reduce", {})
+                out_reduce = config.get("out_reduce", {})
                 parsed_configurations.append({
                     "name": config_name,
                     "generics": generics,
-                    "omitted_ports": omitted_ports
+                    "omitted_ports": omitted_ports,
+                    "in_reduce": in_reduce,
+                    "out_reduce": out_reduce
                 })
 
             # Add parsed entity
@@ -100,6 +104,6 @@ class YamlInterpreter:
                 top.add_config("Default", {})
             else:
                 for config in entity["configurations"]:
-                    top.add_config(config["name"], config["generics"], config["omitted_ports"])
+                    top.add_config(config["name"], config["generics"], config["omitted_ports"], config["in_reduce"], config["out_reduce"])
             top_levels.append(top)
         return top_levels
