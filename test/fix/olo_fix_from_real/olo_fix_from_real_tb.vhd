@@ -52,6 +52,7 @@ architecture sim of olo_fix_from_real_tb is
     signal In_Value         : real := 0.0;
     signal Out_ValuePort    : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
     signal Out_ValueGeneric : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
+    signal Out_ValueSynth   : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
 
 begin
 
@@ -92,7 +93,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- DUT
     -----------------------------------------------------------------------------------------------
-    i_dut_port : entity olo.olo_fix_from_real
+    i_dut_port : entity olo.olo_fix_sim_from_real
         generic map (
             ResultFmt_g => ResultFmt_g,
             Saturate_g  => Saturate_g
@@ -102,7 +103,7 @@ begin
             Out_Value => Out_ValuePort
         );
 
-    i_dut_generic : entity olo.olo_fix_from_real
+    i_dut_generic : entity olo.olo_fix_sim_from_real
         generic map (
             ResultFmt_g => ResultFmt_g,
             Saturate_g  => Saturate_g,
@@ -110,6 +111,16 @@ begin
         )
         port map (
             Out_Value => Out_ValueGeneric
+        );
+
+    i_dut_synth : entity olo.olo_fix_from_real
+        generic map (
+            ResultFmt_g => ResultFmt_g,
+            Saturate_g  => Saturate_g,
+            Value_g     => real'VALUE(Value_g)
+        )
+        port map (
+            Out_Value => Out_ValueSynth
         );
 
 end architecture;
