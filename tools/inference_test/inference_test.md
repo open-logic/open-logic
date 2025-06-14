@@ -38,7 +38,7 @@ files:
     - "debug_*"
 ```
 
-This section defines what files to parse for entities. 
+This section defines what files to parse for entities.
 
 ### Excluded Entities
 
@@ -102,7 +102,7 @@ Then the `configurations`are given. Every configuration can _optionally_ have th
   - This can be useful to see resource usage  with some ports not connected.
   - This also can be useful to limit the I/O count*
 - Reduction of input (`in_reduce`) and output (`out_reduce`) ports
-  - This leads to the listed ports being connected to shift registers. 
+  - This leads to the listed ports being connected to shift registers.
   - These ports are not optimized away and hence resources are reported correctly
   - This also can be useful to limit the I/O count*
   - The approximate amount of resource introduced by the shift registers is subtracted from the reported resources
