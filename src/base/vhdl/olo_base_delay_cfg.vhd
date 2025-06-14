@@ -84,7 +84,7 @@ begin
                     -- ... this is the case for all powers of 2 (which are often used values for digital
                     -- designers))
                     RdAddr_v := std_logic_vector(unsigned(WrAddr) - unsigned(Delay) + 3);
-                    RdAddr <= RdAddr_v(RdAddr'range);
+                    RdAddr   <= RdAddr_v(RdAddr'range);
                 end if;
 
                 -- Reset
