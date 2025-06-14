@@ -11,7 +11,6 @@
 -- This is useful for synthesis tools that cannot complete synthesis for designs with more I/Os
 -- than the target device.
 
-
 ---------------------------------------------------------------------------------------------------
 -- Libraries
 ---------------------------------------------------------------------------------------------------
@@ -24,7 +23,7 @@ library ieee;
 ---------------------------------------------------------------------------------------------------
 entity out_reduce is
     generic (
-        Size_g : natural := 8 
+        Size_g : natural := 8
     );
     port (
         -- Control Ports
@@ -43,7 +42,7 @@ architecture rtl of out_reduce is
 
 begin
 
-    p_reduce : process(Clk)
+    p_reduce : process (Clk) is
     begin
         if rising_edge(Clk) then
             ShiftReg <= ShiftReg(Size_g - 2 downto 0) & '0';
