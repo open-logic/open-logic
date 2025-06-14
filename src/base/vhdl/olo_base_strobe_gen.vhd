@@ -52,7 +52,7 @@ end entity;
 architecture rtl of olo_base_strobe_gen is
 
     -- Counter Period
-    constant PeriodCountsFractional_c : integer := integer(work.olo_base_pkg_math.min(round(FreqClkHz_g / FreqStrobeHz_g * 100.0 ), real(integer'high)));
+    constant PeriodCountsFractional_c : integer := integer(work.olo_base_pkg_math.min(round(FreqClkHz_g / FreqStrobeHz_g * 100.0), real(integer'high)));
     constant PeriodCountsInteger_c    : integer := integer(round(FreqClkHz_g / FreqStrobeHz_g));
     constant PeriodCounts_c           : integer := choose(FractionalMode_g, PeriodCountsFractional_c, PeriodCountsInteger_c);
 
