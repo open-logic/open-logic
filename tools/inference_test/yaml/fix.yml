@@ -2,6 +2,11 @@ files:
   include:
     - "../../../src/fix/**/*.vhd"  # Glob expressions for files to parse
 
+exclude_entities:
+  - "olo_fix_sim_*" # Simulation only
+  - "olo_fix_to_real" # Simulation only
+  - "olo_fix_private_*" # Private entities
+
 entities:
   # olo_fix_abs
   - entity_name: "olo_fix_abs"

@@ -2,6 +2,9 @@ files:
   include:
     - "../../../src/base/**/*.vhd"  # Glob expressions for files to parse
 
+exclude_entities:
+  - "olo_private_*" # Private entities
+
 entities:
   # olo_base_arb_prio
   - entity_name: "olo_base_arb_prio"

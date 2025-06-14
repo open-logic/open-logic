@@ -27,6 +27,7 @@ class YamlInterpreter:
         files = data.get("files", {})
         include_patterns = files.get("include", [])
         exclude_patterns = files.get("exclude", [])
+        exclude_entities = files.get("exclude_entities", [])
 
         # Validate and process the "entities" section
         entities = data.get("entities", [])
@@ -60,6 +61,9 @@ class YamlInterpreter:
                 "configurations": parsed_configurations,
                 "tool_generics": tool_generics
             })
+        
+        # Get excluded entities
+        exclude_entities = data.get("exclude_entities", [])
 
         return {
             "files": {
@@ -67,6 +71,7 @@ class YamlInterpreter:
                 "exclude": exclude_patterns
             },
             "entities": parsed_entities,
+            "exclude_entities": exclude_entities
         }
 
 
@@ -85,6 +90,13 @@ class YamlInterpreter:
                     matched_files.append(abs_path)
 
         return matched_files
+    
+    @property
+    def exclude_entities(self):
+        """
+        Returns a list of entities that are excluded from the test.
+        """
+        return self.data.get("exclude_entities", [])
     
     def get_top_levels(self):
         """

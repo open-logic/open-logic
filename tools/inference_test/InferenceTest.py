@@ -29,6 +29,10 @@ parser.add_argument("--yml", type=str, required=True,
                     help="Path to the YAML file describing the test.")
 parser.add_argument("--no-tables", action="store_true",
                     help="Suppress printing resource tables to stdout.")
+parser.add_argument("--check-coverage", action="store_true",
+                    help="Check if all entities in the analyzed files are synthesized at least once.")
+parser.add_argument("--dry-run", action="store_true",
+                     help="Execute all steps except the actual synthesis (no synthesis will be run).")
 args = parser.parse_args()
 
 # Constants
@@ -47,6 +51,19 @@ top_files = {x.entity : x for x in intp.get_top_levels()}
 ec = EntityCollection()
 for file in intp.files:
     ec.parse_vhdl_file(file)
+
+# Check if all entities are covered
+if args.check_coverage:
+    entities_present = set(ec.entities.keys())
+    entities_covered = set(top_files.keys())
+    entities_ignored = set(intp.exclude_entities)
+    entities_uncovered = entities_present - entities_covered
+    entities_uncovered = {e for e in entities_uncovered if not any([__import__('fnmatch').fnmatch(e, pat) for pat in intp.exclude_entities])}
+    if len(entities_uncovered) > 0:
+        print("ERROR: Not all entities are covered by the test!")
+        for entity in entities_uncovered:
+            print(f"  - {entity}")
+        exit(1)
 
 # Selected entity
 if args.entity:
@@ -101,16 +118,20 @@ if __name__ == '__main__':
                         
                     # Iterate through configs
                     for config in configs:
+                        #Setup synthesis run
                         start = datetime.now()
                         print(f"    > Config: {config:30} ", end="")
                         top_file.create_syn_file(out_file=SYN_FILE, entity_collection=ec, config_name=config, tool_name=tool_name)
-                        tool.sythesize(files=[SYN_FILE, IN_REDUCE_FILE, OUT_REDUCE_FILE], top_entity="test")
-                        #Calculate real resources
-                        in_red_size, out_red_size = top_file.get_last_syn_reduction()
-                        resources_measured = tool.get_resource_usage()
-                        resources_total = {k: resources_measured[k] - tool.get_in_reduce_resources(in_red_size)[k] - tool.get_out_reduce_resources(out_red_size)[k] for k in resources_measured}
-                        #Result handling
-                        resource_results.add_results(config, resources_total)
+                        #Execute synthesis
+                        if not args.dry_run:
+                            tool.sythesize(files=[SYN_FILE, IN_REDUCE_FILE, OUT_REDUCE_FILE], top_entity="test")
+                            #Calculate real resources
+                            in_red_size, out_red_size = top_file.get_last_syn_reduction()
+                            resources_measured = tool.get_resource_usage()
+                            resources_total = {k: resources_measured[k] - tool.get_in_reduce_resources(in_red_size)[k] - tool.get_out_reduce_resources(out_red_size)[k] for k in resources_measured}
+                            resources_total = {k: max(0.0, v) for k, v in resources_total.items()} #-1 values can happen du to incorrect corresction of iniput and output reduction
+                            #Result handling
+                            resource_results.add_results(config, resources_total)
                         end = datetime.now()
                         runtime = end - start
                         runtime_str = f"{runtime.seconds // 60:02}:{runtime.seconds % 60:02}"
