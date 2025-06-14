@@ -1,0 +1,109 @@
+files:
+  include:
+    - "../../../src/fix/**/*.vhd"  # Glob expressions for files to parse
+
+entities:
+  # olo_fix_abs
+  - entity_name: "olo_fix_abs"
+    configurations:
+      - name: "1-8-8-->0-4-4"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          ResultFmt_g: '"(0,4,4)"'
+  # olo_fix_add
+  - entity_name: "olo_fix_add"
+    configurations:
+      - name: "1-8-8-->0-4-4"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          BFmt_g: '"(1,8,8)"'
+          ResultFmt_g: '"(0,4,4)"'
+  # olo_fix_addsub
+  - entity_name: "olo_fix_addsub"
+    configurations:
+      - name: "1-8-8-->0-4-4"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          BFmt_g: '"(1,8,8)"'
+          ResultFmt_g: '"(0,4,4)"'
+  # olo_fix_compare
+  - entity_name: "olo_fix_compare"
+    configurations:
+      - name: "1-8-8-vs-0-4-4"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          BFmt_g: '"(0,4,4)"'
+          Comparison_g: '">="'
+  # olo_fix_from_real
+  - entity_name: "olo_fix_from_real"
+    configurations:
+      - name: "1-8-8"
+        generics:
+          ResultFmt_g: '"(1,8,8)"'
+          Value_g: 1.2345
+  # olo_fix_limit
+  - entity_name: "olo_fix_limit"
+    configurations:
+      - name: "1-8-8-->0-4-4"
+        generics:
+          InFmt_g: '"(1,8,8)"'
+          LimLoFmt_g: '"(0,4,4)"'
+          LimHiFmt_g: '"(0,4,4)"'
+          ResultFmt_g: '"(0,4,4)"'
+  # olo_fix_mult
+  - entity_name: "olo_fix_mult"
+    configurations:
+      - name: "18x18"
+        generics:
+          AFmt_g: '"(1,7,10)"'
+          BFmt_g: '"(1,7,10)"'
+          ResultFmt_g: '"(1,15,20)"'
+      - name: "32x32"
+        generics:
+          AFmt_g: '"(1,0,31)"'
+          BFmt_g: '"(1,0,31)"'
+          ResultFmt_g: '"(1,1,62)"'
+          OpRegs_g: 6
+        in_reduce:
+          In_A: 32
+          In_B: 32
+        out_reduce:
+          Out_Result: 64
+  # olo_fix_neg
+  - entity_name: "olo_fix_neg"
+    configurations:
+      - name: "1-8-8-->1-4-4"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          ResultFmt_g: '"(1,4,4)"'
+  # olo_fix_resize
+  - entity_name: "olo_fix_resize"
+    configurations:
+      - name: "1-8-8-->0-4-4"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          ResultFmt_g: '"(0,4,4)"'
+  # olo_fix_round
+  - entity_name: "olo_fix_round"
+    configurations:
+      - name: "1-8-8-->1,9,4"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          ResultFmt_g: '"(1,9,4)"'
+          Round_g: '"NonSymPos_s"'
+  # olo_fix_saturate
+  - entity_name: "olo_fix_saturate"
+    configurations:
+      - name: "1-8-8-->1,4,8"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          ResultFmt_g: '"(1,4,8)"'
+          Saturate_g: '"Sat_s"'
+  # olo_fix_sub
+  - entity_name: "olo_fix_sub"
+    configurations:
+      - name: "1-8-8-->0-4-4"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          BFmt_g: '"(1,8,8)"'
+          ResultFmt_g: '"(0,4,4)"'
