@@ -41,7 +41,7 @@ found [here](https://ece353.engr.wisc.edu/serial-interfaces/uart-basics/).
 
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Clk  | in     | 1      | -       | Clock - Frequency must e at least **10x higher than _BaudRate_g_** |
+| Clk  | in     | 1      | -       | Clock - Frequency must be at least **10x higher than _BaudRate_g_** |
 | Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_)              |
 
 ### RX Data Interface
