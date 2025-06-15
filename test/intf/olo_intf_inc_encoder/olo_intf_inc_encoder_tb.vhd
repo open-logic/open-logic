@@ -142,7 +142,7 @@ begin
 
         end procedure;
 
-        variable ExpectedAngleValue : unsigned(63 downto 0);
+        variable TmpU64 : unsigned(63 downto 0);
 
     begin
         test_runner_setup(runner, runner_cfg);
@@ -185,8 +185,8 @@ begin
                     ClockCyclesPerStep => 10);
 
                 check_equal(DUT_Position_Value, toUslv(10_000, DUT_PositionWidth_g), "DUT 'Position_Value' is not the expected value after the positive direction rotation.");
-                ExpectedAngleValue := UnsignedMod(to_unsigned(10_000, 64), EmulatedEncoder_Resolution_g);
-                check_equal(DUT_Angle_Value, ExpectedAngleValue(DUT_Angle_Value'range), "DUT 'Angle_Value' is not the expected value after the positive direction rotation.");
+                TmpU64 := UnsignedMod(to_unsigned(10_000, 64), EmulatedEncoder_Resolution_g);
+                check_equal(DUT_Angle_Value, TmpU64(DUT_Angle_Value'range), "DUT 'Angle_Value' is not the expected value after the positive direction rotation.");
 
                 -- Rotate encoder down for some amount.
                 RotateEncoder(
@@ -195,8 +195,8 @@ begin
                     ClockCyclesPerStep => 10);
 
                 check_equal(DUT_Position_Value, toUslv(8_000, DUT_PositionWidth_g), "DUT 'Position_Value' is not the expected value after the negative direction rotation.");
-                ExpectedAngleValue := UnsignedMod(to_unsigned(8_000, 64), EmulatedEncoder_Resolution_g);
-                check_equal(DUT_Angle_Value, ExpectedAngleValue(DUT_Angle_Value'range), "DUT 'Angle_Value' is not the expected value after the negative direction rotation.");
+                TmpU64 := UnsignedMod(to_unsigned(8_000, 64), EmulatedEncoder_Resolution_g);
+                check_equal(DUT_Angle_Value, TmpU64(DUT_Angle_Value'range), "DUT 'Angle_Value' is not the expected value after the negative direction rotation.");
 
             end if;
 
@@ -287,6 +287,60 @@ begin
 
                 -- DUT 'Angle_Value' should be zero.
                 check_equal(DUT_Angle_Value, to_unsigned(0, DUT_Angle_Value'length), "DUT 'Angle_Value' was not zero as expected.");
+
+            end if;
+
+            if run("ClearAngle") then
+
+                -- Reset DUT, and then release reset.
+                WaitForClockCycles(Clk, 1);
+                DUT_Rst <= '0';
+
+                -- Rotate upwards for 90 degrees.
+                TmpU64 := "00" & EmulatedEncoder_Resolution_g(EmulatedEncoder_Resolution_g'high downto 2);
+                RotateEncoder(
+                    StepDirection      => STEP_UP,
+                    NumberOfSteps      => TmpU64,
+                    ClockCyclesPerStep => 10);
+
+                -- Validate 'DUT' state.
+                check_equal(DUT_Angle_Value, TmpU64(DUT_Angle_Value'range), "DUT 'Angle_Value' does not correspond to 90 degrees.");
+
+                -- Clear the DUT angle counter.
+                DUT_Angle_Clear <= '1';
+                WaitForClockCycles(Clk, 1);
+                DUT_Angle_Clear <= '0';
+                WaitForClockCycles(Clk, 1);
+
+                -- Validate 'DUT' state.
+                check_equal(DUT_Angle_Value, to_unsigned(0, DUT_Angle_Value'length), "DUT 'Angle_Value' is not zero after clear.");
+
+            end if;
+
+            if run("ClearPosition") then
+
+                -- Reset DUT, and then release reset.
+                WaitForClockCycles(Clk, 1);
+                DUT_Rst <= '0';
+
+                -- Rotate upwards for half the position range.
+                TmpU64 := (DUT_PositionWidth_g - 2 => '1', others => '0');
+                RotateEncoder(
+                    StepDirection      => STEP_UP,
+                    NumberOfSteps      => TmpU64,
+                    ClockCyclesPerStep => 10);
+
+                -- Validate 'DUT' state.
+                check_equal(DUT_Position_Value, TmpU64(DUT_Position_Value'range), "DUT 'Position_Value' does correspond to 90 degrees.");
+
+                -- Clear the DUT position counter.
+                DUT_Position_Clear <= '1';
+                WaitForClockCycles(Clk, 1);
+                DUT_Position_Clear <= '0';
+                WaitForClockCycles(Clk, 1);
+
+                -- Validate 'DUT' state.
+                check_equal(DUT_Position_Value, to_unsigned(0, DUT_Position_Value'length), "DUT 'Position_Value' is not zero after clear.");
 
             end if;
 
