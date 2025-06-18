@@ -47,7 +47,7 @@
         <efx:design_file name="../../../../../src/intf/vhdl/olo_intf_clk_meas.vhd" version="vhdl_2008" library="default" />
         <efx:design_file name="../../../../../src/intf/vhdl/olo_intf_debounce.vhd" version="vhdl_2008" library="default" />
         <efx:design_file name="../../../../../src/intf/vhdl/olo_intf_i2c_master.vhd" version="vhdl_2008" library="default" />
-        <efx:design_file name="../efinity_tutorial.sv" version="vhdl_2008" library="default" />
+        <efx:design_file name="../efinity_tutorial.sv" version="default" library="default" />
         <efx:top_vhdl_arch name="" />
     </efx:design_info>
     <efx:constraint_info>
