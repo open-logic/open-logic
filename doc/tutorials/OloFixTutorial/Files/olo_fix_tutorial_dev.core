@@ -10,8 +10,8 @@ filesets:
       
   rtl:
     files:
-      - controller_olo_fix.vhd : {file_type : vhdlSource}
-      - fix_formats_pkg.vhd : {file_type : vhdlSource}
+      - controller_olo_fix.vhd : {file_type : vhdlSource-2008}
+      - fix_formats_pkg.vhd : {file_type : vhdlSource-2008}
     depend :
       - "open-logic:open-logic-dev:fix"
 
