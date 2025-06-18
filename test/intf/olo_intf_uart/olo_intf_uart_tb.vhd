@@ -79,8 +79,8 @@ architecture sim of olo_intf_uart_tb is
     constant SlaveStream_c : stream_slave_t := as_stream(SlaveUart_c);
 
     constant TxAxis_c : axi_stream_master_t := new_axi_stream_master (
-		data_length => DataBits_g
-	);
+        data_length => DataBits_g
+    );
 
     constant RxAxis_c : axi_stream_slave_t := new_axi_stream_slave (
         data_length => DataBits_g,
@@ -142,7 +142,7 @@ begin
                 check_equal(Tx_Ready, '1', "Tx_Ready not high after reset");
             end if;
 
-            -- *** Transmit***
+            -- *** Transmit ***
             if run("TxSingle") then
                 Data_v := toUslv(16#7A#, DataBits_g);
                 push_axi_stream(net, TxAxis_c, Data_v);
