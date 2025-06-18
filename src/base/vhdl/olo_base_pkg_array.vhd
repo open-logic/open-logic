@@ -20,6 +20,7 @@
 ---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Header
@@ -60,6 +61,7 @@ package olo_base_pkg_array is
     type StlvArray48_t  is array (natural range <>) of std_logic_vector(47 downto 0);
     type StlvArray64_t  is array (natural range <>) of std_logic_vector(63 downto 0);
     type StlvArray512_t is array (natural range <>) of std_logic_vector(511 downto 0);
+
 
     type IntegerArray_t is array (natural range <>) of integer;
     type RealArray_t is array (natural range <>) of real;
