@@ -44,11 +44,13 @@ namespace eval olo_import_sources {
 	foreach area {base axi intf fix} {
 		add_files $oloRoot/src/$area/vhdl
 		set_property LIBRARY olo [get_files -all *olo_$area\_*]
+		set_property FILE_TYPE {VHDL 2008} [get_files -all *olo_$area\_*]
 	}
 
 	#Add 3rd party files
 	add_files $oloRoot/3rdParty/en_cl_fix/hdl
 	set_property LIBRARY olo [get_files -all *en_cl_fix\_*]
+	set_property FILE_TYPE {VHDL 2008} [get_files -all *en_cl_fix\_*]
 
 	#For constraints, a new TCL file is created which points to 
 	#... the imported TCL files relatively from the impl_1 directory
