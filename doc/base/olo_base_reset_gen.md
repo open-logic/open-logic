@@ -25,8 +25,11 @@ on the users choice.
 The block comes with automatic constraints. For manual constraining, a `set_max_delay -datapath_only` or a
 `set_false_path` constraint is required for the _RstIn_ input (if it is used).
 
-**Note:** Automatic constraining currently only works for _AMD_ tools (_Vivado_) and the usage in VHDL. Manual
-constraints are required for Verilog or other tools.
+**Note:** Automatic constraining currently only works for _AMD_ tools (_Vivado_). Manual
+constraints are required for other tools.
+
+**Note:** For using _Open Logic_ from  in Vivado, manual constraints are required for Versions prior to 2024.2.
+Automatic constraining currently only works for verilog only since 2024.2.
 
 **WARNING:** Reset assertion upon FPGA configuration relies on the **target technology supporting specific FF
 initialization state**. For the most common target technologies (namely AMD and altera) this is given. However, for

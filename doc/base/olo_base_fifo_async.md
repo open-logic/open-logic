@@ -31,7 +31,7 @@ An asynchronous FIFO is a clock-crossing and hence this block follows the genera
 
 | Name            | Type      | Default   | Description                                                  |
 | :-------------- | :-------- | --------- | :----------------------------------------------------------- |
-| Widht_g         | positive  | -         | Number of bits per FIFO entry (word-width)                   |
+| Width_g         | positive  | -         | Number of bits per FIFO entry (word-width)                   |
 | Depth_g         | positive  | -         | Number of FIFO entries. <br />This **must** be a power of two. See [Architecture](#architecture) for more details. |
 | AlmFullOn_g     | boolean   | false     | If set to true, the _AlmFull_ (almost full) status flag is generated (otherwise it is omitted) |
 | AlmFullLevel_g  | natural   | 0         | Level to generate _AlmFull_ flag at. <br>Has no effect if _AlmFullOn_g_ = false |

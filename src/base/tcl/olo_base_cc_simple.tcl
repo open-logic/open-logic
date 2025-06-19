@@ -5,7 +5,7 @@
 #-----------------------------------------------------------------------------
 
 # Scoped constraints for olo_base_cc_simple
-# Load in vivado using "read_xdc -ref olo_base_cc_bits <path>/olo_base_cc_simple.tcl"
+# Load in vivado using "read_xdc -ref olo_base_cc_simple <path>/olo_base_cc_simple.tcl"
 
 #Get clocks based on cells, not ports because get_ports does not work reliable in scoped constraints
 set launch_clk [get_clocks -of_objects [get_cell DataLatchIn*]]

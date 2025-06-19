@@ -87,15 +87,15 @@ If you want to support the project but you do not have specific features in mind
 a look at the [Feature Ideas](https://github.com/open-logic/open-logic/wiki/Feature-Ideas) list in the Wiki or contact
 me and I will suggest features. There is always more than enough to do.
 
-### License
+### Contributor License Agreement
 
-By contributing, you agree that your contributions will be licensed under the [License.txt](./License.txt) file in the
-root directory.
+To get any contributions accepted, the _Contributors License Agreement_ (CLA) must be signed. You can do this
+through [cla-assistant.io](https://cla-assistant.io/open-logic/open-logic).
 
 ### Copyright
 
-Any contribution must give the copyright to Oliver Bründler. This is necessary to manage the project freely. Copyright
-is given by adding the copyright notice to the beginning of each file.
+Please add a copyright notice to the files you contribute. Copyright headers shall be minimal (see example below) - ofc
+ourse use your own name.
 
 ```vhdl
 Copyright (c) 2024 by Oliver Bründler
