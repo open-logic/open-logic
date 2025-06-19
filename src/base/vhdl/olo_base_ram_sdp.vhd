@@ -277,7 +277,7 @@ begin
     -- Synchronous Implementation
     g_sync : if not IsAsync_g generate
 
-        p_ram : process (Clk) is
+        p_ram : process (all) is
         begin
             if rising_edge(Clk) then
                 if RamBehavior_g = "RBW" then
@@ -305,7 +305,7 @@ begin
     g_async : if IsAsync_g generate
 
         -- Write side
-        p_write : process (Clk) is
+        p_write : process (all) is
         begin
             if rising_edge(Clk) then
                 if Wr_Ena = '1' then
@@ -315,7 +315,7 @@ begin
         end process;
 
         -- Read side
-        p_read : process (Rd_Clk) is
+        p_read : process (all) is
         begin
             if rising_edge(Rd_Clk) then
                 if Rd_Ena = '1' then

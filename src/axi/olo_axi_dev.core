@@ -6,12 +6,12 @@ description : "local files (release plus WIP); AXI related modules see https://g
 filesets:
   rtl:
     files:
+      - "vhdl/olo_axi_master_simple.vhd"
+      - "vhdl/olo_axi_pl_stage.vhd"
       - "vhdl/olo_axi_master_full.vhd"
       - "vhdl/olo_axi_lite_slave.vhd"
       - "vhdl/olo_axi_pkg_protocol.vhd"
-      - "vhdl/olo_axi_master_simple.vhd"
-      - "vhdl/olo_axi_pl_stage.vhd"
-    file_type : "vhdlSource"
+    file_type : "vhdlSource-2008"
     logical_name : "olo"
     depend :
       - "^open-logic:open-logic-dev:base:3.3.0"

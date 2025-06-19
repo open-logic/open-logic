@@ -87,7 +87,7 @@ architecture struct of olo_intf_sync is
 begin
 
     -- Synchronizer process
-    p_outff : process (Clk) is
+    p_outff : process (all) is
     begin
         if rising_edge(Clk) then
             -- *** Synchronization ***

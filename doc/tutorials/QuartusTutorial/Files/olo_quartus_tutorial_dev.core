@@ -11,7 +11,7 @@ filesets:
       
   rtl:
     files:
-      - quartus_tutorial.vhd : {file_type : vhdlSource}
+      - quartus_tutorial.vhd : {file_type : vhdlSource-2008}
     depend :
       - "open-logic:open-logic-dev:base"
       - "open-logic:open-logic-dev:intf"

@@ -77,7 +77,7 @@ architecture struct of olo_base_reset_gen is
 begin
 
     -- Reset Synchronizer
-    p_rstsync : process (Clk, RstIn) is
+    p_rstsync : process (all) is
     begin
         if RstIn = RstInPolarity_g then
             RstSyncChain <= (others => '1');
@@ -95,7 +95,7 @@ begin
     g_sync : if not AsyncResetOutput_g generate
 
         -- Synchronizer for synchronous assertion
-        p_sync : process (Clk) is
+        p_sync : process (all) is
         begin
             if rising_edge(Clk) then
                 DsSync <= DsSync(DsSync'left - 1 downto 0) & RstSyncChain(RstSyncChain'left);
@@ -109,7 +109,7 @@ begin
     g_prolong : if RstPulseCycles_g > 3 generate
 
         -- Generate Pulse
-        p_prolong : process (Clk) is
+        p_prolong : process (all) is
         begin
             if rising_edge(Clk) then
                 -- Reset

@@ -45,6 +45,9 @@ namespace eval olo_import_sources {
     # Script
     ##################################################################
 
+	#Open Logic requires VHDL 2008
+	project_settings -vhdl_mode "VHDL_2008"
+
     #Find folder of this file and olo-root folder
     variable fileLoc [file normalize [file dirname [info script]]]
     variable oloRoot [file normalize $fileLoc/../..]

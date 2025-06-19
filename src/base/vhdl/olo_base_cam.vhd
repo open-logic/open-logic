@@ -139,8 +139,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_cob : process (Rd_Valid, Rd_Content, Wr_Valid, Wr_Content, Wr_Addr, Wr_Write, Wr_Clear, Wr_ClearAll,
-                     RamRead_1, Rst, r) is
+    p_cob : process (all) is
         variable v                        : TwoProcess_r;
         variable ClearMask_v, SetMask_v   : std_logic_vector(Addresses_g-1 downto 0);
         variable InRdReady_v, InWrReady_v : std_logic;
@@ -300,7 +299,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Sequential Proccess
     -----------------------------------------------------------------------------------------------
-    p_seq : process (Clk) is
+    p_seq : process (all) is
     begin
         if rising_edge(Clk) then
             r <= r_next;

@@ -13,7 +13,7 @@ _Open Logic_ implements commonly used components in a reusable and vendor/tool-i
 permissive open source license (LGPL modified for FPGA usage, see [License.txt](./License.txt)), so the code can be used
 in commercial projects.
 
-_Open Logic_ is written in VHDL but can also be used from System Verilog easily.
+_Open Logic_ is written in VHDL-2008 but can also be used from System Verilog easily.
 
 Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 

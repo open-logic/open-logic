@@ -182,7 +182,7 @@ begin
     -- *** Pipeline Stage with RDY ***
     g_rdy : if UseReady_g generate
 
-        p_comb : process (In_Valid, In_Data, Out_Ready, r) is
+        p_comb : process (all) is
             variable v         : TwoProcess_r;
             variable IsStuck_v : boolean;
         begin
@@ -227,7 +227,7 @@ begin
         Out_Valid <= r.DataMainVld;
         Out_Data  <= r.DataMain;
 
-        p_seq : process (Clk) is
+        p_seq : process (all) is
         begin
             if rising_edge(Clk) then
                 r <= r_next;
@@ -268,7 +268,7 @@ begin
 
     begin
 
-        p_stg : process (Clk) is
+        p_stg : process (all) is
         begin
             if rising_edge(Clk) then
                 DataReg <= In_Data;

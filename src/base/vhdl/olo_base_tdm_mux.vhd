@@ -67,7 +67,7 @@ architecture rtl of olo_base_tdm_mux is
 
 begin
 
-    p_decode : process (Clk) is
+    p_decode : process (all) is
     begin
         if rising_edge(Clk) then
 

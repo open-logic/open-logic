@@ -66,6 +66,7 @@ architecture rtl of olo_base_strobe_gen is
 
 begin
 
+
     -- Fractional mode is only lsupported for a factor < 1'000'000 between FreqClkHz_g and FreqStrobeHz_g
     assert not (FractionalMode_g and (FreqClkHz_g / FreqStrobeHz_g >= 1.0e6))
         report "olo_base_strobe_gen - Fractional mode is only supported for FreqClkHz_g < 1'000'000 x FreqStrobeHz_g"
@@ -76,7 +77,7 @@ begin
         report "olo_base_strobe_gen - FreqClkHz_g / FreqStrobeHz_g must be <= 2'147'483'000"
         severity failure;
 
-    p_strobe : process (Clk) is
+    p_strobe : process (all) is
     begin
         if rising_edge(Clk) then
             -- Sync

@@ -46,6 +46,14 @@ variable y : BoolArray_t(0 to 3);    -- An array of 4 bools
 variable z : RealArray_t(0 to 1);    -- An array of 2 reals
 ```
 
+There are also arrays of unconstrained vectors:
+
+```vhdl
+signal u : StlvArray_t(0 to 15)(63 downto 0);
+signal v : UnsignedArray_t(0 to 15)(63 downto 0);
+signal w : SignedArray_t(0 to 15)(63 downto 0);
+```
+
 ## Functions
 
 ### Converter Functions

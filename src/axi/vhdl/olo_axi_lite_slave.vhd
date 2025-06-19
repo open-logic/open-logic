@@ -117,9 +117,7 @@ begin
         severity failure;
 
     -- *** Combinatorial Process ***
-    p_comb : process (r, S_AxiLite_ArAddr, S_AxiLite_ArValid, S_AxiLite_AwAddr, S_AxiLite_AwValid,
-                      S_AxiLite_WData, S_AxiLite_WStrb, S_AxiLite_WValid, S_AxiLite_BReady,
-                      S_AxiLite_RReady, Rb_RdData, Rb_RdValid) is
+    p_comb : process (all) is
         variable v : TwoProcess_r;
     begin
         -- Keep variables stable
@@ -230,7 +228,7 @@ begin
     end process;
 
     -- *** Sequential Process ***
-    p_seq : process (Clk) is
+    p_seq : process (all) is
     begin
         if rising_edge(Clk) then
             r <= r_next;
