@@ -12,10 +12,8 @@
 # Imports 
 ###########################################################################
 import re
-from collections import namedtuple
 from dataclasses import dataclass
 from typing import Dict
-import fnmatch
 
 ###########################################################################
 # Helper Classes 
@@ -23,12 +21,18 @@ import fnmatch
 
 @dataclass
 class GenericInfo:
+    """
+    Holds information about a VHDL generic.
+    """
     name: str
     type: str
     default: str = None
 
 @dataclass
 class PortInfo:
+    """
+    Holds information about a VHDL port.
+    """
     name: str
     direction: str
     type: str
@@ -36,6 +40,9 @@ class PortInfo:
 
 @dataclass
 class EntityInfo:
+    """
+    Holds information about a VHDL entity.
+    """
     entity: str
     ports: Dict[str, PortInfo]
     generics: Dict[str, GenericInfo]
@@ -45,35 +52,52 @@ class EntityInfo:
 # Main Class
 ###########################################################################
 class EntityCollection:
+    """
+    A collection of VHDL entities in scope for a certain purpose. They may be distributed over multiple files.
+    This class is used to parse VHDL files and extract entity information.
+    """
 
     def __init__(self):
+        """
+        Constructor for the EntityCollection class.
+        """
+        # Dictionary to hold entity information, indexed by entity name
         self.entities = {}
 
     def get_entity(self, entity_name: str) -> EntityInfo:
         """
         Returns the entity information for the given entity name.
+
+        :param entity_name: The name of the entity to retrieve.
+        :return: EntityInfo object containing the entity information.
         """
         return self.entities[entity_name]
 
-    def parse_vhdl_file(self, file_path) -> Dict[str, EntityInfo]:
+    def parse_vhdl_file(self, file_path):
         """
         Parses a VHDL file (may contain multiple entites)
+
+        :param file_path: The path to the VHDL file to parse.
         """
-
-        entities = {}
-
         with open(file_path, "r") as file:
             content = file.read()
             
             # Find all entity blocks: from 'entity' at line start to 'end' at line start
             entity_blocks = re.findall(r'(?m)^entity\b.*?^end\b.*?;', content, re.DOTALL)
+
+            # Parse each entity block and store the information in the entities dictionary
             for block in entity_blocks:
                 entity = self._parse_entity(block)
                 self.entities[entity.entity] = entity
 
     def _parse_generics(self, generics_text) -> Dict[str, GenericInfo]:
         """
+        Private method, not part of the public API.
+
         Parse the generics section of the entity
+
+        :param generics_text: The text of the generics section (only the generics block, not the whole entity).
+        :return: A dictionary of GenericInfo objects, indexed by generic name.
         """
         generics = {}
 
@@ -98,6 +122,7 @@ class EntityCollection:
             type = type.strip()
 
             
+            # Create a GenericInfo object and add it to the dictionary
             g = GenericInfo(name=name, type=type, default=default)
             generics[g.name] = g
         
@@ -106,7 +131,12 @@ class EntityCollection:
 
     def _parse_ports(self, ports_text) -> Dict[str, PortInfo]:
         """
+        Private method, not part of the public API.
+
         Parses the ports secton of an entity.
+
+        :param ports_text: The text of the ports section (only the ports block, not the whole entity).
+        :return: A dictionary of PortInfo objects, indexed by port name.
         """
         ports = {}
 
@@ -132,16 +162,20 @@ class EntityCollection:
                 type = rem.strip().split(";", 1)[0]
             type = type.strip()
 
-            
+            # Create a PortInfo object and add it to the dictionary
             p = PortInfo(name=name, direction=dir, type=type, default=default)
             ports[p.name] = p
 
         return ports
 
-
     def _parse_entity(self, entity_text) -> EntityInfo:
         """
+        Private method, not part of the public API.
+
         Parses an entity
+
+        :param entity_text: The text of the entity (from 'entity' at line start to 'end' at line start).
+        :return: An EntityInfo object containing the entity name, ports, and generics.
         """
         entity_name = re.findall(r'(?m)^entity\s+(\w+)\s+is', entity_text)[0]
         generic_block = re.search(r'^\s*generic\s*\(.*?^\s*\);\s*', entity_text, re.DOTALL | re.MULTILINE).group(0)

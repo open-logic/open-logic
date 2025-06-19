@@ -94,8 +94,8 @@ if __name__ == '__main__':
     os.makedirs(OUT_PATH)
 
     #Docucment version info
-    print("*** Document Verion Info ***")
     with open(f"{OUT_PATH}/results.txt", "w+") as f:
+        print("*** Document Version Info ***")
         for tool_name, tool in tools.items():
             print(tool_name)
             f.write(f"### {tool_name} ###\n")

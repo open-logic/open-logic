@@ -1,11 +1,27 @@
+# ---------------------------------------------------------------------------------------------------
+# Copyright (c) 2025 by Oliver Bründler
+# All rights reserved.
+# Authors: Oliver Bruendler
+# ---------------------------------------------------------------------------------------------------
 import yaml
 from pathlib import Path
 from fnmatch import fnmatch
 from TopLevel import TopLevel
 
 class YamlInterpreter:
+    """
+    A class to interpret a base YAML file for synthesis tests.
+    
+    It interprets the YAML describing what files are included and what generics to test with which entity
+    configurations. It also matches files based on include and exclude patterns.
+    """
 
     def __init__(self, yaml_file_path):
+        """
+        Constructor for YamlInterpreter.
+
+        :param yaml_file_path: Path to the base YAML file.
+        """
         # Parse the YAML file
         self.data = self._parse_base_yaml(yaml_file_path)
 
@@ -18,7 +34,12 @@ class YamlInterpreter:
 
     def _parse_base_yaml(self, file_path):
         """
+        Private method, not part of the public interface.
+
         Parses the base.yml file and returns its structured content.
+
+        :param file_path: Path to the base YAML file.
+        :return: A dictionary containing the parsed data.
         """
         with open(file_path, 'r') as file:
             data = yaml.safe_load(file)
@@ -78,6 +99,11 @@ class YamlInterpreter:
     def _match_files(self, base_path, include_patterns, exclude_patterns):
         """
         Matches files based on include and exclude patterns relative to the base path.
+
+        :param base_path: The base path to start searching from.
+        :param include_patterns: List of glob patterns to include files.
+        :param exclude_patterns: List of glob patterns to exclude files.
+        :return: A list of matched file paths.
         """
         base_path = Path(base_path)
         matched_files = []
