@@ -10,7 +10,7 @@ filesets:
       
   rtl:
     files:
-      - vivado_tutorial.vhd : {file_type : vhdlSource}
+      - vivado_tutorial.vhd : {file_type : vhdlSource-2008}
     depend :
       - "open-logic:open-logic-dev:base"
       - "open-logic:open-logic-dev:intf"

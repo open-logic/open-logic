@@ -67,7 +67,7 @@ architecture rtl of olo_base_cc_status is
 begin
 
     -- Valid pulse generation
-    p_vldgen : process (In_Clk) is
+    p_vldgen : process (all) is
     begin
         if rising_edge(In_Clk) then
             -- Send valid after it is received back

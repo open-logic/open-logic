@@ -20,6 +20,7 @@
 ---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Header
@@ -64,6 +65,9 @@ package olo_base_pkg_array is
     type IntegerArray_t is array (natural range <>) of integer;
     type RealArray_t is array (natural range <>) of real;
     type BoolArray_t is array (natural range <>) of boolean;
+    type StlvArray_t is array (natural range <>) of std_logic_vector;
+    type UnsignedArray_t is array (natural range <>) of unsigned;
+    type SignedArray_t is array (natural range <>) of signed;
 
     function arrayInteger2Real (a : in IntegerArray_t) return RealArray_t;
     function arrayStdl2Bool (a : in std_logic_vector) return BoolArray_t;

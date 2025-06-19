@@ -120,7 +120,7 @@ begin
     Out_Data      <= invertBitOrder(LfsrReg(LfsrReg'high downto LfsrReg'length-BitsPerSymbol_g));
     State_Current <= LfsrReg(State_Current'high downto 0);
 
-    p_lfsr : process (Clk) is
+    p_lfsr : process (all) is
         variable Lfsr_v : std_logic_vector(LfsrReg'range);
     begin
         if rising_edge(Clk) then

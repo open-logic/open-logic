@@ -86,7 +86,7 @@ begin
     -- Implement conversion logic only if required
     g_convert : if OutWidth_g /= InWidth_g generate
 
-        p_comb : process (r, In_Valid, In_Data, Out_Ready, In_Last, In_Be, Rst) is
+        p_comb : process (all) is
             variable v            : TwoProcess_r;
             variable Out_Valid_v  : std_logic;
             variable Offset_v     : natural range 0 to SrWidth_c - 1;
@@ -176,7 +176,7 @@ begin
             r_next <= v;
         end process;
 
-        p_seq : process (Clk) is
+        p_seq : process (all) is
         begin
             if rising_edge(Clk) then
                 r <= r_next;

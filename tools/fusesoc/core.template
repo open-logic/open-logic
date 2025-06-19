@@ -9,7 +9,7 @@ filesets:
     {%- for file in vhdlFiles %}
       - "{{fileDir}}{{file}}"
     {%- endfor %}
-    file_type : "vhdlSource"
+    file_type : "vhdlSource-2008"
     logical_name : "olo"
     {%- if dependencies or ext_dependencies %}
     depend :

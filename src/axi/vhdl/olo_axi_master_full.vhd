@@ -246,10 +246,7 @@ begin
         severity failure;
 
     -- *** Combinatorial Process ***
-    p_comb : process (r,
-                      CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat,
-                      AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data,
-                      WrWconv_Rdy, WrPl_Vld, WrData_Vld, WrData_Data, WrData_Last, WrData_We, RdPl_Rdy) is
+    p_comb : process (all) is
         variable v              : TwoProcess_r;
         variable WriteBe_v      : std_logic_vector(AxiBytes_c - 1 downto 0);
         variable RdAlignReady_v : std_logic;
@@ -567,7 +564,7 @@ begin
     end process;
 
     -- *** Registered Process ***
-    p_reg : process (Clk) is
+    p_reg : process (all) is
     begin
         if rising_edge(Clk) then
             r <= r_next;

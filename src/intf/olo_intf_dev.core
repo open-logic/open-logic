@@ -6,14 +6,14 @@ description : "local files (release plus WIP); Interfaces (e.g. I2C, synchronize
 filesets:
   rtl:
     files:
-      - "vhdl/olo_intf_i2c_master.vhd"
-      - "vhdl/olo_intf_uart.vhd"
-      - "vhdl/olo_intf_spi_master.vhd"
-      - "vhdl/olo_intf_debounce.vhd"
-      - "vhdl/olo_intf_sync.vhd"
-      - "vhdl/olo_intf_clk_meas.vhd"
       - "vhdl/olo_intf_spi_slave.vhd"
-    file_type : "vhdlSource"
+      - "vhdl/olo_intf_i2c_master.vhd"
+      - "vhdl/olo_intf_debounce.vhd"
+      - "vhdl/olo_intf_clk_meas.vhd"
+      - "vhdl/olo_intf_spi_master.vhd"
+      - "vhdl/olo_intf_sync.vhd"
+      - "vhdl/olo_intf_uart.vhd"
+    file_type : "vhdlSource-2008"
     logical_name : "olo"
     depend :
       - "^open-logic:open-logic-dev:base:3.3.0"
