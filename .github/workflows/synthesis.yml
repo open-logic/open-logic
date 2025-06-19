@@ -26,6 +26,9 @@ jobs:
       #General Setup
       - name: Checkout actions
         uses: actions/checkout@v4
+      # Sleeping for 30 seconds to ensure the instance is ready
+      - name: Sleep for 30 seconds
+        run: sleep 30
       #Start AWS Instance
       - name: Start Instance
         uses: ./.github/actions/start-aws-instance
