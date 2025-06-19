@@ -72,7 +72,7 @@ begin
     begin
 
         -- *** address control process ***
-        p_bram : process (Clk) is
+        p_bram : process (all) is
         begin
             if rising_edge(Clk) then
                 -- Normal Operation
@@ -110,7 +110,7 @@ begin
     end generate;
 
     -- *** Shift Register for delays <= 3 ***
-    p_srl : process (Clk) is
+    p_srl : process (all) is
     begin
         if rising_edge(Clk) then
             if In_Valid = '1' then
@@ -121,7 +121,7 @@ begin
     end process;
 
     -- *** Output register ***
-    p_outreg : process (Clk) is
+    p_outreg : process (all) is
         variable DelayInt_v : natural range 0 to MaxDelay_g;
     begin
         if rising_edge(Clk) then

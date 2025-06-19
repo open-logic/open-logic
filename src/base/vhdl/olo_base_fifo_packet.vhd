@@ -133,8 +133,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_comb : process (In_Valid, In_Data, In_Last, In_Drop, Out_Ready, Out_Next, Out_Repeat, Rst, r,
-                      FifoInReady, RdPacketEnd, RdPacketEndValid) is
+    p_comb : process (all) is
         variable v          : TwoProcess_r;
         variable In_Ready_v : std_logic;
         variable InDrop_v   : std_logic;
@@ -350,7 +349,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Sequential Proccess
     -----------------------------------------------------------------------------------------------
-    p_seq : process (Clk) is
+    p_seq : process (all) is
     begin
         if rising_edge(Clk) then
             r <= r_next;

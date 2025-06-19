@@ -159,7 +159,7 @@ begin
     -----------------------------------------------------------------------------------------------
     SpiMiso_i <= Spi_Miso;
 
-    p_comb : process (r, Cmd_Valid, Cmd_Data, SpiMiso_i, Cmd_Slave, Cmd_TransWidth) is
+    p_comb : process (all) is
         variable v : TwoProcess_r;
     begin
         -- *** hold variables stable ***
@@ -267,7 +267,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Sequential Proccess
     -----------------------------------------------------------------------------------------------
-    p_seq : process (Clk) is
+    p_seq : process (all) is
     begin
         if rising_edge(Clk) then
             r <= r_next;

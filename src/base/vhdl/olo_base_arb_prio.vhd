@@ -62,7 +62,7 @@ begin
     -- Only generate code for non-zero sized arbiters to avoid illegal range delcarations
     g_non_zero : if Width_g > 0 generate
 
-        p_comb : process (In_Req) is
+        p_comb : process (all) is
             variable OredRequest_v : std_logic_vector(In_Req'range);
         begin
             -- Or request vector
@@ -75,7 +75,7 @@ begin
         -- Registered Output
         g_reg : if Latency_g > 0 generate
 
-            p_outreg : process (Clk) is
+            p_outreg : process (all) is
             begin
                 if rising_edge(Clk) then
                     if Rst = '1' then

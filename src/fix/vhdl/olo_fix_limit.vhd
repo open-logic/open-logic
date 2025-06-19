@@ -107,7 +107,7 @@ begin
     end generate;
 
     -- limit
-    p_limit : process (Clk) is
+    p_limit : process (all) is
     begin
         if rising_edge(Clk) then
             -- Stage 1

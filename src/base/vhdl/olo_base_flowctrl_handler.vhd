@@ -97,7 +97,7 @@ begin
         );
 
     -- *** Assertions ***
-    p_assert : process (Clk) is
+    p_assert : process (all) is
     begin
         if rising_edge(Clk) then
             assert (Fifo_InReady = '1' or FromProc_Valid /= '1')

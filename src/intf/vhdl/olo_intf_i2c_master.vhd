@@ -155,7 +155,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_comb : process (r, I2cScl_Sync, I2cSda_Sync, Cmd_Valid, Cmd_Command, Cmd_Data, Cmd_Ack) is
+    p_comb : process (all) is
         variable v                     : TwoProcess_r;
         variable SdaRe_v, SdaFe_v      : std_logic;
         variable I2cStart_v, I2cStop_v : std_logic;
@@ -582,7 +582,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Sequential Proccess
     -----------------------------------------------------------------------------------------------
-    p_seq : process (Clk) is
+    p_seq : process (all) is
     begin
         if rising_edge(Clk) then
             r <= r_next;

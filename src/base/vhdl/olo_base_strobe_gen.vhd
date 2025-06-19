@@ -66,7 +66,7 @@ architecture rtl of olo_base_strobe_gen is
 
 begin
 
-    p_strobe : process (Clk) is
+    p_strobe : process (all) is
     begin
         if rising_edge(Clk) then
             -- Sync
