@@ -44,6 +44,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+      # Setup python
+      - name: Setup Python
+        run : |
+          cd .github/workflows
+          pip3 install -r requirements.txt
       # Synthesis for different areas
       - name: base
         run: |
