@@ -33,6 +33,8 @@ parser.add_argument("--check-coverage", action="store_true",
                     help="Check if all entities in the analyzed files are synthesized at least once.")
 parser.add_argument("--dry-run", action="store_true",
                      help="Execute all steps except the actual synthesis (no synthesis will be run).")
+parser.add_argument("--clean", action="store_true",
+                    help="Clean the output directory before running the tests.")
 args = parser.parse_args()
 
 # Constants
@@ -90,12 +92,12 @@ if __name__ == '__main__':
     overall_start = datetime.now()
 
     # Clean output folder
-    if os.path.exists(OUT_PATH):
+    if os.path.exists(OUT_PATH)and args.clean:
         shutil.rmtree(OUT_PATH)
-    os.makedirs(OUT_PATH)
+    os.makedirs(OUT_PATH, exist_ok=True)
 
     #Docucment version info
-    with open(f"{OUT_PATH}/{YML_NAME}.txt", "w+") as f:
+    with open(f"{OUT_PATH}/{YML_NAME}.txt", "w") as f:
         print("*** Document Version Info ***")
         for tool_name, tool in tools.items():
             print(tool_name)
