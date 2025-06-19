@@ -7,3 +7,4 @@ matplotlib
 prettytable
 pyyaml
 pexpect
+jinja2
