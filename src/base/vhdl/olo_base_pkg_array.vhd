@@ -62,7 +62,6 @@ package olo_base_pkg_array is
     type StlvArray64_t  is array (natural range <>) of std_logic_vector(63 downto 0);
     type StlvArray512_t is array (natural range <>) of std_logic_vector(511 downto 0);
 
-
     type IntegerArray_t is array (natural range <>) of integer;
     type RealArray_t is array (natural range <>) of real;
     type BoolArray_t is array (natural range <>) of boolean;
