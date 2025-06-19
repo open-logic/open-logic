@@ -51,7 +51,7 @@ class ToolVivado(ToolBase):
 
     def get_version(self) -> str:
         child = pexpect.spawn("vivado -version")
-        child.expect(pexpect.EOF)
+        child.expect(pexpect.EOF, timeout=5*60)
         output = child.before.decode("utf-8").strip()
         child.close()
         if child.exitstatus != 0:
