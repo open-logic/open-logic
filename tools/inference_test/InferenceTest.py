@@ -40,6 +40,7 @@ SYN_FILE = os.path.abspath("./test.vhd")
 IN_REDUCE_FILE = os.path.abspath("./vhdl/in_reduce.vhd")
 OUT_REDUCE_FILE = os.path.abspath("./vhdl/out_reduce.vhd")
 OUT_PATH = os.path.abspath("./results")
+YML_NAME = os.path.basename(args.yml).split('.')[0]
 
 # Parse the YAML file
 intp = YamlInterpreter(os.path.abspath(args.yml))
@@ -94,12 +95,13 @@ if __name__ == '__main__':
     os.makedirs(OUT_PATH)
 
     #Docucment version info
-    with open(f"{OUT_PATH}/results.txt", "w+") as f:
+    with open(f"{OUT_PATH}/{YML_NAME}.txt", "w+") as f:
         print("*** Document Version Info ***")
         for tool_name, tool in tools.items():
             print(tool_name)
             f.write(f"### {tool_name} ###\n")
-            f.write(f"{tool.get_version()}\n\n")
+            if not args.dry_run:
+                f.write(f"{tool.get_version()}\n\n")
 
         print("*** Execute Tests ***")
         for entity_name, top_file in top_files.items():

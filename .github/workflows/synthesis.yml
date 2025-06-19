@@ -56,23 +56,29 @@ jobs:
         run: |
           source $LOCAL_TOOLS
           cd ./tools/inference_test
-          python3 ./InferenceTest.py --yml=./yaml/base.yml --no-tables --check-coverage
+          python3 -u ./InferenceTest.py --yml=./yaml/base.yml --no-tables --check-coverage
       - name: axi
         run: |
           source $LOCAL_TOOLS
           cd ./tools/inference_test
-          python3 ./InferenceTest.py --yml=./yaml/axi.yml --no-tables --check-coverage
+          python3 -u ./InferenceTest.py --yml=./yaml/axi.yml --no-tables --check-coverage
       - name: intf
         run: |
           source $LOCAL_TOOLS
           cd ./tools/inference_test
-          python3 ./InferenceTest.py --yml=./yaml/intf.yml --no-tables --check-coverage
+          python3 -u ./InferenceTest.py --yml=./yaml/intf.yml --no-tables --check-coverage
       - name: fix
         run: |
           source $LOCAL_TOOLS
           cd ./tools/inference_test
-          python3 ./InferenceTest.py --yml=./yaml/fix.yml --no-tables --check-coverage
-
+          python3 -u ./InferenceTest.py --yml=./yaml/fix.yml --no-tables --check-coverage
+      # Upload Synthesis results    - name: Upload sim results
+      - name: Upload Synthesis results
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthesis-utilzation
+          path: |
+            tools/inference_test/results/*.txt
 
   # Stopping the instance is not required (it stops automatically
   # when it is unused for some time, controlled by AWS alarm)
