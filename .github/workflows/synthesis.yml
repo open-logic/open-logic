@@ -48,6 +48,7 @@ jobs:
       # Setup python
       - name: Setup Python
         run : |
+          source $LOCAL_TOOLS
           cd .github/workflows
           pip3 install -r requirements.txt
       # Synthesis for different areas
