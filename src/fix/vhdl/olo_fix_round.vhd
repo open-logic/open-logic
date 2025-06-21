@@ -37,7 +37,7 @@ entity olo_fix_round is
         -- Formats / Round / Saturate
         AFmt_g      : string;
         ResultFmt_g : string;
-        Round_g     : string  := FixRound_Trunc_c;
+        Round_g     : string  := FixRound_NonSymPos_c;
         FmtCheck_g  : boolean := true;
         -- Registers
         RoundReg_g  : string  := "YES"
