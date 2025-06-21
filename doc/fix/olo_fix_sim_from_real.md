@@ -11,11 +11,16 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_sim_from_real.json?cacheSeconds=0)
 
 VHDL Source: [olo_fix_from_real](../../src/fix/vhdl/olo_fix_sim_from_real.vhd)
-Bit-true Model: [olo_fix_from_real](../../src/fix/python/olo_fix/olo_fix_sim_from_real.py)
+Bit-true Model: [olo_fix_from_real](../../src/fix/python/olo_fix/olo_fix_from_real.py)
 
 ## Description
 
-This entity converts a real (floating-point) number to fixed-point format. It is aimed to be used in simulations.
+This entity converts a real (floating-point) number to fixed-point format. It is aimed to be used in simulations (python
+bit-true simulations - not HDL simulations).
+
+Note that functionally the entity is equivalent to the [olo_fix_from_real](./olo_fix_from_real.md) entity, but it is
+designed for simulation purposes only. Therefore the python model of _olo_fix_from_real_ is used also for
+_olo_fix_sim_from_real_.
 
 The _olo_fix_sim_from_real_ entity has two main use-cases:
 
