@@ -103,8 +103,8 @@ tristate buffers.
 
 | Name      | In/Out | Length | Default | Description                                                  |
 | :-------- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| I2c_Scl   | bidir  | 1      | 'Z'     | Used only if **InternalTriState_g = true**<br />SCL signal   |
-| I2c_Sda   | bidir  | 1      | 'Z'     | Used only if **InternalTriState_g = true**<br />SDA signal   |
+| I2c_Scl   | bidir  | 1      | -       | Used only if **InternalTriState_g = true**<br />SCL signal   |
+| I2c_Sda   | bidir  | 1      | -       | Used only if **InternalTriState_g = true**<br />SDA signal   |
 | I2c_Scl_i | in     | 1      | '0'     | Used only if **InternalTriState_g = false**<br />SCL input signal |
 | I2c_Scl_o | out    | 1      | N/A     | Used only if **InternalTriState_g = false**<br />SCL output signal |
 | I2c_Scl_t | out    | 1      | N/A     | Used only if **InternalTriState_g = false**<br />SCL Tri-State signal ('1' = tristated, '0' drive) |
