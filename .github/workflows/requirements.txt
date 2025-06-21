@@ -4,3 +4,7 @@ google-cloud-storage
 vsg==3.27
 numpy
 matplotlib
+prettytable
+pyyaml
+pexpect
+jinja2
