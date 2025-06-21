@@ -39,7 +39,7 @@ entity olo_base_crc is
         BitOrder_g      : string           := "MSB_FIRST"; -- "MSB_FIRST" or "LSB_FIRST"
         ByteOrder_g     : string           := "NONE";      -- "NONE", "MSB_FIRST" or "LSB_FIRST"
         BitflipOutput_g : boolean          := false;
-        XorOutput_g     : std_logic_vector := "0" 
+        XorOutput_g     : std_logic_vector := "0"
     );
     port (
         -- Control Ports
@@ -65,7 +65,7 @@ end entity;
 architecture rtl of olo_base_crc is
 
     -- Constants
-    constant CrcWidth_c     : natural := Polynomial_g'length;
+    constant CrcWidth_c     : natural                                 := Polynomial_g'length;
     constant ZeroPoly_c     : std_logic_vector(CrcWidth_c-1 downto 0) := (others => '0');
     constant InitialValue_c : std_logic_vector(CrcWidth_c-1 downto 0) := choose(InitialValue_g = "0", ZeroPoly_c, InitialValue_g);
     constant XorOutput_c    : std_logic_vector(CrcWidth_c-1 downto 0) := choose(XorOutput_g = "0", ZeroPoly_c, XorOutput_g);
