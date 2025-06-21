@@ -38,8 +38,8 @@ architecture sim of olo_base_crc_initval_tb is
     -----------------------------------------------------------------------------------------------
     constant CrcWidth_c     : natural := 8;
     constant DataWidth_c    : natural := 8;
-    constant InitialValue_c : natural := 16#FD#;
-    constant Polynomial_c   : natural := 16#1D#;
+    constant InitialValue_c : std_logic_vector := x"FD";
+    constant Polynomial_c   : std_logic_vector := x"1D";
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -122,7 +122,6 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_crc
         generic map (
-            CrcWidth_g      => CrcWidth_c,
             Polynomial_g    => Polynomial_c,
             InitialValue_g  => InitialValue_c,
             DataWidth_g     => DataWidth_c
