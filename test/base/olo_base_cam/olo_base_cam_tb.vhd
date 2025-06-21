@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024 by Oliver Bründler, Switzerland
+-- Copyright (c) 2024-2025 by Oliver Bruendler, Switzerland
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -30,7 +30,6 @@ entity olo_base_cam_tb is
         Addresses_g             : positive range 8 to 1024 := 8;
         ContentWidth_g          : positive range 10 to 256 := 10;
         RamBehavior_g           : string                   := "RBW";
-        RamBlockWidth_g         : positive                 := 32;
         RamBlockDepth_g         : positive                 := 512; -- 9 addr bits
         ClearAfterReset_g       : boolean                  := true;
         ReadPriority_g          : boolean                  := false;
@@ -451,7 +450,6 @@ begin
         generic map (
             Addresses_g             => Addresses_g,
             ContentWidth_g          => ContentWidth_g,
-            RamBlockWidth_g         => RamBlockWidth_g,
             RamBlockDepth_g         => RamBlockDepth_g,
             ClearAfterReset_g       => ClearAfterReset_g,
             ReadPriority_g          => ReadPriority_g,
