@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------
-# Copyright (c) 2025 by Oliver Bründler
+# Copyright (c) 2025 by Oliver Bruendler
 # All rights reserved.
 # Authors: Oliver Bruendler
 # ---------------------------------------------------------------------------------------------------
@@ -269,8 +269,8 @@ def add_configs(olo_tb):
     named_config(tb, {'ContentWidth_g': 10, 'RamBlockDepth_g': 512})
     named_config(tb, {'ContentWidth_g': 10, 'RamBlockDepth_g': 4096})
     #Test different RAM configs
-    named_config(tb, {'RamBlockWidth_g': 32, 'RamBlockDepth_g': 512})
-    named_config(tb, {'RamBlockWidth_g': 4, 'RamBlockDepth_g': 64})
+    named_config(tb, {'RamBlockDepth_g': 512})
+    named_config(tb, {'RamBlockDepth_g': 64})
     #Read/Write Interleaving
     for ReadPriority in [False, True]:
         for StrictOrdering in [False, True]:

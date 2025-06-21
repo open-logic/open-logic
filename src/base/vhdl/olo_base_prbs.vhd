@@ -36,8 +36,7 @@ entity olo_base_prbs is
     generic (
         Polynomial_g    : std_logic_vector;
         Seed_g          : std_logic_vector;
-        BitsPerSymbol_g : positive := 1;
-        LfsrWidth_g     : natural  := 0 -- Deprecated, not used
+        BitsPerSymbol_g : positive := 1
     );
     port (
         -- Control Ports
