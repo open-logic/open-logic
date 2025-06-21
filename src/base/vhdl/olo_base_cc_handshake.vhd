@@ -72,7 +72,7 @@ architecture rtl of olo_base_cc_handshake is
 begin
 
     -- Valid pulse generation
-    p_in : process (all) is
+    p_in : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
 
@@ -137,7 +137,7 @@ begin
         );
 
     -- Latch data on output side
-    p_out : process (all) is
+    p_out : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
 

@@ -169,7 +169,7 @@ begin
     Out_Level <= r.RdLevel;
     In_Level  <= r.WrLevel;
 
-    p_seq : process (all) is
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;

@@ -87,7 +87,7 @@ begin
         report "###ERROR###: olo_base_crc - For DataWidth_g not being a multiple of 8, only ByteOrder_g=NONE is allowed"
         severity error;
 
-    p_lfsr : process (all) is
+    p_lfsr : process (Clk) is
         variable Input_v : std_logic_vector(In_Data'range);
         variable Lfsr_v  : std_logic_vector(LfsrReg'range);
         variable InBit_v : std_logic;

@@ -227,7 +227,7 @@ begin
         Out_Valid <= r.DataMainVld;
         Out_Data  <= r.DataMain;
 
-        p_seq : process (all) is
+        p_seq : process (Clk) is
         begin
             if rising_edge(Clk) then
                 r <= r_next;
@@ -268,7 +268,7 @@ begin
 
     begin
 
-        p_stg : process (all) is
+        p_stg : process (Clk) is
         begin
             if rising_edge(Clk) then
                 DataReg <= In_Data;

@@ -598,7 +598,7 @@ begin
     end process;
 
     -- *** Registered Process ***
-    p_reg : process (all) is
+    p_reg : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;
