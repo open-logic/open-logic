@@ -27,6 +27,12 @@ for different technologies (some technologies implement one, some the other beha
 An asynchronous FIFO is a clock-crossing and hence this block follows the general
 [clock-crossing principles](clock_crossing_principles.md). Read through them for more information.
 
+**Note:** This is a symmetric FIFO.
+To build an asymmetric n:xn FIFO (N-bits to a multiple of N-bits), the [olo_base_wconv_n2xn](./olo_base_wconv_n2xn.md)
+can be added on the write side of the FIFO.
+To create an xn:n FIFO (a multiple of N-bits to N-bits), the [olo_base_wconv_xn2n](./olo_base_wconv_xn2n.md)
+can be added on the read side of the FIFO.
+
 ## Generics
 
 | Name            | Type      | Default   | Description                                                  |
