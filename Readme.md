@@ -113,7 +113,8 @@ _Open Logic_ aims to provide code that can be trusted - and to provide measures 
 for every individual piece of code in the library. The following measures are implemented:
 
 1. Every entity comes with a testbench.
-2. The project comes with a CI workflow, which regularly runs all simulations. The badge on the very top of this page
+2. The project comes with a CI workflow, which regularly runs all simulations and synthesis tasks. For details
+   see [CI Worfklows](./doc/CI-Workflows.md)
 3. indicates if there is a problem. As long as it is green - you know that all testbenches pass. <br>
    ![example workflow](https://github.com/obruendl/open-logic/actions/workflows/hdl_check.yml/badge.svg)
 4. Indicators for open issues on every entity. In the documentation of every piece of code, you can find a badge, which
