@@ -91,7 +91,7 @@ begin
     Out_RstOut <= RstOutI;
 
     -- Data transmit side (A)
-    p_data_a : process (all) is
+    p_data_a : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
             if In_Valid = '1' then
@@ -101,7 +101,7 @@ begin
     end process;
 
     -- Data receive side (B)
-    p_data_b : process (all) is
+    p_data_b : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
             Out_Valid <= VldOutI;

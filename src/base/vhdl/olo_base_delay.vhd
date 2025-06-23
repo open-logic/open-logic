@@ -85,7 +85,7 @@ begin
         attribute srl_style of SrlSig     : signal is SrlStyle_Srl_c;
     begin
 
-        p_srl : process (all) is
+        p_srl : process (Clk) is
         begin
             if rising_edge(Clk) then
                 if In_Valid = '1' then
@@ -104,7 +104,7 @@ begin
     begin
 
         -- address control process
-        p_bram : process (all) is
+        p_bram : process (Clk) is
         begin
             if rising_edge(Clk) then
                 -- normal Operation
@@ -164,7 +164,7 @@ begin
         signal RstStateCnt : integer range 0 to Delay_g - 1;
     begin
 
-        p_outreg : process (all) is
+        p_outreg : process (Clk) is
         begin
             if rising_edge(Clk) then
                 -- Normal operation

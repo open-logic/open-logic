@@ -81,7 +81,7 @@ begin
     Out_RstOut <= RstOutI;
 
     -- *** Pulse Crossing ***
-    p_reg : process (all) is
+    p_reg : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
             ToggleLast <= ToggleIn;
@@ -112,7 +112,7 @@ begin
     -- Data receive side (Output)
     Out_Pulse <= ToggleOutLast xor ToggleOut;
 
-    p_pulseout : process (all) is
+    p_pulseout : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
             ToggleOutLast <= ToggleOut;

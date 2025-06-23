@@ -107,7 +107,7 @@ begin
     In_Clk_Sig <= In_Clk;
 
     -- Input Register
-    p_inff : process (all) is
+    p_inff : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
             RegIn <= In_Data;
@@ -118,7 +118,7 @@ begin
     end process;
 
     -- Synchronizer process
-    p_outff : process (all) is
+    p_outff : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
             -- *** Synchronization ***

@@ -73,7 +73,7 @@ begin
     -- ** Registers ***
     g_reg : if Stages_g > 0 generate
 
-        p_reg : process (all) is
+        p_reg : process (Clk) is
         begin
             if rising_edge(Clk) then
                 -- First stage

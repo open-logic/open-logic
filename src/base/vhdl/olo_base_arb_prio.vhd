@@ -75,7 +75,7 @@ begin
         -- Registered Output
         g_reg : if Latency_g > 0 generate
 
-            p_outreg : process (all) is
+            p_outreg : process (Clk) is
             begin
                 if rising_edge(Clk) then
                     if Rst = '1' then

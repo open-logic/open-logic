@@ -288,7 +288,7 @@ begin
     g_wbr : if RamBehavior_g = "WBR" generate
 
         -- Port A
-        p_porta : process (all) is
+        p_porta : process (A_Clk) is
         begin
             if rising_edge(A_Clk) then
                 -- RAM
@@ -303,7 +303,7 @@ begin
         end process;
 
         -- Port B
-        p_portb : process (all) is
+        p_portb : process (B_Clk) is
         begin
             if rising_edge(B_Clk) then
                 -- RAM
@@ -322,7 +322,7 @@ begin
     g_rbw : if RamBehavior_g = "RBW" generate
 
         -- Port A
-        p_porta : process (all) is
+        p_porta : process (A_Clk) is
         begin
             if rising_edge(A_Clk) then
                 -- RAM
@@ -337,7 +337,7 @@ begin
         end process;
 
         -- Port B
-        p_portb : process (all) is
+        p_portb : process (B_Clk) is
         begin
             if rising_edge(B_Clk) then
                 -- RAM

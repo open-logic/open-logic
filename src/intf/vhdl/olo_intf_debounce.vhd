@@ -147,7 +147,7 @@ begin
     end process;
 
     -- *** Sequential Process ***
-    p_seq : process (all) is
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- normal operation

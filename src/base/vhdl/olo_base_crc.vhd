@@ -93,7 +93,7 @@ begin
         report "###ERROR###: olo_base_crc - XorOutput_g must have the same length as Polynomial_g"
         severity error;
 
-    p_lfsr : process (all) is
+    p_lfsr : process (Clk) is
         variable Input_v : std_logic_vector(In_Data'range);
         variable Lfsr_v  : std_logic_vector(LfsrReg'range);
         variable InBit_v : std_logic;
