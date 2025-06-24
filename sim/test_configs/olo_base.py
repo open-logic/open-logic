@@ -213,6 +213,14 @@ def add_configs(olo_tb):
     arb_rr_tb = 'olo_base_arb_rr_tb'
     #Only one config required, hence no "add_config" looping
 
+    ### olo_base_arb_wrr ###
+    arb_wrr_tb = 'olo_base_arb_wrr_tb'
+    tb = olo_tb.test_bench(arb_wrr_tb)
+    for Grant in [3, 5, 8]:
+        for Weight in [2, 3, 4]:
+            for Seed in [42, 66, 11]:
+                named_config(tb, {'GrantWidth_g': Grant, 'WeightWidth_g': Weight, 'Seed_g' : Seed})
+
     ### olo_base_strobe_gen ###
     strobe_gen_tb = 'olo_base_strobe_gen_tb'
     tb = olo_tb.test_bench(strobe_gen_tb)
