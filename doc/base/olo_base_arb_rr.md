@@ -57,8 +57,8 @@ section of the waveform.
 | Name      | In/Out | Length    | Default | Description                                                  |
 | :-------- | :----- | :-------- | ------- | :----------------------------------------------------------- |
 | Out_Grant | out    | _Width_g_ | N/A     | Grant output signal                                          |
-| Out_Ready | out    | 1         | N/A     | AXI-S handshaking signal, Asserted whenever Grant != 0       |
-| Out_Valid | out    | 1         | N/A     | AXI-S handshaking signal The state of the  arbiter is updated  upon _Out\_Ready = '1'_ |
+| Out_Ready | in     | 1         | N/A     | AXI-S handshaking signal                                     |
+| Out_Valid | out    | 1         | N/A     | AXI-S handshaking signal, Asserted whenever Grant != 0. The state of the  arbiter is updated  upon _Out\_Ready = '1'_ |
 
 Note that the output is not fully AXI4-Stream compliant because the _Out_Grant_ vector can change its value while
 _Out_Valid_ is asserted (as shown in the example waveform further up). Still the naming of the signals was kept because
