@@ -249,7 +249,7 @@ begin
         severity failure;
 
     -- *** Runtime Assertions ***
-    p_assert : process (all) is
+    p_assert : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- Unexpected read response
@@ -598,7 +598,7 @@ begin
     end process;
 
     -- *** Registered Process ***
-    p_reg : process (all) is
+    p_reg : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;

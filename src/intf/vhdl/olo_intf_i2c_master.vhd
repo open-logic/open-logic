@@ -85,8 +85,8 @@ entity olo_intf_i2c_master is
         Status_BusBusy  : out   std_logic;
         Status_CmdTo    : out   std_logic;
         -- I2c Interface with internal Tri-State
-        I2c_Scl         : inout std_logic := 'Z';
-        I2c_Sda         : inout std_logic := 'Z';
+        I2c_Scl         : inout std_logic;
+        I2c_Sda         : inout std_logic;
         -- I2c Interface with external Tri-State
         I2c_Scl_i       : in    std_logic := '0';
         I2c_Scl_o       : out   std_logic;
@@ -575,14 +575,14 @@ begin
         I2c_Sda_o <= r.SdaOut;
         I2c_Scl_t <= r.SclOut;
         I2c_Sda_t <= r.SdaOut;
-        I2c_Scl   <= 'Z';
-        I2c_Sda   <= 'Z';
+        I2c_Scl   <= '0';
+        I2c_Sda   <= '0';
     end generate;
 
     -----------------------------------------------------------------------------------------------
     -- Sequential Proccess
     -----------------------------------------------------------------------------------------------
-    p_seq : process (all) is
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;

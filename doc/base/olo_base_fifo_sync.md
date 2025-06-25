@@ -24,6 +24,12 @@ The FIFO is a fall-through FIFO and has AXI-S interfaces on read and write side.
 The RAM behavior (read-before-write or write-before-read) can be selected. This allows efficiently implementing FIFOs
 for different technologies (some technologies implement one, some the other behavior).
 
+**Note:** This is a symmetric FIFO.
+To build an asymmetric n:xn FIFO (N-bits to a multiple of N-bits), the [olo_base_wconv_n2xn](./olo_base_wconv_n2xn.md)
+can be added on the write side of the FIFO.
+To create an xn:n FIFO (a multiple of N-bits to N-bits), the [olo_base_wconv_xn2n](./olo_base_wconv_xn2n.md)
+can be added on the read side of the FIFO.
+
 ## Generics
 
 | Name            | Type      | Default | Description                                                  |

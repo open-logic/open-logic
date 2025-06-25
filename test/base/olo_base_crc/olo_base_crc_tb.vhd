@@ -42,17 +42,16 @@ architecture sim of olo_base_crc_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant InitialValue_c : natural := 0;
-    constant XorOutput_c    : natural := choose(InvertOutput_g, 2**CrcWidth_g-1, 0); -- all 1 or all 0
+    constant XorOutput_c : std_logic_vector(CrcWidth_g-1 downto 0) := toSslv(choose(InvertOutput_g, -1, 0), CrcWidth_g); -- all 1 or all 0
 
-    function getPolynomial (crcWidth : natural) return integer is
+    function getPolynomial (crcWidth : natural) return std_logic_vector is
     begin
 
         -- Get polinomials from https://crccalc.com
         case crcWidth is
-            when 5 => return 2#10101#;
-            when 8 => return 16#D5#;
-            when 16 => return 16#0589#;
+            when 5 => return "10101";
+            when 8 => return x"D5";
+            when 16 => return x"0589";
             when others => report "Error: unuspoorted CrcWdith_g" severity error;
         end case;
 
@@ -341,7 +340,7 @@ begin
                     end if;
                 end if;
                 push_axi_stream(net, AxisMaster_c, Data_v);
-                Result_v := toUslv(getPolynomial(CrcWidth_g), CrcWidth_g);
+                Result_v := getPolynomial(CrcWidth_g);
                 if BitflipOutput_g then
                     Result_v := invertBitOrder(Result_v);
                 end if;
@@ -449,9 +448,7 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_base_crc
         generic map (
-            CrcWidth_g      => CrcWidth_g,
             Polynomial_g    => getPolynomial(CrcWidth_g),
-            InitialValue_g  => InitialValue_c,
             DataWidth_g     => DataWidth_g,
             BitOrder_g      => BitOrder_g,
             ByteOrder_g     => ByteOrder_g,

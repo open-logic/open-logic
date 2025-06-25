@@ -81,7 +81,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Master Clock Process
     -----------------------------------------------------------------------------------------------
-    p_control : process (all) is
+    p_control : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- *** Normal Operation ***
@@ -119,7 +119,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Test Clock Process
     -----------------------------------------------------------------------------------------------
-    p_meas : process (all) is
+    p_meas : process (ClkTest) is
     begin
         if rising_edge(ClkTest) then
             -- *** Normal Operation ***

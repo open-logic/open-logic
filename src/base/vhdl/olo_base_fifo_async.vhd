@@ -242,7 +242,7 @@ begin
 
     end process;
 
-    p_seq_in : process (all) is
+    p_seq_in : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
             ri <= ri_next;
@@ -255,7 +255,7 @@ begin
         end if;
     end process;
 
-    p_seq_out : process (all) is
+    p_seq_out : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
             ro <= ro_next;

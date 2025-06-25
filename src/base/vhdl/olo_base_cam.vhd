@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024 by Oliver Bründler
+-- Copyright (c) 2024-2025 by Oliver Bruendler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ----------------------------------------------------------------------------------------------------
@@ -37,7 +37,6 @@ entity olo_base_cam is
         ContentWidth_g       : positive;
         RamStyle_g           : string   := "auto";
         RamBehavior_g        : string   := "RBW";
-        RamBlockWidth_g      : positive := 32;
         RamBlockDepth_g      : positive := 512;
         ClearAfterReset_g    : boolean  := true;
         -- Read/Write interleaving
@@ -299,7 +298,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Sequential Proccess
     -----------------------------------------------------------------------------------------------
-    p_seq : process (all) is
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
             r <= r_next;

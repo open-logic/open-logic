@@ -49,7 +49,7 @@ architecture sim of olo_base_arb_prio_tb is
     signal Out_Grant : std_logic_vector(Width_c - 1 downto 0) := (others => '0');
 
     -----------------------------------------------------------------------------------------------
-    -- TB Defnitions
+    -- TB Definitions
     -----------------------------------------------------------------------------------------------
     constant Clk_Frequency_c : real    := 100.0e6;
     constant Clk_Period_c    : time    := (1 sec) / Clk_Frequency_c;

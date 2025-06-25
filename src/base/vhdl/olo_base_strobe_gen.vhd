@@ -76,7 +76,7 @@ begin
         report "olo_base_strobe_gen - FreqClkHz_g / FreqStrobeHz_g must be <= 2'147'483'000"
         severity failure;
 
-    p_strobe : process (all) is
+    p_strobe : process (Clk) is
     begin
         if rising_edge(Clk) then
             -- Sync

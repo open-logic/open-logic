@@ -72,14 +72,19 @@ begin
     begin
 
         -- *** address control process ***
-        p_bram : process (all) is
+        p_bram : process (Clk) is
+            variable RdAddr_v : std_logic_vector(Delay'range);
         begin
             if rising_edge(Clk) then
                 -- Normal Operation
                 if In_Valid = '1' then
                     -- address mngt
                     WrAddr <= std_logic_vector(unsigned(WrAddr) + 1);
-                    RdAddr <= std_logic_vector(unsigned(WrAddr) - unsigned(Delay) + 3);
+                    -- In corner cases "Delay" has 1 bit more than the addresses. Example: MaxDelay_g=256.
+                    -- ... this is the case for all powers of 2 (which are often used values for digital
+                    -- designers))
+                    RdAddr_v := std_logic_vector(unsigned(WrAddr) - unsigned(Delay) + 3);
+                    RdAddr   <= RdAddr_v(RdAddr'range);
                 end if;
 
                 -- Reset
@@ -110,7 +115,7 @@ begin
     end generate;
 
     -- *** Shift Register for delays <= 3 ***
-    p_srl : process (all) is
+    p_srl : process (Clk) is
     begin
         if rising_edge(Clk) then
             if In_Valid = '1' then
@@ -121,7 +126,7 @@ begin
     end process;
 
     -- *** Output register ***
-    p_outreg : process (all) is
+    p_outreg : process (Clk) is
         variable DelayInt_v : natural range 0 to MaxDelay_g;
     begin
         if rising_edge(Clk) then
