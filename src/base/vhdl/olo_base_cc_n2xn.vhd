@@ -66,7 +66,7 @@ begin
 
     In_Ready <= '1' when (InToggle = OutToggle) and (InRstInt = '0') else '0';
 
-    p_input : process (all) is
+    p_input : process (In_Clk) is
     begin
         if rising_edge(In_Clk) then
             if In_Valid = '1' and (InToggle = OutToggle) then
@@ -80,7 +80,7 @@ begin
         end if;
     end process;
 
-    p_output : process (all) is
+    p_output : process (Out_Clk) is
     begin
         if rising_edge(Out_Clk) then
 

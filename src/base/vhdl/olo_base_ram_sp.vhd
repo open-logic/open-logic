@@ -255,7 +255,7 @@ begin
         severity error;
 
     -- RAM process
-    p_ram : process (all) is
+    p_ram : process (Clk) is
     begin
         if rising_edge(Clk) then
             if RamBehavior_g = "RBW" then

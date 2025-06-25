@@ -38,7 +38,6 @@ the first _Out_Data_ word - and the lower bits are the first results of the LFSR
 | Polynomial_g    | std_logic_vector | -       | Polynomial to use. <br />"100010000" means "x⁴+x⁸". |
 | Seed_g          | std_logic_vector | -       | Initial state of the LFSR. Needs to be the same width as _Polynomial_g_. Must be non-zero vector. |
 | BitsPerSymbol_g | positive         | 1       | Number of bits of the PRBS sequence to present at the output for every symbol (width of _Out_Data_). <br />Must be at least 1. |
-| LfsrWidth_g     | natural          | 0       | Deprecated generic - will be removed in next major release <br> Not used anymore, kept only for backward compatibility. |
 
 For new designs, _LfsrWidth_g_ shall be left unassigned.
 
