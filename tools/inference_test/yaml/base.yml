@@ -65,9 +65,8 @@ entities:
     configurations:
       - name: "16poly-16data"
         generics:
-          CrcWidth_g: 16     
           DataWidth_g: 16
-          Polynomial_g: 2#1000000000000101#   
+          Polynomial_g: '"1000000000000101"'   
   # olo_base_decode_firstbit
   - entity_name: "olo_base_decode_firstbit"
     configurations:
