@@ -2,6 +2,84 @@
 
 # Changelog
 
+## 4.0.0
+
+26-Jun-2025
+
+### Notes
+
+Because the change to VHDL-2008 is non-reverse-compatible anyways, it was decided to put all pending non-reverse-compatible changes into 4.0.0. As a result no breaking changes are foreseen in near future after 4.0.0.
+
+### Added Features
+
+- Added scoped constraints for Vivado to _FuseSoC_ packages.
+  - Contributed by: [rbrglez](https://github.com/rbrglez)
+
+- Added [compile_order.txt](./compile_order.txt) file to support compilation with any tool.
+  - Input from the presentation at FDF25 at CERN
+
+- CI workflow to execute synthesis for every entity in Open Logic
+
+### Backward Compatible Changes
+
+- Various documentation improvements
+  - Some of them reported by: [tasgomes](https://github.com/tasgomes)
+  - Some of them contributed by: [rbrglez](https://github.com/rbrglez), [LukiLeu](https://github.com/LukiLeu)
+- Various smaller changes to the CI workflows
+
+### Non Backward Compatible Changes
+
+- Change language standard to VHDL-2008
+  - All entities now must be compiled as VHDL-2008
+  - Tool integrations are updated accordingly and will import Open Logic as VHDL-2008
+  - Suggested action: Remove Open Logic from your project and re-add it using the tool integration scripts provided, see [HowTo](./doc/HowTo.md)
+
+- Changed default generic values for _olo_fix_round_ and _olo_fix_saturate_ to round and saturate by default.
+  - Affected entities: _olo_fix_round_, _olo_fix_saturate_
+  - Reason: Instantiating those entities for NOT executing the corresponding operation (as it was the default before) does not make much sense.
+
+- Remove unused generics
+  - _olo_base_cam_ - removed _RamBlockWidth_g_
+  - _olo_base_prbs_ - removed deprecated _LfsrWidth_g_
+  - _olo_base_crc_ - removed _CrcWidth_g_
+  - Reason: Code cleanup
+
+- Harmonized polynomial handling between _olo_base_prbs_ and _olo_base_crc_
+  - Affected entities: _olo_base_crc_
+  - _Polynomial_g_, _InitialValue_g_ and _XorOutput_g_ are now _std_logic_vector_ instead of _natural_
+  - Reason: _std_logic_vector_ allows for values wider than 32 bits. Using the same interface types for _olo_base_crc_ and _olo_base_prbs_ is easier to understand for users.
+
+- Change default value for _UserTransactionSizeBits_g_ from 32 to 24 in _olo_axi_master_full_
+  - Affected entities: _olo_axi_master_full_
+  - Reason: Default values for _UserTransactionSizeBits_g_ and _AxiAddrWidth_g_ were incompatible (led to assertion failures)
+
+
+### Bugfixes (Backward Compatible)
+
+- Fix _olo_base_delay_cfg_ for power of 2 _MaxDelay_g_ values 
+  - Affected entities: _olo_base_delay_cfg_
+
+- Remove default values 'Z' from _olo_intf_i2c_master_ ports because this led to synthesis errors with _Microchip Libero_
+  - Affected entities: _olo_intf_i2c_master_
+
+- Removed _In_Real_ port  from _olo_fix_from_real_ because not all tools accept it for synthesis, even if unused.
+  - Affected entities: __olo_fix_from_real_
+
+- Fix needless _olo_base_strobe_gen_ number range error and document rate limitations. Ranges are now actively checked by assertions.
+  - Affected entities: __olo_base_strobe_gen_
+  - Reported by: [fpgauserdude](https://github.com/fpgauserdude)
+
+
+### Reporters
+
+- [fpgauserdude](https://github.com/fpgauserdude)
+- [tasgomes](https://github.com/tasgomes)
+
+### Contributors
+
+- [rbrglez](https://github.com/rbrglez)
+- [LukiLeu](https://github.com/LukiLeu)
+
 ## 3.3.0
 
 04-May-2025
