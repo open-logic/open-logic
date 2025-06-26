@@ -51,17 +51,6 @@ architecture rtl of olo_base_arb_wrr is
     ----------------------------------------------------------------------------
     -- Functions
     ----------------------------------------------------------------------------
-    -- Returns the index of the first high ('1') bit in the vector
-    function getFirstHighBitIndex(vec : std_logic_vector) return integer is
-    begin
-        for i in vec'range loop
-            if vec(i) = '1' then
-                return i;
-            end if;
-        end loop;
-        -- Return 0 if no high bit is found
-        return 0;
-    end function;
 
     -- Generates a mask for the input request vector.
     -- Each bit is set to '1' if the corresponding weight is non-zero; otherwise, '0'.
@@ -129,7 +118,7 @@ begin
 
             -- Get Weight of a currently active Grant
             if (unsigned(Grant_v) /= 0) then
-                v.GrantIdx     := getFirstHighBitIndex(Grant_v);
+                v.GrantIdx     := getLeadingSetBitIndex(Grant_v);
                 v.WeightActive := unsigned(In_Weights((v.GrantIdx + 1) * WeightWidth_g - 1 downto v.GrantIdx * WeightWidth_g));
             else
                 v.WeightActive := (others => '0');
