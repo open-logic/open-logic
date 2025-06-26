@@ -3,13 +3,17 @@
 
 # Variables
 if [ -z "$1" ]; then
-    echo "Usage: $0 <ami-image-id>"
+    echo "Usage: $0 <ami-image-id> <instance-type>"
+    exit 1
+fi
+if [ -z "$2" ]; then
+    echo "Usage: $0 <ami-image-id> <instance-type>"
     exit 1
 fi
 
 echo "Using image: $1"
 AMI_ID="$1"
-INSTANCE_TYPE="t3.2xlarge"
+INSTANCE_TYPE="$2"
 AVAILABILITY_ZONE="eu-central-1a"
 ENI_QUESTA="eni-0ba2390c78b29ff3d"
 ENI_GOWIN="eni-037106146f437262d"
