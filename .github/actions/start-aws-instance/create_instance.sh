@@ -44,7 +44,7 @@ aws ec2 start-instances --instance-ids $INSTANCE_ID
 
 # Wait for 20 seconds to ensure the instance is ready to attach additional ENIs
 echo "Waiting for the instance to be ready..."
-sleep 5
+sleep 30
 
 # Attach the other ENIs
 aws ec2 attach-network-interface --network-interface-id $ENI_GOWIN --instance-id $INSTANCE_ID --device-index 1
