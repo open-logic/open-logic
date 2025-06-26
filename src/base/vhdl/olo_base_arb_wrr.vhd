@@ -107,7 +107,7 @@ begin
     g_non_zero : if GrantWidth_g > 0 generate
 
         -- *** Combinatorial Process ***
-        p_comb : process (r, In_Req, Out_Ready, In_Weights, GrantRoundRobingMasked, GrantRoundRobingUnmasked, RequestWeightsMasked) is
+        p_comb : process (all) is
             variable v       : TwoProcess_t;
             variable Grant_v : std_logic_vector(Out_Grant'range);
         begin
