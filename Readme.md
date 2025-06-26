@@ -1,6 +1,7 @@
 <img src="./doc/Logo.png" alt="Logo" width="400">
 
 ![example workflow](https://github.com/obruendl/open-logic/actions/workflows/hdl_check.yml/badge.svg)
+![example workflow](https://github.com/obruendl/open-logic/actions/workflows/synthesis.yml/badge.svg)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/version.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/date.json?cacheSeconds=0)
 [![Join the chat at https://gitter.im/open-logic/general](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/open-logic/general?utm_source=badge&utm_medium=badge&utm_content=badge)
