@@ -86,7 +86,7 @@ architecture rtl of olo_base_arb_wrr is
 
     -- Two Process Method
     type TwoProcess_t is record
-        RoundRobingMask : std_logic_vector(In_Req'range);
+        RoundRobinMask : std_logic_vector(In_Req'range);
         WeightCnt       : unsigned(WeightWidth_g-1 downto 0);
         WeightActive    : unsigned(WeightWidth_g-1 downto 0);
         GrantIdx        : natural;
@@ -97,9 +97,9 @@ architecture rtl of olo_base_arb_wrr is
 
     -- Component connection signals
     Signal RequestWeightsMasked     : std_logic_vector(In_Req'range);
-    signal RequestRoundRobingMasked : std_logic_vector(In_Req'range);
-    signal GrantRoundRobingMasked   : std_logic_vector(Out_Grant'range);
-    signal GrantRoundRobingUnmasked : std_logic_vector(Out_Grant'range);
+    signal RequestRoundRobinMasked : std_logic_vector(In_Req'range);
+    signal GrantRoundRobinMasked   : std_logic_vector(Out_Grant'range);
+    signal GrantRoundRobinUnmasked : std_logic_vector(Out_Grant'range);
 
 begin
 
@@ -117,14 +117,14 @@ begin
             -- Mask Requests with a weight of zero
             RequestWeightsMasked <= In_Req and generateRequestWeightsMask(In_Weights, WeightWidth_g, GrantWidth_g);
 
-            -- Round Robing Logic
-            RequestRoundRobingMasked <= RequestWeightsMasked and r.RoundRobingMask;
+            -- Round Robin Logic
+            RequestRoundRobinMasked <= RequestWeightsMasked and r.RoundRobinMask;
 
             -- Generate Grant
-            if unsigned(GrantRoundRobingMasked) = 0 then
-                Grant_v := GrantRoundRobingUnmasked;
+            if unsigned(GrantRoundRobinMasked) = 0 then
+                Grant_v := GrantRoundRobinUnmasked;
             else
-                Grant_v := GrantRoundRobingMasked;
+                Grant_v := GrantRoundRobinMasked;
             end if;
 
             -- Get Weight of a currently active Grant
@@ -135,12 +135,12 @@ begin
                 v.WeightActive := (others => '0');
             end if;
 
-            -- Update RoundRobingMask
+            -- Update RoundRobinMask
             if (unsigned(Grant_v) /= 0) and (Out_Ready = '1') then
                 v.WeightCnt := r.WeightCnt + 1;
 
                 if not (r.WeightCnt < v.WeightActive - 1) then
-                    v.RoundRobingMask := '0' & ppcOr(Grant_v(Grant_v'high downto 1));
+                    v.RoundRobinMask := '0' & ppcOr(Grant_v(Grant_v'high downto 1));
                     v.WeightCnt       := (others => '0');
                 end if;
             end if;
@@ -165,7 +165,7 @@ begin
             if rising_edge(Clk) then
                 r <= r_next;
                 if Rst = '1' then
-                    r.RoundRobingMask <= (others => '0');
+                    r.RoundRobinMask <= (others => '0');
                     r.WeightCnt       <= (others => '0');
                     r.GrantIdx        <= 0;
                     r.WeightActive    <= (others => '0');
@@ -182,8 +182,8 @@ begin
             port map (
                 Clk       => Clk,
                 Rst       => Rst,
-                In_Req    => RequestRoundRobingMasked,
-                Out_Grant => GrantRoundRobingMasked
+                In_Req    => RequestRoundRobinMasked,
+                Out_Grant => GrantRoundRobinMasked
             );
 
         i_prio_unmasked : entity work.olo_base_arb_prio
@@ -195,7 +195,7 @@ begin
                 Clk       => Clk,
                 Rst       => Rst,
                 In_Req    => RequestWeightsMasked,
-                Out_Grant => GrantRoundRobingUnmasked
+                Out_Grant => GrantRoundRobinUnmasked
             );
 
     end generate;
