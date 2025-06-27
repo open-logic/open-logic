@@ -1,37 +1,41 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2025 by Oliver Bründler
+-- Copyright (c) 2025 by Oliver Bründler, Rene Brglez
 -- All rights reserved.
--- Authors: Rene Brglez (rene.brglez@gmail.com)
+-- Authors: Rene Brglez
 ---------------------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------------------
 -- Libraries
 ---------------------------------------------------------------------------------------------------
 library ieee;
-    use ieee.std_logic_1164.all;
-    use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library vunit_lib;
-    context vunit_lib.vunit_context;
+context vunit_lib.vunit_context;
+context vunit_lib.com_context;
+context vunit_lib.vc_context;
 
 library OSVVM ;
-    use OSVVM.RandomBasePkg.all ;
-    use OSVVM.RandomPkg.all ;
+use OSVVM.RandomBasePkg.all ;
+use OSVVM.RandomPkg.all ;
 
 library olo;
-    use olo.olo_base_pkg_math.all;
-    use olo.olo_base_pkg_logic.all;
+use olo.olo_base_pkg_math.all;
+use olo.olo_base_pkg_logic.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
 ---------------------------------------------------------------------------------------------------
+-- vunit: run_all_in_same_sim
 entity olo_base_arb_wrr_tb is
     generic (
-        runner_cfg    : string;
-        GrantWidth_g  : positive;
-        WeightWidth_g : positive;
-        Seed_g        : positive := 42
+        runner_cfg        : string;
+        GrantWidth_g      : positive;
+        WeightWidth_g     : positive;
+        RandomStall_g     : boolean;
+        Seed_g            : positive;
+        MaxRandomWeight_g : positive := 8
     );
 end entity;
 
@@ -59,56 +63,37 @@ architecture sim of olo_base_arb_wrr_tb is
     constant Tpd_c           : time     := Clk_Period_c / 10;
     constant NumCycles       : positive := 4;
 
+    constant AxisSlave_c : axi_stream_slave_t := new_axi_stream_slave (
+            data_length  => GrantWidth_g,
+            stall_config => new_stall_config(choose(RandomStall_g, 0.5, 0.0), 0, 2)
+        );
+
     -----------------------------------------------------------------------------------------------
     -- Procedures
     -----------------------------------------------------------------------------------------------
-    procedure check_weighted_grant (
-            signal Clk                : in    std_logic;
-            CycleIdx                  : in    natural;
-            GrantIdx                  : in    natural;
-            signal In_Req             : in    std_logic_vector;
-            signal In_Weights         : in    std_logic_vector;
-            signal ActualGrant        : in    std_logic_vector;
-            signal ActualValid        : in    std_logic;
-            variable LastCheckedGrant : inout natural;
-            constant Tpd              : in    time    := Tpd_c;
-            constant WeightWidth      : in    natural := WeightWidth_g
+    -- *** Procedures ***
+    procedure checkAxiStreamData (
+            signal net   : inout network_t;
+            expectedData :       std_logic_vector
         ) is
-        variable Weight_v        : natural;
-        variable ExpectedGrant_v : std_logic_vector(ActualGrant'range);
     begin
-        -- Extract the weight for the current grant index from the weight vector
-        Weight_v := fromUslv(In_Weights((GrantIdx + 1) * WeightWidth - 1 downto GrantIdx * WeightWidth));
-        -- Set the next expected grant vector
-        ExpectedGrant_v           := (others => '0');
-        ExpectedGrant_v(GrantIdx) := '1';
-
-        if (In_Req(GrantIdx) = '1') then
-
-            for CheckIdx in 0 to Weight_v - 1 loop
-                info(
-                    "CycleIdx = " & to_string(CycleIdx) & " " &
-                    "GrantIdx = " & to_string(GrantIdx) & " " &
-                    "CheckIdx = " & to_string(CheckIdx) & " " &
-                    "Weight = " & to_string(Weight_v) & " " &
-                    "ExpectedGrant = " & to_string(ExpectedGrant_v) & " " &
-                    "ActualGrant = " & to_string(Out_Grant)
-                );
-                check_equal(Out_Grant, ExpectedGrant_v, "Out_Grant Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                wait for Tpd;
-            end loop;
-
-            -- Save the most recent grant index that was checked and not skipped
-            LastCheckedGrant := GrantIdx;
-        else
-            info(
-                "CycleIdx = " & to_string(CycleIdx) & " " &
-                "Skipped GrantIdx = " & to_string(GrantIdx) & " because its corresponding request is not active"
-            );
-        end if;
+        check_axi_stream(
+            net,
+            AxisSlave_c,
+            expectedData,
+            blocking => true,
+            msg      => "data " & to_string(expectedData)
+        );
     end procedure;
+
+    function getWeightAtIdx (
+            weightVec   : std_logic_vector;
+            weightIdx   : integer;
+            WeightWidth : integer := WeightWidth_g
+        ) return integer is
+    begin
+        return fromUslv(weightVec((weightIdx + 1) * WeightWidth - 1 downto weightIdx * WeightWidth));
+    end function getWeightAtIdx;
 
 begin
 
@@ -131,6 +116,20 @@ begin
         );
 
     -----------------------------------------------------------------------------------------------
+    -- Verification Components
+    -----------------------------------------------------------------------------------------------
+    vc_response : entity vunit_lib.axi_stream_slave
+        generic map (
+            Slave => AxisSlave_c
+        )
+        port map (
+            AClk   => Clk,
+            TValid => Out_Valid,
+            TReady => Out_Ready,
+            TData  => Out_Grant
+        );
+
+    -----------------------------------------------------------------------------------------------
     -- Clock
     -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5 * Clk_Period_c;
@@ -138,19 +137,424 @@ begin
     -----------------------------------------------------------------------------------------------
     -- TB Control
     -----------------------------------------------------------------------------------------------
-    -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
-        variable ExpectedGrant_v    : std_logic_vector(Out_Grant'range);
-        variable Weight_v           : integer;
-        variable LastCheckedGrant_v : natural;
-        variable RandGen_v          : RandomPType;
+        variable Rand_v          : RandomPType;
+        variable Weight_v        : integer;
+        variable WeightStdlv_v   : std_logic_vector(WeightWidth_g - 1 downto 0);
+        variable In_Req_v        : std_logic_vector(In_Req'range);
+        variable In_Weights_v    : std_logic_vector(In_Weights'range);
+        variable ExpectedGrant_v : std_logic_vector(Out_Grant'range);
+        variable HighIdx_v       : integer;
+        variable LowIdx_v        : integer;
+
+        procedure configureWeights(
+                config : string
+            ) is
+        begin
+            --------------------------------------------------------------------
+            if (config = "RoundRobinWeights") then
+                info("Set Weights to behave as Round Robin arbiter");
+                for i in 0 to GrantWidth_g - 1 loop
+                    In_Weights_v((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) :=
+                        toUslv(1, WeightWidth_g);
+                end loop;
+                In_Weights <= In_Weights_v;
+
+            --------------------------------------------------------------------
+            elsif (config = "IncrementingWeights") then
+                info("Set Incrementing Weights");
+                for i in 0 to GrantWidth_g - 1 loop
+                    WeightStdlv_v := toUslv(i + 1, WeightWidth_g);
+                    if (unsigned(WeightStdlv_v) = 0) then
+                        WeightStdlv_v := toUslv(1, WeightWidth_g);
+                    end if;
+                    In_Weights_v((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) :=
+                        WeightStdlv_v;
+                    info("Weight(" & to_string(i) & ") = " & to_string(fromUslv(WeightStdlv_v)));
+                end loop;
+                In_Weights <= In_Weights_v;
+
+            --------------------------------------------------------------------
+            elsif (config = "RandomPositiveWeights") then
+                info("Set Random Positive Weights");
+                for i in 0 to GrantWidth_g - 1 loop
+                    WeightStdlv_v := toUslv(Rand_v.RandInt(1, MaxRandomWeight_g), WeightWidth_g);
+                    if (unsigned(WeightStdlv_v) = 0) then
+                        WeightStdlv_v := toUslv(1, WeightWidth_g);
+                    end if;
+                    In_Weights_v((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) :=
+                        WeightStdlv_v;
+                    info("Weight(" & to_string(i) & ") = " & to_string(fromUslv(WeightStdlv_v)));
+                end loop;
+                In_Weights <= In_Weights_v;
+            end if;
+        end procedure;
+
+        procedure testAllBitsRequests is
+        begin
+            -- Set All Bits in Request Vector
+            In_Req_v := (others => '1');
+            In_Req   <= In_Req_v;
+            info("In_Req_v = " & to_string(In_Req_v));
+
+            -- Simulate arbitration over two cycles
+            for CycleIdx in 0 to 2 - 1 loop
+                -- Iterate through all unique one-hot expected grant values
+                for GrantIdx in GrantWidth_g - 1 downto 0 loop
+                    Weight_v := getWeightAtIdx(In_Weights_v, GrantIdx);
+
+                    ExpectedGrant_v           := (others => '0');
+                    ExpectedGrant_v(GrantIdx) := '1';
+                    for i in 0 to Weight_v - 1 loop
+                        checkAxiStreamData(net, ExpectedGrant_v);
+                    end loop;
+                end loop;
+            end loop;
+            -- Wait before moving to the next test
+            wait for Clk_Period_c * 5;
+        end procedure;
+
+        procedure testSlidigWindowRequests (
+                WindowWidth : positive
+            ) is
+        begin
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if (WindowWidth = 1) then
+                -- Slide the window over the vector of width GrantWidth_g
+                for WindowBaseIdx in 0 to GrantWidth_g - WindowWidth loop
+                    HighIdx_v := WindowBaseIdx + WindowWidth - 1;
+                    LowIdx_v  := WindowBaseIdx;
+
+                    ------------------------------------------------------------
+                    -- Set Request Pattern
+                    In_Req_v                            := (others => '0');
+                    In_Req_v(HighIdx_v downto LowIdx_v) := "1";
+                    In_Req                              <= In_Req_v;
+                    info("In_Req_v = " & to_string(In_Req_v));
+
+                    ExpectedGrant_v := (others => '0');
+                    -- Simulate arbitration over two cycles
+                    for CycleIdx in 0 to 2 - 1 loop
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 0);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "1";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                    end loop;
+                    -- Wait before sliding to the next window
+                    wait for Clk_Period_c;
+                end loop;
+                -- Wait before moving to the next test
+                wait for Clk_Period_c * 5;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            elsif (WindowWidth = 2) then
+                -- Slide the window over the vector of width GrantWidth_g
+                for WindowBaseIdx in 0 to GrantWidth_g - WindowWidth loop
+                    HighIdx_v := WindowBaseIdx + WindowWidth - 1;
+                    LowIdx_v  := WindowBaseIdx;
+
+                    ------------------------------------------------------------
+                    -- Set Request Pattern
+                    In_Req_v                            := (others => '0');
+                    In_Req_v(HighIdx_v downto LowIdx_v) := "11";
+                    In_Req                              <= In_Req_v;
+                    info("In_Req_v = " & to_string(In_Req_v));
+
+                    ExpectedGrant_v := (others => '0');
+                    -- Simulate arbitration over two cycles
+                    for CycleIdx in 0 to 2 - 1 loop
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 0);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "10";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 1);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "01";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                    end loop;
+                    -- Wait before sliding to the next window
+                    wait for Clk_Period_c;
+                end loop;
+                -- Wait before moving to the next test
+                wait for Clk_Period_c * 5;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            elsif (WindowWidth = 3) then
+                -- Slide the window over the vector of width GrantWidth_g
+                for WindowBaseIdx in 0 to GrantWidth_g - WindowWidth loop
+                    HighIdx_v := WindowBaseIdx + WindowWidth - 1;
+                    LowIdx_v  := WindowBaseIdx;
+
+                    ------------------------------------------------------------
+                    -- Set Request Pattern
+                    In_Req_v                            := (others => '0');
+                    In_Req_v(HighIdx_v downto LowIdx_v) := "111";
+                    In_Req                              <= In_Req_v;
+                    info("In_Req_v = " & to_string(In_Req_v));
+
+                    ExpectedGrant_v := (others => '0');
+                    -- Simulate arbitration over two cycles
+                    for CycleIdx in 0 to 2 - 1 loop
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 0);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "100";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 1);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "010";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 2);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "001";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                    end loop;
+
+                    ------------------------------------------------------------
+                    -- Set Request Pattern
+                    In_Req_v                            := (others => '0');
+                    In_Req_v(HighIdx_v downto LowIdx_v) := "101";
+                    In_Req                              <= In_Req_v;
+                    info("In_Req_v = " & to_string(In_Req_v));
+
+                    ExpectedGrant_v := (others => '0');
+                    -- Simulate arbitration over two cycles
+                    for CycleIdx in 0 to 2 - 1 loop
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 0);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "100";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 2);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "001";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                    end loop;
+                    -- Wait before sliding to the next window
+                    wait for Clk_Period_c;
+                end loop;
+                -- Wait before moving to the next test
+                wait for Clk_Period_c * 5;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            elsif (WindowWidth = 4) then
+                -- Slide the window over the vector of width GrantWidth_g
+                for WindowBaseIdx in 0 to GrantWidth_g - WindowWidth loop
+                    HighIdx_v := WindowBaseIdx + WindowWidth - 1;
+                    LowIdx_v  := WindowBaseIdx;
+
+                    ------------------------------------------------------------
+                    -- Set Request Pattern
+                    In_Req_v                            := (others => '0');
+                    In_Req_v(HighIdx_v downto LowIdx_v) := "1111";
+                    In_Req                              <= In_Req_v;
+                    info("In_Req_v = " & to_string(In_Req_v));
+
+                    ExpectedGrant_v := (others => '0');
+                    -- Simulate arbitration over two cycles
+                    for CycleIdx in 0 to 2 - 1 loop
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 0);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "1000";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 1);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0100";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 2);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0010";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 3);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0001";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                    end loop;
+
+                    ------------------------------------------------------------
+                    -- Set Request Pattern
+                    In_Req_v                            := (others => '0');
+                    In_Req_v(HighIdx_v downto LowIdx_v) := "1101";
+                    In_Req                              <= In_Req_v;
+                    info("In_Req_v = " & to_string(In_Req_v));
+
+                    ExpectedGrant_v := (others => '0');
+                    -- Simulate arbitration over two cycles
+                    for CycleIdx in 0 to 2 - 1 loop
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 0);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "1000";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 1);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0100";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 3);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0001";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                    end loop;
+
+                    ------------------------------------------------------------
+                    -- Set Request Pattern
+                    In_Req_v                            := (others => '0');
+                    In_Req_v(HighIdx_v downto LowIdx_v) := "1011";
+                    In_Req                              <= In_Req_v;
+                    info("In_Req_v = " & to_string(In_Req_v));
+
+                    ExpectedGrant_v := (others => '0');
+                    -- Simulate arbitration over two cycles
+                    for CycleIdx in 0 to 2 - 1 loop
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 0);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "1000";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 2);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0010";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 3);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0001";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                    end loop;
+
+                    ------------------------------------------------------------
+                    -- Set Request Pattern
+                    In_Req_v                            := (others => '0');
+                    In_Req_v(HighIdx_v downto LowIdx_v) := "1001";
+                    In_Req                              <= In_Req_v;
+                    info("In_Req_v = " & to_string(In_Req_v));
+
+                    ExpectedGrant_v := (others => '0');
+                    -- Simulate arbitration over two cycles
+                    for CycleIdx in 0 to 2 - 1 loop
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 0);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "1000";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                        --------------------------------------------------------
+                        Weight_v := getWeightAtIdx(In_Weights_v, HighIdx_v - 3);
+
+                        ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0001";
+                        for i in 0 to Weight_v - 1 loop
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        end loop;
+                        --------------------------------------------------------
+
+                    end loop;
+                    -- Wait before sliding to the next window
+                    wait for Clk_Period_c;
+                end loop;
+                -- Wait before moving to the next test
+                wait for Clk_Period_c * 5;
+            end if;
+        end procedure;
+
     begin
         test_runner_setup(runner, runner_cfg);
 
         -- Initialize the random generator with a fixed seed for reproducible test results
-        RandGen_v.InitSeed(Seed_g);
+        Rand_v.InitSeed(Seed_g);
 
         while test_suite loop
 
@@ -161,458 +565,175 @@ begin
 
             --------------------------------------------------------------------
             --------------------------------------------------------------------
-            if run("RRLikeWeights_SingleBit") then
-                -- Set Weights to behave as Round Robin arbiter
-                for i in 0 to GrantWidth_g - 1 loop
-                    In_Weights((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) <=
-                        toUslv(1, WeightWidth_g);
-                end loop;
-                -- Always Rdy
-                Out_Ready <= '1';
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                ExpectedGrant_v := (others => '0');
-                check_equal(Out_Grant, ExpectedGrant_v, "Wrong value after reset");
-                check_equal(Out_Valid, '0', "Valid high unexpectedly");
-                wait until rising_edge(Clk);
-                In_Req                     <= (others => '0');
-                In_Req(3 mod GrantWidth_g) <= '1';
-                wait for Tpd_c;
-                check_equal(Out_Grant, In_Req, "Out_Grant 1 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, In_Req, "Out_Grant 2 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                In_Req <= (others => '0');
-                wait for Tpd_c;
-                check_equal(Out_Grant, In_Req, "Out_Grant not de-asserted");
-                check_equal(Out_Valid, '0', "Valid high unexpectedly");
-                wait for Clk_Period_c * 10;
-            end if;
+            if run("ValidInactive_BecauseRequests") then
+                -- Set All Weights high
+                In_Weights_v := (others => '1');
+                In_Weights   <= In_Weights_v;
 
-            --------------------------------------------------------------------
-            --------------------------------------------------------------------
-            if run("RRLikeWeights_MultiBit") and GrantWidth_g = 5 then
-                -- Set Weights to behave as Round Robin arbiter
-                for i in 0 to GrantWidth_g - 1 loop
-                    In_Weights((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) <=
-                        toUslv(1, WeightWidth_g);
-                end loop;
-                -- Always Rdy
-                Out_Ready <= '1';
-                wait until rising_edge(Clk);
-                In_Req <= "10000";
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#10000#, "Out_Grant 3 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                In_Req <= "10111";
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00100#, "Out_Grant 4 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00010#, "Out_Grant 5 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00001#, "Out_Grant 6 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#10000#, "Out_Grant 7 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00100#, "Out_Grant 8 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                In_Req <= "00001";
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00001#, "Out_Grant 9 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                In_Req <= "11001";
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#10000#, "Out_Grant 10 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#01000#, "Out_Grant 11 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                In_Req <= "00000";
-                wait for Clk_Period_c * 10;
-            end if;
+                for CycleIdx in 0 to 2 - 1 loop
+                    ------------------------------------------------------------
+                    -- Set all requests low
+                    -- Check if Out_Valid = '0'
+                    In_Req_v := (others => '0');
+                    In_Req   <= In_Req_v;
 
-            --------------------------------------------------------------------
-            --------------------------------------------------------------------
-            if run("RRLikeWeights_ReadyLow") and GrantWidth_g = 5 then
-                -- Set Weights to behave as Round Robin arbiter
-                for i in 0 to GrantWidth_g - 1 loop
-                    In_Weights((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) <=
-                        toUslv(1, WeightWidth_g);
-                end loop;
-                -- Start test
-                Out_Ready <= '0';
-                In_Req    <= "10011";
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#10000#, "Out_Grant 12 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                Out_Ready <= '1';
-                check_equal(Out_Grant, 2#10000#, "Out_Grant 12 not kept");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                Out_Ready <= '0';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00010#, "Out_Grant 13 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                Out_Ready <= '1';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00010#, "Out_Grant 13 not kept");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                Out_Ready <= '0';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00001#, "Out_Grant 14 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                Out_Ready <= '1';
-                wait for Tpd_c;
-                In_Req <= "10001";
-                check_equal(Out_Grant, 2#00001#, "Out_Grant 14 not kept");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                Out_Ready <= '0';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#10000#, "Out_Grant 15 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                Out_Ready <= '1';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#10000#, "Out_Grant 15 not kept");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                Out_Ready <= '0';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00001#, "Out_Grant 16 Wrong");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                wait until rising_edge(Clk);
-                Out_Ready <= '1';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00001#, "Out_Grant 16 not kept");
-                check_equal(Out_Valid, '1', "Valid low unexpectedly");
-                Out_Ready <= '0';
-                In_Req    <= "00000";
-                wait for Clk_Period_c * 10;
-            end if;
-
-            --------------------------------------------------------------------
-            --------------------------------------------------------------------
-            if run("RRLikeWeights_ExampleFromDoc") and GrantWidth_g = 5 then
-                -- Set Weights to behave as Round Robin arbiter
-                for i in 0 to GrantWidth_g - 1 loop
-                    In_Weights((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) <=
-                        toUslv(1, WeightWidth_g);
-                end loop;
-                Out_Ready <= '0';
-                wait until rising_edge(Clk);
-                In_Req <= "10110";
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#10000#, "Out_Grant Wrong, Doc 0");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#10000#, "Out_Grant Wrong, Doc 1");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 1");
-                wait until rising_edge(Clk);
-                Out_Ready <= '1';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#10000#, "Out_Grant Wrong, Doc 2");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 2");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00100#, "Out_Grant Wrong, Doc 3");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 3");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00010#, "Out_Grant Wrong, Doc 4");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 4");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#10000#, "Out_Grant Wrong, Doc 5");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 5");
-                wait until rising_edge(Clk);
-                Out_Ready <= '0';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00100#, "Out_Grant Wrong, Doc 6");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 6");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00100#, "Out_Grant Wrong, Doc 7");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 7");
-                wait until rising_edge(Clk);
-                In_Req <= "01100";
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#01000#, "Out_Grant Wrong, Doc 8");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 8");
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#01000#, "Out_Grant Wrong, Doc 9");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 9");
-                wait until rising_edge(Clk);
-                Out_Ready <= '1';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#01000#, "Out_Grant Wrong, Doc 10");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 10");
-                wait until rising_edge(Clk);
-                Out_Ready <= '0';
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00100#, "Out_Grant Wrong, Doc 11");
-                check_equal(Out_Valid, '1', "Valid Wrong, Doc 11");
-                wait until rising_edge(Clk);
-                In_Req <= "00000";
-                wait for Tpd_c;
-                check_equal(Out_Grant, 2#00000#, "Out_Grant Wrong, Doc 12");
-                check_equal(Out_Valid, '0', "Valid Wrong, Doc 12");
-                wait for Clk_Period_c * 10;
-            end if;
-
-            --------------------------------------------------------------------
-            --------------------------------------------------------------------
-            if run("IncrementingWeights_AllBits") then
-                -- Set Incementing Weights
-                for i in 0 to GrantWidth_g - 1 loop
-                    In_Weights((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) <=
-                        toUslv(i + 1, WeightWidth_g);
-                end loop;
-                -- Always Rdy
-                Out_Ready <= '1';
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                ExpectedGrant_v := (others => '0');
-                check_equal(Out_Grant, ExpectedGrant_v, "Wrong value after reset");
-                check_equal(Out_Valid, '0', "Valid high unexpectedly");
-                wait until rising_edge(Clk);
-                In_Req <= (others => '1');
-                wait for Tpd_c;
-                for CycleIdx in 0 to NumCycles - 1 loop
-                    -- Loop over each grant index (MSB to LSB)
-                    for GrantIdx in GrantWidth_g - 1 downto 0 loop
-                        check_weighted_grant(
-                            Clk              => Clk,
-                            CycleIdx         => CycleIdx,
-                            GrantIdx         => GrantIdx,
-                            In_Req           => In_Req,
-                            In_Weights       => In_Weights,
-                            ActualGrant      => Out_Grant,
-                            ActualValid      => Out_Valid,
-                            LastCheckedGrant => LastCheckedGrant_v
-                        );
-                    end loop;
-                end loop;
-                wait for Clk_Period_c * 10;
-            end if;
-
-            --------------------------------------------------------------------
-            --------------------------------------------------------------------
-            if run("DecrementingWeights_AllBits") then
-                -- Set Incementing Weights
-                for i in 0 to GrantWidth_g - 1 loop
-                    In_Weights((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) <=
-                        toUslv(GrantWidth_g - i, WeightWidth_g);
-                end loop;
-                -- Always Rdy
-                Out_Ready <= '1';
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                ExpectedGrant_v := (others => '0');
-                check_equal(Out_Grant, ExpectedGrant_v, "Wrong value after reset");
-                check_equal(Out_Valid, '0', "Valid high unexpectedly");
-                wait until rising_edge(Clk);
-                In_Req <= (others => '1');
-                wait for Tpd_c;
-                for CycleIdx in 0 to NumCycles - 1 loop
-                    -- Loop over each grant index (MSB to LSB)
-                    for GrantIdx in GrantWidth_g - 1 downto 0 loop
-                        check_weighted_grant(
-                            Clk              => Clk,
-                            CycleIdx         => CycleIdx,
-                            GrantIdx         => GrantIdx,
-                            In_Req           => In_Req,
-                            In_Weights       => In_Weights,
-                            ActualGrant      => Out_Grant,
-                            ActualValid      => Out_Valid,
-                            LastCheckedGrant => LastCheckedGrant_v
-                        );
-                    end loop;
-                end loop;
-                wait for Clk_Period_c * 10;
-            end if;
-
-            --------------------------------------------------------------------
-            --------------------------------------------------------------------
-            if run("RandomNonZeroWeights_AllBits") then
-                -- Set Random Weights
-                for i in 0 to GrantWidth_g - 1 loop
-                    In_Weights((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) <=
-                        toUslv(RandGen_v.RandInt(1, 2 ** WeightWidth_g - 1), WeightWidth_g);
-                end loop;
-                -- Always Rdy
-                Out_Ready <= '1';
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                ExpectedGrant_v := (others => '0');
-                check_equal(Out_Grant, ExpectedGrant_v, "Wrong value after reset");
-                check_equal(Out_Valid, '0', "Valid high unexpectedly");
-                wait until rising_edge(Clk);
-                In_Req <= (others => '1');
-                wait for Tpd_c;
-                for CycleIdx in 0 to NumCycles - 1 loop
-                    -- Loop over each grant index (MSB to LSB)
-                    for GrantIdx in GrantWidth_g - 1 downto 0 loop
-                        check_weighted_grant(
-                            Clk              => Clk,
-                            CycleIdx         => CycleIdx,
-                            GrantIdx         => GrantIdx,
-                            In_Req           => In_Req,
-                            In_Weights       => In_Weights,
-                            ActualGrant      => Out_Grant,
-                            ActualValid      => Out_Valid,
-                            LastCheckedGrant => LastCheckedGrant_v
-                        );
-                    end loop;
-                end loop;
-                wait for Clk_Period_c * 10;
-            end if;
-
-            --------------------------------------------------------------------
-            --------------------------------------------------------------------
-            if run("AlternatingZeroWeights_AllBits") then
-                for i in 0 to GrantWidth_g - 1 loop
-                    In_Weights((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) <=
-                        toUslv(i mod 2, WeightWidth_g);
-                end loop;
-                -- Always Rdy
-                Out_Ready <= '1';
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                ExpectedGrant_v := (others => '0');
-                check_equal(Out_Grant, ExpectedGrant_v, "Wrong value after reset");
-                check_equal(Out_Valid, '0', "Valid high unexpectedly");
-                wait until rising_edge(Clk);
-                In_Req <= (others => '1');
-                wait for Tpd_c;
-                for CycleIdx in 0 to NumCycles - 1 loop
-                    -- Loop over each grant index (MSB to LSB)
-                    for GrantIdx in GrantWidth_g - 1 downto 0 loop
-                        check_weighted_grant(
-                            Clk              => Clk,
-                            CycleIdx         => CycleIdx,
-                            GrantIdx         => GrantIdx,
-                            In_Req           => In_Req,
-                            In_Weights       => In_Weights,
-                            ActualGrant      => Out_Grant,
-                            ActualValid      => Out_Valid,
-                            LastCheckedGrant => LastCheckedGrant_v
-                        );
-                    end loop;
-                end loop;
-                wait for Clk_Period_c * 10;
-            end if;
-
-            --------------------------------------------------------------------
-            --------------------------------------------------------------------
-            if run("ChangingRandomNonZeroWeights_AllBits") then
-                -- Always Rdy
-                Out_Ready <= '1';
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                ExpectedGrant_v := (others => '0');
-                check_equal(Out_Grant, ExpectedGrant_v, "Wrong value after reset");
-                check_equal(Out_Valid, '0', "Valid high unexpectedly");
-                wait until rising_edge(Clk);
-                In_Req <= (others => '1');
-                for CycleIdx in 0 to NumCycles - 1 loop
-                    -- Randomize the weights each cycle
-                    for i in 0 to GrantWidth_g - 1 loop
-                        In_Weights((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) <=
-                            toUslv(RandGen_v.RandInt(1, 2 ** WeightWidth_g - 1), WeightWidth_g);
-                    end loop;
-                    wait for Tpd_c;
-                    -- Loop over each grant index (MSB to LSB)
-                    for GrantIdx in GrantWidth_g - 1 downto 0 loop
-                        check_weighted_grant(
-                            Clk              => Clk,
-                            CycleIdx         => CycleIdx,
-                            GrantIdx         => GrantIdx,
-                            In_Req           => In_Req,
-                            In_Weights       => In_Weights,
-                            ActualGrant      => Out_Grant,
-                            ActualValid      => Out_Valid,
-                            LastCheckedGrant => LastCheckedGrant_v
-                        );
-                    end loop;
-                end loop;
-                wait for Clk_Period_c * 10;
-            end if;
-
-            --------------------------------------------------------------------
-            --------------------------------------------------------------------
-            if run("RandomNonZeroWeights_RandomNonZeroRequests") then
-                -- Set Random Weights
-                for i in 0 to GrantWidth_g - 1 loop
-                    In_Weights((i + 1) * WeightWidth_g - 1 downto i * WeightWidth_g) <=
-                        toUslv(RandGen_v.RandInt(1, 2 ** WeightWidth_g - 1), WeightWidth_g);
-                end loop;
-                -- Always Rdy
-                Out_Ready <= '1';
-                wait until rising_edge(Clk);
-                wait for Tpd_c;
-                ExpectedGrant_v := (others => '0');
-                check_equal(Out_Grant, ExpectedGrant_v, "Wrong value after reset");
-                check_equal(Out_Valid, '0', "Valid high unexpectedly");
-                wait until rising_edge(Clk);
-
-                LastCheckedGrant_v := 0;
-                for CycleIdx in 0 to NumCycles - 1 loop
-                    -- Randomize the requests each cycle
-                    In_Req <= toUslv(RandGen_v.RandInt(1, 2 ** GrantWidth_g - 1), GrantWidth_g);
-                    wait for Tpd_c;
-
-                    for GrantIdx in LastCheckedGrant_v - 1 downto 0 loop
-                        check_weighted_grant(
-                            Clk              => Clk,
-                            CycleIdx         => CycleIdx,
-                            GrantIdx         => GrantIdx,
-                            In_Req           => In_Req,
-                            In_Weights       => In_Weights,
-                            ActualGrant      => Out_Grant,
-                            ActualValid      => Out_Valid,
-                            LastCheckedGrant => LastCheckedGrant_v
-                        );
+                    for i in 0 to 16 - 1 loop
+                        wait until rising_edge(Clk);
+                        check_equal(Out_Valid, '0', "Out_Valid high unexpectedly (all requests low)");
                     end loop;
 
-                    -- Loop over each grant index (MSB to LSB)
-                    for GrantIdx in GrantWidth_g - 1 downto 0 loop
-                        check_weighted_grant(
-                            Clk              => Clk,
-                            CycleIdx         => CycleIdx,
-                            GrantIdx         => GrantIdx,
-                            In_Req           => In_Req,
-                            In_Weights       => In_Weights,
-                            ActualGrant      => Out_Grant,
-                            ActualValid      => Out_Valid,
-                            LastCheckedGrant => LastCheckedGrant_v
-                        );
+                    ------------------------------------------------------------
+                    -- Set all requests high
+                    -- Check if Out_Valid = '1'
+                    In_Req_v := (others => '1');
+                    In_Req   <= In_Req_v;
+
+                    for i in 0 to 16 - 1 loop
+                        wait until rising_edge(Clk);
+                        check_equal(Out_Valid, '1', "Out_Valid low unexpectedly (all requests high)");
                     end loop;
                 end loop;
-                wait for Clk_Period_c * 10;
+                -- Wait before moving to the next test
+                wait for Clk_Period_c * 5;
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("ValidInactive_BecauseWeights") then
+                -- Set all Requests high
+                In_Req_v := (others => '1');
+                In_Req   <= In_Req_v;
+
+                for CycleIdx in 0 to 2 - 1 loop
+                    ------------------------------------------------------------
+                    -- Set all Weights low
+                    -- Check if Out_Valid = '0'
+                    In_Weights_v := (others => '0');
+                    In_Weights   <= In_Weights_v;
+
+                    for i in 0 to 16 - 1 loop
+                        wait until rising_edge(Clk);
+                        check_equal(Out_Valid, '0', "Out_Valid low unexpectedly (all weights low)");
+                    end loop;
+
+                    ------------------------------------------------------------
+                    -- Set all Weights high
+                    -- Check if Out_Valid = '1'
+                    In_Weights_v := (others => '1');
+                    In_Weights   <= In_Weights_v;
+
+                    for i in 0 to 16 - 1 loop
+                        wait until rising_edge(Clk);
+                        check_equal(Out_Valid, '1', "Out_Valid low unexpectedly (all weights high)");
+                    end loop;
+                end loop;
+                -- Wait before moving to the next test
+                wait for Clk_Period_c * 5;
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("RoundRobinWeights_AllBitsRequests") then
+                configureWeights("RoundRobinWeights");
+                testAllBitsRequests;
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("IncrementingWeights_AllBitsRequests") then
+                configureWeights("IncrementingWeights");
+                testAllBitsRequests;
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("RandomPositiveWeights_AllBitsRequests") then
+                configureWeights("RandomPositiveWeights");
+                testAllBitsRequests;
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("RoundRobinWeights_OneBitRequests") then
+                configureWeights("RoundRobinWeights");
+                testSlidigWindowRequests(WindowWidth => 1);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("RoundRobinWeights_TwoBitRequests") and GrantWidth_g >= 2 then
+                configureWeights("RoundRobinWeights");
+                testSlidigWindowRequests(WindowWidth => 2);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("RoundRobinWeights_ThreeBitRequests") and GrantWidth_g >= 3 then
+                configureWeights("RoundRobinWeights");
+                testSlidigWindowRequests(WindowWidth => 3);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("RoundRobinWeights_FourBitRequests") and GrantWidth_g >= 4 then
+                configureWeights("RoundRobinWeights");
+                testSlidigWindowRequests(WindowWidth => 4);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("IncrementingWeights_OneBitRequests") then
+                configureWeights("IncrementingWeights");
+                testSlidigWindowRequests(WindowWidth => 1);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("IncrementingWeights_TwoBitRequests") and GrantWidth_g >= 2 then
+                configureWeights("IncrementingWeights");
+                testSlidigWindowRequests(WindowWidth => 2);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("IncrementingWeights_ThreeBitRequests") and GrantWidth_g >= 3 then
+                configureWeights("IncrementingWeights");
+                testSlidigWindowRequests(WindowWidth => 3);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("IncrementingWeights_FourBitRequests") and GrantWidth_g >= 4 then
+                configureWeights("IncrementingWeights");
+                testSlidigWindowRequests(WindowWidth => 4);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("RandomPositiveWeights_OneBitRequests") then
+                configureWeights("RandomPositiveWeights");
+                testSlidigWindowRequests(WindowWidth => 1);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("RandomPositiveWeights_TwoBitRequests") and GrantWidth_g >= 2 then
+                configureWeights("RandomPositiveWeights");
+                testSlidigWindowRequests(WindowWidth => 2);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("RandomPositiveWeights_ThreeBitRequests") and GrantWidth_g >= 3 then
+                configureWeights("RandomPositiveWeights");
+                testSlidigWindowRequests(WindowWidth => 3);
+            end if;
+
+            --------------------------------------------------------------------
+            --------------------------------------------------------------------
+            if run("RandomPositiveWeights_FourBitRequests") and GrantWidth_g >= 4 then
+                configureWeights("RandomPositiveWeights");
+                testSlidigWindowRequests(WindowWidth => 4);
             end if;
 
         end loop;
