@@ -23,7 +23,7 @@ class olo_fix_round:
     def __init__(self,
                  a_fmt : FixFormat,
                  result_fmt : FixFormat,
-                 round : FixRound = FixRound.Trunc_s):
+                 round : FixRound = FixRound.NonSymPos_s):
         """
         Constructor for the olo_fix_round class.
         :param a_fmt: Format of the a input

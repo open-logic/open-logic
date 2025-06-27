@@ -62,7 +62,7 @@ begin
     -- Only generate code for non-zero sized arbiters to avoid illegal range delcarations
     g_non_zero : if Width_g > 0 generate
 
-        p_comb : process (In_Req) is
+        p_comb : process (all) is
             variable OredRequest_v : std_logic_vector(In_Req'range);
         begin
             -- Or request vector

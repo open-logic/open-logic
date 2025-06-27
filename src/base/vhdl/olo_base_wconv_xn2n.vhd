@@ -76,7 +76,7 @@ begin
         report "olo_base_wconv_n2xn: OutWidth_g must be smaller than InWidth_g"
         severity error;
 
-    p_comb : process (r, In_Valid, In_Data, Out_Ready, In_WordEna, In_Last) is
+    p_comb : process (all) is
         variable v         : TwoProcess_r;
         variable IsReady_v : std_logic;
     begin

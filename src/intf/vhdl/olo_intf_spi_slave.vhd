@@ -110,7 +110,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_comb : process (r, Tx_Data, Tx_Valid, SpiSclk_i, SpiMosi_i, SpiCsn_i) is
+    p_comb : process (all) is
         variable v                  : TwoProcess_r;
         variable CsnRe_v, CsnFe_v   : std_logic;
         variable SclkRe_v, SclkFe_v : std_logic;

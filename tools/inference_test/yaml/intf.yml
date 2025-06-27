@@ -1,0 +1,49 @@
+files:
+  include:
+    - "../../../src/intf/**/*.vhd"  # Glob expressions for files to parse
+
+entities:
+  # olo_intf_clk_meas
+  - entity_name: "olo_intf_clk_meas"
+    configurations:
+      - name: "clk100M"
+        generics:
+          ClkFrequency_g: 100.0e6
+  # olo_intf_debounce
+  - entity_name: "olo_intf_debounce"
+    configurations:
+      - name: "clk100M"
+        generics:
+          ClkFrequency_g: 100.0e6
+  # olo_intf_i2c_master
+  - entity_name: "olo_intf_i2c_master"
+    configurations:
+      - name: "clk100M"
+        generics:
+          ClkFrequency_g: 100.0e6
+          InternalTriState_g: false
+        omitted_ports:
+          - I2c_Scl
+          - I2c_Sda
+  # olo_intf_spi_master
+  - entity_name: "olo_intf_spi_master"
+    configurations:
+      - name: "clk100M"
+        generics:
+          ClkFreq_g: 100.0e6
+  # olo_intf_spi_slave
+  - entity_name: "olo_intf_spi_slave"
+    configurations:
+      - name: "ext_tristate"
+        generics:
+          InternalTriState_g: false
+        omitted_ports:
+          - Spi_Miso
+  # olo_intf_sync
+  - entity_name: "olo_intf_sync"
+  # olo_intf_uart
+  - entity_name: "olo_intf_uart"
+    configurations:
+      - name: "clk100M"
+        generics:
+          ClkFreq_g: 100.0e6

@@ -58,7 +58,7 @@ class ToolGowin(ToolBase):
     def _extract_resource_count(self, line) -> str:
         field = line.split("|")[1].strip()
         res_cnt = field.split("/")[0]
-        return str(res_cnt)
+        return float(res_cnt)
     
     def get_resource_usage(self) -> dict:
         resource_usage = {
@@ -85,5 +85,21 @@ class ToolGowin(ToolBase):
                     resource_usage["DSP"] = self._extract_resource_count(line)
 
         return resource_usage
+    
+    def get_in_reduce_resources(self, size) -> dict:
+        return {
+            "LUT": 0,
+            "Register": size*2,
+            "BSRAM": 0,
+            "DSP": 0,
+        }
+    
+    def get_out_reduce_resources(self, size) -> dict:
+        return {
+            "LUT": size,
+            "Register": size,
+            "BSRAM": 0,
+            "DSP": 0,
+        }
 
     

@@ -182,7 +182,7 @@ begin
     -- *** Pipeline Stage with RDY ***
     g_rdy : if UseReady_g generate
 
-        p_comb : process (In_Valid, In_Data, Out_Ready, r) is
+        p_comb : process (all) is
             variable v         : TwoProcess_r;
             variable IsStuck_v : boolean;
         begin

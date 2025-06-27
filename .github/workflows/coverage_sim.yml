@@ -34,6 +34,7 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET }}
           aws_access_key_id: ${{ secrets.AWS_KEY }}
           aws_build_ami_id: ${{ vars.AWS_BUILD_AMI_ID }}
+          aws_instance_type: ${{ vars.AWS_INSTANCE_TYPE }}
 
   simulation:
     runs-on: [self-hosted, aws]
@@ -44,6 +45,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+      # Run simulation
+      - name: Run Simulation
+        run: |
+          source $LOCAL_TOOLS
+          cd ./sim
+          python3 ./run.py --modelsim --coverage
       # Coverage Simulation (check > 95%)
       # On PRs errors are required if coverage is low
       - name: Check Coverage Level
@@ -51,7 +58,6 @@ jobs:
         run: |
           source $LOCAL_TOOLS
           cd ./sim
-          python3 ./run.py --modelsim --coverage
           python3 ./AnalyzeCoverage.py --min_coverage=95
       # Coverage Simulation (update badges)
       # On main, we want to udpate badges ALWAYS (also if coverage is low)
@@ -60,7 +66,6 @@ jobs:
         run: |
           source $LOCAL_TOOLS
           cd ./sim
-          python3 ./run.py --modelsim --coverage
           python3 ./AnalyzeCoverage.py --badges
 
 

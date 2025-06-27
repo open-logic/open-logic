@@ -87,7 +87,7 @@ begin
     -- Implement conversion logic only if required
     g_convert : if OutWidth_g > InWidth_g generate
 
-        p_comb : process (r, In_Valid, In_Data, Out_Ready, In_Last) is
+        p_comb : process (all) is
             variable v           : TwoProcess_r;
             variable IsStuck_v   : std_logic;
             variable ShiftDone_v : boolean;

@@ -85,8 +85,8 @@ entity olo_intf_i2c_master is
         Status_BusBusy  : out   std_logic;
         Status_CmdTo    : out   std_logic;
         -- I2c Interface with internal Tri-State
-        I2c_Scl         : inout std_logic := 'Z';
-        I2c_Sda         : inout std_logic := 'Z';
+        I2c_Scl         : inout std_logic;
+        I2c_Sda         : inout std_logic;
         -- I2c Interface with external Tri-State
         I2c_Scl_i       : in    std_logic := '0';
         I2c_Scl_o       : out   std_logic;
@@ -155,7 +155,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_comb : process (r, I2cScl_Sync, I2cSda_Sync, Cmd_Valid, Cmd_Command, Cmd_Data, Cmd_Ack) is
+    p_comb : process (all) is
         variable v                     : TwoProcess_r;
         variable SdaRe_v, SdaFe_v      : std_logic;
         variable I2cStart_v, I2cStop_v : std_logic;
@@ -575,8 +575,8 @@ begin
         I2c_Sda_o <= r.SdaOut;
         I2c_Scl_t <= r.SclOut;
         I2c_Sda_t <= r.SdaOut;
-        I2c_Scl   <= 'Z';
-        I2c_Sda   <= 'Z';
+        I2c_Scl   <= '0';
+        I2c_Sda   <= '0';
     end generate;
 
     -----------------------------------------------------------------------------------------------

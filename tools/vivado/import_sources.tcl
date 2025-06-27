@@ -44,11 +44,13 @@ namespace eval olo_import_sources {
 	foreach area {base axi intf fix} {
 		add_files $oloRoot/src/$area/vhdl
 		set_property LIBRARY olo [get_files -all *olo_$area\_*]
+		set_property FILE_TYPE {VHDL 2008} [get_files -all *olo_$area\_*]
 	}
 
 	#Add 3rd party files
 	add_files $oloRoot/3rdParty/en_cl_fix/hdl
 	set_property LIBRARY olo [get_files -all *en_cl_fix\_*]
+	set_property FILE_TYPE {VHDL 2008} [get_files -all *en_cl_fix\_*]
 
 	#For constraints, a new TCL file is created which points to 
 	#... the imported TCL files relatively from the impl_1 directory
@@ -56,26 +58,15 @@ namespace eval olo_import_sources {
 	#... there for execution).
 	variable projectDir [get_property DIRECTORY [current_project]]
 	variable runDir [file normalize $projectDir/prj.runs/impl_x]
-	variable constraintsTcl [relpath $oloRoot/tools/vivado/all_constraints_amd.tcl $runDir] 
 	variable oloDir $projectDir/open_logic
 	
 	#Create open-logic directory if it does not exist
 	if {![file exists $oloDir]} {
 		file mkdir $oloDir
 	}
-	
-	#Create constraints file
-	variable fileId [open $oloDir/olo_scoped_constraints.tcl "w+"]
-	#puts $fileId $runDir
-	#puts $fileId $oloRoot/tools/vivado/all_constraints_amd.tcl
-	puts $fileId "source $constraintsTcl"
-	close $fileId
-	
-	#Add cosntraints file to project
-	add_files -fileset constrs_1 -norecurse $oloDir/olo_scoped_constraints.tcl
-	set_property used_in_synthesis false [get_files $oloDir/olo_scoped_constraints.tcl]
-	set_property used_in_simulation false [get_files $oloDir/olo_scoped_constraints.tcl]
-	set_property PROCESSING_ORDER LATE [get_files $oloDir/olo_scoped_constraints.tcl]
+		
+	#Add constraints
+	source $oloRoot/tools/vivado/all_constraints_amd.tcl
 }
 
 

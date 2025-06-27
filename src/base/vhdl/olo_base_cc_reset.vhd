@@ -102,7 +102,7 @@ architecture struct of olo_base_cc_reset is
 begin
 
     -- Domain A
-    p_a_rst_sync : process (A_Clk, RstBLatch) is
+    p_a_rst_sync : process (RstBLatch, A_Clk) is
     begin
         if RstBLatch = '1' then
             RstRqstB2A <= (others => '1');
@@ -127,7 +127,7 @@ begin
     A_RstOut <= RstALatch or RstRqstB2A(RstRqstB2A'left);
 
     -- Domain B
-    p_b_rst_sync : process (B_Clk, RstALatch) is
+    p_b_rst_sync : process (RstALatch, B_Clk) is
     begin
         if RstALatch = '1' then
             RstRqstA2B <= (others => '1');

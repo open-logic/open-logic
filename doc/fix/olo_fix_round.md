@@ -35,13 +35,13 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ## Generics
 
-| Name        | Type    | Default   | Description                                                  |
-| :---------- | :------ | --------- | :----------------------------------------------------------- |
-| AFmt_g      | string  | -         | Input A format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
-| ResultFmt_g | string  | -         | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
-| Round_g     | string  | "Trunc_s" | Rounding mode<br />String representation of an _en_cl_fix FixRound_t_. |
-| FmtCheck_g  | boolean | true      | If true, an error is thrown in case _ResultFmt_g_ is not as required |
-| RoundReg_g  | string  | "YES"     | Presence of rounding pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if rounding is needed according to the formats chosen |
+| Name        | Type    | Default       | Description                                                  |
+| :---------- | :------ | ------------- | :----------------------------------------------------------- |
+| AFmt_g      | string  | -             | Input A format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
+| ResultFmt_g | string  | -             | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
+| Round_g     | string  | "NonSymPos_s" | Rounding mode<br />String representation of an _en_cl_fix FixRound_t_. |
+| FmtCheck_g  | boolean | true          | If true, an error is thrown in case _ResultFmt_g_ is not as required |
+| RoundReg_g  | string  | "YES"         | Presence of rounding pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if rounding is needed according to the formats chosen |
 
 ## Interfaces
 

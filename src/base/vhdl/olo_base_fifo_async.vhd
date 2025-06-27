@@ -128,7 +128,7 @@ begin
         report "###ERROR###: olo_base_fifo_async: only power of two Depth_g is allowed"
         severity error;
 
-    p_comb : process (In_Valid, Out_Ready, ri, ro, RstInInt, WrAddrGray, RdAddrGray, In_Data) is
+    p_comb : process (all) is
         variable vi        : TwoProcessIn_r;
         variable vo        : TwoProcessOut_r;
         variable InLevel_v : unsigned(log2ceil(Depth_g) downto 0);

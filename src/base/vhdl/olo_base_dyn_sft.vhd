@@ -84,7 +84,7 @@ begin
         severity error;
 
     -- *** Cobinatorial Process ***
-    p_comb : process (r, In_Valid, In_Data, In_Shift) is
+    p_comb : process (all) is
         variable v          : TwoProcess_t;
         variable StepSize_v : natural;
         variable Select_v   : natural range 0 to 2**SelBitsPerStage_g - 1;

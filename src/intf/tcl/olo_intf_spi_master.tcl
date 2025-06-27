@@ -5,7 +5,7 @@
 #-----------------------------------------------------------------------------
 
 # Scoped constraints for olo_intf_spi_master
-# Load in vivado using "read_xdc -ref olo_intf_sync <path>/olo_intf_spi_master.tcl"
+# Load in vivado using "read_xdc -ref olo_intf_spi_master <path>/olo_intf_spi_master.tcl"
 
 # The MISO signal is synchronized through SCLK anyways. Constraints are given to
 # make sure it arrives within one clock and to not hassle with timing errors

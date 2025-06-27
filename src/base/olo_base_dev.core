@@ -1,54 +1,64 @@
 CAPI=2:
 
-name : open-logic:open-logic-dev:base:3.3.0
-description : local files (release plus WIP); Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base
+name : "open-logic:open-logic-dev:base:4.0.0"
+description : "local files (release plus WIP); Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base"
 
 filesets:
   rtl:
     files:
-      - vhdl/olo_base_crc.vhd
-      - vhdl/olo_base_cc_n2xn.vhd
-      - vhdl/olo_base_arb_rr.vhd
-      - vhdl/olo_base_cc_simple.vhd
-      - vhdl/olo_base_ram_sdp.vhd
-      - vhdl/olo_base_delay_cfg.vhd
-      - vhdl/olo_base_decode_firstbit.vhd
-      - vhdl/olo_base_ram_tdp.vhd
-      - vhdl/olo_base_strobe_gen.vhd
-      - vhdl/olo_base_wconv_n2m.vhd
-      - vhdl/olo_base_wconv_n2xn.vhd
-      - vhdl/olo_base_fifo_async.vhd
-      - vhdl/olo_base_arb_prio.vhd
-      - vhdl/olo_base_cc_reset.vhd
-      - vhdl/olo_base_delay.vhd
-      - vhdl/olo_base_prbs.vhd
-      - vhdl/olo_base_tdm_mux.vhd
-      - vhdl/olo_base_cc_handshake.vhd
-      - vhdl/olo_base_pkg_string.vhd
-      - vhdl/olo_base_pkg_array.vhd
-      - vhdl/olo_base_flowctrl_handler.vhd
-      - vhdl/olo_base_dyn_sft.vhd
-      - vhdl/olo_base_strobe_div.vhd
-      - vhdl/olo_base_ram_sp.vhd
-      - vhdl/olo_base_fifo_sync.vhd
-      - vhdl/olo_base_cc_pulse.vhd
-      - vhdl/olo_base_pkg_logic.vhd
-      - vhdl/olo_base_cam.vhd
-      - vhdl/olo_base_pkg_attribute.vhd
-      - vhdl/olo_base_cc_status.vhd
-      - vhdl/olo_base_reset_gen.vhd
-      - vhdl/olo_base_pkg_math.vhd
-      - vhdl/olo_base_wconv_xn2n.vhd
-      - vhdl/olo_base_fifo_packet.vhd
-      - vhdl/olo_base_pl_stage.vhd
-      - vhdl/olo_base_cc_bits.vhd
-      - vhdl/olo_base_cc_xn2n.vhd
-    file_type : vhdlSource
-    logical_name : olo
+      - "vhdl/olo_base_crc.vhd"
+      - "vhdl/olo_base_cc_n2xn.vhd"
+      - "vhdl/olo_base_arb_rr.vhd"
+      - "vhdl/olo_base_cc_simple.vhd"
+      - "vhdl/olo_base_ram_sdp.vhd"
+      - "vhdl/olo_base_delay_cfg.vhd"
+      - "vhdl/olo_base_decode_firstbit.vhd"
+      - "vhdl/olo_base_ram_tdp.vhd"
+      - "vhdl/olo_base_strobe_gen.vhd"
+      - "vhdl/olo_base_wconv_n2m.vhd"
+      - "vhdl/olo_base_wconv_n2xn.vhd"
+      - "vhdl/olo_base_fifo_async.vhd"
+      - "vhdl/olo_base_arb_prio.vhd"
+      - "vhdl/olo_base_cc_reset.vhd"
+      - "vhdl/olo_base_delay.vhd"
+      - "vhdl/olo_base_prbs.vhd"
+      - "vhdl/olo_base_tdm_mux.vhd"
+      - "vhdl/olo_base_cc_handshake.vhd"
+      - "vhdl/olo_base_pkg_string.vhd"
+      - "vhdl/olo_base_pkg_array.vhd"
+      - "vhdl/olo_base_flowctrl_handler.vhd"
+      - "vhdl/olo_base_dyn_sft.vhd"
+      - "vhdl/olo_base_strobe_div.vhd"
+      - "vhdl/olo_base_ram_sp.vhd"
+      - "vhdl/olo_base_fifo_sync.vhd"
+      - "vhdl/olo_base_cc_pulse.vhd"
+      - "vhdl/olo_base_pkg_logic.vhd"
+      - "vhdl/olo_base_cam.vhd"
+      - "vhdl/olo_base_pkg_attribute.vhd"
+      - "vhdl/olo_base_cc_status.vhd"
+      - "vhdl/olo_base_reset_gen.vhd"
+      - "vhdl/olo_base_pkg_math.vhd"
+      - "vhdl/olo_base_wconv_xn2n.vhd"
+      - "vhdl/olo_base_fifo_packet.vhd"
+      - "vhdl/olo_base_pl_stage.vhd"
+      - "vhdl/olo_base_cc_bits.vhd"
+      - "vhdl/olo_base_cc_xn2n.vhd"
+    file_type : "vhdlSource-2008"
+    logical_name : "olo"
+
+  scoped_constraints:
+    files:
+      - "tcl/olo_base_cc_simple.tcl" : {copyto: "base/olo_base_cc_simple.tcl"}
+      - "tcl/olo_base_reset_gen.tcl" : {copyto: "base/olo_base_reset_gen.tcl"}
+      - "tcl/olo_base_cc_reset.tcl" : {copyto: "base/olo_base_cc_reset.tcl"}
+      - "tcl/olo_base_cc_bits.tcl" : {copyto: "base/olo_base_cc_bits.tcl"}
+      - "tcl/olo_base_constraints_amd.tcl"  : {copyto: "base/olo_base_constraints_amd.tcl", file_type: "tclSource"}
+    file_type: "user"
 
 
 targets:
   default:
     filesets :
-      - rtl
+      - "rtl"
+      - "tool_vivado? (scoped_constraints)"
   

@@ -37,7 +37,7 @@ entity olo_fix_saturate is
         -- Formats / Round / Saturate
         AFmt_g      : string;
         ResultFmt_g : string;
-        Saturate_g  : string := FixSaturate_Warn_c;
+        Saturate_g  : string := FixSaturate_Sat_c;
         -- Registers
         SatReg_g    : string := "YES"
     );

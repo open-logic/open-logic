@@ -29,8 +29,11 @@ instances and constrains them correctly. To use the automatic constraints file, 
 [clock crossing principles](../base/clock_crossing_principles.md) but use the constraints file
 `source <path-to-open-logic>/src/intf/tcl/constraints_amd.tcl`
 
-**Note:** Automatic constraining currently only works for _AMD_ tools (_Vivado_) and the usage in VHDL. Manual
-constraints are required for Verilog or other tools.
+**Note:** Automatic constraining currently only works for _AMD_ tools (_Vivado_). Manual
+constraints are required for other tools.
+
+**Note:** For using _Open Logic_ from  in Vivado, manual constraints are required for Versions prior to 2024.2.
+Automatic constraining currently only works for verilog only since 2024.2.
 
 ## Generics
 

@@ -27,11 +27,17 @@ for different technologies (some technologies implement one, some the other beha
 An asynchronous FIFO is a clock-crossing and hence this block follows the general
 [clock-crossing principles](clock_crossing_principles.md). Read through them for more information.
 
+**Note:** This is a symmetric FIFO.
+To build an asymmetric n:xn FIFO (N-bits to a multiple of N-bits), the [olo_base_wconv_n2xn](./olo_base_wconv_n2xn.md)
+can be added on the write side of the FIFO.
+To create an xn:n FIFO (a multiple of N-bits to N-bits), the [olo_base_wconv_xn2n](./olo_base_wconv_xn2n.md)
+can be added on the read side of the FIFO.
+
 ## Generics
 
 | Name            | Type      | Default   | Description                                                  |
 | :-------------- | :-------- | --------- | :----------------------------------------------------------- |
-| Widht_g         | positive  | -         | Number of bits per FIFO entry (word-width)                   |
+| Width_g         | positive  | -         | Number of bits per FIFO entry (word-width)                   |
 | Depth_g         | positive  | -         | Number of FIFO entries. <br />This **must** be a power of two. See [Architecture](#architecture) for more details. |
 | AlmFullOn_g     | boolean   | false     | If set to true, the _AlmFull_ (almost full) status flag is generated (otherwise it is omitted) |
 | AlmFullLevel_g  | natural   | 0         | Level to generate _AlmFull_ flag at. <br>Has no effect if _AlmFullOn_g_ = false |

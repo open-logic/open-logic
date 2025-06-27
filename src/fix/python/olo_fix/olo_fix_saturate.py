@@ -23,7 +23,7 @@ class olo_fix_saturate:
     def __init__(self,
                  a_fmt : FixFormat,
                  result_fmt : FixFormat,
-                 saturate : FixSaturate = FixSaturate.Warn_s):
+                 saturate : FixSaturate = FixSaturate.Sat_s):
         """
         Constructor for the olo_fix_resize class.
         :param a_fmt: Format of the a input

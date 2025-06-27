@@ -29,6 +29,7 @@ argv = sys.argv[1:]
 SIMULATOR = Simulator.GHDL
 USE_COVERAGE = False
 GENERATE_VHDL_LS_TOML = False
+GENERATE_COMPILE_LIST = False
 
 #Simulator Selection
 #.. The environment variable VUNIT_SIMULATOR has precedence over the commandline options.
@@ -49,6 +50,9 @@ if "--coverage" in sys.argv:
 if "--vhdl_ls" in sys.argv:
     GENERATE_VHDL_LS_TOML = True
     argv.remove("--vhdl_ls")
+if "--compile_list" in sys.argv:
+    GENERATE_COMPILE_LIST = True
+    argv.remove("--compile_list")
 
 
 # Obviously the simulator must be chosen before sources are added
@@ -98,6 +102,20 @@ for area in [olo_base, olo_axi, olo_intf, olo_fix]:
 ########################################################################################################################
 # Execution
 ########################################################################################################################
+
+# Generate compile list if needed
+if GENERATE_COMPILE_LIST:
+    #Generate list of files in the compile order
+    compile_order = []
+    vunit_compile_order = [item for item in vu.get_compile_order() if item.library.name == "olo"]
+    for item in vunit_compile_order:
+        path = os.path.relpath(item.name, os.path.join(os.path.dirname(__file__), ".."))
+        compile_order.append(path)
+    # Write file
+    with open("../compile_order.txt", "w") as f:
+        for item in compile_order:
+            f.write(item + "\n")
+    exit(0)
 
 olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 olo_tb.set_sim_option('nvc.heap_size', '5000M')
