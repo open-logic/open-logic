@@ -39,7 +39,7 @@ entity olo_axi_lite_slave is
         ReadTimeoutClks_g   : positive := 100
     );
     port (
-        -- Control Sgignals
+        -- Control Signals
         Clk               : in    std_logic;
         Rst               : in    std_logic;
         -- AXI-Lite Interface

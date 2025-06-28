@@ -24,7 +24,7 @@ helpfulness):
 
 ## Financial Contributions
 
-You can donate through [GitHub sponsors](https://github.com/sponsors/open-logi). **In case your company better like
+You can donate through [GitHub sponsors](https://github.com/sponsors/open-logi). **In case your company prefers
 buying services than doing donations** - you can also find things to buy on the GitHub sponsors page (e.g. workshops or
 priority support).
 
