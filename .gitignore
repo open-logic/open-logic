@@ -27,3 +27,6 @@ _vmake
 
 #Backup files
 *.bak
+
+#Python Virtual environment
+.venv/
