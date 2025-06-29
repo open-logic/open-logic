@@ -18,6 +18,13 @@ entities:
       - name: "16bit"
         generics:
           Width_g: 16
+  # olo_base_arb_wrr
+  - entity_name: "olo_base_arb_wrr"
+    configurations:
+      - name: "g4-w8"
+        generics:
+          GrantWidth_g: 4
+          WeightWidth_g: 8
   # olo_base_cam
   - entity_name: "olo_base_cam"
     configurations:
