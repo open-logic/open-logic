@@ -57,12 +57,16 @@ package olo_base_pkg_logic is
     -- 0010  --> 0011
     function ppcOr (inp : in std_logic_vector) return std_logic_vector;
 
+    -- DEPRECATED: use to_X01 from std_logic_1164
     function to01X (inp : in std_logic) return std_logic;
 
+    -- DEPRECATED: use to_X01 from std_logic_1164
     function to01X (inp : in std_logic_vector) return std_logic_vector;
 
+    -- DEPRECATED: use to_01 from std_logic_1164
     function to01 (inp : in std_logic) return std_logic;
 
+    -- DEPRECATED: use to_01 from std_logic_1164
     function to01 (inp : in std_logic_vector) return std_logic_vector;
 
     function invertBitOrder (inp : in std_logic_vector) return std_logic_vector;
@@ -215,6 +219,7 @@ package body olo_base_pkg_logic is
         return StageOut_v(Stages_c)(inp'length - 1 downto 0);
     end function;
 
+    -- DEPRECATED: use to_X01 from std_logic_1164
     function to01X (inp : in std_logic) return std_logic is
     begin
 
@@ -227,6 +232,7 @@ package body olo_base_pkg_logic is
 
     end function;
 
+    -- DEPRECATED: use to_X01 from std_logic_1164
     function to01X (inp : in std_logic_vector) return std_logic_vector is
         variable Result_v : std_logic_vector(inp'range);
     begin
@@ -239,6 +245,7 @@ package body olo_base_pkg_logic is
         return Result_v;
     end function;
 
+    -- DEPRECATED: use to_01 from std_logic_1164
     function to01 (inp : in std_logic) return std_logic is
     begin
 
@@ -251,6 +258,7 @@ package body olo_base_pkg_logic is
 
     end function;
 
+    -- DEPRECATED: use to_01 from std_logic_1164
     function to01 (inp : in std_logic_vector) return std_logic_vector is
         variable Result_v : std_logic_vector(inp'range);
     begin
