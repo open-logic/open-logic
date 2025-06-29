@@ -217,6 +217,7 @@ package body olo_base_pkg_logic is
 
     function to01X (inp : in std_logic) return std_logic is
     begin
+        report "DEPRECATED: 'olo_base_pkg_logic.to01X()' is deprecated - use 'std_logic_1164.to_X01()' instead." severity warning;
 
         -- Convert to 0, 1 or X (weak aware)
         case inp is
@@ -230,6 +231,7 @@ package body olo_base_pkg_logic is
     function to01X (inp : in std_logic_vector) return std_logic_vector is
         variable Result_v : std_logic_vector(inp'range);
     begin
+        report "DEPRECATED: 'olo_base_pkg_logic.to01X()' is deprecated - use 'std_logic_1164.to_X01()' instead." severity warning;
 
         -- Loop through all bits
         for i in inp'low to inp'high loop
@@ -241,6 +243,7 @@ package body olo_base_pkg_logic is
 
     function to01 (inp : in std_logic) return std_logic is
     begin
+        report "DEPRECATED: 'olo_base_pkg_logic.to01()' is deprecated - use 'std_logic_1164.to_01()' instead." severity warning;
 
         -- Convert to 0 or 1
         case inp is
@@ -254,6 +257,7 @@ package body olo_base_pkg_logic is
     function to01 (inp : in std_logic_vector) return std_logic_vector is
         variable Result_v : std_logic_vector(inp'range);
     begin
+        report "DEPRECATED: 'olo_base_pkg_logic.to01()' is deprecated - use 'std_logic_1164.to_01()' instead." severity warning;
 
         -- Loop through all bits
         for i in inp'low to inp'high loop
