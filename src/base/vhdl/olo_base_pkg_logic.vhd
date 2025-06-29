@@ -69,11 +69,11 @@ package olo_base_pkg_logic is
 
     function invertByteOrder (inp : in std_logic_vector) return std_logic_vector;
 
-    function getSetBitIndex(vec : std_logic_vector; fromMsb : boolean) return integer;
+    function getSetBitIndex(vec : in std_logic_vector; fromMsb : in boolean) return integer;
 
-    function getLeadingSetBitIndex(vec : std_logic_vector) return integer;
+    function getLeadingSetBitIndex(vec : in std_logic_vector) return integer;
 
-    function getTrailingSetBitIndex(vec : std_logic_vector) return integer;
+    function getTrailingSetBitIndex(vec : in std_logic_vector) return integer;
 
     -- LFSR / CRC / PRBS Polynomials
     -- 1 for the x^n positions used
