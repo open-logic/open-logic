@@ -18,23 +18,25 @@ library ieee;
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
-entity olo_axi_stream_merger is
+entity olo_base_stream_merge is
     generic(
-        NumberOfInputStreams_g : positive := 2);
+        Inputs_g : positive := 2);
     port(
-        -- input streams
-        InputStreams_tvalid : in  std_logic_vector(NumberOfInputStreams_g downto 0);
-        InputStreams_tready : out std_logic;
-        -- output stream
-        OutputStream_tvalid : out std_logic;
-        OutputStream_tready : in  std_logic);
-end entity olo_axi_stream_merger;
+        -- Input streams handshake signals.
+        In_Valid : in  std_logic_vector(Inputs_g - 1 downto 0);
+        In_Ready : out std_logic;
+        -- Output stream handshake signals.
+        Out_Valid : out std_logic;
+        Out_Ready : in  std_logic);
+end entity;
 
-architecture rtl of olo_axi_stream_merger is
+architecture rtl of olo_base_stream_merge is
+    signal AllInputsValid : std_logic;
 begin
-    OutputStream_tvalid <= '1' when InputStreams_tvalid = (others => '1') else '0';
-    InputStreams_tready <= OutputStream_tvalid and OutputStream_tready;
-end architecture rtl;
+    AllInputsValid <= '1' when In_Valid = (others => '1') else '0';
+    Out_Valid <= AllInputsValid;
+    In_Ready <= AllInputsValid and Out_Ready;
+end architecture;
 
 
 
