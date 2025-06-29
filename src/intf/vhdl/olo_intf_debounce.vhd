@@ -96,7 +96,7 @@ begin
         severity failure;
 
     -- *** Combinatorial Process ***
-    p_comb : process (r, DataSync, Tick) is
+    p_comb : process (all) is
         variable v : TwoProcess_r;
     begin
         -- Hold variables stable

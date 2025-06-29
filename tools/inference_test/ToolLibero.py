@@ -56,7 +56,8 @@ class ToolLibero(ToolBase):
         resource_usage = {
             "Block RAM": 0,
             "DSPs": 0,
-            "LUTs": 0
+            "LUTs": 0,
+            "SLEs": 0
         }
 
         # Find summary ile
@@ -66,12 +67,30 @@ class ToolLibero(ToolBase):
         with open(summary_file, "r") as f:
             for line in f:
                 if "Total Block RAMs " in line:
-                    resource_usage["Block RAM"] = line.split(":")[1].strip().split(" ")[0]
+                    resource_usage["Block RAM"] = float(line.split(":")[1].strip().split(" ")[0])
                 elif "Total LUTs" in line:
-                    resource_usage["LUTs"] = line.split(":")[1].strip()
+                    resource_usage["LUTs"] = float(line.split(":")[1].strip())
                 elif "DSP Blocks: " in line:
-                    resource_usage["DSPs"] = line.split(":")[1].strip().split(" ")[0]
+                    resource_usage["DSPs"] = float(line.split(":")[1].strip().split(" ")[0])
+                elif "Total number of SLEs after P&R: " in line:
+                    resource_usage["SLEs"] = float(line.split("=")[1].strip().strip(";").split(" ")[0])
 
         return resource_usage
+    
+    def get_in_reduce_resources(self, size) -> dict:
+        return {
+            "Block RAM": 0,
+            "DSPs": 0,
+            "LUTs": 0,
+            "SLEs": size*2
+        }
+    
+    def get_out_reduce_resources(self, size) -> dict:
+        return {
+            "Block RAM": 0,
+            "DSPs": 0,
+            "LUTs": size,
+            "SLEs": size
+        }
 
     

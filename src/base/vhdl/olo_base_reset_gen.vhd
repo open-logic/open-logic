@@ -77,7 +77,7 @@ architecture struct of olo_base_reset_gen is
 begin
 
     -- Reset Synchronizer
-    p_rstsync : process (Clk, RstIn) is
+    p_rstsync : process (RstIn, Clk) is
     begin
         if RstIn = RstInPolarity_g then
             RstSyncChain <= (others => '1');

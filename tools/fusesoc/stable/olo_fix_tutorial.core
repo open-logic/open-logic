@@ -1,5 +1,5 @@
 CAPI=2:
-name : open-logic:tutorials:olo_fix_tutorial:3.3.0
+name : open-logic:tutorials:olo_fix_tutorial:4.0.0
 description : stable release (downloaded from GitHub); olo_fix tutorial for open-logic, targetting Zybo Z7-10 board
 
 filesets:
@@ -10,8 +10,8 @@ filesets:
       
   rtl:
     files:
-      - doc/tutorials/OloFixTutorial/Files/controller_olo_fix.vhd : {file_type : vhdlSource}
-      - doc/tutorials/OloFixTutorial/Files/fix_formats_pkg.vhd : {file_type : vhdlSource}
+      - doc/tutorials/OloFixTutorial/Files/controller_olo_fix.vhd : {file_type : vhdlSource-2008}
+      - doc/tutorials/OloFixTutorial/Files/fix_formats_pkg.vhd : {file_type : vhdlSource-2008}
     depend :
       - "open-logic:open-logic:fix"
 
@@ -33,4 +33,4 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 3.3.0
+  version : 4.0.0

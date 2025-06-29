@@ -44,7 +44,7 @@ entity olo_axi_master_full is
         AxiMaxBeats_g              : natural range 1 to 256  := 256;
         AxiMaxOpenTransactions_g   : natural range 1 to 8    := 8;
         -- User Configuration
-        UserTransactionSizeBits_g  : natural                 := 32;
+        UserTransactionSizeBits_g  : natural                 := 24;
         DataFifoDepth_g            : natural                 := 1024;
         UserDataWidth_g            : natural                 := 32;
         ImplRead_g                 : boolean                 := true;
@@ -246,10 +246,7 @@ begin
         severity failure;
 
     -- *** Combinatorial Process ***
-    p_comb : process (r,
-                      CmdWr_Addr, CmdWr_Size, CmdWr_Valid, CmdWr_LowLat, CmdRd_Addr, CmdRd_Size, CmdRd_Valid, CmdRd_LowLat,
-                      AxiWrCmd_Rdy, AxiWrDat_Rdy, AxiRdCmd_Rdy, AxiRdDat_Vld, AxiRdDat_Data,
-                      WrWconv_Rdy, WrPl_Vld, WrData_Vld, WrData_Data, WrData_Last, WrData_We, RdPl_Rdy) is
+    p_comb : process (all) is
         variable v              : TwoProcess_r;
         variable WriteBe_v      : std_logic_vector(AxiBytes_c - 1 downto 0);
         variable RdAlignReady_v : std_logic;

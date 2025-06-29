@@ -66,7 +66,7 @@ whitespaces = prj_lines[target_idx].split("<")[0]
 
 #Add lines
 for f in files_rel_prj:
-    prj_lines.insert(target_idx, whitespaces + f'<efx:design_file name="{f}" version="default" library="{lib}"/>\n')
+    prj_lines.insert(target_idx, whitespaces + f'<efx:design_file name="{f}" version="vhdl_2008" library="{lib}"/>\n')
 
 #Write file
 with open(prj_file, "w+") as f:

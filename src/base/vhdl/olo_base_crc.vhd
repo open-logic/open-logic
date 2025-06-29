@@ -33,14 +33,13 @@ library work;
 ---------------------------------------------------------------------------------------------------
 entity olo_base_crc is
     generic (
-        CrcWidth_g      : positive range 2 to natural'high;
         DataWidth_g     : positive;
-        Polynomial_g    : natural;  -- according to https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin
-        InitialValue_g  : natural := 0;
-        BitOrder_g      : string  := "MSB_FIRST"; -- "MSB_FIRST" or "LSB_FIRST"
-        ByteOrder_g     : string  := "NONE";      -- "NONE", "MSB_FIRST" or "LSB_FIRST"
-        BitflipOutput_g : boolean := false;
-        XorOutput_g     : natural := 0
+        Polynomial_g    : std_logic_vector;  -- according to https://crccalc.com/?crc=01&method=CRC-8&datatype=hex&outtype=bin
+        InitialValue_g  : std_logic_vector := "0";
+        BitOrder_g      : string           := "MSB_FIRST"; -- "MSB_FIRST" or "LSB_FIRST"
+        ByteOrder_g     : string           := "NONE";      -- "NONE", "MSB_FIRST" or "LSB_FIRST"
+        BitflipOutput_g : boolean          := false;
+        XorOutput_g     : std_logic_vector := "0"
     );
     port (
         -- Control Ports
@@ -53,7 +52,7 @@ entity olo_base_crc is
         In_Last          : in    std_logic := '0';
         In_First         : in    std_logic := '0';
         -- Output
-        Out_Crc          : out   std_logic_vector(CrcWidth_g-1 downto 0);
+        Out_Crc          : out   std_logic_vector(Polynomial_g'range);
         Out_Valid        : out   std_logic;
         Out_Ready        : in    std_logic := '1'
     );
@@ -66,12 +65,13 @@ end entity;
 architecture rtl of olo_base_crc is
 
     -- Constants
-    constant Polynomial_c   : std_logic_vector(CrcWidth_g-1 downto 0) := toUslv(Polynomial_g, CrcWidth_g);
-    constant InitialValue_c : std_logic_vector(CrcWidth_g-1 downto 0) := toUslv(InitialValue_g, CrcWidth_g);
-    constant XorOutput_c    : std_logic_vector(CrcWidth_g-1 downto 0) := toUslv(XorOutput_g, CrcWidth_g);
+    constant CrcWidth_c     : natural                                 := Polynomial_g'length;
+    constant ZeroPoly_c     : std_logic_vector(CrcWidth_c-1 downto 0) := (others => '0');
+    constant InitialValue_c : std_logic_vector(CrcWidth_c-1 downto 0) := choose(InitialValue_g = "0", ZeroPoly_c, InitialValue_g);
+    constant XorOutput_c    : std_logic_vector(CrcWidth_c-1 downto 0) := choose(XorOutput_g = "0", ZeroPoly_c, XorOutput_g);
 
     -- Signals
-    signal LfsrReg     : std_logic_vector(CrcWidth_g-1 downto 0);
+    signal LfsrReg     : std_logic_vector(CrcWidth_c-1 downto 0);
     signal Out_Valid_I : std_logic;
     signal In_Ready_I  : std_logic;
 
@@ -86,12 +86,18 @@ begin
     assert ByteOrder_g = "NONE" or DataWidth_g mod 8 = 0
         report "###ERROR###: olo_base_crc - For DataWidth_g not being a multiple of 8, only ByteOrder_g=NONE is allowed"
         severity error;
+    assert InitialValue_c'length = CrcWidth_c
+        report "###ERROR###: olo_base_crc - InitialValue_g must have the same length as Polynomial_g"
+        severity error;
+    assert XorOutput_c'length = CrcWidth_c
+        report "###ERROR###: olo_base_crc - XorOutput_g must have the same length as Polynomial_g"
+        severity error;
 
     p_lfsr : process (Clk) is
         variable Input_v : std_logic_vector(In_Data'range);
         variable Lfsr_v  : std_logic_vector(LfsrReg'range);
         variable InBit_v : std_logic;
-        variable Out_v   : std_logic_vector(CrcWidth_g-1 downto 0);
+        variable Out_v   : std_logic_vector(CrcWidth_c-1 downto 0);
     begin
         if rising_edge(Clk) then
             -- Handle Input permutation (LFFSR always processes MSB first)
@@ -130,7 +136,7 @@ begin
                     -- XOR hanling
                     Lfsr_v := Lfsr_v(Lfsr_v'high-1 downto 0) & '0';
                     if InBit_v = '1' then
-                        Lfsr_v := Lfsr_v xor Polynomial_c;
+                        Lfsr_v := Lfsr_v xor Polynomial_g;
                     end if;
 
                 end loop;

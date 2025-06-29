@@ -42,8 +42,6 @@ entity olo_fix_from_real is
         Value_g     : real   := 0.0
     );
     port (
-        -- Input (only used of UsePort_g is true)
-        In_Value    : in    real := Value_g;
         -- Output
         Out_Value   : out   std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0)
     );
@@ -58,6 +56,6 @@ architecture rtl of olo_fix_from_real is
 begin
 
     -- Convert real to fix
-    Out_Value <= cl_fix_from_real(In_Value, ResultFmt_c, Saturate_c);
+    Out_Value <= cl_fix_from_real(Value_g, ResultFmt_c, Saturate_c);
 
 end architecture;

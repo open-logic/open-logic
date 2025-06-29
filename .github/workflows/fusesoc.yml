@@ -37,6 +37,7 @@ jobs:
           aws_secret_access_key: ${{ secrets.AWS_SECRET }}
           aws_access_key_id: ${{ secrets.AWS_KEY }}
           aws_build_ami_id: ${{ vars.AWS_BUILD_AMI_ID }}
+          aws_instance_type: ${{ vars.AWS_INSTANCE_TYPE }}
 
   # Build Local Cores (always)
   fusesoc-local:

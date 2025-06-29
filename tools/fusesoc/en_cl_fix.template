@@ -9,7 +9,7 @@ filesets:
     {%- for file in vhdlFiles %}
       - {{fileDir}}{{file}}
     {%- endfor %}
-    file_type : vhdlSource
+    file_type : vhdlSource-2008
     logical_name : olo
 
 targets:
@@ -23,6 +23,6 @@ provider:
   name    : github
   user    : open-logic
   repo    : en_cl_fix
-  version : {{version}}
+  version : open-logic-{{version}}
 {%- endif %}
   

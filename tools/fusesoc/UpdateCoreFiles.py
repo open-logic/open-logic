@@ -1,5 +1,5 @@
 ###########################################################################
-# Copyright (c) 2024 by Oliver Bründler
+# Copyright (c) 2024-2025 by Oliver Bründler
 # All rights reserved.
 # Authors: Oliver Bruendler
 ###########################################################################
@@ -70,15 +70,35 @@ for state in ["dev", "stable"]:
         # Get all VHDL files
         os.chdir(f"{repoRoot}/src/{area}/vhdl")
         vhdlFiles = os.listdir()
+
+        # TCL files
+        tcldir = f"{repoRoot}/src/{area}/tcl"
+        # Check if tcl directory exists
+        if not os.path.exists(tcldir):
+            tclFiles = []
+        else:
+            os.chdir(tcldir)
+            tclFiles = os.listdir()
+        # Handle main file
+        tclSource = None
+        for fname in tclFiles:
+            if fname.endswith("_constraints_amd.tcl"):
+                tclSource = fname
+                tclFiles.remove(fname)
+                break
+        
+
         # Navigate to area
         os.chdir("..")
 
         # Select proper repo root or .core file as reference
         if state == "dev":
             fileDir = "vhdl/"
+            constDir = "tcl/"
             targetDir = "."
         elif state == "stable":
             fileDir = f"src/{area}/vhdl/"
+            constDir = f"src/{area}/tcl/"
             targetDir = f"{repoRoot}/tools/fusesoc/stable"
         else:
             raise ValueError("Invalid state (dev/stable)")
@@ -93,7 +113,11 @@ for state in ["dev", "stable"]:
             "description" : DESCRIPTIONS[area],
             "dependencies" : DEPENDENCIES[area],
             "library" : library,
-            "codebase" : codebase
+            "codebase" : codebase,
+            "scoped_constraints" : len(tclFiles) > 0,
+            "tclFiles" : tclFiles,
+            "tclSource" : tclSource,
+            "constDir" : constDir
         }
         # Add external dependencies where required
         if area == "fix":
@@ -181,14 +205,3 @@ for state in ["dev", "stable"]:
 
 # Navigate back to tools
 os.chdir(curdir)
-
-
-
-
-
-
-
-
-
-
-

@@ -157,7 +157,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_comb : process (r, Tx_Valid, Tx_Data, UartRxInt, TxStrobe, RxStrobe) is
+    p_comb : process (all) is
         variable v : TwoProcess_r;
     begin
         -- *** hold variables stable ***

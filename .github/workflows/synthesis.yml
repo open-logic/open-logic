@@ -1,0 +1,88 @@
+name: Synthesis Test
+run-name: ${{ github.actor }} triggered Synthesis Test
+
+# Set the permissions for the workflow
+permissions:
+  checks: write
+  pull-requests: write
+
+#Set Triggers
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 3 15 * *'
+  
+#Jobs  
+jobs:
+  start-instance:
+    runs-on: ubuntu-latest
+    steps:
+      #General Setup
+      - name: Checkout actions
+        uses: actions/checkout@v4
+      # Sleeping for 30 seconds to ensure the instance is ready
+      - name: Sleep for 30 seconds
+        run: sleep 30
+      #Start AWS Instance
+      - name: Start Instance
+        uses: ./.github/actions/start-aws-instance
+        with:
+          region: eu-central-1
+          aws_secret_access_key: ${{ secrets.AWS_SECRET }}
+          aws_access_key_id: ${{ secrets.AWS_KEY }}
+          aws_build_ami_id: ${{ vars.AWS_BUILD_AMI_ID }}
+          aws_instance_type: ${{ vars.AWS_INSTANCE_TYPE }}
+
+  # Synthesis Test
+  synthesis:
+    runs-on: [self-hosted, aws]
+    needs: start-instance
+    steps:
+      # Checkout the repository
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      # Setup python
+      - name: Setup Python
+        run : |
+          source $LOCAL_TOOLS
+          cd .github/workflows
+          pip3 install -r requirements.txt
+      # Synthesis for different areas
+      - name: base
+        run: |
+          source $LOCAL_TOOLS
+          cd ./tools/inference_test
+          python3 -u ./InferenceTest.py --yml=./yaml/base.yml --no-tables --check-coverage
+      - name: axi
+        run: |
+          source $LOCAL_TOOLS
+          cd ./tools/inference_test
+          python3 -u ./InferenceTest.py --yml=./yaml/axi.yml --no-tables --check-coverage
+      - name: intf
+        run: |
+          source $LOCAL_TOOLS
+          cd ./tools/inference_test
+          python3 -u ./InferenceTest.py --yml=./yaml/intf.yml --no-tables --check-coverage
+      - name: fix
+        run: |
+          source $LOCAL_TOOLS
+          cd ./tools/inference_test
+          python3 -u ./InferenceTest.py --yml=./yaml/fix.yml --no-tables --check-coverage
+      # Upload Synthesis results    - name: Upload sim results
+      - name: Upload Synthesis results
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthesis-utilzation
+          path: |
+            tools/inference_test/results/*.txt
+
+  # Stopping the instance is not required (it stops automatically
+  # when it is unused for some time, controlled by AWS alarm)

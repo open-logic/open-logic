@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024 by Oliver Bründler
+-- Copyright (c) 2024-2025 by Oliver Bruendler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ----------------------------------------------------------------------------------------------------
@@ -37,7 +37,6 @@ entity olo_base_cam is
         ContentWidth_g       : positive;
         RamStyle_g           : string   := "auto";
         RamBehavior_g        : string   := "RBW";
-        RamBlockWidth_g      : positive := 32;
         RamBlockDepth_g      : positive := 512;
         ClearAfterReset_g    : boolean  := true;
         -- Read/Write interleaving
@@ -139,8 +138,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_cob : process (Rd_Valid, Rd_Content, Wr_Valid, Wr_Content, Wr_Addr, Wr_Write, Wr_Clear,
-                     RamRead_1, Rst, r) is
+    p_cob : process (all) is
         variable v                        : TwoProcess_r;
         variable ClearMask_v, SetMask_v   : std_logic_vector(Addresses_g-1 downto 0);
         variable InRdReady_v, InWrReady_v : std_logic;

@@ -85,7 +85,7 @@ architecture rtl of olo_base_fifo_sync is
 
 begin
 
-    p_comb : process (In_Valid, Out_Ready, Rst, r) is
+    p_comb : process (all) is
         variable v : TwoProcess_r;
     begin
         -- hold variables stable

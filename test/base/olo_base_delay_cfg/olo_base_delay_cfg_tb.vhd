@@ -30,7 +30,8 @@ entity olo_base_delay_cfg_tb is
         runner_cfg      : string;
         SupportZero_g   : boolean := false;
         RamBehavior_g   : string  := "RBW";
-        RandomStall_g   : boolean := false
+        RandomStall_g   : boolean := false;
+        MaxDelay_g      : integer := 20
     );
 end entity;
 
@@ -40,7 +41,6 @@ architecture sim of olo_base_delay_cfg_tb is
     -- Constants
     -----------------------------------------------------------------------------------------------
     constant DataWidth_c : integer := 16;
-    constant MaxDelay_c  : integer := 20;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -53,7 +53,7 @@ architecture sim of olo_base_delay_cfg_tb is
     -----------------------------------------------------------------------------------------------
     signal Clk      : std_logic                                           := '0';
     signal Rst      : std_logic                                           := '0';
-    signal Delay    : std_logic_vector(log2ceil(MaxDelay_c+1)-1 downto 0) := (others => '0');
+    signal Delay    : std_logic_vector(log2ceil(MaxDelay_g+1)-1 downto 0) := (others => '0');
     signal In_Valid : std_logic                                           := '0';
     signal In_Data  : std_logic_vector(DataWidth_c - 1 downto 0)          := (others => '0');
     signal Out_Data : std_logic_vector(DataWidth_c - 1 downto 0)          := (others => '0');
@@ -143,7 +143,7 @@ begin
             end if;
 
             if run("FixDelayMax") then
-                Delay <= toUslv(MaxDelay_c, Delay'length);
+                Delay <= toUslv(MaxDelay_g, Delay'length);
                 pushSamples(net, 40);
             end if;
 
@@ -186,7 +186,7 @@ begin
     i_dut : entity olo.olo_base_delay_cfg
         generic map (
             Width_g         => DataWidth_c,
-            MaxDelay_g      => MaxDelay_c,
+            MaxDelay_g      => MaxDelay_g,
             SupportZero_g   => SupportZero_g,
             RamBehavior_g   => RamBehavior_g
         )

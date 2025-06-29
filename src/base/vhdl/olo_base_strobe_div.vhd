@@ -59,7 +59,7 @@ architecture rtl of olo_base_strobe_div is
 
 begin
 
-    p_comb : process (r, In_Valid, In_Ratio, Out_Ready) is
+    p_comb : process (all) is
         variable OutValid_v : std_logic;
         variable v          : TwoProcess_r;
     begin

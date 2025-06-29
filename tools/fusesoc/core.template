@@ -1,16 +1,16 @@
 CAPI=2:
 
-name : open-logic:{{library}}:{{area}}:{{version}}
-description : {{codebase}}; {{description}} see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#{{area}}
+name : "open-logic:{{library}}:{{area}}:{{version}}"
+description : "{{codebase}}; {{description}} see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#{{area}}"
 
 filesets:
   rtl:
     files:
     {%- for file in vhdlFiles %}
-      - {{fileDir}}{{file}}
+      - "{{fileDir}}{{file}}"
     {%- endfor %}
-    file_type : vhdlSource
-    logical_name : olo
+    file_type : "vhdlSource-2008"
+    logical_name : "olo"
     {%- if dependencies or ext_dependencies %}
     depend :
     {%- for dep in dependencies %}
@@ -20,15 +20,31 @@ filesets:
       - "{{dep}}"
     {%- endfor %}
     {%- endif %}
+  
+  {%- if scoped_constraints %}
+
+  scoped_constraints:
+    files:
+    {%- for file in tclFiles %}
+      - "{{constDir}}{{file}}" : {copyto: "{{area}}/{{file}}"}
+    {%- endfor %}
+    {%- if tclSource %}
+      - "{{constDir}}{{tclSource}}"  : {copyto: "{{area}}/{{tclSource}}", file_type: "tclSource"}
+    {%- endif %}
+    file_type: "user"
+  {%- endif %}
 
 
 targets:
   default:
     filesets :
-      - rtl
+      - "rtl"
+    {%- if scoped_constraints %}
+      - "tool_vivado? (scoped_constraints)"
+    {%- endif %}
       
-{%- if library == "open-logic" %}
 
+{%- if library == "open-logic" %}
 provider:
   name    : github
   user    : open-logic
