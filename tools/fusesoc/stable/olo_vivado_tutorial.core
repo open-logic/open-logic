@@ -1,5 +1,5 @@
 CAPI=2:
-name : open-logic:tutorials:vivado_tutorial:3.3.0
+name : open-logic:tutorials:vivado_tutorial:4.0.0
 description : stable release (downloaded from GitHub); vivado tutorial for open-logic, targetting Zybo Z7-10 board
 
 filesets:
@@ -10,7 +10,7 @@ filesets:
       
   rtl:
     files:
-      - doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd : {file_type : vhdlSource}
+      - doc/tutorials/VivadoTutorial/Files/vivado_tutorial.vhd : {file_type : vhdlSource-2008}
     depend :
       - "open-logic:open-logic:base"
       - "open-logic:open-logic:intf"
@@ -33,4 +33,4 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 3.3.0
+  version : 4.0.0

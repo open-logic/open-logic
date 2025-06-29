@@ -72,6 +72,7 @@ A selection table summarizing the pros and cons of all the different clock cross
 | ------------------------------------------------ | ------------------------------------------------------------ |
 | [olo_base_arb_prio](./base/olo_base_arb_prio.md) | Priority arbiter - Always selects the highest priority requester with a pending request. |
 | [olo_base_arb_rr](./base/olo_base_arb_rr.md)     | Round robin arbiter - iterate through all requesters with a pending request. |
+| [olo_base_arb_wrr](./base/olo_base_arb_wrr.md)   | Weighted Round robin arbiter - iterate through all requesters based on assigned weights with a pending request. |
 
 ### TDM (olo_base_tdm_\<...\>)
 
