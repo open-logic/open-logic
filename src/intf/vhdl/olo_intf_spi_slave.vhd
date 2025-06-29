@@ -135,12 +135,12 @@ begin
         v.Resp_CleanEnd := '0';
 
         -- *** Edge Detections ***
-        if SpiCsn_i /= to01(r.SpiCsnLast) then
+        if SpiCsn_i /= to_01(r.SpiCsnLast) then
             CsnRe_v := SpiCsn_i;
             CsnFe_v := not SpiCsn_i;
         end if;
         v.SpiCsnLast := SpiCsn_i;
-        if SpiSclk_i /= to01(r.SpiSclkLast) then
+        if SpiSclk_i /= to_01(r.SpiSclkLast) then
             SclkRe_v := SpiSclk_i;
             SclkFe_v := not SpiSclk_i;
         end if;

@@ -753,8 +753,8 @@ begin
 
         I2c_Scl   <= 'Z' when I2c_Scl_t = '1' else I2c_Scl_o;
         I2c_Sda   <= 'Z' when I2c_Sda_t = '1' else I2c_Sda_o;
-        I2c_Scl_i <= to01X(I2c_Scl);
-        I2c_Sda_i <= to01X(I2c_Sda);
+        I2c_Scl_i <= to_x01(I2c_Scl);
+        I2c_Sda_i <= to_x01(I2c_Sda);
 
     end generate;
 
