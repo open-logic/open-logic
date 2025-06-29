@@ -14,6 +14,9 @@ inputs:
   aws_build_ami_id:
     description: 'AMI ID for the AWS instance'
     required: true
+  aws_instance_type:
+    description: 'Type of the AWS instance to start'
+    required: true
 
 runs:
   using: 'composite'
@@ -28,6 +31,6 @@ runs:
         AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}
       run: |
         cd ./.github/actions/start-aws-instance
-        source ./create_instance.sh ${{ inputs.aws_build_ami_id }}
+        source ./create_instance.sh ${{ inputs.aws_build_ami_id }} ${{ inputs.aws_instance_type }}
 
 
