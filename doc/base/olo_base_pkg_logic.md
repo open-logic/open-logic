@@ -119,3 +119,55 @@ This function is only allowed for number of bits being a multiple of 8, otherwis
 ```vhdl
 invertByteOrder(inp : in std_logic_vector) return std_logic_vector;
 ```
+
+### getSetBitIndex()
+
+Get the index of the first bit index in vector vec starting either from MSB if fromMsb is true or starting from LSB if fromMsb is false
+
+```vhdl
+function getSetBitIndex(vec : in std_logic_vector; fromMsb : in boolean) return integer;
+```
+
+### getSetBitIndex()
+
+Return the index of the first set bit (`'1'`) in a *std\_logic\_vector*.
+
+The search direction is controlled by the `fromMsb` flag:
+
+- If `fromMsb = true`, the search begins from the most significant bit (MSB).
+- If `fromMsb = false`, the search begins from the least significant bit (LSB).
+
+If no bits are set:
+
+- Returns `vec'low` when searching from MSB (`fromMsb = true`)
+- Returns `vec'high` when searching from LSB (`fromMsb = false`)
+
+This function behaves the same whether the input vector is defined with a `downto` or `to` range.
+
+```vhdl
+function getSetBitIndex(vec : in std_logic_vector; fromMsb : in boolean) return integer;
+```
+
+### getLeadingSetBitIndex()
+
+Return the index of the first set bit (`'1'`) in a *std\_logic\_vector*, starting the search from the most significant bit (MSB).
+
+If no bits are set, returns `vec'low`.
+
+This function behaves the same whether the input vector is defined with a `downto` or `to` range.
+
+```vhdl
+function getLeadingSetBitIndex(vec : in std_logic_vector) return integer;
+```
+
+### getTrailingSetBitIndex()
+
+Return the index of the first set bit (`'1'`) in a *std\_logic\_vector*, starting the search from the least significant bit (LSB).
+
+If no bits are set, returns `vec'high`.
+
+This function behaves the same whether the input vector is defined with a `downto` or `to` range.
+
+```vhdl
+function getTrailingSetBitIndex(vec : in std_logic_vector) return integer;
+```
