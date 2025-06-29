@@ -217,7 +217,7 @@ def add_configs(olo_tb):
     arb_rr_tb = 'olo_base_arb_rr_tb'
     #Only one config required, hence no "add_config" looping
 
-    ### olo_base_arb_wrr2###
+    ### olo_base_arb_wrr###
     arb_wrr_tb = 'olo_base_arb_wrr_tb'
     tb = olo_tb.test_bench(arb_wrr_tb)
     for Grant in [1, 5]:
