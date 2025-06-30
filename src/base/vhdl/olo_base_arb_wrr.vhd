@@ -51,7 +51,6 @@ architecture rtl of olo_base_arb_wrr is
     ----------------------------------------------------------------------------
     -- Functions
     ----------------------------------------------------------------------------
-
     -- Generates a mask for the input request vector.
     -- Each bit is set to '1' if the corresponding weight is non-zero; otherwise, '0'.
     -- Effectively masks out requests with zero weight.
@@ -75,118 +74,99 @@ architecture rtl of olo_base_arb_wrr is
 
     -- Two Process Method
     type TwoProcess_t is record
-        RoundRobinMask : std_logic_vector(In_Req'range);
-        WeightCnt       : unsigned(WeightWidth_g-1 downto 0);
-        WeightActive    : unsigned(WeightWidth_g-1 downto 0);
-        GrantIdx        : natural;
+        -- Round Robin
+        RR_GrantReady : std_logic;
+        -- Weighted Round Robin Grant Interface
+        Grant      : std_logic_vector(Out_Grant'range);
+        GrantValid : std_logic;
+        -- Support signals
+        GrantIdx  : integer;
+        Weight    : unsigned(WeightWidth_g - 1 downto 0);
+        WeightCnt : unsigned(WeightWidth_g - 1 downto 0);
     end record;
 
     signal r      : TwoProcess_t;
     signal r_next : TwoProcess_t;
 
     -- Component connection signals
-    Signal RequestWeightsMasked     : std_logic_vector(In_Req'range);
-    signal RequestRoundRobinMasked : std_logic_vector(In_Req'range);
-    signal GrantRoundRobinMasked   : std_logic_vector(Out_Grant'range);
-    signal GrantRoundRobinUnmasked : std_logic_vector(Out_Grant'range);
+    signal ReqMasked     : std_logic_vector(In_Req'range);
+    signal RR_Grant      : std_logic_vector(Out_Grant'range);
+    signal RR_GrantValid : std_logic;
 
 begin
 
-    -- Only generate code for non-zero sized arbiters to avoid illegal range delcarations
-    g_non_zero : if GrantWidth_g > 0 generate
+    -- Mask Requests with a weight of zero
+    ReqMasked <= In_Req and generateRequestWeightsMask(In_Weights, WeightWidth_g, GrantWidth_g);
 
-        -- *** Combinatorial Process ***
-        p_comb : process (all) is
-            variable v       : TwoProcess_t;
-            variable Grant_v : std_logic_vector(Out_Grant'range);
-        begin
-            -- hold variables stable
-            v := r;
+    -- *** Component Instantiations ***
+    u_arb_rr : entity work.olo_base_arb_rr
+        generic map (
+            Width_g => GrantWidth_g
+        )
+        port map (
+            Clk       => Clk,
+            Rst       => Rst,
+            In_Req    => ReqMasked,
+            Out_Valid => RR_GrantValid,
+            Out_Ready => r_next.RR_GrantReady,
+            Out_Grant => RR_Grant
+        );
 
-            -- Mask Requests with a weight of zero
-            RequestWeightsMasked <= In_Req and generateRequestWeightsMask(In_Weights, WeightWidth_g, GrantWidth_g);
+    -- *** Combinatorial Process ***
+    p_comb : process (all) is
+        variable v : TwoProcess_t;
+    begin
+        -- hold variables stable
+        v := r;
 
-            -- Round Robin Logic
-            RequestRoundRobinMasked <= RequestWeightsMasked and r.RoundRobinMask;
+        v.RR_GrantReady := '0';
 
-            -- Generate Grant
-            if unsigned(GrantRoundRobinMasked) = 0 then
-                Grant_v := GrantRoundRobinUnmasked;
-            else
-                Grant_v := GrantRoundRobinMasked;
+        -- Get the Weight value for the currently active Grant
+        if (RR_GrantValid = '1') then
+            v.GrantIdx := getLeadingSetBitIndex(Out_Grant);
+            -- Extract the corresponding weight using the GrantIdx
+            v.Weight :=
+                unsigned(In_Weights((v.GrantIdx + 1) * WeightWidth_g - 1 downto v.GrantIdx * WeightWidth_g));
+        end if;
+
+
+        if (v.GrantValid = '1' and Out_Ready = '1') then
+            -- Increment the weight counter on each successful AXI handshake
+            v.WeightCnt := r.WeightCnt + 1;
+
+            -- If the same grant has been used for 'Weight' handshakes,
+            -- assert RR_GrantReady to request the next grant and reset the counter
+            if (v.WeightCnt >= v.Weight) then
+                --v.GrantValid    := '0';
+                v.RR_GrantReady := '1';
+                v.WeightCnt     := (others => '0');
             end if;
+        end if;
 
-            -- Get Weight of a currently active Grant
-            if (unsigned(Grant_v) /= 0) then
-                v.GrantIdx     := getLeadingSetBitIndex(Grant_v);
-                v.WeightActive := unsigned(In_Weights((v.GrantIdx + 1) * WeightWidth_g - 1 downto v.GrantIdx * WeightWidth_g));
-            else
-                v.WeightActive := (others => '0');
+        -- Deassert GrantValid when there are no active requests with non-zero weights.
+        if unsigned(ReqMasked) = 0 then
+            v.GrantValid := '0';
+        else
+            v.GrantValid := '1';
+        end if;
+
+        -- Apply to record
+        r_next <= v;
+    end process;
+
+    Out_Grant <= RR_Grant;
+    Out_Valid <= r_next.GrantValid;
+
+    -- *** Sequential Process ***
+    p_seq : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            r <= r_next;
+            if Rst = '1' then
+                r.GrantValid <= '0';
+                r.WeightCnt  <= (others => '0');
             end if;
-
-            -- Update RoundRobinMask
-            if (unsigned(Grant_v) /= 0) and (Out_Ready = '1') then
-                v.WeightCnt := r.WeightCnt + 1;
-
-                if not (r.WeightCnt < v.WeightActive - 1) then
-                    v.RoundRobinMask := '0' & ppcOr(Grant_v(Grant_v'high downto 1));
-                    v.WeightCnt       := (others => '0');
-                end if;
-            end if;
-
-            -- *** Outputs ***
-            if unsigned(Grant_v) /= 0 then
-                Out_Valid <= '1';
-            else
-                Out_Valid <= '0';
-            end if;
-
-            Out_Grant <= Grant_v;
-
-            -- Apply to record
-            r_next <= v;
-
-        end process;
-
-        -- *** Sequential Process ***
-        p_seq : process (Clk) is
-        begin
-            if rising_edge(Clk) then
-                r <= r_next;
-                if Rst = '1' then
-                    r.RoundRobinMask <= (others => '0');
-                    r.WeightCnt       <= (others => '0');
-                    r.GrantIdx        <= 0;
-                    r.WeightActive    <= (others => '0');
-                end if;
-            end if;
-        end process;
-
-        -- *** Component Instantiations ***
-        i_prio_masked : entity work.olo_base_arb_prio
-            generic map (
-                Width_g   => GrantWidth_g,
-                Latency_g => 0
-            )
-            port map (
-                Clk       => Clk,
-                Rst       => Rst,
-                In_Req    => RequestRoundRobinMasked,
-                Out_Grant => GrantRoundRobinMasked
-            );
-
-        i_prio_unmasked : entity work.olo_base_arb_prio
-            generic map (
-                Width_g   => GrantWidth_g,
-                Latency_g => 0
-            )
-            port map (
-                Clk       => Clk,
-                Rst       => Rst,
-                In_Req    => RequestWeightsMasked,
-                Out_Grant => GrantRoundRobinUnmasked
-            );
-
-    end generate;
+        end if;
+    end process;
 
 end architecture;
