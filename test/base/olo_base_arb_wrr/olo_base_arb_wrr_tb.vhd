@@ -149,6 +149,9 @@ begin
         variable HighIdx_v       : integer;
         variable LowIdx_v        : integer;
 
+        variable tdata_v : std_logic_vector(Out_Grant'range);
+        variable tlast_v : std_logic;
+
         procedure configureWeights(
                 config : string
             ) is
@@ -193,6 +196,7 @@ begin
         end procedure;
 
         procedure testAllBitsRequests is
+            variable Check : boolean := True;
         begin
             -- Set All Bits in Request Vector
             In_Req_v := (others => '1');
@@ -208,7 +212,12 @@ begin
                     ExpectedGrant_v           := (others => '0');
                     ExpectedGrant_v(GrantIdx) := '1';
                     for i in 0 to Weight_v - 1 loop
-                        checkAxiStreamData(net, ExpectedGrant_v);
+                        if Check then
+                            checkAxiStreamData(net, ExpectedGrant_v);
+                        else
+                            pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                            info("tdata = " & to_string(tdata_v));
+                        end if;
                     end loop;
                 end loop;
             end loop;
@@ -217,7 +226,8 @@ begin
         end procedure;
 
         procedure testSlidigWindowRequests (
-                WindowWidth : positive
+                WindowWidth : positive;
+                Check       : boolean := True
             ) is
         begin
             --------------------------------------------------------------------
@@ -243,7 +253,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "1";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -277,7 +292,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "10";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -286,7 +306,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "01";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -320,7 +345,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "100";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -329,7 +359,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "010";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -338,7 +373,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "001";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -359,7 +399,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "100";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -368,7 +413,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "001";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -402,7 +452,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "1000";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -411,7 +466,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0100";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -420,7 +480,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0010";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -429,7 +494,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0001";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -450,7 +520,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "1000";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -459,7 +534,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0100";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -468,7 +548,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0001";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -489,7 +574,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "1000";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -498,7 +588,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0010";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -507,7 +602,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0001";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -528,7 +628,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "1000";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
@@ -537,7 +642,12 @@ begin
 
                         ExpectedGrant_v(HighIdx_v downto LowIdx_v) := "0001";
                         for i in 0 to Weight_v - 1 loop
-                            checkAxiStreamData(net, ExpectedGrant_v);
+                            if Check then
+                                checkAxiStreamData(net, ExpectedGrant_v);
+                            else
+                                pop_axi_stream(net, AxisSlave_c, tdata_v, tlast_v);
+                                info("tdata = " & to_string(tdata_v));
+                            end if;
                         end loop;
                         --------------------------------------------------------
 
