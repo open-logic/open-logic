@@ -230,11 +230,11 @@ begin
         SetMask_v   := (others => '0');
         if r.Write_1 = '1' then
             -- Write new CAM entry
-            SetMask_v(fromUslv(to01(r.Addr_1))) := '1';
+            SetMask_v(fromUslv(to_01(r.Addr_1))) := '1';
         end if;
         if r.Clear_1 = '1' then
             -- Clear single CAM entry
-            ClearMask_v(fromUslv(to01(r.Addr_1))) := '0';
+            ClearMask_v(fromUslv(to_01(r.Addr_1))) := '0';
         end if;
         if r.ClearAll_1 = '1' then
             -- Clear all CAM entries - this overrides the single clear mask
@@ -330,8 +330,8 @@ begin
         -- Input assembly
         ContentExtended_0(ContentWidth_g-1 downto 0) <= ReadContent_0;
 
-        RdAddr_0 <= to01(ContentExtended_0((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
-        WrAddr_1 <= to01(r.ContentExtended_1((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
+        RdAddr_0 <= to_01(ContentExtended_0((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
+        WrAddr_1 <= to_01(r.ContentExtended_1((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
 
         -- Instance
         i_ram : entity work.olo_base_ram_sdp

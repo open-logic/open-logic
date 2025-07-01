@@ -72,6 +72,9 @@ ppcOr(inp : in std_logic_vector) return std_logic_vector;
 
 ### to01X()
 
+> **Deprecated**: This function is deprecated in favor of the standardized `to_X01` function defined
+    in the `std_logic_1164` package of the VHDL-2008 standard.
+
 Convert a _std_logic_ resp all bits in a _std_logic_vector_ to '0', '1' or 'X'.
 
 ```vhdl
@@ -87,6 +90,9 @@ binary signals.
 - all others --> 'X'
 
 ### to01()
+
+> **Deprecated**: This function is deprecated in favor of the standardized `to_01` function defined
+    in the `std_logic_1164` package of the VHDL-2008 standard.
 
 Convert a _std_logic_ resp all bits in a _std_logic_vector_ to '0' or '1'.
 

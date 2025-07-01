@@ -603,8 +603,8 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Component Instantiations
     -----------------------------------------------------------------------------------------------
-    I2cScl_Input <= to01X(I2c_Scl) when InternalTriState_g else I2c_Scl_i;
-    I2cSda_Input <= to01X(I2c_Sda) when InternalTriState_g else I2c_Sda_i;
+    I2cScl_Input <= to_X01(I2c_Scl) when InternalTriState_g else I2c_Scl_i;
+    I2cSda_Input <= to_X01(I2c_Sda) when InternalTriState_g else I2c_Sda_i;
 
     i_sync : entity work.olo_intf_sync
         generic map (
