@@ -224,8 +224,10 @@ def add_configs(olo_tb):
         for Weight in [1, 8]:
             for Seed in [42]:
                 for RandomStall in [True, False]:
-                    named_config(tb, {'GrantWidth_g': Grant, 'WeightWidth_g': Weight, 
-                                    'Seed_g' : Seed, 'RandomStall_g' : RandomStall})
+                    for Latency in [True, False]:
+                        named_config(tb, {'GrantWidth_g': Grant, 'WeightWidth_g': Weight, 
+                                          'Seed_g' : Seed, 'RandomStall_g' : RandomStall,
+                                          'Latency_g' : Latency})
 
     ### olo_base_strobe_gen ###
     strobe_gen_tb = 'olo_base_strobe_gen_tb'

@@ -33,7 +33,8 @@ library work;
 entity olo_base_arb_wrr is
     generic (
         GrantWidth_g  : positive;
-        WeightWidth_g : positive
+        WeightWidth_g : positive;
+        Latency_g     : boolean
     );
     port (
         Clk        : in  std_logic;
@@ -47,6 +48,110 @@ entity olo_base_arb_wrr is
 end entity;
 
 architecture rtl of olo_base_arb_wrr is
+
+    component olo_private_arb_wrr_no_latency is
+        generic (
+            GrantWidth_g  : positive;
+            WeightWidth_g : positive
+        );
+        port (
+            Clk        : in  std_logic;
+            Rst        : in  std_logic;
+            In_Weights : in  std_logic_vector(WeightWidth_g*GrantWidth_g-1 downto 0);
+            In_Req     : in  std_logic_vector(GrantWidth_g-1 downto 0);
+            Out_Grant  : out std_logic_vector(GrantWidth_g-1 downto 0);
+            Out_Ready  : in  std_logic;
+            Out_Valid  : out std_logic
+        );
+    end component;
+
+    component olo_private_arb_wrr_latency is
+        generic (
+            GrantWidth_g  : positive;
+            WeightWidth_g : positive
+        );
+        port (
+            Clk        : in  std_logic;
+            Rst        : in  std_logic;
+            In_Weights : in  std_logic_vector(WeightWidth_g*GrantWidth_g-1 downto 0);
+            In_Req     : in  std_logic_vector(GrantWidth_g-1 downto 0);
+            Out_Grant  : out std_logic_vector(GrantWidth_g-1 downto 0);
+            Out_Ready  : in  std_logic;
+            Out_Valid  : out std_logic
+        );
+    end component;
+
+begin
+
+    g_latency : if (Latency_g) generate
+        i_olo_private_arb_wrr_latency : component olo_private_arb_wrr_latency
+            generic map (
+                GrantWidth_g  => GrantWidth_g,
+                WeightWidth_g => WeightWidth_g
+            )
+            port map (
+                Clk        => Clk,
+                Rst        => Rst,
+                In_Weights => In_Weights,
+                In_Req     => In_Req,
+                Out_Grant  => Out_Grant,
+                Out_Ready  => Out_Ready,
+                Out_Valid  => Out_Valid
+            );
+
+    end generate;
+
+    g_no_latency : if (not Latency_g) generate
+
+        i_olo_private_arb_wrr_no_latency : component olo_private_arb_wrr_no_latency
+            generic map (
+                GrantWidth_g  => GrantWidth_g,
+                WeightWidth_g => WeightWidth_g
+            )
+            port map (
+                Clk        => Clk,
+                Rst        => Rst,
+                In_Weights => In_Weights,
+                In_Req     => In_Req,
+                Out_Grant  => Out_Grant,
+                Out_Ready  => Out_Ready,
+                Out_Valid  => Out_Valid
+            );
+    end generate;
+
+end architecture;
+
+---------------------------------------------------------------------------------------------------
+-- Libraries
+---------------------------------------------------------------------------------------------------
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+
+library work;
+    use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_logic.all;
+
+---------------------------------------------------------------------------------------------------
+-- Entity Declaration
+---------------------------------------------------------------------------------------------------
+entity olo_private_arb_wrr_no_latency is
+    generic (
+        GrantWidth_g  : positive;
+        WeightWidth_g : positive
+    );
+    port (
+        Clk        : in  std_logic;
+        Rst        : in  std_logic;
+        In_Weights : in  std_logic_vector(WeightWidth_g*GrantWidth_g-1 downto 0);
+        In_Req     : in  std_logic_vector(GrantWidth_g-1 downto 0);
+        Out_Grant  : out std_logic_vector(GrantWidth_g-1 downto 0);
+        Out_Ready  : in  std_logic;
+        Out_Valid  : out std_logic
+    );
+end entity;
+
+architecture rtl of olo_private_arb_wrr_no_latency is
 
     ----------------------------------------------------------------------------
     -- Functions
@@ -123,12 +228,11 @@ begin
 
         -- Get the Weight value for the currently active Grant
         if (RR_GrantValid = '1') then
-            v.GrantIdx := getLeadingSetBitIndex(Out_Grant);
+            v.GrantIdx := getLeadingSetBitIndex(RR_Grant);
             -- Extract the corresponding weight using the GrantIdx
             v.Weight :=
                 unsigned(In_Weights((v.GrantIdx + 1) * WeightWidth_g - 1 downto v.GrantIdx * WeightWidth_g));
         end if;
-
 
         if (v.GrantValid = '1' and Out_Ready = '1') then
             -- Increment the weight counter on each successful AXI handshake
@@ -165,6 +269,185 @@ begin
             if Rst = '1' then
                 r.GrantValid <= '0';
                 r.WeightCnt  <= (others => '0');
+            end if;
+        end if;
+    end process;
+
+end architecture;
+
+---------------------------------------------------------------------------------------------------
+-- Libraries
+---------------------------------------------------------------------------------------------------
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+
+library work;
+    use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_logic.all;
+
+---------------------------------------------------------------------------------------------------
+-- Entity Declaration
+---------------------------------------------------------------------------------------------------
+entity olo_private_arb_wrr_latency is
+    generic (
+        GrantWidth_g  : positive;
+        WeightWidth_g : positive
+    );
+    port (
+        Clk        : in  std_logic;
+        Rst        : in  std_logic;
+        In_Weights : in  std_logic_vector(WeightWidth_g*GrantWidth_g-1 downto 0);
+        In_Req     : in  std_logic_vector(GrantWidth_g-1 downto 0);
+        Out_Grant  : out std_logic_vector(GrantWidth_g-1 downto 0);
+        Out_Ready  : in  std_logic;
+        Out_Valid  : out std_logic
+    );
+end entity;
+
+architecture rtl of olo_private_arb_wrr_latency is
+    ----------------------------------------------------------------------------
+    -- Functions
+    ----------------------------------------------------------------------------
+    -- Generates a mask for the input request vector.
+    -- Each bit is set to '1' if the corresponding weight is non-zero; otherwise, '0'.
+    -- Effectively masks out requests with zero weight.
+    function generateRequestWeightsMask(
+            weights      : std_logic_vector;
+            weight_width : positive;
+            grant_width  : positive
+        ) return std_logic_vector is
+        variable requestWeightsMask : std_logic_vector(grant_width-1 downto 0);
+    begin
+        for i in (grant_width-1) downto 0 loop
+            if (unsigned(weights((i+1)*weight_width-1 downto i*weight_width)) /= 0) then
+                requestWeightsMask(i) := '1';
+            else
+                requestWeightsMask(i) := '0';
+            end if;
+        end loop;
+
+        return requestWeightsMask;
+    end function;
+
+    -- state record
+    type State_t is (
+            GetRrGrant_s,
+            SendGrant_s
+        );
+
+    -- Two Process Method
+    type TwoProcess_t is record
+        -- Round Robin
+        RR_GrantReady : std_logic;
+        -- Weighted Round Robin Grant Interface
+        Grant      : std_logic_vector(Out_Grant'range);
+        GrantValid : std_logic;
+        -- Support signals
+        GrantIdx  : integer;
+        Weight    : unsigned(WeightWidth_g - 1 downto 0);
+        WeightCnt : unsigned(WeightWidth_g - 1 downto 0);
+        --
+        State : State_t;
+    end record;
+
+
+    signal r      : TwoProcess_t;
+    signal r_next : TwoProcess_t;
+
+    -- Component connection signals
+    signal ReqMasked     : std_logic_vector(In_Req'range);
+    signal RR_Grant      : std_logic_vector(Out_Grant'range);
+    signal RR_GrantValid : std_logic;
+
+begin
+
+    -- Mask Requests with a weight of zero
+    ReqMasked <= In_Req and generateRequestWeightsMask(In_Weights, WeightWidth_g, GrantWidth_g);
+
+    -- *** Component Instantiations ***
+    u_arb_rr : entity work.olo_base_arb_rr
+        generic map (
+            Width_g => GrantWidth_g
+        )
+        port map (
+            Clk       => Clk,
+            Rst       => Rst,
+            In_Req    => ReqMasked,
+            Out_Valid => RR_GrantValid,
+            Out_Ready => r.RR_GrantReady,
+            Out_Grant => RR_Grant
+        );
+
+    -- *** Combinatorial Process ***
+    p_comb : process (all) is
+        variable v : TwoProcess_t;
+    begin
+
+        -- hold variables stable
+        v := r;
+
+        -- FSM
+        case r.State is
+            --------------------------------------------------------------------
+            when GetRrGrant_s =>
+                v.RR_GrantReady := '1';
+
+                if (RR_GrantValid = '1' and r.RR_GrantReady = '1') then
+                    v.RR_GrantReady := '0';
+                    v.Grant         := RR_Grant;
+
+                    if (unsigned(RR_Grant) /= 0) then
+                        v.GrantIdx := getLeadingSetBitIndex(RR_Grant);
+                        v.Weight   :=
+                            unsigned(In_Weights((v.GrantIdx + 1) * WeightWidth_g - 1 downto v.GrantIdx * WeightWidth_g));
+                        v.State := SendGrant_s;
+                    end if;
+                end if;
+
+            --------------------------------------------------------------------
+            when SendGrant_s =>
+
+                -- Check if grant can still be sent
+                if (
+                        ReqMasked(r.GrantIdx) = '1' and
+                        r.WeightCnt <= r.Weight - 1
+                    ) then
+
+                    v.GrantValid := '1';
+                    if (r.GrantValid = '1' and Out_Ready = '1') then
+                        v.GrantValid := '0';
+                        v.WeightCnt  := r.WeightCnt + 1;
+
+                    end if;
+                else
+                    v.GrantValid := '0';
+                    v.WeightCnt  := (others => '0');
+                    v.State      := GetRrGrant_s;
+                end if;
+
+            --------------------------------------------------------------------
+            when others => null;
+        ------------------------------------------------------------------------
+        end case;
+
+        -- Apply to record
+        r_next <= v;
+    end process;
+
+    Out_Grant <= r.Grant;
+    Out_Valid <= r.GrantValid;
+
+    -- *** Sequential Process ***
+    p_seq : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            r <= r_next;
+            if Rst = '1' then
+                r.RR_GrantReady <= '0';
+                r.GrantValid    <= '0';
+                r.WeightCnt     <= (others => '0');
+                r.State         <= GetRrGrant_s;
             end if;
         end if;
     end process;

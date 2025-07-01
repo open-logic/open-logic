@@ -35,6 +35,7 @@ entity olo_base_arb_wrr_tb is
         WeightWidth_g     : positive;
         RandomStall_g     : boolean;
         Seed_g            : positive;
+        Latency_g         : boolean;
         MaxRandomWeight_g : positive := 8
     );
 end entity;
@@ -103,7 +104,8 @@ begin
     i_dut : entity olo.olo_base_arb_wrr
         generic map (
             GrantWidth_g  => GrantWidth_g,
-            WeightWidth_g => WeightWidth_g
+            WeightWidth_g => WeightWidth_g,
+            Latency_g     => Latency_g
         )
         port map (
             Clk        => Clk,
@@ -687,8 +689,13 @@ begin
                     In_Req_v := (others => '0');
                     In_Req   <= In_Req_v;
 
+                    if Latency_g then
+                        wait until rising_edge(Clk);
+                    end if;
+
                     for i in 0 to 16 - 1 loop
                         wait until rising_edge(Clk);
+                        info("Expect Inactive Valid: OutValid = " & to_string(Out_Valid));
                         check_equal(Out_Valid, '0', "Out_Valid high unexpectedly (all requests low)");
                     end loop;
 
@@ -698,8 +705,14 @@ begin
                     In_Req_v := (others => '1');
                     In_Req   <= In_Req_v;
 
+                    if Latency_g then
+                        wait until rising_edge(Clk);
+                        wait until rising_edge(Clk);
+                    end if;
+
                     for i in 0 to 16 - 1 loop
                         wait until rising_edge(Clk);
+                        info("Expect Active Valid: OutValid = " & to_string(Out_Valid));
                         check_equal(Out_Valid, '1', "Out_Valid low unexpectedly (all requests high)");
                     end loop;
                 end loop;
@@ -721,8 +734,13 @@ begin
                     In_Weights_v := (others => '0');
                     In_Weights   <= In_Weights_v;
 
+                    if Latency_g then
+                        wait until rising_edge(Clk);
+                    end if;
+
                     for i in 0 to 16 - 1 loop
                         wait until rising_edge(Clk);
+                        info("Expect Inactive Valid: OutValid = " & to_string(Out_Valid));
                         check_equal(Out_Valid, '0', "Out_Valid low unexpectedly (all weights low)");
                     end loop;
 
@@ -732,8 +750,14 @@ begin
                     In_Weights_v := (others => '1');
                     In_Weights   <= In_Weights_v;
 
+                    if Latency_g then
+                        wait until rising_edge(Clk);
+                        wait until rising_edge(Clk);
+                    end if;
+
                     for i in 0 to 16 - 1 loop
                         wait until rising_edge(Clk);
+                        info("Expect Active Valid: OutValid = " & to_string(Out_Valid));
                         check_equal(Out_Valid, '1', "Out_Valid low unexpectedly (all weights high)");
                     end loop;
                 end loop;
