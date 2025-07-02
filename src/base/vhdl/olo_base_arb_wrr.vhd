@@ -271,7 +271,6 @@ begin
             -- If the same grant has been used for 'Weight' handshakes,
             -- assert RR_GrantReady to request the next grant and reset the counter
             if (v.WeightCnt >= v.Weight) then
-                --v.GrantValid    := '0';
                 v.RR_GrantReady := '1';
                 v.WeightCnt     := (others => '0');
             end if;
