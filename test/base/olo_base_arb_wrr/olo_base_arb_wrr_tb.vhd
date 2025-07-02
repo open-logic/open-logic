@@ -35,7 +35,7 @@ entity olo_base_arb_wrr_tb is
         WeightWidth_g     : positive;
         RandomStall_g     : boolean;
         Seed_g            : positive;
-        Latency_g         : boolean;
+        Latency_g         : natural range 0 to 1;
         MaxRandomWeight_g : positive := 8
     );
 end entity;
@@ -689,7 +689,7 @@ begin
                     In_Req_v := (others => '0');
                     In_Req   <= In_Req_v;
 
-                    if Latency_g then
+                    if Latency_g /= 0 then
                         wait until rising_edge(Clk);
                     end if;
 
@@ -706,7 +706,7 @@ begin
                     In_Req_v := (others => '1');
                     In_Req   <= In_Req_v;
 
-                    if Latency_g then
+                    if Latency_g /= 0 then
                         wait until rising_edge(Clk);
                     end if;
 
@@ -735,7 +735,7 @@ begin
                     In_Weights_v := (others => '0');
                     In_Weights   <= In_Weights_v;
 
-                    if Latency_g then
+                    if Latency_g /= 0 then
                         wait until rising_edge(Clk);
                     end if;
 
@@ -752,7 +752,7 @@ begin
                     In_Weights_v := (others => '1');
                     In_Weights   <= In_Weights_v;
 
-                    if Latency_g then
+                    if Latency_g /= 0 then
                         wait until rising_edge(Clk);
                     end if;
 

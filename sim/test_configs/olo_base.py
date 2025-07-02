@@ -224,7 +224,7 @@ def add_configs(olo_tb):
         for Weight in [1, 8]:
             for Seed in [42]:
                 for RandomStall in [True, False]:
-                    for Latency in [True, False]:
+                    for Latency in [0, 1]:
                         named_config(tb, {'GrantWidth_g': Grant, 'WeightWidth_g': Weight, 
                                           'Seed_g' : Seed, 'RandomStall_g' : RandomStall,
                                           'Latency_g' : Latency})

@@ -34,7 +34,7 @@ entity olo_base_arb_wrr is
     generic (
         GrantWidth_g  : positive;
         WeightWidth_g : positive;
-        Latency_g     : boolean
+        Latency_g     : natural range 0 to 1
     );
     port (
         Clk        : in  std_logic;
@@ -143,7 +143,7 @@ begin
             Out_Grant => RrGrant
         );
 
-    g_latency : if (Latency_g) generate
+    g_latency : if (Latency_g /= 0) generate
         i_olo_private_arb_wrr_latency : component olo_private_arb_wrr_latency
             generic map (
                 GrantWidth_g  => GrantWidth_g,
@@ -166,7 +166,7 @@ begin
 
     end generate;
 
-    g_no_latency : if (not Latency_g) generate
+    g_no_latency : if (Latency_g = 0) generate
 
         i_olo_private_arb_wrr_no_latency : component olo_private_arb_wrr_no_latency
             generic map (
