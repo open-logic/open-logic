@@ -695,6 +695,7 @@ begin
 
                     for i in 0 to 16 - 1 loop
                         wait until rising_edge(Clk);
+                        wait for Tpd_c;
                         info("Expect Inactive Valid: OutValid = " & to_string(Out_Valid));
                         check_equal(Out_Valid, '0', "Out_Valid high unexpectedly (all requests low)");
                     end loop;
@@ -707,11 +708,11 @@ begin
 
                     if Latency_g then
                         wait until rising_edge(Clk);
-                        wait until rising_edge(Clk);
                     end if;
 
                     for i in 0 to 16 - 1 loop
                         wait until rising_edge(Clk);
+                        wait for Tpd_c;
                         info("Expect Active Valid: OutValid = " & to_string(Out_Valid));
                         check_equal(Out_Valid, '1', "Out_Valid low unexpectedly (all requests high)");
                     end loop;
@@ -740,6 +741,7 @@ begin
 
                     for i in 0 to 16 - 1 loop
                         wait until rising_edge(Clk);
+                        wait for Tpd_c;
                         info("Expect Inactive Valid: OutValid = " & to_string(Out_Valid));
                         check_equal(Out_Valid, '0', "Out_Valid low unexpectedly (all weights low)");
                     end loop;
@@ -752,11 +754,11 @@ begin
 
                     if Latency_g then
                         wait until rising_edge(Clk);
-                        wait until rising_edge(Clk);
                     end if;
 
                     for i in 0 to 16 - 1 loop
                         wait until rising_edge(Clk);
+                        wait for Tpd_c;
                         info("Expect Active Valid: OutValid = " & to_string(Out_Valid));
                         check_equal(Out_Valid, '1', "Out_Valid low unexpectedly (all weights high)");
                     end loop;

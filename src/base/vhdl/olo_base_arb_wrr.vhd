@@ -248,7 +248,7 @@ begin
     -- *** Combinatorial Process ***
     p_comb : process (all) is
         variable v        : TwoProcess_t;
-        variable GrantIdx : integer;
+        variable GrantIdx : integer := GrantWidth_g - 1;
     begin
         -- hold variables stable
         v := r;
@@ -370,7 +370,7 @@ begin
     -- *** Combinatorial Process ***
     p_comb : process (all) is
         variable v        : TwoProcess_t;
-        variable GrantIdx : integer;
+        variable GrantIdx : integer := GrantWidth_g - 1;
     begin
 
         -- hold variables stable
@@ -396,7 +396,6 @@ begin
 
             --------------------------------------------------------------------
             when SendGrant_s =>
-
                 -- Check if grant can still be sent
                 if (
                         In_ReqMasked(GrantIdx) = '1' and
@@ -405,8 +404,10 @@ begin
 
                     v.GrantValid := '1';
                     if (r.GrantValid = '1' and Out_Ready = '1') then
-                        v.GrantValid := '0';
-                        v.WeightCnt  := r.WeightCnt + 1;
+                        v.WeightCnt := r.WeightCnt + 1;
+                        if (r.WeightCnt = r.Weight - 1) then
+                            v.GrantValid := '0';
+                        end if;
 
                     end if;
                 else
