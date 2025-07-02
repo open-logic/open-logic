@@ -73,10 +73,10 @@ architecture rtl of olo_base_arb_wrr is
     end function;
 
     -- Component connection signals
-    signal ReqMasked     : std_logic_vector(In_Req'range);
-    signal RR_Grant      : std_logic_vector(Out_Grant'range);
-    signal RR_GrantValid : std_logic;
-    signal RR_GrantReady : std_logic;
+    signal ReqMasked    : std_logic_vector(In_Req'range);
+    signal RrGrant      : std_logic_vector(Out_Grant'range);
+    signal RrGrantValid : std_logic;
+    signal RrGrantReady : std_logic;
 
     ----------------------------------------------------------------------------
     -- Components
@@ -138,9 +138,9 @@ begin
             Clk       => Clk,
             Rst       => Rst,
             In_Req    => ReqMasked,
-            Out_Valid => RR_GrantValid,
-            Out_Ready => RR_GrantReady,
-            Out_Grant => RR_Grant
+            Out_Valid => RrGrantValid,
+            Out_Ready => RrGrantReady,
+            Out_Grant => RrGrant
         );
 
     g_latency : if (Latency_g) generate
@@ -155,9 +155,9 @@ begin
                 In_Weights   => In_Weights,
                 In_ReqMasked => ReqMasked,
 
-                In_RrGrant      => RR_Grant,
-                In_RrGrantReady => RR_GrantReady,
-                In_RrGrantValid => RR_GrantValid,
+                In_RrGrant      => RrGrant,
+                In_RrGrantReady => RrGrantReady,
+                In_RrGrantValid => RrGrantValid,
 
                 Out_Grant => Out_Grant,
                 Out_Ready => Out_Ready,
@@ -179,9 +179,9 @@ begin
                 In_Weights   => In_Weights,
                 In_ReqMasked => ReqMasked,
 
-                In_RrGrant      => RR_Grant,
-                In_RrGrantReady => RR_GrantReady,
-                In_RrGrantValid => RR_GrantValid,
+                In_RrGrant      => RrGrant,
+                In_RrGrantReady => RrGrantReady,
+                In_RrGrantValid => RrGrantValid,
 
                 Out_Grant => Out_Grant,
                 Out_Ready => Out_Ready,
@@ -231,7 +231,7 @@ architecture rtl of olo_private_arb_wrr_no_latency is
     -- Two Process Method
     type TwoProcess_t is record
         -- Round Robin
-        RR_GrantReady : std_logic;
+        RrGrantReady : std_logic;
         -- Weighted Round Robin Grant Interface
         Grant      : std_logic_vector(Out_Grant'range);
         GrantValid : std_logic;
@@ -253,7 +253,7 @@ begin
         -- hold variables stable
         v := r;
 
-        v.RR_GrantReady := '0';
+        v.RrGrantReady := '0';
 
         -- Get the Weight value for the currently active Grant
         if (In_RrGrantValid = '1') then
@@ -268,10 +268,10 @@ begin
             v.WeightCnt := r.WeightCnt + 1;
 
             -- If the same grant has been used for 'Weight' handshakes,
-            -- assert RR_GrantReady to request the next grant and reset the counter
+            -- assert RrGrantReady to request the next grant and reset the counter
             if (v.WeightCnt >= v.Weight) then
-                v.RR_GrantReady := '1';
-                v.WeightCnt     := (others => '0');
+                v.RrGrantReady := '1';
+                v.WeightCnt    := (others => '0');
             end if;
         end if;
 
@@ -289,7 +289,7 @@ begin
     Out_Grant <= In_RrGrant;
     Out_Valid <= r_next.GrantValid;
 
-    In_RrGrantReady <= r_next.RR_GrantReady;
+    In_RrGrantReady <= r_next.RrGrantReady;
 
     -- *** Sequential Process ***
     p_seq : process (Clk) is
@@ -351,7 +351,7 @@ architecture rtl of olo_private_arb_wrr_latency is
     -- Two Process Method
     type TwoProcess_t is record
         -- Round Robin
-        RR_GrantReady : std_logic;
+        RrGrantReady : std_logic;
         -- Weighted Round Robin Grant Interface
         Grant      : std_logic_vector(Out_Grant'range);
         GrantValid : std_logic;
@@ -380,11 +380,11 @@ begin
         case r.State is
             --------------------------------------------------------------------
             when GetRrGrant_s =>
-                v.RR_GrantReady := '1';
+                v.RrGrantReady := '1';
 
-                if (In_RrGrantValid = '1' and r.RR_GrantReady = '1') then
-                    v.RR_GrantReady := '0';
-                    v.Grant         := In_RrGrant;
+                if (In_RrGrantValid = '1' and r.RrGrantReady = '1') then
+                    v.RrGrantReady := '0';
+                    v.Grant        := In_RrGrant;
 
                     if (unsigned(In_RrGrant) /= 0) then
                         GrantIdx := getLeadingSetBitIndex(In_RrGrant);
@@ -427,7 +427,7 @@ begin
     Out_Grant <= r.Grant;
     Out_Valid <= r.GrantValid;
 
-    In_RrGrantReady <= r.RR_GrantReady;
+    In_RrGrantReady <= r.RrGrantReady;
 
     -- *** Sequential Process ***
     p_seq : process (Clk) is
@@ -435,10 +435,10 @@ begin
         if rising_edge(Clk) then
             r <= r_next;
             if Rst = '1' then
-                r.RR_GrantReady <= '0';
-                r.GrantValid    <= '0';
-                r.WeightCnt     <= (others => '0');
-                r.State         <= GetRrGrant_s;
+                r.RrGrantReady <= '0';
+                r.GrantValid   <= '0';
+                r.WeightCnt    <= (others => '0');
+                r.State        <= GetRrGrant_s;
             end if;
         end if;
     end process;
