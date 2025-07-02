@@ -405,7 +405,7 @@ begin
                     v.GrantValid := '1';
                     if (r.GrantValid = '1' and Out_Ready = '1') then
                         v.WeightCnt := r.WeightCnt + 1;
-                        if (r.WeightCnt = r.Weight - 1) then
+                        if (r.WeightCnt >= r.Weight - 1) then
                             v.GrantValid := '0';
                         end if;
 
