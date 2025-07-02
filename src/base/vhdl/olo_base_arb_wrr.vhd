@@ -55,14 +55,14 @@ architecture rtl of olo_base_arb_wrr is
     -- Each bit is set to '1' if the corresponding weight is non-zero; otherwise, '0'.
     -- Effectively masks out requests with zero weight.
     function generateRequestWeightsMask(
-            weights      : std_logic_vector;
-            weight_width : positive;
-            grant_width  : positive
+            Weights     : std_logic_vector;
+            WeightWidth : positive;
+            GrantWidth  : positive
         ) return std_logic_vector is
-        variable requestWeightsMask : std_logic_vector(grant_width-1 downto 0);
+        variable requestWeightsMask : std_logic_vector(GrantWidth-1 downto 0);
     begin
-        for i in (grant_width-1) downto 0 loop
-            if (unsigned(weights((i+1)*weight_width-1 downto i*weight_width)) /= 0) then
+        for i in (GrantWidth-1) downto 0 loop
+            if (unsigned(Weights((i+1)*WeightWidth-1 downto i*WeightWidth)) /= 0) then
                 requestWeightsMask(i) := '1';
             else
                 requestWeightsMask(i) := '0';
@@ -125,7 +125,6 @@ architecture rtl of olo_base_arb_wrr is
     end component;
 
 begin
-
 
     -- Mask Requests with a weight of zero
     ReqMasked <= In_Req and generateRequestWeightsMask(In_Weights, WeightWidth_g, GrantWidth_g);
