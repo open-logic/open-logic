@@ -304,7 +304,7 @@ package body olo_base_pkg_logic is
         return Result_v;
     end function;
 
-    function getSetBitIndex(vec : std_logic_vector; fromMsb : boolean) return integer is
+    function getSetBitIndex(vec : in std_logic_vector; fromMsb : in boolean) return integer is
     begin
         if fromMsb then
             for i in vec'high downto vec'low loop
@@ -323,12 +323,12 @@ package body olo_base_pkg_logic is
         end if;
     end function;
 
-    function getLeadingSetBitIndex(vec : std_logic_vector) return integer is
+    function getLeadingSetBitIndex(vec : in std_logic_vector) return integer is
     begin
         return getSetBitIndex(vec, fromMsb => true);
     end function;
 
-    function getTrailingSetBitIndex(vec : std_logic_vector) return integer is
+    function getTrailingSetBitIndex(vec : in std_logic_vector) return integer is
     begin
         return getSetBitIndex(vec, fromMsb => false);
     end function;
