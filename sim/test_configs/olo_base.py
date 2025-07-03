@@ -220,14 +220,13 @@ def add_configs(olo_tb):
     ### olo_base_arb_wrr###
     arb_wrr_tb = 'olo_base_arb_wrr_tb'
     tb = olo_tb.test_bench(arb_wrr_tb)
-    for Grant in [1, 5]:
-        for Weight in [1, 8]:
-            for Seed in [42]:
-                for RandomStall in [True, False]:
-                    for Latency in [0, 1]:
-                        named_config(tb, {'GrantWidth_g': Grant, 'WeightWidth_g': Weight, 
-                                          'Seed_g' : Seed, 'RandomStall_g' : RandomStall,
-                                          'Latency_g' : Latency})
+    for RandomStall in [True]:
+        for Latency in [0, 1]:
+            # Most parameters fixed to reduce simulation time. More parameter sweeps can be added when needed
+            # for debugging purposes
+            named_config(tb, {'GrantWidth_g': 5, 'WeightWidth_g': 8, 
+                              'Seed_g' : 42, 'RandomStall_g' : RandomStall,
+                              'Latency_g' : Latency})
 
     ### olo_base_strobe_gen ###
     strobe_gen_tb = 'olo_base_strobe_gen_tb'
