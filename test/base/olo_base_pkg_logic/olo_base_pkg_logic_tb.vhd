@@ -43,6 +43,10 @@ begin
         variable Stdlv5_v : std_logic_vector(4 downto 0);
         variable Stdlv3_v : std_logic_vector(2 downto 0);
         variable Stdlv9_v : std_logic_vector(8 downto 0);
+
+        variable Stdlv5to_v : std_logic_vector(0 to 4);
+        variable Stdlv3to_v : std_logic_vector(0 to 2);
+        variable Stdlv9to_v : std_logic_vector(0 to 8);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -137,6 +141,222 @@ begin
                 check_equal(invertByteOrder(X"1234"), 16#3412#, "invertByteOrder(0x1234)");
                 check_equal(invertByteOrder(X"123456"), 16#563412#, "invertByteOrder(0x123456)");
 
+            elsif run("getSetBitIndex-OneSetBit") then
+
+                for i in Stdlv3_v'range loop
+                    Stdlv3_v      := (others => '0');
+                    Stdlv3_v(i)   := '1';
+                    Stdlv3to_v    := (others => '0');
+                    Stdlv3to_v(i) := '1';
+                    info("Stdlv3_v   = " & to_string(Stdlv3_v));
+                    info("Stdlv3to_v = " & to_string(Stdlv3to_v));
+                    info("");
+
+                    check_equal(getSetBitIndex(Stdlv3_v, fromMsb => true), i, "getSetBitIndex(" & to_string(Stdlv3_v) & ", fromMsb => true)");
+                    check_equal(getSetBitIndex(Stdlv3_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv3_v) & ", fromMsb => false)");
+                    check_equal(getLeadingSetBitIndex(Stdlv3_v), i, "getLeadingSetBitIndex(" & to_string(Stdlv3_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv3_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv3_v) & ")");
+
+                    check_equal(getSetBitIndex(Stdlv3to_v, fromMsb => true), i, "getSetBitIndex(" & to_string(Stdlv3to_v) & ", fromMsb => true)");
+                    check_equal(getSetBitIndex(Stdlv3to_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv3to_v) & ", fromMsb => false)");
+                    check_equal(getLeadingSetBitIndex(Stdlv3to_v), i, "getLeadingSetBitIndex(" & to_string(Stdlv3to_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv3to_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv3to_v) & ")");
+                end loop;
+
+                for i in Stdlv5_v'range loop
+                    Stdlv5_v      := (others => '0');
+                    Stdlv5_v(i)   := '1';
+                    Stdlv5to_v    := (others => '0');
+                    Stdlv5to_v(i) := '1';
+                    info("Stdlv5_v   = " & to_string(Stdlv5_v));
+                    info("Stdlv5to_v = " & to_string(Stdlv5to_v));
+                    info("");
+
+                    check_equal(getSetBitIndex(Stdlv5_v, fromMsb => true), i, "getSetBitIndex(" & to_string(Stdlv5_v) & ")");
+                    check_equal(getSetBitIndex(Stdlv5_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv5_v) & ")");
+                    check_equal(getLeadingSetBitIndex(Stdlv5_v), i, "getLeadingSetBitIndex(" & to_string(Stdlv5_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv5_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv5_v) & ")");
+
+                    check_equal(getSetBitIndex(Stdlv5to_v, fromMsb => true), i, "getSetBitIndex(" & to_string(Stdlv5to_v) & ")");
+                    check_equal(getSetBitIndex(Stdlv5to_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv5to_v) & ")");
+                    check_equal(getLeadingSetBitIndex(Stdlv5to_v), i, "getLeadingSetBitIndex(" & to_string(Stdlv5to_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv5to_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv5to_v) & ")");
+                end loop;
+
+                for i in Stdlv9_v'range loop
+                    Stdlv9_v      := (others => '0');
+                    Stdlv9_v(i)   := '1';
+                    Stdlv9to_v    := (others => '0');
+                    Stdlv9to_v(i) := '1';
+                    info("Stdlv9_v   = " & to_string(Stdlv9_v));
+                    info("Stdlv9to_v = " & to_string(Stdlv9to_v));
+                    info("");
+
+                    check_equal(getSetBitIndex(Stdlv9_v, fromMsb => true), i, "getSetBitIndex(" & to_string(Stdlv9_v) & ")");
+                    check_equal(getSetBitIndex(Stdlv9_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv9_v) & ")");
+                    check_equal(getLeadingSetBitIndex(Stdlv9_v), i, "getLeadingSetBitIndex(" & to_string(Stdlv9_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv9_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv9_v) & ")");
+
+                    check_equal(getSetBitIndex(Stdlv9to_v, fromMsb => true), i, "getSetBitIndex(" & to_string(Stdlv9to_v) & ")");
+                    check_equal(getSetBitIndex(Stdlv9to_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv9to_v) & ")");
+                    check_equal(getLeadingSetBitIndex(Stdlv9to_v), i, "getLeadingSetBitIndex(" & to_string(Stdlv9to_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv9to_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv9to_v) & ")");
+                end loop;
+
+            elsif run("getSetBitIndex-TwoSetBits") then
+                for i in 0 to (Stdlv3_v'high / 2) - 1 loop
+                    Stdlv3_v                        := (others => '0');
+                    Stdlv3_v(i)                     := '1';
+                    Stdlv3_v(Stdlv3_v'high - i)     := '1';
+                    Stdlv3to_v                      := (others => '0');
+                    Stdlv3to_v(i)                   := '1';
+                    Stdlv3to_v(Stdlv3to_v'high - i) := '1';
+                    info("Stdlv3_v   = " & to_string(Stdlv3_v));
+                    info("Stdlv3to_v = " & to_string(Stdlv3to_v));
+                    info("");
+
+                    check_equal(getSetBitIndex(Stdlv3_v, fromMsb => true), Stdlv3_v'high - i, "getSetBitIndex(" & to_string(Stdlv3_v) & ", fromMsb => true)");
+                    check_equal(getSetBitIndex(Stdlv3_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv3_v) & ", fromMsb => false)");
+                    check_equal(getLeadingSetBitIndex(Stdlv3_v), Stdlv3_v'high - i, "getLeadingSetBitIndex(" & to_string(Stdlv3_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv3_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv3_v) & ")");
+
+                    check_equal(getSetBitIndex(Stdlv3to_v, fromMsb => true), Stdlv3to_v'high - i, "getSetBitIndex(" & to_string(Stdlv3to_v) & ", fromMsb => true)");
+                    check_equal(getSetBitIndex(Stdlv3to_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv3to_v) & ", fromMsb => false)");
+                    check_equal(getLeadingSetBitIndex(Stdlv3to_v), Stdlv3to_v'high - i, "getLeadingSetBitIndex(" & to_string(Stdlv3to_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv3to_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv3to_v) & ")");
+                end loop;
+
+                for i in 0 to (Stdlv5_v'high / 2) - 1 loop
+                    Stdlv5_v                        := (others => '0');
+                    Stdlv5_v(i)                     := '1';
+                    Stdlv5_v(Stdlv5_v'high - i)     := '1';
+                    Stdlv5to_v                      := (others => '0');
+                    Stdlv5to_v(i)                   := '1';
+                    Stdlv5to_v(Stdlv5to_v'high - i) := '1';
+                    info("Stdlv5_v   = " & to_string(Stdlv5_v));
+                    info("Stdlv5to_v = " & to_string(Stdlv5to_v));
+                    info("");
+
+                    check_equal(getSetBitIndex(Stdlv5_v, fromMsb => true), Stdlv5_v'high - i, "getSetBitIndex(" & to_string(Stdlv5_v) & ", fromMsb => true)");
+                    check_equal(getSetBitIndex(Stdlv5_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv5_v) & ", fromMsb => false)");
+                    check_equal(getLeadingSetBitIndex(Stdlv5_v), Stdlv5_v'high - i, "getLeadingSetBitIndex(" & to_string(Stdlv5_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv5_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv5_v) & ")");
+
+                    check_equal(getSetBitIndex(Stdlv5to_v, fromMsb => true), Stdlv5to_v'high - i, "getSetBitIndex(" & to_string(Stdlv5to_v) & ", fromMsb => true)");
+                    check_equal(getSetBitIndex(Stdlv5to_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv5to_v) & ", fromMsb => false)");
+                    check_equal(getLeadingSetBitIndex(Stdlv5to_v), Stdlv5to_v'high - i, "getLeadingSetBitIndex(" & to_string(Stdlv5to_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv5to_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv5to_v) & ")");
+                end loop;
+
+                for i in 0 to (Stdlv9_v'high / 2) - 1 loop
+                    Stdlv9_v                        := (others => '0');
+                    Stdlv9_v(i)                     := '1';
+                    Stdlv9_v(Stdlv9_v'high - i)     := '1';
+                    Stdlv9to_v                      := (others => '0');
+                    Stdlv9to_v(i)                   := '1';
+                    Stdlv9to_v(Stdlv9to_v'high - i) := '1';
+                    info("Stdlv9_v   = " & to_string(Stdlv9_v));
+                    info("Stdlv9to_v = " & to_string(Stdlv9to_v));
+                    info("");
+
+                    check_equal(getSetBitIndex(Stdlv9_v, fromMsb => true), Stdlv9_v'high - i, "getSetBitIndex(" & to_string(Stdlv9_v) & ", fromMsb => true)");
+                    check_equal(getSetBitIndex(Stdlv9_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv9_v) & ", fromMsb => false)");
+                    check_equal(getLeadingSetBitIndex(Stdlv9_v), Stdlv9_v'high - i, "getLeadingSetBitIndex(" & to_string(Stdlv9_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv9_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv9_v) & ")");
+
+                    check_equal(getSetBitIndex(Stdlv9to_v, fromMsb => true), Stdlv9to_v'high - i, "getSetBitIndex(" & to_string(Stdlv9to_v) & ", fromMsb => true)");
+                    check_equal(getSetBitIndex(Stdlv9to_v, fromMsb => false), i, "getSetBitIndex(" & to_string(Stdlv9to_v) & ", fromMsb => false)");
+                    check_equal(getLeadingSetBitIndex(Stdlv9to_v), Stdlv9to_v'high - i, "getLeadingSetBitIndex(" & to_string(Stdlv9to_v) & ")");
+                    check_equal(getTrailingSetBitIndex(Stdlv9to_v), i, "getTrailingSetBitIndex(" & to_string(Stdlv9to_v) & ")");
+                end loop;
+
+            elsif run("getSetBitIndex-NoSetBits") then
+                Stdlv3_v   := (others => '0');
+                Stdlv3to_v := (others => '0');
+                Stdlv5_v   := (others => '0');
+                Stdlv5to_v := (others => '0');
+                Stdlv9_v   := (others => '0');
+                Stdlv9to_v := (others => '0');
+
+                info("NoSetBits-Stdlv3_v checks");
+                check_equal(getSetBitIndex(Stdlv3_v, fromMsb => true), Stdlv3_v'low, "getSetBitIndex(" & to_string(Stdlv3_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv3_v, fromMsb => false), Stdlv3_v'high, "getSetBitIndex(" & to_string(Stdlv3_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv3_v), Stdlv3_v'low, "getLeadingSetBitIndex(" & to_string(Stdlv3_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv3_v), Stdlv3_v'high, "getTrailingSetBitIndex(" & to_string(Stdlv3_v) & ")");
+
+                info("NoSetBits-Stdlv3to_v checks");
+                check_equal(getSetBitIndex(Stdlv3to_v, fromMsb => true), Stdlv3to_v'low, "getSetBitIndex(" & to_string(Stdlv3to_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv3to_v, fromMsb => false), Stdlv3to_v'high, "getSetBitIndex(" & to_string(Stdlv3to_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv3to_v), Stdlv3to_v'low, "getLeadingSetBitIndex(" & to_string(Stdlv3to_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv3to_v), Stdlv3to_v'high, "getTrailingSetBitIndex(" & to_string(Stdlv3to_v) & ")");
+
+                info("NoSetBits-Stdlv5_v checks");
+                check_equal(getSetBitIndex(Stdlv5_v, fromMsb => true), Stdlv5_v'low, "getSetBitIndex(" & to_string(Stdlv5_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv5_v, fromMsb => false), Stdlv5_v'high, "getSetBitIndex(" & to_string(Stdlv5_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv5_v), Stdlv5_v'low, "getLeadingSetBitIndex(" & to_string(Stdlv5_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv5_v), Stdlv5_v'high, "getTrailingSetBitIndex(" & to_string(Stdlv5_v) & ")");
+
+                info("NoSetBits-Stdlv5to_v checks");
+                check_equal(getSetBitIndex(Stdlv5to_v, fromMsb => true), Stdlv5to_v'low, "getSetBitIndex(" & to_string(Stdlv5to_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv5to_v, fromMsb => false), Stdlv5to_v'high, "getSetBitIndex(" & to_string(Stdlv5to_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv5to_v), Stdlv5to_v'low, "getLeadingSetBitIndex(" & to_string(Stdlv5to_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv5to_v), Stdlv5to_v'high, "getTrailingSetBitIndex(" & to_string(Stdlv5to_v) & ")");
+
+                info("NoSetBits-Stdlv9_v checks");
+                check_equal(getSetBitIndex(Stdlv9_v, fromMsb => true), Stdlv9_v'low, "getSetBitIndex(" & to_string(Stdlv9_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv9_v, fromMsb => false), Stdlv9_v'high, "getSetBitIndex(" & to_string(Stdlv9_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv9_v), Stdlv9_v'low, "getLeadingSetBitIndex(" & to_string(Stdlv9_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv9_v), Stdlv9_v'high, "getTrailingSetBitIndex(" & to_string(Stdlv9_v) & ")");
+
+                info("NoSetBits-Stdlv9to_v checks");
+                check_equal(getSetBitIndex(Stdlv9to_v, fromMsb => true), Stdlv9to_v'low, "getSetBitIndex(" & to_string(Stdlv9to_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv9to_v, fromMsb => false), Stdlv9to_v'high, "getSetBitIndex(" & to_string(Stdlv9to_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv9to_v), Stdlv9to_v'low, "getLeadingSetBitIndex(" & to_string(Stdlv9to_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv9to_v), Stdlv9to_v'high, "getTrailingSetBitIndex(" & to_string(Stdlv9to_v) & ")");
+
+            elsif run("getSetBitIndex-AllSetBits") then
+                Stdlv3_v   := (others => '1');
+                Stdlv3to_v := (others => '1');
+                Stdlv5_v   := (others => '1');
+                Stdlv5to_v := (others => '1');
+                Stdlv9_v   := (others => '1');
+                Stdlv9to_v := (others => '1');
+
+                info("AllSetBits-Stdlv3_v checks");
+                check_equal(getSetBitIndex(Stdlv3_v, fromMsb => true), Stdlv3_v'high, "getSetBitIndex(" & to_string(Stdlv3_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv3_v, fromMsb => false), Stdlv3_v'low, "getSetBitIndex(" & to_string(Stdlv3_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv3_v), Stdlv3_v'high, "getLeadingSetBitIndex(" & to_string(Stdlv3_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv3_v), Stdlv3_v'low, "getTrailingSetBitIndex(" & to_string(Stdlv3_v) & ")");
+
+                info("AllSetBits-Stdlv3to_v checks");
+                check_equal(getSetBitIndex(Stdlv3to_v, fromMsb => true), Stdlv3to_v'high, "getSetBitIndex(" & to_string(Stdlv3to_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv3to_v, fromMsb => false), Stdlv3to_v'low, "getSetBitIndex(" & to_string(Stdlv3to_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv3to_v), Stdlv3to_v'high, "getLeadingSetBitIndex(" & to_string(Stdlv3to_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv3to_v), Stdlv3to_v'low, "getTrailingSetBitIndex(" & to_string(Stdlv3to_v) & ")");
+
+                info("AllSetBits-Stdlv5_v checks");
+                check_equal(getSetBitIndex(Stdlv5_v, fromMsb => true), Stdlv5_v'high, "getSetBitIndex(" & to_string(Stdlv5_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv5_v, fromMsb => false), Stdlv5_v'low, "getSetBitIndex(" & to_string(Stdlv5_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv5_v), Stdlv5_v'high, "getLeadingSetBitIndex(" & to_string(Stdlv5_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv5_v), Stdlv5_v'low, "getTrailingSetBitIndex(" & to_string(Stdlv5_v) & ")");
+
+                info("AllSetBits-Stdlv5to_v checks");
+                check_equal(getSetBitIndex(Stdlv5to_v, fromMsb => true), Stdlv5to_v'high, "getSetBitIndex(" & to_string(Stdlv5to_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv5to_v, fromMsb => false), Stdlv5to_v'low, "getSetBitIndex(" & to_string(Stdlv5to_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv5to_v), Stdlv5to_v'high, "getLeadingSetBitIndex(" & to_string(Stdlv5to_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv5to_v), Stdlv5to_v'low, "getTrailingSetBitIndex(" & to_string(Stdlv5to_v) & ")");
+
+                info("AllSetBits-Stdlv9_v checks");
+                check_equal(getSetBitIndex(Stdlv9_v, fromMsb => true), Stdlv9_v'high, "getSetBitIndex(" & to_string(Stdlv9_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv9_v, fromMsb => false), Stdlv9_v'low, "getSetBitIndex(" & to_string(Stdlv9_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv9_v), Stdlv9_v'high, "getLeadingSetBitIndex(" & to_string(Stdlv9_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv9_v), Stdlv9_v'low, "getTrailingSetBitIndex(" & to_string(Stdlv9_v) & ")");
+
+                info("AllSetBits-Stdlv9to_v checks");
+                check_equal(getSetBitIndex(Stdlv9to_v, fromMsb => true), Stdlv9to_v'high, "getSetBitIndex(" & to_string(Stdlv9to_v) & ", fromMsb => true)");
+                check_equal(getSetBitIndex(Stdlv9to_v, fromMsb => false), Stdlv9to_v'low, "getSetBitIndex(" & to_string(Stdlv9to_v) & ", fromMsb => false)");
+                check_equal(getLeadingSetBitIndex(Stdlv9to_v), Stdlv9to_v'high, "getLeadingSetBitIndex(" & to_string(Stdlv9to_v) & ")");
+                check_equal(getTrailingSetBitIndex(Stdlv9to_v), Stdlv9to_v'low, "getTrailingSetBitIndex(" & to_string(Stdlv9to_v) & ")");
             end if;
 
         end loop;

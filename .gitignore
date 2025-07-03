@@ -31,3 +31,6 @@ _vmake
 # Fusesoc Generated files
 build/
 fusesoc.conf
+
+#Python Virtual environment
+.venv/
