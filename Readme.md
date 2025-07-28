@@ -5,12 +5,15 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/date.json?cacheSeconds=0)
 [![Join the chat at https://gitter.im/open-logic/general](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/open-logic/general?utm_source=badge&utm_medium=badge&utm_content=badge)
 
-# Open Logic - A VHDL Standard Library
+# Open Logic - A VHDL Standard* Library
 
 _Open Logic_ aims to be for HDL projects what _stdlib_ is for C/C++ projects.
 
+Note: The formulation _Standard* Library_ is used to depict the idea behind the project. It is **NOT** meant to imply
+that there is any kind of standardization committee involved.
+
 _Open Logic_ implements commonly used components in a reusable and vendor/tool-independent way and provide them under a
-permissive open source license (LGPL modified for FPGA usage, see [License.txt](./License.txt)), so the code can be used
+permissive open source license (LGPL with exceptions for FPGA usage, see [License.txt](./License.txt)), so the code can be used
 in commercial projects.
 
 _Open Logic_ is written in VHDL but can also be used from System Verilog easily.
