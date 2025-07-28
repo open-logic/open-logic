@@ -10,7 +10,7 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_decode_firstbit.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_decode_firstbit.json?cacheSeconds=0)
 
-VHDL Source: [olo_base_arb_prio](../../src/base/vhdl/olo_base_arb_prio.vhd)
+VHDL Source: [olo_base_decode_firstbit](../../src/base/vhdl/olo_base_decode_firstbit.vhd)
 
 ## Description
 
