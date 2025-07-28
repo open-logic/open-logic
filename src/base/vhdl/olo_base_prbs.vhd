@@ -1,8 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024 by Oliver Bründler
--- All rights reserved.
--- Authors: Rafael Basso, Oliver Bründler
+-- Copyright (c) 2024 by Oliver Bruendler
+-- Authors: Rafael Basso, Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024-2025 by Oliver Bruendler, Switzerland
--- All rights reserved.
+-- Copyright (c) 2024 by Oliver Bruendler, Switzerland
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
