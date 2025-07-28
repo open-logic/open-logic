@@ -1,8 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2019 by Enclustra GmbH, Switzerland
--- Copyright (c) 2024 by Oliver Bründler
--- All rights reserved.
--- Authors: Eduardo del Castillo, Oliver Bründler
+-- Copyright (c) 2024 by Oliver Bruendler
+-- Authors: Eduardo del Castillo, Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------------------

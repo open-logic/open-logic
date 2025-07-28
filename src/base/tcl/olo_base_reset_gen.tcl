@@ -1,7 +1,6 @@
 #-----------------------------------------------------------------------------
-#-  Copyright (c) 2024 by Oliver Bründler
-#-  All rights reserved.
-#-  Oliver Bründler
+#-  Copyright (c) 2024 by Oliver Bruendler
+#-  Oliver Bruendler
 #-----------------------------------------------------------------------------
 
 # Scoped constraints for olo_base_cc_bits

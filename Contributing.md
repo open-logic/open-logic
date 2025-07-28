@@ -94,12 +94,6 @@ root directory.
 
 ### Copyright
 
-Any contribution must give the copyright to Oliver Bründler. This is necessary to manage the project freely. Copyright
-is given by adding the copyright notice to the beginning of each file.
+You may add your own copiright notice to any file you contribute to. However, for contributions to be accepted, you
+must sign the [Contributor License Agreement](https://cla-assistant.io/open-logic/open-logic).
 
-```vhdl
-Copyright (c) 2024 by Oliver Bründler
-All rights reserved.
-```
-
-Of course the year must be adjusted to the year of the contribution and could also be a span like `2024-2025`.

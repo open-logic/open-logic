@@ -1,7 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2020 by Oliver Bruendler
--- Copyright (c) 2024 by Oliver Bründler
--- All rights reserved.
+-- Copyright (c) 2020-2024 by Oliver Bruendler
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 

@@ -1,6 +1,5 @@
 # ---------------------------------------------------------------------------------------------------
-# Copyright (c) 2025 by Oliver Bründler
-# All rights reserved.
+# Copyright (c) 2025 by Oliver Bruendler
 # Authors: Oliver Bruendler
 # ---------------------------------------------------------------------------------------------------
 from typing import List
