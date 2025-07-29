@@ -1,0 +1,3 @@
+[submodule "3rdParty/en_cl_fix"]
+	path = 3rdParty/en_cl_fix
+	url = https://github.com/open-logic/en_cl_fix.git

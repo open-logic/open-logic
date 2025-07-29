@@ -53,7 +53,7 @@ Below figure explains the _RdLatency_g_ generic in detail:
 ### Byte Enables
 
 Due to tool limitations regarding inference, the usage of byte enables (_UseByteEnable_g=true_) can lead to increased
-RAM usage.nTherefore, **do not use byte enable signals unless this is strictly required**.
+RAM usage. Therefore, **do not use byte enable signals unless this is strictly required**.
 
 Open Logic internally does not use byte enables, hence only users using the _olo_base_ram_sp_ component directly with
 byte-enables enabled are affected.

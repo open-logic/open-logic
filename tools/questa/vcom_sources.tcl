@@ -14,5 +14,6 @@ namespace eval olo_import_sources {
     variable oloRoot [file normalize $fileLoc/../..]
     
     #Compile
-    vcom -autoorder -work olo $oloRoot/src/*/vhdl/*.vhd
+    vcom -2008 -autoorder -work olo $oloRoot/3rdParty/en_cl_fix/hdl/*.vhd
+    vcom -2008 -autoorder -work olo $oloRoot/src/*/vhdl/*.vhd
 }

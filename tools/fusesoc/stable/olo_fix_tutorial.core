@@ -1,0 +1,36 @@
+CAPI=2:
+name : open-logic:tutorials:olo_fix_tutorial:4.0.0
+description : stable release (downloaded from GitHub); olo_fix tutorial for open-logic, targetting Zybo Z7-10 board
+
+filesets:
+
+  zybo_z7:
+    files:
+      - doc/tutorials/OloFixTutorial/Files/timing.xdc : {file_type : xdc}
+      
+  rtl:
+    files:
+      - doc/tutorials/OloFixTutorial/Files/controller_olo_fix.vhd : {file_type : vhdlSource-2008}
+      - doc/tutorials/OloFixTutorial/Files/fix_formats_pkg.vhd : {file_type : vhdlSource-2008}
+    depend :
+      - "open-logic:open-logic:fix"
+
+targets:
+  default: &default
+    filesets : [rtl]
+    toplevel: ["is_toplevel? (olo_fix_tutorial_controller)"]
+    
+  zybo_z7: 
+    default_tool: vivado
+    description : Digilent Zybo Z7-10 SoC Kit
+    filesets : [rtl, zybo_z7]
+    tools:
+      vivado:
+        part : xc7z010clg400-1
+    toplevel : olo_fix_tutorial_controller
+
+provider:
+  name    : github
+  user    : open-logic
+  repo    : open-logic
+  version : 4.0.0

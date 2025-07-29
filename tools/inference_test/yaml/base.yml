@@ -1,0 +1,254 @@
+files:
+  include:
+    - "../../../src/base/**/*.vhd"  # Glob expressions for files to parse
+
+exclude_entities:
+  - "olo_private_*" # Private entities
+
+entities:
+  # olo_base_arb_prio
+  - entity_name: "olo_base_arb_prio"
+    configurations:
+      - name: "16bit"
+        generics:
+          Width_g: 16
+  # olo_base_arb_rr
+  - entity_name: "olo_base_arb_rr"
+    configurations:
+      - name: "16bit"
+        generics:
+          Width_g: 16
+  # olo_base_cam
+  - entity_name: "olo_base_cam"
+    configurations:
+      - name: "d128-w16"
+        generics:
+          Addresses_g: 128
+          ContentWidth_g: 16
+        omitted_ports:
+          - Match_Match
+          - Match_Valid
+  # olo_base_cc_bits
+  - entity_name: "olo_base_cc_bits"
+  # olo_base_cc_handshake
+  - entity_name: "olo_base_cc_handshake"
+    configurations:
+      - name: "16bit"
+        generics:
+          Width_g: 16  
+  # olo_base_cc_n2xn
+  - entity_name: "olo_base_cc_n2xn"
+    configurations:
+      - name: "16bit"
+        generics:
+          Width_g: 16  
+  # olo_base_cc_pulse
+  - entity_name: "olo_base_cc_pulse"
+  # olo_base_cc_reset
+  - entity_name: "olo_base_cc_reset"
+  # olo_base_cc_simple
+  - entity_name: "olo_base_cc_simple"
+  # olo_base_cc_status
+  - entity_name: "olo_base_cc_status"
+    configurations:
+      - name: "16bit"
+        generics:
+          Width_g: 16   
+  # olo_base_cc_xn2n
+  - entity_name: "olo_base_cc_xn2n"
+    configurations:
+      - name: "16bit"
+        generics:
+          Width_g: 16        
+  # olo_base_crc
+  - entity_name: "olo_base_crc"
+    configurations:
+      - name: "16poly-16data"
+        generics:
+          DataWidth_g: 16
+          Polynomial_g: '"1000000000000101"'   
+  # olo_base_decode_firstbit
+  - entity_name: "olo_base_decode_firstbit"
+    configurations:
+      - name: "16bit"
+        generics:
+          InWidth_g: 16     
+  # olo_base_delay_cfg
+  - entity_name: "olo_base_delay_cfg"
+    configurations:
+      - name: "16bit-256del"
+        generics:
+          Width_g: 16    
+  # olo_base_delay
+  - entity_name: "olo_base_delay"
+    configurations:
+      - name: "16bit-256del"
+        generics:
+          Width_g: 16
+          Delay_g: 256
+  # olo_base_dyn_sft
+  - entity_name: "olo_base_dyn_sft"
+    configurations:
+      - name: "left-32bit-shift32"
+        generics:
+          Direction_g: '"LEFT"'
+          MaxShift_g: 32
+          Width_g: 32
+  # olo_base_fifo_async
+  - entity_name: "olo_base_fifo_async"
+    configurations:
+      - name: "d512-w16"
+        generics:
+          Width_g: 16
+          Depth_g: 512 
+  # olo_base_fifo_packet
+  - entity_name: "olo_base_fifo_packet"
+    configurations:
+      - name: "d512-w16"
+        generics:
+          Width_g: 16
+          Depth_g: 512 
+  # olo_base_fifo_sync
+  - entity_name: "olo_base_fifo_sync"
+    configurations:
+      - name: "d512-w16"
+        generics:
+          Width_g: 16
+          Depth_g: 512 
+  # olo_base_flowctrl_handler
+  - entity_name: "olo_base_flowctrl_handler"
+    configurations:
+      - name: "in16-out16-32spl"
+        generics:
+          InWidth_g: 16
+          OutWidth_g: 16
+          SamplesToAbsorb_g: 32 
+  # olo_base_pl_stage
+  - entity_name: "olo_base_pl_stage"
+    configurations:
+      - name: "16bit"
+        generics:
+          Width_g: 16
+  # olo_base_prbs
+  - entity_name: "olo_base_prbs"
+    configurations:
+      - name: "prbs4"
+        generics:
+          Polynomial_g: '"1100"'
+          Seed_g: '"1111"'
+  # olo_base_ram_sdp
+  - entity_name: "olo_base_ram_sdp"
+    fixed_generics:
+      Depth_g: 512
+      Width_g: 16
+      InitString_g: '"0x1234, 0x5678, 0xDEAD, 0xBEEF"'
+    configurations:
+      - name: "NoBe-NoInit"
+        generics:
+          InitFormat_g: '"NONE"'
+          UseByteEnable_g: false
+      - name: "NoBe-Init"
+        generics:
+          InitFormat_g: '"HEX"'
+          UseByteEnable_g: false
+      - name: "Be-NoInit"
+        generics:
+          InitFormat_g: '"NONE"'
+          UseByteEnable_g: true
+      - name: "Be-Init"
+        generics:
+          InitFormat_g: '"HEX"'
+          UseByteEnable_g: true
+  # olo_base_ram_sp
+  - entity_name: "olo_base_ram_sp"
+    fixed_generics:
+      Depth_g: 512
+      Width_g: 16
+      InitString_g: '"0x1234, 0x5678, 0xDEAD, 0xBEEF"'
+    configurations:
+      - name: "NoBe-NoInit"
+        generics:
+          InitFormat_g: '"NONE"'
+          UseByteEnable_g: false
+      - name: "NoBe-Init"
+        generics:
+          InitFormat_g: '"HEX"'
+          UseByteEnable_g: false
+      - name: "Be-NoInit"
+        generics:
+          InitFormat_g: '"NONE"'
+          UseByteEnable_g: true
+      - name: "Be-Init"
+        generics:
+          InitFormat_g: '"HEX"'
+          UseByteEnable_g: true
+  # olo_base_ram_tdp
+  - entity_name: "olo_base_ram_tdp"
+    fixed_generics:
+      Depth_g: 512
+      Width_g: 16
+      InitString_g: '"0x1234, 0x5678, 0xDEAD, 0xBEEF"'
+      RamBehavior_g: '"WBR"'
+    configurations:
+      - name: "NoBe-NoInit"
+        generics:
+          InitFormat_g: '"NONE"'
+          UseByteEnable_g: false
+      - name: "NoBe-Init"
+        generics:
+          InitFormat_g: '"HEX"'
+          UseByteEnable_g: false
+      - name: "Be-NoInit"
+        generics:
+          InitFormat_g: '"NONE"'
+          UseByteEnable_g: true
+      - name: "Be-Init"
+        generics:
+          InitFormat_g: '"HEX"'
+          UseByteEnable_g: true
+    tool_generics:
+      quartus:
+        RamBehavior_g: '"WBR"'
+  # olo_base_reset_gen
+  - entity_name: "olo_base_reset_gen"
+  # olo_base_strobe_div
+  - entity_name: "olo_base_strobe_div"
+    configurations:
+      - name: "1000x"
+        generics:
+          MaxRatio_g: 1000
+  # olo_base_strobe_gen
+  - entity_name: "olo_base_strobe_gen"
+    configurations:
+      - name: "100M-1Hz"
+        generics:
+          FreqClkHz_g: 100.0e6
+          FreqStrobeHz_g: 1.0
+  # olo_base_tdm_mux
+  - entity_name: "olo_base_tdm_mux"
+    configurations:
+      - name: "16ch-16bit"
+        generics:
+          Channels_g: 16
+          Width_g: 16
+  # olo_base_wconv_n2m
+  - entity_name: "olo_base_wconv_n2m"
+    configurations:
+      - name: "32to24"
+        generics:
+          InWidth_g: 32
+          OutWidth_g: 24
+  # olo_base_wconv_n2xn
+  - entity_name: "olo_base_wconv_n2xn"
+    configurations:
+      - name: "8to32"
+        generics:
+          InWidth_g: 8
+          OutWidth_g: 32
+  # olo_base_wconv_xn2n
+  - entity_name: "olo_base_wconv_xn2n"
+    configurations:
+      - name: "32to8"
+        generics:
+          InWidth_g: 32
+          OutWidth_g: 8

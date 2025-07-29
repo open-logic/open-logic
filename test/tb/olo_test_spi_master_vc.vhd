@@ -168,7 +168,6 @@ begin
     main : process is
         -- Messaging
         variable request_msg      : msg_t;
-        variable reply_msg        : msg_t;
         variable msg_type         : msg_type_t;
         variable transaction_bits : positive;
         variable data_mosi        : std_logic_vector(instance.max_trans_width-1 downto 0);
@@ -182,8 +181,7 @@ begin
         variable shift_reg_tx : std_logic_vector(instance.max_trans_width-1 downto 0);
 
         -- Others
-        variable tx_id     : integer;
-        variable last_edge : time;
+        variable tx_id : integer;
     begin
         -- Initialization
         mosi <= '0';

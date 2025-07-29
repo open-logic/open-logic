@@ -15,20 +15,25 @@ repoRoot = os.path.abspath(f"{curdir}/../../")
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--version", help="Specify the version", required=True)
+parser.add_argument("--cl-fix-version", help="Specify the version for cl_fix", required=False)
 args = parser.parse_args()
+
 
 
 #Constants
 VERSION = args.version
+CL_FIX_VERSION = args.cl_fix_version
 DESCRIPTIONS = {
     "base" : "Basic Circuitry (e.g. FIFOs, CDCs, ...)",
     "axi" : "AXI related modules",
-    "intf" : "Interfaces (e.g. I2C, synchronizer, SPI, ...)"
+    "intf" : "Interfaces (e.g. I2C, synchronizer, SPI, ...)",
+    "fix" : "Fixed point mathematics"
 }
 DEPENDENCIES = {
     "base" : [],
     "axi" : ["base"],
-    "intf" : ["base"]
+    "intf" : ["base"],
+    "fix" : ["base"]
 }
 
 #Jinja setup
@@ -64,15 +69,35 @@ for state in ["dev", "stable"]:
         # Get all VHDL files
         os.chdir(f"{repoRoot}/src/{area}/vhdl")
         vhdlFiles = os.listdir()
+
+        # TCL files
+        tcldir = f"{repoRoot}/src/{area}/tcl"
+        # Check if tcl directory exists
+        if not os.path.exists(tcldir):
+            tclFiles = []
+        else:
+            os.chdir(tcldir)
+            tclFiles = os.listdir()
+        # Handle main file
+        tclSource = None
+        for fname in tclFiles:
+            if fname.endswith("_constraints_amd.tcl"):
+                tclSource = fname
+                tclFiles.remove(fname)
+                break
+        
+
         # Navigate to area
         os.chdir("..")
 
         # Select proper repo root or .core file as reference
         if state == "dev":
             fileDir = "vhdl/"
+            constDir = "tcl/"
             targetDir = "."
         elif state == "stable":
             fileDir = f"src/{area}/vhdl/"
+            constDir = f"src/{area}/tcl/"
             targetDir = f"{repoRoot}/tools/fusesoc/stable"
         else:
             raise ValueError("Invalid state (dev/stable)")
@@ -87,23 +112,62 @@ for state in ["dev", "stable"]:
             "description" : DESCRIPTIONS[area],
             "dependencies" : DEPENDENCIES[area],
             "library" : library,
-            "codebase" : codebase
+            "codebase" : codebase,
+            "scoped_constraints" : len(tclFiles) > 0,
+            "tclFiles" : tclFiles,
+            "tclSource" : tclSource,
+            "constDir" : constDir
         }
+        # Add external dependencies where required
+        if area == "fix":
+            data["ext_dependencies"] = [f"^open-logic:{library}:en_cl_fix:{CL_FIX_VERSION}"]
         rendered_template = template.render(data)
         with open(f"{targetDir}/olo_{area}{filepostfix}.core", "w+") as f:
             f.write(rendered_template)
+
+    # 3rd party repo en_cl_fix
+    # Get all VHDL files
+    os.chdir(f"{repoRoot}/3rdParty/en_cl_fix/hdl")
+    vhdlFiles = os.listdir()
+    # Navigate to cl_fix root
+    os.chdir("..")
+    # Select proper repo root or .core file as reference
+    fileDir = "hdl/"
+    if state == "dev":   
+        targetDir = "."
+    elif state == "stable":
+        targetDir = f"{repoRoot}/tools/fusesoc/stable"
+    else:
+        raise ValueError("Invalid state (dev/stable)")
+    # Generaete core-file
+    template = env.get_template("en_cl_fix.template")
+    data = {
+        "submodule" : "en_cl_fix",
+        "fileDir" : fileDir,
+        "vhdlFiles" : vhdlFiles,
+        "version" : CL_FIX_VERSION,
+        "library" : library,
+        "codebase" : codebase,
+    }
+    rendered_template = template.render(data)
+    with open(f"{targetDir}/en_cl_fix{filepostfix}.core", "w+") as f:
+        f.write(rendered_template)
 
     # Select proper repo root or .core file as reference
     if state == "dev":
         vivadoFileDir = ""
         quartusFileDir = ""
+        fixFiledir = ""
         vivadoTargetDir = "."
         quartusTargetDir = "."
+        fixTargetDir = "."
     elif state == "stable":
         vivadoFileDir = "doc/tutorials/VivadoTutorial/Files/"
         quartusFileDir = "doc/tutorials/QuartusTutorial/Files/"
+        fixFiledir = "doc/tutorials/OloFixTutorial/Files/"
         vivadoTargetDir = f"{repoRoot}/tools/fusesoc/stable"
         quartusTargetDir = f"{repoRoot}/tools/fusesoc/stable"
+        fixTargetDir = f"{repoRoot}/tools/fusesoc/stable"
     else:
         raise ValueError("Invalid state (dev/stable)")
 
@@ -130,16 +194,13 @@ for state in ["dev", "stable"]:
     with open(f"{quartusTargetDir}/olo_quartus_tutorial{filepostfix}.core", "w+") as f:
         f.write(rendered_template)
 
+    #OLO FIX Tutorial
+    data["fileDir"] = fixFiledir
+    os.chdir(f"{repoRoot}/doc/tutorials/OloFixTutorial/Files")
+    template = env.get_template("olo_fix_tutorial.template")
+    rendered_template = template.render(data)
+    with open(f"{fixTargetDir}/olo_fix_tutorial{filepostfix}.core", "w+") as f:
+        f.write(rendered_template)
+
 # Navigate back to tools
 os.chdir(curdir)
-
-
-
-
-
-
-
-
-
-
-

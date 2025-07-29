@@ -19,7 +19,7 @@ granted (i.e. asserted in the grant  vector). The arbiter is implemented using t
 parallel prefix computation approach.
 
 The arbiter can be implemented with or without an output registers. The waveform below shows its implementation with
-andwithout output register (_Latency\_g = 0_ resp. 1).
+and without output register (_Latency\_g = 0_ resp. 1).
 
 ![Waveform](./arb/olo_base_arb_prio_example.png)
 

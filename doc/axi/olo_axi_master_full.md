@@ -54,7 +54,7 @@ Read and write logic are fully independent. So reads and writes can happen at th
 | AxiDataWidth_g            | positive | 32      | AXI data width (must be a power of 2 of bytes and equal to or an integer multiple of _UserDataWidth_g_)<br />Range: 8 ... 1024 |
 | AxiMaxBeats_g             | positive | 256     | Maximum number of beats in one AXI transaction. <br />Values given by the AXI specification are 16 for AXI-3 and 256 for AXI-4. However, the user may choose any other number for scheduling reasons.<br />Range: 1 ... 256 |
 | AxiMaxOpenTransactions_g  | positive | 8       | Maximum number of AXI commands (AW/AR-channel) to send before the first command is completed (outstanding transactions).<br />Range: 1 ... 8 |
-| UserTransactionSizeBits_g | positive | 32      | Number of bits used to specify the number of bytes to transfer on the user command interface. This is the only limiting factor for the transfer size requested.<br />Must be smaller or equal to _AxiAddrWidth_g_. |
+| UserTransactionSizeBits_g | positive | 24      | Number of bits used to specify the number of bytes to transfer on the user command interface. This is the only limiting factor for the transfer size requested.<br />Must be smaller or equal to _AxiAddrWidth_g_. |
 | DataFifoDepth_g           | positive | 1024    | Number of entries in the read/write data FIFOs (in AXI data words - _AxiDataWidth_g_, not bytes) |
 | UserDataWidth_g           | positive | 32      | Width of the user interface for data (_Wr_Data_/_Rd_Data_)   |
 | ImplRead_g                | boolean  | true    | Implement read functionality (can be disabled to save resources) |

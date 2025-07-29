@@ -23,5 +23,6 @@ source {{import_sources}}
 export_assignments
 
 # Build project
-execute_flow -compile
+execute_module -tool map
+execute_module -tool fit
 

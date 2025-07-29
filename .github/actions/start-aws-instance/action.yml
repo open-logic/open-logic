@@ -1,0 +1,36 @@
+name: Start AWS Instance Action
+description: 'Starts an AWS EC2 instance if not running already'
+
+inputs:
+  region:
+    description: 'AWS region where the instance is located'
+    required: true
+  aws_access_key_id:
+    description: 'AWS Access Key ID'
+    required: true
+  aws_secret_access_key:
+    description: 'AWS Secret Access Key'
+    required: true
+  aws_build_ami_id:
+    description: 'AMI ID for the AWS instance'
+    required: true
+  aws_instance_type:
+    description: 'Type of the AWS instance to start'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    # Installing AWS CLI is not required (pre-installed in the GitHub Actions environment)
+    # Start EC2 instance safely
+    - name: Start EC2 instance
+      shell: bash
+      env:
+        AWS_DEFAULT_REGION: ${{ inputs.region }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
+        AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}
+      run: |
+        cd ./.github/actions/start-aws-instance
+        source ./create_instance.sh ${{ inputs.aws_build_ami_id }} ${{ inputs.aws_instance_type }}
+
+

@@ -16,6 +16,7 @@ DIR = '../..'
 
 # Not linted files
 NOT_LINTED = ["RbExample.vhd"] # Docmentation example, incomplete VHDL
+NOT_LINTED_DIR = ["../../3rdParty/"] # 3rd party libraries
 
 def root_is_vc(root):
     return root.endswith('test/tb') or root.endswith('test\\tb')
@@ -23,6 +24,11 @@ def root_is_vc(root):
 def find_normal_vhd_files(directory):
     vhd_files = []
     for root, _, files in os.walk(directory):
+        # Skip directories that are not relevant (including subdirectories)
+        if any(root.startswith(not_linted) for not_linted in NOT_LINTED_DIR):
+            continue
+
+        #Lint files
         for file in files:
             # Skip VC files
             if root_is_vc(root):

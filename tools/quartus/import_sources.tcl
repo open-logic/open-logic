@@ -38,17 +38,28 @@ namespace eval olo_import_sources {
     # Script
     ##################################################################
 
+	#Open Logic requires VHDL 2008
+	set_global_assignment -name VHDL_INPUT_VERSION VHDL_2008
+
     #Find folder of this file and olo-root folder
 	variable projectLoc [get_project_directory]
     variable fileLoc [file normalize [file dirname [info script]]]
     variable oloRoot [file normalize $fileLoc/../..]
 
     #Add all source files
-    foreach area {base axi intf} {
+    foreach area {base axi intf fix} {
         variable files [glob $oloRoot/src/$area/vhdl/*.vhd]
 	    foreach f $files {
 			variable pathRelative [relpath $f $projectLoc]
 	        set_global_assignment -name VHDL_FILE $pathRelative -library olo
 	    }
     }
+
+	#Add 3rd party files
+	variable files [glob $oloRoot/3rdParty/en_cl_fix/hdl/*.vhd]
+	foreach f $files {
+		variable pathRelative [relpath $f $projectLoc]
+		set_global_assignment -name VHDL_FILE $pathRelative -library olo
+	}
+
 }

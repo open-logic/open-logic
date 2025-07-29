@@ -412,8 +412,6 @@ entity olo_test_i2c_vc is
         instance                 : olo_test_i2c_t
     );
     port (
-        clk          : in    std_logic;
-        rst          : in    std_logic;
         scl          : inout std_logic;
         sda          : inout std_logic
     );
@@ -428,7 +426,7 @@ architecture a of olo_test_i2c_vc is
         msg        : string) is
         variable sig_v : std_logic;
     begin
-        sig_v := to01X(sig);
+        sig_v := to_X01(sig);
         check_equal(sig_v, expected, msg);
     end procedure;
 
@@ -454,11 +452,6 @@ architecture a of olo_test_i2c_vc is
     end procedure;
 
     -- *** Time Calculations ***
-    impure function clk_period return time is
-    begin
-        return (1 sec) / instance.bus_frequency;
-    end function;
-
     impure function clk_half_period return time is
     begin
         return (0.5 sec) / instance.bus_frequency;
@@ -518,7 +511,7 @@ architecture a of olo_test_i2c_vc is
         wait for clk_half_period;
         check_last_activity(scl, clk_half_period*0.9, -1, msg & " - SCL high period too short [receive_bit_incl_clock]");
         check_last_activity(sda, clk_half_period, -1, msg & " - SDA not stable during SCL pulse [receive_bit_incl_clock]");
-        data := to01X(sda);
+        data := to_X01(sda);
         scl  <= '0';
         wait for clk_quart_period;
     end procedure;
@@ -589,7 +582,7 @@ architecture a of olo_test_i2c_vc is
         -- wait clock falling edge
         level_wait(scl, '0', msg & " - SCL did not go low [receive_bit_excl_clock]", timeout);
         check_last_activity(sda, clk_half_period, -1, msg & " - SDA not stable during SCL pulse [receive_bit_excl_clock]");
-        data := to01X(sda);
+        data := to_X01(sda);
 
         -- wait until center of low
         wait for clk_quart_period;
@@ -659,13 +652,6 @@ architecture a of olo_test_i2c_vc is
     end procedure;
 
     -- *** Utilities ***
-    -- Calculate adddress
-    function i2c_get_addr (
-        addr   : in integer;
-        is_read : in boolean) return integer is
-    begin
-        return addr*2+choose(is_read, 1, 0);
-    end function;
 
     -- Free Bus
     procedure i2c_bus_free (
@@ -685,7 +671,6 @@ begin
     main : process is
         -- Messaging
         variable request_msg  : msg_t;
-        variable reply_msg    : msg_t;
         variable msg_type     : msg_type_t;
         variable delay        : time;
         variable timeout      : time;
@@ -751,7 +736,7 @@ begin
 
                 -- Initial check
                 check(opmode = i2c_master, to_string(msg_p) & " - I2C must be in master mode before I2C-REPEATED-START can be sent [I2cPushRepeatedStart]");
-                if to01X(scl) = '1' then
+                if to_X01(scl) = '1' then
                     level_check(sda, '1', to_string(msg_p) & " - SDA must be 1 before procedure is called if SCL = 1 [I2cPushRepeatedStart]");
                 end if;
 
@@ -783,7 +768,7 @@ begin
 
                 -- Initial check
                 check(opmode = i2c_master, to_string(msg_p) & " - I2C must be in master mode before I2C-STOP can be sent [I2cPushStop]");
-                if to01X(scl) = '1' then
+                if to_X01(scl) = '1' then
                     level_check(sda, '0', to_string(msg_p) & " - SDA must be 0 before procedure is called if SCL = 1 [I2cPushStop]");
                 end if;
 
@@ -873,12 +858,12 @@ begin
 
                 -- Initial check
                 check(opmode = i2c_slave, to_string(msg_p) & " - I2C must be in slave mode before I2C-REPEATED-START can be expected [I2cExpectRepeatedStart]");
-                if to01X(scl) = '1' then
+                if to_X01(scl) = '1' then
                     level_check(sda, '1', to_string(msg_p) & " - SDA must be 1 if SCL = 1 when waiting for a I2C-REPEATED-START [I2cExpectRepeatedStart]");
                 end if;
 
                 -- Do Check
-                if to01X(scl) = '0' then
+                if to_X01(scl) = '0' then
                     -- Clock stretching
                     if clk_stretch > 0 ns then
                         scl <= '0';
@@ -904,12 +889,12 @@ begin
 
                 -- Initial check
                 check(opmode = i2c_slave, to_string(msg_p) & " - I2C must be in slave mode before I2C-STOP can be expected [I2cExpectStop]");
-                if to01X(scl) = '1' then
+                if to_X01(scl) = '1' then
                     level_check(sda, '0', to_string(msg_p) & " - SDA must be 0 if SCL = 1 when waiting for a I2C-STOP [I2cExpectStop]");
                 end if;
 
                 -- Do Check
-                if to01X(scl) = '0' then
+                if to_X01(scl) = '0' then
                     -- Clock stretching
                     if clk_stretch > 0 ns then
                         scl <= '0';

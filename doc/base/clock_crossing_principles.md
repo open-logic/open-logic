@@ -15,11 +15,11 @@ set_max_delay -from [get_clocks <src-clock>] -to [get_clocks <dst-clock>] -datap
 set_max_delay -from [get_clocks <dst-clock>] -to [get_clocks <src-clock>] -datapath_only <period-of-faster-clock>
 ```
 
-**Note:** For altera Quartus, manual constraints are required because automatic constraining (scoped constraints) is not
-supported by Quartus.
+**Note:** Automatic constraining currently only works for _AMD_ tools (_Vivado_). Manual
+constraints are required for other tools.
 
-**Note:** For using _Open Logic_ from Verilog, manual constraints are required. Automatic constraining currently only
-works for VHDL.
+**Note:** For using _Open Logic_ from  in Vivado, manual constraints are required for Versions prior to 2024.2.
+Automatic constraining currently only works for verilog only since 2024.2.
 
 ### Automatic Constraining
 

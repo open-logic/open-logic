@@ -236,7 +236,7 @@ architecture rtl of olo_axi_master_simple is
 
 begin
 
-    -- *** Assertions ***
+    -- *** Static Assertions ***
     assert AxiDataWidth_g mod 8 = 0
         report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be a multiple of 8"
         severity failure;
@@ -247,11 +247,27 @@ begin
         report "###ERROR###: olo_axi_master_simple UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-log2(AxiDataWidth_g/8), see documentation"
         severity failure;
 
+    -- *** Runtime Assertions ***
+    p_assert : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            -- Unexpected read response
+            if ImplRead_g and RdRespLast = '1' then
+                assert RdRespFifoVld = '1'
+                    report "###ERROR###: olo_axi_master_simple: Unexpected Read Response (RdRespFifo Empty)"
+                    severity error;
+            end if;
+            -- Unexpected write response
+            if ImplWrite_g and M_Axi_BValid = '1' then
+                assert WrRespFifoVld = '1'
+                    report "###ERROR###: olo_axi_master_simple: Unexpected Write Response (WrRespFifo Empty)"
+                    severity error;
+            end if;
+        end if;
+    end process;
+
     -- *** Combinatorial Process ***
-    p_comb : process (r, M_Axi_AwReady, M_Axi_BValid, M_Axi_BResp, WrDataFifoORdy, WrDataFifoOVld, WrTransFifoOutVld,
-                      WrTransFifoBeats, WrRespIsLast, WrRespFifoVld, CmdWr_Addr, CmdWr_Size, CmdWr_LowLat, CmdWr_Valid,
-                      Wr_Valid, WrData_Rdy_I, M_Axi_ArReady, RdRespIsLast, RdRespFifoVld, RdRespLast, CmdRd_Addr,
-                      CmdRd_Size, CmdRd_LowLat, CmdRd_Valid, Rd_Ready, RdDat_Vld_I, M_Axi_RResp) is
+    p_comb : process (all) is
         variable v               : TwoProcess_r;
         variable WrMax4kBeats_v  : unsigned(13 - UnusedAddrBits_c downto 0);
         variable RdMax4kBeats_v  : unsigned(13 - UnusedAddrBits_c downto 0);
@@ -430,9 +446,6 @@ begin
 
             -- W response FSM
             if M_Axi_BValid = '1' then
-                assert WrRespFifoVld = '1'
-                    report "###ERROR###: olo_axi_master_simple internal error --> WrRespFifo Empty"
-                    severity error;
                 v.WrOpenTrans := v.WrOpenTrans - 1; -- Use v. because it may have been modified above and this modification has not to be overriden
                 if WrRespIsLast = '1' then
                     if (M_Axi_BResp /= AxiResp_Okay_c) then
@@ -563,9 +576,6 @@ begin
 
             -- FSM
             if RdRespLast = '1' then
-                assert RdRespFifoVld = '1'
-                    report "###ERROR###: olo_axi_master_simple internal error --> RdRespFifo Empty"
-                    severity error;
                 v.RdOpenTrans := v.RdOpenTrans - 1; -- Use v. because it may have been modified above and this modification has not to be overriden
                 if RdRespIsLast = '1' then
                     if (M_Axi_RResp /= AxiResp_Okay_c) then

@@ -1,0 +1,24 @@
+CAPI=2:
+
+name : open-logic:open-logic:en_cl_fix:2.2.1
+description : stable release (downloaded from GitHub);  see https://github.com/enclustra/en_cl_fix/blob/main/README.md
+
+filesets:
+  rtl:
+    files:
+      - hdl/en_cl_fix_private_pkg.vhd
+      - hdl/en_cl_fix_pkg.vhd
+    file_type : vhdlSource-2008
+    logical_name : olo
+
+targets:
+  default:
+    filesets :
+      - rtl
+
+provider:
+  name    : github
+  user    : open-logic
+  repo    : en_cl_fix
+  version : open-logic-2.2.1
+  

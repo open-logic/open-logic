@@ -26,6 +26,7 @@ jobs:
           ISSUES_TOKEN: ${{ secrets.ISSUES_TOKEN }}
           GCS_PASSPHRASE: ${{ secrets.GCS_PASSPHRASE }}
         run: |
-         source ./.github/workflows/install_gcs_key.sh
-         source ./.github/workflows/analyze_issues.sh
+         source ./.github/workflows/scripts/install_gcs_key.sh
+         cd ./sim
+         python3 AnalyzeIssues.py $ISSUES_TOKEN
          echo "Issues updated"

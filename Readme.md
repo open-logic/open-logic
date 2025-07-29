@@ -1,6 +1,7 @@
 <img src="./doc/Logo.png" alt="Logo" width="400">
 
 ![example workflow](https://github.com/obruendl/open-logic/actions/workflows/hdl_check.yml/badge.svg)
+![example workflow](https://github.com/obruendl/open-logic/actions/workflows/synthesis.yml/badge.svg)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/version.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/date.json?cacheSeconds=0)
 [![Join the chat at https://gitter.im/open-logic/general](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/open-logic/general?utm_source=badge&utm_medium=badge&utm_content=badge)
@@ -16,7 +17,7 @@ _Open Logic_ implements commonly used components in a reusable and vendor/tool-i
 permissive open source license (LGPL with exceptions for FPGA usage, see [License.txt](./License.txt)), so the code can be used
 in commercial projects.
 
-_Open Logic_ is written in VHDL but can also be used from System Verilog easily.
+_Open Logic_ is written in VHDL-2008 but can also be used from System Verilog easily.
 
 Browse the [**Entity List**](./doc/EntityList.md) to see what is available.
 
@@ -32,6 +33,35 @@ such as **workshops** and **priority support**. Click the button below to visit 
 
 [![sponsors](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/open-logic)
 
+## Get It
+
+_Open Logic_ includes the submodules below. To make sure submodule sources are included in _Open Logic_, get it
+according to the instructions below.
+
+Submodules used:
+
+- [en_cl_fix](https://github.com/enclustra/en_cl_fix) - MIT License
+
+### GIT Clone
+
+To include submodules, it is important to use the _--recursive_ switch:
+
+```shell
+git clone --recurse-submodules https://github.com/open-logic/open-logic.git
+```
+
+### Download Archive
+
+When downloading the archive from the release page, make sure you download _CompleteSources.zip_ and not one of
+the auto-generated archives (in those, submodules are missing):
+
+![download](./doc/general/Download.png)
+
+### FuseSoC
+
+When using FuseSoC (see [HowTo](./doc/HowTo.md)), all dependencies are resolved automatically and not special actions
+are required.
+
 ## Structure
 
 _Open Logic_ is split into the following areas. You might use all of them or only the ones you need.
@@ -41,6 +71,8 @@ _Open Logic_ is split into the following areas. You might use all of them or onl
   - requires: _base_
 - [intf](./doc/EntityList.md#intf)  - any logic related to device external interfaces
   - requires: _base_
+- [fix](./doc/EntityList.md#FIX)  - fixed point mathematics incl. bit-true models and co-simulation support
+  - requires: _base_ and _en_cl_fix_ ( [./3rdParty/en_cl_fix](./3rdParty/en_cl_fix))
 
 It's suggested that you compile ALL files of the areas you need (plus their dependencies) into one VHDL library. You are
 free to choose any library name and you are also free to use the same single library for _Open Logic_ files and
@@ -63,6 +95,10 @@ user-code.
   - [Questa Tutorial](./doc/tutorials/QuestasimTutorial.md) - for VHDL and System Verilog
   - [Libero Tutorial](./doc/tutorials/LiberoTutorial.md) - for VHDL and System Verilog
   - [Gowin Tutorial](./doc/tutorials/GowinTutorial.md) - for VHDL and System Verilog
+  - [Fixed Point Mathematics Tutorial](./doc/tutorials/OloFixTutorial.md)
+    - Fixed-point bit-true modeling in Python
+    - _Open Logic_ based fixed-point implementation in HDL
+    - Python / VHDL / Verilog co-simulation
 - [Instructions for Contributors](./Contributing.md)
 
 ## Project Philosophy
@@ -81,7 +117,8 @@ _Open Logic_ aims to provide code that can be trusted - and to provide measures 
 for every individual piece of code in the library. The following measures are implemented:
 
 1. Every entity comes with a testbench.
-2. The project comes with a CI workflow, which regularly runs all simulations. The badge on the very top of this page
+2. The project comes with a CI workflow, which regularly runs all simulations and synthesis tasks. For details
+   see [CI Worfklows](./doc/CI-Workflows.md)
 3. indicates if there is a problem. As long as it is green - you know that all testbenches pass. <br>
    ![example workflow](https://github.com/obruendl/open-logic/actions/workflows/hdl_check.yml/badge.svg)
 4. Indicators for open issues on every entity. In the documentation of every piece of code, you can find a badge, which
@@ -164,6 +201,7 @@ summary of alternative libraries that was reported by users and in replies to Op
 - [FPGA Design Elements](https://github.com/laforest/FPGADesignElements)
 - [SURF](https://github.com/slaclab/surf)
 - [PSI Libraries](https://github.com/paulscherrerinstitute/psi_fpga_all)
+- [Colibri](https://gitlab.cern.ch/colibri/colibri)
 
 If you are interested in my opinion what the pros and cons of those libraries are compared to Open Logic, contact me
 directly: [obruendl](oliver.bruendler@gmx.ch).

@@ -109,7 +109,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_comb : process (r, Tx_Data, Tx_Valid, SpiSclk_i, SpiMosi_i, SpiCsn_i) is
+    p_comb : process (all) is
         variable v                  : TwoProcess_r;
         variable CsnRe_v, CsnFe_v   : std_logic;
         variable SclkRe_v, SclkFe_v : std_logic;
@@ -134,12 +134,12 @@ begin
         v.Resp_CleanEnd := '0';
 
         -- *** Edge Detections ***
-        if SpiCsn_i /= to01(r.SpiCsnLast) then
+        if SpiCsn_i /= to_01(r.SpiCsnLast) then
             CsnRe_v := SpiCsn_i;
             CsnFe_v := not SpiCsn_i;
         end if;
         v.SpiCsnLast := SpiCsn_i;
-        if SpiSclk_i /= to01(r.SpiSclkLast) then
+        if SpiSclk_i /= to_01(r.SpiSclkLast) then
             SclkRe_v := SpiSclk_i;
             SclkFe_v := not SpiSclk_i;
         end if;

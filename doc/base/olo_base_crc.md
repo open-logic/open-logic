@@ -29,16 +29,15 @@ many commonly used CRCs are listed.
 
 ## Generics
 
-| Name            | Type     | Default     | Description                                                  |
-| :-------------- | :------- | ----------- | :----------------------------------------------------------- |
-| CrcWidth_g      | positive | -           | Width of the CRC in bits (must be >= 2)                      |
-| DataWidth_g     | positive | -           | Input data width                                             |
-| Polynomial_g    | natural  | -           | CRC Polynomial according to the notation in [crccalc.com](https://crccalc.com) - which matches the comon-sense.<br />Passed as integer - for good readability use hex notation (e.g. _16#D5#_) <br />For details, see [Architecture](#architecture) |
-| InitialValue_g  | natural  | 0           | Initial value to load into the LFSR before the first data word arrives.<br />Passed as integer - for good readability use hex notation (e.g. _16#D5#_) |
-| BitOrder_g      | string   | "MSB_FIRST" | The input can be processed "MSB_FIRST" or "LSB_FIRST".<br />"MSB_FIRST" - Most significant bit is shifted into LFSR first<br />"LSB_FIRST" - Least significant bit is shifted into LFSR first |
-| ByteOrder_g     | string   | "NONE"      | This generic allows byte-wise processing of the input if required.<br />"NONE" - No byte-wise processing, the whole input is interpreted as one word<br />"MSB_FIRST" - Most significant byte of the input is shifted into the LFSR first. <br />"MSB_FIRST" -  Least significant byte of the input is shifted into the LFSR first. <br />For any other values than "NONE" the setting of _BitOrder_g_ is applied to the ordering of bits within each byte.<br>**Note:** Other values than "NONE" are only allowed if _DataWidth_g_ is a multiple of 8 |
-| BitflipOutput_g | boolean  | false       | If set to _true_ the LFSR content is bit-flipped (MSB to LSB and vice-versa) for output through _Out_Crc_. |
-| XorOutput_g     | natural  | 0           | XOR mask to apply to the output. This is required for certain standards according to [crccalc.com](https://crccalc.com). <b> The XOR mask is applied after bitflip in case of _BitFlipOutput_g=true_. |
+| Name            | Type             | Default     | Description                                                  |
+| :-------------- | :--------------- | ----------- | :----------------------------------------------------------- |
+| DataWidth_g     | positive         | -           | Input data width                                             |
+| Polynomial_g    | std_logic_vector | -           | CRC Polynomial according to the notation in [crccalc.com](https://crccalc.com) - which matches the comon-sense.<br />MSB left. For good readability use hex notation (e.g. _x"D5"_) <br />Width of the CRC is the number of bits in the Polynomial.<br />For details, see [Architecture](#architecture) |
+| InitialValue_g  | std_logic_vector | all '0'     | Initial value to load into the LFSR before the first data word arrives.<br />MSB left. For good readability use hex notation (e.g. _x"D5"_) |
+| BitOrder_g      | string           | "MSB_FIRST" | The input can be processed "MSB_FIRST" or "LSB_FIRST".<br />"MSB_FIRST" - Most significant bit is shifted into LFSR first<br />"LSB_FIRST" - Least significant bit is shifted into LFSR first |
+| ByteOrder_g     | string           | "NONE"      | This generic allows byte-wise processing of the input if required.<br />"NONE" - No byte-wise processing, the whole input is interpreted as one word<br />"MSB_FIRST" - Most significant byte of the input is shifted into the LFSR first. <br />"MSB_FIRST" -  Least significant byte of the input is shifted into the LFSR first. <br />For any other values than "NONE" the setting of _BitOrder_g_ is applied to the ordering of bits within each byte.<br>**Note:** Other values than "NONE" are only allowed if _DataWidth_g_ is a multiple of 8 |
+| BitflipOutput_g | boolean          | false       | If set to _true_ the LFSR content is bit-flipped (MSB to LSB and vice-versa) for output through _Out_Crc_. |
+| XorOutput_g     | std_logic_vector | all '0'     | XOR mask to apply to the output. This is required for certain standards according to [crccalc.com](https://crccalc.com). <br> The XOR mask is applied after bitflip in case of _BitFlipOutput_g=true_. |
 
 **Note:** For cases where no exact protocol specification must be followed (for user defined protocols) it is suggested
 to leave the following generics on their default value. These generics are only used to match exact protocol
@@ -71,11 +70,11 @@ specifications.
 
 ### Output Data
 
-| Name      | In/Out | Length       | Default | Description                                   |
-| :-------- | :----- | :----------- | ------- | :-------------------------------------------- |
-| Out_Crc   | out    | _CrcWidth_g_ | -       | Output CRC checksum                           |
-| Out_Valid | out    | 1            | -       | AXI4-Stream handshaking signal for _Out_Data_ |
-| Out_Ready | in     | 1            | '1'     | AXI4-Stream handshaking signal for _Out_Data_ |
+| Name      | In/Out | Length                | Default | Description                                   |
+| :-------- | :----- | :-------------------- | ------- | :-------------------------------------------- |
+| Out_Crc   | out    | _width(Polynomial_g)_ | -       | Output CRC checksum                           |
+| Out_Valid | out    | 1                     | -       | AXI4-Stream handshaking signal for _Out_Data_ |
+| Out_Ready | in     | 1                     | '1'     | AXI4-Stream handshaking signal for _Out_Data_ |
 
 ## Architecture
 

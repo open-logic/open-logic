@@ -6,13 +6,24 @@ import os
 import json
 from Badge import create_coverage_version_badge, create_coverage_badge, create_branch_badge
 import sys
+import argparse
 
 ########################################################################################################################
 # Parse Arguments
 ########################################################################################################################
-UPDATE_BADGES = False
-if "--badges" in sys.argv:
-    UPDATE_BADGES = True
+parser = argparse.ArgumentParser(description="Analyze coverage data and optionally update badges.")
+parser.add_argument(
+    "--badges",
+    action="store_true",
+    help="Update badges based on coverage data."
+)
+parser.add_argument(
+    "--min_coverage",
+    type=float,
+    default=0.0,
+    help="Minimum coverage percentage required (default: 0.0)."
+)
+args = parser.parse_args()
 
 ########################################################################################################################
 # Types
@@ -56,13 +67,31 @@ for line in fd.readlines():
 #*** Generate Output ***
 print("Entity:                        Statements Branches")
 for entity in entities:
+    # Print coverage
     print(f"{entity.name:25}: {entity.statements:9}% {entity.branches:9}%")
-    if UPDATE_BADGES:
+    # Crate badge
+    if args.badges:
         create_coverage_badge(entity.name, entity.statements)
         create_branch_badge(entity.name, entity.branches)
-if UPDATE_BADGES:
+if args.badges:
     create_coverage_version_badge()
-
+ 
+# Check if minimum coverage is met (after creating badges). We do
+# .. not want to hide bad coverage!
+for entity in entities:
+    # SKip TBs
+    if entity.name.endswith("_tb"):
+        continue
+    # Skip non OLO entities
+    if not entity.name.startswith("olo_"):
+        continue
+    # Check coverage
+    if entity.statements < args.min_coverage:
+        print(f"ERROR - Statement coverage for {entity.name} is {entity.statements}, minimum is {args.min_coverage}")
+        sys.exit(1)
+    if entity.branches < args.min_coverage:
+        print(f"ERROR - Branch coverage for {entity.name} is {entity.branches}, minimum is {args.min_coverage}")
+        sys.exit(1)
 
 
 

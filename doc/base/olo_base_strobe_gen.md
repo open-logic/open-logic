@@ -57,6 +57,11 @@ Use _aequidistant mode_ if a constant number of clock cycles between _Out_Valid_
 | FreqStrobeHz_g   | real    | -       | Pulse frequency to generate in Hz                  |
 | FractionalMode_g | boolean | false   | true: Fractional mode <br>false: Aequidistant mode |
 
+**Note:** Fractional Mode is only supported for a factor of less than 1'000'000 between _FreqClkHz_g_ and
+_FreqStrobeHz_g_.
+
+**Note:** The maximum allowed ratio between _FreqClkHz_g_ and _FreqStrobeHz_g_ is 2'147'483'000.
+
 ## Interfaces
 
 ### Control

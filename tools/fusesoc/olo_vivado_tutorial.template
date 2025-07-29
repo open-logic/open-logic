@@ -10,7 +10,7 @@ filesets:
       
   rtl:
     files:
-      - {{fileDir}}vivado_tutorial.vhd : {file_type : vhdlSource}
+      - {{fileDir}}vivado_tutorial.vhd : {file_type : vhdlSource-2008}
     depend :
       - "open-logic:{{library}}:base"
       - "open-logic:{{library}}:intf"

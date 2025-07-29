@@ -36,7 +36,6 @@ entity olo_base_cam is
         ContentWidth_g       : positive;
         RamStyle_g           : string   := "auto";
         RamBehavior_g        : string   := "RBW";
-        RamBlockWidth_g      : positive := 32;
         RamBlockDepth_g      : positive := 512;
         ClearAfterReset_g    : boolean  := true;
         -- Read/Write interleaving
@@ -138,8 +137,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
-    p_cob : process (Rd_Valid, Rd_Content, Wr_Valid, Wr_Content, Wr_Addr, Wr_Write, Wr_Clear,
-                     RamRead_1, Rst, r) is
+    p_cob : process (all) is
         variable v                        : TwoProcess_r;
         variable ClearMask_v, SetMask_v   : std_logic_vector(Addresses_g-1 downto 0);
         variable InRdReady_v, InWrReady_v : std_logic;
@@ -231,11 +229,11 @@ begin
         SetMask_v   := (others => '0');
         if r.Write_1 = '1' then
             -- Write new CAM entry
-            SetMask_v(fromUslv(to01(r.Addr_1))) := '1';
+            SetMask_v(fromUslv(to_01(r.Addr_1))) := '1';
         end if;
         if r.Clear_1 = '1' then
             -- Clear single CAM entry
-            ClearMask_v(fromUslv(to01(r.Addr_1))) := '0';
+            ClearMask_v(fromUslv(to_01(r.Addr_1))) := '0';
         end if;
         if r.ClearAll_1 = '1' then
             -- Clear all CAM entries - this overrides the single clear mask
@@ -331,8 +329,8 @@ begin
         -- Input assembly
         ContentExtended_0(ContentWidth_g-1 downto 0) <= ReadContent_0;
 
-        RdAddr_0 <= to01(ContentExtended_0((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
-        WrAddr_1 <= to01(r.ContentExtended_1((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
+        RdAddr_0 <= to_01(ContentExtended_0((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
+        WrAddr_1 <= to_01(r.ContentExtended_1((i+1)*BlockAddrBits_c-1 downto i*BlockAddrBits_c));
 
         -- Instance
         i_ram : entity work.olo_base_ram_sdp

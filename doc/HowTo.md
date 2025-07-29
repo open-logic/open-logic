@@ -18,6 +18,7 @@ AKA Table of Content
   - [Use Open Logic through FuseSoC](#use-open-logic-through-fusesoc)
 - Contribution Related
   - [Use the Linter](#use-the-linter)
+  - [Use VHDL Language Server](#use-vhdl-language-server)
   - [Run Simulations](#run-simulations)
   - [Analyze Coverage](#analyze-coverage)
   - [Update Badges](#update-badges)
@@ -45,7 +46,7 @@ To run the script, follow the steps below:
 
 That's it. Nothing more.
 
-- All _Open Logic_ sources are configured to be compiled into the library _olo_
+- All _Open Logic_ sources are configured to be compiled into the library _olo_ <br>
   ![Sources](./general/gowin/result.png)
 
 Because Gowin does not support scoped constraints, **NO** constraints are imported. They have to be created
@@ -62,7 +63,7 @@ contrast to the AMD Vivado tools). For Efinity all constraints must be added man
 To run the script, follow the steps below:
 
 1. Create a project in Libero (if it does not yet exist)
-2. Use the menu entry _Project > Execute script_
+2. Use the menu entry _Project > Execute script_ <br>
    ![MenuEntry](./general/libero/import_sources_run.png)
 3. Select the script _\<open-logic-root\>/tools/libero/import_sources.tcl_ and press _Run_.<br>
    **For VHDL, no arguments are required**, which leads to all files being compiled into the default Open Logic library
@@ -74,7 +75,7 @@ To run the script, follow the steps below:
    original location, they are not copied into the project. All sources are imported into the library selected (see
    point 3, default is _olo_) and are available to be used.<br>
    In case you do not need all open-logic files and you don't want to clutter the project, just manually remove the
-   filesp you do not need.![Dialog](./general/libero/import_sources_files.png)
+   filesp you do not need.<br>![Dialog](./general/libero/import_sources_files.png)
 
 ## Use Open Logic in a Questasim Simulation
 
@@ -85,7 +86,7 @@ There is a script to compile all _Open Logic_ sources into a library _olo_. To r
 
 That's it. Nothing more.
 
-- All _Open Logic_ sources are configured to be compiled into the library _olo_
+- All _Open Logic_ sources are configured to be compiled into the library _olo_ <br>
   ![Sources](./general/questa/vcom_sources.png)
 
 ## Use Open Logic in a Efinix Efinity Project
@@ -106,7 +107,7 @@ To run the script, follow the steps below:
    Replace `<library-name>` by the library to compile open-logic sources into (_olo_ for VHDL, _default_ for Verilog)
 5. Open the project in Efinity again. You should now see all _Open Logic_ sources being added.<br>
    In case you do not need all open-logic files and you don't want to clutter the project, just manually remove the
-   files you do not need.![Sources](./general/efinity/import_sources.png)
+   files you do not need. <br>![Sources](./general/efinity/import_sources.png)
 
 Two more notes:
 
@@ -132,13 +133,13 @@ the script, follow the steps below:
 
 That's it. Nothing more.
 
-- All _Open Logic_ sources are configured to be compiled into the library _olo_
+- All _Open Logic_ sources are configured to be compiled into the library _olo_ <br>
   ![Sources](./general/vivado/import_sources_sources.png)
 - A new constraints file for importing all scoped constraints is added to the Vivado project by the script.
   
   **Note:** Scoped constraints are always imported but only work for usage from VHDL. For Verilog usage, manual
   constraints are required. Refer to the documentation of entities that require constraints (clock-crossings,
-  interfaces, etc.)
+  interfaces, etc.) <br>
 
   ![Constraints](./general/vivado/import_sources_constraints.png)
 
@@ -152,7 +153,7 @@ contrast to the AMD Vivado tools). For Quartus all constraints must be added man
 To run the script, follow the steps below:
 
 1. Open Quartus and create a project (if not existing yet)
-2. Open the TCL shell in Quartus
+2. Open the TCL shell in Quartus <br>
    ![Sources](./general/quartus/launch_tcl_shell.png)
 3. Execute the command `source <open-logic-root>/tools/quartus/import_sources.tcl`
    Replace `<open-logic-root>` by the path of your _Open Logic_ working copy.<br>
@@ -161,7 +162,7 @@ To run the script, follow the steps below:
 
 That's it. Nothing more.
 
-- All _Open Logic_ sources are configured to be compiled into the library _olo_
+- All _Open Logic_ sources are configured to be compiled into the library _olo_ <br>
   ![Sources](./general/quartus/import_sources.png)
 
 Because Quartus does not support scoped constraints, **NO** constraints are imported. They have to be created
@@ -280,6 +281,16 @@ fusesoc library add open-logic open-logic-work
 In this case, the local files - **open-logic-dev** must be used. It is explicitly required to use the local files.
 Downloading a release from GitHub would be exactly what is NOT wanted in this scenario.
 
+## VSCode Integration
+
+Integration of the [Linter](#integrate-linter-with-vscode) and [Simulations](#integrate-simulations-with-vscode) with
+VSCode is described in the corresponding sections.
+
+Additionally a configuration [toml](../vhdl_ls.toml) to use the [VHDL-LS](https://github.com/VHDL-LS/rust_hdl_vscode)
+extension is provided. This extensions allows live syntax checking and things like "go to declaration". To use
+it, simply install the _VHDL-LS_ extension and open the open-logic folder in VSCode. _VHDL-LS_ will automatically
+do its job.
+
 ## Use the Linter
 
 ### Introduction
@@ -313,7 +324,7 @@ covered by passing an additional config file:
 vsg -c <root>/lint/config/vsg_config.yml <root>/lint/config/vsg_config_overlay_vc.yml -f <path-to-file>
 ```
 
-Any errors or warnings found will be reported:
+Any errors or warnings found will be reported: <br>
 
 ![vsg-output](./general/linting/vsg_output.png)
 
@@ -351,7 +362,7 @@ For verification components (with slightly different coding conventions, see [Co
 _Run VSG Lint - VC_ command.
 
 The results will be properly displayed in the problems tab and you can navigate to the corresponding code line by
-clicking on the specific problem.
+clicking on the specific problem. <br>
 
 ![vsg-output](./general/linting/vsg_vscode.png)
 
@@ -365,6 +376,31 @@ will map it the Ctrl+Alt+L:
         "args": "Run VSG Lint"
     }
 ```
+
+## Use VHDL Language Server
+
+VHDL Language Server (VHDL_LS) is a VSCode extension that adds code browsing features for VHDL. It does allow going to
+definitions, finding all uses of an entity and many other features known from advanced IDEs.
+
+To use it, install the _VHDL_LS_ extension in VSCode:
+
+![Extension](./general/vhdl_ls/extension.png)
+
+_VHDL_LS_ uses a TOML file for configuration (i.e. to know where to look for files). Because _Open Logic_ uses _VUnit_
+and the location of _VUnit_ files is installation dependent, the TOML file matching the installation is generated by a
+script. It's trivial to generate the TOML from the VUnit project because VUnit knows the location of all sources.
+
+To generate the _VHDL_LS_ TOML, run the following command from the _\<root\>/sim_ directory:
+
+```sh
+python3 run.py --vhdl_ls
+```
+
+Note, the command does NOT run simulations. it only creates the TOML file.
+
+When opening the root folder of _Open Logic_ in VSCode, you should now be able to use VHDL_LS. You can try it out
+by going to a VHDL file and for some signal in the architecture use _"Go to Declaration"_ from the right-click menu,
+which is provided by VHDL_LS.
 
 ## Run Simulations
 
@@ -391,7 +427,7 @@ python3 run.py --nvc      # For NVC
 Tipp: For faster runtimes, you may want to use multiple threads to execute simulations. This can be achieved by adding
 the argument `-p 16` (16 is the number of threads, you may use any other number fitting your CPU).
 
-You should now see an output indicating that all tests pass.
+You should now see an output indicating that all tests pass. <br>
 
 ![simulation](./general/Simulation.png)
 
@@ -415,7 +451,7 @@ printscreen.
 python3 run.py olo_tb.olo_base_cc_bits_tb.D=19-N=20.SimpleTransfer --gui
 ```
 
-The simulator GUI will show up (the example is showing GTKWave - the GHDL/NVC GUI):
+The simulator GUI will show up (the example is showing GTKWave - the GHDL/NVC GUI): <br>
 
 ![SimGui](./general/GtkwaveGui.png)
 
@@ -440,7 +476,7 @@ command. Important notes to this command:
 It also is possible to run all simulations in the project, using the _VUnit - All Files_ variant of the command. No GUI
 option is provided because this command runs _really a lot_ of simulations.
 
-Any compile errors are properly displayed in the VSCode _Problems_ tab. In below example a semicolon was missed:
+Any compile errors are properly displayed in the VSCode _Problems_ tab. In below example a semicolon was missed: <br>
 
 ![CompileError-VSCode](./general/Simulation_VsCode.png)
 
@@ -468,7 +504,7 @@ python3 run.py --modelsim --coverage
 python3 ./AnalyzeCoverage.py 
 ```
 
-You should now see a clean summary of the statement coverage:
+You should now see a clean summary of the statement coverage: <br>
 
 ![simulation](./general/Coverage.png)
 

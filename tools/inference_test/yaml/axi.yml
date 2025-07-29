@@ -1,0 +1,90 @@
+files:
+  include:
+    - "../../../src/axi/**/*.vhd"  # Glob expressions for files to parse
+
+entities:
+  # olo_axi_lite_slave
+  - entity_name: "olo_axi_lite_slave"
+    configurations:
+    - name: "addr12-data32"
+      generics:
+        AxiAddrWidth_g: 12
+        AxiDataWidth_g: 32
+      in_reduce:
+        S_AxiLite_ArAddr: 12
+        S_AxiLite_AwAddr: 12
+        S_AxiLite_WData: 32
+        Rb_RdData: 32
+      out_reduce:
+        Rb_Addr: 12
+        S_AxiLite_RData: 32
+        Rb_WrData: 32
+  # olo_axi_master_full
+  - entity_name: "olo_axi_master_full"
+    configurations:
+    - name: "addr32-data32"
+      generics:
+        AxiAddrWidth_g: 32
+        AxiDataWidth_g: 32
+        UserDataWidth_g: 16
+        UserTransactionSizeBits_g: 24
+      in_reduce:
+        CmdWr_Addr: 32
+        CmdRd_Addr: 32
+        CmdWr_Size: 24
+        CmdRd_Size: 24
+        Wr_Data: 16
+        M_Axi_RData: 32
+      out_reduce:
+        Rd_Data: 16
+        M_Axi_AwAddr: 32
+        M_Axi_ArAddr: 32
+        M_Axi_WData: 32
+  # olo_axi_master_simple
+  - entity_name: "olo_axi_master_simple"
+    configurations:
+    - name: "addr32-data32"
+      generics:
+        AxiAddrWidth_g: 32
+        AxiDataWidth_g: 32
+      in_reduce:
+        CmdWr_Addr: 32
+        CmdRd_Addr: 32
+        CmdWr_Size: 24
+        CmdRd_Size: 24
+        Wr_Data: 32
+        M_Axi_RData: 32
+      out_reduce:
+        Rd_Data: 32
+        M_Axi_AwAddr: 32
+        M_Axi_ArAddr: 32
+        M_Axi_WData: 32
+  # olo_axi_pl_stage
+  - entity_name: "olo_axi_pl_stage"
+    configurations:
+    - name: "addr32-data32"
+      generics:
+        AddrWidth_g: 32
+        DataWidth_g: 32
+      in_reduce:
+        S_AwAddr: 32
+        S_AwLen: 8
+        S_AwCache: 4
+        S_AwQos: 4
+        S_WData: 32
+        S_ArAddr: 32
+        S_ArLen: 8
+        S_ArCache: 4
+        S_ArQos: 4
+        M_RData: 32
+      out_reduce:
+        S_RData: 32
+        M_AwAddr: 32
+        M_AwLen: 8
+        M_AwCache: 4
+        M_AwQos: 4
+        M_WData: 32
+        M_ArAddr: 32
+        M_ArLen: 8
+        M_ArCache: 4
+        M_ArQos: 4
