@@ -158,12 +158,15 @@ Below figure gives an overview over the different components involved in the wri
 
 The individual components and their responsibilities are described below.
 
-* The *WriteTfGen FSM* splits arbitrarily sized user transactions into AXI transactions, which do not exceed the maximum burst size or cross 4kB boundaries.
-* The *AW FSM* does transmit those transactions through the AXI AW channel.
-* The *wr_trans FIFO* does store the number of beats in each transaction for a number of open transactions.
-* The "W FSM* does transmit data packets (size of each packet given by *wr_trans FIFO*) through the AXI W channel.
-* The *wr_resp FIFO* holds one entry for each AW/W transaction and the information if this is the last AXI transfer related to a single user transaction.
-* The *WResp Handling* does signal to the user that the complete user transaction was done after the last AXI transaction related to the user transaction was signalled completed through the AXI B channel.
+- The _WriteTfGen FSM_ splits arbitrarily sized user transactions into AXI transactions, which do not
+  exceed the maximum burst size or cross 4kB boundaries.
+- The _AW FSM_ does transmit those transactions through the AXI AW channel.
+- The _wr_trans FIFO_ does store the number of beats in each transaction for a number of open transactions.
+- The _W FSM_ does transmit data packets (size of each packet given by _wr_trans FIFO_) through the AXI W channel.
+- The _wr_resp FIFO_ holds one entry for each AW/W transaction and the information if this is the last AXI transfer
+  related to a single user transaction.
+- The _WResp Handling_ does signal to the user that the complete user transaction was done after the last AXI
+  transaction related to the user transaction was signalled completed through the AXI B channel.
 
 ### Read Logic
 
@@ -173,11 +176,14 @@ Below figure gives an overview over the different components involved in the rea
 
 The individual components and their responsibilities are described below.
 
-* The *ReadTfGen FSM* splits arbitrarily sized user transactions into AXI transactions, which do not exceed the maximum burst size or cross 4kB boundaries.
-* The *AR FSM* does transmit those transactions through the AXI AR channel.
-* The *rd_resp FIFO* holds one entry for each AR/RRESP transaction and the information if this is the last AXI transfer related to a single user transaction.
-* The *RRESP HAndling* does signal to the user that the complete user transaction was done after the last AXI transaction related to the user transaction was signalled completed through the AXI RRESP channel.
-* The *rd_data FIFO* does buffer read data plus the *Last* flag for the last transaction belonging to a user transaction
+- The _ReadTfGen FSM_ splits arbitrarily sized user transactions into AXI transactions, which do not exceed the
+  maximum burst size or cross 4kB boundaries.
+- The _AR FSM_ does transmit those transactions through the AXI AR channel.
+- The _rd_resp FIFO_ holds one entry for each AR/RRESP transaction and the information if this is the last AXI
+  transfer related to a single user transaction.
+- The _RRESP HAndling_ does signal to the user that the complete user transaction was done after the last AXI
+  transaction related to the user transaction was signalled completed through the AXI RRESP channel.
+- The _rd_data FIFO_ does buffer read data plus the _Last_ flag for the last transaction belonging to a user transaction
 
 ### Transaction Types
 
