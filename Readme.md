@@ -14,8 +14,8 @@ Note: The formulation _Standard* Library_ is used to depict the idea behind the 
 that there is any kind of standardization committee involved.
 
 _Open Logic_ implements commonly used components in a reusable and vendor/tool-independent way and provide them under a
-permissive open source license (LGPL with exceptions for FPGA usage, see [License.txt](./License.txt)), so the code can be used
-in commercial projects.
+permissive open source license (LGPL with exceptions for FPGA usage, see [License.txt](./License.txt)), so the code
+can be used in commercial projects.
 
 _Open Logic_ is written in VHDL-2008 but can also be used from System Verilog easily.
 

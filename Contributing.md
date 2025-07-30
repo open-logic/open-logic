@@ -96,5 +96,3 @@ through [cla-assistant.io](https://cla-assistant.io/open-logic/open-logic).
 
 You may add your own copyright notice to any file you contribute to. However, for contributions to be accepted, you
 must sign the [Contributor License Agreement](https://cla-assistant.io/open-logic/open-logic).
-
-
