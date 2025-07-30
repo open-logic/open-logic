@@ -150,6 +150,35 @@ direction of transfers.
 
 ![Architecture](./master/olo_axi_master_simple.svg)
 
+### Write Logic
+
+Below figure gives an overview over the different components involved in the write logic.
+
+![Write Logic](./master/olo_axi_master_simple_write_logic.svg)
+
+The individual components and their responsibilities are described below.
+
+* The *WriteTfGen FSM* splits arbitrarily sized user transactions into AXI transactions, which do not exceed the maximum burst size or cross 4kB boundaries.
+* The *AW FSM* does transmit those transactions through the AXI AW channel.
+* The *wr_trans FIFO* does store the number of beats in each transaction for a number of open transactions.
+* The "W FSM* does transmit data packets (size of each packet given by *wr_trans FIFO*) through the AXI W channel.
+* The *wr_resp FIFO* holds one entry for each AW/W transaction and the information if this is the last AXI transfer related to a single user transaction.
+* The *WResp Handling* does signal to the user that the complete user transaction was done after the last AXI transaction related to the user transaction was signalled completed through the AXI B channel.
+
+### Read Logic
+
+Below figure gives an overview over the different components involved in the read logic.
+
+![Read Logic](./master/olo_axi_master_simple_read_logic.svg)
+
+The individual components and their responsibilities are described below.
+
+* The *ReadTfGen FSM* splits arbitrarily sized user transactions into AXI transactions, which do not exceed the maximum burst size or cross 4kB boundaries.
+* The *AR FSM* does transmit those transactions through the AXI AR channel.
+* The *rd_resp FIFO* holds one entry for each AR/RRESP transaction and the information if this is the last AXI transfer related to a single user transaction.
+* The *RRESP HAndling* does signal to the user that the complete user transaction was done after the last AXI transaction related to the user transaction was signalled completed through the AXI RRESP channel.
+* The *rd_data FIFO* does buffer read data plus the *Last* flag for the last transaction belonging to a user transaction
+
 ### Transaction Types
 
 For simplicity, only burst transactions are shown. However also single-word transactions are supported.
