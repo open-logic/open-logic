@@ -53,12 +53,12 @@ aws ec2 attach-network-interface --network-interface-id $ENI_MICROCHIP --instanc
 # Create CloudWatch alarm to terminate the instance if CPU utilization is < 5% for 3 consecutive 5-minute periods
 aws cloudwatch put-metric-alarm \
     --alarm-name "Terminate-OnLowCPU" \
-    --alarm-description "TErminate instance if CPU < 5% for 15 minutes" \
+    --alarm-description "TErminate instance if CPU < 5% for 30 minutes" \
     --metric-name CPUUtilization \
     --namespace AWS/EC2 \
     --statistic Average \
     --period 300 \
-    --evaluation-periods 3 \
+    --evaluation-periods 6 \
     --threshold 5 \
     --comparison-operator LessThanThreshold \
     --dimensions Name=InstanceId,Value=$INSTANCE_ID \
@@ -67,12 +67,12 @@ aws cloudwatch put-metric-alarm \
 
 aws cloudwatch put-metric-alarm \
     --alarm-name "Notify-OnLowCPU" \
-    --alarm-description "Notiify if instance if CPU < 5% for 15 minutes" \
+    --alarm-description "Notiify if instance if CPU < 5% for 30 minutes" \
     --metric-name CPUUtilization \
     --namespace AWS/EC2 \
     --statistic Average \
     --period 300 \
-    --evaluation-periods 3 \
+    --evaluation-periods 6 \
     --threshold 5 \
     --comparison-operator LessThanThreshold \
     --dimensions Name=InstanceId,Value=$INSTANCE_ID \
