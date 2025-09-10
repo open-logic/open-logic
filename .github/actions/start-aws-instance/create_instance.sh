@@ -91,6 +91,6 @@ aws cloudwatch put-metric-alarm \
     --threshold 1 \
     --comparison-operator GreaterThanOrEqualToThreshold \
     --dimensions Name=InstanceId,Value=$INSTANCE_ID \
-    --alarm-actions arn:aws:sns:eu-central-1:$(aws sts get-caller-identity --query Account --output text):OloOnForTooLong
+    --alarm-actions arn:aws:sns:eu-central-1:612153846898:OloOnForTooLong \
 
 echo "Instance $INSTANCE_ID is running with ENIs attached."
