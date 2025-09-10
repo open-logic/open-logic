@@ -92,7 +92,6 @@ jobs:
       # Setup Fusesoc
       - name: Setup FuseSoc for Stable Cores
         run: |
-          printenv
           source $LOCAL_TOOLS
           mkdir fusesoc_stable
           cd fusesoc_stable
