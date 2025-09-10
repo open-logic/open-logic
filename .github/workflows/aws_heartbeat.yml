@@ -32,7 +32,7 @@ jobs:
 
   # This task is not actually required. It's only there to make sure GitHub logs that the runner
   # .. took a job
-  fusesoc-local:
+  dummy-job:
     runs-on: [self-hosted, aws]
     needs: start-instance
     steps:
