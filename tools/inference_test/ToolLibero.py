@@ -61,7 +61,6 @@ class ToolLibero(ToolBase):
 
         # Find summary ile
         summary_file = self._find_file_in_project(".srr")
-        print(summary_file)
 
         # Extract resource usage
         with open(summary_file, "r") as f:
