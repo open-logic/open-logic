@@ -77,3 +77,11 @@ class ToolBase:
         :return: A dictionary containing the resources used for output reduction.
         """
         raise NotImplementedError("This method should be implemented by subclasses.")
+    
+    def check_drc(self):
+        """
+        Check if any open logic DRCs are violaged (e.g. if there are latches).
+
+        In case of violations, an exception is raised.
+        """
+        raise NotImplementedError("This method should be implemented by subclasses.")

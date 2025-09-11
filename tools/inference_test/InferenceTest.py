@@ -135,6 +135,8 @@ if __name__ == '__main__':
                             resources_total = {k: max(0.0, v) for k, v in resources_total.items()} #-1 values can happen du to incorrect corresction of iniput and output reduction
                             #Result handling
                             resource_results.add_results(config, resources_total)
+                            #Check DRCs
+                            tool.check_drc()
                         end = datetime.now()
                         runtime = end - start
                         runtime_str = f"{runtime.seconds // 60:02}:{runtime.seconds % 60:02}"
