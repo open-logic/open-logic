@@ -74,6 +74,26 @@ entities:
         generics:
           DataWidth_g: 16
           Polynomial_g: '"1000000000000101"'   
+    # olo_base_crc_append
+  - entity_name: "olo_base_crc_append"
+    configurations:
+      - name: "16poly-16data"
+        generics:
+          DataWidth_g: 16
+          CrcPolynomial_g: '"1000000000000101"'   
+    # olo_base_crc_check
+  - entity_name: "olo_base_crc_check"
+    configurations:
+      - name: "16poly-16data-drop"
+        generics:
+          DataWidth_g: 16
+          CrcPolynomial_g: '"1000000000000101"'
+          Mode_g: '"DROP"'
+      - name: "16poly-16data-flag"
+        generics:
+          DataWidth_g: 16
+          CrcPolynomial_g: '"1000000000000101"'
+          Mode_g: '"FLAG"' 
   # olo_base_decode_firstbit
   - entity_name: "olo_base_decode_firstbit"
     configurations:
