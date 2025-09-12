@@ -323,3 +323,9 @@ def add_configs(olo_tb):
     for BitFlip in [True, False]:
         for InvertOutput in [True, False]:
             named_config(tb, {'BitflipOutput_g': BitFlip, 'InvertOutput_g' : InvertOutput})
+
+    ### olo_base_crc_append ###
+    crc_append_tb = 'olo_base_crc_append_tb'
+    tb = olo_tb.test_bench(crc_append_tb)  
+    for DataWidth, CrcWidth in [(8, 8), (16, 8), (16, 16)]:
+        named_config(tb, {'CrcWidth_g': CrcWidth, 'DataWidth_g': DataWidth})
