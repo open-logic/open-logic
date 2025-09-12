@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
---  Copyright (c) 2024 by Oliver Bruendler, Switzerland
+--  Copyright (c) 2024-2025 by Oliver Bruendler, Switzerland
 --  Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -31,7 +31,8 @@ library olo;
 -- vunit: run_all_in_same_sim
 entity olo_base_fifo_packet_hs_tb is
     generic (
-        runner_cfg      : string
+        runner_cfg      : string;
+        FeatureSet_g    : string := "FULL"
     );
 end entity;
 
@@ -236,226 +237,177 @@ begin
 
             -- *** Out_Next operation between samples ***
             if run("Next-BeforePacket") then -- ignored
+                if FeatureSet_g = "FULL" then
 
-                -- Next Before Packet
-                Out_Next <= '1';
-                wait until rising_edge(Clk);
+                    -- Next Before Packet
+                    Out_Next <= '1';
+                    wait until rising_edge(Clk);
 
-                Out_Next <= '0';
+                    Out_Next <= '0';
 
-                -- Push Packet
-                In_Valid <= '1';
-                In_Data  <= x"0001";
-                wait until rising_edge(Clk);
+                    -- Push Packet
+                    In_Valid <= '1';
+                    In_Data  <= x"0001";
+                    wait until rising_edge(Clk);
 
-                In_Data <= x"0002";
-                In_Last <= '1';
-                wait until rising_edge(Clk);
+                    In_Data <= x"0002";
+                    In_Last <= '1';
+                    wait until rising_edge(Clk);
 
-                In_Valid <= '0';
-                wait until falling_edge(Clk);
+                    In_Valid <= '0';
+                    wait until falling_edge(Clk);
 
-                check_equal(PacketLevel, 1, "PacketLevel");
-                check_equal(FreeWords, Depth_c-2, "FreeWords");
+                    check_equal(PacketLevel, 1, "PacketLevel");
+                    check_equal(FreeWords, Depth_c-2, "FreeWords");
 
-                -- Check Packet
-                Out_Ready <= '1';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    -- Check Packet
+                    Out_Ready <= '1';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 1, "Out_Data");
-                check_equal(Out_Last, '0', "Out_Last");
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 1, "Out_Data");
+                    check_equal(Out_Last, '0', "Out_Last");
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 2, "Out_Data");
-                check_equal(Out_Last, '1', "Out_Last");
+                    check_equal(Out_Data, 2, "Out_Data");
+                    check_equal(Out_Last, '1', "Out_Last");
 
-                wait until rising_edge(Clk);
-                check_equal(Out_Valid, '0', "Out_Valid");
-                wait until falling_edge(Clk);
+                    wait until rising_edge(Clk);
+                    check_equal(Out_Valid, '0', "Out_Valid");
+                    wait until falling_edge(Clk);
 
-                check_equal(PacketLevel, 0, "PacketLevel");
-                wait until rising_edge(Clk);
-                wait until falling_edge(Clk);
+                    check_equal(PacketLevel, 0, "PacketLevel");
+                    wait until rising_edge(Clk);
+                    wait until falling_edge(Clk);
 
-                check_equal(FreeWords, Depth_c, "FreeWords");
+                    check_equal(FreeWords, Depth_c, "FreeWords");
+                end if;
             end if;
 
             if run("Next-BeforeReady") then -- detected
+                if FeatureSet_g = "FULL" then
+                    -- Push Packet
+                    In_Valid <= '1';
+                    In_Data  <= x"0001";
+                    wait until rising_edge(Clk);
 
-                -- Push Packet
-                In_Valid <= '1';
-                In_Data  <= x"0001";
-                wait until rising_edge(Clk);
+                    In_Data <= x"0002";
+                    In_Last <= '1';
+                    wait until rising_edge(Clk);
 
-                In_Data <= x"0002";
-                In_Last <= '1';
-                wait until rising_edge(Clk);
+                    In_Valid <= '0';
+                    wait until falling_edge(Clk);
 
-                In_Valid <= '0';
-                wait until falling_edge(Clk);
+                    check_equal(PacketLevel, 1, "PacketLevel");
+                    check_equal(FreeWords, Depth_c-2, "FreeWords");
 
-                check_equal(PacketLevel, 1, "PacketLevel");
-                check_equal(FreeWords, Depth_c-2, "FreeWords");
+                    -- Check Packet
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                -- Check Packet
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    Out_Next <= '1';
+                    wait until rising_edge(Clk);
 
-                Out_Next <= '1';
-                wait until rising_edge(Clk);
+                    Out_Next  <= '0';
+                    Out_Ready <= '1';
 
-                Out_Next  <= '0';
-                Out_Ready <= '1';
+                    -- One word must be provided because AXI-S does not allow deasserting Valid
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                -- One word must be provided because AXI-S does not allow deasserting Valid
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 1, "Out_Data");
+                    check_equal(Out_Last, '1', "Out_Last");
+                    wait until rising_edge(Clk);
 
-                check_equal(Out_Data, 1, "Out_Data");
-                check_equal(Out_Last, '1', "Out_Last");
-                wait until rising_edge(Clk);
+                    check_equal(Out_Valid, '0', "Out_Valid");
+                    wait until falling_edge(Clk);
 
-                check_equal(Out_Valid, '0', "Out_Valid");
-                wait until falling_edge(Clk);
+                    check_equal(PacketLevel, 0, "PacketLevel");
+                    wait until rising_edge(Clk);
+                    wait until falling_edge(Clk);
 
-                check_equal(PacketLevel, 0, "PacketLevel");
-                wait until rising_edge(Clk);
-                wait until falling_edge(Clk);
-
-                check_equal(FreeWords, Depth_c, "FreeWords");
+                    check_equal(FreeWords, Depth_c, "FreeWords");
+                end if;
             end if;
 
             if run("Next-DuringPacket") then  -- detected
+                if FeatureSet_g = "FULL" then
+                    -- Push Packet
+                    In_Valid <= '1';
+                    In_Data  <= x"0001";
+                    wait until rising_edge(Clk);
 
-                -- Push Packet
-                In_Valid <= '1';
-                In_Data  <= x"0001";
-                wait until rising_edge(Clk);
+                    In_Data <= x"0002";
+                    wait until rising_edge(Clk);
 
-                In_Data <= x"0002";
-                wait until rising_edge(Clk);
+                    In_Data <= x"0003";
+                    In_Last <= '1';
+                    wait until rising_edge(Clk);
 
-                In_Data <= x"0003";
-                In_Last <= '1';
-                wait until rising_edge(Clk);
+                    In_Valid <= '0';
+                    wait until falling_edge(Clk);
 
-                In_Valid <= '0';
-                wait until falling_edge(Clk);
+                    check_equal(PacketLevel, 1, "PacketLevel");
+                    check_equal(FreeWords, Depth_c-3, "FreeWords");
 
-                check_equal(PacketLevel, 1, "PacketLevel");
-                check_equal(FreeWords, Depth_c-3, "FreeWords");
+                    -- Check Packet
+                    Out_Ready <= '1';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                -- Check Packet
-                Out_Ready <= '1';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 1, "Out_Data");
+                    check_equal(Out_Last, '0', "Out_Last");
+                    Out_Ready <= '0';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 1, "Out_Data");
-                check_equal(Out_Last, '0', "Out_Last");
-                Out_Ready <= '0';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    Out_Next <= '1';
+                    wait until rising_edge(Clk);
 
-                Out_Next <= '1';
-                wait until rising_edge(Clk);
+                    Out_Next <= '0';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                Out_Next <= '0';
-                wait until rising_edge(Clk) and Out_Valid = '1';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    Out_Ready <= '1';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                Out_Ready <= '1';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 2, "Out_Data");
+                    check_equal(Out_Last, '1', "Out_Last");
+                    wait until rising_edge(Clk);
 
-                check_equal(Out_Data, 2, "Out_Data");
-                check_equal(Out_Last, '1', "Out_Last");
-                wait until rising_edge(Clk);
+                    check_equal(Out_Valid, '0', "Out_Valid");
+                    wait until falling_edge(Clk);
 
-                check_equal(Out_Valid, '0', "Out_Valid");
-                wait until falling_edge(Clk);
+                    check_equal(PacketLevel, 0, "PacketLevel");
+                    wait until rising_edge(Clk);
+                    wait until falling_edge(Clk);
 
-                check_equal(PacketLevel, 0, "PacketLevel");
-                wait until rising_edge(Clk);
-                wait until falling_edge(Clk);
-
-                check_equal(FreeWords, Depth_c, "FreeWords");
+                    check_equal(FreeWords, Depth_c, "FreeWords");
+                end if;
             end if;
 
             -- *** Out_Repeat operation between samples ***
             if run("Repeat-BeforePacket") then -- ignored
+                if FeatureSet_g = "FULL" then
 
-                -- Next Before Packet
-                Out_Repeat <= '1';
-                wait until rising_edge(Clk);
+                    -- Next Before Packet
+                    Out_Repeat <= '1';
+                    wait until rising_edge(Clk);
 
-                Out_Repeat <= '0';
+                    Out_Repeat <= '0';
 
-                -- Push Packet
-                In_Valid <= '1';
-                In_Data  <= x"0001";
-                wait until rising_edge(Clk);
+                    -- Push Packet
+                    In_Valid <= '1';
+                    In_Data  <= x"0001";
+                    wait until rising_edge(Clk);
 
-                In_Data <= x"0002";
-                In_Last <= '1';
-                wait until rising_edge(Clk);
+                    In_Data <= x"0002";
+                    In_Last <= '1';
+                    wait until rising_edge(Clk);
 
-                In_Valid <= '0';
-                wait until falling_edge(Clk);
+                    In_Valid <= '0';
+                    wait until falling_edge(Clk);
 
-                check_equal(PacketLevel, 1, "PacketLevel");
-                check_equal(FreeWords, Depth_c-2, "FreeWords");
+                    check_equal(PacketLevel, 1, "PacketLevel");
+                    check_equal(FreeWords, Depth_c-2, "FreeWords");
 
-                -- Check Packet
-                Out_Ready <= '1';
-                wait until rising_edge(Clk) and Out_Valid = '1';
-
-                check_equal(Out_Data, 1, "Out_Data");
-                check_equal(Out_Last, '0', "Out_Last");
-                wait until rising_edge(Clk) and Out_Valid = '1';
-
-                check_equal(Out_Data, 2, "Out_Data");
-                check_equal(Out_Last, '1', "Out_Last");
-                wait until falling_edge(Clk);
-
-                check_equal(PacketLevel, 0, "PacketLevel");
-                wait until rising_edge(Clk);
-
-                check_equal(Out_Valid, '0', "Out_Valid");
-                check_equal(FreeWords, Depth_c-2, "FreeWords");
-                wait until rising_edge(Clk);
-                wait until falling_edge(Clk);
-
-                check_equal(FreeWords, Depth_c, "FreeWords");
-            end if;
-
-            if run("Repeat-BeforeReady") then -- detected
-
-                -- Push Packet
-                In_Valid <= '1';
-                In_Data  <= x"0001";
-                wait until rising_edge(Clk);
-
-                In_Data <= x"0002";
-                In_Last <= '1';
-                wait until rising_edge(Clk);
-
-                In_Valid <= '0';
-                wait until falling_edge(Clk);
-
-                check_equal(PacketLevel, 1, "PacketLevel");
-                wait until falling_edge(Clk);
-
-                check_equal(FreeWords, Depth_c-2, "FreeWords");
-
-                -- Check Packet
-                wait until rising_edge(Clk) and Out_Valid = '1';
-
-                Out_Repeat <= '1';
-                wait until rising_edge(Clk);
-
-                Out_Repeat <= '0';
-                wait until rising_edge(Clk);
-                wait until rising_edge(Clk);
-
-                Out_Ready <= '1';
-
-                -- Check Packet (twice because repeated)
-                for i in 0 to 1 loop
+                    -- Check Packet
+                    Out_Ready <= '1';
                     wait until rising_edge(Clk) and Out_Valid = '1';
 
                     check_equal(Out_Data, 1, "Out_Data");
@@ -466,179 +418,239 @@ begin
                     check_equal(Out_Last, '1', "Out_Last");
                     wait until falling_edge(Clk);
 
-                    check_equal(PacketLevel, 1-i, "PacketLevel");
+                    check_equal(PacketLevel, 0, "PacketLevel");
+                    wait until rising_edge(Clk);
+
+                    check_equal(Out_Valid, '0', "Out_Valid");
                     check_equal(FreeWords, Depth_c-2, "FreeWords");
-                end loop;
+                    wait until rising_edge(Clk);
+                    wait until falling_edge(Clk);
 
-                wait until rising_edge(Clk);
+                    check_equal(FreeWords, Depth_c, "FreeWords");
+                end if;
+            end if;
 
-                check_equal(Out_Valid, '0', "Out_Valid");
-                wait until falling_edge(Clk);
+            if run("Repeat-BeforeReady") then -- detected
+                if FeatureSet_g = "FULL" then
 
-                check_equal(PacketLevel, 0, "PacketLevel");
-                check_equal(FreeWords, Depth_c, "FreeWords");
+                    -- Push Packet
+                    In_Valid <= '1';
+                    In_Data  <= x"0001";
+                    wait until rising_edge(Clk);
+
+                    In_Data <= x"0002";
+                    In_Last <= '1';
+                    wait until rising_edge(Clk);
+
+                    In_Valid <= '0';
+                    wait until falling_edge(Clk);
+
+                    check_equal(PacketLevel, 1, "PacketLevel");
+                    wait until falling_edge(Clk);
+
+                    check_equal(FreeWords, Depth_c-2, "FreeWords");
+
+                    -- Check Packet
+                    wait until rising_edge(Clk) and Out_Valid = '1';
+
+                    Out_Repeat <= '1';
+                    wait until rising_edge(Clk);
+
+                    Out_Repeat <= '0';
+                    wait until rising_edge(Clk);
+                    wait until rising_edge(Clk);
+
+                    Out_Ready <= '1';
+
+                    -- Check Packet (twice because repeated)
+                    for i in 0 to 1 loop
+                        wait until rising_edge(Clk) and Out_Valid = '1';
+
+                        check_equal(Out_Data, 1, "Out_Data");
+                        check_equal(Out_Last, '0', "Out_Last");
+                        wait until rising_edge(Clk) and Out_Valid = '1';
+
+                        check_equal(Out_Data, 2, "Out_Data");
+                        check_equal(Out_Last, '1', "Out_Last");
+                        wait until falling_edge(Clk);
+
+                        check_equal(PacketLevel, 1-i, "PacketLevel");
+                        check_equal(FreeWords, Depth_c-2, "FreeWords");
+                    end loop;
+
+                    wait until rising_edge(Clk);
+
+                    check_equal(Out_Valid, '0', "Out_Valid");
+                    wait until falling_edge(Clk);
+
+                    check_equal(PacketLevel, 0, "PacketLevel");
+                    check_equal(FreeWords, Depth_c, "FreeWords");
+                end if;
             end if;
 
             if run("Repeat-DuringPacket") then
+                if FeatureSet_g = "FULL" then
+                    -- Push Packet
+                    In_Valid <= '1';
+                    In_Data  <= x"0001";
+                    wait until rising_edge(Clk);
 
-                -- Push Packet
-                In_Valid <= '1';
-                In_Data  <= x"0001";
-                wait until rising_edge(Clk);
+                    In_Data <= x"0002";
+                    wait until rising_edge(Clk);
 
-                In_Data <= x"0002";
-                wait until rising_edge(Clk);
+                    In_Data <= x"0003";
+                    In_Last <= '1';
+                    wait until rising_edge(Clk);
 
-                In_Data <= x"0003";
-                In_Last <= '1';
-                wait until rising_edge(Clk);
+                    In_Valid <= '0';
+                    wait until falling_edge(Clk);
 
-                In_Valid <= '0';
-                wait until falling_edge(Clk);
+                    check_equal(PacketLevel, 1, "PacketLevel");
+                    check_equal(FreeWords, Depth_c-3, "FreeWords");
 
-                check_equal(PacketLevel, 1, "PacketLevel");
-                check_equal(FreeWords, Depth_c-3, "FreeWords");
+                    -- Check Packet 1
+                    Out_Ready <= '1';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                -- Check Packet 1
-                Out_Ready <= '1';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 1, "Out_Data");
+                    check_equal(Out_Last, '0', "Out_Last");
+                    Out_Ready <= '0';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 1, "Out_Data");
-                check_equal(Out_Last, '0', "Out_Last");
-                Out_Ready <= '0';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    Out_Repeat <= '1';
+                    wait until rising_edge(Clk);
 
-                Out_Repeat <= '1';
-                wait until rising_edge(Clk);
+                    Out_Repeat <= '0';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                Out_Repeat <= '0';
-                wait until rising_edge(Clk) and Out_Valid = '1';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    Out_Ready <= '1';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                Out_Ready <= '1';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 2, "Out_Data");
+                    check_equal(Out_Last, '0', "Out_Last");
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 2, "Out_Data");
-                check_equal(Out_Last, '0', "Out_Last");
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 3, "Out_Data");
+                    check_equal(Out_Last, '1', "Out_Last");
+                    wait until falling_edge(Clk);
 
-                check_equal(Out_Data, 3, "Out_Data");
-                check_equal(Out_Last, '1', "Out_Last");
-                wait until falling_edge(Clk);
+                    check_equal(PacketLevel, 1, "PacketLevel");
+                    check_equal(FreeWords, Depth_c-3, "FreeWords");
 
-                check_equal(PacketLevel, 1, "PacketLevel");
-                check_equal(FreeWords, Depth_c-3, "FreeWords");
+                    -- Valid low pulse between packets
+                    wait until rising_edge(Clk);
 
-                -- Valid low pulse between packets
-                wait until rising_edge(Clk);
+                    check_equal(Out_Valid, '0', "Out_Valid");
+                    wait until falling_edge(Clk);
 
-                check_equal(Out_Valid, '0', "Out_Valid");
-                wait until falling_edge(Clk);
+                    check_equal(PacketLevel, 1, "PacketLevel");
+                    check_equal(FreeWords, Depth_c-3, "FreeWords");
 
-                check_equal(PacketLevel, 1, "PacketLevel");
-                check_equal(FreeWords, Depth_c-3, "FreeWords");
+                    -- Check Packet 2
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                -- Check Packet 2
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 1, "Out_Data");
+                    check_equal(Out_Last, '0', "Out_Last");
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 1, "Out_Data");
-                check_equal(Out_Last, '0', "Out_Last");
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 2, "Out_Data");
+                    check_equal(Out_Last, '0', "Out_Last");
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 2, "Out_Data");
-                check_equal(Out_Last, '0', "Out_Last");
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 3, "Out_Data");
+                    check_equal(Out_Last, '1', "Out_Last");
+                    wait until rising_edge(Clk);
 
-                check_equal(Out_Data, 3, "Out_Data");
-                check_equal(Out_Last, '1', "Out_Last");
-                wait until rising_edge(Clk);
+                    check_equal(Out_Valid, '0', "Out_Valid");
+                    wait until rising_edge(Clk);
 
-                check_equal(Out_Valid, '0', "Out_Valid");
-                wait until rising_edge(Clk);
+                    check_equal(Out_Valid, '0', "Out_Valid");
+                    wait until falling_edge(Clk);
 
-                check_equal(Out_Valid, '0', "Out_Valid");
-                wait until falling_edge(Clk);
-
-                check_equal(PacketLevel, 0, "PacketLevel");
-                check_equal(FreeWords, Depth_c, "FreeWords");
+                    check_equal(PacketLevel, 0, "PacketLevel");
+                    check_equal(FreeWords, Depth_c, "FreeWords");
+                end if;
             end if;
 
             if run("Repeat-BetweenPackets") then -- ignored
+                if FeatureSet_g = "FULL" then
 
-                -- Packet 0
-                -- Push Packet
-                In_Valid <= '1';
-                In_Data  <= x"0001";
-                wait until rising_edge(Clk);
+                    -- Packet 0
+                    -- Push Packet
+                    In_Valid <= '1';
+                    In_Data  <= x"0001";
+                    wait until rising_edge(Clk);
 
-                In_Data <= x"0002";
-                In_Last <= '1';
-                wait until rising_edge(Clk);
+                    In_Data <= x"0002";
+                    In_Last <= '1';
+                    wait until rising_edge(Clk);
 
-                In_Valid <= '0';
-                In_Last  <= '0';
-                wait until falling_edge(Clk);
+                    In_Valid <= '0';
+                    In_Last  <= '0';
+                    wait until falling_edge(Clk);
 
-                check_equal(PacketLevel, 1, "PacketLevel");
-                check_equal(FreeWords, Depth_c-2, "FreeWords");
+                    check_equal(PacketLevel, 1, "PacketLevel");
+                    check_equal(FreeWords, Depth_c-2, "FreeWords");
 
-                -- Check Packet
-                Out_Ready <= '1';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    -- Check Packet
+                    Out_Ready <= '1';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 1, "Out_Data");
-                check_equal(Out_Last, '0', "Out_Last");
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 1, "Out_Data");
+                    check_equal(Out_Last, '0', "Out_Last");
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 2, "Out_Data");
-                check_equal(Out_Last, '1', "Out_Last");
-                wait until rising_edge(Clk);
+                    check_equal(Out_Data, 2, "Out_Data");
+                    check_equal(Out_Last, '1', "Out_Last");
+                    wait until rising_edge(Clk);
 
-                check_equal(Out_Valid, '0', "Out_Valid");
-                wait until falling_edge(Clk);
+                    check_equal(Out_Valid, '0', "Out_Valid");
+                    wait until falling_edge(Clk);
 
-                check_equal(PacketLevel, 0, "PacketLevel");
-                check_equal(FreeWords, Depth_c, "FreeWords");
+                    check_equal(PacketLevel, 0, "PacketLevel");
+                    check_equal(FreeWords, Depth_c, "FreeWords");
 
-                -- Repeat Before Packet
-                Out_Repeat <= '1';
-                wait until rising_edge(Clk);
+                    -- Repeat Before Packet
+                    Out_Repeat <= '1';
+                    wait until rising_edge(Clk);
 
-                Out_Repeat <= '0';
+                    Out_Repeat <= '0';
 
-                -- Packet 1
-                -- Push Packet
-                In_Valid <= '1';
-                In_Data  <= x"0005";
-                wait until rising_edge(Clk);
+                    -- Packet 1
+                    -- Push Packet
+                    In_Valid <= '1';
+                    In_Data  <= x"0005";
+                    wait until rising_edge(Clk);
 
-                In_Data <= x"0006";
-                In_Last <= '1';
-                wait until rising_edge(Clk);
+                    In_Data <= x"0006";
+                    In_Last <= '1';
+                    wait until rising_edge(Clk);
 
-                In_Valid <= '0';
-                wait until falling_edge(Clk);
+                    In_Valid <= '0';
+                    wait until falling_edge(Clk);
 
-                check_equal(PacketLevel, 1, "PacketLevel");
-                check_equal(FreeWords, Depth_c-2, "FreeWords");
+                    check_equal(PacketLevel, 1, "PacketLevel");
+                    check_equal(FreeWords, Depth_c-2, "FreeWords");
 
-                -- Check Packet
-                Out_Ready <= '1';
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    -- Check Packet
+                    Out_Ready <= '1';
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 5, "Out_Data");
-                check_equal(Out_Last, '0', "Out_Last");
-                wait until rising_edge(Clk) and Out_Valid = '1';
+                    check_equal(Out_Data, 5, "Out_Data");
+                    check_equal(Out_Last, '0', "Out_Last");
+                    wait until rising_edge(Clk) and Out_Valid = '1';
 
-                check_equal(Out_Data, 6, "Out_Data");
-                check_equal(Out_Last, '1', "Out_Last");
-                wait until rising_edge(Clk);
+                    check_equal(Out_Data, 6, "Out_Data");
+                    check_equal(Out_Last, '1', "Out_Last");
+                    wait until rising_edge(Clk);
 
-                check_equal(Out_Valid, '0', "Out_Valid");
-                wait until falling_edge(Clk);
+                    check_equal(Out_Valid, '0', "Out_Valid");
+                    wait until falling_edge(Clk);
 
-                check_equal(PacketLevel, 0, "PacketLevel");
-                check_equal(FreeWords, Depth_c, "FreeWords");
+                    check_equal(PacketLevel, 0, "PacketLevel");
+                    check_equal(FreeWords, Depth_c, "FreeWords");
+                end if;
             end if;
 
             -- End case condition
@@ -662,6 +674,7 @@ begin
         generic map (
             Width_g             => Width_c,
             Depth_g             => Depth_c,
+            FeatureSet_G        => FeatureSet_g,
             RamStyle_g          => "auto",
             RamBehavior_g       => "RBW",
             SmallRamStyle_g     => "same",

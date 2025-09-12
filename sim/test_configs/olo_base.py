@@ -262,11 +262,14 @@ def add_configs(olo_tb):
 
     ### olo_base_fifo_packet ###
     fifo_packet_tb = 'olo_base_fifo_packet_tb'
+    fifo_packet_tb_hs = 'olo_base_fifo_packet_hs_tb'
     tb = olo_tb.test_bench(fifo_packet_tb)
-    #Choose settings for short runtim
-    named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': True})
-    named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': False}) #Some checks require non-random stall
-    #fifo_packet_hs_tb does not have generics
+    tb_hs = olo_tb.test_bench(fifo_packet_tb_hs)
+    #Choose settings for short runtime
+    for FeatureSet in ["FULL", "DROP_ONLY"]:
+        named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': True, 'FeatureSet_g' : FeatureSet})
+        named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': False, 'FeatureSet_g' : FeatureSet}) #Some checks require non-random stall
+        named_config(tb_hs, {'FeatureSet_g' : FeatureSet})
 
     ### olo_base_cam ###
     cam_tb = 'olo_base_cam_tb'

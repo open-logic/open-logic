@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024 by Oliver Bruendler
+-- Copyright (c) 2024-2025 by Oliver Bruendler
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -29,6 +29,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -37,6 +38,7 @@ entity olo_base_fifo_packet is
     generic (
         Width_g             : positive;
         Depth_g             : positive;
+        FeatureSet_g        : string                            := "FULL";
         RamStyle_g          : string                            := "auto";
         RamBehavior_g       : string                            := "RBW";
         SmallRamStyle_g     : string                            := "auto";
@@ -74,8 +76,9 @@ end entity;
 architecture rtl of olo_base_fifo_packet is
 
     -- Constants
-    constant SmallRamStyle_c    : string := choose(SmallRamStyle_g = "same", RamStyle_g, SmallRamStyle_g);
-    constant SmallRamBehavior_c : string := choose(SmallRamBehavior_g = "same", RamBehavior_g, SmallRamBehavior_g);
+    constant SmallRamStyle_c    : string := choose(toLower(SmallRamStyle_g) = "same", RamStyle_g, SmallRamStyle_g);
+    constant SmallRamBehavior_c : string := choose(toLower(SmallRamBehavior_g) = "same", RamBehavior_g, SmallRamBehavior_g);
+    constant FeatureSet_c       : string := toLower(FeatureSet_g);
 
     -- Range definitions
     subtype Addr_c is integer range log2ceil(Depth_g) downto 0; -- one additional bit to differentiate between full/empty
@@ -119,6 +122,7 @@ architecture rtl of olo_base_fifo_packet is
     signal FifoInValid      : std_logic;
     signal FifoOutRdy       : std_logic;
     signal WrAddrStdlv      : std_logic_vector(Addr_c);
+    signal OutLastDropOnly  : std_logic;
 
 begin
 
@@ -129,14 +133,20 @@ begin
         report "olo_base_fifo_packet: only power of two Depth_g is allowed"
         severity error;
 
+    assert FeatureSet_c = "full" or FeatureSet_c = "drop_only"
+        report "olo_base_fifo_packet: FeatureSet_g must be FULL or DROP_ONLY"
+        severity error;
+
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
     p_comb : process (all) is
-        variable v          : TwoProcess_r;
-        variable In_Ready_v : std_logic;
-        variable InDrop_v   : std_logic;
-        variable OutLast_v  : std_logic;
+        variable v           : TwoProcess_r;
+        variable In_Ready_v  : std_logic;
+        variable InDrop_v    : std_logic;
+        variable OutLast_v   : std_logic;
+        variable OutNext_v   : std_logic;
+        variable OutRepeat_v : std_logic;
     begin
         -- hold variables stable
         v := r;
@@ -227,6 +237,14 @@ begin
         FifoOutRdy <= '0';
         OutLast_v  := '0';
 
+        -- Suppress deactivated feature sets
+        OutNext_v   := '0';
+        OutRepeat_v := '0';
+        if FeatureSet_c = "full" then
+            OutNext_v   := Out_Next;
+            OutRepeat_v := Out_Repeat;
+        end if;
+
         -- FSM
         case r.RdFsm is
             when Fetch_s =>
@@ -257,7 +275,10 @@ begin
                     end if;
                     v.RdPacketEnd := unsigned(RdPacketEnd);
                     v.RdValid     := '1';
-                    v.RdSize      := unsigned(RdPacketEnd) - r.RdAddr + 1;
+                    -- Packet size is only supported in FULL mode
+                    if FeatureSet_c = "full" then
+                        v.RdSize := unsigned(RdPacketEnd) - r.RdAddr + 1;
+                    end if;
 
                 end if;
 
@@ -276,7 +297,7 @@ begin
                     end if;
 
                     -- Handle abortion of packet
-                    if Out_Next = '1' or r.NextLatch = '1' then
+                    if OutNext_v = '1' or r.NextLatch = '1' then
                         OutLast_v := '1';
                         v.RdValid := '0';
                         v.RdFsm   := Fetch_s;
@@ -312,13 +333,18 @@ begin
 
         RamRdAddr <= std_logic_vector(v.RdAddr);
         Out_Valid <= r.RdValid;
-        Out_Last  <= OutLast_v;
-        Out_Size  <= std_logic_vector(r.RdSize);
+        if FeatureSet_c /= "full" then
+            OutLast_v := OutLastDropOnly; -- Override default assignment further up in the process
+            Out_Size  <= (others => 'X');
+        else
+            Out_Size <= std_logic_vector(r.RdSize);
+        end if;
+        Out_Last <= OutLast_v;
 
         -- Latch Next between samples
         if r.RdValid = '1' and Out_Ready = '1' and OutLast_v = '1' then
             v.NextLatch := '0';
-        elsif r.RdValid = '1' and Out_Next = '1' then
+        elsif r.RdValid = '1' and OutNext_v = '1' then
             v.NextLatch := '1';
         end if;
 
@@ -326,7 +352,7 @@ begin
         if In_Valid = '1' and In_Ready_v = '1' and In_Last = '1' and InDrop_v = '0' then
             v.PacketLevel := r.PacketLevel + 1;
         end if;
-        if r.RdValid = '1' and Out_Ready = '1' and OutLast_v = '1' and r.RdRepeat = '0' and Out_Repeat = '0' then
+        if r.RdValid = '1' and Out_Ready = '1' and OutLast_v = '1' and r.RdRepeat = '0' and OutRepeat_v = '0' then
             v.PacketLevel := v.PacketLevel - 1;
         end if;
         PacketLevel <= std_logic_vector(r.PacketLevel);
@@ -336,7 +362,7 @@ begin
 
         -- Latch Repeat between samples
         -- Clearing is done in FSM
-        if Out_Repeat = '1' and r.RdValid = '1' then
+        if OutRepeat_v = '1' and r.RdValid = '1' then
             v.RdRepeat := '1';
         end if;
 
@@ -379,40 +405,100 @@ begin
     WrAddrStdlv(WrAddrStdlv'high) <= not r.WrAddr(r.WrAddr'high);
 
     -- Main RAM
-    i_ram : entity work.olo_base_ram_sdp
-        generic map (
-            Depth_g         => Depth_g,
-            Width_g         => Width_g,
-            RamStyle_g      => RamStyle_g,
-            RamBehavior_g   => RamBehavior_g
-        )
-        port map (
-            Clk     => Clk,
-            Wr_Addr => WrAddrStdlv(AddrApp_c), -- Additional bit for full/empty differentiation is stripped
-            Wr_Ena  => RamWrEna,
-            Wr_Data => In_Data,
-            Rd_Addr => RamRdAddr(AddrApp_c),   -- Additional bit for full/empty differentiation is stripped
-            Rd_Data => Out_Data
-        );
+    b_ram : block is
+        -- RAM stores last for drop_only feature set
+        constant RamWidth_c : natural := choose(FeatureSet_c = "full", Width_g, Width_g+1);
 
-    -- FIFO transfer packet ends
-    i_pktend_fifo : entity work.olo_base_fifo_sync
-        generic map (
-            Width_g         => log2ceil(Depth_g)+1,
-            Depth_g         => MaxPackets_g-1,     -- One packet is currently read out (not in the FIFO anymore)
-            RamStyle_g      => SmallRamStyle_c,
-            RamBehavior_g   => SmallRamBehavior_c,
-            ReadyRstState_g => '0'
-        )
-        port map (
-            Clk           => Clk,
-            Rst           => Rst,
-            In_Data       => WrAddrStdlv,
-            In_Valid      => FifoInValid,
-            In_Ready      => FifoInReady,
-            Out_Data      => RdPacketEnd,
-            Out_Valid     => RdPacketEndValid,
-            Out_Ready     => FifoOutRdy
-        );
+        signal RamInData  : std_logic_vector(RamWidth_c-1 downto 0);
+        signal RamOutData : std_logic_vector(RamWidth_c-1 downto 0);
+    begin
+
+        p_map : process (all) is
+        begin
+            if FeatureSet_c = "full" then
+                -- Input
+                RamInData <= In_Data;
+                -- Output
+                Out_Data <= RamOutData;
+            else
+                -- Input
+                RamInData(RamInData'high) <= In_Last;
+                RamInData(In_Data'range)  <= In_Data;
+                -- Output
+                OutLastDropOnly <= RamOutData(RamOutData'high); -- assigned in main comb process
+                Out_Data        <= RamOutData(Out_Data'range);
+            end if;
+        end process;
+
+        i_ram : entity work.olo_base_ram_sdp
+            generic map (
+                Depth_g         => Depth_g,
+                Width_g         => RamWidth_c,
+                RamStyle_g      => RamStyle_g,
+                RamBehavior_g   => RamBehavior_g
+            )
+            port map (
+                Clk     => Clk,
+                Wr_Addr => WrAddrStdlv(AddrApp_c), -- Additional bit for full/empty differentiation is stripped
+                Wr_Ena  => RamWrEna,
+                Wr_Data => RamInData,
+                Rd_Addr => RamRdAddr(AddrApp_c),   -- Additional bit for full/empty differentiation is stripped
+                Rd_Data => RamOutData
+            );
+
+    end block;
+
+    -- FIFO transfer packet ends for full feature set
+    g_small_fifo : if FeatureSet_c = "full" generate
+
+        i_pktend_fifo : entity work.olo_base_fifo_sync
+            generic map (
+                Width_g         => log2ceil(Depth_g)+1,
+                Depth_g         => MaxPackets_g-1,     -- One packet is currently read out (not in the FIFO anymore)
+                RamStyle_g      => SmallRamStyle_c,
+                RamBehavior_g   => SmallRamBehavior_c,
+                ReadyRstState_g => '0'
+            )
+            port map (
+                Clk           => Clk,
+                Rst           => Rst,
+                In_Data       => WrAddrStdlv,
+                In_Valid      => FifoInValid,
+                In_Ready      => FifoInReady,
+                Out_Data      => RdPacketEnd,
+                Out_Valid     => RdPacketEndValid,
+                Out_Ready     => FifoOutRdy
+            );
+
+    end generate;
+
+    -- For drop_only feature set only the last end address must be latched
+    g_no_small_fifo : if FeatureSet_c /= "full" generate
+
+        FifoInReady <= '1';
+
+        p_latch : process (Clk) is
+        begin
+            if rising_edge(Clk) then
+
+                -- Read
+                if FifoOutRdy = '1' then
+                    RdPacketEndValid <= '0';
+                end if;
+
+                -- Write
+                if FifoInValid = '1' then
+                    RdPacketEndValid <= '1';
+                    RdPacketEnd      <= WrAddrStdlv;
+                end if;
+
+                -- Reset
+                if Rst = '1' then
+                    RdPacketEndValid <= '0';
+                end if;
+            end if;
+        end process;
+
+    end generate;
 
 end architecture;

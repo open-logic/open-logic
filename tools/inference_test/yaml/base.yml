@@ -111,10 +111,16 @@ entities:
   # olo_base_fifo_packet
   - entity_name: "olo_base_fifo_packet"
     configurations:
-      - name: "d512-w16"
+      - name: "d512-w16-full"
         generics:
           Width_g: 16
-          Depth_g: 512 
+          Depth_g: 512
+          FeatureSet_g: '"FULL"'
+      - name: "d512-w16-drop"
+        generics:
+          Width_g: 16
+          Depth_g: 512
+          FeatureSet_g: '"DROP_ONLY"'
   # olo_base_fifo_sync
   - entity_name: "olo_base_fifo_sync"
     configurations:

@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024 by Oliver Bruendler, Switzerland
+-- Copyright (c) 2024-2025 by Oliver Bruendler, Switzerland
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -31,6 +31,7 @@ entity olo_base_fifo_packet_tb is
     generic (
         RandomStall_g   : boolean := false;
         RandomPackets_g : integer := 100;
+        FeatureSet_g    : string  := "FULL";
         runner_cfg      : string
     );
 end entity;
@@ -143,7 +144,9 @@ architecture sim of olo_base_fifo_packet_tb is
             if repeatAt = i then
                 Repeat_v := '1';
             end if;
-            push_axi_stream(net, AxisNextRepeatMaster_c, Repeat_v & Next_v);
+            if FeatureSet_g = "FULL" then
+                push_axi_stream(net, AxisNextRepeatMaster_c, Repeat_v & Next_v);
+            end if;
             -- Data
             if i = size-1 then
                 Tlast_v := '1';
@@ -151,10 +154,16 @@ architecture sim of olo_base_fifo_packet_tb is
             if OutDelay_v > 0 ns then
                 wait for OutDelay_v;
             end if;
-            if pktsize = -1 then
-                Size_v := toUslv(size, Size_v'length);
+            -- for FULL check size
+            if FeatureSet_g = "FULL" then
+                if pktsize = -1 then
+                    Size_v := toUslv(size, Size_v'length);
+                else
+                    Size_v := toUslv(pktSize, Size_v'length);
+                end if;
+            -- ... else the size is not present
             else
-                Size_v := toUslv(pktSize, Size_v'length);
+                Size_v := (others => '0');
             end if;
             check_axi_stream(net, AxisSlave_c, toUslv(startVal + i, Width_c), tlast => Tlast_v, tuser => Size_v, blocking => false);
         end loop;
@@ -395,203 +404,249 @@ begin
 
             if run("RepeatPacketMiddle") then
 
-                -- Loop over different repeat positions
-                for repeatWord in 0 to 2 loop
-                    testPacket(net, 3, 1);
-                    pushPacket(net, 3, 16);
-                    checkPacket(net, 3, 16, repeatAt => repeatWord);
-                    checkPacket(net, 3, 16);
-                    testPacket(net, 3, 32);
-                    wait for CaseDelay_c;
-                end loop;
+                if FeatureSet_g = "FULL" then
+
+                    -- Loop over different repeat positions
+                    for repeatWord in 0 to 2 loop
+                        testPacket(net, 3, 1);
+                        pushPacket(net, 3, 16);
+                        checkPacket(net, 3, 16, repeatAt => repeatWord);
+                        checkPacket(net, 3, 16);
+                        testPacket(net, 3, 32);
+                        wait for CaseDelay_c;
+                    end loop;
+
+                end if;
 
             end if;
 
             if run("RepeatPacketFirstPacket") then
-                pushPacket(net, 3, 1);
-                checkPacket(net, 3, 1, repeatAt => 0);
-                checkPacket(net, 3, 1);
+                if FeatureSet_g = "FULL" then
+                    pushPacket(net, 3, 1);
+                    checkPacket(net, 3, 1, repeatAt => 0);
+                    checkPacket(net, 3, 1);
+                end if;
             end if;
 
             if run("RepeatPacketMiddleSize1") then
-                testPacket(net, 3, 1);
-                pushPacket(net, 1, 16);
-                checkPacket(net, 1, 16, repeatAt => 0);
-                checkPacket(net, 1, 16);
-                testPacket(net, 3, 32);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, 3, 1);
+                    pushPacket(net, 1, 16);
+                    checkPacket(net, 1, 16, repeatAt => 0);
+                    checkPacket(net, 1, 16);
+                    testPacket(net, 3, 32);
+                end if;
             end if;
 
             if run("RepeatPacketFirstSize1") then
-                pushPacket(net, 1, 1);
-                checkPacket(net, 1, 1, repeatAt => 0);
-                checkPacket(net, 1, 1);
+                if FeatureSet_g = "FULL" then
+                    pushPacket(net, 1, 1);
+                    checkPacket(net, 1, 1, repeatAt => 0);
+                    checkPacket(net, 1, 1);
+                end if;
             end if;
 
             if run("RepeatPacketMuti") then
-                testPacket(net, 3, 1);
-                pushPacket(net, 3, 16);
+                if FeatureSet_g = "FULL" then
 
-                -- Loop over different repeat positions
-                for repeatWord in 0 to 2 loop
-                    checkPacket(net, 3, 16, repeatAt => repeatWord);
-                end loop;
+                    testPacket(net, 3, 1);
+                    pushPacket(net, 3, 16);
 
-                checkPacket(net, 3, 16);
-                testPacket(net, 3, 32);
+                    -- Loop over different repeat positions
+                    for repeatWord in 0 to 2 loop
+                        checkPacket(net, 3, 16, repeatAt => repeatWord);
+                    end loop;
+
+                    checkPacket(net, 3, 16);
+                    testPacket(net, 3, 32);
+
+                end if;
             end if;
 
             if run("RepeatPacketMultiFirstSize1") then
-                pushPacket(net, 1, 1);
-                checkPacket(net, 1, 1, repeatAt => 0);
-                checkPacket(net, 1, 1, repeatAt => 0);
-                checkPacket(net, 1, 1, repeatAt => 0);
-                checkPacket(net, 1, 1);
-                testPacket(net, 3, 16);
+                if FeatureSet_g = "FULL" then
+                    pushPacket(net, 1, 1);
+                    checkPacket(net, 1, 1, repeatAt => 0);
+                    checkPacket(net, 1, 1, repeatAt => 0);
+                    checkPacket(net, 1, 1, repeatAt => 0);
+                    checkPacket(net, 1, 1);
+                    testPacket(net, 3, 16);
+                end if;
             end if;
 
             if run("RepeatPacket-ContainingWraparound-SplBeforeWrap") then
-                testPacket(net, Depth_c-5, 1);
-                pushPacket(net, 10, 16#100#);
-                checkPacket(net, 10, 16#100#, repeatAt => 2);
-                checkPacket(net, 10, 16#100#);
-                testPacket(net, 3, 16#200#);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, Depth_c-5, 1);
+                    pushPacket(net, 10, 16#100#);
+                    checkPacket(net, 10, 16#100#, repeatAt => 2);
+                    checkPacket(net, 10, 16#100#);
+                    testPacket(net, 3, 16#200#);
+                end if;
             end if;
 
             if run("RepeatPacket-ContainingWraparound-SplAfterWrap") then
-                testPacket(net, Depth_c-5, 1);
-                pushPacket(net, 10, 16#100#);
-                checkPacket(net, 10, 16#100#, repeatAt => 8);
-                checkPacket(net, 10, 16#100#);
-                testPacket(net, 3, 16#200#);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, Depth_c-5, 1);
+                    pushPacket(net, 10, 16#100#);
+                    checkPacket(net, 10, 16#100#, repeatAt => 8);
+                    checkPacket(net, 10, 16#100#);
+                    testPacket(net, 3, 16#200#);
+                end if;
             end if;
 
             -- *** Next Packet Test (Output Side) ***
 
             if run("NextPacketMiddle") then
+                if FeatureSet_g = "FULL" then
 
-                -- Loop over different skip positions
-                for nextWord in 0 to 2 loop
-                    testPacket(net, 3, 1);
-                    pushPacket(net, 3, 16);
-                    checkPacket(net, nextWord+1, 16, nextAt => nextWord, pktSize => 3);
-                    testPacket(net, 3, 32);
-                    wait for CaseDelay_c;
-                end loop;
+                    -- Loop over different skip positions
+                    for nextWord in 0 to 2 loop
+                        testPacket(net, 3, 1);
+                        pushPacket(net, 3, 16);
+                        checkPacket(net, nextWord+1, 16, nextAt => nextWord, pktSize => 3);
+                        testPacket(net, 3, 32);
+                        wait for CaseDelay_c;
+                    end loop;
 
+                end if;
             end if;
 
             if run("NextPacketFirstPacket") then
-                pushPacket(net, 3, 1);
-                checkPacket(net, 1, 1, nextAt => 0, pktSize => 3);
-                testPacket(net, 3, 32);
+                if FeatureSet_g = "FULL" then
+                    pushPacket(net, 3, 1);
+                    checkPacket(net, 1, 1, nextAt => 0, pktSize => 3);
+                    testPacket(net, 3, 32);
+                end if;
             end if;
 
             if run("NextPacketMiddleSize1") then
-                testPacket(net, 3, 1);
-                pushPacket(net, 1, 16);
-                checkPacket(net, 1, 16, nextAt => 0);
-                testPacket(net, 3, 32);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, 3, 1);
+                    pushPacket(net, 1, 16);
+                    checkPacket(net, 1, 16, nextAt => 0);
+                    testPacket(net, 3, 32);
+                end if;
             end if;
 
             if run("NextPacketMulti") then
-                testPacket(net, 3, 1);
-                pushPacket(net, 3, 16);
-                checkPacket(net, 1, 16, nextAt => 0, pktSize => 3);
-                pushPacket(net, 3, 32);
-                checkPacket(net, 2, 32, nextAt => 1, pktSize => 3);
-                testPacket(net, 3, 32);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, 3, 1);
+                    pushPacket(net, 3, 16);
+                    checkPacket(net, 1, 16, nextAt => 0, pktSize => 3);
+                    pushPacket(net, 3, 32);
+                    checkPacket(net, 2, 32, nextAt => 1, pktSize => 3);
+                    testPacket(net, 3, 32);
+                end if;
             end if;
 
             if run("NextPacket-ContainingWraparound-SplBeforeWrap") then
-                testPacket(net, Depth_c-5, 1);
-                pushPacket(net, 10, 16#100#);
-                checkPacket(net, 3, 16#100#, nextAt => 2, pktSize => 10);
-                testPacket(net, 3, 16#200#);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, Depth_c-5, 1);
+                    pushPacket(net, 10, 16#100#);
+                    checkPacket(net, 3, 16#100#, nextAt => 2, pktSize => 10);
+                    testPacket(net, 3, 16#200#);
+                end if;
             end if;
 
             if run("NextPacket-ContainingWraparound-SplAfterWrap") then
-                testPacket(net, Depth_c-5, 1);
-                pushPacket(net, 10, 16#100#);
-                checkPacket(net, 8, 16#100#, nextAt => 7, pktSize => 10);
-                testPacket(net, 3, 16#200#);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, Depth_c-5, 1);
+                    pushPacket(net, 10, 16#100#);
+                    checkPacket(net, 8, 16#100#, nextAt => 7, pktSize => 10);
+                    testPacket(net, 3, 16#200#);
+                end if;
             end if;
 
             if run("NextPacket-ContainingWraparound-Multi") then
-                testPacket(net, Depth_c-15, 1);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, Depth_c-15, 1);
 
-                -- Three packets
-                for pkt in 1 to 3 loop
-                    pushPacket(net, 10, 16#100#*pkt);
-                    checkPacket(net, 1, 16#100#*pkt, nextAt => 0, pktSize => 10);
-                end loop;
+                    -- Three packets
+                    for pkt in 1 to 3 loop
+                        pushPacket(net, 10, 16#100#*pkt);
+                        checkPacket(net, 1, 16#100#*pkt, nextAt => 0, pktSize => 10);
+                    end loop;
 
-                testPacket(net, 3, 16#800#);
+                    testPacket(net, 3, 16#800#);
+                end if;
             end if;
 
             -- *** Next/Repeat Packet Test (Output Side) ***
             if run("NextRepeatPacketMiddle-SameWord") then
+                if FeatureSet_g = "FULL" then
 
-                -- Loop over different skip positions
-                for nextWord in 0 to 2 loop
-                    testPacket(net, 3, 1);
-                    pushPacket(net, 3, 16);
-                    checkPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => nextWord, pktSize => 3);
-                    checkPacket(net, 3, 16);
-                    testPacket(net, 3, 32);
-                    wait for CaseDelay_c;
-                end loop;
+                    -- Loop over different skip positions
+                    for nextWord in 0 to 2 loop
+                        testPacket(net, 3, 1);
+                        pushPacket(net, 3, 16);
+                        checkPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => nextWord, pktSize => 3);
+                        checkPacket(net, 3, 16);
+                        testPacket(net, 3, 32);
+                        wait for CaseDelay_c;
+                    end loop;
 
+                end if;
             end if;
 
             if run("NextRepeatPacketMiddle-RepeatBefore") then
+                if FeatureSet_g = "FULL" then
 
-                -- Loop over different skip positions
-                for nextWord in 1 to 2 loop
-                    testPacket(net, 3, 1);
-                    pushPacket(net, 3, 16);
-                    checkPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => 0, pktSize => 3);
-                    checkPacket(net, 3, 16);
-                    testPacket(net, 3, 32);
-                    wait for CaseDelay_c;
-                end loop;
+                    -- Loop over different skip positions
+                    for nextWord in 1 to 2 loop
+                        testPacket(net, 3, 1);
+                        pushPacket(net, 3, 16);
+                        checkPacket(net, nextWord+1, 16, nextAt => nextWord, repeatAt => 0, pktSize => 3);
+                        checkPacket(net, 3, 16);
+                        testPacket(net, 3, 32);
+                        wait for CaseDelay_c;
+                    end loop;
 
+                end if;
             end if;
 
             if run("NextRepeatPacketFirstPacket") then
-                pushPacket(net, 3, 1);
-                checkPacket(net, 1, 1, nextAt => 0, repeatAt => 0, pktSize => 3);
-                checkPacket(net, 3, 1);
-                testPacket(net, 3, 32);
+                if FeatureSet_g = "FULL" then
+                    pushPacket(net, 3, 1);
+                    checkPacket(net, 1, 1, nextAt => 0, repeatAt => 0, pktSize => 3);
+                    checkPacket(net, 3, 1);
+                    testPacket(net, 3, 32);
+                end if;
             end if;
 
             if run("NextRepeatPacketMiddleSize1") then
-                testPacket(net, 3, 1);
-                pushPacket(net, 1, 16);
-                checkPacket(net, 1, 16, nextAt => 0, repeatAt => 0);
-                checkPacket(net, 1, 16);
-                testPacket(net, 3, 32);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, 3, 1);
+                    pushPacket(net, 1, 16);
+                    checkPacket(net, 1, 16, nextAt => 0, repeatAt => 0);
+                    checkPacket(net, 1, 16);
+                    testPacket(net, 3, 32);
+                end if;
             end if;
 
             if run("NextRepeatPacketMulti") then
-                testPacket(net, 3, 1);
-                pushPacket(net, 3, 16);
-                checkPacket(net, 1, 16, nextAt => 0, repeatAt => 0, pktSize => 3);
-                checkPacket(net, 2, 16, nextAt => 1, repeatAt => 1, pktSize => 3);
-                checkPacket(net, 3, 16);
-                testPacket(net, 3, 32);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, 3, 1);
+                    pushPacket(net, 3, 16);
+                    checkPacket(net, 1, 16, nextAt => 0, repeatAt => 0, pktSize => 3);
+                    checkPacket(net, 2, 16, nextAt => 1, repeatAt => 1, pktSize => 3);
+                    checkPacket(net, 3, 16);
+                    testPacket(net, 3, 32);
+                end if;
             end if;
 
             if run("NextRepeatPacket-ContainingWraparound") then
-                testPacket(net, Depth_c-15, 1);
-                pushPacket(net, 10, 16#100#);
+                if FeatureSet_g = "FULL" then
+                    testPacket(net, Depth_c-15, 1);
+                    pushPacket(net, 10, 16#100#);
 
-                -- Three packets
-                for pkt in 1 to 3 loop
-                    checkPacket(net, pkt+1, 16#100#, nextAt => pkt, repeatAt => 1, pktSize => 10);
-                end loop;
+                    -- Three packets
+                    for pkt in 1 to 3 loop
+                        checkPacket(net, pkt+1, 16#100#, nextAt => pkt, repeatAt => 1, pktSize => 10);
+                    end loop;
 
-                checkPacket(net, 4, 16#100#, nextAt => 3, pktSize => 10);
-                testPacket(net, 3, 16#800#);
+                    checkPacket(net, 4, 16#100#, nextAt => 3, pktSize => 10);
+                    testPacket(net, 3, 16#800#);
+                end if;
             end if;
 
             -- *** Corner Cases ***
@@ -605,18 +660,38 @@ begin
                     check_equal(PacketLevel, pkt+1, "PacketLevel 0");
                 end loop;
 
-                -- These packets are added on the go when readout starts
+                -- These packets are added on the go when readout starts for FULL and immediately for DROP_ONLY
                 for pkt in 0 to 3 loop
                     pushPacket(net, 3, 16*(pkt+MaxPackets_c));
                 end loop;
 
                 check_equal(PacketLevel, MaxPackets_c, "PacketLevel 1");
 
+                wait for 100*ClockPeriod_c;
+
+                -- For FULL the input is blocked when full
+                if FeatureSet_g = "FULL" then
+                    check_equal(PacketLevel, MaxPackets_c, "PacketLevel 2");
+                -- For DROP_ONLY it does overflow
+                else
+                    Level_v := MaxPackets_c+4;
+                    Level_v := Level_v mod 2**PacketLevel'length;
+                    check_equal(PacketLevel, Level_v, "PacketLevel 2");
+                end if;
+
                 -- Readout all packets
                 for pkt in 0 to MaxPackets_c+3 loop
                     checkPacket(net, 3, 16*pkt, blocking => true);
-                    Level_v := minimum(MaxPackets_c+3 - pkt, MaxPackets_c-1);  ---1 packet is readout
+                    -- For DROP_ONLY the input is never blocked and the packet-level freely increases. For FULL
+                    -- it is limited to MaxPackets_c-1 because one packet is always readout.
+                    Level_v := MaxPackets_c+3 - pkt;
+                    if FeatureSet_g = "FULL" then
+                        Level_v := minimum(Level_v, MaxPackets_c-1);
+                    else
+                        Level_v := Level_v mod 2**PacketLevel'length;
+                    end if;
                     -- Only works with non-random input timing
+                    -- .. PPacket level is not supported for DROP_ONLY
                     if not RandomStall_g then
                         wait until rising_edge(Clk);
                         check_equal(PacketLevel, Level_v, "PacketLevel 2");
@@ -731,6 +806,7 @@ begin
         generic map (
             Width_g             => Width_c,
             Depth_g             => Depth_c,
+            FeatureSet_g        => FeatureSet_g,
             RamStyle_g          => "auto",
             RamBehavior_g       => "RBW",
             SmallRamStyle_g     => "same",
@@ -773,18 +849,26 @@ begin
             TUser(0) => In_Drop
         );
 
-    vc_response : entity vunit_lib.axi_stream_slave
-        generic map (
-            Slave => AxisSlave_c
-        )
-        port map (
-            Aclk   => Clk,
-            TValid => Out_Valid,
-            TReady => Out_Ready,
-            TData  => Out_Data,
-            TLast  => Out_Last,
-            TUser  => Out_Size
-        );
+    b_resp : block is
+        signal OutSize : std_logic_vector(Out_Size'range);
+    begin
+        -- Do only check size for FULL feature set
+        OutSize <= Out_Size when FeatureSet_g = "FULL" else (others => '0');
+
+        vc_response : entity vunit_lib.axi_stream_slave
+            generic map (
+                Slave => AxisSlave_c
+            )
+            port map (
+                Aclk   => Clk,
+                TValid => Out_Valid,
+                TReady => Out_Ready,
+                TData  => Out_Data,
+                TLast  => Out_Last,
+                TUser  => OutSize
+            );
+
+    end block;
 
     b_nr : block is
         signal Ready       : std_logic;
