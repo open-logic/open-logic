@@ -329,3 +329,17 @@ def add_configs(olo_tb):
     tb = olo_tb.test_bench(crc_append_tb)  
     for DataWidth, CrcWidth in [(8, 8), (16, 8), (16, 16)]:
         named_config(tb, {'CrcWidth_g': CrcWidth, 'DataWidth_g': DataWidth})
+
+    ### olo_base_crc_check ###
+    crc_check_tb = 'olo_base_crc_check_tb'
+    tb = olo_tb.test_bench(crc_check_tb)  
+    for DataWidth, CrcWidth in [(8, 8), (16, 8), (16, 16)]:
+        named_config(tb, {'CrcWidth_g': CrcWidth, 'DataWidth_g': DataWidth})
+    for Mode in ["DROP", "FLAG"]:
+        named_config(tb, {'Mode_g': Mode})
+
+    ### olo_base_crc_append + olo_base_crc_check ###
+    crc_append_check_tb = 'olo_base_crc_append_check_tb'
+    tb = olo_tb.test_bench(crc_append_check_tb)  
+    for Mode in ["DROP", "FLAG"]:
+        named_config(tb, {'CheckMode_g': Mode})
