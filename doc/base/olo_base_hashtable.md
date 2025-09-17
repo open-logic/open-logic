@@ -73,7 +73,7 @@ Current supported hash algorithms are:
 | Out_Ready         | out    | 1                | N/A     | Ready for new operation                                         |
 | Out_KeyUnknown    | out    | 1                | N/A     | _In_Key_ does not exist in the hashtable (WR/RM/RD operations)  |
 | Out_Full          | out    | 1                | N/A     | Full                                                            |
-| Out_Size          | out    | _IndexWidth_g_+1 | N/A     | Number of Key-Value pairs stored |
+| Out_Pairs          | out    | _IndexWidth_g_+1 | N/A     | Number of Key-Value pairs stored |
 
 
 ## Architecture
