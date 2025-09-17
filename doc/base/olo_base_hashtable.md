@@ -25,10 +25,13 @@ The memory is described in a way that it utilizes RAM resources (Block-RAM or di
 | Depth_g           | positive  | -         | Number of storable elements. Must be a power of two |
 | KeyWidth_g        | positive  | -         | Width of key |
 | ValueWidth_g      | positive  | -         | Width of Value |
-|HashMode_g         | HashMode_t| DIVISION  | Hashing algorithm used |
+| Hash_g            | Hash_t    | DIVISION  | Hashing algorithm used |
+| RamStyle_g      | string   | "auto"  | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info |
+| RamBehavior_g   | string   | "RBW"   | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info  |
 
-The width of the internal RAM is calculated using the following equation: RamWidth = KeyWidth_g + ValueWidth_g + 1
-The supplementary bit comes from the "used" bit that memorises which words contain valid key-value pairs
+Current supported hash algorithms are:
+* *DIVISION*: Key's value is used as-is, except for modulo against depth of hashtable to obtain a valid index
+* *CRC*: Key's value is hashed using *olo_base_crc*
 
 ## Interfaces
 
