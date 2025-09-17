@@ -78,9 +78,15 @@ Current supported hash algorithms are:
 
 ## Architecture
 
-**Note**: Operations requested while hashtable isn't ready (_Out_Ready_ = '1') are ignored
+### Notes
 
-### Key search
+* Operations requested while hashtable isn't ready (_Out_Ready_ = '1') are ignored
+* A supplementary `used` bit is stored in memory alongside each key-value pair to indicate which memory words are occupied (`used` = 1). The total width of the internal memory is thus: RamWidth = KeyWidth_g + ValueWidth_g + 1
+* If the used *olo_base_sdp* is in an unknown state after reset, the memory must be cleared before accepting any operation to prevent the hashtable from finding erroneous `used` bits set to 1 when the hashtable should be empty
+
+### Operations
+
+#### Key search
 
 The hastable uses a hash function to obtain a memory index from the provided key. As the hashing could produce the same result for different keys,the hashtable uses [linear open-addressing](https://en.wikipedia.org/wiki/Open_addressing) to resolve those collisions: the following elements are checked until either the key or an empty spot is found, creating clusters (or search-chains). When a key is found, _Out_KeyUnknown_ is set to '0' and to '1' otherwise. A counter is also used to prevent endless looping when memory is full as there would be no empty spot to end the search on
 
