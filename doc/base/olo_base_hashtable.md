@@ -94,21 +94,21 @@ The more pairs are stored, the more chances of collisions and thus the formation
 
 #### Read
 
-Read searches for _In_Key_ in the hashtable and updates _Out_Value_ if the key is found
+Read searches for _In_Key_ in the hashtable. If the key is known, _Out_KeyUnknown_ is reset and _Out_Value_ holds the associated value. Otherwise, _Out_KeyUnknown_ is set and _Out_Value_ is undefined
 
 #### Write 
 
-Write searches for _In_Key_ (or an empty spot if the element isn't already in the hashtable) and then writes the _In_Value_ and _In_Key_ in memory along with a `used` value to signal that this spot is occupied
+Write searches for _In_Key_ in the hashtable. If the key is found, _Out_KeyUnknown_ is reset, _In_Value_ and _In_Key_ are stored in memory along with the `used` bit which is set to 1 to signal that this spot is occupied
 
 When hashtable is full (_Out_Full_ = '1'), it is still possible to overwrite existing keys. In such cases, use _Out_KeyUnknown_ to known if new value was overwritten (_Out_KeyUnknown_ = '0') or ignored (_Out_KeyUnknown_ = '1')
 
 #### Removal 
 
-Removal searches for _In_Key_ and (if key is found) sets the `used` bit to 0 before performing cluster compression (see below)
+Removal searches for _In_Key_ in the hashtable. If the key is found, _Out_KeyUnknown is reset and cluster compression is performed before resetting the `used` bit of the last element of the cluster (see below). Otherwise, _Out_KeyUnknown_ is set
 
 #### Clear
 
-Clear goes through the whole memory and clears all `used` values
+Clear goes through the whole memory and resets all `used` values, effectively emptying the whole hashtable from all its values
 
 #### Next Key
 
