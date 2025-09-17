@@ -6,7 +6,11 @@
 
 ## Status Information
 
-VHDL Source: [olo_base_fifo_sync](../../src/base/vhdl/olo_base_hashtable.vhd)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_base_hashtable.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_hashtable.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_hashtable.json?cacheSeconds=0)
+
+VHDL Source: [olo_base_hashtable](../../src/base/vhdl/olo_base_hashtable.vhd)
 
 ## Description
 
