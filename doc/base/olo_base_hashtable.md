@@ -90,25 +90,25 @@ Current supported hash algorithms are:
 
 The hastable uses a hash function to obtain a memory index from the provided key. As the hashing could produce the same result for different keys,the hashtable uses [linear open-addressing](https://en.wikipedia.org/wiki/Open_addressing) to resolve those collisions: the following elements are checked until either the key or an empty spot is found, creating clusters (or search-chains). When a key is found, _Out_KeyUnknown_ is set to '0' and to '1' otherwise. A counter is also used to prevent endless looping when memory is full as there would be no empty spot to end the search on
 
-### Read
+#### Read
 
 Read searches for _In_Key_ in the hashtable and updates _Out_Value_ if the key is found
 
-### Write 
+#### Write 
 
 Write searches for _In_Key_ (or an empty spot if the element isn't already in the hashtable) and then writes the _In_Value_ and _In_Key_ in memory along with a `used` value to signal that this spot is occupied
 
 When hashtable is full (_Out_Full_ = '1'), it is still possible to overwrite existing keys. In such cases, use _Out_KeyUnknown_ to known if new value was overwritten (_Out_KeyUnknown_ = '0') or ignored (_Out_KeyUnknown_ = '1')
 
-### Removal 
+#### Removal 
 
 Removal searches for _In_Key_ and (if key is found) sets the `used` bit to 0 before performing cluster compression (see below)
 
-### Clear
+#### Clear
 
 Clear goes through the whole memory and clears all `used` values
 
-### Next Key
+#### Next Key
 
 Next Key sequentially and cyclically goes through the hash table looking for the next used spot and updates _Out_Key_ with the value. Modifying the internal memory may disturb the recovery of all the keys. To reliably obtain all values stored in the hashtable, use the following steps:
 
@@ -116,7 +116,7 @@ Next Key sequentially and cyclically goes through the hash table looking for the
 2. Wait till hashtable is ready again to read Out_key
 3. Repeat steps 1 and 2 _Out_Size_ times
 
-### Cluster compression
+## Cluster compression
 
 When removing key-value pairs, holes may be created in those clusters, rendering some elements inaccessible. Take for example the following situation:
 
