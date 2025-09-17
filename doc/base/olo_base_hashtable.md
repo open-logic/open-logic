@@ -22,7 +22,7 @@ The memory is described in a way that it utilizes RAM resources (Block-RAM or di
 
 | Name              | Type      | Default   | Description                                                  |
 | :--------------   | :-------- | -------   | :----------------------------------------------------------- |
-| IdxWidth_g        | positive  | -         | Width of indices. Depth of internal RAM is set using this parameter (RamDepth = 2**IdxWidth_g) |
+| Depth_g           | positive  | -         | Number of storable elements. Must be a power of two |
 | KeyWidth_g        | positive  | -         | Width of key |
 | ValueWidth_g      | positive  | -         | Width of Value |
 |HashMode_g         | HashMode_t| DIVISION  | Hashing algorithm used |
