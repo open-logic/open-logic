@@ -14,10 +14,9 @@ VHDL Source: [olo_base_hashtable](../../src/base/vhdl/olo_base_hashtable.vhd)
 
 ## Description
 
-This component implements a synchronous [hashtable](https://en.wikipedia.org/wiki/Hash_table) capable of storing data using an integer value as key.
+This component implements a synchronous [hashtable](https://en.wikipedia.org/wiki/Hash_table) capable of storing *std_logic_vector* key-value pairs.
 
-The memory is described in a way that it utilizes RAM resources (Block-RAM or distributed RAM) available in FPGAs with
-commonly used tools. For this purpose [olo_base_ram_sdp](./olo_base_ram_sdp.md) is used.
+The memory is described in a way that it utilizes RAM resources (Block-RAM or distributed RAM) available in FPGAs with commonly used tools. For this purpose [olo_base_ram_sdp](./olo_base_ram_sdp.md) is used.
 
 ## Generics
 
