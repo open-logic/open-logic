@@ -58,13 +58,13 @@ Current supported hash algorithms are:
 
 ### Operations
 
-| Name          | In/Out | Length    | Default   | Description                                      |
-| :-------      | :----- | :-------- | -------   | :-------------------------------------------     |
-| In_Write      | in     | 1         | -         | (Over)Write In_Key-In_Value pair                 |
-| In_Read       | in     | 1         | -         | Read Out_Value corresponding to In_Key           |
-| In_Remove     | in     | 1         | -         | Remove Key-Value pair corresponding to In_Key    |
-| In_Clear      | in     | 1         | -         | Clear All Key-Value pairs from memory            |
-| In_NextKey    | in     | 1         | -         | Find next valid Out_Key in memory                |
+| Name          | In/Out | Length    | Default   | Latency | Description |
+| :-------      | :----- | :-------- | -------   | :---- | :-------------------------------------------    |
+| In_Write      | in     | 1         | -         | TODO | (Over)Write In_Key-In_Value pair                 |
+| In_Read       | in     | 1         | -         | TODO | Read Out_Value corresponding to In_Key           |
+| In_Remove     | in     | 1         | -         | TODO | Remove Key-Value pair corresponding to In_Key    |
+| In_Clear      | in     | 1         | -         | TODO | Clear All Key-Value pairs from memory            |
+| In_NextKey    | in     | 1         | -         | TODO | Find next valid Out_Key in memory                |
 
 ### Status
 
