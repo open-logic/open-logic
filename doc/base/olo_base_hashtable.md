@@ -88,7 +88,9 @@ Current supported hash algorithms are:
 
 #### Key search
 
-The hastable uses a hash function to obtain a memory index from the provided key. As the hashing could produce the same result for different keys,the hashtable uses [linear open-addressing](https://en.wikipedia.org/wiki/Open_addressing) to resolve those collisions: the following elements are checked until either the key or an empty spot is found, creating clusters (or search-chains). When a key is found, _Out_KeyUnknown_ is set to '0' and to '1' otherwise. A counter is also used to prevent endless looping when memory is full as there would be no empty spot to end the search on
+The hastable uses a hash function to obtain a memory index from the provided key. As the hashing could produce the same result for different keys,the hashtable uses [linear open-addressing](https://en.wikipedia.org/wiki/Open_addressing) to resolve those collisions: the following elements are checked until either the key or an empty spot is found, creating clusters (or search-chains). When a key is found, _Out_KeyUnknown_ is reset to '0' and set to '1' otherwise. A counter is also used to prevent endless looping when memory is full as there would be no empty spot to end the search on
+
+The more pairs are stored, the more chances of collisions and thus the formation of clusters whose size rapidly reduces the performance of the hashtable. When performance is an important factor, the hashtable should be dimensioned such that it never comes close to being full 
 
 #### Read
 
