@@ -1,0 +1,18 @@
+
+
+
+# GPIO Bank NB (Pmod Header A)
+NET   "Switches[0]" Loc = "IO_NB_A0";
+NET   "Switches[1]" Loc = "IO_NB_A1";
+NET   "Switches[2]" Loc = "IO_NB_A2";
+#NET   "Switches[3]" Loc = "IO_NB_A3";
+
+# GPIO Bank EB (1.2V..2.5V)
+NET   "Rst_n"   Loc = "IO_EB_B0"; # Push Button SW3
+NET   "Led[0]"   Loc = "IO_EB_B1"; # LED D1
+NET   "Led[1]"   Loc = "IO_EB_B2"; # LED D2
+NET   "Led[2]"   Loc = "IO_EB_B3"; # LED D3
+NET   "Led[3]"   Loc = "IO_EB_B4"; # LED D4
+
+# Clock
+NET   "Clk"   Loc = "IO_SB_A8"; # Clock0

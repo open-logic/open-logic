@@ -9,16 +9,18 @@ entity cologne_tutorial is
     port (
         -- Control Signals
         Clk             : in    std_logic;
+        Rst_n           : in    std_logic;
+            
         -- Interfaces
-        Switches        : in    std_logic_vector(3 downto 0);
+        Switches        : in    std_logic_vector(2 downto 0);
         Led             : out   std_logic_vector(3 downto 0)
     );
 end entity;
 
 architecture rtl of cologne_tutorial is
 
-    signal Switches_Inv  : std_logic_vector(3 downto 0);
-    signal Switches_Sync : std_logic_vector(3 downto 0);
+    signal Switches_Inv  : std_logic_vector(2 downto 0);
+    signal Switches_Sync : std_logic_vector(2 downto 0);
     signal Data          : std_logic_vector(3 downto 0);
     signal RisingEdges   : std_logic_vector(2 downto 0);
     signal Events        : std_logic_vector(2 downto 0);
@@ -34,7 +36,7 @@ begin
         )
         port map (
             Clk         => Clk,
-            RstIn       => Switches(3),
+            RstIn       => Rst_n,
             RstOut      => Rst
         );
 
@@ -43,9 +45,9 @@ begin
 
     i_switches : entity olo.olo_intf_debounce
         generic map (
-            ClkFrequency_g  => 50.0e6,
+            ClkFrequency_g  => 10.0e6,
             DebounceTime_g  => 25.0e-3,
-            Width_g         => 4
+            Width_g         => 3
         )
         port map (
             Clk         => Clk,
@@ -55,7 +57,7 @@ begin
         );
 
     -- Switch(3) is used for reset
-    Events <= Switches_Sync(2 downto 0);
+    Events <= Switches_Sync;
 
     -- Edge Detection
     p_edge_detection : process (Clk) is

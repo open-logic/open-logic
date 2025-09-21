@@ -3,3 +3,5 @@
 
 # Yosys generated files
 *.json
+*.log
+*.bit
