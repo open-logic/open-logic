@@ -165,7 +165,26 @@ Note also that memory is used cyclically and thus, elements at indices 7 and 0 w
 
 wr_idx < rd_idx && (hash <= wr_idx || hash > rd_idx) || rd_idx <= wr_idx && hash > rd_idx && hash <= wr_idx
 
-Where `wr_idx` is the index of the current "hole" in the cluster, `rd_idx` is a following element of the cluster and `hash` is the hash of the element at `rd_idx`. When the equation is true, the element at `rd_idx` is copied at `wr_idx`. Once an empty element is found, the cluster is complete and the last copied element is emptied
+Where `wr_idx` is the index of the current "hole" in the cluster, `rd_idx` is a following element of the cluster and `hash` is the hash of the element at `rd_idx`. When the equation is true, the element at `rd_idx` is copied at `wr_idx`. Once an empty element is found, the cluster is complete and the last copied element is emptied. Here's a more complete example using compression-first as explained above:
+
+Idx | Init  | Compression | Removal | Cmp | Rm | Cmp | Rm | Cmp | Rm | Cmp | Rm
+---: | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :---
+0   |       |       |       |       |       |       |       |       |       |       | 
+1   |       |       |       |       |       |       |       |       |       |       | 
+2   |       |       |       |       |       |       |       |       |       |       | 
+3   |       |       |       |       |       |       |       |       |       |       | 
+4   | A(4)  | A(4)  | *A(4)*  | C(4)  | *C(4)*  | E(4)  | *E(4)*  | J(4)  | ***J(4)***  |    
+5   | *B(4)*  | C(4)  | C(4)  | D(5)  | D(5)  | D(5)  | D(5)  | D(5)  | D(5)  | D(5)  | D(5)  
+6   | C(4)  | D(5)  | D(5)  | E(4)  | E(4)  | F(5)  | F(5)  | F(5)  | F(5)  | F(5)  | F(5)  
+7   | D(5)  | E(4)  | E(4)  | F(5)  | F(5)  | G(7)  | G(7)  | G(7)  | G(7)  | G(7)  | G(7)  
+8   | E(4)  | F(5)  | F(5)  | G(7)  | G(7)  | H(5)  | H(5)  | H(5)  | H(5)  | H(5)  | H(5)  
+9   | F(5)  | G(7)  | G(7)  | H(5)  | H(5)  | J(4)  | J(4)  | **J(4)**  |       |       | 
+10  | G(7)  | H(5)  | H(5)  | I(10) | I(10) | I(10) | I(10) | I(10) | I(10) | I(10) | I(10)
+11  | H(5)  | I(10) | I(10) | J(4)  | J(4)  | **J(4)**  |       |       |       |       | 
+12  | I(10) | J(4)  | J(4)  | **J(4)**  |       |       |       |       |       |       | 
+13  | J(4)  | **J(4)**  |       |       |       |       |       |       |       |       | 
+14  |       |       |       |       |       |       |       |       |       |       | 
+15  |       |       |       |       |       |       |       |       |       |       | 
 
 In the special case where an element must be removed from a full hashtable, the state machine would run endlessly as there is no empty memory spot to signal the end of a cluster. To prevent this, a counter is used to detect when the memory was fully checked
 
