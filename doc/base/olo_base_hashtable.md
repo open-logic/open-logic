@@ -130,7 +130,7 @@ Index | Data
 3 | Data_2, hash = 2
 4 | Data_3, hash = 3
 5 | Data_4, hash = 5
-6 | -
+6 | Data_5, hash = 6
 7 | -
 
 When searching for Data_3, hash would indicate to go search at index 3 but since Data_2 is already there, hashtable looks at the following index and finds Data_3. Trying to remove the element at index 3 would prevent further searches for Data_3 from succeeding
@@ -143,7 +143,7 @@ Index | Data
 3 | -
 4 | Data_3, hash = 3 (now inaccessible)
 5 | Data_4, hash = 5
-6 | -
+6 | Data_5, hash = 6
 7 | -
 
 When searching for Data_3, hash would redirect to index 3 but since memory is empty here, the hashtable would believe that Data_3 doesn't exist. Search chain must then be rebuilt by copying subsequent elements back into the cluster if their hash corresponds
@@ -156,7 +156,7 @@ Index | Data
 3 | Data_3, hash = 3 (accessible again)
 4 | -
 5 | Data_4, hash = 5 (not moved because already at the right place)
-6 | -
+6 | Data_5, hash = 6
 7 | -
 
 Note that in this implementation, only the last element of the cluster is actually removed (memory written to 0). In practice, the cluster is first rebuilt, (possibly squashing the data to remove) and then the last element of the cluster (possibly the element to remove if it was the sole element of the cluster) is emptied. This strategy simplifies the state machine necessary to remove an element
