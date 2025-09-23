@@ -163,9 +163,7 @@ Note that in this implementation, only the last element of the cluster is actual
 
 Note also that memory is used cyclically and thus, elements at indices 7 and 0 would be considered as part of the same cluster. When reconstituting the cluster, the following equation is used to determine if an element's hash places it outside the search chain (cluster broken by remove):
 
-$
-wr\_idx < rd\_idx \wedge (hash <= wr\_idx \vee hash > rd\_idx) \vee rd\_idx <= wr\_idx \wedge hash > rd\_idx \wedge hash <= wr\_idx
-$
+wr_idx < rd_idx && (hash <= wr_idx || hash > rd_idx) || rd_idx <= wr_idx && hash > rd_idx && hash <= wr_idx
 
 Where `wr_idx` is the index of the current "hole" in the cluster, `rd_idx` is a following element of the cluster and `hash` is the hash of the element at `rd_idx`. When the equation is true, the element at `rd_idx` is copied at `wr_idx`. Once an empty element is found, the cluster is complete and the last copied element is emptied
 
