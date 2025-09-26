@@ -19,30 +19,24 @@ end entity;
 
 architecture rtl of cologne_tutorial is
 
-    signal Switches_Inv  : std_logic_vector(2 downto 0);
     signal Switches_Sync : std_logic_vector(2 downto 0);
     signal Data          : std_logic_vector(3 downto 0);
     signal RisingEdges   : std_logic_vector(2 downto 0);
     signal Events        : std_logic_vector(2 downto 0);
     signal Events_Last   : std_logic_vector(2 downto 0);
     signal Rst           : std_logic;
+    signal Led_Int       : std_logic_vector(3 downto 0);
 
 begin
 
     -- Assert reset
     i_reset : entity olo.olo_base_reset_gen
-        generic map (
-            RstInPolarity_g => '0'
-        )
         port map (
             Clk         => Clk,
-            RstIn       => Rst_n,
             RstOut      => Rst
         );
 
     -- Debounce Switches
-    Switches_Inv <= not Switches; -- Buttons are low-active
-
     i_switches : entity olo.olo_intf_debounce
         generic map (
             ClkFrequency_g  => 10.0e6,
@@ -52,7 +46,7 @@ begin
         port map (
             Clk         => Clk,
             Rst         => Rst,
-            DataAsync   => Switches_Inv,
+            DataAsync   => Switches,
             DataOut     => Switches_Sync
         );
 
@@ -103,8 +97,10 @@ begin
             Rst           => Rst,
             In_Data       => Data,
             In_Valid      => RisingEdges(0),
-            Out_Data      => Led,
+            Out_Data      => Led_Int,
             Out_Ready     => RisingEdges(1)
         );
+
+    Led <= not Led_Int; -- Leds are low-active
 
 end architecture;
