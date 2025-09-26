@@ -19,7 +19,7 @@ build from Sep-2025.
 
 ## Step 1: Setup Hardware
 
-The _GateMate FPGA Starter Kit_ does not contain the buttons required for this tutorial. Therefore a 
+The _GateMate FPGA Starter Kit_ does not contain the buttons required for this tutorial. Therefore a
 PMod BTN must be connected to the _upper_ row of the connector _PMODA_ as shown below.
 
 ![Hardware](./CologneChipTutorial/Pictures/HW.jpg)
@@ -70,11 +70,11 @@ In the build script, the only line that really is Open Logic specific is the fol
 python3 ../../../../tools/yosys/compile_olo.py
 ```
 
-This line does compile Open Logic. All other content is as decribed on the [Cologne Chip Website](https://colognechip.com/programmable-logic/gatemate)
+This line does compile Open Logic. All other content is as decribed on the
+[Cologne Chip Website](https://colognechip.com/programmable-logic/gatemate)
 under the _Getting Started_ section.
 
 ![GettingStarted](./CologneChipTutorial/Pictures/GettingStarted.png)
-
 
 ### Analyze Resource Utilization
 
@@ -99,12 +99,12 @@ Info:            CPE_RAMIO:      49/  40960     0%
 Info:             RAM_HALF:       1/     64     1%
 ```
 
-The overall LUT count of the design is 524 CPE_LT. This was not investigated in detail and there might be 
+The overall LUT count of the design is 524 CPE_LT. This was not investigated in detail and there might be
 room for optimization by different sythesis options.
 
 ### Analyze Timing
 
-The timing report shows that unsurprisingly the slow clock-speed of the 10 MHz clock is met. 
+The timing report shows that unsurprisingly the slow clock-speed of the 10 MHz clock is met.
 
 ```text
 Info: Max frequency for clock 'i_fifo.clk': 94.83 MHz (PASS at 10.00 MHz)

@@ -15,6 +15,7 @@ AKA Table of Content
   - [Use Open Logic in a Efinix Efinity Project](#use-open-logic-in-a-efinix-efinity-project)
   - [Use Open Logic in a AMD Vivado Project](#use-open-logic-in-a-amd-vivado-project)
   - [Use Open Logic in a altera Quartus Project](#use-open-logic-in-a-altera-quartus-project)
+  - [Use Open Logic in a Yosys / oss-cad-suite Project](#use-open-logic-in-a-yosys--oss-cad-suite-project)
   - [Use Open Logic through FuseSoC](#use-open-logic-through-fusesoc)
 - Contribution Related
   - [Use the Linter](#use-the-linter)
@@ -168,6 +169,22 @@ That's it. Nothing more.
 Because Quartus does not support scoped constraints, **NO** constraints are imported. They have to be created
 manually - more information can be found in the documentation of individual _Open Logic_ entities which require
 constraints.
+
+## Use Open Logic in a Yosys / oss-cad-suite Project
+
+There is a script to compile all _Open Logic_ sources into a Yosys project.
+
+To run the script, follow the steps below:
+
+1. In a shell, navigate to the working directory of your _oss-cad-suite_ project
+2. Execute teh command 'python3 <open-logic-root>/tools/yosys/compile_olo.py'
+
+That's it. From there on Open Logic can be used in your project.
+
+An example of this flow is available in the [Cologne Chip Tutorial](./tutorials/CologneChipTutorial.md).
+
+> Note: By default Open Logic is compiled into the library _olo_. If you want to use another library, pass the name of
+> the target library through the '--library=<library-name>' argument to the script.
 
 ## Use Open Logic through FuseSoC
 
