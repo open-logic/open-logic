@@ -55,14 +55,14 @@ to all other tutorials this tutorial does not congain a GUI walkthrough. Instead
 **Note:** The build script is provided for Linux environments. For Windows, the commands must be adapted accordingly.
 
 To build the project, first navigate to the folder `<open-logic-root>/doc/tutorials/CologneChipTutorial/Files` in a
-shell. Then execute the build script.
+shell. Then execute the build script [scrtipted_build.sh](./CologneChipTutorial/Files/scripted_build.sh):
 
 ```bash
 cd <open-logic-root>/doc/tutorials/CologneChipTutorial/Files
 source ./scripted_build.sh
 ```
 
-For Verilog, use the script `scripted_build_sv.sh` instead.
+For Verilog, use the script [scripted_build_sv.sh](./CologneChipTutorial/Files/scripted_build_sv.sh) instead.
 
 In the build script, the only line that really is Open Logic specific is the following one:
 
