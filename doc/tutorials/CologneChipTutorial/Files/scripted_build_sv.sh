@@ -1,6 +1,6 @@
 # Compile open-logic
 echo "*** Compile open-logic ***"
-python3 ../../../tools/yosys/compile_olo.py --library=work
+python3 ../../../../tools/yosys/compile_olo.py --library=work
 
 # Compile top-level
 #echo "*** Compile top-level ***"
