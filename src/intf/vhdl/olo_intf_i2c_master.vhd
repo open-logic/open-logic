@@ -241,9 +241,11 @@ begin
                 -- Detect Bus Busy by Start Command
                 if (r.Cmd_Ready = '1') and (Cmd_Valid = '1') then
                     -- Everyting else than START commands is ignored and an error is printed in this case
+                    -- synthesis translate_off
                     assert (Cmd_Command = I2cCmd_Start_c) or DisableAsserts_g
                         report "###ERROR###: olo_intf_i2c_master: In idle state, only I2cCmd_Start_c commands are allowed!"
                         severity error;
+                    -- synthesis translate_on
                     v.CmdTypeLatch := Cmd_Command;
                     if Cmd_Command = I2cCmd_Start_c then
                         v.Fsm       := Start1_s;
@@ -334,10 +336,12 @@ begin
 
                 -- All commands except START are allowed, START commands are ignored
                 if (r.Cmd_Ready = '1') and (Cmd_Valid = '1') then
+                    -- synthesis translate_off
                     assert (Cmd_Command = I2cCmd_Stop_c) or (Cmd_Command = I2cCmd_RepStart_c) or
                            (Cmd_Command = I2cCmd_Send_c) or (Cmd_Command = I2cCmd_Receive_c) or DisableAsserts_g
                         report "###ERROR###: olo_intf_i2c_master: In WaitCmd_s state, I2cCmd_Start_c commands are not allowed!"
                         severity error;
+                    -- synthesis translate_on
                     if (Cmd_Command = I2cCmd_Stop_c) or (Cmd_Command = I2cCmd_RepStart_c) or
                        (Cmd_Command = I2cCmd_Send_c) or (Cmd_Command = I2cCmd_Receive_c) then
                         v.Fsm       := WaitLowCenter_s;

@@ -130,9 +130,11 @@ package body olo_base_pkg_string is
 
         -- Check prefix
         if hasPrefix then
+            -- synthesis translate_off
             assert Trimmed_c(Trimmed_c'left to Trimmed_c'left+1) = "0x"
                 report "Invalid prefix in hex2StdLogicVector() - expected prefix is 0x - string: " & a
                 severity error;
+            -- synthesis translate_on
             -- coverage
             LowIdx_v := LowIdx_v + 2;
         end if;

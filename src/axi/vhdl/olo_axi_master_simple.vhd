@@ -248,6 +248,7 @@ begin
         severity failure;
 
     -- *** Runtime Assertions ***
+    -- synthesis translate_off
     p_assert : process (Clk) is
     begin
         if rising_edge(Clk) then
@@ -265,6 +266,7 @@ begin
             end if;
         end if;
     end process;
+    -- synthesis translate_on
 
     -- *** Combinatorial Process ***
     p_comb : process (all) is

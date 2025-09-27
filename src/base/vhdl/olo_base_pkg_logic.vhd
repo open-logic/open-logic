@@ -290,9 +290,11 @@ package body olo_base_pkg_logic is
     begin
 
         -- Check input width
+        -- synthesis translate_off
         assert inp'length mod 8 = 0
             report "invertByteOrder(): Number of bits must be a multiple of 8"
             severity error;
+        -- synthesis translate_on
 
         -- Invert byte order
         for byte in 0 to Bytes_c-1 loop

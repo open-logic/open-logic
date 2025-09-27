@@ -480,9 +480,11 @@ package body olo_base_pkg_math is
     -- *** integer from stdl ***
     function fromStdl (input : std_logic) return integer is
     begin
+        -- synthesis translate_off
         assert input = '0' or input = '1'
             report "fromStdl(): Illegal argument"
             severity error;
+        -- synthesis translate_on
         if input = '0' then
             return 0;
         else
