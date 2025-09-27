@@ -1,0 +1,21 @@
+# Compile open-logic
+python3 {{compile_olo}}
+
+# Add Files
+{%- for src_file in src_files %}
+ghdl -a --std=08 -frelaxed-rules -Wno-hide -Wno-shared -Wno-unhandled-attribute {{src_file}}
+{%- endfor %}
+
+#Build
+yosys -m ghdl -p '
+    ghdl --std=08 -frelaxed-rules -Wno-hide -Wno-shared -Wno-unhandled-attribute {{top_entity}};
+        synth_gatemate -top {{top_entity}} -luttree -nomx8;
+        write_json {{toop_entity}}.json;  # write JSON netlist for implementation' > yosys.log
+
+# Implement
+nextpnr-himbaechel \
+    --device=CCGM1A2 \
+    --json {{toop_entity}}.json \
+    --vopt allow-unconstrained \
+    -o out=impl.txt \
+    --router router2 > nexpnr.log 2>&1
