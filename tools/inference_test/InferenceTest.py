@@ -19,8 +19,8 @@ from datetime import datetime
 
 # Argument parser setup
 parser = argparse.ArgumentParser(description="Run inference tests with specified tools, top-levels, and configurations.")
-parser.add_argument("--tool", type=str, choices=["vivado", "quartus", "gowin", "efinity", "libero", "cologne"],
-                    help="Specify the tool to use for synthesis (e.g., vivado, quartus, etc.).", required=False)
+parser.add_argument("--tool", type=str,
+                    help="Specify the tool to use for synthesis (e.g., vivado, quartus, gowin, efinity, libero, cologne etc.).", required=False)
 parser.add_argument("--entity", type=str,
                     help="Specify the name of the entity to test (e.g., test_olo_base_ram_sdp).", required=False)
 parser.add_argument("--config", type=str,
@@ -83,10 +83,14 @@ tools = {"quartus" : ToolQuartus(),
          "libero"  : ToolLibero(),
          "cologne" : ToolCologne()}
 if args.tool:
-    if args.tool in tools:
-        tools = {args.tool: tools[args.tool]}
-    else:
-        raise ValueError(f"Invalid --tool: {args.tool}")
+    sel_tools = args.tool.split(",")
+    tool_new = {}
+    for t in sel_tools:
+        if t in tools:
+            tool_new[t] = tools[t]
+        else:
+            raise ValueError(f"Invalid --tool: {t}")
+    tools = tool_new
 
 if __name__ == '__main__':
 
@@ -112,6 +116,11 @@ if __name__ == '__main__':
             for tool_name, tool in tools.items():
                     print(f"  > Tool: {tool_name}")
                     resource_results = ResourceResults()
+
+                    #Ckip omitted entities
+                    if tool_name in top_file.toolOmit:
+                        print(f"    - Omitted: {top_file.toolOmit[tool_name]}")
+                        continue
 
                     #Select config
                     configs = top_file.get_configs()

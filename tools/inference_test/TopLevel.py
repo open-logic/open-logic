@@ -34,6 +34,7 @@ class TopLevel:
         self.out_reduce = {}
         self.fixGenerics = {}
         self.toolGenerics = {}
+        self.toolOmit = {}
         self.entity = entity
         self._last_in_reduce = 0
         self._last_out_reduce = 0
@@ -79,6 +80,16 @@ class TopLevel:
         self.omitted_ports[name] = omitted_ports if omitted_ports is not None else []
         self.in_reduce[name] = in_reduce if in_reduce is not None else {}
         self.out_reduce[name] = out_reduce if out_reduce is not None else {}
+
+
+    def add_tool_omit(self, tool : str, reason : str):
+        """
+        Add a dictionary of tool-specific omit reasons.
+
+        :param tool: The name of the tool.
+        :param reason: The reason why this top-level entity should be omitted for the specified tool
+        """
+        self.toolOmit[tool] = reason
 
 
     def get_configs(self) -> List[str]:

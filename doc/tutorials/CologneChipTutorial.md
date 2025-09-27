@@ -99,8 +99,8 @@ Info:            CPE_RAMIO:      49/  40960     0%
 Info:             RAM_HALF:       1/     64     1%
 ```
 
-The overall LUT count of the design is 524 CPE_LT. This was not investigated in detail and there might be
-room for optimization by different sythesis options.
+The overall LUT count of the design is 524 CPE_LT. For interpreting this number it must be kept in mind, that a CP_LT
+is only half a LUT, hence the design uses 262 full LUTs.
 
 ### Analyze Timing
 

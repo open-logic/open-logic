@@ -88,12 +88,17 @@ entities:
     tool_generics:
       vivado:
         - ClockSpeed: 100
+    tool_omit:
+      quartus: "Some Reason"
   - entity_name: "MyEntity2"
     ..On the first level, every entity to be synthesized is given.
 ```
 
 The `fixed_generics` option does allow to set some generics to the same value for all configuration. This can be useful
 to avoid needless repetition in the YAML file.
+
+The `tool_omit` option allows to exclude certain tools for the synthesis of this entity. A reason must be given. This
+should only be done in very special cases where some technologies do not support very specific functionality.
 
 Then the `configurations`are given. Every configuration can _optionally_ have the following entries:
 

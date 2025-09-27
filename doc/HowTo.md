@@ -183,8 +183,12 @@ That's it. From there on Open Logic can be used in your project.
 
 An example of this flow is available in the [Cologne Chip Tutorial](./tutorials/CologneChipTutorial.md).
 
-> Note: By default Open Logic is compiled into the library _olo_. If you want to use another library, pass the name of
-> the target library through the '--library=<library-name>' argument to the script.
+Note: By default Open Logic is compiled into the library _olo_. If you want to use another library, pass the name of
+the target library through the '--library=<library-name>' argument to the script.
+
+> [!WARNING]
+> True dual port RAM (_olo_base_ram_tdp_) is _NOT_ supported on **Cologne Chip** FPGAs. Please use _olo_base_ram_sdp_
+> instead.
 
 ## Use Open Logic through FuseSoC
 

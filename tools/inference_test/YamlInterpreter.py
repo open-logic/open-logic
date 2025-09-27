@@ -58,6 +58,7 @@ class YamlInterpreter:
             fixed_generics = entity.get("fixed_generics", {})
             configurations = entity.get("configurations", [])
             tool_generics = entity.get("tool_generics", {})
+            tool_omit = entity.get("tool_omit", {})
 
             # Process configurations
             parsed_configurations = []
@@ -72,7 +73,7 @@ class YamlInterpreter:
                     "generics": generics,
                     "omitted_ports": omitted_ports,
                     "in_reduce": in_reduce,
-                    "out_reduce": out_reduce
+                    "out_reduce": out_reduce,
                 })
 
             # Add parsed entity
@@ -80,7 +81,8 @@ class YamlInterpreter:
                 "entity_name": entity_name,
                 "fixed_generics": fixed_generics,
                 "configurations": parsed_configurations,
-                "tool_generics": tool_generics
+                "tool_generics": tool_generics,
+                "tool_omit": tool_omit
             })
         
         # Get excluded entities
@@ -133,6 +135,9 @@ class YamlInterpreter:
             top = TopLevel(entity["entity_name"])
             # Add fixed generics
             top.add_fix_generics(entity["fixed_generics"])
+            # Add omitted tools
+            for tool, reason in entity["tool_omit"].items():
+                top.add_tool_omit(tool, reason) 
             # Add tool generics
             for tool, generics in entity["tool_generics"].items():
                 top.add_tool_generics(tool, generics)

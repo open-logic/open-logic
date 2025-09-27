@@ -45,3 +45,5 @@ entities:
         - ClockSpeed: 75
       efinity:
         - Optimization: "balanced"
+    tool_omit:
+      cologne: "Not supported"

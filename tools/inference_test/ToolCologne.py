@@ -63,7 +63,7 @@ class ToolCologne(ToolBase):
     def get_resource_usage(self) -> dict:
         resource_usage = {
             "RAM_HALF": 0,
-            "CPE LUT": 0,
+            "CPE LT": 0,
             "CPE FF": 0
         }
 
@@ -79,7 +79,7 @@ class ToolCologne(ToolBase):
                 if "RAM_HALF" in line:
                     resource_usage["RAM_HALF"] = self._extract_resource_count(line)
                 elif "CPE_LT" in line:
-                    resource_usage["CPE LUT"] = self._extract_resource_count(line)
+                    resource_usage["CPE LT"] = self._extract_resource_count(line)
                 elif "CPE_FF" in line:
                     resource_usage["CPE FF"] = self._extract_resource_count(line)
 
@@ -88,14 +88,14 @@ class ToolCologne(ToolBase):
     def get_in_reduce_resources(self, size) -> dict:
         return {
             "RAM_HALF": 0,
-            "CPE LUT": int(size*3+4),
+            "CPE LT": int(size*3+4),
             "CPE FF": int(size*2+1)
         }
     
     def get_out_reduce_resources(self, size) -> dict:
         return {
             "RAM_HALF": 0,
-            "CPE LUT": int(size+1),
+            "CPE LT": int(size+1),
             "CPE FF": int(size)
         }
     

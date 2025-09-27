@@ -96,6 +96,7 @@ begin
         );
 
     -- *** Assertions ***
+    -- synthesis translate_off
     p_assert : process (Clk) is
     begin
         if rising_edge(Clk) then
@@ -104,5 +105,6 @@ begin
                 severity error;
         end if;
     end process;
+    -- synthesis translate_on
 
 end architecture;

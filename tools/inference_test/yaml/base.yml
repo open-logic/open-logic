@@ -187,11 +187,16 @@ entities:
       - name: "Be-NoInit"
         generics:
           InitFormat_g: '"NONE"'
-          UseByteEnable_g: true
+          UseByteEnable_g: true 
       - name: "Be-Init"
         generics:
           InitFormat_g: '"HEX"'
           UseByteEnable_g: true
+      - name: "Async"
+        generics:
+          InitFormat_g: '"NONE"'
+          UseByteEnable_g: true 
+          IsAsync_g: true        
   # olo_base_ram_sp
   - entity_name: "olo_base_ram_sp"
     fixed_generics:
@@ -242,6 +247,8 @@ entities:
     tool_generics:
       quartus:
         RamBehavior_g: '"WBR"'
+    tool_omit:
+      cologne: "TDP not supported on Cologne Chip FPGAs"
   # olo_base_reset_gen
   - entity_name: "olo_base_reset_gen"
   # olo_base_strobe_div
