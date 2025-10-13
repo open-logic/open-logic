@@ -10,7 +10,7 @@ entity cologne_tutorial is
         -- Control Signals
         Clk             : in    std_logic;
         Rst_n           : in    std_logic;
-            
+
         -- Interfaces
         Switches        : in    std_logic_vector(2 downto 0);
         Led             : out   std_logic_vector(3 downto 0)

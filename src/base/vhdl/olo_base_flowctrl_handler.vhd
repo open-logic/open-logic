@@ -105,6 +105,7 @@ begin
                 severity error;
         end if;
     end process;
+
     -- synthesis translate_on
 
 end architecture;
