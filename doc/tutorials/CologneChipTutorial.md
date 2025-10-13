@@ -14,8 +14,11 @@ The design is rather hardware independent but all examples and pinout constraint
 [GateMate FPGA Starter Kit](https://colognechip.com/programmable-logic/gatemate-evaluation-board/) evaluation board. If
 you want to use it on some other hardware, just change pinout and the target device accordingly.
 
-The steps should be very much independent of the Libero version but all screenshots are taken with the _oss-cad-suite_
-build from Sep-2025.
+The steps should be very much independent of the _oss-cad-suite_ version but all screenshots are taken with the
+_oss-cad-suite_ build from Sep-2025.
+
+> **Note:** Instantiating VHDL entities with generics from Verilog is currently not supported by _Yosys_. Hence this
+> tutorial is only available for VHDL.
 
 ## Step 1: Setup Hardware
 
@@ -61,8 +64,6 @@ shell. Then execute the build script [scrtipted_build.sh](./CologneChipTutorial/
 cd <open-logic-root>/doc/tutorials/CologneChipTutorial/Files
 source ./scripted_build.sh
 ```
-
-For Verilog, use the script [scripted_build_sv.sh](./CologneChipTutorial/Files/scripted_build_sv.sh) instead.
 
 In the build script, the only line that really is Open Logic specific is the following one:
 
@@ -129,9 +130,6 @@ The source code can be found in the file
 
 Not every line of the source code is discussed. It is simple and implements the design described earlier. Only a few
 details worth mentioning are discussed.
-
-The source code samples given are VHDL - however, for the verilog example file the code looks very much the same and the
-comments apply as well.
 
 ### Omitting Unused Generics
 
