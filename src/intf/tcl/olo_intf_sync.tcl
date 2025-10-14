@@ -20,3 +20,5 @@ set_input_delay -clock $latch_clk -add_delay -max 0.0 $in_ports
 set_input_delay -clock $latch_clk -add_delay -min [get_property PERIOD $latch_clk] $in_ports
 
 
+#Make sure the first FF is not placed in the IOB. This ensures both FFs are placed in the same slice.
+set_property IOB FALSE [get_cells *Reg0*]
