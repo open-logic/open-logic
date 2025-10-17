@@ -28,6 +28,7 @@ The memory is described in a way that it utilizes RAM resources (Block-RAM or di
 | Hash_g            | Hash_t    | DIVISION  | Hashing algorithm used |
 | RamStyle_g      | string   | "auto"  | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info |
 | RamBehavior_g   | string   | "RBW"   | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info  |
+| ClearAfterReset_g | boolean | true | Clear memory after a reset to prevent erroneous values |
 
 Current supported hash algorithms are:
 * *DIVISION*: Key's value is used as-is, except for modulo against depth of hashtable to obtain a valid index
@@ -53,27 +54,38 @@ Current supported hash algorithms are:
 
 | Name      | In/Out | Length           | Default | Description                                   |
 | :-------- | :----- | :--------        | ------- | :-------------------------------------------- |
+| Out_Key   | out    | _KeyWidth_g_      | N/A     | Stored key output |
 | Out_Value | out    | _ValueWidth_g_    | N/A     | Output value                                  |
-| Out_Key   | out    | _KeyWidth_g_      | N/A     | Stored key output                             |
+
 
 ### Operations
 
 | Name          | In/Out | Length    | Default   | Latency | Description |
-| :-------      | :----- | :-------- | -------   | :---- | :-------------------------------------------    |
+| :-------      | :----- | :-------- | :-------   | :---- | :-------------------------------------------    |
 | In_Write      | in     | 1         | -         | TODO | (Over)Write In_Key-In_Value pair                 |
 | In_Read       | in     | 1         | -         | TODO | Read Out_Value corresponding to In_Key           |
 | In_Remove     | in     | 1         | -         | TODO | Remove Key-Value pair corresponding to In_Key    |
 | In_Clear      | in     | 1         | -         | TODO | Clear All Key-Value pairs from memory            |
 | In_NextKey    | in     | 1         | -         | TODO | Find next valid Out_Key in memory                |
 
+Operations are given in order of priority: if multiple operations are requested, only the highest in the list is performed
+
+### Handshaking
+
+| Name | In/Out | Length | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| Out_OpReady      | out    | 1         | -         | Axi-Stream handshaking signal that hashtable is ready to accept an operation |
+| In_OpValid      | in     | 1         | -         | Axi_Stream handshaking signal that an operation is requested |
+| In_DataReady      | in    | 1         | -         | Axi-Stream handshaking signal that user is ready to accept data |
+| Out_DataValid      | out     | 1         | -         | Axi_Stream handshaking signal that hashtable has data for the user |
+
 ### Status
 
 | Name              | In/Out | Length           | Default | Description                                                     |
 | :--------         | :----- | :--------------- | ------- | :----------------------                                         |
-| Out_Ready         | out    | 1                | N/A     | Ready for new operation                                         |
 | Out_KeyUnknown    | out    | 1                | N/A     | _In_Key_ does not exist in the hashtable (WR/RM/RD operations)  |
 | Out_Full          | out    | 1                | N/A     | Full                                                            |
-| Out_Pairs          | out    | _IndexWidth_g_+1 | N/A     | Number of Key-Value pairs stored |
+| Out_Pairs          | out    | _log2ceil(Depth_g)_+1 | N/A     | Number of Key-Value pairs stored |
 
 
 ## Architecture
