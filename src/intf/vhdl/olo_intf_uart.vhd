@@ -114,6 +114,7 @@ architecture rtl of olo_intf_uart is
         TxCount        : natural range 0 to transmitBits*2 - 1;
         Tx_Ready       : std_logic;
         TxSync         : std_logic;
+        TxSyncLast     : std_logic;
         TxShiftReg     : std_logic_vector(DataBits_g+1 downto 0);
         Uart_Tx        : std_logic;
         -- RX
@@ -164,8 +165,9 @@ begin
 
         -- *** TX FSM ***
         -- Default Values
-        v.TxSync  := '0';
-        v.Uart_Tx := '1';
+        v.TxSync     := '0';
+        v.TxSyncLast := r.TxSync;
+        v.Uart_Tx    := '1';
 
         -- FSM
         case r.StateTx is
@@ -187,7 +189,8 @@ begin
 
             when Data_s =>
                 v.Uart_Tx := r.TxShiftReg(0);
-                if TxStrobe = '1' then
+                -- The strobe geenrator requires 2 clock cycles to sync up - ignore strobes during that time
+                if TxStrobe = '1' and (r.TxSync = '0' and r.TxSyncLast = '0') then
                     -- Switch to new state after last bit is transferred
                     if r.TxCount = transmitBits*2 - 1 then
                         v.TxCount := 0;
@@ -237,7 +240,7 @@ begin
                 end if;
 
             when Start_s =>
-                if RxStrobe = '1' then
+                if RxStrobe = '1'  and r.RxSync = '0' then
                     -- Go to data reception after start bit
                     if r.RxCount = 2 then
                         v.StateRx := Data_s;
@@ -321,8 +324,9 @@ begin
             r <= r_next;
             if Rst = '1' then
                 -- Tx
-                r.StateTx  <= Reset_s;
-                r.Tx_Ready <= '0';
+                r.StateTx    <= Reset_s;
+                r.Tx_Ready   <= '0';
+                r.TxSyncLast <= '0';
                 -- Rx
                 r.StateRx <= Idle_s;
             end if;
@@ -359,6 +363,9 @@ begin
         );
 
     i_sync : entity work.olo_intf_sync
+        generic map (
+            RstLevel_g => '1'
+        )
         port map (
             Clk             => Clk,
             Rst             => Rst,

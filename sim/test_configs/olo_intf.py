@@ -92,6 +92,7 @@ def add_configs(olo_tb):
             named_config(tb, {'DataBits_g': DataBits, 'Parity_g' : Parity})
     for StopBits in ["1", "1.5", "2"]:
         named_config(tb, {'StopBits_g' : StopBits})
+    # olo_intr_uart_clkdrift_tb does not require additional configurations
 
     ### olo_intf_spi_master ###
     spi_master_tb = 'olo_intf_spi_master_tb'
