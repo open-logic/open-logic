@@ -59,7 +59,6 @@ begin
     -----------------------------------------------------------------------------------------------
     -- TB Control
     -----------------------------------------------------------------------------------------------
-    -- TB is not very vunit-ish because it is a ported legacy TB
     test_runner_watchdog(runner, 10 ms);
 
     p_control : process is
