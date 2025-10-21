@@ -48,7 +48,7 @@ architecture tb of olo_base_hashtable_tb is
     signal In_DataReady : std_logic;
     signal Out_KeyUnknown : std_logic;
     signal Out_Full : std_logic;
-    signal Out_Pairs : std_logic_vector(PAIRS_IDX-1 downto 0);
+    signal Out_Pairs : std_logic_vector(PAIRS_IDX downto 0);
 
 begin
 
@@ -87,7 +87,7 @@ begin
 
     --Show passing tests messages
     show(get_logger(default_checker), display_handler, pass);
-    test_runner_watchdog(runner, 1 us);
+    test_runner_watchdog(runner, 1 ms);
 
     main : process
     begin
@@ -173,14 +173,9 @@ begin
                 In_Read <= '1';
                 wait until rising_edge(Clk);
                 In_Read <= '0';
-                --Wait till output
-                In_DataReady <= '1';
+                --Wait till hashtable ready again
+                wait until rising_edge(Out_OpReady);
                 wait until rising_edge(Clk);
-                if Out_DataValid /= '1' then
-                    wait until rising_edge(Out_DataValid);
-                    wait until rising_edge(Clk);
-                end if;
-                In_DataReady <= '0';
                 --Check that key wasn't found
                 check(Out_KeyUnknown = '1', "Non-existing value after clear");
 

@@ -23,7 +23,7 @@ entity olo_base_hashtable is
         Rst : in std_logic;
         In_Key : in std_logic_vector(KeyWidth_g-1 downto 0);
         In_Value : in std_logic_vector(ValueWidth_g-1 downto 0);
-        Out_Key : out std_logic_vector(KeyWidth_g downto 0);
+        Out_Key : out std_logic_vector(KeyWidth_g-1 downto 0);
         Out_Value : out std_logic_vector(ValueWidth_g-1 downto 0);
         In_Write : in std_logic;
         In_Read : in std_logic;
@@ -100,7 +100,7 @@ architecture rtl of olo_base_hashtable is
 
     function to_data (vec: std_logic_vector) return data_t is
     begin
-        return (vec(data_t.key'range), vec(data_t.value'range), vec(vec'low));
+        return (vec(KeyWidth_g + ValueWidth_g downto ValueWidth_g+1), vec(ValueWidth_g downto 1), vec(0));
     end function;
 
 begin
@@ -123,18 +123,23 @@ begin
                 if In_OpValid <= '1' then
                     reg_sn.user_data <= (In_Key, In_Value, '1');
                     if In_Write = '1' then
+                        report "Attempting to write value with key " & integer'image(to_integer(unsigned(In_Key))) & " to hashtable" & LF;
                         reg_sn.after_search <= WRITE;
                         reg_sn.ht_state <= SEARCH_INIT;
                     elsif In_Read = '1' then
+                        report "Attempting to read value with key " & integer'image(to_integer(unsigned(In_Key))) & " from hashtable" & LF;
                         reg_sn.after_search <= READ;
                         reg_sn.ht_state <= SEARCH_INIT;
                     elsif In_Remove = '1' then
+                        report "Attempting to remove value with key " & integer'image(to_integer(unsigned(In_Key))) & " from hashtable" & LF;
                         Reg_sn.after_search <= REMOVE;
                         reg_sn.ht_state <= SEARCH_INIT;
                     elsif In_Clear = '1' then
+                        report "Attempting to clear hashtable" & LF;
                         reg_sn.wr_idx <= to_unsigned(0, reg_sn.wr_idx'length);
                         reg_sn.ht_state <= CLEAR;
                     elsif In_NextKey = '1' and reg_sp.pairs > 0 then
+                        report "Attempting to find next key in hashtable" & LF;
                         Ram_RdEna <= '1';
                         Ram_RdAddr <= reg_sp.rd_idx + 1;
                         reg_sn.rd_idx <= reg_sp.rd_idx + 1;
@@ -150,9 +155,11 @@ begin
                 reg_sn.hash <= Hash_Out;
                 reg_sn.rd_idx <= Hash_Out;
                 reg_sn.ht_state <= SEARCH_KEY;
+                report "Initialising search at index " & integer'image(to_integer(Hash_Out));
 
             when NEXT_KEY =>
                 if Ram_RdData.used = '1' then
+                    report "Found next key: " & integer'image(to_integer(unsigned(In_Key))) & LF;
                     Out_DataValid <= '1';
                     if In_DataReady = '1' then
                         reg_sn.ht_state <= IDLE;
@@ -170,49 +177,63 @@ begin
                 reg_sn.wr_idx <= reg_sp.wr_idx + 1;
                 Ram_RdEna <= '1';
                 if reg_sp.wr_idx = Depth_g-1 then
+                    report "Hashtable Cleared";
+                    reg_sn.pairs <= to_unsigned(0, reg_sn.pairs'length);
                     reg_sn.ht_state <= IDLE;
                 end if;
 
             when SEARCH_KEY =>
                 if Ram_RdData.used = '1' and Ram_RdData.key = reg_sp.user_data.key then
+                    report "Found key";
                     reg_sn.key_found <= '1';
                     reg_sn.ht_state <= reg_sp.after_search;
                 elsif Ram_RdData.used = '1' and reg_sp.rd_idx + 1 /= reg_sp.hash then
+                    report "Key not at index " & integer'image(to_integer(reg_sp.rd_idx)) & ". Key here is " & integer'image(to_integer(unsigned(Ram_RdData.key)));
                     Ram_RdAddr <= reg_sp.rd_idx + 1;
                     reg_sn.rd_idx <= reg_sp.rd_idx + 1;
                     Ram_RdEna <= '1';
                 else
+                    report "Key not found";
                     reg_sn.ht_state <= reg_sp.after_search;
                 end if;
 
             when WRITE =>
                 Ram_WrAddr <= reg_sp.rd_idx;
                 if reg_sp.key_found = '1' then
+                    report "Key overriden";
                     Ram_WrData.value <= reg_sp.user_data.value;
                     Ram_WrEna <= '1';
                 else
                     if Ht_Full = '0' then
+                        report "Writing new key";
                         Ram_WrEna <= '1';
+                        reg_sn.pairs <= reg_sp.pairs + 1;
                     end if;
                     Ram_WrData <= reg_sp.user_data;
                 end if;
-                reg_sn.pairs <= reg_sp.pairs + 1;
                 reg_sn.ht_state <= IDLE;
 
             when READ =>
-                Out_DataValid <= '1';
-                if In_DataReady <= '1' then
+                if reg_sp.key_found = '1' then
+                    report "Reading key found to output";
+                    Out_DataValid <= '1';
+                    if In_DataReady <= '1' then
+                        reg_sn.ht_state <= IDLE;
+                    end if;
+                else 
                     reg_sn.ht_state <= IDLE;
                 end if;
 
             when REMOVE =>
                 if reg_sp.key_found = '1' then
+                    report "Removing key and performing cluster compression";
                     Ram_WrData <= DATA_CLEAR;
                     Ram_WrEna <= '1';
                     Ram_WrAddr <= reg_sp.rd_idx;
                     reg_sn.rd_idx <= reg_sp.rd_idx + 1;
                     reg_sn.wr_idx <= reg_sp.rd_idx;
                     reg_sn.ht_state <= CLUSTER_COMP;
+                    reg_sn.pairs <= reg_sp.pairs - 1;
                 else
                     reg_sn.ht_state <= IDLE;
                 end if;
@@ -222,6 +243,7 @@ begin
                 if Ram_RdData.used <= '0' then --Done
                     Ram_WrEna <= '1';
                     reg_sn.ht_state <= IDLE;
+                    report "Cluster compression done";
                 else
                     if Hash_OutCluster = '1' then
                         Ram_WrEna <= '1';
