@@ -148,6 +148,9 @@ package olo_base_pkg_math is
 
     function minArray (a : in RealArray_t) return real;
 
+    -- Linear Congruential Generator Pseudo-Random Number
+    function lcg_prng(a, mult, incr : unsigned) return unsigned;
+
 end package;
 
 ---------------------------------------------------------------------------------------------------
@@ -653,6 +656,12 @@ package body olo_base_pkg_math is
         end loop;
 
         return Min_v;
+    end function;
+    
+    -- *** Calculate next pseudorandom value for Linear Congruential Generator ***
+    function lcg_prng(a, mult, incr : unsigned) return unsigned is
+    begin
+        return (a * mult + incr);
     end function;
 
 end package body;
