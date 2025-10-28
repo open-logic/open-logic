@@ -58,7 +58,8 @@ i_wconf
 );
 ```
 
-Without the explicit assignment of `.In_WordEna (2'b11)` this example does not synthesize correctly although the default port value is set to `(others => '1')`in VHDL.
+Without the explicit assignment of `.In_WordEna (2'b11)` this example does not synthesize correctly although the
+default port value is set to `(others => '1')`in VHDL.
 
 ## Use Open Logic in a Gowin Project
 
