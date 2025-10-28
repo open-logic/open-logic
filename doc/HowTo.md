@@ -8,6 +8,8 @@
 
 AKA Table of Content
 
+- General Topics
+  - [Use Open Logic from Verilog](#use-open-logic-from-verilog)
 - Tool Integration Related
   - [Use Open Logic in a Gowin Project](#use-open-logic-in-a-gowin-project)
   - [Use Open Logic in a Microchip Libero Project](#use-open-logic-in-a-microchip-libero-project)
@@ -23,6 +25,40 @@ AKA Table of Content
   - [Run Simulations](#run-simulations)
   - [Analyze Coverage](#analyze-coverage)
   - [Update Badges](#update-badges)
+
+## Use Open Logic from Verilog
+
+### Input Port Default Values
+
+Not all tools apply input port default values correctly when doing cross-language instantiation. For example Vivado
+seems to assign zero to unconnected ports instead of the default value given in the instantiated entity.
+
+To avoid issues, do **NOT** rely on default port values when instantiating _Open Logic_ entities from Verilog but
+assign all input ports explicitly. For unused ports, assign the default value given in the documentation explicitly.
+
+Example:
+
+```vhdl
+olo_base_wconv_xn2n
+#(
+    .InWidth_g  (256),
+    .OutWidth_g (128))
+i_wconf
+(
+    .Clk (clk),
+    .Rst (rst),
+    .In_Valid (ivalid)
+    .In_Ready (iready),
+    .In_Data (idata),
+    .In_WordEna (2'b11),
+    .In_Last (0)
+    .Out_Valid (ovalid),
+    .Out_Ready (oready),
+    .Out_Data (odata)
+);
+```
+
+Without the explicit assignment of `.In_WordEna (2'b11)` this example does not synthesize correctly although the default port value is set to `(others => '1')`in VHDL.
 
 ## Use Open Logic in a Gowin Project
 
