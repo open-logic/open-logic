@@ -1,0 +1,9 @@
+{signal: [
+  {name: 'Clk',          wave: 'P...............'},  
+  {name: 'In_Valid',     wave: '1......0..1....0'},
+  {name: 'In_Ready',     wave: '101010101..0..10'},
+  {name: 'In_Data',      wave: '22.2.2.x..22...x', data:["1", "2", "3", "4", "5", "6", "7", "8", "9"]},
+  {name: 'Out_Valid',    wave: '10101010..101..0'},
+  {name: 'Out_Ready',    wave: '1...........0.10'},
+  {name: 'Out_Data',     wave: '3x3x4x4x..5x6..x', data:["1", "2", "3", "4", "5", "6", "7", "8", "9"]},
+]}
