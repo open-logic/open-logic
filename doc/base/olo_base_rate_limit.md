@@ -29,7 +29,7 @@ The component has two modes of operation:
 The sample figure is drawn for _Period_g_=4 clock cycles and _MaxSamples_g_=2 samples per period. Periods on the output
 side are marked in colors.
 
-![wave_smooth](misc/olo_base_rate_limit_block.png)
+![wave_block](misc/olo_base_rate_limit_block.png)
 
 Note how the rate can exceed the limit if short bursts occur at the end of one block (blue) and the beginning of the
 next block (turquoise).
@@ -50,8 +50,8 @@ Note how the samples never exceed the rate of one sample every two clock cycles.
 | Width_g         | positive  | -        | Width of _In_Data_ and _Out_Data_                            |
 | RegisterReady_g | boolean   | true     | If true, _In_Ready_ is registered to improve timing          |
 | Mode_g          | string    | "SMOOTH" | Rate limiting mode, either "BLOCK" or "SMOOTH"               |
-| Period_g        | time      | 1 ms     | Time period for rate limiting in clock cycles                |
-| MaxSamples_g    | natural   | 100      | Maximum number of samples allowed per _Period_g_             |
+| Period_g        | positive  | -    | Time period for rate limiting in clock cycles                |
+| MaxSamples_g    | positive  | 1      | Maximum number of samples allowed per _Period_g_             |
 
 ## Interfaces
 
