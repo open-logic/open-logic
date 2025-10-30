@@ -31,8 +31,9 @@ side are marked in colors.
 
 ![wave_block](misc/olo_base_rate_limit_block.png)
 
-Note how the rate can exceed the limit if short bursts occur at the end of one block (blue) and the beginning of the
-next block (turquoise).
+Note how the rate can exceed the limit if short bursts occur at the end of one block (blue, block 2) and the beginning
+of the next block (turquoise, block 3). Although each block only forwards two samples, in this situation fours samples
+are forwarded consecutively in the two consecutive blocks.
 
 ### _SMOOTH_ Mode
 
@@ -41,7 +42,8 @@ side are marked in colors.
 
 ![wave_smooth](misc/olo_base_rate_limit_smooth.png)
 
-Note how the samples never exceed the rate of one sample every two clock cycles. Also not over short periods of time.
+Note how the samples are equally spaced (one sample every two clock cycles). In contrast to _BLOCK_ mode bursts are
+forwarded.
 
 ## Generics
 
