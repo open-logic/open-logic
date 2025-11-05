@@ -26,13 +26,15 @@ The memory is described in a way that it utilizes RAM resources (Block-RAM or di
 | KeyWidth_g        | positive  | -         | Width of key |
 | ValueWidth_g      | positive  | -         | Width of Value |
 | Hash_g            | Hash_t    | DIVISION  | Hashing algorithm used |
-| RamStyle_g      | string   | "auto"  | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info |
-| RamBehavior_g   | string   | "RBW"   | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info  |
+| LcgMult_g         | positive  | 1103515245 | Multiplier used in the LCG (Default value from libc) |
+| LcgIncr_g         | positive  | 12345     | Multiplier used in the LCG (Default value from libc) |
+| RamStyle_g        | string   | "auto"  | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info |
+| RamBehavior_g     | string   | "RBW"   | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info  |
 | ClearAfterReset_g | boolean | true | Clear memory after a reset to prevent erroneous values |
 
 Current supported hash algorithms are:
 * *DIVISION*: Key's value is used as-is, except for modulo against depth of hashtable to obtain a valid index
-* *CRC*: Key's value is hashed using *olo_base_crc*
+* *LCG*: [Linear Congruential Generator](https://en.wikipedia.org/wiki/Linear_congruential_generator) PRNG algorithm is used. The multiplier and increment for the algorithm can be chosen using _LcgMult_g_ and _LcgIncr_g_ respectively. Modulus is width of the hastable's indices
 
 ## Interfaces
 
@@ -60,15 +62,18 @@ Current supported hash algorithms are:
 
 ### Operations
 
-| Name          | In/Out | Length    | Default   | Latency | Description |
+| Name          | In/Out | Length    | Default   | Latency (ticks)| Description |
 | :-------      | :----- | :-------- | :-------   | :---- | :-------------------------------------------    |
-| In_Write      | in     | 1         | -         | TODO | (Over)Write In_Key-In_Value pair                 |
-| In_Read       | in     | 1         | -         | TODO | Read Out_Value corresponding to In_Key           |
-| In_Remove     | in     | 1         | -         | TODO | Remove Key-Value pair corresponding to In_Key    |
-| In_Clear      | in     | 1         | -         | TODO | Clear All Key-Value pairs from memory            |
-| In_NextKey    | in     | 1         | -         | TODO | Find next valid Out_Key in memory                |
+| In_Write      | in     | 1         | -         | search_key + 1 | (Over)Write In_Key-In_Value pair                 |
+| In_Read       | in     | 1         | -         | search_key + In_DataReady_delay + 1 | Read Out_Value corresponding to In_Key           |
+| In_Remove     | in     | 1         | -         | search_key + cluster_comp + 1 | Remove Key-Value pair corresponding to In_Key    |
+| In_Clear      | in     | 1         | -         | Width_g | Clear All Key-Value pairs from memory            |
+| In_NextKey    | in     | 1         | -         | distance_from_next_key | Find next valid Out_Key in memory                |
 
 Operations are given in order of priority: if multiple operations are requested, only the highest in the list is performed
+
+Latency of search_key is: *1 + element_position_in_cluster*
+Latency of *cluster_comp* is: *1 + (cluster_size - element_position_in_cluster)*
 
 ### Handshaking
 
@@ -94,7 +99,7 @@ Operations are given in order of priority: if multiple operations are requested,
 
 * Operations requested while hashtable isn't ready (_Out_Ready_ = '1') are ignored
 * A supplementary `used` bit is stored in memory alongside each key-value pair to indicate which memory words are occupied (`used` = 1). The total width of the internal memory is thus: RamWidth = KeyWidth_g + ValueWidth_g + 1
-* If the used *olo_base_sdp* is in an unknown state after reset, the memory must be cleared before accepting any operation to prevent the hashtable from finding erroneous `used` bits set to 1 when the hashtable should be empty
+* If the used *olo_base_sdp* is in an unknown state after reset, the memory must be cleared before accepting any operation to prevent the hashtable from finding erroneous `used` bits set to 1 when the hashtable should be empty. The 
 
 ### Operations
 
@@ -129,6 +134,8 @@ Next Key sequentially and cyclically goes through the hash table looking for the
 1. Invoke In_NextKey
 2. Wait till hashtable is ready again to read Out_key
 3. Repeat steps 1 and 2 _Out_Size_ times
+
+It is important NOT to perform any other operation in between those steps as this would modify the internal memory and index registers and would most likely prevent coherent outputs
 
 ## Cluster compression
 
