@@ -62,8 +62,8 @@ architecture rtl of olo_base_hashtable is
         ht_state : ht_state_t;
         pairs : unsigned(PAIRS_IDX downto 0);
         rd_idx : unsigned(PAIRS_IDX-1 downto 0);
-        wr_idx : unsigned(PAIRS_IDX-1 downto 0); --May be useless (can use rd_idx for clear and hash for remove)
-        hash : unsigned(PAIRS_IDX-1 downto 0);
+        wr_idx : unsigned(PAIRS_IDX-1 downto 0);
+        cnt : unsigned(PAIRS_IDX-1 downto 0);
         key_found : std_logic;
         after_search : ht_state_t;
         user_data : data_t;
@@ -105,6 +105,10 @@ architecture rtl of olo_base_hashtable is
 
 begin
 
+    --Verification asserts
+    --Depth is power of 2
+    assert log2(Depth_g) = log2ceil(Depth_g) report "Depth must be a power of 2";
+
     process (all)
     begin
         reg_sn <= reg_sp;
@@ -132,7 +136,7 @@ begin
                         reg_sn.ht_state <= SEARCH_INIT;
                     elsif In_Remove = '1' then
                         report "Attempting to remove value with key " & integer'image(to_integer(unsigned(In_Key))) & " from hashtable" & LF;
-                        Reg_sn.after_search <= REMOVE;
+                        Reg_sn.after_search <= CLUSTER_COMP;
                         reg_sn.ht_state <= SEARCH_INIT;
                     elsif In_Clear = '1' then
                         report "Attempting to clear hashtable" & LF;
@@ -152,7 +156,7 @@ begin
                 reg_sn.key_found <= '0';
                 Ram_RdAddr <= Hash_Out;
                 Ram_RdEna <= '1';
-                reg_sn.hash <= Hash_Out;
+                reg_sn.cnt <= to_unsigned(0, reg_sn.cnt'length);
                 reg_sn.rd_idx <= Hash_Out;
                 reg_sn.ht_state <= SEARCH_KEY;
                 report "Initialising search at index " & integer'image(to_integer(Hash_Out));
@@ -187,11 +191,19 @@ begin
                     report "Found key";
                     reg_sn.key_found <= '1';
                     reg_sn.ht_state <= reg_sp.after_search;
-                elsif Ram_RdData.used = '1' and reg_sp.rd_idx + 1 /= reg_sp.hash then
+                    reg_sn.cnt <= to_unsigned(0, reg_sn.cnt'length);
+                    if reg_sp.after_search = CLUSTER_COMP then
+                        reg_sn.rd_idx <= reg_sp.rd_idx + 1;
+                        reg_sn.wr_idx <= reg_sp.rd_idx;
+                        Ram_RdAddr <= reg_sp.rd_idx + 1;
+                        Ram_RdEna <= '1';
+                    end if;
+                elsif Ram_RdData.used = '1' and reg_sp.cnt < Depth_g-1 then
                     report "Key not at index " & integer'image(to_integer(reg_sp.rd_idx)) & ". Key here is " & integer'image(to_integer(unsigned(Ram_RdData.key)));
                     Ram_RdAddr <= reg_sp.rd_idx + 1;
                     reg_sn.rd_idx <= reg_sp.rd_idx + 1;
                     Ram_RdEna <= '1';
+                    reg_sn.cnt <= reg_sp.cnt + 1;
                 else
                     report "Key not found";
                     reg_sn.ht_state <= reg_sp.after_search;
@@ -224,33 +236,39 @@ begin
                     reg_sn.ht_state <= IDLE;
                 end if;
 
-            when REMOVE =>
+            when CLUSTER_COMP =>
+                Ram_WrAddr <= reg_sp.wr_idx;
                 if reg_sp.key_found = '1' then
-                    report "Removing key and performing cluster compression";
-                    Ram_WrData <= DATA_CLEAR;
-                    Ram_WrEna <= '1';
-                    Ram_WrAddr <= reg_sp.rd_idx;
-                    reg_sn.rd_idx <= reg_sp.rd_idx + 1;
-                    reg_sn.wr_idx <= reg_sp.rd_idx;
-                    reg_sn.ht_state <= CLUSTER_COMP;
-                    reg_sn.pairs <= reg_sp.pairs - 1;
+                    if Ram_RdData.used <= '0' then --Done
+                        Ram_WrEna <= '1';
+                        reg_sn.ht_state <= REMOVE;
+                        report "Cluster compression done";
+                    else
+                        if Hash_OutCluster = '1' then
+                            Ram_WrEna <= '1';
+                            reg_sn.wr_idx <= reg_sp.rd_idx;
+                        end if;
+                        if reg_sp.cnt = Depth_g-1 then
+                            reg_sn.ht_state <= REMOVE;
+                        else
+                            reg_sn.cnt <= reg_sp.cnt + 1; 
+                            reg_sn.rd_idx <= reg_sp.rd_idx + 1;
+                            Ram_RdAddr <= reg_sp.rd_idx + 1;
+                            Ram_RdEna <= '1';
+                        end if;
+                    end if;
                 else
                     reg_sn.ht_state <= IDLE;
                 end if;
 
-            when CLUSTER_COMP =>
-                Ram_WrAddr <= reg_sp.wr_idx;
-                if Ram_RdData.used <= '0' then --Done
-                    Ram_WrEna <= '1';
-                    reg_sn.ht_state <= IDLE;
-                    report "Cluster compression done";
-                else
-                    if Hash_OutCluster = '1' then
-                        Ram_WrEna <= '1';
-                        reg_sn.wr_idx <= reg_sp.rd_idx;
-                    end if;
-                    reg_sn.rd_idx <= reg_sp.rd_idx + 1;
-                end if;
+            when REMOVE =>
+                report "Removing key";
+                Ram_WrData <= DATA_CLEAR;
+                Ram_WrEna <= '1';
+                Ram_WrAddr <= reg_sp.rd_idx;
+                reg_sn.ht_state <= CLUSTER_COMP;
+                reg_sn.pairs <= reg_sp.pairs - 1;
+                reg_sn.ht_state <= IDLE;
 
             when others =>
                 null;
@@ -275,8 +293,8 @@ begin
     hash_type_gen : if Hash_g = "LCG" generate
         
         Hash_Out <= lcg_prng(unsigned(Hash_InKey), 
-            to_unsigned(LcgMult_g, log2ceil(LcgMult_g)), 
-            to_unsigned(LcgIncr_g, log2ceil(LcgIncr_g)))(Hash_Out'range);
+            LcgMult_g, 
+            LcgIncr_g)(Hash_Out'range);
         
     else generate -- Do nothing, just take LSB
 
@@ -286,18 +304,18 @@ begin
 
     -- Cyclically check if hash of read element falls outside of 
     -- ]wr_idx;rd_idx] interval (search chain broken by remove)
-    -- EQUATION:
-    -- R = (rd_idx > wr_idx)((hash >= wr_idx) + (hash > rd_idx)) + 
-    -- (rd_idx < wr_idx)((hash >= wr_idx) + (hash > rd_idx)) = 
+    -- LOGICAL EQUATION:
+    -- R = (rd_idx > wr_idx)((hash <= wr_idx) + (hash > rd_idx)) + 
+    -- (rd_idx < wr_idx)((hash <= wr_idx)(hash > rd_idx)) = 
     -- A(B+C) + DBC
     -- 2 assumptions could allow us to simplify it:
     -- * rd_idx and wr_idx are never equal -> D = !A
     -- * When rd_idx <= wr_idx (!A), hash<rd_idx and hash>wr_idx 
-    --  cannot exist -> !A!B!C is undefined and can be anything
+    --  cannot exist -> !A!B!C is undefined
     -- With the 2 previous assumptions, equation can be rewritten
     -- R = A(!BC + B!C) + !A(BC + !B!C) = A xor !(B xor C)
-    Hash_OutCluster <= '1' when (reg_sp.rd_idx > reg_sp.wr_idx) and ((Hash_Out >= reg_sp.wr_idx) or (Hash_Out > reg_sp.rd_idx)) or
-        (reg_sp.rd_idx < reg_sp.wr_idx) and ((Hash_Out >= reg_sp.wr_idx) or (Hash_Out > reg_sp.rd_idx)) else '0';
+    Hash_OutCluster <= '1' when ((reg_sp.rd_idx > reg_sp.wr_idx) and ((Hash_Out <= reg_sp.wr_idx) or (Hash_Out > reg_sp.rd_idx))) or
+        ((reg_sp.rd_idx < reg_sp.wr_idx) and ((Hash_Out <= reg_sp.wr_idx) and (Hash_Out > reg_sp.rd_idx))) else '0';
 
     olo_base_ram_sdp_inst: entity olo.olo_base_ram_sdp
      generic map(
