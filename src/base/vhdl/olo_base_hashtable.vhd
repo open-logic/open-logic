@@ -8,35 +8,44 @@ library olo;
 
 entity olo_base_hashtable is
     generic (
-        Depth_g           : positive;
-        KeyWidth_g        : positive;
-        ValueWidth_g      : positive;
-        Hash_g            : string   := "LCG";
+        Depth_g                 : positive;
+        KeyWidth_g              : positive;
+        ValueWidth_g            : positive;
+        Hash_g                  : string   := "LCG";
         Hash_Lcg_Mult_g         : positive := 1103515245; --  For LCG. From GCC's implementation
         Hash_Lcg_Incr_g         : positive := 12345; --  For LCG. From GCC's implementation
-        RamStyle_g        : string   := "auto";
-        RamBehavior_g     : string   := "RBW";
-        ClearAfterReset_g : boolean  := true
+        RamStyle_g              : string   := "auto";
+        RamBehavior_g           : string   := "RBW";
+        ClearAfterReset_g       : boolean  := true
     );
     port (
-        Clk            : in    std_logic;
-        Rst            : in    std_logic;
-        In_Key         : in    std_logic_vector(KeyWidth_g-1 downto 0);
-        In_Value       : in    std_logic_vector(ValueWidth_g-1 downto 0);
-        Out_Key        : out   std_logic_vector(KeyWidth_g-1 downto 0);
-        Out_Value      : out   std_logic_vector(ValueWidth_g-1 downto 0);
-        In_Write       : in    std_logic;
-        In_Read        : in    std_logic;
-        In_Remove      : in    std_logic;
-        In_Clear       : in    std_logic;
-        In_NextKey     : in    std_logic;
-        In_OpValid     : in    std_logic;
-        Out_OpReady    : out   std_logic;
-        Out_DataValid  : out   std_logic;
-        In_DataReady   : in    std_logic;
-        Out_KeyUnknown : out   std_logic;
-        Out_Full       : out   std_logic;
-        Out_Pairs      : out   std_logic_vector(log2ceil(Depth_g) downto 0)
+        -- Sync interface --
+        Clk               : in    std_logic;
+        Rst               : in    std_logic;
+        -- Input Interface --
+        -- Data
+        In_Key            : in    std_logic_vector(KeyWidth_g-1 downto 0);
+        In_Value          : in    std_logic_vector(ValueWidth_g-1 downto 0);
+        -- Operations
+        In_Write          : in    std_logic;
+        In_Read           : in    std_logic;
+        In_Remove         : in    std_logic;
+        In_Clear          : in    std_logic;
+        In_NextKey        : in    std_logic;
+        In_Valid          : in    std_logic;
+        In_Ready          : out   std_logic;
+        -- AXI Handshaking
+        Out_Key           : out   std_logic_vector(KeyWidth_g-1 downto 0);
+        Out_Value         : out   std_logic_vector(ValueWidth_g-1 downto 0);
+        -- Output Interface --
+        -- Data
+        Out_Valid         : out   std_logic;
+        Out_Ready         : in    std_logic;
+        -- Result
+        Out_KeyUnknown    : out   std_logic;
+        -- Status Interface --
+        Status_Full       : out   std_logic;
+        Status_Pairs      : out   std_logic_vector(log2ceil(Depth_g) downto 0)
     );
 end entity;
 
@@ -127,22 +136,22 @@ begin
     p_ht_fsm : process (all) is
     begin
         -- Default values
-        RegNext       <= RegCurr; -- Keep current register values by default
-        Out_OpReady   <= '0';
-        Ram_RdEna     <= '0';
-        Ram_RdAddr    <= (others => '0');
-        Ram_WrAddr    <= (others => '0');
-        Ram_WrEna     <= '0';
-        Ram_WrData    <= Ram_RdData; -- Write data is read data by default
-        Out_DataValid <= '0';
-        Hash_InKey    <= Ram_RdData.key;
+        RegNext    <= RegCurr; -- Keep current register values by default
+        In_Ready   <= '0';
+        Ram_RdEna  <= '0';
+        Ram_RdAddr <= (others => '0');
+        Ram_WrAddr <= (others => '0');
+        Ram_WrEna  <= '0';
+        Ram_WrData <= Ram_RdData; -- Write data is read data by default
+        Out_Valid  <= '0';
+        Hash_InKey <= Ram_RdData.key;
 
         -- FSM
         case RegCurr.ht_state is
             when Idle_s =>
                 -- Hashtable ready for new operation
-                Out_OpReady <= '1';
-                if In_OpValid <= '1' then -- AXIS handshake
+                In_Ready <= '1';
+                if In_Valid <= '1' then -- AXIS handshake
                     RegNext.user_data <= (In_Key, In_Value, '1'); -- Memorise input data
                     if In_Write = '1' then
                         RegNext.after_search <= Write_s;
@@ -178,8 +187,8 @@ begin
             when NextKey_s =>
                 -- Read next index until a used one is found
                 if Ram_RdData.used = '1' then
-                    Out_DataValid <= '1';
-                    if In_DataReady = '1' then
+                    Out_Valid <= '1';
+                    if Out_Ready = '1' then
                         RegNext.ht_state <= Idle_s;
                     end if;
                 else
@@ -244,8 +253,8 @@ begin
             when Read_s =>
                 -- Read value
                 if RegCurr.key_found = '1' then
-                    Out_DataValid <= '1';
-                    if In_DataReady <= '1' then -- AXIS handshake
+                    Out_Valid <= '1';
+                    if Out_Ready <= '1' then -- AXIS handshake
                         RegNext.ht_state <= Idle_s;
                     end if;
                 else
@@ -358,9 +367,9 @@ begin
     Ram_RdData <= toData(Ram_RdDataVec);
 
     -- Outputs
-    Out_Pairs      <= std_logic_vector(RegCurr.pairs);
+    Status_Pairs   <= std_logic_vector(RegCurr.pairs);
     Ht_Full        <= '1' when RegCurr.pairs = Depth_g else '0';
-    Out_Full       <= Ht_Full;
+    Status_Full    <= Ht_Full;
     Out_KeyUnknown <= not(RegCurr.key_found);
     Out_Key        <= Ram_RdData.key;
     Out_Value      <= Ram_RdData.value;

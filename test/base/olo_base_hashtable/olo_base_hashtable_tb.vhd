@@ -50,13 +50,13 @@ architecture tb of olo_base_hashtable_tb is
     signal In_Remove : std_logic := '0';
     signal In_Clear : std_logic := '0';
     signal In_NextKey : std_logic := '0';
-    signal In_OpValid : std_logic := '0';
-    signal Out_OpReady : std_logic := '0';
-    signal Out_DataValid : std_logic := '0';
-    signal In_DataReady : std_logic := '0';
+    signal In_Valid : std_logic := '0';
+    signal In_Ready : std_logic := '0';
+    signal Out_Valid : std_logic := '0';
+    signal Out_Ready : std_logic := '0';
     signal Out_KeyUnknown : std_logic := '0';
-    signal Out_Full : std_logic := '0';
-    signal Out_Pairs : std_logic_vector(PAIRS_IDX downto 0) := (others => '0');
+    signal Status_Full : std_logic := '0';
+    signal Status_Pairs : std_logic_vector(PAIRS_IDX downto 0) := (others => '0');
 
 begin
 
@@ -87,13 +87,13 @@ begin
         In_Remove => In_Remove,
         In_Clear => In_Clear,
         In_NextKey => In_NextKey,
-        In_OpValid => In_OpValid,
-        Out_OpReady => Out_OpReady,
-        Out_DataValid => Out_DataValid,
-        In_DataReady => In_DataReady,
+        In_Valid => In_Valid,
+        In_Ready => In_Ready,
+        Out_Valid => Out_Valid,
+        Out_Ready => Out_Ready,
         Out_KeyUnknown => Out_KeyUnknown,
-        Out_Full => Out_Full,
-        Out_Pairs => Out_Pairs
+        Status_Full => Status_Full,
+        Status_Pairs => Status_Pairs
     );
 
     Clk <= not Clk after 0.5 * Clk_Period_c;
@@ -125,83 +125,83 @@ begin
                 --Tests with single key-value pair
                 --Check Reset Values
                 if ClearAfterReset_g then
-                    check(Out_OpReady = '0', "Hashtable clearing after reset");
+                    check(In_Ready = '0', "Hashtable clearing after reset");
                 else
-                    check(Out_OpReady = '1', "Hashtable ready after reset");
+                    check(In_Ready = '1', "Hashtable ready after reset");
                 end if;
-                check(Out_DataValid = '0', "No data output after reset");
-                check(Out_Full = '0', "Hashtable not full after reset");
-                check_equal(Out_Pairs, 0, "Hashtable empty after reset");
+                check(Out_Valid = '0', "No data output after reset");
+                check(Status_Full = '0', "Hashtable not full after reset");
+                check_equal(Status_Pairs, 0, "Hashtable empty after reset");
                 --Request write
-                In_OpValid <= '1';
+                In_Valid <= '1';
                 In_Write <= '1';
                 In_Key <= TEST_KEY(In_Key'range);
                 In_Value <= TEST_VALUE(In_Value'range);
                 --Wait for hashtable to be ready
                 wait until rising_edge(Clk);
-                if Out_OpReady /= '1' then
-                    wait until rising_edge(Out_OpReady);
+                if In_Ready /= '1' then
+                    wait until rising_edge(In_Ready);
                     wait until rising_edge(Clk);
                 end if;
                 In_Write <= '0';
                 --Wait till write done
-                wait until rising_edge(Out_OpReady);
+                wait until rising_edge(In_Ready);
                 wait until rising_edge(Clk);
                 --Check that key wasn't found
                 check(Out_KeyUnknown = '1', "Writing non-existing key");
                 --Check that hashtable now contains 1 pair
-                check_equal(Out_Pairs, 1, "Coherent pair counting");
+                check_equal(Status_Pairs, 1, "Coherent pair counting");
                 --Request read with same key
                 In_Read <= '1';
                 wait until rising_edge(Clk);
                 In_Read <= '0';
                 --Wait till value output
-                In_DataReady <= '1';
+                Out_Ready <= '1';
                 wait until rising_edge(Clk);
-                if Out_DataValid /= '1' then
-                    wait until rising_edge(Out_DataValid);
+                if Out_Valid /= '1' then
+                    wait until rising_edge(Out_Valid);
                     wait until rising_edge(Clk);
                 end if;
-                In_DataReady <= '0';
+                Out_Ready <= '0';
                 --Check that value was found and is correct
                 check(Out_KeyUnknown = '0', "Reading existing key");
                 check_equal(Out_Value, TEST_VALUE(ValueWidth_g-1 downto 0), "Coherent read value");
                 --Request key output
                 In_NextKey <= '1';
                 wait until rising_edge(Clk);
-                if Out_OpReady /= '1' then
-                    wait until rising_edge(Out_OpReady);
+                if In_Ready /= '1' then
+                    wait until rising_edge(In_Ready);
                     wait until rising_edge(Clk);
                 end if;
                 In_NextKey <= '0';
                 --Wait till output
-                In_DataReady <= '1';
+                Out_Ready <= '1';
                 wait until rising_edge(Clk);
-                if Out_DataValid /= '1' then
-                    wait until rising_edge(Out_DataValid);
+                if Out_Valid /= '1' then
+                    wait until rising_edge(Out_Valid);
                     wait until rising_edge(Clk);
                 end if;
-                In_DataReady <= '0';
+                Out_Ready <= '0';
                 --Check that key corresponds to input
                 check_equal(Out_Key, TEST_KEY(KeyWidth_g-1 downto 0), "Coherent key output");
                 --Request Clear
                 In_Clear <= '1';
                 wait until rising_edge(Clk);
-                if Out_OpReady /= '1' then
-                    wait until rising_edge(Out_OpReady);
+                if In_Ready /= '1' then
+                    wait until rising_edge(In_Ready);
                     wait until rising_edge(Clk);
                 end if;
                 In_Clear <= '0';
                 --Wait clear done
-                wait until rising_edge(Out_OpReady);
+                wait until rising_edge(In_Ready);
                 --Check that hashtable is empty
-                check_equal(Out_Pairs, 0, "Coherent pair counting after clear");
+                check_equal(Status_Pairs, 0, "Coherent pair counting after clear");
                 --Request read with same key
                 In_Read <= '1';
                 wait until rising_edge(Clk);
                 In_Read <= '0';
                 --Wait till hashtable ready again
-                wait until rising_edge(Out_OpReady);
+                wait until rising_edge(In_Ready);
                 wait until rising_edge(Clk);
                 --Check that key wasn't found
                 check(Out_KeyUnknown = '1', "Non-existing value after clear");
@@ -230,48 +230,48 @@ begin
                 storedPairs := 0;
                 In_Write <= '1';
                 for i in 0 to Depth_g-1 loop
-                    check(Out_Full = '0', "Hashtable not full");
+                    check(Status_Full = '0', "Hashtable not full");
                     In_Key <= TestKeys(i);
                     In_Value <= TestValues(i);
-                    In_OpValid <= '1';
-                    wait until falling_edge(Out_OpReady);
-                    In_OpValid <= '0';
-                    wait until rising_edge(Out_OpReady);
+                    In_Valid <= '1';
+                    wait until falling_edge(In_Ready);
+                    In_Valid <= '0';
+                    wait until rising_edge(In_Ready);
                     check(Out_KeyUnknown = '1', "Writing new key");
                     storedPairs := storedPairs + 1;
-                    check_equal(Out_Pairs, storedPairs, "Coherent pair counting");
+                    check_equal(Status_Pairs, storedPairs, "Coherent pair counting");
                 end loop;
                 wait until rising_edge(Clk);
-                check(Out_Full = '1', "Hashtable full");
+                check(Status_Full = '1', "Hashtable full");
                 In_Write <= '0';
                 --Read all pairs
                 report "Read all pairs";
                 In_Read <= '1';
                 for i in 0 to Depth_g-1 loop
                     In_Key <= TestKeys(i);
-                    In_OpValid <= '1';
-                    wait until falling_edge(Out_OpReady);
-                    In_OpValid <= '0';
-                    In_DataReady <= '1';
-                    wait until rising_edge(Out_DataValid);
+                    In_Valid <= '1';
+                    wait until falling_edge(In_Ready);
+                    In_Valid <= '0';
+                    Out_Ready <= '1';
+                    wait until rising_edge(Out_Valid);
                     wait until rising_edge(Clk);
-                    In_DataReady <= '0';
+                    Out_Ready <= '0';
                     check(Out_KeyUnknown = '0', "Coherent value search result");
                     check_equal(Out_Value, TestValues(i), "Check output value");
-                    wait until rising_edge(Out_OpReady);
+                    wait until rising_edge(In_Ready);
                 end loop;
                 In_Read <= '0';
                 --Get all keys
                 report "Get all keys";
                 In_NextKey <= '1';
-                for i in 0 to to_integer(unsigned(Out_Pairs))-1 loop
-                    In_OpValid <= '1';
-                    wait until falling_edge(Out_OpReady);
-                    In_OpValid <= '0';
-                    In_DataReady <= '1';
-                    wait until rising_edge(Out_DataValid);
+                for i in 0 to to_integer(unsigned(Status_Pairs))-1 loop
+                    In_Valid <= '1';
+                    wait until falling_edge(In_Ready);
+                    In_Valid <= '0';
+                    Out_Ready <= '1';
+                    wait until rising_edge(Out_Valid);
                     wait until rising_edge(Clk);
-                    In_DataReady <= '0';
+                    Out_Ready <= '0';
                     KeyValid := '0';
                     find_key_loop: for j in 0 to Depth_g-1 loop
                         if TestKeys(j) = Out_Key then
@@ -281,7 +281,7 @@ begin
                         end if;
                     end loop;
                     check(KeyValid = '1', "Check key valid");
-                    wait until rising_edge(Out_OpReady);
+                    wait until rising_edge(In_Ready);
                 end loop;
                 check_equal(KeysFound, Depth_g, "Check all keys found");
                 In_NextKey <= '0';
@@ -297,25 +297,25 @@ begin
                 In_Write <= '1';
                 In_Key <= TestKeys(0);
                 In_Value <= TestValues(0);
-                In_OpValid <= '1';
-                wait until falling_edge(Out_OpReady);
+                In_Valid <= '1';
+                wait until falling_edge(In_Ready);
                 In_Write <= '0';
-                In_OpValid <= '0';
-                wait until rising_edge(Out_OpReady);
+                In_Valid <= '0';
+                wait until rising_edge(In_Ready);
                 check(Out_KeyUnknown = '0', "Check key known");
                 --Check value overridden
                 report "Check value overridden";
                 In_Read <= '1';
-                In_OpValid <= '1';
-                wait until falling_edge(Out_OpReady);
+                In_Valid <= '1';
+                wait until falling_edge(In_Ready);
                 In_Read <= '0';
-                In_OpValid <= '0';
-                In_DataReady <= '1';
-                wait until rising_edge(Out_DataValid);
+                In_Valid <= '0';
+                Out_Ready <= '1';
+                wait until rising_edge(Out_Valid);
                 wait until rising_edge(Clk);
-                In_DataReady <= '0';
+                Out_Ready <= '0';
                 check_equal(Out_Value, TestValues(0), "Check value overridden");
-                wait until rising_edge(Out_OpReady);
+                wait until rising_edge(In_Ready);
                 --Create excess key-value pair
                 report "Create excess key-value pair";
                 In_Key <= std_logic_vector(lcg_prng(
@@ -327,30 +327,30 @@ begin
                 --Try to write new key
                 report "Try to write new key";
                 In_Write <= '1';
-                In_OpValid <= '1';
-                wait until falling_edge(Out_OpReady);
+                In_Valid <= '1';
+                wait until falling_edge(In_Ready);
                 In_Write <= '0';
-                In_OpValid <= '0';
-                wait until rising_edge(Out_OpReady);
+                In_Valid <= '0';
+                wait until rising_edge(In_Ready);
                 check(Out_KeyUnknown = '1', "Check key unknown");
                 --Check pair ignored
                 report "Check pair ignored";
                 In_Read <= '1';
-                In_OpValid <= '1';
-                wait until falling_edge(Out_OpReady);
+                In_Valid <= '1';
+                wait until falling_edge(In_Ready);
                 In_Read <= '0';
-                In_OpValid <= '0';
-                wait until rising_edge(Out_OpReady);
+                In_Valid <= '0';
+                wait until rising_edge(In_Ready);
                 check(Out_KeyUnknown = '1', "Check value ignored");
                 --Remove half keys
                 report "Remove half keys";
                 In_Remove <= '1';
                 for i in 0 to (Depth_g/2)-1 loop
                     In_Key <= TestKeys(i);
-                    In_OpValid <= '1';
-                    wait until falling_edge(Out_OpReady);
-                    In_OpValid <= '0';
-                    wait until rising_edge(Out_OpReady);
+                    In_Valid <= '1';
+                    wait until falling_edge(In_Ready);
+                    In_Valid <= '0';
+                    wait until rising_edge(In_Ready);
                     check(Out_KeyUnknown = '0', "Check key removed is known");
                 end loop;
                 In_Remove <= '0';
@@ -359,19 +359,19 @@ begin
                 In_Read <= '1';
                 for i in 0 to Depth_g-1 loop
                     In_Key <= TestKeys(i);
-                    In_OpValid <= '1';
-                    wait until falling_edge(Out_OpReady);
-                    In_OpValid <= '0';
+                    In_Valid <= '1';
+                    wait until falling_edge(In_Ready);
+                    In_Valid <= '0';
                     if i < Depth_g/2 then --Removed pairs, check unknown
-                        wait until rising_edge(Out_OpReady);
+                        wait until rising_edge(In_Ready);
                         check(Out_KeyUnknown = '1', "Coherent value search result");
                     else -- Not removed pairs, check valid
-                        In_DataReady <= '1';
-                        wait until rising_edge(Out_DataValid);
+                        Out_Ready <= '1';
+                        wait until rising_edge(Out_Valid);
                         wait until rising_edge(Clk);
-                        In_DataReady <= '0';
+                        Out_Ready <= '0';
                         check_equal(Out_Value, TestValues(i), "Check output value");
-                        wait until rising_edge(Out_OpReady);
+                        wait until rising_edge(In_Ready);
                         check(Out_KeyUnknown = '0', "Coherent value search result");
                     end if;
                 end loop;
@@ -379,17 +379,17 @@ begin
                 --Clear all keys
                 report "Clear all keys";
                 In_Clear <= '1';
-                wait until rising_edge(Out_OpReady);
+                wait until rising_edge(In_Ready);
                 In_Clear <= '0';
                 --Check coherent key search output
                 report "Check coherent key search output";
                 In_Read <= '1';
                 for i in 0 to Depth_g-1 loop
                     In_Key <= TestKeys(i);
-                    In_OpValid <= '1';
-                    wait until falling_edge(Out_OpReady);
-                    In_OpValid <= '0';
-                    wait until rising_edge(Out_OpReady);
+                    In_Valid <= '1';
+                    wait until falling_edge(In_Ready);
+                    In_Valid <= '0';
+                    wait until rising_edge(In_Ready);
                     check(Out_KeyUnknown = '1', "Coherent value search result");
                 end loop;
                 In_Read <= '0';

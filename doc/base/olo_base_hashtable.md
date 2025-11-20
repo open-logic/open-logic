@@ -65,7 +65,7 @@ Current supported hash algorithms are:
 | Name          | In/Out | Length    | Default   | Latency (ticks)| Description |
 | :-------      | :----- | :-------- | :-------   | :---- | :-------------------------------------------    |
 | In_Write      | in     | 1         | -         | search_key + 1 | (Over)Write In_Key-In_Value pair                 |
-| In_Read       | in     | 1         | -         | search_key + In_DataReady_delay + 1 | Read Out_Value corresponding to In_Key           |
+| In_Read       | in     | 1         | -         | search_key + Out_Ready_delay + 1 | Read Out_Value corresponding to In_Key           |
 | In_Remove     | in     | 1         | -         | search_key + cluster_comp + 1 | Remove Key-Value pair corresponding to In_Key    |
 | In_Clear      | in     | 1         | -         | Width_g | Clear All Key-Value pairs from memory            |
 | In_NextKey    | in     | 1         | -         | distance_from_next_key | Find next valid Out_Key in memory                |
@@ -79,18 +79,18 @@ Latency of *cluster_comp* is: *1 + (cluster_size - element_position_in_cluster)*
 
 | Name | In/Out | Length | Default | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| Out_OpReady      | out    | 1         | -         | Axi-Stream handshaking signal that hashtable is ready to accept an operation |
-| In_OpValid      | in     | 1         | -         | Axi_Stream handshaking signal that an operation is requested |
-| In_DataReady      | in    | 1         | -         | Axi-Stream handshaking signal that user is ready to accept data |
-| Out_DataValid      | out     | 1         | -         | Axi_Stream handshaking signal that hashtable has data for the user |
+| In_Ready      | out    | 1         | -         | Axi-Stream handshaking signal that hashtable is ready to accept an operation |
+| In_Valid      | in     | 1         | -         | Axi_Stream handshaking signal that an operation is requested |
+| Out_Ready      | in    | 1         | -         | Axi-Stream handshaking signal that user is ready to accept data |
+| Out_Valid      | out     | 1         | -         | Axi_Stream handshaking signal that hashtable has data for the user |
 
 ### Status
 
 | Name              | In/Out | Length           | Default | Description                                                     |
 | :--------         | :----- | :--------------- | ------- | :----------------------                                         |
 | Out_KeyUnknown    | out    | 1                | N/A     | _In_Key_ does not exist in the hashtable (WR/RM/RD operations)  |
-| Out_Full          | out    | 1                | N/A     | Full                                                            |
-| Out_Pairs          | out    | _log2ceil(Depth_g)_+1 | N/A     | Number of Key-Value pairs stored |
+| Status_Full          | out    | 1                | N/A     | Full                                                            |
+| Status_Pairs          | out    | _log2ceil(Depth_g)_+1 | N/A     | Number of Key-Value pairs stored |
 
 
 ## Architecture
@@ -117,7 +117,7 @@ Read searches for _In_Key_ in the hashtable. If the key is known, _Out_KeyUnknow
 
 Write searches for _In_Key_ in the hashtable. If the key is found, _Out_KeyUnknown_ is reset, _In_Value_ and _In_Key_ are stored in memory along with the `used` bit which is set to 1 to signal that this spot is occupied
 
-When hashtable is full (_Out_Full_ = '1'), it is still possible to overwrite existing keys. In such cases, use _Out_KeyUnknown_ to known if new value was overwritten (_Out_KeyUnknown_ = '0') or ignored (_Out_KeyUnknown_ = '1')
+When hashtable is full (_Status_Full_ = '1'), it is still possible to overwrite existing keys. In such cases, use _Out_KeyUnknown_ to known if new value was overwritten (_Out_KeyUnknown_ = '0') or ignored (_Out_KeyUnknown_ = '1')
 
 #### Removal 
 
