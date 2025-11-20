@@ -85,18 +85,7 @@ architecture rtl of olo_base_hashtable is
         user_data    : Data_r;
     end record;
 
-    -- Reset registers value
-    constant RegClear_c : Reg_r := (
-        Clear_s,
-        (others => '0'),
-        (others => '0'),
-        (others => '0'),
-        (others => '0'),
-        '0',
-        Idle_s,
-        DataClear_c
-    );
-    signal ResetVal     : Reg_r;
+    signal ResetVal : Reg_r;
 
     signal RegNext, RegCurr : Reg_r;
 
@@ -195,19 +184,6 @@ begin
                 RegNext.rd_idx    <= Hash_Out;
                 RegNext.ht_state  <= SearchKey_s;
 
-            when NextKey_s =>
-                -- Read next index until a used one is found
-                if Ram_RdData.used = '1' then
-                    Out_Valid <= '1';
-                    if Out_Ready = '1' then
-                        RegNext.ht_state <= Idle_s;
-                    end if;
-                else
-                    Ram_RdEna      <= '1';
-                    Ram_RdAddr     <= RegCurr.rd_idx + 1;
-                    RegNext.rd_idx <= RegCurr.rd_idx + 1;
-                end if;
-
             when SearchKey_s =>
                 -- Key found
                 if Ram_RdData.used = '1' and Ram_RdData.key = RegCurr.user_data.key then
@@ -230,6 +206,19 @@ begin
                 -- Key not found
                 else
                     RegNext.ht_state <= RegCurr.after_search;
+                end if;
+
+            when NextKey_s =>
+                -- Read next index until a used one is found
+                if Ram_RdData.used = '1' then
+                    Out_Valid <= '1';
+                    if Out_Ready = '1' then
+                        RegNext.ht_state <= Idle_s;
+                    end if;
+                else
+                    Ram_RdEna      <= '1';
+                    Ram_RdAddr     <= RegCurr.rd_idx + 1;
+                    RegNext.rd_idx <= RegCurr.rd_idx + 1;
                 end if;
 
             when Clear_s =>
@@ -310,21 +299,23 @@ begin
                 null;
         end case;
 
-        -- Configure reset value
-        ResetVal <= RegClear_c;
-        if ClearAfterReset_g then
-            ResetVal.ht_state <= Clear_s;
-        end if;
-
     end process;
 
     -- Register process
     p_reg : process (Clk, Rst) is
     begin
-        if Rst = '1' then
-            RegCurr <= ResetVal;
-        elsif rising_edge(Clk) then
-            RegCurr <= RegNext;
+        if rising_edge(Clk) then
+            if Rst = '1' then
+                if ClearAfterReset_g then
+                    RegCurr.ht_state <= Clear_s;
+                else
+                    RegCurr.ht_state <= Idle_s;
+                end if;
+                RegCurr.pairs  <= to_unsigned(0, PairsIdx_c+1);
+                RegCurr.wr_idx <= to_unsigned(0, PairsIdx_c);
+            else
+                RegCurr <= RegNext;
+            end if;
         end if;
     end process;
 
