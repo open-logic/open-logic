@@ -12,8 +12,8 @@ entity olo_base_hashtable is
         KeyWidth_g        : positive;
         ValueWidth_g      : positive;
         Hash_g            : string   := "LCG";
-        LcgMult_g         : positive := 1103515245; --  For LCG. From GCC's implementation
-        LcgIncr_g         : positive := 12345; --  For LCG. From GCC's implementation
+        Hash_Lcg_Mult_g         : positive := 1103515245; --  For LCG. From GCC's implementation
+        Hash_Lcg_Incr_g         : positive := 12345; --  For LCG. From GCC's implementation
         RamStyle_g        : string   := "auto";
         RamBehavior_g     : string   := "RBW";
         ClearAfterReset_g : boolean  := true
@@ -312,8 +312,8 @@ begin
     g_hash_type_gen : if Hash_g = "LCG" generate
 
         Hash_Out <= lcg_prng(unsigned(Hash_InKey),
-                             LcgMult_g,
-                             LcgIncr_g)(Hash_Out'range);
+                             Hash_Lcg_Mult_g,
+                             Hash_Lcg_Incr_g)(Hash_Out'range);
 
     else generate -- Do nothing, just take LSB
 

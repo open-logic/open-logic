@@ -18,8 +18,8 @@ entity olo_base_hashtable_tb is
         KeyWidth_g : positive := 16;
         ValueWidth_g : positive := 32;
         Hash_g : string := "LCG";
-        LcgMult_g : positive := 1103515245;
-        LcgIncr_g : positive := 12345;
+        Hash_Lcg_Mult_g : positive := 1103515245;
+        Hash_Lcg_Incr_g : positive := 12345;
         RamStyle_g : string := "auto";
         RamBehavior_g : string := "RBW";
         ClearAfterReset_g : boolean := true
@@ -214,13 +214,13 @@ begin
                 for i in 1 to Depth_g-1 loop
                     TestKeys(i) := std_logic_vector(lcg_prng(
                         unsigned(TestKeys(i-1)), 
-                        LcgMult_g, 
-                        LcgIncr_g
+                        Hash_Lcg_Mult_g, 
+                        Hash_Lcg_Incr_g
                         )(KeyWidth_g-1 downto 0));
                     TestValues(i) := std_logic_vector(lcg_prng(
                         unsigned(TestValues(i-1)), 
-                        LcgMult_g, 
-                        LcgIncr_g
+                        Hash_Lcg_Mult_g, 
+                        Hash_Lcg_Incr_g
                         )(ValueWidth_g-1 downto 0));
                     report "Key: " & 
                         integer'image(to_integer(unsigned(TestKeys(i))));
@@ -289,8 +289,8 @@ begin
                 report "Modify existing key";
                 TestValues(0) := std_logic_vector(lcg_prng(
                     unsigned(TestValues(Depth_g-1)), 
-                    LcgMult_g, 
-                    LcgIncr_g
+                    Hash_Lcg_Mult_g, 
+                    Hash_Lcg_Incr_g
                     )(ValueWidth_g-1 downto 0));
                 --Try to write new value on existing key
                 report "Try to write new value on existing key";
@@ -320,8 +320,8 @@ begin
                 report "Create excess key-value pair";
                 In_Key <= std_logic_vector(lcg_prng(
                     unsigned(TestKeys(Depth_g-1)), 
-                    LcgMult_g, 
-                    LcgIncr_g
+                    Hash_Lcg_Mult_g, 
+                    Hash_Lcg_Incr_g
                     )(KeyWidth_g-1 downto 0));
                 In_Value <= TEST_VALUE(ValueWidth_g-1 downto 0);
                 --Try to write new key
