@@ -208,18 +208,6 @@ begin
                     RegNext.rd_idx <= RegCurr.rd_idx + 1;
                 end if;
 
-            when Clear_s =>
-                -- Go through all indices and clear data
-                Ram_WrEna      <= '1';
-                Ram_WrData     <= DataClear_c;
-                Ram_WrAddr     <= RegCurr.wr_idx;
-                RegNext.wr_idx <= RegCurr.wr_idx + 1;
-                Ram_RdEna      <= '1';
-                if RegCurr.wr_idx = Depth_g-1 then
-                    RegNext.pairs    <= to_unsigned(0, RegNext.pairs'length);
-                    RegNext.ht_state <= Idle_s;
-                end if;
-
             when SearchKey_s =>
                 -- Key found
                 if Ram_RdData.used = '1' and Ram_RdData.key = RegCurr.user_data.key then
@@ -242,6 +230,18 @@ begin
                 -- Key not found
                 else
                     RegNext.ht_state <= RegCurr.after_search;
+                end if;
+
+            when Clear_s =>
+                -- Go through all indices and clear data
+                Ram_WrEna      <= '1';
+                Ram_WrData     <= DataClear_c;
+                Ram_WrAddr     <= RegCurr.wr_idx;
+                RegNext.wr_idx <= RegCurr.wr_idx + 1;
+                Ram_RdEna      <= '1';
+                if RegCurr.wr_idx = Depth_g-1 then
+                    RegNext.pairs    <= to_unsigned(0, RegNext.pairs'length);
+                    RegNext.ht_state <= Idle_s;
                 end if;
 
             when Write_s =>
