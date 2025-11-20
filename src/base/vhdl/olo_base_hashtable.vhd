@@ -85,8 +85,6 @@ architecture rtl of olo_base_hashtable is
         user_data    : Data_r;
     end record;
 
-    signal ResetVal : Reg_r;
-
     signal RegNext, RegCurr : Reg_r;
 
     signal Ram_WrAddr, Ram_RdAddr : unsigned(PairsIdx_c-1 downto 0);
@@ -322,9 +320,10 @@ begin
     -- Hash
     g_hash_type_gen : if Hash_g = "LCG" generate
 
-        Hash_Out <= lcg_prng(unsigned(Hash_InKey),
+        Hash_Out <= lcgPrng(unsigned(Hash_InKey),
                              Hash_Lcg_Mult_g,
-                             Hash_Lcg_Incr_g)(Hash_Out'range);
+                             Hash_Lcg_Incr_g,
+                             Hash_Out'length);
 
     else generate -- Do nothing, just take LSB
 

@@ -212,16 +212,16 @@ begin
                 TestKeys(0) := TEST_KEY(KeyWidth_g-1 downto 0);
                 TestValues(0) := TEST_VALUE(ValueWidth_g-1 downto 0);
                 for i in 1 to Depth_g-1 loop
-                    TestKeys(i) := std_logic_vector(lcg_prng(
+                    TestKeys(i) := std_logic_vector(lcgPrng(
                         unsigned(TestKeys(i-1)), 
                         Hash_Lcg_Mult_g, 
-                        Hash_Lcg_Incr_g
-                        )(KeyWidth_g-1 downto 0));
-                    TestValues(i) := std_logic_vector(lcg_prng(
+                        Hash_Lcg_Incr_g,
+                        KeyWidth_g));
+                    TestValues(i) := std_logic_vector(lcgPrng(
                         unsigned(TestValues(i-1)), 
                         Hash_Lcg_Mult_g, 
-                        Hash_Lcg_Incr_g
-                        )(ValueWidth_g-1 downto 0));
+                        Hash_Lcg_Incr_g,
+                        ValueWidth_g));
                     report "Key: " & 
                         integer'image(to_integer(unsigned(TestKeys(i))));
                 end loop;
@@ -287,11 +287,11 @@ begin
                 In_NextKey <= '0';
                 --Modify existing key
                 report "Modify existing key";
-                TestValues(0) := std_logic_vector(lcg_prng(
+                TestValues(0) := std_logic_vector(lcgPrng(
                     unsigned(TestValues(Depth_g-1)), 
                     Hash_Lcg_Mult_g, 
-                    Hash_Lcg_Incr_g
-                    )(ValueWidth_g-1 downto 0));
+                    Hash_Lcg_Incr_g,
+                    ValueWidth_g));
                 --Try to write new value on existing key
                 report "Try to write new value on existing key";
                 In_Write <= '1';
@@ -318,11 +318,11 @@ begin
                 wait until rising_edge(In_Ready);
                 --Create excess key-value pair
                 report "Create excess key-value pair";
-                In_Key <= std_logic_vector(lcg_prng(
+                In_Key <= std_logic_vector(lcgPrng(
                     unsigned(TestKeys(Depth_g-1)), 
                     Hash_Lcg_Mult_g, 
-                    Hash_Lcg_Incr_g
-                    )(KeyWidth_g-1 downto 0));
+                    Hash_Lcg_Incr_g,
+                    KeyWidth_g));
                 In_Value <= TEST_VALUE(ValueWidth_g-1 downto 0);
                 --Try to write new key
                 report "Try to write new key";

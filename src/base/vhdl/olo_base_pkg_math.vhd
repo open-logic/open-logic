@@ -149,7 +149,7 @@ package olo_base_pkg_math is
     function minArray (a : in RealArray_t) return real;
 
     -- Linear Congruential Generator Pseudo-Random Number
-    function lcg_prng(a : unsigned; mult, incr : integer) return unsigned;
+    function lcgPrng(a : unsigned; mult, incr, modBits : integer) return unsigned;
 
 end package;
 
@@ -659,15 +659,15 @@ package body olo_base_pkg_math is
     end function;
     
     -- *** Calculate next pseudorandom value for Linear Congruential Generator ***
-    function lcg_prng(a : unsigned; mult, incr : integer) return unsigned is
+    function lcgPrng(a : unsigned; mult, incr, modBits : integer) return unsigned is
         variable unsMult : unsigned(31 downto 0);
-        variable unsIncr, lehmer_prng, lcg : unsigned(a'length + 32 downto 0);
+        variable unsIncr, lehmerPrng, lcg : unsigned(a'length + 32 downto 0);
     begin
         unsMult := to_unsigned(mult, 32);
         unsIncr := to_unsigned(incr, a'length+33);
-        lehmer_prng := '0' & (a * unsMult);
-        lcg := lehmer_prng + unsIncr;
-        return lcg;
+        lehmerPrng := '0' & (a * unsMult);
+        lcg := lehmerPrng + unsIncr;
+        return lcg(modBits-1 downto 0);
     end function;
 
 end package body;
