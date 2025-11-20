@@ -134,6 +134,7 @@ begin
         report "Memory underuse over 2x: Not enough different key values to fill half the hashtable";
 
     p_ht_fsm : process (all) is
+        variable Ops_v : std_logic_vector(4 downto 0);
     begin
         -- Default values
         RegNext    <= RegCurr; -- Keep current register values by default
@@ -152,6 +153,16 @@ begin
                 -- Hashtable ready for new operation
                 In_Ready <= '1';
                 if In_Valid <= '1' then -- AXIS handshake
+                    -- synthesis off
+                    -- Only one operation can be requested at a time
+                    Ops_v := (4 => In_Read,
+                              3 => In_Write,
+                              2 => In_Remove,
+                              1 => In_NextKey,
+                              0 => In_Clear);
+                    assert (std_logic_vector(unsigned(Ops_v)-1) and Ops_v) = "00000"
+                        report "Only one hashtable operation should be requested at a time";
+                    -- synthesis on
                     RegNext.user_data <= (In_Key, In_Value, '1'); -- Memorise input data
                     if In_Write = '1' then
                         RegNext.after_search <= Write_s;
