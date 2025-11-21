@@ -33,13 +33,14 @@ entity olo_base_hashtable is
         In_Remove         : in    std_logic;
         In_Clear          : in    std_logic;
         In_NextKey        : in    std_logic;
+        -- AXI Handshaking
         In_Valid          : in    std_logic;
         In_Ready          : out   std_logic;
-        -- AXI Handshaking
-        Out_Key           : out   std_logic_vector(KeyWidth_g-1 downto 0);
-        Out_Value         : out   std_logic_vector(ValueWidth_g-1 downto 0);
         -- Output Interface --
         -- Data
+        Out_Key           : out   std_logic_vector(KeyWidth_g-1 downto 0);
+        Out_Value         : out   std_logic_vector(ValueWidth_g-1 downto 0);
+        -- AXI Handshaking
         Out_Valid         : out   std_logic;
         Out_Ready         : in    std_logic;
         -- Result

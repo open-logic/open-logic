@@ -45,50 +45,40 @@ Current supported hash algorithms are:
 | Clk  | in     | 1      | -       | Clock                                           |
 | Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_) |
 
-### Input Data
+### Input
 
-| Name     | In/Out | Length        | Default   | Description                                  |
-| :------- | :----- | :--------     | -------   | :------------------------------------------- |
-| In_Key   | in     | _KeyWidth_g_   | -         | Input key                                    |
-| In_Value | in     | _ValueWidth_g_ | -         | Input Value                                  |
-
-### Output Data
-
-| Name      | In/Out | Length           | Default | Description                                   |
-| :-------- | :----- | :--------        | ------- | :-------------------------------------------- |
-| Out_Key   | out    | _KeyWidth_g_      | N/A     | Stored key output |
-| Out_Value | out    | _ValueWidth_g_    | N/A     | Output value                                  |
-
-
-### Operations
-
-| Name          | In/Out | Length    | Default   | Latency (ticks)| Description |
-| :-------      | :----- | :-------- | :-------   | :---- | :-------------------------------------------    |
+| Name     | In/Out | Length        | Default   | Latency (ticks) | Description                                  |
+| :------- | :----- | :--------     | -------   | :--- | :------------------------------------------- |
+| In_Key   | in     | _KeyWidth_g_   | -         | N/A | Input key                                    |
+| In_Value | in     | _ValueWidth_g_ | -         | N/A | Input Value                                  |
 | In_Write      | in     | 1         | -         | search_key + 1 | (Over)Write In_Key-In_Value pair                 |
 | In_Read       | in     | 1         | -         | search_key + Out_Ready_delay + 1 | Read Out_Value corresponding to In_Key           |
 | In_Remove     | in     | 1         | -         | search_key + cluster_comp + 1 | Remove Key-Value pair corresponding to In_Key    |
 | In_Clear      | in     | 1         | -         | Width_g | Clear All Key-Value pairs from memory            |
 | In_NextKey    | in     | 1         | -         | distance_from_next_key | Find next valid Out_Key in memory                |
+| In_Ready      | out    | 1         | -         | N/A. | Axi-Stream handshaking signal that hashtable is ready to accept an operation |
+| In_Valid      | in     | 1         | -         | N/A. | Axi_Stream handshaking signal that an operation is requested |
 
 Operations are given in order of priority: if multiple operations are requested, only the highest in the list is performed
 
 Latency of search_key is: *1 + element_position_in_cluster*
+
 Latency of *cluster_comp* is: *1 + (cluster_size - element_position_in_cluster)*
 
-### Handshaking
+### Output
 
-| Name | In/Out | Length | Default | Description |
-| :--- | :--- | :--- | :--- | :--- |
-| In_Ready      | out    | 1         | -         | Axi-Stream handshaking signal that hashtable is ready to accept an operation |
-| In_Valid      | in     | 1         | -         | Axi_Stream handshaking signal that an operation is requested |
+| Name      | In/Out | Length           | Default | Description                                   |
+| :-------- | :----- | :--------        | ------- | :-------------------------------------------- |
+| Out_Key   | out    | _KeyWidth_g_      | N/A     | Stored key output |
+| Out_Value | out    | _ValueWidth_g_    | N/A     | Output value                                  |
 | Out_Ready      | in    | 1         | -         | Axi-Stream handshaking signal that user is ready to accept data |
 | Out_Valid      | out     | 1         | -         | Axi_Stream handshaking signal that hashtable has data for the user |
+| Out_KeyUnknown    | out    | 1                | N/A     | _In_Key_ does not exist in the hashtable (WR/RM/RD operations)  |
 
 ### Status
 
 | Name              | In/Out | Length           | Default | Description                                                     |
 | :--------         | :----- | :--------------- | ------- | :----------------------                                         |
-| Out_KeyUnknown    | out    | 1                | N/A     | _In_Key_ does not exist in the hashtable (WR/RM/RD operations)  |
 | Status_Full          | out    | 1                | N/A     | Full                                                            |
 | Status_Pairs          | out    | _log2ceil(Depth_g)_+1 | N/A     | Number of Key-Value pairs stored |
 
