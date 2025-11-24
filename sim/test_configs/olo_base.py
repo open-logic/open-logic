@@ -351,12 +351,15 @@ def add_configs(olo_tb):
     for Mode in ["SMOOTH", "BLOCK"]:
         named_config(tb, {'Mode_g': Mode})
     # Test different Period/MaxSamples combinations
-    #for Period, MaxSamples in [(10, 3), (20, 5), (50, 10)]:
-    #    for Mode in ["SMOOTH", "BLOCK"]:
-    #        named_config(tb, {'Mode_g': Mode, 'Period_g': Period, 'MaxSamples_g': MaxSamples})
-    # Test RegisterReady_g option
-    #for RegisterReady in [True, False]:
-    #    named_config(tb, {'RegisterReady_g': RegisterReady})
+    for Period, MaxSamples in [(10, 2), (5, 3), (5, 1), (1, 1)]:
+        for Mode in ["SMOOTH", "BLOCK"]:
+            named_config(tb, {'Mode_g': Mode, 'Period_g': Period, 'MaxSamples_g': MaxSamples})
+    # Test different RegisterReady settings
+    for RegisterReady in [True, False]:
+        named_config(tb, {'RegisterReady_g': RegisterReady})
     # Test with random stall enabled
-    #for RandomStall in [True, False]:
-    #    named_config(tb, {'RandomStall_g': RandomStall})
+    for RandomStall in [True, False]:
+        named_config(tb, {'RandomStall_g': RandomStall})
+    # Test different data widths
+    for Width in [8, 16]:
+        named_config(tb, {'Width_g': Width})

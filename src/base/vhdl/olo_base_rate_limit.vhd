@@ -62,21 +62,9 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_rate_limit is
 
-    -- Two process method signals
-    type TwoProcess_r is record
-        -- SMOOTH mode signals
-        SmoothCounter   : unsigned(log2ceil(Period_g+MaxSamples_g)-1 downto 0);
-        -- BLOCK mode signals
-        PeriodCounter   : integer range 0 to Period_g-1;
-        SamplesCounter  : integer range 0 to MaxSamples_g;
-    end record;
-
-    signal r, r_next : TwoProcess_r;
-    
-    -- Internal signals to avoid reading back output ports
-    signal Out_Valid_i : std_logic;
-    signal In_Ready_i  : std_logic;
-    signal AllowSample : std_logic;
+    signal Input_Ready : std_logic;
+    signal Input_Valid : std_logic;
+    signal Input_Data  : std_logic_vector(Width_g-1 downto 0);
 
 begin
 
@@ -90,97 +78,154 @@ begin
         report "olo_base_rate_limit: Mode_g must be either ""SMOOTH"" or ""BLOCK"", got """ & Mode_g & """"
         severity failure;
 
-    ---------------------------------------------------------------------------------------------------
-    -- Rate Limiting Logic (RegisterReady_g = false case only for now)
-    ---------------------------------------------------------------------------------------------------
-    
-    -- Combinatorial process
-    p_comb : process (all) is
-        variable v : TwoProcess_r;
-        variable OutputTransfer_v : boolean;
-    begin
-        -- Hold variables stable
-        v := r;
+    -- *** Add Input Register if Required ***
+    g_input_register : if RegisterReady_g generate
+        i_pl_stage : entity work.olo_base_pl_stage
+            generic map (
+                Width_g => Width_g 
+            )
+            port map (
+                Clk       => Clk,
+                Rst       => Rst,
+                In_Data   => In_Data,
+                In_Valid  => In_Valid,
+                In_Ready  => In_Ready,
+                Out_Data  => Input_Data,
+                Out_Valid => Input_Valid,
+                Out_Ready => Input_Ready
+            );
         
-        -- Detect successful output transfer (rate limiter output to downstream)
-        OutputTransfer_v := (Out_Valid_i = '1' and Out_Ready = '1');
+    end generate;
+    g_no_input_register : if not RegisterReady_g generate
+        Input_Valid <= In_Valid;
+        In_Ready    <= Input_Ready;
+        Input_Data  <= In_Data;
+    end generate;
 
-        ---------------------------------------------------------------------------------------------------
-        -- SMOOTH Mode Logic
-        ---------------------------------------------------------------------------------------------------
-        if Mode_g = "SMOOTH" then
+    -- *** Generate statement for NO RATE LIMIT when Period_g = 1 ***
+    g_no_rate_limit : if Period_g = 1 generate
+        -- Direct wire-through without any rate limiting
+        Out_Valid <= Input_Valid;
+        Input_Ready  <= Out_Ready;
+        Out_Data  <= Input_Data;
+    end generate;
 
-            -- Update counter: either decrement (on transfer) OR increment (building credit)
-            if OutputTransfer_v then
-                v.SmoothCounter := r.SmoothCounter - Period_g;
-            elsif r.SmoothCounter < Period_g then
-                v.SmoothCounter := r.SmoothCounter + MaxSamples_g;
-            end if;
+    -- *** Generate statement for ACTIVE RATE LIMIT when Period_g > 1 ***
+    g_rate_limit : if Period_g > 1 generate
+        -- Two process method signals
+        type TwoProcess_r is record
+            -- SMOOTH mode signals
+            SmoothCounter   : unsigned(log2ceil(Period_g+MaxSamples_g)-1 downto 0);
+            -- BLOCK mode signals
+            PeriodCounter   : integer range 0 to Period_g-1;
+            SamplesCounter  : integer range 0 to MaxSamples_g+1;
+            -- Burst detection
+            CurrentBurst    : integer range 0 to MaxSamples_g+1;  -- Current consecutive burst count
+            MaxBurst        : integer range 0 to MaxSamples_g+1;  -- Maximum burst size detected
+        end record;
 
-            -- Allow sample logic
-            if r.SmoothCounter >= Period_g then
-                AllowSample <= '1';
-            else
-                AllowSample <= '0';
-            end if;
-            
-        ---------------------------------------------------------------------------------------------------
-        -- BLOCK Mode Logic  
-        ---------------------------------------------------------------------------------------------------
-        else -- Mode_g = "BLOCK"
+        signal r, r_next : TwoProcess_r;
+        
+        -- Internal signals to avoid reading back output ports
+        signal Out_Valid_i : std_logic;
+        signal In_Ready_i  : std_logic;
+        signal AllowSample : std_logic;
 
-            -- Samples counting (increment only when actually outputting)
-            if OutputTransfer_v then
-                v.SamplesCounter := r.SamplesCounter + 1;
-            end if;
-
-            -- Period Handling
-            if r.PeriodCounter = Period_g - 1 then
-                v.PeriodCounter := 0;
-                v.SamplesCounter := 0; 
-            else
-                v.PeriodCounter := r.PeriodCounter + 1;
-            end if;
-
-            -- Allow sample logic
-            if r.SamplesCounter < MaxSamples_g - 1 then
-                AllowSample <= '1';
-            else
-                AllowSample <= '0';
-            end if;
-        end if;
-
-        -- Assign to next state
-        r_next <= v;
-    end process;
-
-    -- Sequential process  
-    p_seq : process (Clk) is
     begin
-        if rising_edge(Clk) then
-            r <= r_next;
-            if Rst = '1' then
-                r.SmoothCounter  <= (others => '0');
-                r.PeriodCounter  <= 0; 
-                r.SamplesCounter <= 0;
+
+        ---------------------------------------------------------------------------------------------------
+        -- Rate Limiting Logic (RegisterReady_g = false case only for now)
+        ---------------------------------------------------------------------------------------------------
+        
+        -- Combinatorial process
+        p_comb : process (all) is
+            variable v : TwoProcess_r;
+            variable OutputTransfer_v : boolean;
+            constant SmoothLimit_c : positive := Period_g - MaxSamples_g; -- off by one correction
+        begin
+            -- Hold variables stable
+            v := r;
+            
+            -- Detect successful output transfer (rate limiter output to downstream)
+            OutputTransfer_v := (Out_Valid_i = '1' and Out_Ready = '1');
+
+            ---------------------------------------------------------------------------------------------------
+            -- SMOOTH Mode Logic
+            ---------------------------------------------------------------------------------------------------
+            if Mode_g = "SMOOTH" then
+
+                -- Update counter: either decrement (on transfer) OR increment (building credit)
+                if OutputTransfer_v then
+                    v.SmoothCounter := r.SmoothCounter - SmoothLimit_c;
+                elsif r.SmoothCounter < SmoothLimit_c then
+                    v.SmoothCounter := r.SmoothCounter + MaxSamples_g;
+                end if;
+
+                -- Allow sample logic
+                if r.SmoothCounter >= SmoothLimit_c then
+                    AllowSample <= '1';
+                else
+                    AllowSample <= '0';
+                end if;
+                
+            ---------------------------------------------------------------------------------------------------
+            -- BLOCK Mode Logic  
+            ---------------------------------------------------------------------------------------------------
+            else -- Mode_g = "BLOCK"
+
+                -- Samples counting (increment only when actually outputting)
+                if OutputTransfer_v then
+                    v.SamplesCounter := r.SamplesCounter + 1;
+                end if;
+
+                -- Period Handling
+                if r.PeriodCounter = Period_g - 1 then
+                    v.PeriodCounter := 0;
+                    v.SamplesCounter := 0; 
+                else
+                    v.PeriodCounter := r.PeriodCounter + 1;
+                end if;
+
+                -- Allow sample logic
+                if r.SamplesCounter < MaxSamples_g then
+                    AllowSample <= '1';
+                else
+                    AllowSample <= '0';
+                end if;
             end if;
-        end if;
-    end process;
 
+            -- Assign to next state
+            r_next <= v;
+        end process;
 
-    ---------------------------------------------------------------------------------------------------
-    -- Internal Signal Assignment
-    ---------------------------------------------------------------------------------------------------
-    -- Only allow output when rate limiter permits and input is valid
-    Out_Valid_i <= In_Valid and AllowSample;
-    -- Only assert ready when downstream is ready and rate limiter allows
-    In_Ready_i  <= Out_Ready and AllowSample;
+        -- Sequential process  
+        p_seq : process (Clk) is
+        begin
+            if rising_edge(Clk) then
+                r <= r_next;
+                if Rst = '1' then
+                    r.SmoothCounter  <= (others => '0');
+                    r.PeriodCounter  <= 0; 
+                    r.SamplesCounter <= 0;
+                end if;
+            end if;
+        end process;
 
-    ---------------------------------------------------------------------------------------------------
-    -- Output Port Assignment
-    ---------------------------------------------------------------------------------------------------
-    Out_Valid <= Out_Valid_i;
-    In_Ready  <= In_Ready_i;
-    Out_Data  <= In_Data;
+        ---------------------------------------------------------------------------------------------------
+        -- Internal Signal Assignment
+        ---------------------------------------------------------------------------------------------------
+        -- Only allow output when rate limiter permits and input is valid
+        Out_Valid_i <= Input_Valid and AllowSample;
+        -- Only assert ready when downstream is ready and rate limiter allows
+        In_Ready_i  <= Out_Ready and AllowSample;
+
+        ---------------------------------------------------------------------------------------------------
+        -- Output Port Assignment
+        ---------------------------------------------------------------------------------------------------
+        Out_Valid <= Out_Valid_i;
+        Input_Ready  <= In_Ready_i;
+        Out_Data  <= Input_Data;
+
+    end generate;
 
 end architecture;

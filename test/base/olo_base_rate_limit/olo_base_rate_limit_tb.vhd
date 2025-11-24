@@ -66,55 +66,12 @@ architecture sim of olo_base_rate_limit_tb is
     -----------------------------------------------------------------------------------------------
     constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master (
         data_length => DataWidth_c,
-        stall_config => new_stall_config(choose(RandomStall_g, 0.1, 0.0), 0, 3*Period_g)
+        stall_config => new_stall_config(choose(RandomStall_g, 0.3, 0.0), 0, 2*Period_g)
     );
     constant AxisSlave_c  : axi_stream_slave_t  := new_axi_stream_slave (
         data_length => DataWidth_c,
-        stall_config => new_stall_config(choose(RandomStall_g, 0.1, 0.0), 0, 3*Period_g)
+        stall_config => new_stall_config(choose(RandomStall_g, 0.3, 0.0), 0, 2*Period_g)
     );
-
-    -----------------------------------------------------------------------------------------------
-    -- Throughput Measurement Procedures
-    -----------------------------------------------------------------------------------------------
-    procedure StartThroughputMeasurement is
-    begin
-        ThroughputStart_v   := now;
-        ThroughputSamples_v := 0;
-        ThroughputActive_v  := true;
-    end procedure;
-
-    procedure StopThroughputMeasurement is
-    begin
-        ThroughputEnd_v    := now;
-        ThroughputActive_v := false;
-    end procedure;
-
-    function GetAverageThroughput (
-        constant StartTime : time;
-        constant EndTime : time;
-        constant SampleCount : integer
-    ) return real is
-        variable Duration_v : time;
-        variable DurationSec_v : real;
-        variable Throughput_v : real;
-    begin
-        Duration_v := EndTime - StartTime;
-        if Duration_v > 0 ns then
-            DurationSec_v := real(Duration_v / 1 ns) * 1.0e-9;  -- Convert to seconds
-            Throughput_v := real(SampleCount) / DurationSec_v;
-        else
-            Throughput_v := 0.0;
-        end if;
-        return Throughput_v;
-    end function;
-
-    function GetExpectedThroughput return real is
-        variable ExpectedRate_v : real;
-    begin
-        -- Calculate expected throughput in samples per clock cycle
-        ExpectedRate_v := real(MaxSamples_g) / real(Period_g) * Clk_Frequency_c;
-        return ExpectedRate_v;
-    end function;
 
     -----------------------------------------------------------------------------------------------
     -- Test Helper Procedures
@@ -146,10 +103,11 @@ architecture sim of olo_base_rate_limit_tb is
     begin
         for i in 0 to NumSamples - 1 loop
             check_axi_stream(net, AxisSlave_c, toUslv(StartValue + i, DataWidth_c), 
-                           blocking => DelayBetweenSamples > 0 ns, 
+                           blocking => false, 
                            msg => "Sample " & integer'image(i) & " (value " & integer'image(StartValue + i) & ")");
-            if DelayBetweenSamples > 0 ns then
-                wait for DelayBetweenSamples - Clk_Period_c; -- Adjust for clock period already waited in check_axi_stream
+            if DelayBetweenSamples > Clk_Period_c then
+                -- A little bit less (1 ns less) to compensate for delta cycle.
+                wait for DelayBetweenSamples; -- Adjust for clock period already waited in check_axi_stream
             end if;
         end loop;
     end procedure;
@@ -162,10 +120,19 @@ architecture sim of olo_base_rate_limit_tb is
         variable ActualDuration_v : time;
     begin
         ActualDuration_v := EndTime - StartTime;
-        check(abs(ActualDuration_v - ExpectedDuration) <= Tolerance_c,
-              "Timing check failed. Expected: " & time'image(ExpectedDuration) & 
-              ", Actual: " & time'image(ActualDuration_v) & 
-              ", Tolerance: ±" & time'image(Tolerance_c));
+        -- Check within tolerance normally
+        if not RandomStall_g then
+            check(abs(ActualDuration_v - ExpectedDuration) <= Tolerance_c,
+                  "Timing check failed. Expected: " & time'image(ExpectedDuration) & 
+                  ", Actual: " & time'image(ActualDuration_v) & 
+                  ", Tolerance: ±" & time'image(Tolerance_c));
+        end if;
+        -- Duration may be higher with random stalls
+        if RandomStall_g then
+            check(ActualDuration_v >= ExpectedDuration,
+                  "Timing check failed. Actual duration " & time'image(ActualDuration_v) & 
+                  " is less than expected minimum " & time'image(ExpectedDuration));
+        end if;
     end procedure;
 
     -----------------------------------------------------------------------------------------------
@@ -179,6 +146,9 @@ architecture sim of olo_base_rate_limit_tb is
     signal Out_Data  : std_logic_vector(DataWidth_c - 1 downto 0)    := (others => '0');
     signal Out_Valid : std_logic                                     := '0';
     signal Out_Ready : std_logic                                     := '0';
+
+    -- Burst size detection
+    signal MaxBurstSize : integer := 0;
 
 begin
 
@@ -197,6 +167,8 @@ begin
         variable StartTime_v : time;
         variable EndTime_v : time;
         variable ExpectedDuration_v : time;
+        -- Test size
+        variable NumSamples_c : positive := MaxSamples_g * 20;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -225,73 +197,87 @@ begin
                 end if;
                 
             elsif run("DataCorrectness") then
-                -- Test data integrity through the entity without timing constraints
-                -- Push 3*MaxSamples_g words and verify they come out correctly
-                
-                -- Calculate number of samples to test
-                NumSamples_v := 3 * MaxSamples_g;
+                -- Test data integrity through the entity without timing constraints        
                 
                 -- Push data (non-blocking, let rate limiter handle the flow)
-                PushData(net, NumSamples_v, 16#1000#, 0 ns);
+                PushData(net, NumSamples_c, 16#1000#);
                 
                 -- Check data (blocking, wait for all samples to come through)
-                CheckData(net, NumSamples_v, 16#1000#);
+                CheckData(net, NumSamples_c, 16#1000#);
 
             elsif run("SlowInput") then
                 -- Test case 1: Input provided at 2x lower rate than allowed
-                NumSamples_v := 3 * MaxSamples_g;
                 InputDelay_v := 2.0 * ExpectedTimePerTransfer_c; -- 2x slower input
                 
                 -- Expected duration: limited by input rate since it's slower than rate limit
-                ExpectedDuration_v := real(NumSamples_v) * InputDelay_v;
+                ExpectedDuration_v := real(NumSamples_c) * InputDelay_v;
                 
                 StartTime_v := now;
-                CheckData(net, NumSamples_v, 16#2000#); -- Check non-blocking first, then push blocking
-                PushData(net, NumSamples_v, 16#2000#, InputDelay_v);
+                CheckData(net, NumSamples_c, 16#2000#); -- Check non-blocking first, then push blocking
+                PushData(net, NumSamples_c, 16#2000#, InputDelay_v);
                 EndTime_v := now;
                 
                 CheckTiming(StartTime_v, EndTime_v, ExpectedDuration_v);
 
             elsif run("SlowOutput") then  
                 -- Test case 2: Output accepted at 2x lower rate than allowed
-                NumSamples_v := 2 * MaxSamples_g;
                 OutputDelay_v := 2.0 * ExpectedTimePerTransfer_c; -- 2x slower output acceptance
                 
                 -- Expected duration: limited by output acceptance rate
-                ExpectedDuration_v := real(NumSamples_v) * OutputDelay_v;
+                ExpectedDuration_v := real(NumSamples_c) * OutputDelay_v;
                 
                 StartTime_v := now;
-                PushData(net, NumSamples_v, 16#3000#, 0 ns); -- push nonblocking, then check blocking
-                CheckData(net, NumSamples_v, 16#3000#, OutputDelay_v);
+                PushData(net, NumSamples_c, 16#3000#); -- push nonblocking, then check blocking
+                CheckData(net, NumSamples_c, 16#3000#, OutputDelay_v);
                 EndTime_v := now;
                 
                 CheckTiming(StartTime_v, EndTime_v, ExpectedDuration_v);
 
             elsif run("Throttled") then
                 -- Test case 3: Data pushed through at full speed (rate limited)
-                NumSamples_v := 3 * MaxSamples_g; -- Use more samples for better measurement
                 
                 -- Expected duration: limited by rate limiter
-                ExpectedDuration_v := real(NumSamples_v) * ExpectedTimePerTransfer_c;
+                ExpectedDuration_v := real(NumSamples_c) * ExpectedTimePerTransfer_c;
                 
                 StartTime_v := now;
-                PushData(net, NumSamples_v, 16#4000#, 0 ns);
-                CheckData(net, NumSamples_v, 16#4000#);
+                PushData(net, NumSamples_c, 16#4000#);
+                CheckData(net, NumSamples_c, 16#4000#);
+
+                -- Wait until everything done
+                wait_until_idle(net, as_sync(AxisMaster_c));
+                wait_until_idle(net, as_sync(AxisSlave_c));
                 EndTime_v := now;
+
+                -- Check burst behavior
+                if Period_g > 1 then -- For Period_g = 1, there is no rate limiting and burst size is not defined
+                    if Mode_g = "BLOCK" then
+                        -- In BLOCK mode, maximum burst size should not exceed MaxSamples_g
+                        check_equal(MaxBurstSize, MaxSamples_g,
+                            "Maximum burst size " & integer'image(MaxBurstSize) & 
+                            " exceeds MaxSamples_g " & integer'image(MaxSamples_g) & " in BLOCK mode");
+                    elsif Mode_g = "SMOOTH" and MaxSamples_g*2 < Period_g then
+                        -- In SMOOTH mode, maximum burst size should not exceed 1
+                        check_equal(MaxBurstSize, 1,
+                            "Maximum burst size " & integer'image(MaxBurstSize) & 
+                            " exceeds 1 in SMOOTH mode");
+                    end if;
+                end if;
                 
+                -- Check Timing
                 CheckTiming(StartTime_v, EndTime_v, ExpectedDuration_v);
                 
             end if;
 
             -- Wait for all verification components to be idle
             wait for 1 us;
-            wait_until_idle(net, as_sync(AxisMaster_c));
             wait_until_idle(net, as_sync(AxisSlave_c));
 
         end loop;
 
         -- TB done
         test_runner_cleanup(runner);
+            -- Report maximum burst size
+            report "Maximum burst size detected on output: " & integer'image(MaxBurstSize);
     end process;
 
     -----------------------------------------------------------------------------------------------
@@ -303,6 +289,34 @@ begin
             -- Count samples that pass through successfully
             if ThroughputActive_v and Out_Valid = '1' and Out_Ready = '1' then
                 ThroughputSamples_v := ThroughputSamples_v + 1;
+            end if;
+        end if;
+    end process;
+
+    -----------------------------------------------------------------------------------------------
+    -- Maximum Burst Size Detector
+    -----------------------------------------------------------------------------------------------
+    p_burst_monitor : process (Clk) is
+        variable BurstSize : integer := 0;
+        variable FirstBurst : boolean := true;
+    begin
+        if rising_edge(Clk) then
+            if Rst = '1' then
+                BurstSize := 0;
+                MaxBurstSize <= 0;
+                FirstBurst := true;
+            elsif Out_Valid = '1' and Out_Ready = '1' then
+                BurstSize := BurstSize + 1;
+                if BurstSize > MaxBurstSize then
+                    MaxBurstSize <= BurstSize;
+                end if;
+            elsif Out_Valid = '0' or Out_Ready = '0' then
+                BurstSize := 0;
+                -- Ignore first burst (might be affected by transients
+                if FirstBurst and MaxBurstSize > 0 then
+                    MaxBurstSize <= 0;
+                    FirstBurst := false;
+                end if;
             end if;
         end if;
     end process;
