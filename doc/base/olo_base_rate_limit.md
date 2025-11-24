@@ -52,8 +52,8 @@ forwarded.
 | Width_g         | positive  | -        | Width of _In_Data_ and _Out_Data_                            |
 | RegisterReady_g | boolean   | true     | If true, _In_Ready_ is registered to improve timing          |
 | Mode_g          | string    | "SMOOTH" | Rate limiting mode, either "BLOCK" or "SMOOTH"               |
-| Period_g        | positive  | -    | Time period for rate limiting in clock cycles                |
-| MaxSamples_g    | positive  | 1      | Maximum number of samples allowed per _Period_g_             |
+| Period_g        | positive  | -        | Time period for rate limiting in clock cycles                |
+| MaxSamples_g    | positive  | 1        | Maximum number of samples allowed per _Period_g_             |
 
 ## Interfaces
 

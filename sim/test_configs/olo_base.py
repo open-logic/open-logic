@@ -343,3 +343,20 @@ def add_configs(olo_tb):
     tb = olo_tb.test_bench(crc_append_check_tb)  
     for Mode in ["DROP", "FLAG"]:
         named_config(tb, {'CheckMode_g': Mode})
+
+    ### olo_base_rate_limit ###
+    rate_limit_tb = 'olo_base_rate_limit_tb'
+    tb = olo_tb.test_bench(rate_limit_tb)
+    # Test both SMOOTH and BLOCK modes
+    for Mode in ["SMOOTH", "BLOCK"]:
+        named_config(tb, {'Mode_g': Mode})
+    # Test different Period/MaxSamples combinations
+    #for Period, MaxSamples in [(10, 3), (20, 5), (50, 10)]:
+    #    for Mode in ["SMOOTH", "BLOCK"]:
+    #        named_config(tb, {'Mode_g': Mode, 'Period_g': Period, 'MaxSamples_g': MaxSamples})
+    # Test RegisterReady_g option
+    #for RegisterReady in [True, False]:
+    #    named_config(tb, {'RegisterReady_g': RegisterReady})
+    # Test with random stall enabled
+    #for RandomStall in [True, False]:
+    #    named_config(tb, {'RandomStall_g': RandomStall})
