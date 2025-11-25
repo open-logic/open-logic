@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024-2025 by Oliver Bruendler
--- Authors: Oliver Bruendler
+-- Copyright (c) 2025 by Oliver Bruendler
+-- Author: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ architecture rtl of olo_base_rate_limit is
 
 begin
 
-    -- Assertions
+    -- *** Assertions ***
     assert MaxSamples_g <= Period_g
         report "olo_base_rate_limit: MaxSamples_g (" & integer'image(MaxSamples_g) &
                ") must be <= Period_g (" & integer'image(Period_g) & ")"
@@ -79,7 +79,8 @@ begin
         severity failure;
 
     -- *** Add Input Register if Required ***
-    g_input_register : if RegisterReady_g generate
+    -- Ready registered
+    g_ready_registered : if RegisterReady_g generate
 
         i_pl_stage : entity work.olo_base_pl_stage
             generic map (
@@ -98,13 +99,16 @@ begin
 
     end generate;
 
-    g_no_input_register : if not RegisterReady_g generate
+    -- Ready unregistered
+    g_ready_unregistered : if not RegisterReady_g generate
         Input_Valid <= In_Valid;
         In_Ready    <= Input_Ready;
         Input_Data  <= In_Data;
     end generate;
 
-    -- *** Generate statement for NO RATE LIMIT when Period_g = 1 ***
+    -- *** Generate statement for NO RATE LIMIT ***
+    -- Period_g = 1 means that there is no rate limit because every clock cycle a
+    -- sample can be transferred.
     g_no_rate_limit : if Period_g = 1 generate
         -- Direct wire-through without any rate limiting
         Out_Valid   <= Input_Valid;
@@ -132,9 +136,6 @@ begin
 
     begin
 
-        -------------------------------------------------------------------------------------------
-        -- Rate Limiting Logic (RegisterReady_g = false case only for now)
-        ---------------------------------------------------------------------------------------
         -- Combinatorial process
         p_comb : process (all) is
             variable v                : TwoProcess_r;
@@ -147,9 +148,7 @@ begin
             -- Detect successful output transfer (rate limiter output to downstream)
             OutputTransfer_v := (Out_Valid_i = '1' and Out_Ready = '1');
 
-            ---------------------------------------------------------------------------------------
             -- SMOOTH Mode Logic
-            ---------------------------------------------------------------------------------------
             if Mode_g = "SMOOTH" then
 
                 -- Update counter: either decrement (on transfer) OR increment (building credit)
@@ -166,9 +165,7 @@ begin
                     AllowSample <= '0';
                 end if;
 
-            ---------------------------------------------------------------------------------------
             -- BLOCK Mode Logic
-            ---------------------------------------------------------------------------------------
             else -- Mode_g = "BLOCK"
 
                 -- Samples counting (increment only when actually outputting)
@@ -209,17 +206,11 @@ begin
             end if;
         end process;
 
-        -------------------------------------------------------------------------------------------
-        -- Internal Signal Assignment
-        -------------------------------------------------------------------------------------------
-        -- Only allow output when rate limiter permits and input is valid
+        -- Gatged handshaking signals
         Out_Valid_i <= Input_Valid and AllowSample;
-        -- Only assert ready when downstream is ready and rate limiter allows
-        In_Ready_i <= Out_Ready and AllowSample;
+        In_Ready_i  <= Out_Ready and AllowSample;
 
-        -------------------------------------------------------------------------------------------
         -- Output Port Assignment
-        -------------------------------------------------------------------------------------------
         Out_Valid   <= Out_Valid_i;
         Input_Ready <= In_Ready_i;
         Out_Data    <= Input_Data;

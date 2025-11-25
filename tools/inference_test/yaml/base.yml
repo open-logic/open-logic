@@ -292,3 +292,18 @@ entities:
         generics:
           InWidth_g: 32
           OutWidth_g: 8
+  # olo_base_rate_limit
+  - entity_name: "olo_base_rate_limit"
+    fixed_generics:
+      Width_g: 16
+      Period_g: 7
+      MaxSamples_g: 3
+    configurations:
+      - name: "block"
+        generics: 
+          Mode_g: '"BLOCK"'
+          RegisterReady_g: True
+      - name: "smooth"
+        generics: 
+          Mode_g: '"SMOOTH"'
+          RegisterReady_g: False

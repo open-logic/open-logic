@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024-2025 by Oliver Bruendler
--- Authors: Oliver Bruendler
+-- Copyright (c) 2025 by Oliver Bruendler
+-- Authos: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------------------
@@ -39,11 +39,6 @@ end entity;
 architecture sim of olo_base_rate_limit_tb is
 
     -----------------------------------------------------------------------------------------------
-    -- Constants
-    -----------------------------------------------------------------------------------------------
-    constant DataWidth_c : integer := Width_g;
-
-    -----------------------------------------------------------------------------------------------
     -- TB Definitions
     -----------------------------------------------------------------------------------------------
     constant Clk_Frequency_c : real := 100.0e6;
@@ -54,28 +49,21 @@ architecture sim of olo_base_rate_limit_tb is
     constant Tolerance_c               : time := (real(Period_g + 2)) * Clk_Period_c;
 
     -----------------------------------------------------------------------------------------------
-    -- Shared Variables for Throughput Measurement
-    -----------------------------------------------------------------------------------------------
-    shared variable ThroughputStart_v   : time    := 0 ns;
-    shared variable ThroughputEnd_v     : time    := 0 ns;
-    shared variable ThroughputSamples_v : integer := 0;
-    shared variable ThroughputActive_v  : boolean := false;
-
-    -----------------------------------------------------------------------------------------------
     -- Verification Components
     -----------------------------------------------------------------------------------------------
     constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master (
-        data_length => DataWidth_c,
+        data_length => Width_g,
         stall_config => new_stall_config(choose(RandomStall_g, 0.3, 0.0), 0, 2*Period_g)
     );
     constant AxisSlave_c  : axi_stream_slave_t  := new_axi_stream_slave (
-        data_length => DataWidth_c,
+        data_length => Width_g,
         stall_config => new_stall_config(choose(RandomStall_g, 0.3, 0.0), 0, 2*Period_g)
     );
 
     -----------------------------------------------------------------------------------------------
     -- Test Helper Procedures
     -----------------------------------------------------------------------------------------------
+    -- Push a number of samples into the rate limiter (optionally at a set rate)
     procedure pushData (
         signal net                   : inout network_t;
         constant NumSamples          : integer;
@@ -84,7 +72,7 @@ architecture sim of olo_base_rate_limit_tb is
     begin
 
         for i in 0 to NumSamples - 1 loop
-            push_axi_stream(net, AxisMaster_c, toUslv(StartValue + i, DataWidth_c));
+            push_axi_stream(net, AxisMaster_c, toUslv(StartValue + i, Width_g));
             -- Wait between samples to simulate slower input rate (if requested)
             if DelayBetweenSamples > 0 ns then
                 wait for DelayBetweenSamples;
@@ -93,6 +81,7 @@ architecture sim of olo_base_rate_limit_tb is
 
     end procedure;
 
+    -- Check a number of samples from the rate limiter (optionally at a set rate)
     procedure checkData (
         signal net                   : inout network_t;
         constant NumSamples          : integer;
@@ -101,7 +90,7 @@ architecture sim of olo_base_rate_limit_tb is
     begin
 
         for i in 0 to NumSamples - 1 loop
-            check_axi_stream(net, AxisSlave_c, toUslv(StartValue + i, DataWidth_c),
+            check_axi_stream(net, AxisSlave_c, toUslv(StartValue + i, Width_g),
                            blocking => false, msg => "Sample " & integer'image(i) & " (value " & integer'image(StartValue + i) & ")");
             if DelayBetweenSamples > Clk_Period_c then
                 -- A little bit less (1 ns less) to compensate for delta cycle.
@@ -111,6 +100,7 @@ architecture sim of olo_base_rate_limit_tb is
 
     end procedure;
 
+    -- Check duration of the whole test-case.
     procedure checkTiming (
         constant StartTime        : time;
         constant EndTime          : time;
@@ -136,14 +126,14 @@ architecture sim of olo_base_rate_limit_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk       : std_logic                                  := '0';
-    signal Rst       : std_logic                                  := '0';
-    signal In_Data   : std_logic_vector(DataWidth_c - 1 downto 0) := (others => '0');
-    signal In_Valid  : std_logic                                  := '0';
-    signal In_Ready  : std_logic                                  := '0';
-    signal Out_Data  : std_logic_vector(DataWidth_c - 1 downto 0) := (others => '0');
-    signal Out_Valid : std_logic                                  := '0';
-    signal Out_Ready : std_logic                                  := '0';
+    signal Clk       : std_logic                              := '0';
+    signal Rst       : std_logic                              := '0';
+    signal In_Data   : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
+    signal In_Valid  : std_logic                              := '0';
+    signal In_Ready  : std_logic                              := '0';
+    signal Out_Data  : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
+    signal Out_Valid : std_logic                              := '0';
+    signal Out_Ready : std_logic                              := '0';
 
     -- Burst size detection
     signal MaxBurstSize : integer := 0;
@@ -156,20 +146,18 @@ begin
     test_runner_watchdog(runner, 10 ms);
 
     p_control : process is
-        variable ExpectedRate_v     : real;
-        variable ActualRate_v       : real;
-        variable NumSamples_v       : integer;
         -- Variables for timing tests
-        variable InputDelay_v       : time;
-        variable OutputDelay_v      : time;
+        variable Delay_v            : time;
         variable StartTime_v        : time;
         variable EndTime_v          : time;
         variable ExpectedDuration_v : time;
         -- Test size
         constant NumSamples_c       : positive := MaxSamples_g * 20;
     begin
+        -- setup runner
         test_runner_setup(runner, runner_cfg);
 
+        -- Run test suite
         while test_suite loop
 
             -- Reset DUT
@@ -205,28 +193,28 @@ begin
 
             elsif run("SlowInput") then
                 -- Test case 1: Input provided at 2x lower rate than allowed
-                InputDelay_v := 2.0 * ExpectedTimePerTransfer_c; -- 2x slower input
+                Delay_v := 2.0 * ExpectedTimePerTransfer_c; -- 2x slower input
 
                 -- Expected duration: limited by input rate since it's slower than rate limit
-                ExpectedDuration_v := real(NumSamples_c) * InputDelay_v;
+                ExpectedDuration_v := real(NumSamples_c) * Delay_v;
 
                 StartTime_v := now;
                 checkData(net, NumSamples_c, 16#2000#); -- Check non-blocking first, then push blocking
-                pushData(net, NumSamples_c, 16#2000#, InputDelay_v);
+                pushData(net, NumSamples_c, 16#2000#, Delay_v);
                 EndTime_v   := now;
 
                 checkTiming(StartTime_v, EndTime_v, ExpectedDuration_v);
 
             elsif run("SlowOutput") then
                 -- Test case 2: Output accepted at 2x lower rate than allowed
-                OutputDelay_v := 2.0 * ExpectedTimePerTransfer_c; -- 2x slower output acceptance
+                Delay_v := 2.0 * ExpectedTimePerTransfer_c; -- 2x slower output acceptance
 
                 -- Expected duration: limited by output acceptance rate
-                ExpectedDuration_v := real(NumSamples_c) * OutputDelay_v;
+                ExpectedDuration_v := real(NumSamples_c) * Delay_v;
 
                 StartTime_v := now;
                 pushData(net, NumSamples_c, 16#3000#); -- push nonblocking, then check blocking
-                checkData(net, NumSamples_c, 16#3000#, OutputDelay_v);
+                checkData(net, NumSamples_c, 16#3000#, Delay_v);
                 EndTime_v   := now;
 
                 checkTiming(StartTime_v, EndTime_v, ExpectedDuration_v);
@@ -277,21 +265,10 @@ begin
     end process;
 
     -----------------------------------------------------------------------------------------------
-    -- Throughput Monitor
-    -----------------------------------------------------------------------------------------------
-    p_throughput_monitor : process (Clk) is
-    begin
-        if rising_edge(Clk) then
-            -- Count samples that pass through successfully
-            if ThroughputActive_v and Out_Valid = '1' and Out_Ready = '1' then
-                ThroughputSamples_v := ThroughputSamples_v + 1;
-            end if;
-        end if;
-    end process;
-
-    -----------------------------------------------------------------------------------------------
     -- Maximum Burst Size Detector
     -----------------------------------------------------------------------------------------------
+    -- Detect the maximum burst size during a test-case to check if the rate limitation
+    -- works as expected.
     p_burst_monitor : process (Clk) is
         variable BurstSize_v  : integer := 0;
         variable FirstBurst_v : boolean := true;
