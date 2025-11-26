@@ -30,6 +30,7 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -62,6 +63,10 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_rate_limit is
 
+    -- Constants
+    constant ModeUpper_c : string := toUpper(Mode_g);
+
+    -- Signals
     signal Input_Ready : std_logic;
     signal Input_Valid : std_logic;
     signal Input_Data  : std_logic_vector(Width_g-1 downto 0);
@@ -74,8 +79,8 @@ begin
                ") must be <= Period_g (" & integer'image(Period_g) & ")"
         severity failure;
 
-    assert Mode_g = "SMOOTH" or Mode_g = "BLOCK"
-        report "olo_base_rate_limit: Mode_g must be either ""SMOOTH"" or ""BLOCK"", got """ & Mode_g & """"
+    assert ModeUpper_c = "SMOOTH" or ModeUpper_c = "BLOCK"
+        report "olo_base_rate_limit: Mode_g must be either ""SMOOTH"" or ""BLOCK"", got """ & ModeUpper_c & """"
         severity failure;
 
     -- *** Add Input Register if Required ***
@@ -149,7 +154,7 @@ begin
             OutputTransfer_v := (Out_Valid_i = '1' and Out_Ready = '1');
 
             -- SMOOTH Mode Logic
-            if Mode_g = "SMOOTH" then
+            if ModeUpper_c = "SMOOTH" then
 
                 -- Update counter: either decrement (on transfer) OR increment (building credit)
                 if OutputTransfer_v then
@@ -206,7 +211,7 @@ begin
             end if;
         end process;
 
-        -- Gatged handshaking signals
+        -- Gated handshaking signals
         Out_Valid_i <= Input_Valid and AllowSample;
         In_Ready_i  <= Out_Ready and AllowSample;
 

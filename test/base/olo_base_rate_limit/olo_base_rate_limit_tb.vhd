@@ -237,15 +237,18 @@ begin
                 -- Check burst behavior
                 if Period_g > 1 then -- For Period_g = 1, there is no rate limiting and burst size is not defined
                     if Mode_g = "BLOCK" then
-                        -- In BLOCK mode, maximum burst size should not exceed MaxSamples_g
-                        check_equal(MaxBurstSize, MaxSamples_g,
-                            "Maximum burst size " & integer'image(MaxBurstSize) &
-                            " exceeds MaxSamples_g " & integer'image(MaxSamples_g) & " in BLOCK mode");
+                        -- In BLOCK mode, maximum burst size is fixed for non-random-stall case and can
+                        -- be anywhere between 1 and 2*MaxSamples_g for random stall case (see documentation for
+                        -- reasons).
+                        if RandomStall_g then
+                            check(MaxBurstSize >= 1 and MaxBurstSize <= 2*MaxSamples_g,
+                                "Maximum burst size " & integer'image(MaxBurstSize) & "not within 1...2*MaxSamples_g for BLOCK/RandomStall");
+                        else
+                            check_equal(MaxBurstSize, MaxSamples_g, "Maximum burst size for BLOKC/Non-random-stall");
+                        end if;
                     elsif Mode_g = "SMOOTH" and MaxSamples_g*2 < Period_g then
                         -- In SMOOTH mode, maximum burst size should not exceed 1
-                        check_equal(MaxBurstSize, 1,
-                            "Maximum burst size " & integer'image(MaxBurstSize) &
-                            " exceeds 1 in SMOOTH mode");
+                        check_equal(MaxBurstSize, 1, "Maximum burst size for SMOOTH mode");
                     end if;
                 end if;
 

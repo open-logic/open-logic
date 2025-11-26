@@ -347,19 +347,13 @@ def add_configs(olo_tb):
     ### olo_base_rate_limit ###
     rate_limit_tb = 'olo_base_rate_limit_tb'
     tb = olo_tb.test_bench(rate_limit_tb)
-    # Test both SMOOTH and BLOCK modes
-    for Mode in ["SMOOTH", "BLOCK"]:
-        named_config(tb, {'Mode_g': Mode})
+    tb_configs = {'RegisterReady_g': True,
+                  'RandomStall_g': False,
+                  'Width_g': 16}
     # Test different Period/MaxSamples combinations
     for Period, MaxSamples in [(10, 2), (5, 3), (5, 1), (1, 1)]:
         for Mode in ["SMOOTH", "BLOCK"]:
-            named_config(tb, {'Mode_g': Mode, 'Period_g': Period, 'MaxSamples_g': MaxSamples})
-    # Test different RegisterReady settings
-    for RegisterReady in [True, False]:
-        named_config(tb, {'RegisterReady_g': RegisterReady})
-    # Test with random stall enabled
-    for RandomStall in [True, False]:
-        named_config(tb, {'RandomStall_g': RandomStall})
-    # Test different data widths
-    for Width in [8, 16]:
-        named_config(tb, {'Width_g': Width})
+            named_config(tb,tb_configs | {'Mode_g': Mode, 'Period_g': Period, 'MaxSamples_g': MaxSamples, 'RandomStall_g': True})
+            named_config(tb,tb_configs | {'Mode_g': Mode, 'Period_g': Period, 'MaxSamples_g': MaxSamples, 'RandomStall_g': False})
+    # Test a different value for static settings
+    named_config(tb,tb_configs | {'RegisterReady_g': False, 'Width_g': 8})
