@@ -17,6 +17,8 @@ VHDL Source: [olo_base_rate_limit](../../src/base/vhdl/olo_base_rate_limit.vhd)
 This component limits the rate of AXI4-Stream style handshaked interfaces to a specified maximum data rate. It can
 be used to avoid overloading downstream components. This is especially useful when interfacing to components that have
 limited processing capabilities and do not support back-pressure (i.e. do not de-assert _Ready_ signals).
+Another common use-case is limiting the bandwidth of data-streams - thanks to runtime configurable
+parameters the rate limit can be adjusted on-the-fly.
 
 The component has two modes of operation:
 
@@ -45,6 +47,20 @@ side are marked in colors.
 Note how the samples are equally spaced (one sample every two clock cycles). In contrast to _BLOCK_ mode bursts are
 forwarded.
 
+### Runtime Configuration
+
+When _RuntimeCfg_g_=false (default), the component operates with fixed parameters defined by the _Period_g_ and
+_MaxSamples_g_ generics.
+
+When _RuntimeCfg_g_=true, the component accepts runtime configuration through the _Cfg_Period_ and _Cfg_MaxSamples_
+ports. In this mode:
+
+- The generics _Period_g_ and _MaxSamples_g_ define the maximum supported values
+- The actual period and max samples are determined by the configuration ports
+- Configuration port values represent the actual value minus 1 (e.g., Cfg_Period=1 means a period of 2 clock cycles)
+- Configuration changes take effect within less than five clock cycles
+- The configuration ports must **always** satisfy: Cfg_MaxSamples ≤ Cfg_Period
+
 ## Generics
 
 | Name            | Type      | Default  | Description                                                  |
@@ -52,8 +68,9 @@ forwarded.
 | Width_g         | positive  | -        | Width of _In_Data_ and _Out_Data_                            |
 | RegisterReady_g | boolean   | true     | If true, _In_Ready_ is registered to improve timing          |
 | Mode_g          | string    | "SMOOTH" | Rate limiting mode, either "BLOCK" or "SMOOTH"               |
-| Period_g        | positive  | -        | Time period for rate limiting in clock cycles                |
-| MaxSamples_g    | positive  | 1        | Maximum number of samples allowed per _Period_g_             |
+| Period_g        | positive  | -        | Time period for rate limiting in clock cycles. When _RuntimeCfg_g_=true, this defines the maximum supported period. |
+| MaxSamples_g    | positive  | 1        | Maximum number of samples allowed per _Period_g_. When _RuntimeCfg_g_=true, this defines the maximum supported samples per period. |
+| RuntimeCfg_g    | boolean   | false    | If true, period and max samples are taken from configuration ports instead of generics |
 
 ## Interfaces
 
@@ -63,6 +80,15 @@ forwarded.
 | :--- | :----- | :----- | ------- | :---------------------------------------------- |
 | Clk  | in     | 1      | -       | Clock                                           |
 | Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_) |
+
+### Configuration
+
+Configuration ports are only used when _RuntimeCfg_g_=true.
+
+| Name           | In/Out | Length                   | Default        | Description                                              |
+| :------------- | :----- | :----------------------- | -------------- | :------------------------------------------------------- |
+| Cfg_Period     | in     | ceil(log2(Period_g))     | Period_g-1     | Period for runtime-configuration minus 1 (_Cfg_Period_=1 means a period of two clock cycles)     |
+| Cfg_MaxSamples | in     | ceil(log2(MaxSamples_g)) | MaxSamples_g-1 | MaxSamples for runtime-configuration minus 1 (_Cfg_MaxSamples_=1 means two samples per block) |
 
 ### Input Data
 

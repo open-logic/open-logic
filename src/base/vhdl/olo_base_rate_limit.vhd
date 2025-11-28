@@ -31,6 +31,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_string.all;
+    use work.olo_base_pkg_logic.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -41,7 +42,8 @@ entity olo_base_rate_limit is
         RegisterReady_g : boolean  := true;
         Mode_g          : string   := "SMOOTH";
         Period_g        : positive;
-        MaxSamples_g    : positive := 1
+        MaxSamples_g    : positive := 1;
+        RuntimeCfg_g    : boolean  := false
     );
     port (
         -- Control
@@ -49,12 +51,15 @@ entity olo_base_rate_limit is
         Rst             : in    std_logic;
         -- Input Data
         In_Data         : in    std_logic_vector(Width_g-1 downto 0);
-        In_Valid        : in    std_logic := '1';
+        In_Valid        : in    std_logic                                           := '1';
         In_Ready        : out   std_logic;
         -- Output Data
         Out_Data        : out   std_logic_vector(Width_g-1 downto 0);
         Out_Valid       : out   std_logic;
-        Out_Ready       : in    std_logic := '1'
+        Out_Ready       : in    std_logic                                           := '1';
+        -- Configuration Ports (for RuntimeCfg_g = true)
+        Cfg_Period      : in    std_logic_vector(log2ceil(Period_g)-1 downto 0)     := toUslv(Period_g-1, log2ceil(Period_g));
+        Cfg_MaxSamples  : in    std_logic_vector(log2ceil(MaxSamples_g)-1 downto 0) := toUslv(MaxSamples_g-1, log2ceil(MaxSamples_g))
     );
 end entity;
 
@@ -130,6 +135,10 @@ begin
             -- BLOCK mode signals
             PeriodCounter  : integer range 0 to Period_g-1;
             SamplesCounter : integer range 0 to MaxSamples_g+1;
+            -- Runtime configuration signals
+            CfgPeriod      : std_logic_vector(Cfg_Period'range);
+            CfgMaxSamples  : std_logic_vector(Cfg_MaxSamples'range);
+            CfgSmoothLimit : unsigned(Cfg_Period'range);
         end record;
 
         signal r, r_next : TwoProcess_r;
@@ -145,10 +154,33 @@ begin
         p_comb : process (all) is
             variable v                : TwoProcess_r;
             variable OutputTransfer_v : boolean;
-            constant SmoothLimit_c    : positive := Period_g - MaxSamples_g; -- off by one correction
+            variable PeriodMin1_v     : natural;
+            variable MaxSamples_v     : natural;
+            variable SmoothLimit_v    : natural;
         begin
             -- Hold variables stable
             v := r;
+
+            -- Register Runtime Configuration signals
+            if RuntimeCfg_g then
+                v.CfgPeriod     := to01(Cfg_Period);
+                v.CfgMaxSamples := to01(Cfg_MaxSamples);
+                -- to01 and resize required to workaroudn simulation issues. Functionally they do not
+                -- have impact so this is tolerable.
+                v.CfgSmoothLimit := unsigned(to01(Cfg_Period)) - resize(unsigned(to01(Cfg_MaxSamples)), Cfg_Period'length);
+                PeriodMin1_v     := to_integer(unsigned(to01(r.CfgPeriod)));
+                MaxSamples_v     := to_integer(unsigned(to01(r.CfgMaxSamples)))+1;
+                SmoothLimit_v    := to_integer(r.CfgSmoothLimit);
+                -- synthesis translate_off
+                assert MaxSamples_v <= PeriodMin1_v+1
+                    report "olo_base_rate_limit: Runtime configured requires Cfg_MaxSamples <= Cfg_Period"
+                    severity failure;
+                -- synthesis translate_on
+            else
+                PeriodMin1_v  := Period_g - 1;
+                MaxSamples_v  := MaxSamples_g;
+                SmoothLimit_v := Period_g - MaxSamples_g; -- off by one correction
+            end if;
 
             -- Detect successful output transfer (rate limiter output to downstream)
             OutputTransfer_v := (Out_Valid_i = '1' and Out_Ready = '1');
@@ -158,13 +190,13 @@ begin
 
                 -- Update counter: either decrement (on transfer) OR increment (building credit)
                 if OutputTransfer_v then
-                    v.SmoothCounter := r.SmoothCounter - SmoothLimit_c;
-                elsif r.SmoothCounter < SmoothLimit_c then
-                    v.SmoothCounter := r.SmoothCounter + MaxSamples_g;
+                    v.SmoothCounter := r.SmoothCounter - SmoothLimit_v;
+                elsif r.SmoothCounter < SmoothLimit_v then
+                    v.SmoothCounter := r.SmoothCounter + MaxSamples_v;
                 end if;
 
                 -- Allow sample logic
-                if r.SmoothCounter >= SmoothLimit_c then
+                if r.SmoothCounter >= SmoothLimit_v then
                     AllowSample <= '1';
                 else
                     AllowSample <= '0';
@@ -179,7 +211,7 @@ begin
                 end if;
 
                 -- Period Handling
-                if r.PeriodCounter = Period_g - 1 then
+                if r.PeriodCounter >= PeriodMin1_v then
                     v.PeriodCounter  := 0;
                     v.SamplesCounter := 0;
                 else
@@ -187,7 +219,7 @@ begin
                 end if;
 
                 -- Allow sample logic
-                if r.SamplesCounter < MaxSamples_g then
+                if r.SamplesCounter < MaxSamples_v then
                     AllowSample <= '1';
                 else
                     AllowSample <= '0';
@@ -207,6 +239,9 @@ begin
                     r.SmoothCounter  <= (others => '0');
                     r.PeriodCounter  <= 0;
                     r.SamplesCounter <= 0;
+                    r.CfgPeriod      <= toUslv(Period_g-1, Cfg_Period'length);
+                    r.CfgMaxSamples  <= toUslv(MaxSamples_g-1, Cfg_MaxSamples'length);
+                    r.CfgSmoothLimit <= to_unsigned(Period_g - MaxSamples_g + 1, Cfg_Period'length);
                 end if;
             end if;
         end process;

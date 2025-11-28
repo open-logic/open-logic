@@ -303,7 +303,9 @@ entities:
         generics: 
           Mode_g: '"BLOCK"'
           RegisterReady_g: True
+          RuntimeCfg_g: true
       - name: "smooth"
         generics: 
           Mode_g: '"SMOOTH"'
           RegisterReady_g: False
+          RuntimeCfg_g: false

@@ -32,7 +32,8 @@ entity olo_base_rate_limit_tb is
         Mode_g          : string   := "BLOCK";
         Period_g        : positive := 10;
         MaxSamples_g    : positive := 2;
-        RandomStall_g   : boolean  := false
+        RandomStall_g   : boolean  := false;
+        RuntimeCfg_g    : boolean  := true
     );
 end entity;
 
@@ -44,9 +45,19 @@ architecture sim of olo_base_rate_limit_tb is
     constant Clk_Frequency_c : real := 100.0e6;
     constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
-    -- Rate limiting calculations
-    constant ExpectedTimePerTransfer_c : time := (real(Period_g) / real(MaxSamples_g)) * Clk_Period_c;
-    constant Tolerance_c               : time := (real(Period_g + 2)) * Clk_Period_c;
+    -- Parameters for runtime configuration
+    type RtCfg_t is record
+        Period     : positive;
+        MaxSamples : positive;
+    end record;
+    type RtCfg_a is array (natural range <>) of RtCfg_t;
+
+    constant RtCfgs_c : RtCfg_a := (
+        (Period => 5, MaxSamples => 3),
+        (Period => 5,  MaxSamples => 5),
+        (Period => 1, MaxSamples => 1),
+        (Period => 5, MaxSamples => 1),
+        (Period => 3, MaxSamples => 2));
 
     -----------------------------------------------------------------------------------------------
     -- Verification Components
@@ -104,16 +115,17 @@ architecture sim of olo_base_rate_limit_tb is
     procedure checkTiming (
         constant StartTime        : time;
         constant EndTime          : time;
-        constant ExpectedDuration : time) is
+        constant ExpectedDuration : time;
+        constant Tolerance        : time) is
         variable ActualDuration_v : time;
     begin
         ActualDuration_v := EndTime - StartTime;
         -- Check within tolerance normally
         if not RandomStall_g then
-            check(abs(ActualDuration_v - ExpectedDuration) <= Tolerance_c,
+            check(abs(ActualDuration_v - ExpectedDuration) <= Tolerance,
                   "Timing check failed. Expected: " & time'image(ExpectedDuration) &
                   ", Actual: " & time'image(ActualDuration_v) &
-                  ", Tolerance: ±" & time'image(Tolerance_c));
+                  ", Tolerance: ±" & time'image(Tolerance));
         end if;
         -- Duration may be higher with random stalls
         if RandomStall_g then
@@ -126,17 +138,20 @@ architecture sim of olo_base_rate_limit_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk       : std_logic                              := '0';
-    signal Rst       : std_logic                              := '0';
-    signal In_Data   : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
-    signal In_Valid  : std_logic                              := '0';
-    signal In_Ready  : std_logic                              := '0';
-    signal Out_Data  : std_logic_vector(Width_g - 1 downto 0) := (others => '0');
-    signal Out_Valid : std_logic                              := '0';
-    signal Out_Ready : std_logic                              := '0';
+    signal Clk            : std_logic                                           := '0';
+    signal Rst            : std_logic                                           := '0';
+    signal In_Data        : std_logic_vector(Width_g - 1 downto 0)              := (others => '0');
+    signal In_Valid       : std_logic                                           := '0';
+    signal In_Ready       : std_logic                                           := '0';
+    signal Out_Data       : std_logic_vector(Width_g - 1 downto 0)              := (others => '0');
+    signal Out_Valid      : std_logic                                           := '0';
+    signal Out_Ready      : std_logic                                           := '0';
+    signal Cfg_MaxSamples : std_logic_vector(log2ceil(MaxSamples_g)-1 downto 0) := toUslv(MaxSamples_g-1, log2ceil(MaxSamples_g));
+    signal Cfg_Period     : std_logic_vector(log2ceil(Period_g)-1 downto 0)     := toUslv(Period_g-1, log2ceil(Period_g));
 
     -- Burst size detection
     signal MaxBurstSize : integer := 0;
+    signal RstBurstmeas : boolean := false;
 
 begin
 
@@ -147,12 +162,16 @@ begin
 
     p_control : process is
         -- Variables for timing tests
-        variable Delay_v            : time;
-        variable StartTime_v        : time;
-        variable EndTime_v          : time;
-        variable ExpectedDuration_v : time;
+        variable Delay_v                   : time;
+        variable StartTime_v               : time;
+        variable EndTime_v                 : time;
+        variable ExpectedDuration_v        : time;
+        variable Cfg_v                     : RtCfg_t;
         -- Test size
-        constant NumSamples_c       : positive := MaxSamples_g * 20;
+        constant NumSamples_c              : positive := MaxSamples_g * 20;
+        -- Rate limiting calculations
+        variable ExpectedTimePerTransfer_v : time;
+        variable Tolerance_v               : time;
     begin
         -- setup runner
         test_runner_setup(runner, runner_cfg);
@@ -167,6 +186,10 @@ begin
             wait until rising_edge(Clk);
             Rst <= '0';
             wait until rising_edge(Clk);
+
+            -- Default values
+            ExpectedTimePerTransfer_v := (real(Period_g) / real(MaxSamples_g)) * Clk_Period_c;
+            Tolerance_v               := (real(Period_g + 2)) * Clk_Period_c;
 
             if run("Reset") then
                 -- Check initial state after reset
@@ -193,7 +216,7 @@ begin
 
             elsif run("SlowInput") then
                 -- Test case 1: Input provided at 2x lower rate than allowed
-                Delay_v := 2.0 * ExpectedTimePerTransfer_c; -- 2x slower input
+                Delay_v := 2.0 * ExpectedTimePerTransfer_v; -- 2x slower input
 
                 -- Expected duration: limited by input rate since it's slower than rate limit
                 ExpectedDuration_v := real(NumSamples_c) * Delay_v;
@@ -203,11 +226,11 @@ begin
                 pushData(net, NumSamples_c, 16#2000#, Delay_v);
                 EndTime_v   := now;
 
-                checkTiming(StartTime_v, EndTime_v, ExpectedDuration_v);
+                checkTiming(StartTime_v, EndTime_v, ExpectedDuration_v, Tolerance_v);
 
             elsif run("SlowOutput") then
                 -- Test case 2: Output accepted at 2x lower rate than allowed
-                Delay_v := 2.0 * ExpectedTimePerTransfer_c; -- 2x slower output acceptance
+                Delay_v := 2.0 * ExpectedTimePerTransfer_v; -- 2x slower output acceptance
 
                 -- Expected duration: limited by output acceptance rate
                 ExpectedDuration_v := real(NumSamples_c) * Delay_v;
@@ -217,13 +240,13 @@ begin
                 checkData(net, NumSamples_c, 16#3000#, Delay_v);
                 EndTime_v   := now;
 
-                checkTiming(StartTime_v, EndTime_v, ExpectedDuration_v);
+                checkTiming(StartTime_v, EndTime_v, ExpectedDuration_v, Tolerance_v);
 
             elsif run("Throttled") then
                 -- Test case 3: Data pushed through at full speed (rate limited)
 
                 -- Expected duration: limited by rate limiter
-                ExpectedDuration_v := real(NumSamples_c) * ExpectedTimePerTransfer_c;
+                ExpectedDuration_v := real(NumSamples_c) * ExpectedTimePerTransfer_v;
 
                 StartTime_v := now;
                 pushData(net, NumSamples_c, 16#4000#);
@@ -235,7 +258,7 @@ begin
                 EndTime_v := now;
 
                 -- Check burst behavior
-                if Period_g > 1 then -- For Period_g = 1, there is no rate limiting and burst size is not defined
+                if Period_g > 1 and Period_g > MaxSamples_g then -- For Period_g = 1 or Period_g=MaxSamples_g, there is no rate limiting
                     if Mode_g = "BLOCK" then
                         -- In BLOCK mode, maximum burst size is fixed for non-random-stall case and can
                         -- be anywhere between 1 and 2*MaxSamples_g for random stall case (see documentation for
@@ -253,7 +276,49 @@ begin
                 end if;
 
                 -- Check Timing
-                checkTiming(StartTime_v, EndTime_v, ExpectedDuration_v);
+                checkTiming(StartTime_v, EndTime_v, ExpectedDuration_v, Tolerance_v);
+
+            elsif run("RuntimeConfig") then
+
+                -- Execute only if runtime configuration is enabled
+                if RuntimeCfg_g then
+
+                    -- Loop through configurations
+                    for idx in RtCfgs_c'range loop
+                        Cfg_v := RtCfgs_c(idx);
+
+                        -- Skip if config out of range
+                        if Cfg_v.MaxSamples > MaxSamples_g or Cfg_v.Period > Period_g then
+                            next;
+                        end if;
+
+                        -- Reconfigure and reset burst measurement
+                        RstBurstmeas   <= true;
+                        Cfg_Period     <= toUslv(Cfg_v.Period - 1, Cfg_Period'length);
+                        Cfg_MaxSamples <= toUslv(Cfg_v.MaxSamples - 1, Cfg_MaxSamples'length);
+                        wait for 5*Clk_Period_c;
+                        RstBurstmeas   <= false;
+
+                        -- Prepare test parameters
+                        ExpectedTimePerTransfer_v := (real(Cfg_v.Period) / real(Cfg_v.MaxSamples)) * Clk_Period_c;
+                        Tolerance_v               := (real(Cfg_v.Period  + 2)) * Clk_Period_c;
+                        ExpectedDuration_v        := real(NumSamples_c) * ExpectedTimePerTransfer_v;
+
+                        -- Run test
+                        StartTime_v := now;
+                        pushData(net, NumSamples_c, 16#5000# + idx * 100);
+                        checkData(net, NumSamples_c, 16#5000# + idx * 100);
+
+                        -- Wait until everything done
+                        wait_until_idle(net, as_sync(AxisMaster_c));
+                        wait_until_idle(net, as_sync(AxisSlave_c));
+                        EndTime_v := now;
+
+                        -- Check timing
+                        checkTiming(StartTime_v, EndTime_v, ExpectedDuration_v, Tolerance_v);
+                    end loop;
+
+                end if;
 
             end if;
 
@@ -277,7 +342,7 @@ begin
         variable FirstBurst_v : boolean := true;
     begin
         if rising_edge(Clk) then
-            if Rst = '1' then
+            if Rst = '1' or RstBurstmeas then
                 BurstSize_v  := 0;
                 MaxBurstSize <= 0;
                 FirstBurst_v := true;
@@ -311,17 +376,20 @@ begin
             RegisterReady_g => RegisterReady_g,
             Mode_g          => Mode_g,
             Period_g        => Period_g,
-            MaxSamples_g    => MaxSamples_g
+            MaxSamples_g    => MaxSamples_g,
+            RuntimeCfg_g    => RuntimeCfg_g
         )
         port map (
-            Clk       => Clk,
-            Rst       => Rst,
-            In_Data   => In_Data,
-            In_Valid  => In_Valid,
-            In_Ready  => In_Ready,
-            Out_Data  => Out_Data,
-            Out_Valid => Out_Valid,
-            Out_Ready => Out_Ready
+            Clk            => Clk,
+            Rst            => Rst,
+            In_Data        => In_Data,
+            In_Valid       => In_Valid,
+            In_Ready       => In_Ready,
+            Out_Data       => Out_Data,
+            Out_Valid      => Out_Valid,
+            Out_Ready      => Out_Ready,
+            Cfg_Period     => Cfg_Period,
+            Cfg_MaxSamples => Cfg_MaxSamples
         );
 
     -----------------------------------------------------------------------------------------------

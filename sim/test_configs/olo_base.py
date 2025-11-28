@@ -351,9 +351,10 @@ def add_configs(olo_tb):
                   'RandomStall_g': False,
                   'Width_g': 16}
     # Test different Period/MaxSamples combinations
-    for Period, MaxSamples in [(10, 2), (5, 3), (5, 1), (1, 1)]:
+    for Period, MaxSamples in [(5, 5), (5, 3), (5, 1), (1, 1)]:
         for Mode in ["SMOOTH", "BLOCK"]:
             named_config(tb,tb_configs | {'Mode_g': Mode, 'Period_g': Period, 'MaxSamples_g': MaxSamples, 'RandomStall_g': True})
             named_config(tb,tb_configs | {'Mode_g': Mode, 'Period_g': Period, 'MaxSamples_g': MaxSamples, 'RandomStall_g': False})
     # Test a different value for static settings
-    named_config(tb,tb_configs | {'RegisterReady_g': False, 'Width_g': 8})
+    named_config(tb,tb_configs | {'RegisterReady_g': False, 'Width_g': 8, 'RuntimeCfg_g' : False, 'Mode_g' : "SMOOTH"})
+    named_config(tb,tb_configs | {'RegisterReady_g': False, 'Width_g': 8, 'RuntimeCfg_g' : False, 'Mode_g' : "BLOCK"})
