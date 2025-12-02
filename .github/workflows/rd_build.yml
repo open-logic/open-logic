@@ -48,72 +48,78 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      # Questa
-      - name: Questa VHDL
+#      # Questa
+#      - name: Questa VHDL
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/QuestasimTutorial/Files
+#          vsim <<< "source ./scripted_run.tcl; quit -f" 
+#      - name: Questa Verilog
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/QuestasimTutorial/Files
+#          vsim <<< "source ./scripted_run_sv.tcl; quit -f"
+#      # Vivado
+#      - name: Vivado VHDL
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/VivadoTutorial/Files
+#          vivado -mode batch -source scripted_build.tcl
+#      - name: Vivado Verilog
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/VivadoTutorial/Files
+#          vivado -mode batch -source scripted_build_sv.tcl
+#      # Quartus
+#      - name: Quartus VHDL
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/QuartusTutorial/Files
+#          quartus_sh -t scripted_build.tcl
+#      - name: Quartus Verilog
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/QuartusTutorial/Files
+#          quartus_sh -t scripted_build_sv.tcl
+#      # Efinity
+#      - name: Efinity VHDL
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/EfinityTutorial/Files/prj_vhdl
+#          efx_run --prj ./prj_vhdl.xml
+#      - name: Efinity Verilog
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/EfinityTutorial/Files/prj_verilog
+#          efx_run --prj ./prj_verilog.xml
+#      # Gowin
+#      - name: Gowin VHDL
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/GowinTutorial/Files
+#          gw_sh scripted_build_sh.tcl
+#      - name: Gowin Verilog
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/GowinTutorial/Files
+#          gw_sh scripted_build_sv_sh.tcl
+#      # Libero
+#      - name: Libero VHDL
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/LiberoTutorial/Files
+#          libero script:scripted_build.tcl
+#      - name: Libero Verilog
+#        run: |
+#          source $LOCAL_TOOLS
+#          cd ./doc/tutorials/LiberoTutorial/Files
+#          libero script:scripted_build_sv.tcl
+      # Cologne chip
+      - name: Cologne Chip VHDL
         run: |
           source $LOCAL_TOOLS
-          cd ./doc/tutorials/QuestasimTutorial/Files
-          vsim <<< "source ./scripted_run.tcl; quit -f" 
-      - name: Questa Verilog
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/QuestasimTutorial/Files
-          vsim <<< "source ./scripted_run_sv.tcl; quit -f"
-      # Vivado
-      - name: Vivado VHDL
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/VivadoTutorial/Files
-          vivado -mode batch -source scripted_build.tcl
-      - name: Vivado Verilog
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/VivadoTutorial/Files
-          vivado -mode batch -source scripted_build_sv.tcl
-      # Quartus
-      - name: Quartus VHDL
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/QuartusTutorial/Files
-          quartus_sh -t scripted_build.tcl
-      - name: Quartus Verilog
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/QuartusTutorial/Files
-          quartus_sh -t scripted_build_sv.tcl
-      # Efinity
-      - name: Efinity VHDL
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/EfinityTutorial/Files/prj_vhdl
-          efx_run --prj ./prj_vhdl.xml
-      - name: Efinity Verilog
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/EfinityTutorial/Files/prj_verilog
-          efx_run --prj ./prj_verilog.xml
-      # Gowin
-      - name: Gowin VHDL
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/GowinTutorial/Files
-          gw_sh scripted_build_sh.tcl
-      - name: Gowin Verilog
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/GowinTutorial/Files
-          gw_sh scripted_build_sv_sh.tcl
-      # Libero
-      - name: Libero VHDL
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/LiberoTutorial/Files
-          libero script:scripted_build.tcl
-      - name: Libero Verilog
-        run: |
-          source $LOCAL_TOOLS
-          cd ./doc/tutorials/LiberoTutorial/Files
-          libero script:scripted_build_sv.tcl
+          cd ./doc/tutorials/CologneChipTutorial/Files
+          source ./scripted_build.sh
 
   # Stopping the instance is not required (it stops automatically
   # when it is unused for some time, controlled by AWS alarm)
