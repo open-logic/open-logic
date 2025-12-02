@@ -154,7 +154,7 @@ begin
         p_comb : process (all) is
             variable v                : TwoProcess_r;
             variable OutputTransfer_v : boolean;
-            variable PeriodMin1_v     : natural;
+            variable PeriodMin1_v     : natural; -- Period minus 1
             variable MaxSamples_v     : natural;
             variable SmoothLimit_v    : natural;
         begin
@@ -165,10 +165,10 @@ begin
             if RuntimeCfg_g then
                 v.CfgPeriod     := to01(Cfg_Period);
                 v.CfgMaxSamples := to01(Cfg_MaxSamples);
-                -- to01 and resize required to workaroudn simulation issues. Functionally they do not
+                -- to01 and resize required to workaround simulation issues. Functionally they do not
                 -- have impact so this is tolerable.
                 v.CfgSmoothLimit := unsigned(to01(Cfg_Period)) - resize(unsigned(to01(Cfg_MaxSamples)), Cfg_Period'length);
-                PeriodMin1_v     := to_integer(unsigned(to01(r.CfgPeriod)));
+                PeriodMin1_v     := to_integer(unsigned(to01(r.CfgPeriod))); -- This is period minus 1 because the definition of the port is like that
                 MaxSamples_v     := to_integer(unsigned(to01(r.CfgMaxSamples)))+1;
                 SmoothLimit_v    := to_integer(r.CfgSmoothLimit);
                 -- synthesis translate_off
