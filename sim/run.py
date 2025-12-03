@@ -127,6 +127,8 @@ if USE_COVERAGE:
     #Add coverage for package TBs (otherwise coverage does not work)
     for f in olo_tb.get_source_files("*_pkg_*_tb.vhd"):
         f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
+    for f in olo_tb.get_source_files("*_pkg_tb.vhd"):
+        f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
 
     def post_run(results):
         results.merge_coverage(file_name='coverage_data')
