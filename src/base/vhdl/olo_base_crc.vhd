@@ -108,7 +108,7 @@ begin
         if rising_edge(Clk) then
 
             if (BeMode_c and In_Last = '1') then
-                BePlus_v                      := std_logic_vector(unsigned(In_Be) + 1);
+                BePlus_v := std_logic_vector(unsigned(In_Be) + 1);
                 -- synthesis translate_off
                 assert (In_Be and BePlus_v) = zerosVector(In_Be'length)
                     report "olo_base_crc: In_Be must have LSB asserted and all asserted bits must be contiguous. Trailing-Only Byte-Enable convention violated."
@@ -178,7 +178,7 @@ begin
                 -- The loop bounds must be static, as variable ranges are not synthesizable
                 for bit in In_Data'high downto 0 loop
 
-                    -- Only execute for the valid bits in input. 
+                    -- Only execute for the valid bits in input.
                     if bit <= InputHigh_v then
 
                         -- Input Handling
