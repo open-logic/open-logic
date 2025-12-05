@@ -66,13 +66,17 @@ end entity;
 architecture rtl of olo_base_crc is
 
     -- Constants
-    constant CrcWidth_c     : natural                                 := Polynomial_g'length;
-    constant BeMode_c       : boolean                                 := choose(DataWidth_g mod 8 = 0, true, false);
-    constant ZeroPoly_c     : std_logic_vector(CrcWidth_c-1 downto 0) := (others => '0');
-    constant InitialValue_c : std_logic_vector(CrcWidth_c-1 downto 0) := choose(InitialValue_g = "0", ZeroPoly_c, InitialValue_g);
-    constant XorOutput_c    : std_logic_vector(CrcWidth_c-1 downto 0) := choose(XorOutput_g = "0", ZeroPoly_c, XorOutput_g);
-    constant BitOrder_c     : string                                  := toUpper(BitOrder_g);
-    constant ByteOrder_c    : string                                  := toUpper(ByteOrder_g);
+    constant CrcWidth_c            : natural                                 := Polynomial_g'length;
+    constant BeMode_c              : boolean                                 := choose(DataWidth_g mod 8 = 0, true, false);
+    constant ZeroPoly_c            : std_logic_vector(CrcWidth_c-1 downto 0) := (others => '0');
+    -- Resized constants - required because modelsim does not compile choose() if inputs have different size, even if
+    -- .. the input in question is not selected
+    constant InitialValueResized_c : std_logic_vector(CrcWidth_c-1 downto 0) := std_logic_vector(resize(signed(InitialValue_g), CrcWidth_c));
+    constant XorValueResized_c     : std_logic_vector(CrcWidth_c-1 downto 0) := std_logic_vector(resize(signed(XorOutput_g), CrcWidth_c));
+    constant InitialValue_c        : std_logic_vector(CrcWidth_c-1 downto 0) := choose(InitialValue_g = "0", ZeroPoly_c, InitialValueResized_c);
+    constant XorOutput_c           : std_logic_vector(CrcWidth_c-1 downto 0) := choose(XorOutput_g = "0", ZeroPoly_c, XorValueResized_c);
+    constant BitOrder_c            : string                                  := toUpper(BitOrder_g);
+    constant ByteOrder_c           : string                                  := toUpper(ByteOrder_g);
 
     -- Signals
     signal LfsrReg     : std_logic_vector(CrcWidth_c-1 downto 0);
