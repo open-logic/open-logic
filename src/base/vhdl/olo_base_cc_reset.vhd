@@ -52,12 +52,12 @@ architecture struct of olo_base_cc_reset is
 
     -- Domain A signals
     signal RstALatch  : std_logic                    := '1';
-    signal RstRqstB2A : std_logic_vector(2 downto 0) := (others => '0');
+    signal RstRqstB2A : std_logic_vector(2 downto 0) := (others => '1');
     signal RstAckB2A  : std_logic;
 
     -- Domain B signals
     signal RstBLatch  : std_logic                    := '1';
-    signal RstRqstA2B : std_logic_vector(2 downto 0) := (others => '0');
+    signal RstRqstA2B : std_logic_vector(2 downto 0) := (others => '1');
     signal RstAckA2B  : std_logic;
 
     -- Synthesis attributes - suppress shift register extraction
