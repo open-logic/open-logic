@@ -17,7 +17,7 @@ entity olo_base_hashtable_tb is
         Depth_g : positive := 8;
         KeyWidth_g : positive := 16;
         ValueWidth_g : positive := 32;
-        Hash_g : string := "LCG";
+        Hash_g : string := "CRC32";
         Hash_Lcg_Mult_g : positive := 1103515245;
         Hash_Lcg_Incr_g : positive := 12345;
         RamStyle_g : string := "auto";

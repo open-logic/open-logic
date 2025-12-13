@@ -5,6 +5,7 @@ library ieee;
 library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
+    use olo.olo_base_pkg_string.all;
 
 entity olo_base_hashtable is
     generic (
@@ -50,6 +51,9 @@ entity olo_base_hashtable is
 end entity;
 
 architecture rtl of olo_base_hashtable is
+
+    -- Constant case Hash_g
+    constant Hash_c : string := toUpper(Hash_g);
 
     -- Width of hashtable indices
     constant PairsIdx_c : integer := log2ceil(Depth_g);
@@ -110,15 +114,48 @@ architecture rtl of olo_base_hashtable is
         return (vec(KeyWidth_g + ValueWidth_g downto ValueWidth_g+1), vec(ValueWidth_g downto 1), vec(0));
     end function;
 
+    -- CRC32 Hash Function
+    function crc32Hash (data: std_logic_vector) return unsigned is
+        -- CRC-32/ISCSI (Ref: https://crccalc.com/?crc=04&method=CRC-32/ISCSI&datatype=hex&outtype=bin)
+        constant Hash_Crc32_Polynomial_c : std_logic_vector(31 downto 0) := x"1EDC6F41";
+        -- Initial value chosen to have good distribution for hashtable
+        constant Hash_Crc32_Init_c       : std_logic_vector(31 downto 0) := x"A5A5A5A5";
+
+        -- Variables
+        variable Lfsr_v  : std_logic_vector(31 downto 0) := Hash_Crc32_Init_c;
+        variable InBit_v : std_logic;
+    begin
+
+        for bit in data'high downto 0 loop
+
+            -- Input Handling
+            InBit_v := data(bit) xor Lfsr_v(Lfsr_v'high);
+
+            -- XOR hanling
+            Lfsr_v := Lfsr_v(Lfsr_v'high-1 downto 0) & '0';
+            if InBit_v = '1' then
+                Lfsr_v := Lfsr_v xor Hash_Crc32_Polynomial_c;
+            end if;
+
+        end loop;
+
+        return unsigned(Lfsr_v(PairsIdx_c-1 downto 0));
+    end function;
+
 begin
 
     -- Verification asserts
     -- Depth is power of 2
     assert log2(Depth_g) = log2ceil(Depth_g)
-        report "Depth must be a power of 2";
+        report "###ERROR###: olo_base_hashtable - Depth_g must be a power of 2";
     -- Width of key must be bigger than width of indices to prevent memory underuse. Depth_g twice as big as number of keys tolerated to avoid clustering
     assert KeyWidth_g+1 >= PairsIdx_c
-        report "Memory underuse over 2x: Not enough different key values to fill half the hashtable";
+        report "olo_base_hashtable - Memory underuse over 2x: Not enough different key values to fill half the hashtable"
+        severity warning;
+    -- Check Hash Function
+    assert Hash_c = "LCG" or Hash_c = "DIVISION" or Hash_c = "CRC32"
+        report "###ERROR###: olo_base_hashtable - Illegal value for Hash_g"
+        severity error;
 
     p_ht_fsm : process (all) is
         variable Ops_v : std_logic_vector(4 downto 0);
@@ -318,17 +355,19 @@ begin
     end process;
 
     -- Hash
-    g_hash_type_gen : if Hash_g = "LCG" generate
-
+    g_hash_lcb : if Hash_c = "LCG" generate
         Hash_Out <= lcgPrng(unsigned(Hash_InKey),
-                             Hash_Lcg_Mult_g,
-                             Hash_Lcg_Incr_g,
-                             Hash_Out'length);
+                            Hash_Lcg_Mult_g,
+                            Hash_Lcg_Incr_g,
+                            Hash_Out'length);
+    end generate;
 
-    else generate -- Do nothing, just take LSB
-
+    g_hash_div : if Hash_c = "DIVISION" generate
         Hash_Out <= unsigned(Hash_InKey(Hash_Out'range));
+    end generate;
 
+    g_hash_crc32 : if Hash_c = "CRC32" generate
+        Hash_Out <= crc32Hash(Hash_InKey);
     end generate;
 
     -- Cyclically check if hash of read element falls outside of
