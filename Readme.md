@@ -177,15 +177,16 @@ See [Contributing](./Contributing.md).
 
 Major sponsors of the project are:
 
-| Sponsor  | Logo |
-|----------|----------|
-| [NLnet](https://nlnet.nl/) |  <img src="./doc/pics/nlnet.jpg" alt="Logo" width="200">|
+| Sponsor  | Logo     | Comment |
+|----------|----------|---------|
+| [NLnet](https://nlnet.nl/) |  <img src="./doc/pics/nlnet.jpg" alt="Logo" width="200">| This project is funded through [NGI0 Commons Fund](https://nlnet.nl/commonsfund), a fund established by [NLnet](https://nlnet.nl) with financial support from the European Commission's [Next Generation Internet](https://ngi.eu) program. Learn more at the [NLnet project page](https://nlnet.nl/project/OpenLogic). |
 
 ## Origin of the Project
 
-The _Open Logic_ project is based on the
-[psi_common](https://github.com/paulscherrerinstitute/psi_common/tree/57aa85217e727b5fbddf8f000b270ab77602b03e)
-library provided by Paul Scherrer Institute. I would like to give credits to the authors of this library, especially
+The _Open Logic_ project is based on the libraries
+[psi_common](https://github.com/paulscherrerinstitute/psi_common) and
+[psi_fix](https://github.com/paulscherrerinstitute/psi_fix)
+provided by Paul Scherrer Institute. I would like to give credits to the authors of this library, especially
 Benoit Stef, who maintained the project after I left PSI.
 
 I decided to create _Open Logic_ instead of more actively working on the PSI libraries for the following reasons:
