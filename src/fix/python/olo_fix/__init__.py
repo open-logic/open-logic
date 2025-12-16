@@ -17,4 +17,6 @@ from .olo_fix_saturate import *
 from .olo_fix_sub import *
 from .olo_fix_utils import *
 from .olo_fix_limit import *
+from .olo_fix_cordic_rot import *
+from .olo_fix_cordic_vect import *
 
