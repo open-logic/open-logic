@@ -31,7 +31,7 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | BFmt_g      | string  | -         | Input B format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | ResultFmt_g | string  | -         | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
 | Round_g     | string  | "Trunc_s" | Rounding mode<br />String representation of an _en_cl_fix FixRound_t_. |
-| Saturate_g  | string  | "Sat_s"   | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
+| Saturate_g  | string  | "Warn_s"  | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
 | OpRegs_g    | natural | 1         | Number of pipeline stages for the operation                  |
 | RoundReg_g  | string  | "YES"     | Presence of rounding pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if rounding is needed according to the formats chosen |
 | SatReg_g    | string  | "YES"     | Presence of saturation pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if saturation is needed according to the formats chosen |

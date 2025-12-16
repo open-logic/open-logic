@@ -36,11 +36,11 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ## Generics
 
-| Name        | Type    | Default   | Description                                                  |
-| :---------- | :------ | --------- | :----------------------------------------------------------- |
-| ResultFmt_g | string  | -         | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
-| Saturate_g  | string  | "Sat_s"   | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
-| Value_g     | real    | 0.0       | Generic to be used for compile-time static inputs. |
+| Name        | Type    | Default     | Description                                                  |
+| :---------- | :------ | ----------- | :----------------------------------------------------------- |
+| ResultFmt_g | string  | -           | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
+| Saturate_g  | string  | "SatWarn_s" | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
+| Value_g     | real    | 0.0         | Generic to be used for compile-time static inputs. |
 
 ## Interfaces
 
