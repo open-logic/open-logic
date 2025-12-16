@@ -200,4 +200,5 @@ be used. For deciding which option to use, the following considerations shall be
 
 | Entity                                              | Description                                                  |
 | --------------------------------------------------- | ------------------------------------------------------------ |
-| [olo_fix_cordic_vect](./fix/olo_fix_cordic_vect.md)   | CORDIC vectoring mode - cartesian to polar conversion |
+| [olo_fix_cordic_vect](./fix/olo_fix_cordic_vect.md) | CORDIC vectoring mode - cartesian to polar conversion |
+| [olo_fix_cordic_rot](./fix/olo_fix_cordic_rot.md)   | CORDIC rotating mode - polar to cartesian conversion |
