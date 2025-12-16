@@ -53,8 +53,7 @@ be controlled throug hthe generic _GainCorrCoefFmt_g_.
 
 The latency of the entity depends on several factors:
 
-**TO BE DEFINED**
-
+Content **TO BE DEFINED**
 
 ## Generics
 
@@ -113,8 +112,8 @@ The format must be signed.
 The more fractional bits are used, the more precise the calculation gets. Usually a few more fractional bits than in
 _OutFmt_g_ are required.
 
-The number of integer bits must be chosen to ensure that no overflows happen during calculation. Except for special cases
-one more bit than for _InMagFmt_g_ is required.
+The number of integer bits must be chosen to ensure that no overflows happen during calculation. Except for special
+cases one more bit than for _InMagFmt_g_ is required.
 
 Optimization is best performed based on the bit-true python model.
 

@@ -53,7 +53,7 @@ be controlled throug hthe generic GainCorrCoefFmt_g.
 
 The latency of the entity depends on several factors:
 
-**TO BE DEFINED**
+Content **TO BE DEFINED**
 
 ## Generics
 
@@ -160,4 +160,3 @@ The figure below shows the implementation of the vectoring CORDIC. The algorithm
 mapping is compensated at the output.
 
 ![Architecture](./cordic/cordic_vect.drawio.png)
-
