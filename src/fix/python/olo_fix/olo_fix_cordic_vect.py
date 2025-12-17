@@ -1,141 +1,208 @@
-########################################################################################################################
-#  Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
-#  All rights reserved.
-#  Authors: Oliver Bruendler
-########################################################################################################################
+# ---------------------------------------------------------------------------------------------------
+# Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+# Copyright (c) 2025 by Oliver Bründler
+# Authors: Oliver Bruendler
+# ---------------------------------------------------------------------------------------------------
 
-########################################################################################################################
+# ---------------------------------------------------------------------------------------------------
 # Imports
-########################################################################################################################
-from psi_fix_pkg import *
+# ---------------------------------------------------------------------------------------------------
+from en_cl_fix_pkg import *
+from typing import Union
 import numpy as np
 
-########################################################################################################################
-# Vectoring CORDIC (Cartesian to Polar)
-########################################################################################################################
-class psi_fix_cordic_vect:
+# ---------------------------------------------------------------------------------------------------
+# Class
+# ---------------------------------------------------------------------------------------------------
+class olo_fix_cordic_vect:
+    """
+    Model of olo_fix_cordic_vect entity
+    """
 
-    ####################################################################################################################
+    # ---------------------------------------------------------------------------------------------------
     # Constants
-    ####################################################################################################################
-    ATAN_TABLE = np.arctan(2.0 **-np.arange(0, 32))/(2*np.pi)
-    GAIN_COMP_FMT = PsiFixFmt(0, 0, 17)
-
-    ####################################################################################################################
+    # ---------------------------------------------------------------------------------------------------
+    _ATAN_TABLE = np.arctan(2.0 **-np.arange(0, 32))/(2*np.pi)
+  
+    # ---------------------------------------------------------------------------------------------------
     # Constructor
-    ####################################################################################################################
-    def __init__(self,  inFmt : PsiFixFmt,
-                        outFmt : PsiFixFmt,
-                        internalFmt : PsiFixFmt,
-                        angleFmt : PsiFixFmt,
-                        angleIntFmt : PsiFixFmt,
-                        iterations : int,
-                        gainComp : bool,
-                        round : PsiFixRnd,
-                        sat : PsiFixSat):
+    # ---------------------------------------------------------------------------------------------------
+    def __init__(self,  
+                 in_fmt             : FixFormat,
+                 out_mag_fmt        : FixFormat,
+                 out_ang_fmt        : FixFormat,
+                 internal_fmt       : Union[FixFormat,str],                        
+                 int_ang_fmt        : Union[FixFormat,str],
+                 iterations         : int,
+                 gain_corr_coef_fmt : Union[FixFormat,str],
+                 round              : FixRound               = FixRound.Trunc_s,
+                 sat                : FixSaturate            = FixSaturate.Warn_s):
         """
         Constructor of a vectoring CORDIC model.
-        :param inFmt: Input fixed-point format
-        :param outFmt: Output fixed-point format for the absolute value
-        :param internalFmt: Internal fixed-point format for X/Y calculation
-        :param angleFmt: Output fixed-point format for the angle
-        :param angleIntFmt: Internal fixed-point format for the angle calculation
+
+        Read the Markdown documentation of the VHDL entity for details.
+
+        The following generics that do not impact numeric behavior and are related to FPGA implementation only are
+        omitted:
+        - Mode_g
+        - PlStgPerIter_g
+
+        :param in_fmt: Input fixed-point format
+        :param out_mag_fmt: Output fixed-point format for the absolute value
+        :param out_ang_fmt: Output fixed-point format for the angle
+        :param internal_fmt: Internal fixed-point format for X/Y calculation (use "AUTO" for Automatic)
+        :param int_ang_fmt: Internal fixed-point format for the angle calculation (use "AUTO" for Automatic)
         :param iterations: Number of CORDIC iterations
-        :param gainComp: True=CORDIC gain is compensated internally, False = CORDIC gain is not compensated
+        :param gain_corr_coef_fmt: Format of the gain correction coefficient (use "NONE" for no correction)
         :param round: Rounding mode at the output
         :param sat: Saturation mode at the output
         """
-        #Checks
-        if inFmt.S != 1:                        raise ValueError("psi_fix_cordic_vect: InFmt_g must be signed")
-        if outFmt.S != 0:                       raise ValueError("psi_fix_cordic_vect: OutFmt_g must be unsigned")
-        if internalFmt.S != 1:                  raise ValueError("psi_fix_cordic_vect: InternalFmt_g must be signed")
-        # Note: Ignoring CORDIC growth, abs(z) still grows by up to sqrt(2) because sqrt(1**2 + 1**2) = sqrt(2).
-        #       Then, CORDIC growth is asymptotically ~1.647. So overall growth is ~2.33 ==> +2 integer bits needed in the worst case.
-        if internalFmt.I < inFmt.I+2:           raise ValueError("psi_fix_cordic_vect: InternalFmt_g must have at least 2 more int bits than InFmt_g")
-        if internalFmt.F < inFmt.F:             raise ValueError("psi_fix_cordic_vect: InternalFmt_g must have at least as many frac bits as InFmt_g")
-        # Note: AngleIntFmt_g [-0.5, 0.5) is signed and AngleFmt_g [0.0, 1.0) is unsigned.
-        if angleFmt.S+angleFmt.I != 0:          raise ValueError("psi_fix_cordic_vect: AngleFmt_g must be purely fractional")
-        if angleIntFmt.S+angleIntFmt.I != 0:    raise ValueError("psi_fix_cordic_vect: AngleIntFmt_g must be purely fractional")
-        #Implementation
-        self.inFmt = inFmt
-        self.outFmt = outFmt
-        self.internalFmt = internalFmt
-        self.iterations = iterations
-        self.round = round
-        self.sat = sat
-        self.angleFmt = angleFmt
-        self.angleIntFmt = angleIntFmt
-        self.gainComp = gainComp
-        self.gainCompCoef = PsiFixFromReal(1/self.CordicGain, self.GAIN_COMP_FMT)
-        #Angle table for up to 32 iterations
-        self.angleTable = PsiFixFromReal(self.ATAN_TABLE, angleIntFmt)
+        # in_fmt
+        if in_fmt.S != 1:                        raise ValueError("olo_fix_cordic_vect: in_fmt_g must be signed")
+        self._in_fmt = in_fmt
 
-    ####################################################################################################################
+        # out_mag_fmt
+        if out_mag_fmt.S != 0:                   raise ValueError("olo_fix_cordic_vect: out_mag_fmt_g must be unsigned")
+        self._out_mag_fmt = out_mag_fmt
+
+        # out_ang_fmt
+        # Note: int_ang_fmt_g [-0.5, 0.5) is signed and out_ang_fmt_g [0.0, 1.0) is unsigned.
+        if out_ang_fmt.S+out_ang_fmt.I != 0:          raise ValueError("olo_fix_cordic_vect: out_ang_fmt_g must be (0, 0, x)")
+        self._out_ang_fmt = out_ang_fmt
+
+        # internal_fmt
+        if isinstance(internal_fmt, str):
+            #String
+            if internal_fmt == "AUTO":
+                # Note: Ignoring CORDIC growth, abs(z) still grows by up to sqrt(2) because sqrt(1**2 + 1**2) = sqrt(2).
+                #       Then, CORDIC growth is asymptotically ~1.647. So overall growth is ~2.33 ==> +2 integer bits needed in the worst case.
+                self._internal_fmt = FixFormat(1, self._in_fmt.I + 2, max(self._out_mag_fmt.F, self._out_ang_fmt.F) + 3)
+            else:
+                raise ValueError("olo_fix_cordic_vect: internal_fmt_g must be 'AUTO' or a FixFormat")
+        else:
+            #Format
+            if internal_fmt.S != 1:            raise ValueError("olo_fix_cordic_vect: internal_fmt_g must be signed")
+            self._internal_fmt = internal_fmt
+
+        # int_ang_fmt
+        if isinstance(int_ang_fmt, str):
+            #String
+            if int_ang_fmt == "AUTO":
+                self._int_ang_fmt = FixFormat(1, -2, self._out_ang_fmt.F + 3)
+            else:
+                raise ValueError("olo_fix_cordic_vect: int_ang_fmt_g must be 'AUTO' or a FixFormat")
+        else:
+            #Format
+            if int_ang_fmt.S != 1:             raise ValueError("olo_fix_cordic_vect: int_ang_fmt_g must be signed")
+            if int_ang_fmt.I != -2:            raise ValueError("olo_fix_cordic_vect: int_ang_fmt_g must be (1,-2,x)")
+            self._int_ang_fmt = int_ang_fmt   
+
+
+        # iterations
+        if iterations > 32:              raise ValueError("olo_fix_cordic_vect: iterations_g must be <= 32")
+        self._iterations = iterations
+
+        # gain_corr_coef_fmt
+        if isinstance(gain_corr_coef_fmt, str):
+            # String
+            if gain_corr_coef_fmt == "NONE":
+                self._gain_comp_on = False
+                self._gain_comp_coef = 0
+                self._gain_comp_coef_fmt = FixFormat(0,0,0) 
+            else:
+                raise ValueError("olo_fix_cordic_vect: gain_corr_coef_fmt_g must be 'NONE' or a FixFormat")
+        else:
+            # Format
+            self._gain_comp_on = True
+            self._gain_comp_coef = cl_fix_from_real(1/self.cordic_gain, gain_corr_coef_fmt)
+            self._gain_comp_coef_fmt = gain_corr_coef_fmt
+
+        # round
+        self._round = round
+
+        # sat
+        self._sat = sat
+
+        #Angle table for up to 32 iterations
+        self._angleTable = cl_fix_from_real(self._ATAN_TABLE, self._int_ang_fmt)
+
+    # ---------------------------------------------------------------------------------------------------
     # Public Methods and Properties
-    ####################################################################################################################
+    # ---------------------------------------------------------------------------------------------------
 
     @property
-    def CordicGain(self):
+    def cordic_gain(self):
         """
         Get the CORDIC gain of the model (can be used if external compensation is required)
         :return: CORDIC gain
         """
         g = 1
-        for i in range(self.iterations):
+        for i in range(self._iterations):
             g *= np.sqrt(1+2**(-2*i))
         return g
-
-    def Process(self, inpI, inpQ) :
+    
+    def next(self, inp_i, inp_q):
         """
-        Run the bittrue model
-        :param inpI: Real-part of the input
-        :param inpQ: Imaginary-part of the input
+        Process next N samples
+        
+        :param inp_i: Real-part of the input
+        :param inp_q: Imaginary-part of the input
+        :return: Output as tuple (abs, angle)
+        """
+        return self.process(inp_i, inp_q)
+
+    def process(self, inp_i, inp_q) :
+        """
+        Process samples (without preserving previous state)
+        
+        :param inp_i: Real-part of the input
+        :param inp_q: Imaginary-part of the input
         :return: Output as tuple (abs, angle)
         """
         # Map to quadrant one
-        # No rounding or saturation because internalFmt is checked to have sufficient int and frac bits
-        x = PsiFixAbs(PsiFixFromReal(inpI, self.inFmt), self.inFmt, self.internalFmt, PsiFixRnd.Trunc, PsiFixSat.Wrap)
-        y = PsiFixAbs(PsiFixFromReal(inpQ, self.inFmt), self.inFmt, self.internalFmt, PsiFixRnd.Trunc, PsiFixSat.Wrap)
-        z = 0
-        for i in range(0, self.iterations):
-            x_next = self._CordicStepX(x, y, i)
-            y_next = self._CordicStepY(x, y, i)
-            z_next = self._CordicStepZ(z, y, i)
+        # No rounding or saturation because internal_fmt is checked to have sufficient int and frac bits
+        x = cl_fix_abs(cl_fix_from_real(inp_i, self._in_fmt), self._in_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        y = cl_fix_abs(cl_fix_from_real(inp_q, self._in_fmt), self._in_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        z = 0.0
+        for i in range(0, self._iterations):
+            x_next = self._cordic_step_x(x, y, i)
+            y_next = self._cordic_step_y(x, y, i)
+            z_next = self._cordic_step_z(z, y, i)
             x = x_next
             y = y_next
             z = z_next
         # Normalized angles are never saturated. With 1 non-fractional bit, wrapping is correct behavior.
-        zQ1 = PsiFixResize(z, self.angleIntFmt, self.angleFmt, self.round, PsiFixSat.Wrap)
-        zQ2 = PsiFixSub(0.5, self.angleIntFmt, z, self.angleIntFmt, self.angleFmt, self.round, PsiFixSat.Wrap)
-        zQ3 = PsiFixAdd(0.5, self.angleIntFmt, z, self.angleIntFmt, self.angleFmt, self.round, PsiFixSat.Wrap)
-        zQ4 = PsiFixSub(0.0, self.angleIntFmt, z, self.angleIntFmt, self.angleFmt, self.round, PsiFixSat.Wrap)
-        zOut = np.select([ np.logical_and(inpI >= 0, inpQ >= 0),
-                        np.logical_and(inpI < 0, inpQ >= 0),
-                        np.logical_and(inpI < 0, inpQ < 0),
-                        np.logical_and(inpI >= 0, inpQ < 0)], [zQ1, zQ2, zQ3, zQ4])
-        if self.gainComp:
-            xOut = PsiFixMult(x, self.internalFmt, self.gainCompCoef, self.GAIN_COMP_FMT, self.outFmt, self.round, self.sat)
+        zQ1 = cl_fix_resize(z, self._int_ang_fmt, self._out_ang_fmt, self._round, FixSaturate.None_s)
+        zQ2 = cl_fix_sub(0.5, self._int_ang_fmt, z, self._int_ang_fmt, self._out_ang_fmt, self._round, FixSaturate.None_s)
+        zQ3 = cl_fix_add(0.5, self._int_ang_fmt, z, self._int_ang_fmt, self._out_ang_fmt, self._round, FixSaturate.None_s)
+        zQ4 = cl_fix_sub(0.0, self._int_ang_fmt, z, self._int_ang_fmt, self._out_ang_fmt, self._round, FixSaturate.None_s)
+        zOut = np.select([ np.logical_and(inp_i >= 0, inp_q >= 0),
+                        np.logical_and(inp_i < 0, inp_q >= 0),
+                        np.logical_and(inp_i < 0, inp_q < 0),
+                        np.logical_and(inp_i >= 0, inp_q < 0)], [zQ1, zQ2, zQ3, zQ4])
+        if self._gain_comp_on:
+            xOut = cl_fix_mult(x, self._internal_fmt, self._gain_comp_coef, self._gain_comp_coef_fmt, self._out_mag_fmt, self._round, self._sat)
         else:
-            xOut = PsiFixResize(x, self.internalFmt, self.outFmt, self.round, self.sat)
+            xOut = cl_fix_resize(x, self._internal_fmt, self._out_mag_fmt, self._round, self._sat)
         return (xOut, zOut)
 
-    ####################################################################################################################
-    # Private Methods (do not call!)
-    ####################################################################################################################
-    def _CordicStepX(self, xLast, yLast, shift : int):
-        yShifted = PsiFixShiftRight(yLast, self.internalFmt, shift, self.iterations-1, self.internalFmt)
-        sub = PsiFixSub(xLast, self.internalFmt, yShifted, self.internalFmt, self.internalFmt, PsiFixRnd.Trunc, PsiFixSat.Wrap)
-        add = PsiFixAdd(xLast, self.internalFmt, yShifted, self.internalFmt, self.internalFmt, PsiFixRnd.Trunc, PsiFixSat.Wrap)
+    # ---------------------------------------------------------------------------------------------------
+    # Private Methods
+    # ---------------------------------------------------------------------------------------------------
+    def _cordic_step_x(self, xLast, yLast, shift : int):
+        yShifted = cl_fix_shift(yLast, self._internal_fmt, -shift, self._internal_fmt)
+        sub = cl_fix_sub(xLast, self._internal_fmt, yShifted, self._internal_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        add = cl_fix_add(xLast, self._internal_fmt, yShifted, self._internal_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
         return np.where(yLast < 0, sub, add)
 
-    def _CordicStepY(self, xLast, yLast, shift: int):
-        xShifted = PsiFixShiftRight(xLast, self.internalFmt, shift, self.iterations - 1, self.internalFmt)
-        add = PsiFixAdd(yLast, self.internalFmt, xShifted, self.internalFmt, self.internalFmt, PsiFixRnd.Trunc, PsiFixSat.Wrap)
-        sub = PsiFixSub(yLast, self.internalFmt, xShifted, self.internalFmt, self.internalFmt, PsiFixRnd.Trunc, PsiFixSat.Wrap)
+    def _cordic_step_y(self, xLast, yLast, shift: int):
+        xShifted = cl_fix_shift(xLast, self._internal_fmt, -shift, self._internal_fmt)
+        add = cl_fix_add(yLast, self._internal_fmt, xShifted, self._internal_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        sub = cl_fix_sub(yLast, self._internal_fmt, xShifted, self._internal_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
         out = np.where(yLast < 0, add, sub)
         return out
 
-    def _CordicStepZ(self, zLast, yLast, iteration : int):
-        add = PsiFixAdd(zLast, self.angleIntFmt, self.angleTable[iteration], self.angleIntFmt, self.angleIntFmt, PsiFixRnd.Trunc, PsiFixSat.Wrap)
-        sub = PsiFixSub(zLast, self.angleIntFmt, self.angleTable[iteration], self.angleIntFmt, self.angleIntFmt, PsiFixRnd.Trunc, PsiFixSat.Wrap)
+    def _cordic_step_z(self, zLast, yLast, iteration : int):
+        add = cl_fix_add(zLast, self._int_ang_fmt, self._angleTable[iteration], self._int_ang_fmt, self._int_ang_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        sub = cl_fix_sub(zLast, self._int_ang_fmt, self._angleTable[iteration], self._int_ang_fmt, self._int_ang_fmt, FixRound.Trunc_s, FixSaturate.None_s)
         return np.where(yLast < 0, sub, add)

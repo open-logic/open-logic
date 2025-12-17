@@ -1,0 +1,9 @@
+{
+    "python.analysis.extraPaths": [
+        "3rdParty/en_cl_fix/bittrue/models/python"
+    ],
+    "python.terminal.activateEnvironment": true,
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "${workspaceFolder}/3rdParty/en_cl_fix/bittrue/models/python"
+    }
+}

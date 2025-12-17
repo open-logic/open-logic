@@ -63,8 +63,8 @@ Content **TO BE DEFINED**
 | InAngFmt_g        | string   | -           | Input angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,0,15)") |
 | OutFmt_g          | string   | -           | Output data format <br>Usually (1,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | InternalFmt_g     | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>Form manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
-| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>Form manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
-| Iterations_g      | positive | 16          | Number of CORDIC iterations. Refer to [Format Considerations](#format-considerations) for details  |
+| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>Form manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
+| Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details  |
 | Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"ITERATIVE": Iterative mode<br />"PIPELINED": Pipelined mode |
 | GainCorrCoefFmt_g | string   | "(0,0,17)"  | Format of the gain correction coefficient, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(0,0,15)"). Refer to [Format Considerations](#format-considerations). <br> To disable the internal gain compensation, choose "NONE" |
 | Round_g           | string   | "Trunc_s"   | Rounding mode <br />String representation of an _en_cl_fix FixRound_t_. |
@@ -134,7 +134,8 @@ correction factor will not impact the relative precision between samples.
 
 #### IntAngFmt_g
 
-Internal calculation format for angles (must be signed).
+Internal calculation format for angles (must be signed) and have -2 integer bits (because only one quadrant is used, 
+angles 0...0.25).)
 
 The more fractional bits, the more precise the calculation gets. Usually a few more bits than in _InAngFmt_g_ are
 required.
@@ -144,7 +145,7 @@ Optimization is best performed based on the bit-true python model.
 For "AUTO" mode, the internal format is chosen as follows:
 
 - Sign bit: yes
-- Integer bits: 0
+- Integer bits: -2
 - Fractional bits: _InAngFmt_g.F_ + 3
 
 #### Iterations_g
