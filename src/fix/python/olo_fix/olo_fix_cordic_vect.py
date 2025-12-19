@@ -88,13 +88,13 @@ class olo_fix_cordic_vect:
         if isinstance(int_ang_fmt, str):
             #String
             if int_ang_fmt == "AUTO":
-                self._int_ang_fmt = FixFormat(1, -2, self._out_ang_fmt.F + 3)
+                self._int_ang_fmt = FixFormat(1, -1, self._out_ang_fmt.F + 3)
             else:
                 raise ValueError("olo_fix_cordic_vect: int_ang_fmt_g must be 'AUTO' or a FixFormat")
         else:
             #Format
             if int_ang_fmt.S != 1:             raise ValueError("olo_fix_cordic_vect: int_ang_fmt_g must be signed")
-            if int_ang_fmt.I != -2:            raise ValueError("olo_fix_cordic_vect: int_ang_fmt_g must be (1,-2,x)")
+            if int_ang_fmt.I != -1:            raise ValueError("olo_fix_cordic_vect: int_ang_fmt_g must be (1,-1,x)")
             self._int_ang_fmt = int_ang_fmt   
 
 
@@ -172,10 +172,10 @@ class olo_fix_cordic_vect:
             y = y_next
             z = z_next
         # Normalized angles are never saturated. With 1 non-fractional bit, wrapping is correct behavior.
-        zQ1 = cl_fix_resize(z, self._int_ang_fmt, self._out_ang_fmt, self._round, FixSaturate.None_s)
-        zQ2 = cl_fix_sub(0.5, self._int_ang_fmt, z, self._int_ang_fmt, self._out_ang_fmt, self._round, FixSaturate.None_s)
-        zQ3 = cl_fix_add(0.5, self._int_ang_fmt, z, self._int_ang_fmt, self._out_ang_fmt, self._round, FixSaturate.None_s)
-        zQ4 = cl_fix_sub(0.0, self._int_ang_fmt, z, self._int_ang_fmt, self._out_ang_fmt, self._round, FixSaturate.None_s)
+        zQ1 = cl_fix_resize(z, self._int_ang_fmt, self._out_ang_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        zQ2 = cl_fix_sub(0.5, self._int_ang_fmt, z, self._int_ang_fmt, self._out_ang_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        zQ3 = cl_fix_add(0.5, self._int_ang_fmt, z, self._int_ang_fmt, self._out_ang_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        zQ4 = cl_fix_sub(0.0, self._int_ang_fmt, z, self._int_ang_fmt, self._out_ang_fmt, FixRound.Trunc_s, FixSaturate.None_s)
         zOut = np.select([ np.logical_and(inp_i >= 0, inp_q >= 0),
                         np.logical_and(inp_i < 0, inp_q >= 0),
                         np.logical_and(inp_i < 0, inp_q < 0),
@@ -193,7 +193,7 @@ class olo_fix_cordic_vect:
         yShifted = cl_fix_shift(yLast, self._internal_fmt, -shift, self._internal_fmt)
         sub = cl_fix_sub(xLast, self._internal_fmt, yShifted, self._internal_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
         add = cl_fix_add(xLast, self._internal_fmt, yShifted, self._internal_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
-        return np.where(yLast < 0, sub, add)
+        return np.where(yLast <= 0, sub, add)
 
     def _cordic_step_y(self, xLast, yLast, shift: int):
         xShifted = cl_fix_shift(xLast, self._internal_fmt, -shift, self._internal_fmt)

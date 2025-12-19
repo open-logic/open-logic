@@ -20,9 +20,13 @@ def cosim(output_path : str = None,
           generics : dict = None, 
           cosim_mode : bool = True):
     
-    # Constants
-    SAMPLES_RAND = 1000
-    SAMPLES_LOGIC = 360
+    # Constants (shorter for cosim than for plotting)
+    if cosim_mode:
+        SAMPLES_RAND = 100
+        SAMPLES_LOGIC = 35
+    else:
+        SAMPLES_RAND = 1000
+        SAMPLES_LOGIC = 361
 
     #Parse Generics
     InFmt_g = olo_fix_utils.fix_format_from_string(generics["InFmt_g"])
@@ -69,9 +73,11 @@ def cosim(output_path : str = None,
         ang_diff = out_ang - ang_expected
         # Wrap difference to [-0.5, 0.5] range
         ang_diff = np.where(ang_diff > 0.5, ang_diff - 1.0, ang_diff)
-        ang_diff = np.where(ang_diff < -0.5, ang_diff + 1.0, ang_diff)
-        
-        err_data = {"Error Magnitude [LSB]" :  (out_mag - abs(sig_cplx))*2**OutMagFmt_g.F, 
+        #Expected magnitude
+        mag_exp = abs(sig_cplx)
+        if str(GainCorrCoefFmt_g) == "NONE":
+            mag_exp = mag_exp * dut.cordic_gain
+        err_data = {"Error Magnitude [LSB]" :  (out_mag - mag_exp)*2**OutMagFmt_g.F, 
                 "Error Angle [LSB]" : ang_diff * 2**OutAngFmt_g.F}
         olo_fix_plots.plot_subplots({"Input Data" : in_data, "Output Data" : out_data, "Error Data" : err_data})
 
@@ -90,7 +96,7 @@ if __name__ == "__main__":
         "InFmt_g": "(1, 0, 15)",
         "OutMagFmt_g": "(0, 2, 16)",
         "OutAngFmt_g": "(0, 0, 15)",
-        "InternalFmt_g": "AUTO",
+        "InternalFmt_g": "(1,2,22)",
         "IntAngFmt_g": "AUTO",
         "Iterations_g": "13",
         "GainCorrCoefFmt_g": "(0, 0, 17)",

@@ -63,7 +63,7 @@ Content **TO BE DEFINED**
 | OutMagFmt_g       | string   | -           | Output magnitude format <br>Must be (0,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
 | OutAngFmt_g       | string   | -           | Output angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
 | InternalFmt_g     | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>Form manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
-| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>Form manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
+| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>Form manual control, specify a string representation of a (1,-1,x) _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
 | Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details  |
 | Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"ITERATIVE": Iterative mode<br />"PIPELINED": Pipelined mode |
 | GainCorrCoefFmt_g | string   | "(0,0,17)"  | Format of the gain correction coefficient, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations). <br> To disable the internal gain compensation, choose "NONE" |
@@ -134,8 +134,8 @@ correction factor will not impact the relative precision between samples.
 
 #### IntAngFmt_g
 
-Internal calculation format for angles (must be signed) and have -2 integer bits (because only one quadrant is used, 
-angles 0...0.25).)
+Internal calculation format for angles (must be signed) and have -1 integer bits (because only one quadrant is used,
+angles 0...0.25 but the full range (incl. the 0.25 exactly) must be representable).
 
 The more fractional bits, the more precise the calculation gets. Usually a few more bits than in _OutAngFmt_g_ are
 required.
@@ -145,7 +145,7 @@ Optimization is best performed based on the bit-true python model.
 For "AUTO" mode, the internal format is chosen as follows:
 
 - Sign bit: yes
-- Integer bits: -2
+- Integer bits: -1
 - Fractional bits: _OutAngFmt_g.F_ + 3
 
 #### Iterations_g
