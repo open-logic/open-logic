@@ -10,14 +10,14 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_cordic_rot.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_cordic_rot.json?cacheSeconds=0)
 
-VHDL Source: [olo_fix_cordic_rot](../../src/fix/vhdl/olo_fix_cordic_rot.vhd)
+VHDL Source: [olo_fix_cordic_rot](../../src/fix/vhdl/olo_fix_cordic_rot.vhd)<br />
 Bit-true Model: [olo_fix_cordic_rot](../../src/fix/python/olo_fix/olo_fix_cordic_rot.py)
 
 ## Description
 
 ### Overview
 
-This entity implements the rotating CORDIC algorithm. This algorithm usually is used to covert from the polar
+This entity implements the rotating CORDIC algorithm. This algorithm is usually used to covert from the polar
 to the cartesian coordinate system, i.e. to calculate I and Q components (complex numbers) from an
 angle and a magnitude.
 
@@ -25,7 +25,7 @@ The algorithm can be implemented in two different modes:
 
 - **ITERATIVE**
   - Iterations are executed one after the other
-  - Every computation requires several clock cycles and a new sample only is accepted after the previous one is finished
+  - Every computation requires several clock cycles and a new sample is accepted only after the previous one has finished
   - Lowest possible resource usage
 - **PIPELINED**
   - Iterations are implemented in individual pipeline stages
@@ -37,7 +37,7 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ### Gain Compensation
 
-The CORDIC algorithm has an inherent gain that depends on the number of iterations. This gain optionally can be
+The CORDIC algorithm has an inherent gain that depends on the number of iterations. This gain can optionally be
 compensated directly within the _olo_fix_cordic_rot_ entity. The internal gain compensation works most efficiently
 if the internal format _InternalFmt_g_  fits into one multiplier of the target device.
 
@@ -47,7 +47,7 @@ _olo_fix_mult_ entity after the CORDIC. For this the gain factor must be known, 
 ![Cordic Gain Formula](./cordic/cordic_gain.png)
 
 Note that depending on the application the gain compensation may be omitted completely. Therefore it is optional and can
-be controlled throug hthe generic _GainCorrCoefFmt_g_.
+be controlled through the generic _GainCorrCoefFmt_g_.
 
 ### Latency
 
