@@ -10,7 +10,7 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_mult.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_mult.json?cacheSeconds=0)
 
-VHDL Source: [olo_fix_mult](../../src/fix/vhdl/olo_fix_mult.vhd)
+VHDL Source: [olo_fix_mult](../../src/fix/vhdl/olo_fix_mult.vhd)<br />
 Bit-true Model: [olo_fix_mult](../../src/fix/python/olo_fix/olo_fix_mult.py)
 
 ## Description
