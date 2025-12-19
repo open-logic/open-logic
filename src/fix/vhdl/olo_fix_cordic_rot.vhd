@@ -28,7 +28,6 @@ library work;
     use work.en_cl_fix_pkg.all;
     use work.olo_fix_pkg.all;
 
--- TODO: Use pipelined gain correction multiplier (or sat/round))
 -- TODO: Document latency
 
 ---------------------------------------------------------------------------------------------------
@@ -196,6 +195,10 @@ architecture rtl of olo_fix_cordic_rot is
     type IntArr_t is array (natural range <>) of std_logic_vector(cl_fix_width(InternalFmt_c)-1 downto 0);
     type AngArr_t is array (natural range <>) of std_logic_vector(cl_fix_width(AngleIntFmt_c)-1 downto 0);
 
+    -- Gain Correction Signals
+    signal YQc, XQc : std_logic_vector(cl_fix_width(InternalFmt_c)-1 downto 0);
+    signal QcVld    : std_logic;
+
 begin
 
     -- *** Assertions ***
@@ -230,8 +233,6 @@ begin
         signal Z        : AngArr_t(0 to Iterations_g);
         signal Vld      : std_logic_vector(0 to Iterations_g);
         signal Quad     : t_aslv2(0 to Iterations_g);
-        signal YQc, XQc : std_logic_vector(cl_fix_width(InternalFmt_c)-1 downto 0);
-        signal QcVld    : std_logic;
     begin
         -- Pipelined implementation can take a sample every clock cycle
         In_Ready <= '1';
@@ -272,15 +273,6 @@ begin
                         XQc <= cl_fix_neg(X(Iterations_g), InternalFmt_c, InternalFmt_c, Trunc_s, None_s);
                     end if;
 
-                    -- Output
-                    Out_Valid <= QcVld;
-                    if GainComp_g then
-                        Out_I <= cl_fix_mult(XQc, InternalFmt_c, GcCoef_c, GainCorrCoefFmt_c, OutFmt_c, Round_g, Sat_g);
-                        Out_Q <= cl_fix_mult(YQc, InternalFmt_c, GcCoef_c, GainCorrCoefFmt_c, OutFmt_c, Round_g, Sat_g);
-                    else
-                        Out_I <= cl_fix_resize(XQc, InternalFmt_c, OutFmt_c, Round_g, Sat_g);
-                        Out_Q <= cl_fix_resize(YQc, InternalFmt_c, OutFmt_c, Round_g, Sat_g);
-                    end if;
                 end if;
             end if;
         end process;
@@ -298,8 +290,6 @@ begin
         signal CordVld   : std_logic;
         signal IterCnt   : integer range 0 to Iterations_g-1;
         signal Quad      : std_logic_vector(1 downto 0);
-        signal YQc, XQc  : std_logic_vector(cl_fix_width(InternalFmt_c)-1 downto 0);
-        signal QcVld     : std_logic;
     begin
         In_Ready <= not XIn_Valid;
 
@@ -357,21 +347,91 @@ begin
                         XQc <= cl_fix_neg(X, InternalFmt_c, InternalFmt_c, Trunc_s, None_s);
                     end if;
 
-                    -- Output
-                    Out_Valid <= QcVld;
-                    if GainComp_g then
-                        Out_I <= cl_fix_mult(XQc, InternalFmt_c, GcCoef_c, GainCorrCoefFmt_c, OutFmt_c, Round_g, Sat_g);
-                        Out_Q <= cl_fix_mult(YQc, InternalFmt_c, GcCoef_c, GainCorrCoefFmt_c, OutFmt_c, Round_g, Sat_g);
-                    else
-                        Out_I <= cl_fix_resize(XQc, InternalFmt_c, OutFmt_c, Round_g, Sat_g);
-                        Out_Q <= cl_fix_resize(YQc, InternalFmt_c, OutFmt_c, Round_g, Sat_g);
-                    end if;
-
                 end if;
             end if;
         end process;
 
     end generate;
+
+    -- *** Gain Correction ***
+    -- No correction
+    g_no_gain_comp : if GainCorrCoefFmtUpper_c = "NONE" generate
+
+        i_resize_i : entity work.olo_fix_resize
+            generic map (
+                AFmt_g      => to_string(InternalFmt_c),
+                ResultFmt_g => to_string(OutFmt_c),
+                Round_g     => to_string(Round_c),
+                Saturate_g  => to_string(Saturate_c),
+                RoundReg_g  => "AUTO",
+                SatReg_g    => "AUTO"
+            )
+            port map (
+                Clk         => Clk,
+                Rst         => Rst,
+                In_Valid    => QcVld,
+                In_A        => XQc,
+                Out_Valid   => Out_Valid,
+                Out_Result  => Out_I
+            );
+
+        i_resize_q : entity work.olo_fix_resize
+            generic map (
+                AFmt_g      => to_string(InternalFmt_c),
+                ResultFmt_g => to_string(OutFmt_c),
+                Round_g     => to_string(Round_c),
+                Saturate_g  => to_string(Saturate_c),
+                RoundReg_g  => "AUTO",
+                SatReg_g    => "AUTO"
+            )
+            port map (
+                Clk         => Clk,
+                Rst         => Rst,
+                In_Valid    => QcVld,
+                In_A        => YQc,
+                Out_Result  => Out_Q
+            );
+    end generate;
+
+    -- Compensation Enabled
+    g_gain_comp : if GainCorrCoefFmtUpper_c /= "NONE" generate
+
+        i_mult_i : entity work.olo_fix_mult
+            generic map (
+                AFmt_g      => to_string(InternalFmt_c),
+                BFmt_g      => to_string(GainCorrCoefFmt_c),
+                ResultFmt_g => to_string(OutFmt_c),
+                Round_g     => to_string(Round_c),
+                Saturate_g  => to_string(Saturate_c),
+            )
+            port map (
+                Clk         => Clk,
+                Rst         => Rst,
+                In_Valid    => QcVld,
+                In_A        => XQc,
+                In_B        => GcCoef_c,
+                Out_Valid   => Out_Valid,
+                Out_Result  => Out_I
+            );
+
+        i_mult_q : entity work.olo_fix_mult
+            generic map (
+                AFmt_g      => to_string(InternalFmt_c),
+                BFmt_g      => to_string(GainCorrCoefFmt_c),
+                ResultFmt_g => to_string(OutFmt_c),
+                Round_g     => to_string(Round_c),
+                Saturate_g  => to_string(Saturate_c)
+            )
+            port map (
+                Clk         => Clk,
+                Rst         => Rst,
+                In_Valid    => QcVld,
+                In_A        => YQc,
+                In_B        => GcCoef_c,
+                Out_Result  => Out_Q
+            );
+    end generate;
+
 
 end architecture;
 
