@@ -20,16 +20,20 @@ def cosim(output_path : str = None,
           generics : dict = None, 
           cosim_mode : bool = True):
     
-    # Constants
-    SAMPLES_RAND = 1000
-    SAMPLES_LOGIC = 361
+    # Constants (shorter for cosim than for plotting)
+    if cosim_mode:
+        SAMPLES_RAND = 100
+        SAMPLES_LOGIC = 35
+    else:
+        SAMPLES_RAND = 1000
+        SAMPLES_LOGIC = 361
 
     #Parse Generics
     InMagFmt_g = olo_fix_utils.fix_format_from_string(generics["InMagFmt_g"])
     InAngFmt_g = olo_fix_utils.fix_format_from_string(generics["InAngFmt_g"])
     OutFmt_g = olo_fix_utils.fix_format_from_string(generics["OutFmt_g"])
     InternalFmt_g = olo_fix_utils.fix_format_from_string(generics["InternalFmt_g"], tolerate_str=True)
-    IntAngFmt_g = olo_fix_utils.fix_format_from_string(generics["IntAngFmt_g"], tolerate_str=True)
+    AngleIntFmt_g = olo_fix_utils.fix_format_from_string(generics["AngleIntFmt_g"], tolerate_str=True)
     Iterations_g = int(generics["Iterations_g"])
     GainCorrCoefFmt_g = olo_fix_utils.fix_format_from_string(generics["GainCorrCoefFmt_g"], tolerate_str=True)
     Round_g = FixRound[generics["Round_g"]]
@@ -55,7 +59,7 @@ def cosim(output_path : str = None,
     sig_ang = cl_fix_from_real(sig_ang, InAngFmt_g)
 
     #Calcualte
-    dut = olo_fix_cordic_rot(InMagFmt_g, InAngFmt_g, OutFmt_g, InternalFmt_g, IntAngFmt_g, 
+    dut = olo_fix_cordic_rot(InMagFmt_g, InAngFmt_g, OutFmt_g, InternalFmt_g, AngleIntFmt_g, 
                              Iterations_g, GainCorrCoefFmt_g, Round_g, Saturate_g)
     out_i, out_q = dut.process(sig_mag, sig_ang)
     
@@ -63,8 +67,13 @@ def cosim(output_path : str = None,
     if not cosim_mode:
         in_data = {"Magnitude" : sig_mag, "Angle" : sig_ang}
         out_data = {"Output I" : out_i, "Output Q" : out_q}
-        err_data = {"Error I [LSB]" :  (out_i-np.cos(sig_ang*2*np.pi)*sig_mag)*2**OutFmt_g.F, 
-                    "Error Q [LSB]" : (out_q-np.sin(sig_ang*2*np.pi)*sig_mag)*2**OutFmt_g.F}
+        expected_i = np.cos(sig_ang*2*np.pi)*sig_mag
+        expected_q = np.sin(sig_ang*2*np.pi)*sig_mag
+        if str(GainCorrCoefFmt_g) == "NONE":
+            expected_i = expected_i * dut.cordic_gain
+            expected_q = expected_q * dut.cordic_gain
+        err_data = {"Error I [LSB]" :  (out_i-expected_i)*2**OutFmt_g.F, 
+                    "Error Q [LSB]" : (out_q-expected_q)*2**OutFmt_g.F}
         olo_fix_plots.plot_subplots({"Input Data" : in_data, "Output Data" : out_data, "Error Data" : err_data})
 
     #Write Files
@@ -83,7 +92,7 @@ if __name__ == "__main__":
         "InAngFmt_g": "(0, 0, 15)",
         "OutFmt_g": "(1, 2, 16)",
         "InternalFmt_g": "(1, 2, 22)",
-        "IntAngFmt_g": "(1, -2, 23)",
+        "AngleIntFmt_g": "(1, -2, 23)",
         "Iterations_g": "21",
         "GainCorrCoefFmt_g": "(0, 0, 17)",
         "Round_g": "NonSymPos_s",

@@ -39,7 +39,7 @@ library work;
 entity olo_fix_cordic_rot is
     generic (
         InMagFmt_g        : string;
-        InAngFmt_g       : string;
+        InAngFmt_g        : string;
         OutFmt_g          : string;
         InternalFmt_g     : string   := "AUTO";
         AngleIntFmt_g     : string   := "AUTO";
@@ -82,13 +82,13 @@ architecture rtl of olo_fix_cordic_rot is
     constant OutFmt_c          : FixFormat_t   := cl_fix_format_from_string(OutFmt_g);
     constant InternalFmt_c     : FixFormat_t   := choose(InternalFmtUpper_c = "AUTO",
                                                          (1, InMagFmt_c.I + 1, InMagFmt_c.F + 3),
-                                                         cl_fix_format_from_string(InternalFmtUpper_c));
+                                                         fixFmtFromStringTolerant(InternalFmtUpper_c));
     constant AngleIntFmt_c     : FixFormat_t   := choose(AngleIntFmtUpper_c = "AUTO",
                                                          (1, -2, InAngFmt_c.F + 3),
-                                                         cl_fix_format_from_string(AngleIntFmtUpper_c));
+                                                         fixFmtFromStringTolerant(AngleIntFmtUpper_c));
     constant GainCorrCoefFmt_c : FixFormat_t   := choose(GainCorrCoefFmtUpper_c = "NONE",
-                                                         (0, 0, 0),
-                                                         cl_fix_format_from_string(GainCorrCoefFmtUpper_c));
+                                                         FixFmt_Unused_c,
+                                                         fixFmtFromStringTolerant(GainCorrCoefFmtUpper_c));
     constant Round_c           : FixRound_t    := cl_fix_round_from_string(Round_g);
     constant Saturate_c        : FixSaturate_t := cl_fix_saturate_from_string(Saturate_g);
 
@@ -205,28 +205,28 @@ begin
 
     -- *** Assertions ***
     assert InMagFmt_c.S = 0
-        report "olo_fix_cordic_rot: InMagFmt_c must be unsigned"
+        report "###ERROR###: olo_fix_cordic_rot: InMagFmt_c must be unsigned"
         severity error;
     assert InAngFmt_c.S = 0
-        report "olo_fix_cordic_rot: InAngFmt_c must be (0,0,x))"
+        report "###ERROR###: olo_fix_cordic_rot: InAngFmt_c must be (0,0,x))"
         severity error;
     assert InAngFmt_c.I = 0
-        report "olo_fix_cordic_rot: InAngFmt_c must be (0,0,x))"
+        report "###ERROR###: olo_fix_cordic_rot: InAngFmt_c must be (0,0,x))"
         severity error;
     assert InternalFmt_c.S = 1
-        report "olo_fix_cordic_rot: InternalFmt_c must be signed"
+        report "###ERROR###: olo_fix_cordic_rot: InternalFmt_c must be signed"
         severity error;
     assert AngleIntFmt_c.S = 1
-        report "olo_fix_cordic_rot: AngleIntFmt_c must be sig(1,-2,x)ned"
+        report "###ERROR###: olo_fix_cordic_rot: AngleIntFmt_c must be sig(1,-2,x)ned"
         severity error;
     assert AngleIntFmt_c.I = -2
-        report "olo_fix_cordic_rot: AngleIntFmt_c must be (1,-2,x)"
+        report "###ERROR###: olo_fix_cordic_rot: AngleIntFmt_c must be (1,-2,x)"
         severity error;
     assert Iterations_g <= 32
-        report "olo_fix_cordic_rot: Iterations_g must be <= 32"
+        report "###ERROR###: olo_fix_cordic_rot: Iterations_g must be <= 32"
         severity error;
     assert ModeUpper_c = "PIPELINED" or ModeUpper_c = "SERIAL"
-        report "olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
+        report "###ERROR###: olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
         severity error;
 
     -- *** Pipelined Implementation ***
@@ -245,7 +245,6 @@ begin
             if rising_edge(Clk) then
                 if Rst = '1' then
                     Vld       <= (others => '0');
-                    Out_Valid <= '0';
                     QcVld     <= '0';
                 else
                     -- Initialization
@@ -301,8 +300,8 @@ begin
                 if Rst = '1' then
                     XIn_Valid <= '0';
                     IterCnt   <= 0;
-                    Out_Valid <= '0';
                     CordVld   <= '0';
+                    QcVld     <= '0';
                 else
                     -- Input latching
                     if XIn_Valid = '0' and In_Valid = '1' then

@@ -46,6 +46,8 @@ package olo_fix_pkg is
     constant FixSaturate_Sat_c     : string := "Sat_s";
     constant FixSaturate_SatWarn_c : string := "SatWarn_s";
 
+    constant FixFmt_Unused_c : FixFormat_t := (0, 1, 0); -- Unused formats must have one bit to avoid issues
+
     -- Functions
     function fixFmtWidthFromString (fmt : string) return natural;
 
@@ -56,6 +58,9 @@ package olo_fix_pkg is
     function fixImplementReg (
         logicPresent : boolean;
         regMode      : string) return boolean;
+
+    -- Return fixed-point format from string and tolerate wrong strings (returning 0,0,0)
+    function fixFmtFromStringTolerant (fmt : string) return FixFormat_t;
 
 end package;
 
@@ -97,6 +102,49 @@ package body olo_fix_pkg is
 
         return Result_v;
 
+    end function;
+
+    function fixFmtFromStringTolerant (fmt : string) return FixFormat_t is
+        type State_t is (BracketOpen_s, IntBits_s, FracBits_s, BracketClose_s, Done_s);
+
+        variable Result_v : FixFormat_t := (0, 0, 0);
+        variable State_v  : State_t     := BracketOpen_s;
+    begin
+
+        for i in fmt'low to fmt'high loop
+
+            case State_v is
+                when BracketOpen_s =>
+                    if fmt(i) = '(' then
+                        State_v := IntBits_s;
+                    end if;
+                when IntBits_s =>
+                    if fmt(i) = ',' then
+                        State_v := FracBits_s;
+                    end if;
+                when FracBits_s =>
+                    if fmt(i) = ',' then
+                        State_v := BracketClose_s;
+                    end if;
+                when BracketClose_s =>
+                    if fmt(i) = ')' then
+                        State_v := Done_s;
+                    end if;
+                when Done_s =>
+                    null; -- unreachable
+                -- coverage off
+                when others =>
+                    null; -- unreachable
+                -- coverage on
+            end case;
+
+        end loop;
+
+        if State_v = Done_s then
+            Result_v := cl_fix_format_from_string(fmt);
+        end if;
+
+        return Result_v;
     end function;
 
 end package body;

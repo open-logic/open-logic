@@ -15,6 +15,7 @@ library vunit_lib;
     context vunit_lib.vunit_context;
 
 library olo;
+    use olo.en_cl_fix_pkg.all;
     use olo.olo_fix_pkg.all;
 
 ---------------------------------------------------------------------------------------------------
@@ -37,6 +38,7 @@ begin
     test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
+        variable Format_v : FixFormat_t;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -60,6 +62,32 @@ begin
                 check_equal(fixImplementReg(true,  "YES"),  true,  "fixImplementReg(true,  YES) wrong");
                 check_equal(fixImplementReg(false, "NO"),   false, "fixImplementReg(false, NO) wrong");
                 check_equal(fixImplementReg(true,  "NO"),   false, "fixImplementReg(true,  NO) wrong");
+
+            elsif run("fixFmtFromStringTolerant") then
+                Format_v := fixFmtFromStringTolerant("(1,1,3)");
+                check_equal(Format_v.S, 1, "fixFmtFromStringTolerant(1,1,3) S wrong");
+                check_equal(Format_v.I, 1, "fixFmtFromStringTolerant(1,1,3) I wrong");
+                check_equal(Format_v.F, 3, "fixFmtFromStringTolerant(1,1,3) F wrong");
+
+                Format_v := fixFmtFromStringTolerant(" (1, 1 ,3) ");
+                check_equal(Format_v.S, 1, "fixFmtFromStringTolerant(1,1,3) S wrong");
+                check_equal(Format_v.I, 1, "fixFmtFromStringTolerant(1,1,3) I wrong");
+                check_equal(Format_v.F, 3, "fixFmtFromStringTolerant(1,1,3) F wrong");                
+
+                Format_v := fixFmtFromStringTolerant("(0,-1,3)");
+                check_equal(Format_v.S, 0, "fixFmtFromStringTolerant(0,-1,3) S wrong");
+                check_equal(Format_v.I, -1, "fixFmtFromStringTolerant(0,-1,3) I wrong");
+                check_equal(Format_v.F, 3, "fixFmtFromStringTolerant(0,-1,3) F wrong");
+
+                Format_v := fixFmtFromStringTolerant("NONE");
+                check_equal(Format_v.S, 0, "fixFmtFromStringTolerant(NONE) S wrong");
+                check_equal(Format_v.I, 0, "fixFmtFromStringTolerant(NONE) I wrong");
+                check_equal(Format_v.F, 0, "fixFmtFromStringTolerant(NONE) F wrong");
+
+                Format_v := fixFmtFromStringTolerant("(0,-1,3");
+                check_equal(Format_v.S, 0, "fixFmtFromStringTolerant(0,-1,3 S wrong");
+                check_equal(Format_v.I, 0, "fixFmtFromStringTolerant(0,-1,3 I wrong");
+                check_equal(Format_v.F, 0, "fixFmtFromStringTolerant(0,-1,3 F wrong");
 
             else
                 report "Test not found";
