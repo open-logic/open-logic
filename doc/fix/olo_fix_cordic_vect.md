@@ -17,7 +17,7 @@ Bit-true Model: [olo_fix_cordic_vect](../../src/fix/python/olo_fix/olo_fix_cordi
 
 ### Overview
 
-This entity implements the vectoring CORDIC algorithm. This algorithm usually is used to covert from the cartesian
+This entity implements the vectoring CORDIC algorithm. This algorithm is usually used to covert from the cartesian
 to the polar coordinate system, i.e. to calculate the magnitude and angle of a vector given by its X and Y (or I and Q)
 components.
 
@@ -25,7 +25,8 @@ The algorithm can be implemented in two different modes:
 
 - **ITERATIVE**
   - Iterations are executed one after the other
-  - Every computation requires several clock cycles and a new sample only is accepted after the previous one is finished
+  - Every computation requires several clock cycles and a new sample is accepted only after the
+    previous one has finished
   - Lowest possible resource usage
 - **PIPELINED**
   - Iterations are implemented in individual pipeline stages
@@ -37,7 +38,7 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ### Gain Compensation
 
-The CORDIC algorithm has an inherent gain that depends on the number of iterations. This gain optionally can be
+The CORDIC algorithm has an inherent gain that depends on the number of iterations. This gain can optionally be
 compensated directly within the _olo_fix_cordic_vect_ entity. The internal gain compensation works most efficiently
 if the internal format _InternalFmt_g_  fits into one multiplier of the target device.
 
@@ -47,7 +48,7 @@ _olo_fix_mult_ entity after the CORDIC. For this the gain factor must be known, 
 ![Cordic Gain Formula](./cordic/cordic_gain.png)
 
 Note that depending on the application the gain compensation may be omitted completely. Therefore it is optional and can
-be controlled throug hthe generic GainCorrCoefFmt_g.
+be controlled through the generic GainCorrCoefFmt_g.
 
 ### Latency
 
@@ -61,9 +62,9 @@ Content **TO BE DEFINED**
 | :---------------- | :------- | ----------- | :----------------------------------------------------------- |
 | InFmt_g           | string   | -           | Input data format <br>Must be (1,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | OutMagFmt_g       | string   | -           | Output magnitude format <br>Must be (0,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
-| OutAngFmt_g       | string   | -           | Output angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
-| InternalFmt_g     | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>Form manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
-| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>Form manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
+| OutAngFmt_g       | string   | -           | Output angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,0,15)") |
+| InternalFmt_g     | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
+| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
 | Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details  |
 | Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"ITERATIVE": Iterative mode<br />"PIPELINED": Pipelined mode |
 | GainCorrCoefFmt_g | string   | "(0,0,17)"  | Format of the gain correction coefficient, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations). <br> To disable the internal gain compensation, choose "NONE" |
@@ -77,8 +78,8 @@ Content **TO BE DEFINED**
 
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Clk  | in     | 1      | '0'     | Clock |
-| Rst  | in     | 1      | '0'     | Reset input (high-active, synchronous to _Clk_) |
+| Clk  | in     | 1      | -       | Clock |
+| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_) |
 
 ### Input Data
 
@@ -125,16 +126,16 @@ For "AUTO" mode, the internal format is chosen as follows:
 
 #### GainCorrCoefFmt_g
 
-For optimal absolute preciseion, the gain correction coefficient shall have at least the same number of fractional
+For optimal absolute precision, the gain correction coefficient shall have at least the same number of fractional
 bits as _OutMagFmt_g_.
 
 In many cases the absolute precision is secondary and only the relative precision matters. In such cases the number
-of bits can be reduced to save resources. Because all sample receive the same gain correction, any errors in the
+of bits can be reduced to save resources. Because all samples receive the same gain correction, any errors in the
 correction factor will not impact the relative precision between samples.
 
 #### IntAngFmt_g
 
-Internal calculation format for angles (must be signed) and have -2 integer bits (because only one quadrant is used, 
+Internal calculation format for angles (must be signed) and have -2 integer bits (because only one quadrant is used,
 angles 0...0.25).)
 
 The more fractional bits, the more precise the calculation gets. Usually a few more bits than in _OutAngFmt_g_ are
