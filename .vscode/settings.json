@@ -5,5 +5,12 @@
     "python.terminal.activateEnvironment": true,
     "terminal.integrated.env.linux": {
         "PYTHONPATH": "${workspaceFolder}/3rdParty/en_cl_fix/bittrue/models/python"
-    }
+    },
+    "python.testing.pytestArgs": [
+        "src",
+        "--cov=src",
+        "--cov-report=xml"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }
