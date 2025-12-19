@@ -10,14 +10,14 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_cordic_vect.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_cordic_vect.json?cacheSeconds=0)
 
-VHDL Source: [olo_fix_cordic_vect](../../src/fix/vhdl/olo_fix_cordic_vect.vhd)
+VHDL Source: [olo_fix_cordic_vect](../../src/fix/vhdl/olo_fix_cordic_vect.vhd)<br />
 Bit-true Model: [olo_fix_cordic_vect](../../src/fix/python/olo_fix/olo_fix_cordic_vect.py)
 
 ## Description
 
 ### Overview
 
-This entity implements the vectoring CORDIC algorithm. This algorithm is usually used to covert from the cartesian
+This entity implements the vectoring CORDIC algorithm. This algorithm is usually used to convert from the cartesian
 to the polar coordinate system, i.e. to calculate the magnitude and angle of a vector given by its X and Y (or I and Q)
 components.
 
@@ -64,13 +64,12 @@ Content **TO BE DEFINED**
 | OutMagFmt_g       | string   | -           | Output magnitude format <br>Must be (0,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
 | OutAngFmt_g       | string   | -           | Output angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,0,15)") |
 | InternalFmt_g     | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
-| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
+| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-1,x) _en_cl_fix Format_t_ (e.g. "(1,-1,15)"). Refer to [Format Considerations](#format-considerations) for details |
 | Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details  |
 | Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"ITERATIVE": Iterative mode<br />"PIPELINED": Pipelined mode |
 | GainCorrCoefFmt_g | string   | "(0,0,17)"  | Format of the gain correction coefficient, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations). <br> To disable the internal gain compensation, choose "NONE" |
 | Round_g           | string   | "Trunc_s"   | Rounding mode <br />String representation of an _en_cl_fix FixRound_t_. |
 | Saturate_g        | string   | "Warn_s     | Saturation mode <br />String representation of an _en_cl_fix FixSaturate_t_. |
-| PlStgPerIter_g    | positive | 1           | Number of pipeline stages per iteration. <br />Choose 2 for best Fmax<br>Range: 1 ... 2   <br />Only used if _Mode_g="PIPELINED"_ |
 
 ## Interfaces
 
@@ -95,7 +94,7 @@ Content **TO BE DEFINED**
 | Name       | In/Out | Length               | Default | Description                               |
 | :--------- | :----- | :------------------- | ------- | :---------------------------------------- |
 | Out_Mag    | out    | _width(OutMagFmt_g)_ | N/A     | Output magnitude<br />Format _OutMagFmt_g_ |
-| Out_Ang    | out    | _width(OutAngFmt_g)_ | N/A     | Output angle in 2PI (1.0 = 360°)<br />Format _OutAngFmt_g_     |
+| Out_Ang    | out    | _width(OutAngFmt_g)_ | N/A     | Output angle, Normalized units (1.0 = 360° = 2*PI)<br />Format _OutAngFmt_g_     |
 | Out_Valid  | out    | 1                    | N/A     | AXI4-Stream handshaking signal for _Out_Mag_ and _Out_Ang_ |
 
 **Note** The output interface does not implement backpressure (_Ready_). If backpressure is required, the user ideally

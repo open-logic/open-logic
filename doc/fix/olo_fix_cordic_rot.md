@@ -17,7 +17,7 @@ Bit-true Model: [olo_fix_cordic_rot](../../src/fix/python/olo_fix/olo_fix_cordic
 
 ### Overview
 
-This entity implements the rotating CORDIC algorithm. This algorithm is usually used to covert from the polar
+This entity implements the rotating CORDIC algorithm. This algorithm is usually used to convert from the polar
 to the cartesian coordinate system, i.e. to calculate I and Q components (complex numbers) from an
 angle and a magnitude.
 
@@ -64,7 +64,7 @@ Content **TO BE DEFINED**
 | InAngFmt_g        | string   | -           | Input angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,0,15)") |
 | OutFmt_g          | string   | -           | Output data format <br>Usually (1,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | InternalFmt_g     | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
-| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
+| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,-2,15)"). Refer to [Format Considerations](#format-considerations) for details |
 | Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details  |
 | Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"ITERATIVE": Iterative mode<br />"PIPELINED": Pipelined mode |
 | GainCorrCoefFmt_g | string   | "(0,0,17)"  | Format of the gain correction coefficient, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(0,0,15)"). Refer to [Format Considerations](#format-considerations). <br> To disable the internal gain compensation, choose "NONE" |
@@ -85,7 +85,7 @@ Content **TO BE DEFINED**
 | Name     | In/Out | Length              | Default | Description                                                  |
 | :------- | :----- | :------------------ | ------- | :----------------------------------------------------------- |
 | In_Mag   | in     | _width(InMagFmt_g)_ | N/A     | Input magnitude<br />Format _InMagFmt_g_ |
-| In_Ang   | in     | _width(InAngFmt_g)_ | N/A     | Input angle full rotations (1.0 = 360°)<br />Format _InAngFmt_g_     |
+| In_Ang   | in     | _width(InAngFmt_g)_ | N/A     | Input angle, Normalized units (1.0 = 360° = 2*PI)<br />Format _InAngFmt_g_     |
 | In_Valid | in     | 1                   | '1'     | AXI4-Stream handshaking signal for _In_Mag_ and _In_Ang_         |
 | In_Ready | out    | 1                   | N/A     | AXI4-Stream ready signal for _In_Mag_ and _In_Ang_<br>Used in "ITERATIVE" mode to signal when a new input sample is taken  |
 
