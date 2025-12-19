@@ -10,14 +10,14 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_cordic_rot.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_cordic_rot.json?cacheSeconds=0)
 
-VHDL Source: [olo_fix_cordic_rot](../../src/fix/vhdl/olo_fix_cordic_rot.vhd)
+VHDL Source: [olo_fix_cordic_rot](../../src/fix/vhdl/olo_fix_cordic_rot.vhd)<br />
 Bit-true Model: [olo_fix_cordic_rot](../../src/fix/python/olo_fix/olo_fix_cordic_rot.py)
 
 ## Description
 
 ### Overview
 
-This entity implements the rotating CORDIC algorithm. This algorithm usually is used to covert from the polar
+This entity implements the rotating CORDIC algorithm. This algorithm is usually used to convert from the polar
 to the cartesian coordinate system, i.e. to calculate I and Q components (complex numbers) from an
 angle and a magnitude.
 
@@ -25,7 +25,8 @@ The algorithm can be implemented in two different modes:
 
 - **ITERATIVE**
   - Iterations are executed one after the other
-  - Every computation requires several clock cycles and a new sample only is accepted after the previous one is finished
+  - Every computation requires several clock cycles and a new sample is accepted only after the
+    previous one has finished
   - Lowest possible resource usage
 - **PIPELINED**
   - Iterations are implemented in individual pipeline stages
@@ -37,7 +38,7 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ### Gain Compensation
 
-The CORDIC algorithm has an inherent gain that depends on the number of iterations. This gain optionally can be
+The CORDIC algorithm has an inherent gain that depends on the number of iterations. This gain can optionally be
 compensated directly within the _olo_fix_cordic_rot_ entity. The internal gain compensation works most efficiently
 if the internal format _InternalFmt_g_  fits into one multiplier of the target device.
 
@@ -47,7 +48,7 @@ _olo_fix_mult_ entity after the CORDIC. For this the gain factor must be known, 
 ![Cordic Gain Formula](./cordic/cordic_gain.png)
 
 Note that depending on the application the gain compensation may be omitted completely. Therefore it is optional and can
-be controlled throug hthe generic _GainCorrCoefFmt_g_.
+be controlled through the generic _GainCorrCoefFmt_g_.
 
 ### Latency
 
@@ -63,8 +64,8 @@ to be independent of the latency of this block.
 | InMagFmt_g        | string   | -           | Input magnitude format <br>Must be (0,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
 | InAngFmt_g        | string   | -           | Input angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,0,15)") |
 | OutFmt_g          | string   | -           | Output data format <br>Usually (1,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
-| InternalFmt_g     | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>Form manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
-| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>Form manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
+| InternalFmt_g     | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
+| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,-2,15)"). Refer to [Format Considerations](#format-considerations) for details |
 | Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details  |
 | Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"ITERATIVE": Iterative mode<br />"PIPELINED": Pipelined mode |
 | GainCorrCoefFmt_g | string   | "(0,0,17)"  | Format of the gain correction coefficient, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(0,0,15)"). Refer to [Format Considerations](#format-considerations). <br> To disable the internal gain compensation, choose "NONE" |
@@ -77,15 +78,15 @@ to be independent of the latency of this block.
 
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Clk  | in     | 1      | '0'     | Clock |
-| Rst  | in     | 1      | '0'     | Reset input (high-active, synchronous to _Clk_) |
+| Clk  | in     | 1      | -    | Clock |
+| Rst  | in     | 1      | -    | Reset input (high-active, synchronous to _Clk_) |
 
 ### Input Data
 
 | Name     | In/Out | Length              | Default | Description                                                  |
 | :------- | :----- | :------------------ | ------- | :----------------------------------------------------------- |
 | In_Mag   | in     | _width(InMagFmt_g)_ | N/A     | Input magnitude<br />Format _InMagFmt_g_ |
-| In_Ang   | in     | _width(InAngFmt_g)_ | N/A     | Input angle in 2PI (1.0 = 360°)<br />Format _InAngFmt_g_     |
+| In_Ang   | in     | _width(InAngFmt_g)_ | N/A     | Input angle, Normalized units (1.0 = 360° = 2*PI)<br />Format _InAngFmt_g_     |
 | In_Valid | in     | 1                   | '1'     | AXI4-Stream handshaking signal for _In_Mag_ and _In_Ang_         |
 | In_Ready | out    | 1                   | N/A     | AXI4-Stream ready signal for _In_Mag_ and _In_Ang_<br>Used in "ITERATIVE" mode to signal when a new input sample is taken  |
 
@@ -106,9 +107,7 @@ implements it over the whole processing chain using [olo_base_flowctrl_handler](
 
 #### InternalFmt_g
 
-The format for inetrnal calculation of X and Y components must be **signed**.
-
-The format must be signed.
+The format for internal calculation of X and Y components must be **signed**.
 
 The more fractional bits are used, the more precise the calculation gets. Usually a few more fractional bits than in
 _OutFmt_g_ are required.
@@ -126,16 +125,16 @@ For "AUTO" mode, the internal format is chosen as follows:
 
 #### GainCorrCoefFmt_g
 
-For optimal absolute preciseion, the gain correction coefficient shall have at least the same number of fractional
+For optimal absolute precision, the gain correction coefficient shall have at least the same number of fractional
 bits as _OutFmt_g_.
 
 In many cases the absolute precision is secondary and only the relative precision matters. In such cases the number
-of bits can be reduced to save resources. Because all sample receive the same gain correction, any errors in the
+of bits can be reduced to save resources. Because all samples receive the same gain correction, any errors in the
 correction factor will not impact the relative precision between samples.
 
 #### IntAngFmt_g
 
-Internal calculation format for angles (must be signed) and have -2 integer bits (because only one quadrant is used, 
+Internal calculation format for angles (must be signed) and have -2 integer bits (because only one quadrant is used,
 angles 0...0.25).)
 
 The more fractional bits, the more precise the calculation gets. Usually a few more bits than in _InAngFmt_g_ are
