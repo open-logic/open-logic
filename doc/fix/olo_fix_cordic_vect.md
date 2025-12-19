@@ -51,9 +51,10 @@ be controlled throug hthe generic GainCorrCoefFmt_g.
 
 ### Latency
 
-The latency of the entity depends on several factors:
+The latency of the entity depends on several factors and can best be determined in the simulation.
 
-Content **TO BE DEFINED**
+Note: Latency is not guaranteed to be constant accross different version. It's therefore best to design user logic
+to be independent of the latency of this block.
 
 ## Generics
 
