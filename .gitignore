@@ -4,6 +4,10 @@
 .idea/
 __pycache__/
 
+#Pytest files
+.coverage
+coverage.xml
+
 #Vunit files
 sim/vunit_out/
 sim/coverage_data

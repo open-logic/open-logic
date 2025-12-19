@@ -112,3 +112,11 @@ entities:
           AFmt_g: '"(1,8,8)"'
           BFmt_g: '"(1,8,8)"'
           ResultFmt_g: '"(0,4,4)"'
+  # olo_fix_cordic_rot
+  - entity_name: "olo_fix_cordic_rot"
+    configurations:
+      - name: "default"
+        generics:
+          InMagFmt_g: '"(0, 0, 16)"'
+          InAngFmt_g: '"(0, 0, 15)"'
+          OutFmt_g: '"(1, 0, 16)"'
