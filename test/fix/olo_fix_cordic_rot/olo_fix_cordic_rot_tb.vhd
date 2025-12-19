@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2025 by Oliver Bründler, Switzerland
+-- Copyright (c) 2025 by Oliver Bruendler, Switzerland
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -197,8 +197,8 @@ begin
 
     vc_checker_I : entity work.olo_test_fix_checker_vc
         generic map (
-            Instance         => CheckerI_c,
-            Fmt              => cl_fix_format_from_string(OutFmt_g)
+            Instance => CheckerI_c,
+            Fmt      => cl_fix_format_from_string(OutFmt_g)
         )
         port map (
             Clk      => Clk,
@@ -208,8 +208,8 @@ begin
 
     vc_checker_Q : entity work.olo_test_fix_checker_vc
         generic map (
-            Instance         => CheckerQ_c,
-            Fmt              => cl_fix_format_from_string(OutFmt_g)
+            Instance => CheckerQ_c,
+            Fmt      => cl_fix_format_from_string(OutFmt_g)
         )
         port map (
             Clk      => Clk,
