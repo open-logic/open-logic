@@ -62,7 +62,8 @@ class olo_fix_cordic_rot:
         self._in_mag_fmt = in_mag_fmt
 
         # in_ang_fmt
-        if in_ang_fmt.S == 1:              raise ValueError("olo_fix_cordic_rot: in_ang_fmt_g must be unsigned")
+        if in_ang_fmt.S == 1:              raise ValueError("olo_fix_cordic_rot: in_ang_fmt_g must be (0,0,x")
+        if in_ang_fmt.I != 0:              raise ValueError("olo_fix_cordic_rot: in_ang_fmt_g must be (0,0,x)")
         self._in_ang_fmt = in_ang_fmt
 
         # out_fmt
