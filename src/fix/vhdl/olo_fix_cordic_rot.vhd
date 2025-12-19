@@ -25,8 +25,11 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_string.all;
+    use work.olo_base_pkg_array.all;
     use work.en_cl_fix_pkg.all;
     use work.olo_fix_pkg.all;
+
 
 -- TODO: Document latency
 
@@ -36,7 +39,7 @@ library work;
 entity olo_fix_cordic_rot is
     generic (
         InMagFmt_g        : string;
-        In_AngFmt_g       : string;
+        InAngFmt_g       : string;
         OutFmt_g          : string;
         InternalFmt_g     : string   := "AUTO";
         AngleIntFmt_g     : string   := "AUTO";
@@ -54,11 +57,11 @@ entity olo_fix_cordic_rot is
         In_Valid  : in    std_logic;
         In_Ready  : out   std_logic;
         In_Mag    : in    std_logic_vector(fixFmtWidthFromString(InMagFmt_g)-1 downto 0);
-        In_Ang    : in    std_logic_vector(fixFmtWidthFromString(In_AngFmt_g)-1 downto 0);
+        In_Ang    : in    std_logic_vector(fixFmtWidthFromString(InAngFmt_g)-1 downto 0);
         -- Output
         Out_Valid : out   std_logic;
-        Out_I     : out   std_logic_vector(fixFmtWidthFromString(OutFmt_c)-1 downto 0);
-        Out_Q     : out   std_logic_vector(fixFmtWidthFromString(OutFmt_c)-1 downto 0)
+        Out_I     : out   std_logic_vector(fixFmtWidthFromString(OutFmt_g)-1 downto 0);
+        Out_Q     : out   std_logic_vector(fixFmtWidthFromString(OutFmt_g)-1 downto 0)
     );
 end entity;
 
@@ -68,36 +71,36 @@ end entity;
 architecture rtl of olo_fix_cordic_rot is
 
     -- String upping
-    constant InternalFmtUpper_c     : string := toUpper(InternalFmt_c);
-    constant InAngFmtUpper_c        : string := toUpper(InAngFmt_c);
+    constant InternalFmtUpper_c     : string := toUpper(InternalFmt_g);
+    constant AngleIntFmtUpper_c     : string := toUpper(AngleIntFmt_g);
     constant ModeUpper_c            : string := toUpper(Mode_g);
     constant GainCorrCoefFmtUpper_c : string := toUpper(GainCorrCoefFmt_g);
 
     -- Formats
     constant InMagFmt_c        : FixFormat_t   := cl_fix_format_from_string(InMagFmt_g);
-    constant InAngFmt_c        : FixFormat_t   := cl_fix_format_from_string(InAngFmt_c);
-    constant OutFmt_c          : FixFormat_t   := cl_fix_format_from_string(OutFmt_c);
+    constant InAngFmt_c        : FixFormat_t   := cl_fix_format_from_string(InAngFmt_g);
+    constant OutFmt_c          : FixFormat_t   := cl_fix_format_from_string(OutFmt_g);
     constant InternalFmt_c     : FixFormat_t   := choose(InternalFmtUpper_c = "AUTO",
                                                          (1, InMagFmt_c.I + 1, InMagFmt_c.F + 3),
-                                                         cl_fix_format_from_string(OutFmt_c));
+                                                         cl_fix_format_from_string(InternalFmtUpper_c));
     constant AngleIntFmt_c     : FixFormat_t   := choose(AngleIntFmtUpper_c = "AUTO",
                                                          (1, -2, InAngFmt_c.F + 3),
-                                                         cl_fix_format_from_string(AngleIntFmt_c));
+                                                         cl_fix_format_from_string(AngleIntFmtUpper_c));
     constant GainCorrCoefFmt_c : FixFormat_t   := choose(GainCorrCoefFmtUpper_c = "NONE",
                                                          (0, 0, 0),
-                                                         cl_fix_format_from_string(GainCorrCoefFmt_g));
+                                                         cl_fix_format_from_string(GainCorrCoefFmtUpper_c));
     constant Round_c           : FixRound_t    := cl_fix_round_from_string(Round_g);
     constant Saturate_c        : FixSaturate_t := cl_fix_saturate_from_string(Saturate_g);
 
     -- Constants
-    constant AngleTableReal_c : t_areal(0 to 31) := (0.125,                 0.0737918088252,    0.0389895651887,    0.0197917120803,
-                                                     0.00993426215277,    0.00497197391179,    0.00248659363948,    0.00124337269683,
-                                                     0.000621695834357,    0.000310849102962,    0.000155424699705,    7.77123683806e-05,
-                                                     3.88561865063e-05,    1.94280935426e-05,    9.71404680751e-06,    4.85702340828e-06,
-                                                     2.4285117047e-06,    1.21425585242e-06,    6.0712792622e-07,    3.03563963111e-07,
-                                                     1.51781981556e-07,    7.58909907779e-08,    3.7945495389e-08,    1.89727476945e-08,
-                                                     9.48637384724e-09,    4.74318692362e-09,    2.37159346181e-09,    1.1857967309e-09,
-                                                     5.92898365452e-10,    2.96449182726e-10,    1.48224591363e-10,    7.41122956816e-11);
+    constant AngleTableReal_c : RealArray_t(0 to 31) := (0.125,                 0.0737918088252,    0.0389895651887,    0.0197917120803,
+                                                         0.00993426215277,    0.00497197391179,    0.00248659363948,    0.00124337269683,
+                                                         0.000621695834357,    0.000310849102962,    0.000155424699705,    7.77123683806e-05,
+                                                         3.88561865063e-05,    1.94280935426e-05,    9.71404680751e-06,    4.85702340828e-06,
+                                                         2.4285117047e-06,    1.21425585242e-06,    6.0712792622e-07,    3.03563963111e-07,
+                                                         1.51781981556e-07,    7.58909907779e-08,    3.7945495389e-08,    1.89727476945e-08,
+                                                         9.48637384724e-09,    4.74318692362e-09,    2.37159346181e-09,    1.1857967309e-09,
+                                                         5.92898365452e-10,    2.96449182726e-10,    1.48224591363e-10,    7.41122956816e-11);
     type AngleTable_t is array (0 to Iterations_g-1) of std_logic_vector(cl_fix_width(AngleIntFmt_c)-1 downto 0);
 
     function angleTableStdlv return AngleTable_t is
@@ -124,7 +127,6 @@ architecture rtl of olo_fix_cordic_rot is
         return Gain_v;
     end function;
 
-    constant AngleIntExtFmt_c : FixFormat_t                                                  := (AngleIntFmt_c.S, max(AngleIntFmt_c.I, 1), AngleIntFmt_c.F);
     constant GcCoef_c         : std_logic_vector(cl_fix_width(GainCorrCoefFmt_c)-1 downto 0) :=
         cl_fix_from_real(1.0/cordicGain(Iterations_g), GainCorrCoefFmt_c);
     constant QuadFmt_c        : FixFormat_t                                                  := (0, 0, 2);
@@ -137,7 +139,7 @@ architecture rtl of olo_fix_cordic_rot is
         zLast        : std_logic_vector;
         shift        : integer) return std_logic_vector is
         -- Declarations
-        constant YShifted_c : std_logic_vector := cl_fix_shift(yLast, InternalFmt_c, -shift, InternalFmt_c, Trunc_s, None_s, true);
+        constant YShifted_c : std_logic_vector := cl_fix_shift(yLast, InternalFmt_c, -shift, InternalFmt_c, Trunc_s, None_s);
     begin
 
         if signed(zLast) > 0 then
@@ -159,7 +161,7 @@ architecture rtl of olo_fix_cordic_rot is
         zLast        : std_logic_vector;
         shift        : integer) return std_logic_vector is
         -- Declarations
-        constant XShifted_c : std_logic_vector := cl_fix_shift(xLast, InternalFmt_c, -shift, InternalFmt_c, Trunc_s, None_s, true);
+        constant XShifted_c : std_logic_vector := cl_fix_shift(xLast, InternalFmt_c, -shift, InternalFmt_c, Trunc_s, None_s);
     begin
 
         if signed(zLast) > 0 then
@@ -232,7 +234,7 @@ begin
         signal X, Y     : IntArr_t(0 to Iterations_g);
         signal Z        : AngArr_t(0 to Iterations_g);
         signal Vld      : std_logic_vector(0 to Iterations_g);
-        signal Quad     : t_aslv2(0 to Iterations_g);
+        signal Quad     : StlvArray2_t(0 to Iterations_g);
     begin
         -- Pipelined implementation can take a sample every clock cycle
         In_Ready <= '1';
@@ -402,7 +404,7 @@ begin
                 BFmt_g      => to_string(GainCorrCoefFmt_c),
                 ResultFmt_g => to_string(OutFmt_c),
                 Round_g     => to_string(Round_c),
-                Saturate_g  => to_string(Saturate_c),
+                Saturate_g  => to_string(Saturate_c)
             )
             port map (
                 Clk         => Clk,
