@@ -38,8 +38,8 @@ entity olo_fix_cordic_rot is
         InMagFmt_g        : string;
         InAngFmt_g        : string;
         OutFmt_g          : string;
-        InternalFmt_g     : string   := "AUTO";
-        AngleIntFmt_g     : string   := "AUTO";
+        IntXyFmt_g        : string   := "AUTO";
+        IntAngFmt_g       : string   := "AUTO";
         Iterations_g      : positive := 16;
         Mode_g            : string   := "PIPELINED";
         GainCorrCoefFmt_g : string   := "(0,0,17)";
@@ -68,8 +68,8 @@ end entity;
 architecture rtl of olo_fix_cordic_rot is
 
     -- String upping
-    constant InternalFmtUpper_c     : string := toUpper(InternalFmt_g);
-    constant AngleIntFmtUpper_c     : string := toUpper(AngleIntFmt_g);
+    constant IntXyFmtUpper_c        : string := toUpper(IntXyFmt_g);
+    constant IntAngFmtUpper_c       : string := toUpper(IntAngFmt_g);
     constant ModeUpper_c            : string := toUpper(Mode_g);
     constant GainCorrCoefFmtUpper_c : string := toUpper(GainCorrCoefFmt_g);
 
@@ -77,12 +77,12 @@ architecture rtl of olo_fix_cordic_rot is
     constant InMagFmt_c        : FixFormat_t   := cl_fix_format_from_string(InMagFmt_g);
     constant InAngFmt_c        : FixFormat_t   := cl_fix_format_from_string(InAngFmt_g);
     constant OutFmt_c          : FixFormat_t   := cl_fix_format_from_string(OutFmt_g);
-    constant InternalFmt_c     : FixFormat_t   := choose(InternalFmtUpper_c = "AUTO",
+    constant IntXyFmt_c        : FixFormat_t   := choose(IntXyFmtUpper_c = "AUTO",
                                                          (1, InMagFmt_c.I + 1, InMagFmt_c.F + 3),
-                                                         fixFmtFromStringTolerant(InternalFmtUpper_c));
-    constant AngleIntFmt_c     : FixFormat_t   := choose(AngleIntFmtUpper_c = "AUTO",
+                                                         fixFmtFromStringTolerant(IntXyFmtUpper_c));
+    constant IntAngFmt_c       : FixFormat_t   := choose(IntAngFmtUpper_c = "AUTO",
                                                          (1, -2, InAngFmt_c.F + 3),
-                                                         fixFmtFromStringTolerant(AngleIntFmtUpper_c));
+                                                         fixFmtFromStringTolerant(IntAngFmtUpper_c));
     constant GainCorrCoefFmt_c : FixFormat_t   := choose(GainCorrCoefFmtUpper_c = "NONE",
                                                          FixFmt_Unused_c,
                                                          fixFmtFromStringTolerant(GainCorrCoefFmtUpper_c));
@@ -98,14 +98,14 @@ architecture rtl of olo_fix_cordic_rot is
                                                          1.51781981556e-07,    7.58909907779e-08,    3.7945495389e-08,    1.89727476945e-08,
                                                          9.48637384724e-09,    4.74318692362e-09,    2.37159346181e-09,    1.1857967309e-09,
                                                          5.92898365452e-10,    2.96449182726e-10,    1.48224591363e-10,    7.41122956816e-11);
-    type AngleTable_t is array (0 to Iterations_g-1) of std_logic_vector(cl_fix_width(AngleIntFmt_c)-1 downto 0);
+    type AngleTable_t is array (0 to Iterations_g-1) of std_logic_vector(cl_fix_width(IntAngFmt_c)-1 downto 0);
 
     function angleTableStdlv return AngleTable_t is
         variable Table_v : AngleTable_t;
     begin
 
         for i in 0 to Iterations_g-1 loop
-            Table_v(i) := cl_fix_from_real(AngleTableReal_c(i), AngleIntFmt_c);
+            Table_v(i) := cl_fix_from_real(AngleTableReal_c(i), IntAngFmt_c);
         end loop;
 
         return Table_v;
@@ -124,9 +124,8 @@ architecture rtl of olo_fix_cordic_rot is
         return Gain_v;
     end function;
 
-    constant GcCoef_c         : std_logic_vector(cl_fix_width(GainCorrCoefFmt_c)-1 downto 0) :=
-        cl_fix_from_real(1.0/cordicGain(Iterations_g), GainCorrCoefFmt_c);
-    constant QuadFmt_c        : FixFormat_t                                                  := (0, 0, 2);
+    constant GcCoef_c  : std_logic_vector(cl_fix_width(GainCorrCoefFmt_c)-1 downto 0) := cl_fix_from_real(1.0/cordicGain(Iterations_g), GainCorrCoefFmt_c);
+    constant QuadFmt_c : FixFormat_t                                                  := (0, 0, 2);
 
     -- *** Functions ***
     -- Cordic step for X
@@ -136,17 +135,17 @@ architecture rtl of olo_fix_cordic_rot is
         zLast        : std_logic_vector;
         shift        : integer) return std_logic_vector is
         -- Declarations
-        constant YShifted_c : std_logic_vector := cl_fix_shift(yLast, InternalFmt_c, -shift, InternalFmt_c, Trunc_s, None_s);
+        constant YShifted_c : std_logic_vector := cl_fix_shift(yLast, IntXyFmt_c, -shift, IntXyFmt_c, Trunc_s, None_s);
     begin
 
         if signed(zLast) > 0 then
-            return cl_fix_sub(xLast, InternalFmt_c,
-                             YShifted_c, InternalFmt_c,
-                             InternalFmt_c, Trunc_s, None_s);
+            return cl_fix_sub(xLast, IntXyFmt_c,
+                             YShifted_c, IntXyFmt_c,
+                             IntXyFmt_c, Trunc_s, None_s);
         else
-            return cl_fix_add(xLast, InternalFmt_c,
-                             YShifted_c, InternalFmt_c,
-                             InternalFmt_c, Trunc_s, None_s);
+            return cl_fix_add(xLast, IntXyFmt_c,
+                             YShifted_c, IntXyFmt_c,
+                             IntXyFmt_c, Trunc_s, None_s);
 
         end if;
     end function;
@@ -158,17 +157,17 @@ architecture rtl of olo_fix_cordic_rot is
         zLast        : std_logic_vector;
         shift        : integer) return std_logic_vector is
         -- Declarations
-        constant XShifted_c : std_logic_vector := cl_fix_shift(xLast, InternalFmt_c, -shift, InternalFmt_c, Trunc_s, None_s);
+        constant XShifted_c : std_logic_vector := cl_fix_shift(xLast, IntXyFmt_c, -shift, IntXyFmt_c, Trunc_s, None_s);
     begin
 
         if signed(zLast) > 0 then
-            return    cl_fix_add(yLast, InternalFmt_c,
-                                XShifted_c, InternalFmt_c,
-                                InternalFmt_c, Trunc_s, None_s);
+            return    cl_fix_add(yLast, IntXyFmt_c,
+                                XShifted_c, IntXyFmt_c,
+                                IntXyFmt_c, Trunc_s, None_s);
         else
-            return    cl_fix_sub(yLast, InternalFmt_c,
-                                XShifted_c, InternalFmt_c,
-                                InternalFmt_c, Trunc_s, None_s);
+            return    cl_fix_sub(yLast, IntXyFmt_c,
+                                XShifted_c, IntXyFmt_c,
+                                IntXyFmt_c, Trunc_s, None_s);
         end if;
     end function;
 
@@ -177,25 +176,25 @@ architecture rtl of olo_fix_cordic_rot is
         zLast        : std_logic_vector;
         iteration    : integer) return std_logic_vector is
         -- Declarations
-        constant Atan_c : std_logic_vector(cl_fix_width(AngleIntFmt_c)-1 downto 0) := AngleTable_c(iteration);
+        constant Atan_c : std_logic_vector(cl_fix_width(IntAngFmt_c)-1 downto 0) := AngleTable_c(iteration);
     begin
         if signed(zLast) > 0 then
-            return    cl_fix_sub(zLast, AngleIntFmt_c,
-                                Atan_c, AngleIntFmt_c,
-                                AngleIntFmt_c, Trunc_s, None_s);
+            return    cl_fix_sub(zLast, IntAngFmt_c,
+                                Atan_c, IntAngFmt_c,
+                                IntAngFmt_c, Trunc_s, None_s);
         else
-            return    cl_fix_add(zLast, AngleIntFmt_c,
-                                Atan_c, AngleIntFmt_c,
-                                AngleIntFmt_c, Trunc_s, None_s);
+            return    cl_fix_add(zLast, IntAngFmt_c,
+                                Atan_c, IntAngFmt_c,
+                                IntAngFmt_c, Trunc_s, None_s);
         end if;
     end function;
 
     -- Types
-    type IntArr_t is array (natural range <>) of std_logic_vector(cl_fix_width(InternalFmt_c)-1 downto 0);
-    type AngArr_t is array (natural range <>) of std_logic_vector(cl_fix_width(AngleIntFmt_c)-1 downto 0);
+    type IntArr_t is array (natural range <>) of std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
+    type AngArr_t is array (natural range <>) of std_logic_vector(cl_fix_width(IntAngFmt_c)-1 downto 0);
 
     -- Gain Correction Signals
-    signal YQc, XQc : std_logic_vector(cl_fix_width(InternalFmt_c)-1 downto 0);
+    signal YQc, XQc : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
     signal QcVld    : std_logic;
 
 begin
@@ -210,14 +209,14 @@ begin
     assert InAngFmt_c.I = 0
         report "###ERROR###: olo_fix_cordic_rot: InAngFmt_c must be (0,0,x))"
         severity error;
-    assert InternalFmt_c.S = 1
-        report "###ERROR###: olo_fix_cordic_rot: InternalFmt_c must be signed"
+    assert IntXyFmt_c.S = 1
+        report "###ERROR###: olo_fix_cordic_rot: IntXyFmt_c must be signed"
         severity error;
-    assert AngleIntFmt_c.S = 1
-        report "###ERROR###: olo_fix_cordic_rot: AngleIntFmt_c must be sig(1,-2,x)ned"
+    assert IntAngFmt_c.S = 1
+        report "###ERROR###: olo_fix_cordic_rot: IntAngFmt_c must be sig(1,-2,x)ned"
         severity error;
-    assert AngleIntFmt_c.I = -2
-        report "###ERROR###: olo_fix_cordic_rot: AngleIntFmt_c must be (1,-2,x)"
+    assert IntAngFmt_c.I = -2
+        report "###ERROR###: olo_fix_cordic_rot: IntAngFmt_c must be (1,-2,x)"
         severity error;
     assert Iterations_g <= 32
         report "###ERROR###: olo_fix_cordic_rot: Iterations_g must be <= 32"
@@ -228,10 +227,10 @@ begin
 
     -- *** Pipelined Implementation ***
     g_pipelined : if ModeUpper_c = "PIPELINED" generate
-        signal X, Y     : IntArr_t(0 to Iterations_g);
-        signal Z        : AngArr_t(0 to Iterations_g);
-        signal Vld      : std_logic_vector(0 to Iterations_g);
-        signal Quad     : StlvArray2_t(0 to Iterations_g);
+        signal X, Y : IntArr_t(0 to Iterations_g);
+        signal Z    : AngArr_t(0 to Iterations_g);
+        signal Vld  : std_logic_vector(0 to Iterations_g);
+        signal Quad : StlvArray2_t(0 to Iterations_g);
     begin
         -- Pipelined implementation can take a sample every clock cycle
         In_Ready <= '1';
@@ -241,13 +240,13 @@ begin
         begin
             if rising_edge(Clk) then
                 if Rst = '1' then
-                    Vld       <= (others => '0');
-                    QcVld     <= '0';
+                    Vld   <= (others => '0');
+                    QcVld <= '0';
                 else
                     -- Initialization
-                    X(0)    <= cl_fix_resize(In_Mag, InMagFmt_c, InternalFmt_c, Trunc_s, None_s);
+                    X(0)    <= cl_fix_resize(In_Mag, InMagFmt_c, IntXyFmt_c, Trunc_s, None_s);
                     Y(0)    <= (others => '0');
-                    Z(0)    <= cl_fix_resize(In_Ang, InAngFmt_c, AngleIntFmt_c, Trunc_s, None_s);
+                    Z(0)    <= cl_fix_resize(In_Ang, InAngFmt_c, IntAngFmt_c, Trunc_s, None_s);
                     Quad(0) <= cl_fix_resize(In_Ang, InAngFmt_c, QuadFmt_c, Trunc_s, None_s);
                     Vld(0)  <= In_Valid;
 
@@ -267,8 +266,8 @@ begin
                         YQc <= Y(Iterations_g);
                         XQc <= X(Iterations_g);
                     else
-                        YQc <= cl_fix_neg(Y(Iterations_g), InternalFmt_c, InternalFmt_c, Trunc_s, None_s);
-                        XQc <= cl_fix_neg(X(Iterations_g), InternalFmt_c, InternalFmt_c, Trunc_s, None_s);
+                        YQc <= cl_fix_neg(Y(Iterations_g), IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                        XQc <= cl_fix_neg(X(Iterations_g), IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
                     end if;
 
                 end if;
@@ -279,12 +278,12 @@ begin
 
     -- *** Serial Implementation ***
     g_serial : if ModeUpper_c = "SERIAL" generate
-        signal Xin, Yin  : std_logic_vector(cl_fix_width(InternalFmt_c)-1 downto 0);
-        signal Zin       : std_logic_vector(cl_fix_width(AngleIntFmt_c)-1 downto 0);
+        signal Xin, Yin  : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
+        signal Zin       : std_logic_vector(cl_fix_width(IntAngFmt_c)-1 downto 0);
         signal XIn_Valid : std_logic;
         signal Quadin    : std_logic_vector(1 downto 0);
-        signal X, Y      : std_logic_vector(cl_fix_width(InternalFmt_c)-1 downto 0);
-        signal Z         : std_logic_vector(cl_fix_width(AngleIntFmt_c)-1 downto 0);
+        signal X, Y      : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
+        signal Z         : std_logic_vector(cl_fix_width(IntAngFmt_c)-1 downto 0);
         signal CordVld   : std_logic;
         signal IterCnt   : integer range 0 to Iterations_g-1;
         signal Quad      : std_logic_vector(1 downto 0);
@@ -303,9 +302,9 @@ begin
                     -- Input latching
                     if XIn_Valid = '0' and In_Valid = '1' then
                         XIn_Valid <= '1';
-                        Xin       <= cl_fix_resize(In_Mag, InMagFmt_c, InternalFmt_c, Trunc_s, None_s);
+                        Xin       <= cl_fix_resize(In_Mag, InMagFmt_c, IntXyFmt_c, Trunc_s, None_s);
                         Yin       <= (others => '0');
-                        Zin       <= cl_fix_resize(In_Ang, InAngFmt_c, AngleIntFmt_c, Trunc_s, None_s);
+                        Zin       <= cl_fix_resize(In_Ang, InAngFmt_c, IntAngFmt_c, Trunc_s, None_s);
                         Quadin    <= cl_fix_resize(In_Ang, InAngFmt_c, QuadFmt_c, Trunc_s, None_s);
                     end if;
 
@@ -341,8 +340,8 @@ begin
                         YQc <= Y;
                         XQc <= X;
                     else
-                        YQc <= cl_fix_neg(Y, InternalFmt_c, InternalFmt_c, Trunc_s, None_s);
-                        XQc <= cl_fix_neg(X, InternalFmt_c, InternalFmt_c, Trunc_s, None_s);
+                        YQc <= cl_fix_neg(Y, IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                        XQc <= cl_fix_neg(X, IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
                     end if;
 
                 end if;
@@ -357,7 +356,7 @@ begin
 
         i_resize_i : entity work.olo_fix_resize
             generic map (
-                AFmt_g      => to_string(InternalFmt_c),
+                AFmt_g      => to_string(IntXyFmt_c),
                 ResultFmt_g => to_string(OutFmt_c),
                 Round_g     => to_string(Round_c),
                 Saturate_g  => to_string(Saturate_c),
@@ -375,7 +374,7 @@ begin
 
         i_resize_q : entity work.olo_fix_resize
             generic map (
-                AFmt_g      => to_string(InternalFmt_c),
+                AFmt_g      => to_string(IntXyFmt_c),
                 ResultFmt_g => to_string(OutFmt_c),
                 Round_g     => to_string(Round_c),
                 Saturate_g  => to_string(Saturate_c),
@@ -389,6 +388,7 @@ begin
                 In_A        => YQc,
                 Out_Result  => Out_Q
             );
+
     end generate;
 
     -- Compensation Enabled
@@ -396,7 +396,7 @@ begin
 
         i_mult_i : entity work.olo_fix_mult
             generic map (
-                AFmt_g      => to_string(InternalFmt_c),
+                AFmt_g      => to_string(IntXyFmt_c),
                 BFmt_g      => to_string(GainCorrCoefFmt_c),
                 ResultFmt_g => to_string(OutFmt_c),
                 Round_g     => to_string(Round_c),
@@ -414,7 +414,7 @@ begin
 
         i_mult_q : entity work.olo_fix_mult
             generic map (
-                AFmt_g      => to_string(InternalFmt_c),
+                AFmt_g      => to_string(IntXyFmt_c),
                 BFmt_g      => to_string(GainCorrCoefFmt_c),
                 ResultFmt_g => to_string(OutFmt_c),
                 Round_g     => to_string(Round_c),
@@ -427,9 +427,10 @@ begin
                 In_A        => YQc,
                 In_B        => GcCoef_c,
                 Out_Result  => Out_Q
-            );
-    end generate;
 
+            );
+
+    end generate;
 
 end architecture;
 

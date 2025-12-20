@@ -40,7 +40,7 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 The CORDIC algorithm has an inherent gain that depends on the number of iterations. This gain can optionally be
 compensated directly within the _olo_fix_cordic_rot_ entity. The internal gain compensation works most efficiently
-if the internal format _InternalFmt_g_  fits into one multiplier of the target device.
+if the internal format _IntXyFmt_g_  fits into one multiplier of the target device.
 
 Alternatively, the user may choose to do the gain compensation outside of the entity, e.g. by using an
 _olo_fix_mult_ entity after the CORDIC. For this the gain factor must be known, hence the formula is given below:
@@ -64,7 +64,7 @@ to be independent of the latency of this block.
 | InMagFmt_g        | string   | -           | Input magnitude format <br>Must be (0,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
 | InAngFmt_g        | string   | -           | Input angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,0,15)") |
 | OutFmt_g          | string   | -           | Output data format <br>Usually (1,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
-| InternalFmt_g     | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
+| IntXyFmt_g        | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
 | IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,-2,15)"). Refer to [Format Considerations](#format-considerations) for details |
 | Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details  |
 | Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"ITERATIVE": Iterative mode<br />"PIPELINED": Pipelined mode |
@@ -105,7 +105,7 @@ implements it over the whole processing chain using [olo_base_flowctrl_handler](
 
 ### Format Considerations
 
-#### InternalFmt_g
+#### IntXyFmt_g
 
 The format for internal calculation of X and Y components must be **signed**.
 

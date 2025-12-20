@@ -35,14 +35,14 @@ entity olo_fix_cordic_rot_tb is
         InMagFmt_g        : string   := "(0,0,16)";
         InAngFmt_g        : string   := "(0,0,16)";
         OutFmt_g          : string   := "(1,0,15)";
-        InternalFmt_g     : string   := "AUTO";
-        AngleIntFmt_g     : string   := "AUTO";
+        IntXyFmt_g        : string   := "AUTO";
+        IntAngFmt_g       : string   := "AUTO";
         Iterations_g      : positive := 16;
         Mode_g            : string   := "PIPELINED";
         GainCorrCoefFmt_g : string   := "(0,0,17)";
         Round_g           : string   := "Trunc_s";
         Saturate_g        : string   := "Sat_s";
-        runner_cfg   : string
+        runner_cfg        : string
     );
 end entity;
 
@@ -57,9 +57,9 @@ architecture sim of olo_fix_cordic_rot_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk       : std_logic := '0';
-    signal Rst       : std_logic := '0';
-    signal In_Valid  : std_logic := '0';
+    signal Clk       : std_logic                                                      := '0';
+    signal Rst       : std_logic                                                      := '0';
+    signal In_Valid  : std_logic                                                      := '0';
     signal In_Ready  : std_logic;
     signal In_Mag    : std_logic_vector(fixFmtWidthFromString(InMagFmt_g)-1 downto 0) := (others => '0');
     signal In_Ang    : std_logic_vector(fixFmtWidthFromString(InAngFmt_g)-1 downto 0) := (others => '0');
@@ -145,8 +145,8 @@ begin
             InMagFmt_g        => InMagFmt_g,
             InAngFmt_g        => InAngFmt_g,
             OutFmt_g          => OutFmt_g,
-            InternalFmt_g     => InternalFmt_g,
-            AngleIntFmt_g     => AngleIntFmt_g,
+            IntXyFmt_g        => IntXyFmt_g,
+            IntAngFmt_g       => IntAngFmt_g,
             Iterations_g      => Iterations_g,
             Mode_g            => Mode_g,
             GainCorrCoefFmt_g => GainCorrCoefFmt_g,
@@ -195,7 +195,7 @@ begin
             Data     => In_Ang
         );
 
-    vc_checker_I : entity work.olo_test_fix_checker_vc
+    vc_checker_i_i : entity work.olo_test_fix_checker_vc
         generic map (
             Instance => CheckerI_c,
             Fmt      => cl_fix_format_from_string(OutFmt_g)
@@ -206,7 +206,7 @@ begin
             Data     => Out_I
         );
 
-    vc_checker_Q : entity work.olo_test_fix_checker_vc
+    vc_checker_q_i : entity work.olo_test_fix_checker_vc
         generic map (
             Instance => CheckerQ_c,
             Fmt      => cl_fix_format_from_string(OutFmt_g)

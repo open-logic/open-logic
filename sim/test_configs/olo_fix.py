@@ -269,8 +269,8 @@ def add_configs(olo_tb):
         'InMagFmt_g': '(0, 0, 16)',
         'InAngFmt_g': '(0, 0, 15)',
         'OutFmt_g': '(1, 2, 16)',
-        'InternalFmt_g': '(1, 2, 22)',
-        'AngleIntFmt_g': '(1, -2, 23)',
+        'IntXyFmt_g': '(1, 2, 22)',
+        'IntAngFmt_g': '(1, -2, 23)',
         'Iterations_g': '21',
         'GainCorrCoefFmt_g': '(0, 0, 17)',
         'Round_g': 'NonSymPos_s',
@@ -289,8 +289,8 @@ def add_configs(olo_tb):
         # Check Auto Formats
         generics = default_generics.copy()
         generics['Mode_g'] = Mode
-        generics['InternalFmt_g'] = 'AUTO'
-        generics['AngleIntFmt_g'] = 'AUTO'
+        generics['IntXyFmt_g'] = 'AUTO'
+        generics['IntAngFmt_g'] = 'AUTO'
         named_config(tb, generics, pre_config=cosim, short_name=f'default-AutoFmt-Mode_g={Mode}')
 
         # Check no round/sat
@@ -309,8 +309,8 @@ def add_configs(olo_tb):
         # CheckLow Resolution
         generics = default_generics.copy()
         generics['Mode_g'] = Mode
-        generics['InternalFmt_g'] = '(1,0,8)'
-        generics['AngleIntFmt_g'] = '(1,-2,8)'
+        generics['IntXyFmt_g'] = '(1,0,8)'
+        generics['IntAngFmt_g'] = '(1,-2,8)'
         generics['Iterations_g'] = '5'
         generics['OutFmt_g'] = '(1,0,8)'
         named_config(tb, generics, pre_config=cosim, short_name=f'default-LowRes-Mode_g={Mode}')   

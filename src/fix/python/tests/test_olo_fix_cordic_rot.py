@@ -25,7 +25,7 @@ class TestOloFixCordicRot(unittest.TestCase):
             'in_mag_fmt': FixFormat(0, 0, 16),
             'in_ang_fmt': FixFormat(0, 0, 15),
             'out_fmt': FixFormat(1, 2, 16),
-            'internal_fmt': FixFormat(1, 2, 22),
+            'int_xy_fmt': FixFormat(1, 2, 22),
             'int_ang_fmt': FixFormat(1, -2, 23),
             'iterations': 21,
             'gain_corr_coef_fmt': FixFormat(0, 0, 17),
@@ -88,7 +88,7 @@ class TestOloFixCordicRot(unittest.TestCase):
     def test_large_range(self):
         # Create
         self.config['in_mag_fmt'] = FixFormat(0, 2, 16)
-        self.config['internal_fmt'] = FixFormat(1, 4, 22)
+        self.config['int_xy_fmt'] = FixFormat(1, 4, 22)
         self.dut = olo_fix_cordic_rot(**self.config)
         # Execute
         result = self.dut.process(self.in_abs*2, self.in_ang)
@@ -98,7 +98,7 @@ class TestOloFixCordicRot(unittest.TestCase):
 
     def test_auto_fmt(self):
         # Create
-        self.config['internal_fmt'] = "AUTO"
+        self.config['int_xy_fmt'] = "AUTO"
         self.config['int_ang_fmt'] = "AUTO"
         self.dut = olo_fix_cordic_rot(**self.config)
         # Execute
@@ -122,14 +122,14 @@ class TestOloFixCordicRot(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.dut = olo_fix_cordic_rot(**self.config)
             
-    def test_invalid_internal_fmt(self):
+    def test_invalid_int_xy_fmt(self):
         # unsigned
-        self.config['internal_fmt'] = FixFormat(0, 8, 8)
+        self.config['int_xy_fmt'] = FixFormat(0, 8, 8)
         with self.assertRaises(ValueError):
             self.dut = olo_fix_cordic_rot(**self.config)
 
         # Illegal string
-        self.config['internal_fmt'] = "BadString"
+        self.config['int_xy_fmt'] = "BadString"
         with self.assertRaises(ValueError):
             self.dut = olo_fix_cordic_rot(**self.config)   
 

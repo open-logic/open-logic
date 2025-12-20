@@ -32,8 +32,8 @@ def cosim(output_path : str = None,
     InMagFmt_g = olo_fix_utils.fix_format_from_string(generics["InMagFmt_g"])
     InAngFmt_g = olo_fix_utils.fix_format_from_string(generics["InAngFmt_g"])
     OutFmt_g = olo_fix_utils.fix_format_from_string(generics["OutFmt_g"])
-    InternalFmt_g = olo_fix_utils.fix_format_from_string(generics["InternalFmt_g"], tolerate_str=True)
-    AngleIntFmt_g = olo_fix_utils.fix_format_from_string(generics["AngleIntFmt_g"], tolerate_str=True)
+    IntXyFmt_g = olo_fix_utils.fix_format_from_string(generics["IntXyFmt_g"], tolerate_str=True)
+    IntAngFmt_g = olo_fix_utils.fix_format_from_string(generics["IntAngFmt_g"], tolerate_str=True)
     Iterations_g = int(generics["Iterations_g"])
     GainCorrCoefFmt_g = olo_fix_utils.fix_format_from_string(generics["GainCorrCoefFmt_g"], tolerate_str=True)
     Round_g = FixRound[generics["Round_g"]]
@@ -59,7 +59,7 @@ def cosim(output_path : str = None,
     sig_ang = cl_fix_from_real(sig_ang, InAngFmt_g)
 
     #Calcualte
-    dut = olo_fix_cordic_rot(InMagFmt_g, InAngFmt_g, OutFmt_g, InternalFmt_g, AngleIntFmt_g, 
+    dut = olo_fix_cordic_rot(InMagFmt_g, InAngFmt_g, OutFmt_g, IntXyFmt_g, IntAngFmt_g, 
                              Iterations_g, GainCorrCoefFmt_g, Round_g, Saturate_g)
     out_i, out_q = dut.process(sig_mag, sig_ang)
     
@@ -91,8 +91,8 @@ if __name__ == "__main__":
         "InMagFmt_g": "(0, 0, 16)",
         "InAngFmt_g": "(0, 0, 15)",
         "OutFmt_g": "(1, 2, 16)",
-        "InternalFmt_g": "(1, 2, 22)",
-        "AngleIntFmt_g": "(1, -2, 23)",
+        "IntXyFmt_g": "(1, 2, 22)",
+        "IntAngFmt_g": "(1, -2, 23)",
         "Iterations_g": "21",
         "GainCorrCoefFmt_g": "(0, 0, 17)",
         "Round_g": "NonSymPos_s",
