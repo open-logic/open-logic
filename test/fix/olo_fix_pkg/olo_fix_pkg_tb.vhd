@@ -72,7 +72,7 @@ begin
                 Format_v := fixFmtFromStringTolerant(" (1, 1 ,3) ");
                 check_equal(Format_v.S, 1, "fixFmtFromStringTolerant(1,1,3) S wrong");
                 check_equal(Format_v.I, 1, "fixFmtFromStringTolerant(1,1,3) I wrong");
-                check_equal(Format_v.F, 3, "fixFmtFromStringTolerant(1,1,3) F wrong");                
+                check_equal(Format_v.F, 3, "fixFmtFromStringTolerant(1,1,3) F wrong");
 
                 Format_v := fixFmtFromStringTolerant("(0,-1,3)");
                 check_equal(Format_v.S, 0, "fixFmtFromStringTolerant(0,-1,3) S wrong");
