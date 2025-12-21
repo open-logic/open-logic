@@ -199,6 +199,11 @@ architecture rtl of olo_fix_cordic_vect is
     type IntArr_t is array (natural range <>) of std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
     type AngArr_t is array (natural range <>) of std_logic_vector(cl_fix_width(IntAngFmt_c)-1 downto 0);
 
+    -- Gain Correction Signals
+    signal GcAng : std_logic_vector(cl_fix_width(OutAngFmt_c)-1 downto 0);
+    signal GcMag : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
+    signal GcVld : std_logic;
+
 begin
 
     -- *** Assertions ***
@@ -243,53 +248,49 @@ begin
         p_cordic_pipelined : process (Clk) is
         begin
             if rising_edge(Clk) then
+                -- Input registering
+                VldReg <= In_Valid;
+                IReg   <= In_I;
+                Qreg   <= In_Q;
+
+                -- Map to quadrant one
+                -- No rounding or saturation because IntXyFmt_c is checked to have sufficient int and frac bits
+                X(0)    <= cl_fix_abs(IReg, InFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                Y(0)    <= cl_fix_abs(Qreg, InFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                Z(0)    <= (others => '0');
+                Quad(0) <= IReg(IReg'left) & Qreg(Qreg'left);
+                Vld(0)  <= VldReg;
+
+                -- Cordic Iterations_g
+                Vld(1 to Vld'high)   <= Vld(0 to Vld'high-1);
+                Quad(1 to Quad'high) <= Quad(0 to Quad'high-1);
+
+                for i in 0 to Iterations_g-1 loop
+                    X(i+1) <= cordicStepx(X(i), Y(i), i);
+                    Y(i+1) <= cordicStepy(X(i), Y(i), i);
+                    Z(i+1) <= cordicStepz(Z(i), Y(i), i);
+                end loop;
+
+                -- Output
+                GcVld <= Vld(Iterations_g);
+                GcMag <= X(Iterations_g);
+
+                case Quad(Iterations_g) is
+                    -- Normalized angles are never saturated. With 1 non-fractional bit, wrapping is correct behavior.
+                    when "00" => GcAng <= cl_fix_resize(Z(Iterations_g), IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
+                    when "10" => GcAng <= cl_fix_sub(AngInt_0_5_c, IntAngFmt_c, Z(Iterations_g), IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
+                    when "11" => GcAng <= cl_fix_add(AngInt_0_5_c, IntAngFmt_c, Z(Iterations_g), IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
+                    when "01" => GcAng <= cl_fix_sub(AngInt_1_0_c, IntAngFmt_c, Z(Iterations_g), IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
+                    -- coverage off
+                    when others => null; -- unreachable
+                    -- coverage on
+                end case;
+
+                -- Reset
                 if Rst = '1' then
-                    Vld       <= (others => '0');
-                    VldReg    <= '0';
-                    Out_Valid <= '0';
-                else
-                    -- Input registering
-                    VldReg <= In_Valid;
-                    IReg   <= In_I;
-                    Qreg   <= In_Q;
-
-                    -- Map to quadrant one
-                    -- No rounding or saturation because IntXyFmt_c is checked to have sufficient int and frac bits
-                    X(0)    <= cl_fix_abs(IReg, InFmt_c, IntXyFmt_c, Trunc_s, None_s);
-                    Y(0)    <= cl_fix_abs(Qreg, InFmt_c, IntXyFmt_c, Trunc_s, None_s);
-                    Z(0)    <= (others => '0');
-                    Quad(0) <= IReg(IReg'left) & Qreg(Qreg'left);
-                    Vld(0)  <= VldReg;
-
-                    -- Cordic Iterations_g
-                    Vld(1 to Vld'high)   <= Vld(0 to Vld'high-1);
-                    Quad(1 to Quad'high) <= Quad(0 to Quad'high-1);
-
-                    for i in 0 to Iterations_g-1 loop
-                        X(i+1) <= cordicStepx(X(i), Y(i), i);
-                        Y(i+1) <= cordicStepy(X(i), Y(i), i);
-                        Z(i+1) <= cordicStepz(Z(i), Y(i), i);
-                    end loop;
-
-                    -- Output
-                    Out_Valid <= Vld(Iterations_g);
-                    if GainCorrCoefFmtUpper_c /= "NONE"  then
-                        Out_Mag <= cl_fix_mult(X(Iterations_g), IntXyFmt_c, GcCoef_c, GainCorrCoefFmt_c, OutMagFmt_c, Round_c, Saturate_c);
-                    else
-                        Out_Mag <= cl_fix_resize(X(Iterations_g), IntXyFmt_c, OutMagFmt_c, Round_c, Saturate_c);
-                    end if;
-
-                    case Quad(Iterations_g) is
-                        -- Normalized angles are never saturated. With 1 non-fractional bit, wrapping is correct behavior.
-                        when "00" =>  Out_Ang <= cl_fix_resize(Z(Iterations_g), IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
-                        when "10" =>  Out_Ang <= cl_fix_sub(AngInt_0_5_c, IntAngFmt_c, Z(Iterations_g), IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
-                        when "11" =>  Out_Ang <= cl_fix_add(AngInt_0_5_c, IntAngFmt_c, Z(Iterations_g), IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
-                        when "01" =>  Out_Ang <= cl_fix_sub(AngInt_1_0_c, IntAngFmt_c, Z(Iterations_g), IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
-                        -- coverage off
-                        when others => null; -- unreachable
-                        -- coverage on
-                    end case;
-
+                    Vld    <= (others => '0');
+                    VldReg <= '0';
+                    GcVld  <= '0';
                 end if;
             end if;
         end process;
@@ -316,72 +317,145 @@ begin
         p_cordic_serial : process (Clk) is
         begin
             if rising_edge(Clk) then
+                -- Input latching
+                if XIn_Valid = '0' and In_Valid = '1' then
+                    XIn_Valid <= '1';
+                    -- Map to quadrant one
+                    -- No rounding or saturation because IntXyFmt_c is checked to have sufficient int and frac bits
+                    Xin    <= cl_fix_abs(In_I, InFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                    Yin    <= cl_fix_abs(In_Q, InFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                    Quadin <= In_I(In_I'left) & In_Q(In_Q'left);
+                end if;
+
+                -- CORDIC loop
+                CordVld <= '0';
+                if IterCnt = 0 then
+                    -- Start of calculation
+                    if XIn_Valid = '1' then
+                        Y         <= cordicStepy(Xin, Yin, 0);
+                        X         <= cordicStepx(Xin, Yin, 0);
+                        Quad      <= Quadin;
+                        Z         <= cordicStepz(Z0_c, Yin, 0);
+                        IterCnt   <= IterCnt+1;
+                        XIn_Valid <= '0';
+                    end if;
+                else
+                    -- Normal Calculation Step
+                    X <= cordicStepx(X, Y, IterCnt);
+                    Y <= cordicStepy(X, Y, IterCnt);
+                    Z <= cordicStepz(Z, Y, IterCnt);
+
+                    if IterCnt = Iterations_g-1 then
+                        IterCnt <= 0;
+                        CordVld <= '1';
+                    else
+                        IterCnt <= IterCnt+1;
+                    end if;
+                end if;
+
+                -- Output
+                GcVld <= CordVld;
+                GcMag <= X;
+
+                case Quad is
+                    -- Normalized angles are never saturated. With 1 non-fractional bit, wrapping is correct behavior.
+                    when "00" => GcAng <= cl_fix_resize(Z, IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
+                    when "10" => GcAng <= cl_fix_sub(AngInt_0_5_c, IntAngFmt_c, Z, IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
+                    when "11" => GcAng <= cl_fix_add(AngInt_0_5_c, IntAngFmt_c, Z, IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
+                    when "01" => GcAng <= cl_fix_sub(AngInt_1_0_c, IntAngFmt_c, Z, IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
+                    -- coverage off
+                    when others => null; -- unreachable
+                    -- coverage on
+                end case;
+
+                -- Reset
                 if Rst = '1' then
                     XIn_Valid <= '0';
                     IterCnt   <= 0;
-                    Out_Valid <= '0';
+                    GcVld     <= '0';
                     CordVld   <= '0';
-                else
-                    -- Input latching
-                    if XIn_Valid = '0' and In_Valid = '1' then
-                        XIn_Valid <= '1';
-                        -- Map to quadrant one
-                        -- No rounding or saturation because IntXyFmt_c is checked to have sufficient int and frac bits
-                        Xin    <= cl_fix_abs(In_I, InFmt_c, IntXyFmt_c, Trunc_s, None_s);
-                        Yin    <= cl_fix_abs(In_Q, InFmt_c, IntXyFmt_c, Trunc_s, None_s);
-                        Quadin <= In_I(In_I'left) & In_Q(In_Q'left);
-                    end if;
-
-                    -- CORDIC loop
-                    CordVld <= '0';
-                    if IterCnt = 0 then
-                        -- Start of calculation
-                        if XIn_Valid = '1' then
-                            Y         <= cordicStepy(Xin, Yin, 0);
-                            X         <= cordicStepx(Xin, Yin, 0);
-                            Quad      <= Quadin;
-                            Z         <= cordicStepz(Z0_c, Yin, 0);
-                            IterCnt   <= IterCnt+1;
-                            XIn_Valid <= '0';
-                        end if;
-                    else
-                        -- Normal Calculation Step
-                        X <= cordicStepx(X, Y, IterCnt);
-                        Y <= cordicStepy(X, Y, IterCnt);
-                        Z <= cordicStepz(Z, Y, IterCnt);
-
-                        if IterCnt = Iterations_g-1 then
-                            IterCnt <= 0;
-                            CordVld <= '1';
-                        else
-                            IterCnt <= IterCnt+1;
-                        end if;
-                    end if;
-
-                    -- Output stage
-                    Out_Valid <= CordVld;
-                    if CordVld = '1' then
-                        if GainCorrCoefFmtUpper_c /= "NONE"  then
-                            Out_Mag <= cl_fix_mult(X, IntXyFmt_c, GcCoef_c, GainCorrCoefFmt_c, OutMagFmt_c, Round_c, Saturate_c);
-                        else
-                            Out_Mag <= cl_fix_resize(X, IntXyFmt_c, OutMagFmt_c, Round_c, Saturate_c);
-                        end if;
-
-                        case Quad is
-                            -- Normalized angles are never saturated. With 1 non-fractional bit, wrapping is correct behavior.
-                            when "00" =>  Out_Ang <= cl_fix_resize(Z, IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
-                            when "10" =>  Out_Ang <= cl_fix_sub(AngInt_0_5_c, IntAngFmt_c, Z, IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
-                            when "11" =>  Out_Ang <= cl_fix_add(AngInt_0_5_c, IntAngFmt_c, Z, IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
-                            when "01" =>  Out_Ang <= cl_fix_sub(AngInt_1_0_c, IntAngFmt_c, Z, IntAngFmt_c, OutAngFmt_c, Trunc_s, None_s);
-                            -- coverage off
-                            when others => null; -- unreachable
-                            -- coverage on
-                        end case;
-
-                    end if;
                 end if;
             end if;
         end process;
+
+    end generate;
+
+    -- *** Gain Correction ***
+    -- No correction
+    g_no_gain_comp : if GainCorrCoefFmtUpper_c = "NONE" generate
+
+        -- Resize Magnitued
+        i_resize_mag : entity work.olo_fix_resize
+            generic map (
+                AFmt_g      => to_string(IntXyFmt_c),
+                ResultFmt_g => to_string(OutMagFmt_c),
+                Round_g     => to_string(Round_c),
+                Saturate_g  => to_string(Saturate_c),
+                RoundReg_g  => "YES",
+                SatReg_g    => "YES"
+            )
+            port map (
+                Clk         => Clk,
+                Rst         => Rst,
+                In_Valid    => GcVld,
+                In_A        => GcMag,
+                Out_Valid   => Out_Valid,
+                Out_Result  => Out_Mag
+            );
+
+        -- Delay Angle
+        i_delay_angle : entity work.olo_base_delay
+            generic map (
+                Width_g         => cl_fix_width(OutAngFmt_c),
+                Delay_g         => 2,
+                RstState_g      => false
+            )
+            port map (
+                Clk      => Clk,
+                Rst      => Rst,
+                In_Data  => GcAng,
+                Out_Data => Out_Ang
+            );
+
+    end generate;
+
+    -- Compensation Enabled
+    g_gain_comp : if GainCorrCoefFmtUpper_c /= "NONE" generate
+
+        i_mult_mag : entity work.olo_fix_mult
+            generic map (
+                AFmt_g      => to_string(IntXyFmt_c),
+                BFmt_g      => to_string(GainCorrCoefFmt_c),
+                ResultFmt_g => to_string(OutMagFmt_c),
+                Round_g     => to_string(Round_c),
+                Saturate_g  => to_string(Saturate_c),
+                RoundReg_g  => "YES",
+                SatReg_g    => "YES",
+                OpRegs_g    => 1
+            )
+            port map (
+                Clk         => Clk,
+                Rst         => Rst,
+                In_Valid    => GcVld,
+                In_A        => GcMag,
+                In_B        => GcCoef_c,
+                Out_Valid   => Out_Valid,
+                Out_Result  => Out_Mag
+            );
+
+        -- Delay Angle
+        i_delay_angle : entity work.olo_base_delay
+            generic map (
+                Width_g         => cl_fix_width(OutAngFmt_c),
+                Delay_g         => 3,
+                RstState_g      => false
+            )
+            port map (
+                Clk      => Clk,
+                Rst      => Rst,
+                In_Data  => GcAng,
+                Out_Data => Out_Ang
+            );
 
     end generate;
 

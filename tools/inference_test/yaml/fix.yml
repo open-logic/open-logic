@@ -120,3 +120,13 @@ entities:
           InMagFmt_g: '"(0, 0, 16)"'
           InAngFmt_g: '"(0, 0, 15)"'
           OutFmt_g: '"(1, 0, 16)"'
+          GainCorrCoefFmt_g: '"NONE"'
+  # olo_fix_cordic_vect
+  - entity_name: "olo_fix_cordic_vect"
+    configurations:
+      - name: "default"
+        generics:
+          InFmt_g: '"(1, 0, 16)"'
+          OutAngFmt_g: '"(0, 0, 15)"'
+          OutMagFmt_g: '"(0, 1, 16)"'
+          GainCorrCoefFmt_g: '"NONE"'

@@ -239,37 +239,36 @@ begin
         p_cordic_pipelined : process (Clk) is
         begin
             if rising_edge(Clk) then
+                -- Initialization
+                X(0)    <= cl_fix_resize(In_Mag, InMagFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                Y(0)    <= (others => '0');
+                Z(0)    <= cl_fix_resize(In_Ang, InAngFmt_c, IntAngFmt_c, Trunc_s, None_s);
+                Quad(0) <= cl_fix_resize(In_Ang, InAngFmt_c, QuadFmt_c, Trunc_s, None_s);
+                Vld(0)  <= In_Valid;
+
+                -- Cordic Iterations_g
+                Vld(1 to Vld'high)   <= Vld(0 to Vld'high-1);
+                Quad(1 to Quad'high) <= Quad(0 to Quad'high-1);
+
+                for i in 0 to Iterations_g-1 loop
+                    X(i+1) <= cordicStepx(X(i), Y(i), Z(i), i);
+                    Y(i+1) <= cordicStepy(X(i), Y(i), Z(i), i);
+                    Z(i+1) <= cordicStepz(Z(i), i);
+                end loop;
+
+                -- Quadrant Correction
+                QcVld <= Vld(Iterations_g);
+                if (Quad(Iterations_g) = "00") or (Quad(Iterations_g) = "11") then
+                    YQc <= Y(Iterations_g);
+                    XQc <= X(Iterations_g);
+                else
+                    YQc <= cl_fix_neg(Y(Iterations_g), IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                    XQc <= cl_fix_neg(X(Iterations_g), IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                end if;
+
                 if Rst = '1' then
                     Vld   <= (others => '0');
                     QcVld <= '0';
-                else
-                    -- Initialization
-                    X(0)    <= cl_fix_resize(In_Mag, InMagFmt_c, IntXyFmt_c, Trunc_s, None_s);
-                    Y(0)    <= (others => '0');
-                    Z(0)    <= cl_fix_resize(In_Ang, InAngFmt_c, IntAngFmt_c, Trunc_s, None_s);
-                    Quad(0) <= cl_fix_resize(In_Ang, InAngFmt_c, QuadFmt_c, Trunc_s, None_s);
-                    Vld(0)  <= In_Valid;
-
-                    -- Cordic Iterations_g
-                    Vld(1 to Vld'high)   <= Vld(0 to Vld'high-1);
-                    Quad(1 to Quad'high) <= Quad(0 to Quad'high-1);
-
-                    for i in 0 to Iterations_g-1 loop
-                        X(i+1) <= cordicStepx(X(i), Y(i), Z(i), i);
-                        Y(i+1) <= cordicStepy(X(i), Y(i), Z(i), i);
-                        Z(i+1) <= cordicStepz(Z(i), i);
-                    end loop;
-
-                    -- Quadrant Correction
-                    QcVld <= Vld(Iterations_g);
-                    if (Quad(Iterations_g) = "00") or (Quad(Iterations_g) = "11") then
-                        YQc <= Y(Iterations_g);
-                        XQc <= X(Iterations_g);
-                    else
-                        YQc <= cl_fix_neg(Y(Iterations_g), IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
-                        XQc <= cl_fix_neg(X(Iterations_g), IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
-                    end if;
-
                 end if;
             end if;
         end process;
@@ -293,57 +292,57 @@ begin
         p_cordic_serial : process (Clk) is
         begin
             if rising_edge(Clk) then
+                -- Input latching
+                if XIn_Valid = '0' and In_Valid = '1' then
+                    XIn_Valid <= '1';
+                    Xin       <= cl_fix_resize(In_Mag, InMagFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                    Yin       <= (others => '0');
+                    Zin       <= cl_fix_resize(In_Ang, InAngFmt_c, IntAngFmt_c, Trunc_s, None_s);
+                    Quadin    <= cl_fix_resize(In_Ang, InAngFmt_c, QuadFmt_c, Trunc_s, None_s);
+                end if;
+
+                -- CORDIC loop
+                CordVld <= '0';
+                if IterCnt = 0 then
+                    -- start of calculation
+                    if XIn_Valid = '1' then
+                        X         <= cordicStepx(Xin, Yin, Zin, 0);
+                        Y         <= cordicStepy(Xin, Yin, Zin, 0);
+                        Quad      <= Quadin;
+                        Z         <= cordicStepz(Zin, 0);
+                        IterCnt   <= IterCnt+1;
+                        XIn_Valid <= '0';
+                    end if;
+                else
+                    -- Normal Calculation Step
+                    X <= cordicStepx(X, Y, Z, IterCnt);
+                    Y <= cordicStepy(X, Y, Z, IterCnt);
+                    Z <= cordicStepz(Z, IterCnt);
+
+                    if IterCnt = Iterations_g-1 then
+                        IterCnt <= 0;
+                        CordVld <= '1';
+                    else
+                        IterCnt <= IterCnt+1;
+                    end if;
+                end if;
+
+                -- Quadrant Correction
+                QcVld <= CordVld;
+                if (Quad = "00") or (Quad = "11") then
+                    YQc <= Y;
+                    XQc <= X;
+                else
+                    YQc <= cl_fix_neg(Y, IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                    XQc <= cl_fix_neg(X, IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                end if;
+
+                -- Reset
                 if Rst = '1' then
                     XIn_Valid <= '0';
                     IterCnt   <= 0;
                     CordVld   <= '0';
                     QcVld     <= '0';
-                else
-                    -- Input latching
-                    if XIn_Valid = '0' and In_Valid = '1' then
-                        XIn_Valid <= '1';
-                        Xin       <= cl_fix_resize(In_Mag, InMagFmt_c, IntXyFmt_c, Trunc_s, None_s);
-                        Yin       <= (others => '0');
-                        Zin       <= cl_fix_resize(In_Ang, InAngFmt_c, IntAngFmt_c, Trunc_s, None_s);
-                        Quadin    <= cl_fix_resize(In_Ang, InAngFmt_c, QuadFmt_c, Trunc_s, None_s);
-                    end if;
-
-                    -- CORDIC loop
-                    CordVld <= '0';
-                    if IterCnt = 0 then
-                        -- start of calculation
-                        if XIn_Valid = '1' then
-                            X         <= cordicStepx(Xin, Yin, Zin, 0);
-                            Y         <= cordicStepy(Xin, Yin, Zin, 0);
-                            Quad      <= Quadin;
-                            Z         <= cordicStepz(Zin, 0);
-                            IterCnt   <= IterCnt+1;
-                            XIn_Valid <= '0';
-                        end if;
-                    else
-                        -- Normal Calculation Step
-                        X <= cordicStepx(X, Y, Z, IterCnt);
-                        Y <= cordicStepy(X, Y, Z, IterCnt);
-                        Z <= cordicStepz(Z, IterCnt);
-
-                        if IterCnt = Iterations_g-1 then
-                            IterCnt <= 0;
-                            CordVld <= '1';
-                        else
-                            IterCnt <= IterCnt+1;
-                        end if;
-                    end if;
-
-                    -- Quadrant Correction
-                    QcVld <= CordVld;
-                    if (Quad = "00") or (Quad = "11") then
-                        YQc <= Y;
-                        XQc <= X;
-                    else
-                        YQc <= cl_fix_neg(Y, IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
-                        XQc <= cl_fix_neg(X, IntXyFmt_c, IntXyFmt_c, Trunc_s, None_s);
-                    end if;
-
                 end if;
             end if;
         end process;
