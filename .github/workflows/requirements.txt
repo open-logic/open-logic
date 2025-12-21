@@ -8,3 +8,5 @@ prettytable
 pyyaml
 pexpect
 jinja2
+pytest
+pytest-cov

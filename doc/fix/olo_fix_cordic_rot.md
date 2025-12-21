@@ -59,18 +59,18 @@ to be independent of the latency of this block.
 
 ## Generics
 
-| Name              | Type     | Default     | Description                                                  |
-| :---------------- | :------- | ----------- | :----------------------------------------------------------- |
-| InMagFmt_g        | string   | -           | Input magnitude format <br>Must be (0,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
-| InAngFmt_g        | string   | -           | Input angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,0,15)") |
-| OutFmt_g          | string   | -           | Output data format <br>Usually (1,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
+| Name              | Type     | Default     | Description                                                                                                                                                                                                                                                          |
+| :---------------- | :------- | ----------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| InMagFmt_g        | string   | -           | Input magnitude format <br>Must be (0,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)")                                                                                                                                                  |
+| InAngFmt_g        | string   | -           | Input angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,0,15)")                                                                                                                                                      |
+| OutFmt_g          | string   | -           | Output data format <br>Usually (1,x,y) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")                                                                                                                                                      |
 | IntXyFmt_g        | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
-| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,-2,15)"). Refer to [Format Considerations](#format-considerations) for details |
-| Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details  |
-| Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"ITERATIVE": Iterative mode<br />"PIPELINED": Pipelined mode |
-| GainCorrCoefFmt_g | string   | "(0,0,17)"  | Format of the gain correction coefficient, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(0,0,15)"). Refer to [Format Considerations](#format-considerations). <br> To disable the internal gain compensation, choose "NONE" |
-| Round_g           | string   | "Trunc_s"   | Rounding mode <br />String representation of an _en_cl_fix FixRound_t_. |
-| Saturate_g        | string   | "Warn_s"    | Saturation mode <br />String representation of an _en_cl_fix FixSaturate_t_. |
+| IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,-2,15)"). Refer to [Format Considerations](#format-considerations) for details   |
+| Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details                                                                                                                                             |
+| Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"ITERATIVE": Iterative mode<br />"PIPELINED": Pipelined mode                                                                                                                                                                              |
+| GainCorrCoefFmt_g | string   | "(0,0,17)"  | Format of the gain correction coefficient, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(0,0,15)"). Refer to [Format Considerations](#format-considerations). <br> To disable the internal gain compensation, choose "NONE"               |
+| Round_g           | string   | "Trunc_s"   | Rounding mode <br />String representation of an _en_cl_fix FixRound_t_.                                                                                                                                                                                              |
+| Saturate_g        | string   | "Warn_s"    | Saturation mode <br />String representation of an _en_cl_fix FixSaturate_t_.                                                                                                                                                                                         |
 
 ## Interfaces
 
@@ -78,25 +78,25 @@ to be independent of the latency of this block.
 
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Clk  | in     | 1      | -    | Clock |
-| Rst  | in     | 1      | -    | Reset input (high-active, synchronous to _Clk_) |
+| Clk  | in     | 1      | -       | Clock                                                        |
+| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_)              |
 
 ### Input Data
 
-| Name     | In/Out | Length              | Default | Description                                                  |
-| :------- | :----- | :------------------ | ------- | :----------------------------------------------------------- |
-| In_Mag   | in     | _width(InMagFmt_g)_ | N/A     | Input magnitude<br />Format _InMagFmt_g_ |
-| In_Ang   | in     | _width(InAngFmt_g)_ | N/A     | Input angle, Normalized units (1.0 = 360° = 2*PI)<br />Format _InAngFmt_g_     |
-| In_Valid | in     | 1                   | '1'     | AXI4-Stream handshaking signal for _In_Mag_ and _In_Ang_         |
+| Name     | In/Out | Length              | Default | Description                                                                                                                |
+| :------- | :----- | :------------------ | ------- | :------------------------------------------------------------------------------------------------------------------------- |
+| In_Mag   | in     | _width(InMagFmt_g)_ | N/A     | Input magnitude<br />Format _InMagFmt_g_                                                                                   |
+| In_Ang   | in     | _width(InAngFmt_g)_ | N/A     | Input angle, Normalized units (1.0 = 360° = 2*PI)<br />Format _InAngFmt_g_                                                 |
+| In_Valid | in     | 1                   | '1'     | AXI4-Stream handshaking signal for _In_Mag_ and _In_Ang_                                                                   |
 | In_Ready | out    | 1                   | N/A     | AXI4-Stream ready signal for _In_Mag_ and _In_Ang_<br>Used in "ITERATIVE" mode to signal when a new input sample is taken  |
 
 ### Output Data
 
-| Name       | In/Out | Length               | Default | Description                               |
-| :--------- | :----- | :------------------- | ------- | :---------------------------------------- |
-| Out_I      | in     | _width(OutFmt_g)_    | -       | In-phase/real part of output data<br />Format: _OutFmt_g_      |
+| Name       | In/Out | Length               | Default | Description                                                      |
+| :--------- | :----- | :------------------- | ------- | :--------------------------------------------------------------- |
+| Out_I      | in     | _width(OutFmt_g)_    | -       | In-phase/real part of output data<br />Format: _OutFmt_g_        |
 | Out_Q      | in     | _width(OutFmt_g)_    | -       | Quadrature/imaginary part of output data<br />Format: _OutFmt_g_ |
-| Out_Valid  | out    | 1                    | N/A     | AXI4-Stream handshaking signal for _Out_Q_ and _Out_I_ |
+| Out_Valid  | out    | 1                    | N/A     | AXI4-Stream handshaking signal for _Out_Q_ and _Out_I_           |
 
 **Note** The output interface does not implement backpressure (_Ready_). If backpressure is required, the user ideally
 implements it over the whole processing chain using [olo_base_flowctrl_handler](../base/olo_base_flowctrl_handler.md).

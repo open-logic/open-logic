@@ -31,7 +31,7 @@ class olo_fix_cordic_vect:
                  in_fmt             : FixFormat,
                  out_mag_fmt        : FixFormat,
                  out_ang_fmt        : FixFormat,
-                 internal_fmt       : Union[FixFormat,str],                        
+                 int_xy_fmt         : Union[FixFormat,str],                        
                  int_ang_fmt        : Union[FixFormat,str],
                  iterations         : int,
                  gain_corr_coef_fmt : Union[FixFormat,str],
@@ -50,7 +50,7 @@ class olo_fix_cordic_vect:
         :param in_fmt: Input fixed-point format
         :param out_mag_fmt: Output fixed-point format for the absolute value
         :param out_ang_fmt: Output fixed-point format for the angle
-        :param internal_fmt: Internal fixed-point format for X/Y calculation (use "AUTO" for Automatic)
+        :param int_xy_fmt: Internal fixed-point format for X/Y calculation (use "AUTO" for Automatic)
         :param int_ang_fmt: Internal fixed-point format for the angle calculation (use "AUTO" for Automatic)
         :param iterations: Number of CORDIC iterations
         :param gain_corr_coef_fmt: Format of the gain correction coefficient (use "NONE" for no correction)
@@ -70,19 +70,19 @@ class olo_fix_cordic_vect:
         if out_ang_fmt.S+out_ang_fmt.I != 0:          raise ValueError("olo_fix_cordic_vect: out_ang_fmt_g must be (0, 0, x)")
         self._out_ang_fmt = out_ang_fmt
 
-        # internal_fmt
-        if isinstance(internal_fmt, str):
+        # int_xy_fmt
+        if isinstance(int_xy_fmt, str):
             #String
-            if internal_fmt == "AUTO":
+            if int_xy_fmt == "AUTO":
                 # Note: Ignoring CORDIC growth, abs(z) still grows by up to sqrt(2) because sqrt(1**2 + 1**2) = sqrt(2).
                 #       Then, CORDIC growth is asymptotically ~1.647. So overall growth is ~2.33 ==> +2 integer bits needed in the worst case.
-                self._internal_fmt = FixFormat(1, self._in_fmt.I + 2, max(self._out_mag_fmt.F, self._out_ang_fmt.F) + 3)
+                self._int_xy_fmt = FixFormat(1, self._in_fmt.I + 2, max(self._out_mag_fmt.F, self._out_ang_fmt.F) + 3)
             else:
-                raise ValueError("olo_fix_cordic_vect: internal_fmt_g must be 'AUTO' or a FixFormat")
+                raise ValueError("olo_fix_cordic_vect: int_xy_fmt_g must be 'AUTO' or a FixFormat")
         else:
             #Format
-            if internal_fmt.S != 1:            raise ValueError("olo_fix_cordic_vect: internal_fmt_g must be signed")
-            self._internal_fmt = internal_fmt
+            if int_xy_fmt.S != 1:            raise ValueError("olo_fix_cordic_vect: int_xy_fmt_g must be signed")
+            self._int_xy_fmt = int_xy_fmt
 
         # int_ang_fmt
         if isinstance(int_ang_fmt, str):
@@ -160,9 +160,9 @@ class olo_fix_cordic_vect:
         :return: Output as tuple (abs, angle)
         """
         # Map to quadrant one
-        # No rounding or saturation because internal_fmt is checked to have sufficient int and frac bits
-        x = cl_fix_abs(cl_fix_from_real(inp_i, self._in_fmt), self._in_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
-        y = cl_fix_abs(cl_fix_from_real(inp_q, self._in_fmt), self._in_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        # No rounding or saturation because int_xy_fmt is checked to have sufficient int and frac bits
+        x = cl_fix_abs(cl_fix_from_real(inp_i, self._in_fmt), self._in_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        y = cl_fix_abs(cl_fix_from_real(inp_q, self._in_fmt), self._in_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
         z = 0.0
         for i in range(0, self._iterations):
             x_next = self._cordic_step_x(x, y, i)
@@ -181,24 +181,24 @@ class olo_fix_cordic_vect:
                         np.logical_and(inp_i < 0, inp_q < 0),
                         np.logical_and(inp_i >= 0, inp_q < 0)], [zQ1, zQ2, zQ3, zQ4])
         if self._gain_comp_on:
-            xOut = cl_fix_mult(x, self._internal_fmt, self._gain_comp_coef, self._gain_comp_coef_fmt, self._out_mag_fmt, self._round, self._sat)
+            xOut = cl_fix_mult(x, self._int_xy_fmt, self._gain_comp_coef, self._gain_comp_coef_fmt, self._out_mag_fmt, self._round, self._sat)
         else:
-            xOut = cl_fix_resize(x, self._internal_fmt, self._out_mag_fmt, self._round, self._sat)
+            xOut = cl_fix_resize(x, self._int_xy_fmt, self._out_mag_fmt, self._round, self._sat)
         return (xOut, zOut)
 
     # ---------------------------------------------------------------------------------------------------
     # Private Methods
     # ---------------------------------------------------------------------------------------------------
     def _cordic_step_x(self, xLast, yLast, shift : int):
-        yShifted = cl_fix_shift(yLast, self._internal_fmt, -shift, self._internal_fmt)
-        sub = cl_fix_sub(xLast, self._internal_fmt, yShifted, self._internal_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
-        add = cl_fix_add(xLast, self._internal_fmt, yShifted, self._internal_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        yShifted = cl_fix_shift(yLast, self._int_xy_fmt, -shift, self._int_xy_fmt)
+        sub = cl_fix_sub(xLast, self._int_xy_fmt, yShifted, self._int_xy_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        add = cl_fix_add(xLast, self._int_xy_fmt, yShifted, self._int_xy_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
         return np.where(yLast <= 0, sub, add)
 
     def _cordic_step_y(self, xLast, yLast, shift: int):
-        xShifted = cl_fix_shift(xLast, self._internal_fmt, -shift, self._internal_fmt)
-        add = cl_fix_add(yLast, self._internal_fmt, xShifted, self._internal_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
-        sub = cl_fix_sub(yLast, self._internal_fmt, xShifted, self._internal_fmt, self._internal_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        xShifted = cl_fix_shift(xLast, self._int_xy_fmt, -shift, self._int_xy_fmt)
+        add = cl_fix_add(yLast, self._int_xy_fmt, xShifted, self._int_xy_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        sub = cl_fix_sub(yLast, self._int_xy_fmt, xShifted, self._int_xy_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
         out = np.where(yLast < 0, add, sub)
         return out
 

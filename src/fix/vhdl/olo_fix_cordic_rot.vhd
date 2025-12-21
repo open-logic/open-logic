@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2025 by Oliver Bründler
+-- Copyright (c) 2025 by Oliver Bruendler
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -201,22 +201,22 @@ begin
 
     -- *** Assertions ***
     assert InMagFmt_c.S = 0
-        report "###ERROR###: olo_fix_cordic_rot: InMagFmt_c must be unsigned"
+        report "###ERROR###: olo_fix_cordic_rot: InMagFmt_g must be unsigned"
         severity error;
     assert InAngFmt_c.S = 0
-        report "###ERROR###: olo_fix_cordic_rot: InAngFmt_c must be (0,0,x))"
+        report "###ERROR###: olo_fix_cordic_rot: InAngFmt_g must be (0,0,x))"
         severity error;
     assert InAngFmt_c.I = 0
-        report "###ERROR###: olo_fix_cordic_rot: InAngFmt_c must be (0,0,x))"
+        report "###ERROR###: olo_fix_cordic_rot: InAngFmt_g must be (0,0,x))"
         severity error;
     assert IntXyFmt_c.S = 1
-        report "###ERROR###: olo_fix_cordic_rot: IntXyFmt_c must be signed"
+        report "###ERROR###: olo_fix_cordic_rot: IntXyFmt_g must be signed"
         severity error;
     assert IntAngFmt_c.S = 1
-        report "###ERROR###: olo_fix_cordic_rot: IntAngFmt_c must be sig(1,-2,x)ned"
+        report "###ERROR###: olo_fix_cordic_rot: IntAngFmt_g must be sig(1,-2,x)ned"
         severity error;
     assert IntAngFmt_c.I = -2
-        report "###ERROR###: olo_fix_cordic_rot: IntAngFmt_c must be (1,-2,x)"
+        report "###ERROR###: olo_fix_cordic_rot: IntAngFmt_g must be (1,-2,x)"
         severity error;
     assert Iterations_g <= 32
         report "###ERROR###: olo_fix_cordic_rot: Iterations_g must be <= 32"

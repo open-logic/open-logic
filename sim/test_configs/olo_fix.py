@@ -314,3 +314,57 @@ def add_configs(olo_tb):
         generics['Iterations_g'] = '5'
         generics['OutFmt_g'] = '(1,0,8)'
         named_config(tb, generics, pre_config=cosim, short_name=f'default-LowRes-Mode_g={Mode}')   
+
+    ### olo_fix_cordic_vect ###
+    tb = olo_tb.test_bench('olo_fix_cordic_vect_tb')
+    #Test formats and round/sat modes
+    default_generics = {
+        'InFmt_g': '(1, 0, 16)',
+        'OutAngFmt_g': '(0, 0, 15)',
+        'OutMagFmt_g': '(0, 0, 16)',
+        'IntXyFmt_g': '(1, 2, 22)',
+        'IntAngFmt_g': '(1, -1, 23)',
+        'Iterations_g': '21',
+        'GainCorrCoefFmt_g': '(0, 0, 17)',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'Mode_g' : 'PIPELINED'
+    }
+    cosim = olo_fix_cordic_vect.cosim.cosim
+
+    #Execute all simulations pipelined and non-pipelined
+    for Mode in ['PIPELINED', 'SERIAL']:
+        # General Check
+        generics = default_generics.copy()
+        generics['Mode_g'] = Mode
+        named_config(tb, generics, pre_config=cosim, short_name=f'default-General-Mode_g={Mode}')
+
+        # Check Auto Formats
+        generics = default_generics.copy()
+        generics['Mode_g'] = Mode
+        generics['IntXyFmt_g'] = 'AUTO'
+        generics['IntAngFmt_g'] = 'AUTO'
+        named_config(tb, generics, pre_config=cosim, short_name=f'default-AutoFmt-Mode_g={Mode}')
+
+        # Check no round/sat
+        generics = default_generics.copy()
+        generics['Mode_g'] = Mode
+        generics['Round_g'] = 'Trunc_s'
+        generics['Saturate_g'] = 'None_s'
+        named_config(tb, generics, pre_config=cosim, short_name=f'default-NoRoundSat-Mode_g={Mode}')   
+
+        # Check no Correction
+        generics = default_generics.copy()
+        generics['Mode_g'] = Mode
+        generics['GainCorrCoefFmt_g'] = 'NONE'
+        named_config(tb, generics, pre_config=cosim, short_name=f'default-NoGc-Mode_g={Mode}') 
+
+        # CheckLow Resolution
+        generics = default_generics.copy()
+        generics['Mode_g'] = Mode
+        generics['IntXyFmt_g'] = '(1,0,8)'
+        generics['IntAngFmt_g'] = '(1,-1,8)'
+        generics['Iterations_g'] = '5'
+        generics['OutMagFmt_g'] = '(0,0,8)'
+        generics['OutAngFmt_g'] = '(0,0,8)'
+        named_config(tb, generics, pre_config=cosim, short_name=f'default-LowRes-Mode_g={Mode}')   
