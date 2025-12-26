@@ -329,6 +329,76 @@ def add_configs(olo_tb):
                     }
                     named_config(tb, generics)
 
+    ### olo_base_pkg_crc ###
+    pkg_crc_tb = 'olo_base_pkg_crc_tb'
+    tb = olo_tb.test_bench(pkg_crc_tb)
+    CrcNames = [
+        "Crc8_Autosar_c",
+        "Crc8_Bluetooth_c",
+        "Crc8_Cdma2000_c",
+        "Crc8_Darc_c",
+        "Crc8_DvbS2_c",
+        "Crc8_GsmA_c",
+        "Crc8_GsmB_c",
+        "Crc8_Hitag_c",
+        "Crc8_I4321_c",
+        "Crc8_ICode_c",
+        "Crc8_Lte_c",
+        "Crc8_MaximDow_c",
+        "Crc8_MifareMad_c",
+        "Crc8_Nrsc5_c",
+        "Crc8_Opensafety_c",
+        "Crc8_Rohc_c",
+        "Crc8_SaeJ1850_c",
+        "Crc8_Smbus_c",
+        "Crc8_Tech3250_c",
+        "Crc8_Wcdma_c",
+        "Crc16_Arc_c",
+        "Crc16_Cdma2000_c",
+        "Crc16_Cms_c",
+        "Crc16_Dds110_c",
+        "Crc16_DectR_c",
+        "Crc16_DectX_c",
+        "Crc16_Dnp_c",
+        "Crc16_En13757_c",
+        "Crc16_Genibus_c",
+        "Crc16_Gsm_c",
+        "Crc16_Ibm3740_c",
+        "Crc16_IbmSdlc_c",
+        "Crc16_IsoIec144433A_c",
+        "Crc16_Lj1200_c",
+        "Crc16_M17_c",
+        "Crc16_MaximDow_c",
+        "Crc16_Mcrf4xx_c",
+        "Crc16_Modbus_c",
+        "Crc16_Nrsc5_c",
+        "Crc16_OpensafetyA_c",
+        "Crc16_OpensafetyB_c",
+        "Crc16_Profibus_c",
+        "Crc16_Riello_c",
+        "Crc16_SpiFujitsu_c",
+        "Crc16_T10Dif_c",
+        "Crc16_Teledisk_c",
+        "Crc16_Tms37157_c",
+        "Crc16_Umts_c",
+        "Crc16_Usb_c",
+        "Crc16_Xmodem_c",
+        "Crc32_Aixm_c",
+        "Crc32_Autosar_c",
+        "Crc32_Base91D_c",
+        "Crc32_Bzip2_c",
+        "Crc32_CdRomEdc_c",
+        "Crc32_Cksum_c",
+        "Crc32_Iscsi_c",
+        "Crc32_IsoHdlc_c",
+        "Crc32_Jamcrc_c",
+        "Crc32_Mef_c",
+        "Crc32_Mpeg2_c",
+        "Crc32_Xfer_c",
+    ]
+    for CrcName in CrcNames:
+        named_config(tb, {"CrcName_g" : CrcName})
+
     ### olo_base_crc_append ###
     crc_append_tb = 'olo_base_crc_append_tb'
     tb = olo_tb.test_bench(crc_append_tb)  
