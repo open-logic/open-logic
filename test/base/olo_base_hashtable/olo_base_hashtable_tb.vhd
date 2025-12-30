@@ -71,10 +71,18 @@ architecture tb of olo_base_hashtable_tb is
 
     constant OP_NB : integer := 5;
     constant OP_WRITE : std_logic_vector(OP_NB-1 downto 0) := "10000";
+    constant OP_WRITE_BIT : integer := 4;
     constant OP_READ : std_logic_vector(OP_NB-1 downto 0) := "01000";
+    constant OP_READ_BIT : integer := 3;
     constant OP_REMOVE : std_logic_vector(OP_NB-1 downto 0) := "00100";
+    constant OP_REMOVE_BIT : integer := 2;
     constant OP_CLEAR : std_logic_vector(OP_NB-1 downto 0) := "00010";
+    constant OP_CLEAR_BIT : integer := 1;
     constant OP_NEXTKEY : std_logic_vector(OP_NB-1 downto 0) := "00001";
+    constant OP_NEXTKEY_BIT : integer := 0;
+
+    signal maxis_tdata : std_logic_vector(KeyWidth_g+ValueWidth_g-1 downto 0);
+    signal maxis_tuser : std_logic_vector(OP_NB-1 downto 0);
 
     procedure HtAction (signal net : inout network_t;
                         Action : std_logic_vector(OP_NB-1 downto 0);
@@ -127,17 +135,19 @@ architecture tb of olo_base_hashtable_tb is
                             checkMsg : string) is
         variable streamData : std_logic_vector(ValueWidth_g+KeyWidth_g-1 downto 0);
         variable readValue : std_logic_vector(ValueWidth_g-1 downto 0);
+        variable tuserDiscard : std_logic;
     begin
-        pop_axi_stream(net, AxisSlave_c, streamData, open);
+        pop_axi_stream(net, AxisSlave_c, streamData, tuserDiscard);
         readValue := streamData(ValueWidth_g-1 downto 0);
         check_equal(readValue, checkValue, checkMsg);
     end procedure;
 
     procedure HtNextKeyGet(signal net : inout network_t;
-                            Key : out std_logic_vector(ValueWidth_g-1 downto 0)) is
+                            Key : out std_logic_vector(KeyWidth_g-1 downto 0)) is
         variable streamData : std_logic_vector(ValueWidth_g+KeyWidth_g-1 downto 0);
+        variable tuserDiscard : std_logic;
     begin
-        pop_axi_stream(net, AxisSlave_c, streamData, open);
+        pop_axi_stream(net, AxisSlave_c, streamData, tuserDiscard);
         Key := streamData(KeyWidth_g+ValueWidth_g-1 downto ValueWidth_g);
     end procedure;
 
@@ -187,9 +197,18 @@ begin
         aclk => Clk,
         tvalid => In_Valid,
         tready => In_Ready,
-        tdata => (In_Key & In_Value),
-        tuser => (In_Write & In_Read & In_Remove & In_Clear & In_NextKey)
+        tdata => maxis_tdata, -- In_Key | In_Value
+        tuser => maxis_tuser -- In_Write | In_Read | In_Remove | In_Clear | In_NextKey
     );
+
+    In_Key <= maxis_tdata(KeyWidth_g+ValueWidth_g-1 downto ValueWidth_g);
+    In_Value <= maxis_tdata(ValueWidth_g-1 downto 0);
+    In_Write <= maxis_tuser(OP_WRITE_BIT);
+    In_Read <= maxis_tuser(OP_READ_BIT);
+    In_Remove <= maxis_tuser(OP_REMOVE_BIT);
+    In_Clear <= maxis_tuser(OP_CLEAR_BIT);
+    In_NextKey <= maxis_tuser(OP_NEXTKEY_BIT);
+
     axis_slave : entity vunit_lib.axi_stream_slave
     generic map (
         slave => AxisSlave_c
@@ -257,10 +276,16 @@ begin
                         Hash_Lcg_Incr_g,
                         ValueWidth_g));
                     report "Key " & integer'image(i) & ": " & 
-                        integer'image(to_integer(unsigned(TestKeys(i))));
+                        to_hstring(TestKeys(i));
                     report "Value " & integer'image(i) & ": " & 
-                        integer'image(to_integer(unsigned(TestValues(i))));
+                        to_hstring(TestValues(i));
                 end loop;
+                --Wait for hashtable to be ready
+                --NOTE: This behaviour isn't technically standard AXI-STREAM protocol as we are waiting for a slave
+                --interface to be ready. The standard specifies that a slave can wait for a master (valid = '1') but
+                --not the inverse. In this testbench, however, we need the hashtable to be ready before sending
+                --requests but keep in mind that is not how it should be used in HW designs
+                wait until In_Ready = '1';
                 --Store all pairs
                 report "Store all pairs";
                 storedPairs := 0;
@@ -276,16 +301,20 @@ begin
                 --Read all pairs
                 report "Read all pairs";
                 for i in 0 to Depth_g-1 loop
-                    HtRead(net, TestValues(i), true);
-                    check(Out_KeyUnknown = '0', "Coherent value search result");
+                    -- Non-blocking read as HtReadCheck will set axi-stream slave ready
+                    HtRead(net, TestKeys(i), false);
+                    --Must check value before KeyUnknown as read operation cannot finish without output being read
                     HtReadCheck(net, TestValues(i), "Check output value");
                     wait until rising_edge(In_Ready);
+                    check(Out_KeyUnknown = '0', "Coherent value search result");
                 end loop;
                 --Get all keys
                 report "Get all keys";
                 for i in 0 to to_integer(unsigned(Status_Pairs))-1 loop
                     --Recover Next Key
-                    HtNextKey(net, true);
+                    --Non-blocking NextKey search as output read (necessary for operation to finish) is
+                    --setup in HtNextKeyGet
+                    HtNextKey(net, false);
                     HtNextKeyGet(net, KeyCheck);
                     --Check that key exists and hasn't been found before
                     find_key_loop: for j in 0 to Depth_g-1 loop
@@ -313,14 +342,17 @@ begin
                 check(Out_KeyUnknown = '0', "Check key known");
                 --Check value overridden
                 report "Check value overridden";
-                HtRead(net, TestKeys(0), true);
+                --Non-blocking read to prevent lock (output read by HtReadCheck necessary for read op to finish)
+                HtRead(net, TestKeys(0), false);
                 HtReadCheck(net, TestValues(0), "Check value overridden");
+                wait until In_Ready = '1';
                 --Try to write new key
                 report "Try to write new key";
                 HtWrite(net, TestKeys(Depth_g), TestValues(Depth_g), true);
                 check(Out_KeyUnknown = '1', "Check key unknown");
                 --Check pair ignored
                 report "Check pair ignored";
+                --Blocking read as it is expected to fail (no output read necessary to finish)
                 HtRead(net, TestKeys(Depth_g), true);
                 check(Out_KeyUnknown = '1', "Check value ignored");
                 --Remove half keys
@@ -332,12 +364,16 @@ begin
                 --Check coherent key search output
                 report "Check coherent key search output";
                 for i in 0 to Depth_g-1 loop
-                    HtRead(net, TestKeys(i), true);
+                    --Non-blocking read to prevent lock
+                    HtRead(net, TestKeys(i), false);
                     if i < Depth_g/2 then --Removed pairs, check unknown
+                        wait until In_Ready = '1';
                         check(Out_KeyUnknown = '1', "Coherent value search result");
                     else -- Not removed pairs, check valid
-                        check(Out_KeyUnknown = '0', "Coherent value search result");
+                        --Must check value before KeyUnknown (See previous similar reads)
                         HtReadCheck(net, TestValues(i), "Check output value");
+                        wait until In_Ready = '1';
+                        check(Out_KeyUnknown = '0', "Coherent value search result");
                     end if;
                 end loop;
                 --Clear all keys
@@ -346,6 +382,7 @@ begin
                 --Check coherent key search output
                 report "Check coherent key search output";
                 for i in 0 to Depth_g-1 loop
+                    --Blocking reads (all expected to fail so no need to read output)
                     HtRead(net, TestKeys(i), true);
                     check(Out_KeyUnknown = '1', "Coherent value search result");
                 end loop;
