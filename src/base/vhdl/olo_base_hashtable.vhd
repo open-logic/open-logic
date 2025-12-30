@@ -290,7 +290,7 @@ begin
                 -- Read value
                 if RegCurr.key_found = '1' then
                     Out_Valid <= '1';
-                    if Out_Ready <= '1' then -- AXIS handshake
+                    if Out_Ready = '1' then -- AXIS handshake
                         RegNext.ht_state <= Idle_s;
                     end if;
                 else
