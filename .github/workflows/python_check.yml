@@ -1,0 +1,39 @@
+name: Python-Check
+run-name: ${{ github.actor }} triggered Python Check
+
+# Set the permissions for the workflow
+permissions:
+  checks: write
+  pull-requests: write
+
+#Set Triggers
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * 1'
+  
+#Jobs  
+jobs:
+  olo-fix-unittests:
+    runs-on: ubuntu-latest
+    steps:
+      #General Setup
+      - name: Setup node
+        uses: actions/setup-node@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      #Setup environment
+      - name: Setup environment
+        uses: ./.github/actions/setup-environment
+        with:
+          os: ${{ runner.os }}
+      #Run Tests
+      - name: Run Tests
+        run: |
+          python3 -m pytest src/fix/python/tests/ --cov=src/fix/python --cov-report=term-missing
