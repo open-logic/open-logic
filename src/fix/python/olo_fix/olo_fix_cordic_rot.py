@@ -157,7 +157,10 @@ class olo_fix_cordic_rot:
         """
 
         #Initialization - always map to quadrant one
-        x = cl_fix_resize(inp_abs, self._in_mag_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        if self._gain_comp_on:
+            x = cl_fix_mult(inp_abs, self._in_mag_fmt, self._gain_comp_coef, self._gain_comp_coef_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        else:
+            x = cl_fix_resize(inp_abs, self._in_mag_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
         y = 0.0
         z = cl_fix_resize(inp_angle, self._in_ang_fmt, self._int_ang_fmt, FixRound.Trunc_s, FixSaturate.None_s)
         quad = cl_fix_resize(inp_angle, self._in_ang_fmt, self._QUAD_FMT, FixRound.Trunc_s, FixSaturate.None_s)
@@ -173,17 +176,13 @@ class olo_fix_cordic_rot:
 
         #Quadrant correction
         yInv = cl_fix_neg(y, self._int_xy_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
-        yCorr = np.select([quad == 0, quad==0.25, quad==0.5, quad==0.75], [y, yInv, yInv, y])
+        yFull = np.select([quad == 0, quad==0.25, quad==0.5, quad==0.75], [y, yInv, yInv, y])
         xInv = cl_fix_neg(x, self._int_xy_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
-        xCorr = np.select([quad == 0, quad == 0.25, quad == 0.5, quad == 0.75], [x, xInv, xInv, x])
+        xFull = np.select([quad == 0, quad == 0.25, quad == 0.5, quad == 0.75], [x, xInv, xInv, x])
 
-        #Gain correction
-        if self._gain_comp_on:
-            xOut = cl_fix_mult(xCorr, self._int_xy_fmt, self._gain_comp_coef, self._gain_comp_coef_fmt, self._out_fmt, self._round, self._sat)
-            yOut = cl_fix_mult(yCorr, self._int_xy_fmt, self._gain_comp_coef, self._gain_comp_coef_fmt, self._out_fmt, self._round, self._sat)
-        else:
-            xOut = cl_fix_resize(xCorr, self._int_xy_fmt, self._out_fmt, self._round, self._sat)
-            yOut = cl_fix_resize(yCorr, self._int_xy_fmt, self._out_fmt, self._round, self._sat)
+        #Output conditioning
+        xOut = cl_fix_resize(xFull, self._int_xy_fmt, self._out_fmt, self._round, self._sat)
+        yOut = cl_fix_resize(yFull, self._int_xy_fmt, self._out_fmt, self._round, self._sat)
         return xOut, yOut
 
     # ---------------------------------------------------------------------------------------------------

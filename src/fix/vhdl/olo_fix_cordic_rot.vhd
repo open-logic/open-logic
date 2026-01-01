@@ -196,6 +196,10 @@ architecture rtl of olo_fix_cordic_rot is
     -- Gain Correction Signals
     signal YQc, XQc : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
     signal QcVld    : std_logic;
+    signal In_Ready_I : std_logic;
+    signal ProcMag  : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
+    signal ProcValid : std_logic;
+    signal ProcAng  : std_logic_vector(cl_fix_width(InAngFmt_c)-1 downto 0);
 
 begin
 
@@ -233,18 +237,18 @@ begin
         signal Quad : StlvArray2_t(0 to Iterations_g);
     begin
         -- Pipelined implementation can take a sample every clock cycle
-        In_Ready <= '1';
+        In_Ready_I <= '1';
 
         -- Implementation
         p_cordic_pipelined : process (Clk) is
         begin
             if rising_edge(Clk) then
                 -- Initialization
-                X(0)    <= cl_fix_resize(In_Mag, InMagFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                X(0)    <= ProcMag;
                 Y(0)    <= (others => '0');
-                Z(0)    <= cl_fix_resize(In_Ang, InAngFmt_c, IntAngFmt_c, Trunc_s, None_s);
-                Quad(0) <= cl_fix_resize(In_Ang, InAngFmt_c, QuadFmt_c, Trunc_s, None_s);
-                Vld(0)  <= In_Valid;
+                Z(0)    <= cl_fix_resize(ProcAng, InAngFmt_c, IntAngFmt_c, Trunc_s, None_s);
+                Quad(0) <= cl_fix_resize(ProcAng, InAngFmt_c, QuadFmt_c, Trunc_s, None_s);
+                Vld(0)  <= ProcValid;
 
                 -- Cordic Iterations_g
                 Vld(1 to Vld'high)   <= Vld(0 to Vld'high-1);
@@ -287,18 +291,26 @@ begin
         signal IterCnt   : integer range 0 to Iterations_g-1;
         signal Quad      : std_logic_vector(1 downto 0);
     begin
-        In_Ready <= not XIn_Valid;
-
         p_cordic_serial : process (Clk) is
         begin
             if rising_edge(Clk) then
+                -- In Ready Handling
+                if In_Ready_I = '1' and In_Valid = '1' then
+                    In_Ready_I <= '0';
+                end if;
+                -- Assert ready depending on the latency of the input logic
+                if (IterCnt = 2 and GainCorrCoefFmtUpper_c /= "NONE")  or
+                   (IterCnt = 1 and GainCorrCoefFmtUpper_c = "NONE") then
+                    In_Ready_I <= '1';
+                end if;
+
                 -- Input latching
-                if XIn_Valid = '0' and In_Valid = '1' then
+                if XIn_Valid = '0' and ProcValid = '1' then
                     XIn_Valid <= '1';
-                    Xin       <= cl_fix_resize(In_Mag, InMagFmt_c, IntXyFmt_c, Trunc_s, None_s);
+                    Xin       <= ProcMag;
                     Yin       <= (others => '0');
-                    Zin       <= cl_fix_resize(In_Ang, InAngFmt_c, IntAngFmt_c, Trunc_s, None_s);
-                    Quadin    <= cl_fix_resize(In_Ang, InAngFmt_c, QuadFmt_c, Trunc_s, None_s);
+                    Zin       <= cl_fix_resize(ProcAng, InAngFmt_c, IntAngFmt_c, Trunc_s, None_s);
+                    Quadin    <= cl_fix_resize(ProcAng, InAngFmt_c, QuadFmt_c, Trunc_s, None_s);
                 end if;
 
                 -- CORDIC loop
@@ -343,93 +355,128 @@ begin
                     IterCnt   <= 0;
                     CordVld   <= '0';
                     QcVld     <= '0';
+                    In_Ready_I <= '1';
                 end if;
             end if;
         end process;
 
     end generate;
 
-    -- *** Gain Correction ***
-    -- No correction
-    g_no_gain_comp : if GainCorrCoefFmtUpper_c = "NONE" generate
+    In_Ready <= In_Ready_I;
 
-        i_resize_i : entity work.olo_fix_resize
-            generic map (
-                AFmt_g      => to_string(IntXyFmt_c),
-                ResultFmt_g => to_string(OutFmt_c),
-                Round_g     => to_string(Round_c),
-                Saturate_g  => to_string(Saturate_c),
-                RoundReg_g  => "AUTO",
-                SatReg_g    => "AUTO"
-            )
-            port map (
-                Clk         => Clk,
-                Rst         => Rst,
-                In_Valid    => QcVld,
-                In_A        => XQc,
-                Out_Valid   => Out_Valid,
-                Out_Result  => Out_I
-            );
-
-        i_resize_q : entity work.olo_fix_resize
-            generic map (
-                AFmt_g      => to_string(IntXyFmt_c),
-                ResultFmt_g => to_string(OutFmt_c),
-                Round_g     => to_string(Round_c),
-                Saturate_g  => to_string(Saturate_c),
-                RoundReg_g  => "AUTO",
-                SatReg_g    => "AUTO"
-            )
-            port map (
-                Clk         => Clk,
-                Rst         => Rst,
-                In_Valid    => QcVld,
-                In_A        => YQc,
-                Out_Result  => Out_Q
-            );
-
-    end generate;
-
+    -- *** Gain Correction and Input registers***
     -- Compensation Enabled
     g_gain_comp : if GainCorrCoefFmtUpper_c /= "NONE" generate
+        signal In_Mag_Reg   : std_logic_vector(cl_fix_width(InMagFmt_c)-1 downto 0);
+        signal In_Ang_Reg   : std_logic_vector(cl_fix_width(InAngFmt_c)-1 downto 0);
+        signal In_Valid_Reg : std_logic;
+    begin
+
+        p_registers : process (Clk) is
+        begin
+            if rising_edge(Clk) then
+                -- Input Regiseter
+                In_Mag_Reg   <= In_Mag;
+                In_Ang_Reg   <= In_Ang;
+                In_Valid_Reg <= In_Ready_I and In_Valid;
+
+                -- Compensate multiplier latency
+                ProcAng      <= In_Ang_Reg;
+
+                -- Reset
+                if Rst = '1' then
+                    In_Valid_Reg <= '0';
+                end if;
+            end if;
+        end process;
 
         i_mult_i : entity work.olo_fix_mult
             generic map (
-                AFmt_g      => to_string(IntXyFmt_c),
+                AFmt_g      => to_string(InMagFmt_c),
                 BFmt_g      => to_string(GainCorrCoefFmt_c),
-                ResultFmt_g => to_string(OutFmt_c),
-                Round_g     => to_string(Round_c),
-                Saturate_g  => to_string(Saturate_c)
+                ResultFmt_g => to_string(IntXyFmt_c),
+                Round_g     => FixRound_Trunc_c,
+                Saturate_g  => FixSaturate_None_c,
+                OpRegs_g    => 1,
+                RoundReg_g  => "NO",
+                SatReg_g    => "NO"
             )
             port map (
                 Clk         => Clk,
                 Rst         => Rst,
-                In_Valid    => QcVld,
-                In_A        => XQc,
+                In_Valid    => In_Valid_Reg,
+                In_A        => In_Mag_Reg,
                 In_B        => GcCoef_c,
-                Out_Valid   => Out_Valid,
-                Out_Result  => Out_I
-            );
-
-        i_mult_q : entity work.olo_fix_mult
-            generic map (
-                AFmt_g      => to_string(IntXyFmt_c),
-                BFmt_g      => to_string(GainCorrCoefFmt_c),
-                ResultFmt_g => to_string(OutFmt_c),
-                Round_g     => to_string(Round_c),
-                Saturate_g  => to_string(Saturate_c)
-            )
-            port map (
-                Clk         => Clk,
-                Rst         => Rst,
-                In_Valid    => QcVld,
-                In_A        => YQc,
-                In_B        => GcCoef_c,
-                Out_Result  => Out_Q
-
+                Out_Valid   => ProcValid,
+                Out_Result  => ProcMag
             );
 
     end generate;
+
+    -- Compensation EnablDisabled
+    g_no_gain_comp : if GainCorrCoefFmtUpper_c = "NONE" generate
+        signal In_Mag_Reg   : std_logic_vector(cl_fix_width(InMagFmt_c)-1 downto 0);
+        signal In_Ang_Reg   : std_logic_vector(cl_fix_width(InAngFmt_c)-1 downto 0);
+        signal In_Valid_Reg : std_logic;
+    begin
+
+        p_registers : process (Clk) is
+        begin
+            if rising_edge(Clk) then
+                -- Input Regiseter
+                In_Mag_Reg   <= In_Mag;
+                In_Ang_Reg   <= In_Ang;
+                In_Valid_Reg <= In_Ready_I and In_Valid;
+
+                -- Reset
+                if Rst = '1' then
+                    In_Valid_Reg <= '0';
+                end if;
+            end if;
+        end process;
+
+        -- Directly assign inputs (register is in main cordic process)
+        ProcAng <= In_Ang_Reg;
+        ProcMag <= cl_fix_resize(In_Mag_Reg, InMagFmt_c, IntXyFmt_c, Trunc_s, None_s);
+        ProcValid <= In_Valid_Reg;
+
+    end generate;
+
+    -- *** Output Conditioning ***
+    i_resize_i : entity work.olo_fix_resize
+    generic map (
+        AFmt_g      => to_string(IntXyFmt_c),
+        ResultFmt_g => to_string(OutFmt_c),
+        Round_g     => to_string(Round_c),
+        Saturate_g  => to_string(Saturate_c),
+        RoundReg_g  => "AUTO",
+        SatReg_g    => "AUTO"
+    )
+    port map (
+        Clk         => Clk,
+        Rst         => Rst,
+        In_Valid    => QcVld,
+        In_A        => XQc,
+        Out_Valid   => Out_Valid,
+        Out_Result  => Out_I
+    );
+
+i_resize_q : entity work.olo_fix_resize
+    generic map (
+        AFmt_g      => to_string(IntXyFmt_c),
+        ResultFmt_g => to_string(OutFmt_c),
+        Round_g     => to_string(Round_c),
+        Saturate_g  => to_string(Saturate_c),
+        RoundReg_g  => "AUTO",
+        SatReg_g    => "AUTO"
+    )
+    port map (
+        Clk         => Clk,
+        Rst         => Rst,
+        In_Valid    => QcVld,
+        In_A        => YQc,
+        Out_Result  => Out_Q
+    );
 
 end architecture;
 

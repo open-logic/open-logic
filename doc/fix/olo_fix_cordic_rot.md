@@ -25,8 +25,7 @@ The algorithm can be implemented in two different modes:
 
 - **ITERATIVE**
   - Iterations are executed one after the other
-  - Every computation requires several clock cycles and a new sample is accepted only after the
-    previous one has finished
+  - A new sample can be accepted every _Iterations_g_ clock cycles.
   - Lowest possible resource usage
 - **PIPELINED**
   - Iterations are implemented in individual pipeline stages
