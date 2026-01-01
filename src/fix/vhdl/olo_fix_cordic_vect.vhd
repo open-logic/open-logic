@@ -78,7 +78,7 @@ architecture rtl of olo_fix_cordic_vect is
     constant OutMagFmt_c       : FixFormat_t   := cl_fix_format_from_string(OutMagFmt_g);
     constant OutAngFmt_c       : FixFormat_t   := cl_fix_format_from_string(OutAngFmt_g);
     constant IntXyFmt_c        : FixFormat_t   := choose(IntXyFmtUpper_c = "AUTO",
-                                                         (1, InFmt_c.I + 2, max(OutMagFmt_c.F, OutAngFmt_c.F) + 3),
+                                                         (1, InFmt_c.I + 2, max(OutMagFmt_c.F, OutAngFmt_c.F - InFmt_c.I) + 4),
                                                          fixFmtFromStringTolerant(IntXyFmtUpper_c));
     constant IntAngFmt_c       : FixFormat_t   := choose(IntAngFmtUpper_c = "AUTO",
                                                          (1, -1, OutAngFmt_c.F + 3),

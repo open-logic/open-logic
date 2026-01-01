@@ -76,7 +76,7 @@ class olo_fix_cordic_vect:
             if int_xy_fmt == "AUTO":
                 # Note: Ignoring CORDIC growth, abs(z) still grows by up to sqrt(2) because sqrt(1**2 + 1**2) = sqrt(2).
                 #       Then, CORDIC growth is asymptotically ~1.647. So overall growth is ~2.33 ==> +2 integer bits needed in the worst case.
-                self._int_xy_fmt = FixFormat(1, self._in_fmt.I + 2, max(self._out_mag_fmt.F, self._out_ang_fmt.F) + 3)
+                self._int_xy_fmt = FixFormat(1, self._in_fmt.I + 2, max(self._out_mag_fmt.F, self._out_ang_fmt.F - self._in_fmt.I) + 4)
             else:
                 raise ValueError("olo_fix_cordic_vect: int_xy_fmt_g must be 'AUTO' or a FixFormat")
         else:

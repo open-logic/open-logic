@@ -121,7 +121,7 @@ For "AUTO" mode, the internal format is chosen as follows:
 
 - Sign bit: yes
 - Integer bits: _InFmt_g.I_ + 2
-- Fractional bits: max(_OutMagFmt_g.F_, _OutAngFmt_g.F_) + 3
+- Fractional bits: max(_OutMagFmt_g.F_, _OutAngFmt_g.F_-_InFmt_g.I_) + 4
 
 #### GainCorrCoefFmt_g
 
