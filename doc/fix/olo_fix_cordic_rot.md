@@ -42,7 +42,8 @@ compensated directly within the _olo_fix_cordic_rot_ entity. The internal gain c
 if the internal format _IntXyFmt_g_  fits into one multiplier of the target device.
 
 Alternatively, the user may choose to do the gain compensation outside of the entity, e.g. by using an
-_olo_fix_mult_ entity after the CORDIC. For this the gain factor must be known, hence the formula is given below:
+_olo_fix_mult_ entity before the CORDIC to scale down the input magnitude. For this the gain factor must be known, 
+hence the formula is given below:
 
 ![Cordic Gain Formula](./cordic/cordic_gain.png)
 

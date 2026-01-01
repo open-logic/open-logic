@@ -18,6 +18,13 @@ from en_cl_fix_pkg import *
 
 class TestOloFixCordicVect(unittest.TestCase):
 
+    def angl_diff(self, a, b):
+        """Compute difference between two angles in [0, 1) range, taking care of wrap-around."""
+        diff = a - b
+        diff = np.where(diff > 0.5, diff - 1.0, diff)
+        diff = np.where(diff < -0.5, diff + 1.0, diff)
+        return diff
+
     def setUp(self):
 
         # Test Setup
@@ -26,7 +33,7 @@ class TestOloFixCordicVect(unittest.TestCase):
             'out_mag_fmt': FixFormat(0, 1, 16),
             'out_ang_fmt': FixFormat(0, 0, 15),
             'int_xy_fmt': FixFormat(1, 2, 22),
-            'int_ang_fmt': FixFormat(1, -2, 23),
+            'int_ang_fmt': FixFormat(1, -1, 23),
             'iterations': 21,
             'gain_corr_coef_fmt': FixFormat(0, 0, 17),
             'round': FixRound.NonSymPos_s,
@@ -46,16 +53,16 @@ class TestOloFixCordicVect(unittest.TestCase):
     def test_scalar(self):
         res = self.dut.process(self.in_i[0], self.in_q[0])
         self.assertAlmostEqual(res[0], self.expected_mag[0], delta=1e-3)
-        self.assertAlmostEqual(res[1], self.expected_ang[0], delta=1e-3)
+        self.assertLess(abs(self.angl_diff(res[1], self.expected_ang[0])), 1e-3)
         
         res = self.dut.process(self.in_i[1], self.in_q[1])
         self.assertAlmostEqual(res[0], self.expected_mag[1], delta=1e-3)
-        self.assertAlmostEqual(res[1], self.expected_ang[1], delta=1e-3)
+        self.assertLess(abs(self.angl_diff(res[1], self.expected_ang[1])), 1e-3)
 
     def test_array(self):
         result = self.dut.process(self.in_i, self.in_q)
         np.testing.assert_allclose(result[0], self.expected_mag, atol=1e-3)
-        np.testing.assert_allclose(result[1], self.expected_ang, atol=1e-3)
+        np.testing.assert_allclose(self.angl_diff(result[1], self.expected_ang), 0, atol=1e-3)
 
     def test_next_scalar(self):
         result = []
@@ -63,7 +70,7 @@ class TestOloFixCordicVect(unittest.TestCase):
             result.append(self.dut.next(i, q))
         res_mag, res_ang = zip(*result)
         np.testing.assert_allclose(res_mag, self.expected_mag, atol=1e-3)
-        np.testing.assert_allclose(res_ang, self.expected_ang, atol=1e-3)
+        np.testing.assert_allclose(self.angl_diff(np.array(res_ang), self.expected_ang), 0, atol=1e-3)
 
     def test_next_list(self):
         res_i = []
@@ -75,7 +82,7 @@ class TestOloFixCordicVect(unittest.TestCase):
         res_i.extend(i)
         res_q.extend(q)
         np.testing.assert_allclose(res_i, self.expected_mag, atol=1e-3)
-        np.testing.assert_allclose(res_q, self.expected_ang, atol=1e-3)
+        np.testing.assert_allclose(self.angl_diff(np.array(res_q), self.expected_ang), 0, atol=1e-3)
 
     # Test special cases
     def test_no_caincomp(self):
@@ -88,7 +95,7 @@ class TestOloFixCordicVect(unittest.TestCase):
         expected_mag = self.expected_mag * self.dut.cordic_gain
         expected_ang = self.expected_ang
         np.testing.assert_allclose(result[0], expected_mag, atol=1e-3)
-        np.testing.assert_allclose(result[1], expected_ang, atol=1e-3)
+        np.testing.assert_allclose(self.angl_diff(result[1], expected_ang), 0, atol=1e-3)
 
     def test_large_range(self):
         # Create
@@ -100,7 +107,7 @@ class TestOloFixCordicVect(unittest.TestCase):
         result = self.dut.process(self.in_i*2, self.in_q*2)
         # Check
         np.testing.assert_allclose(result[0], self.expected_mag*2, atol=1e-3)
-        np.testing.assert_allclose(result[1], self.expected_ang, atol=1e-3)       
+        np.testing.assert_allclose(self.angl_diff(result[1], self.expected_ang), 0, atol=1e-3)
 
     def test_auto_fmt(self):
         # Create
@@ -111,7 +118,7 @@ class TestOloFixCordicVect(unittest.TestCase):
         result = self.dut.process(self.in_i, self.in_q)
         # Check
         np.testing.assert_allclose(result[0], self.expected_mag, atol=1e-3)
-        np.testing.assert_allclose(result[1], self.expected_ang, atol=1e-3)        
+        np.testing.assert_allclose(self.angl_diff(result[1], self.expected_ang), 0, atol=1e-3)    
 
     def test_signed_angle_fmt(self):
         # Create
@@ -122,7 +129,7 @@ class TestOloFixCordicVect(unittest.TestCase):
         # Check
         self.expected_ang = np.where(self.expected_ang > 0.5, self.expected_ang - 1.0, self.expected_ang)
         np.testing.assert_allclose(result[0], self.expected_mag, atol=1e-3)
-        np.testing.assert_allclose(result[1], self.expected_ang, atol=1e-3)     
+        np.testing.assert_allclose(self.angl_diff(result[1], self.expected_ang), 0, atol=1e-3)    
 
     # Test construction errorrs
     def test_invalid_in_fmt(self):
