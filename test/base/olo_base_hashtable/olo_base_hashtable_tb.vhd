@@ -18,7 +18,7 @@ entity olo_base_hashtable_tb is
         Depth_g : positive := 8;
         KeyWidth_g : positive := 16;
         ValueWidth_g : positive := 32;
-        Hash_g : string := "CRC32";
+        Hash_g : string := "LCG";
         Hash_Lcg_Mult_g : positive := 1103515245;
         Hash_Lcg_Incr_g : positive := 12345;
         RamStyle_g : string := "auto";
@@ -259,7 +259,7 @@ begin
                 check(Status_Full = '0', "Hashtable not full after reset");
                 check_equal(Status_Pairs, 0, "Hashtable empty after reset");
                 
-            elsif run("MultiplePairs") then
+            elsif run("TestFeatures") then
                 --Test all features (filled hashtable)
                 --Generate random pairs (one more than Depth_g to prepare write-when-full test)
                 TestKeys(0) := TEST_KEY(KeyWidth_g-1 downto 0);
@@ -386,6 +386,41 @@ begin
                     HtRead(net, TestKeys(i), true);
                     check(Out_KeyUnknown = '1', "Coherent value search result");
                 end loop;
+            
+            elsif run("AxiStreamTimings") then
+                --Prepare test pairs
+                TestKeys(0) := TEST_KEY(KeyWidth_g-1 downto 0);
+                TestValues(0) := TEST_VALUE(ValueWidth_g-1 downto 0);
+                TestKeys(1) := std_logic_vector(lcgPrng(
+                    unsigned(TestKeys(0)), 
+                    Hash_Lcg_Mult_g, 
+                    Hash_Lcg_Incr_g,
+                    KeyWidth_g));
+                TestValues(1) := std_logic_vector(lcgPrng(
+                    unsigned(TestValues(0)), 
+                    Hash_Lcg_Mult_g, 
+                    Hash_Lcg_Incr_g,
+                    ValueWidth_g));
+                --Wait for hashtable to be ready
+                wait until In_Ready = '1';
+                --Send 2 non-blocking write transactions
+                for i in 0 to 1 loop
+                    HtWrite(net, TestKeys(i), TestValues(i), false);
+                end loop;
+                --Wait for write transactions
+                wait_until_idle(net, as_sync(AxisMaster_c));
+                wait until In_Ready = '1';
+                --Send 2 non-blocking read transactions
+                for i in 0 to 1 loop
+                    HtRead(net, TestKeys(i), false);
+                end loop;
+                --Wait for a moment (enough for hashtable to have to hold read transaction)
+                wait for 200 ns;
+                --Blocking read (and result check) for hashtable output (second read waits for hashtable)
+                for i in 0 to 1 loop
+                    HtReadCheck(net, TestValues(i), "Timing values check");
+                end loop;
+            
             end if;
 
             wait for 1 us;
