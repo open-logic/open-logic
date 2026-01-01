@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------
-# Copyright (c) 2025 by Oliver Bründler
+# Copyright (c) 2025-2026 by Oliver Bründler
 # Authors: Oliver Bruendler
 # ---------------------------------------------------------------------------------------------------
 
@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 class olo_fix_plots:
     
     @staticmethod
-    def plot_subplots(data_dict: dict, show: bool = True) -> None:
+    def plot_subplots(data_dict: dict, show: bool = True) -> None: # pragma: no cover - testing plots automated is difficult
         """
         Plot multiple subplots based on a dictionary of dictionaries.
 

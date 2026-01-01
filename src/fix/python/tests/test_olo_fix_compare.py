@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------
-# Copyright (c) 2025 by Oliver Bründler
+# Copyright (c) 2025-2026 by Oliver Bründler
 # Authors: Oliver Bruendler
 # ---------------------------------------------------------------------------------------------------
 
@@ -38,6 +38,10 @@ class TestOloCompare(unittest.TestCase):
     def test_scalar(self):
         self.assertEqual(self.gt.process(self.a[0], self.b[0]), self.expected_gt[0])
         self.assertEqual(self.lt.process(self.a[1], self.b[1]), self.expected_lt[1])
+        self.assertEqual(self.eq.process(self.a[2], self.b[2]), self.expected_eq[2])
+        self.assertEqual(self.ne.process(self.a[3], self.b[3]), self.expected_ne[3])
+        self.assertEqual(self.ge.process(self.a[4], self.b[4]), self.expected_ge[4])
+        self.assertEqual(self.le.process(self.a[4], self.b[4]), self.expected_le[4])
 
     def test_array(self):
         result = self.gt.process(self.a, self.b)
@@ -54,6 +58,10 @@ class TestOloCompare(unittest.TestCase):
         result.extend(self.gt.next(self.a[:2], self.b[:2]))
         result.extend(self.gt.next(self.a[2:], self.b[2:]))
         self.assertListEqual(result, self.expected_gt)
+
+    def test_illegal_comparison(self):
+        with self.assertRaises(AssertionError):
+            comp = olo_fix_compare(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), comparison="??")
 
 
 if __name__ == '__main__':

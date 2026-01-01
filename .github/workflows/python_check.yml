@@ -36,4 +36,4 @@ jobs:
       #Run Tests
       - name: Run Tests
         run: |
-          python3 -m pytest src/fix/python/tests/ --cov=src/fix/python --cov-report=term-missing
+          python3 -m pytest src/fix/python/tests/ --cov=src/fix/python/olo_fix --cov-report=term-missing

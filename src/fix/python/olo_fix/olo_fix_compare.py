@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------
-# Copyright (c) 2025 by Oliver Bründler
+# Copyright (c) 2025-2026 by Oliver Bründler
 # Authors: Oliver Bruendler
 # ---------------------------------------------------------------------------------------------------
 
@@ -66,7 +66,7 @@ class olo_fix_compare:
         elif self._comparison == "<=":
             return a <= b
         else:
-            raise ValueError(f"Unknown comparison type: {self._comparison}")
+            raise ValueError(f"Unknown comparison type: {self._comparison}") # pragma: no cover - unreachable code
 
     def process(self, a, b):
         """

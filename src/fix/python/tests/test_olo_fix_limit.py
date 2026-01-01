@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------
-# Copyright (c) 2025 by Oliver Bründler
+# Copyright (c) 2025-2026 by Oliver Bründler
 # Authors: Oliver Bruendler
 # ---------------------------------------------------------------------------------------------------
 
@@ -80,6 +80,12 @@ class TestOloFixLimit(unittest.TestCase):
         result.extend(self.dut_fixed.next(self.data[:2]))
         result.extend(self.dut_fixed.next(self.data[2:]))
         self.assertListEqual(result, self.expected_fixed)
+
+    def test_no_limits(self):
+        with self.assertRaises(ValueError):
+            self.dut.process(self.data, lim_lo=self.lim_lo)
+        with self.assertRaises(ValueError):
+            self.dut.process(self.data, lim_hi=self.lim_hi)
 
 
 if __name__ == '__main__':
