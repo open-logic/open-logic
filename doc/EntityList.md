@@ -195,6 +195,7 @@ be used. For deciding which option to use, the following considerations shall be
 | Entity                                          | Description                                                  |
 | ----------------------------------------------- | ------------------------------------------------------------ |
 | [olo_fix_limit](./fix/olo_fix_limit.md)         | Limit a value between an upper and a lower bound             |
+| [olo_fix_bin_div](./fix/olo_fix_bin_div.md)     | Binary division of two fixed point numbers                   |
 
 ### CORDIC
 

@@ -94,8 +94,8 @@ to be independent of the latency of this block.
 
 | Name       | In/Out | Length               | Default | Description                                                      |
 | :--------- | :----- | :------------------- | ------- | :--------------------------------------------------------------- |
-| Out_I      | in     | _width(OutFmt_g)_    | -       | In-phase/real part of output data<br />Format: _OutFmt_g_        |
-| Out_Q      | in     | _width(OutFmt_g)_    | -       | Quadrature/imaginary part of output data<br />Format: _OutFmt_g_ |
+| Out_I      | out    | _width(OutFmt_g)_    | -       | In-phase/real part of output data<br />Format: _OutFmt_g_        |
+| Out_Q      | out    | _width(OutFmt_g)_    | -       | Quadrature/imaginary part of output data<br />Format: _OutFmt_g_ |
 | Out_Valid  | out    | 1                    | N/A     | AXI4-Stream handshaking signal for _Out_Q_ and _Out_I_           |
 
 **Note** The output interface does not implement backpressure (_Ready_). If backpressure is required, the user ideally
