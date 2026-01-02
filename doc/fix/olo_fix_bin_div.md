@@ -33,7 +33,7 @@ to be independent of the latency of this block.
 
 In the current version the implementation can be calculated as follows:
 
-_Latency_ = width(_OutFmt_g_) + 6
+_Latency_ = width(_OutFmt_g_) + 5
 
 The latency is equal to the insertion interval (a new sample is accepted every _Latency_ clock cycles).
 
