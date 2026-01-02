@@ -163,7 +163,7 @@ begin
                 end if;
 
                 -- Calculation
-                v.ResultInt      := r.ResultInt sll 1;
+                v.ResultInt      := r.ResultInt(r.ResultInt'high-1 downto 0) & '0'; -- shift left
                 NumIn_DenomFmt_v := cl_fix_resize(r.NumComp, NumCompFmt_c, DenomCompFmt_c, Trunc_s, None_s);
                 if unsigned(r.DenomComp) <= unsigned(NumIn_DenomFmt_v) then
                     v.ResultInt(0) := '1';
@@ -175,17 +175,15 @@ begin
                 v.State     := Idle_s;
                 v.Out_Valid := '1';
                 v.In_Ready  := '1';
-                if OutFmt_c.S = 1 then
-                    if r.NumSign /= r.DenomSign then
-                        v.Out_Quot := cl_fix_neg(r.ResultInt, ResultIntFmt_c, OutFmt_c, Round_c, Saturate_c);
-                    else
-                        v.Out_Quot := cl_fix_resize(r.ResultInt, ResultIntFmt_c, OutFmt_c, Round_c, Saturate_c);
-                    end if;
+                if r.NumSign /= r.DenomSign then
+                    v.Out_Quot := cl_fix_neg(r.ResultInt, ResultIntFmt_c, OutFmt_c, Round_c, Saturate_c);
                 else
                     v.Out_Quot := cl_fix_resize(r.ResultInt, ResultIntFmt_c, OutFmt_c, Round_c, Saturate_c);
                 end if;
 
-            when others => null;
+            -- coverage off
+            when others => null; -- unreachable
+            -- coverage on
         end case;
 
         -- *** Assign to signal ***

@@ -367,4 +367,41 @@ def add_configs(olo_tb):
         generics['Iterations_g'] = '5'
         generics['OutMagFmt_g'] = '(0,0,8)'
         generics['OutAngFmt_g'] = '(0,0,8)'
-        named_config(tb, generics, pre_config=cosim, short_name=f'default-LowRes-Mode_g={Mode}')   
+        named_config(tb, generics, pre_config=cosim, short_name=f'default-LowRes-Mode_g={Mode}')
+
+    ### olo_fix_bin_div ###
+    tb = olo_tb.test_bench('olo_fix_bin_div_tb')    
+    #Test formats and round/sat modes
+    default_generics = {
+        'NumFmt_g': '(0, 2, 10)',
+        'DenomFmt_g': '(1, 3, 4)',
+        'OutFmt_g': '(1, 8, 12)',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+    cosim = olo_fix_bin_div.cosim.cosim
+
+    # General
+    named_config(tb, default_generics, pre_config=cosim, short_name=f'default')
+
+    # Signed/Unsigned commbinations
+    for num_name, num_fmt in {"Signed": '(1,2,10)', "Unsigned": '(0,2,10)'}.items():
+        for denom_name, denom_fmt in {"Signed": '(1,3,4)', "Unsigned": '(0,3,4)'}.items():
+            named_config(tb, default_generics  | {'NumFmt_g': num_fmt, 'DenomFmt_g': denom_fmt},
+                            pre_config=cosim,
+                            short_name=f'SignCheck-NumFmt_g={num_name}-DenomFmt_g={denom_name}')
+            
+    # Test unsigned output
+    named_config(tb, default_generics  | {'OutFmt_g': '(0,8,12)'},
+                    pre_config=cosim,
+                    short_name='UnsignedOutput')
+            
+    # Test no rounding
+    named_config(tb, default_generics  | {'Round_g': 'Trunc_s'},
+                    pre_config=cosim,
+                    short_name='NoRounding')
+    
+    # Test no saturation
+    named_config(tb, default_generics  | {'Saturate_g': 'None_s'},
+                    pre_config=cosim,
+                    short_name='NoSaturation')

@@ -26,7 +26,7 @@ class olo_fix_bin_div:
                  denom_fmt : FixFormat,
                  out_fmt   : FixFormat,
                  round     : FixRound    = FixRound.Trunc_s,
-                 saturate  : FixSaturate = FixSaturate.Warn_s):
+                 saturate  : FixSaturate = FixSaturate.Sat_s):
             """
             Constructor of a binary division model.
     

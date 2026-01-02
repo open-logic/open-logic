@@ -22,6 +22,8 @@ This entity implements a binary division of two fixed-point numbers.
 The division is executed over multiple clock cycles using a iterative algorithm. Pipelined implementation is not
 available because in most applications for maximum throughput an approximation based implementation is more efficient.
 
+Division by zero returns the highest possible value for _Saturate_g_ = "Sat_s"_ and an undefined value otherwise.
+
 ### Latency
 
 The latency of the entity depends on several factors and can best be determined in the simulation.

@@ -70,6 +70,7 @@ src/fix/vhdl/olo_fix_from_real.vhd
 src/fix/vhdl/olo_fix_cordic_vect.vhd
 src/fix/vhdl/olo_fix_cordic_rot.vhd
 src/fix/vhdl/olo_fix_compare.vhd
+src/fix/vhdl/olo_fix_bin_div.vhd
 src/fix/vhdl/olo_fix_addsub.vhd
 src/fix/vhdl/olo_fix_add.vhd
 src/fix/vhdl/olo_fix_abs.vhd

@@ -130,3 +130,11 @@ entities:
           OutAngFmt_g: '"(0, 0, 15)"'
           OutMagFmt_g: '"(0, 1, 16)"'
           GainCorrCoefFmt_g: '"NONE"'
+  # olo_fix_bin_div
+  - entity_name: "olo_fix_bin_div"
+    configurations:
+      - name: "default"
+        generics:   
+          NumFmt_g: '"(0, 2, 10)"'
+          DenomFmt_g: '"(1, 3, 4)"'
+          OutFmt_g: '"(1, 8, 12)"'
