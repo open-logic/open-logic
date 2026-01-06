@@ -67,7 +67,7 @@ to be independent of the latency of this block.
 | IntXyFmt_g        | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
 | IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-2,x) _en_cl_fix Format_t_ (e.g. "(1,-2,15)"). Refer to [Format Considerations](#format-considerations) for details   |
 | Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details                                                                                                                                             |
-| Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"SERIAL": one iteration per clock cycle<br />"PIPELINED": Pipelined mode (one sample per clock cycle)                                                                                                                                                                             |
+| Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"SERIAL": one iteration per clock cycle<br />"PIPELINED": Pipelined mode (one sample per clock cycle)                                                                                                                                     |
 | GainCorrCoefFmt_g | string   | "(0,0,17)"  | Format of the gain correction coefficient, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(0,0,15)"). Refer to [Format Considerations](#format-considerations). <br> To disable the internal gain compensation, choose "NONE"               |
 | Round_g           | string   | "Trunc_s"   | Rounding mode <br />String representation of an _en_cl_fix FixRound_t_.                                                                                                                                                                                              |
 | Saturate_g        | string   | "Warn_s"    | Saturation mode <br />String representation of an _en_cl_fix FixSaturate_t_.                                                                                                                                                                                         |
@@ -88,7 +88,7 @@ to be independent of the latency of this block.
 | In_Mag   | in     | _width(InMagFmt_g)_ | N/A     | Input magnitude<br />Format _InMagFmt_g_                                                                                   |
 | In_Ang   | in     | _width(InAngFmt_g)_ | N/A     | Input angle, Normalized units (1.0 = 360° = 2*PI)<br />Format _InAngFmt_g_                                                 |
 | In_Valid | in     | 1                   | '1'     | AXI4-Stream handshaking signal for _In_Mag_ and _In_Ang_                                                                   |
-| In_Ready | out    | 1                   | N/A     | AXI4-Stream ready signal for _In_Mag_ and _In_Ang_<br>Used in "SERIAL" mode to signal when a new input sample is taken  |
+| In_Ready | out    | 1                   | N/A     | AXI4-Stream ready signal for _In_Mag_ and _In_Ang_<br>Used in "SERIAL" mode to signal when a new input sample is taken     |
 
 ### Output Data
 

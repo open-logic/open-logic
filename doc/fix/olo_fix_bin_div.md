@@ -42,7 +42,7 @@ to be independent of the latency of this block.
 In the current version the implementation can be calculated as follows:
 
 - _Mode_g = SERIAL_: _Latency_ = width(_OutFmt_g_) + 5
-- _Mode_g = PIPELINED_: _Latency_ = width(_OutFmt_g_) + 5 
+- _Mode_g = PIPELINED_: _Latency_ = width(_OutFmt_g_) + 5
 
 ## Generics
 
@@ -51,7 +51,7 @@ In the current version the implementation can be calculated as follows:
 | NumFmt_g          | string   | -           | Numerator format <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")                                                                                                                                                                            |
 | DenomFmt_g        | string   | -           | Denominator format <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")                                                                                                                                                                          |
 | OutFmt_g          | string   | -           | Output data format <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")                                                                                                                                                                          |
-| Mode_g            | string   | "PIPELINED" | Mode of Operation<br />"SERIAL": one iteration per clock cycle<br />"PIPELINED": Pipelined mode (one sample per clock cycle)                                                                                                                                                                          |
+| Mode_g            | string   | "PIPELINED" | Mode of Operation<br />"SERIAL": one iteration per clock cycle<br />"PIPELINED": Pipelined mode (one sample per clock cycle)                                                                                                                                         |
 | Round_g           | string   | "Trunc_s"   | Rounding mode <br />String representation of an _en_cl_fix FixRound_t_.                                                                                                                                                                                              |
 | Saturate_g        | string   | "Sat_s"     | Saturation mode <br />String representation of an _en_cl_fix FixSaturate_t_.                                                                                                                                                                                         |
 
