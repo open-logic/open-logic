@@ -19,8 +19,16 @@ Bit-true Model: [olo_fix_bin_div](../../src/fix/python/olo_fix/olo_fix_bin_div.p
 
 This entity implements a binary division of two fixed-point numbers.
 
-The division is executed over multiple clock cycles using a iterative algorithm. Pipelined implementation is not
-available because in most applications for maximum throughput an approximation based implementation is more efficient.
+The algorithm can be implemented in two different modes:
+
+- **SERIAL**
+  - Iterations are executed one after the other
+  - A new sample can be accepted every _width(OutFmt_g) + 5_ clock cycles
+  - Lowest possible resource usage
+- **PIPELINED**
+  - Iterations are implemented in individual pipeline stages
+  - Every clock cycle a new sample can be accepted
+  - Highest possible throughput
 
 Division by zero returns the highest possible value for _Saturate_g_ = "Sat_s"_ and an undefined value otherwise.
 
@@ -33,9 +41,8 @@ to be independent of the latency of this block.
 
 In the current version the implementation can be calculated as follows:
 
-_Latency_ = width(_OutFmt_g_) + 5
-
-The latency is equal to the insertion interval (a new sample is accepted every _Latency_ clock cycles).
+- _Mode_g = SERIAL_: _Latency_ = width(_OutFmt_g_) + 5
+- _Mode_g = PIPELINED_: _Latency_ = width(_OutFmt_g_) + 5 
 
 ## Generics
 
@@ -44,6 +51,7 @@ The latency is equal to the insertion interval (a new sample is accepted every _
 | NumFmt_g          | string   | -           | Numerator format <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")                                                                                                                                                                            |
 | DenomFmt_g        | string   | -           | Denominator format <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")                                                                                                                                                                          |
 | OutFmt_g          | string   | -           | Output data format <br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")                                                                                                                                                                          |
+| Mode_g            | string   | "PIPELINED" | Mode of Operation<br />"SERIAL": one iteration per clock cycle<br />"PIPELINED": Pipelined mode (one sample per clock cycle)                                                                                                                                                                          |
 | Round_g           | string   | "Trunc_s"   | Rounding mode <br />String representation of an _en_cl_fix FixRound_t_.                                                                                                                                                                                              |
 | Saturate_g        | string   | "Sat_s"     | Saturation mode <br />String representation of an _en_cl_fix FixSaturate_t_.                                                                                                                                                                                         |
 

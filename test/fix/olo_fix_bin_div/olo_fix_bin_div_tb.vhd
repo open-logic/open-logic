@@ -32,11 +32,12 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_fix_bin_div_tb is
     generic (
-        NumFmt_g          : string   := "(0,0,16)";
-        DenomFmt_g        : string   := "(0,0,16)";
-        OutFmt_g          : string   := "(1,0,15)";
-        Round_g           : string   := "Trunc_s";
-        Saturate_g        : string   := "Sat_s";
+        NumFmt_g          : string := "(0,0,16)";
+        DenomFmt_g        : string := "(0,0,16)";
+        OutFmt_g          : string := "(1,0,15)";
+        Mode_g            : string := "PIPELINED";
+        Round_g           : string := "Trunc_s";
+        Saturate_g        : string := "Sat_s";
         runner_cfg        : string
     );
 end entity;
@@ -56,10 +57,11 @@ architecture sim of olo_fix_bin_div_tb is
     signal Rst       : std_logic                                                      := '0';
     signal In_Valid  : std_logic                                                      := '0';
     signal In_Ready  : std_logic;
-    signal In_Num    : std_logic_vector(fixFmtWidthFromString(NumFmt_g)-1 downto 0) := (others => '0');
+    signal In_Num    : std_logic_vector(fixFmtWidthFromString(NumFmt_g)-1 downto 0)   := (others => '0');
     signal In_Denom  : std_logic_vector(fixFmtWidthFromString(DenomFmt_g)-1 downto 0) := (others => '0');
     signal Out_Valid : std_logic;
     signal Out_Quot  : std_logic_vector(fixFmtWidthFromString(OutFmt_g)-1 downto 0);
+
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
@@ -133,6 +135,7 @@ begin
             NumFmt_g          => NumFmt_g,
             DenomFmt_g        => DenomFmt_g,
             OutFmt_g          => OutFmt_g,
+            Mode_g            => Mode_g,
             Round_g           => Round_g,
             Saturate_g        => Saturate_g
         )

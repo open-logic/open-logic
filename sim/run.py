@@ -120,6 +120,12 @@ if GENERATE_COMPILE_LIST:
 olo_tb.set_sim_option('ghdl.elab_flags', ['-frelaxed'])
 olo_tb.set_sim_option('nvc.heap_size', '5000M')
 
+# Disable IEEE numeric_std warnings to avoid slow simulation speed due to X-propagation
+olo_tb.set_sim_option('ghdl.sim_flags', ['--ieee-asserts=disable'])
+olo_tb.set_sim_option('nvc.sim_flags', ['--ieee-warnings=off'])
+vu.set_sim_option("disable_ieee_warnings", True)
+
+
 if USE_COVERAGE:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
     olo.set_compile_option('modelsim.vlog_flags', ['+cover=bs'])

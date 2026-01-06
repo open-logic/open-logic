@@ -27,31 +27,36 @@ class olo_fix_bin_div:
                  out_fmt   : FixFormat,
                  round     : FixRound    = FixRound.Trunc_s,
                  saturate  : FixSaturate = FixSaturate.Sat_s):
-            """
-            Constructor of a binary division model.
-    
-            Read the Markdown documentation of the VHDL entity for details.
-    
-            :param num_fmt: Numerator fixed-point format
-            :param denom_fmt: Denominator fixed-point format
-            :param out_fmt: Output fixed-point format
-            :param round: Rounding mode at the output
-            :param saturate: Saturation mode at the output
-            """
-            # Store parameters
-            self.num_fmt = num_fmt
-            self.denom_fmt = denom_fmt
-            self.out_fmt = out_fmt
-            self.round = round
-            self.saturate = saturate
-            # Derived parameters
-            self.first_shift = out_fmt.I
-            self.num_abs_fmt = FixFormat(0, num_fmt.I + num_fmt.S, num_fmt.F)
-            self.denom_abs_fmt = FixFormat(0, denom_fmt.I + denom_fmt.S, denom_fmt.F)
-            self.result_int_fmt = FixFormat(1, out_fmt.I+1, out_fmt.F+1)
-            self.denom_comp_fmt = FixFormat(0, self.denom_abs_fmt.I+self.first_shift, self.denom_abs_fmt.F - self.first_shift)
-            self.num_comp_fmt = FixFormat(0, max(self.denom_comp_fmt.I, self.num_abs_fmt.I), max(self.denom_comp_fmt.F, self.num_abs_fmt.F))   
-            self.iterations = self.out_fmt.I + self.out_fmt.F + 2
+        """
+        Constructor of a binary division model.
+
+        Read the Markdown documentation of the VHDL entity for details.
+
+
+        The following generics that do not impact numeric behavior and are related to FPGA implementation only are
+        omitted:
+        - Mode_g
+        
+        :param num_fmt: Numerator fixed-point format
+        :param denom_fmt: Denominator fixed-point format
+        :param out_fmt: Output fixed-point format
+        :param round: Rounding mode at the output
+        :param saturate: Saturation mode at the output
+        """
+        # Store parameters
+        self.num_fmt = num_fmt
+        self.denom_fmt = denom_fmt
+        self.out_fmt = out_fmt
+        self.round = round
+        self.saturate = saturate
+        # Derived parameters
+        self.first_shift = out_fmt.I
+        self.num_abs_fmt = FixFormat(0, num_fmt.I + num_fmt.S, num_fmt.F)
+        self.denom_abs_fmt = FixFormat(0, denom_fmt.I + denom_fmt.S, denom_fmt.F)
+        self.result_int_fmt = FixFormat(1, out_fmt.I+1, out_fmt.F+1)
+        self.denom_comp_fmt = FixFormat(0, self.denom_abs_fmt.I+self.first_shift, self.denom_abs_fmt.F - self.first_shift)
+        self.num_comp_fmt = FixFormat(0, max(self.denom_comp_fmt.I, self.num_abs_fmt.I), max(self.denom_comp_fmt.F, self.num_abs_fmt.F))   
+        self.iterations = self.out_fmt.I + self.out_fmt.F + 2
 
     # ---------------------------------------------------------------------------------------------------
     # Public Methods and Properties
