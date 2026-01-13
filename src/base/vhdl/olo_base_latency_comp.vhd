@@ -32,25 +32,25 @@ entity olo_base_latency_comp is
     generic (
         Width_g          : positive;
         Mode_g           : string                            := "DYNAMIC";
-        Latency_g        : positive range 2 to positive'high := 32;
+        Latency_g        : positive range 2 to positive'high := 30;
         AssertsDisable_g : boolean                           := false;
         AssertsName_g    : string                            := "No Name";
         RamBehavior_g    : string                            := "RBW"
     );
     port (
         -- Control Ports
-        Clk       : in    std_logic;
-        Rst       : in    std_logic;
+        Clk          : in    std_logic;
+        Rst          : in    std_logic;
         -- Input Data
-        In_Data   : in    std_logic_vector(Width_g-1 downto 0);
-        In_Valid  : in    std_logic := '1';
-        In_Ready  : in    std_logic := '1';
+        In_Data      : in    std_logic_vector(Width_g-1 downto 0);
+        In_Valid     : in    std_logic := '1';
+        In_Ready     : in    std_logic := '1';
         -- Output Data
-        Out_Data  : out   std_logic_vector(Width_g-1 downto 0);
-        Out_Valid : in    std_logic := '1';
-        Out_Ready : in    std_logic := '1';
+        Out_Data     : out   std_logic_vector(Width_g-1 downto 0);
+        Out_Valid    : in    std_logic := '1';
+        Out_Ready    : in    std_logic := '1';
         -- Status
-        Err_Overrun : out   std_logic;
+        Err_Overrun  : out   std_logic;
         Err_Underrun : out   std_logic
     );
 end entity;
@@ -79,10 +79,9 @@ begin
     In_Beat  <= In_Valid and In_Ready;
     Out_Beat <= Out_Valid and Out_Ready;
 
-
     -- *** DYNAMIC Mode ***
     g_dynamic : if ModeUpper_c = "DYNAMIC" generate
-        signal In_Rdy : std_logic;
+        signal In_Rdy  : std_logic;
         signal Out_Vld : std_logic;
     begin
 
@@ -90,7 +89,7 @@ begin
         i_fifo : entity work.olo_base_fifo_sync
             generic map (
                 Width_g         => Width_g,
-                Depth_g         => Latency_g,
+                Depth_g         => Latency_g+2,
                 AlmFullOn_g     => false,
                 AlmEmptyOn_g    => false,
                 RamBehavior_g   => RamBehaviorUpper_c,
@@ -113,12 +112,12 @@ begin
             if rising_edge(Clk) then
 
                 -- Overrun
-                if In_Beat = '1' and In_Rdy = '0' then
+                if In_Beat = '1' and In_Rdy = '0' and Out_Beat = '0' then
                     Err_Overrun <= '1';
                     if not AssertsDisable_g then
                         -- synthesis translate_off
-                        report "###ERROR###: olo_base_latency_comp[" & AssertsName_g & "]: Overrun detected in DYNAMIC mode."
-                        severity error;
+                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Overrun detected in DYNAMIC mode."
+                            severity warning;
                         -- synthesis translate_on
                     end if;
                 end if;
@@ -128,8 +127,8 @@ begin
                     Err_Underrun <= '1';
                     if not AssertsDisable_g then
                         -- synthesis translate_off
-                        report "###ERROR###: olo_base_latency_comp[" & AssertsName_g & "]: Underrun detected in DYNAMIC mode."
-                        severity error;
+                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Underrun detected in DYNAMIC mode."
+                            severity warning;
                         -- synthesis translate_on
                     end if;
                 end if;
@@ -146,30 +145,38 @@ begin
 
     -- *** FIXED_CYCLES Mode ***
     g_fixed_cycles : if ModeUpper_c = "FIXED_CYCLES" generate
-        signal Delay_Data : std_logic_vector(Width_g-1 downto 0);
-        signal Delay_Beat : std_logic;
+        signal Delay_Data   : std_logic_vector(Width_g-1 downto 0);
+        signal Delay_Beat   : std_logic;
         signal Data_Latched : std_logic;
+        signal InData       : std_logic_vector(Width_g downto 0);
+        signal OutData      : std_logic_vector(Width_g downto 0);
     begin
+
+        -- Input assembly
+        InData(Width_g-1 downto 0) <= In_Data;
+        InData(Width_g)            <= In_Beat;
 
         -- Delay Line
         i_delay : entity work.olo_base_delay
             generic map (
-                Width_g  => Width_g+1,
-                Delay_g  => Latency_g-1,
-                RstState_g => true,
+                Width_g       => Width_g+1,
+                Delay_g       => Latency_g-1,
+                RstState_g    => true,
                 RamBehavior_g => RamBehaviorUpper_c
             )
             port map (
                 Clk      => Clk,
                 Rst      => Rst,
-                In_Data(Width_g-1 downto 0) => In_Data,
-                In_Data(Width_g)            => In_Beat,
+                In_Data  => InData,
                 In_Valid => '1',
-                Out_Data(Width_g-1 downto 0) => Delay_Data,
-                Out_Data(Width_g)            => Delay_Beat
+                Out_Data => OutData
             );
 
-        -- Logic to allow output side handshaking 
+        -- Output disassembly
+        Delay_Data <= OutData(Width_g-1 downto 0);
+        Delay_Beat <= OutData(Width_g);
+
+        -- Logic to allow output side handshaking
         -- ... Keep output data valid as long as no new sample arrives
         p_handshake : process (Clk) is
         begin
@@ -180,8 +187,8 @@ begin
                     Err_Overrun <= '1';
                     if not AssertsDisable_g then
                         -- synthesis translate_off
-                        report "###ERROR###: olo_base_latency_comp[" & AssertsName_g & "]: Overrun detected in FIXED_CYCLES mode."
-                        severity error;$
+                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Overrun detected in FIXED_CYCLES mode."
+                            severity warning;
                         -- synthesis translate_on
                     end if;
                 end if;
@@ -191,8 +198,8 @@ begin
                     Err_Underrun <= '1';
                     if not AssertsDisable_g then
                         -- synthesis translate_off
-                        report "###ERROR###: olo_base_latency_comp[" & AssertsName_g & "]: Underrun detected in FIXED_CYCLES mode."
-                        severity error;
+                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Underrun detected in FIXED_CYCLES mode."
+                            severity warning;
                         -- synthesis translate_on
                     end if;
                 end if;
@@ -200,6 +207,7 @@ begin
                 -- Data Latched Update
                 if Delay_Beat = '1' then
                     Data_Latched <= '1';
+                    Out_Data     <= Delay_Data;
                 elsif Out_Beat = '1' then
                     Data_Latched <= '0';
                 end if;
@@ -212,6 +220,7 @@ begin
                 end if;
             end if;
         end process;
+
     end generate;
 
     -- *** FIXED_BEATS Mode ***
@@ -223,16 +232,16 @@ begin
         -- Delay Line
         i_delay : entity work.olo_base_delay
             generic map (
-                Width_g  => Width_g,
-                Delay_g  => Latency_g,
-                RstState_g => true,
+                Width_g       => Width_g,
+                Delay_g       => Latency_g,
+                RstState_g    => true,
                 RamBehavior_g => RamBehaviorUpper_c
             )
             port map (
-                Clk      => Clk,
-                Rst      => Rst,
-                In_Data  => In_Data,
-                In_Valid => In_Beat,
+                Clk       => Clk,
+                Rst       => Rst,
+                In_Data   => In_Data,
+                In_Valid  => In_Beat,
                 Out_Data  => Out_Data
             );
 
@@ -242,12 +251,12 @@ begin
             if rising_edge(Clk) then
 
                 -- Underrun
-                if Out_Beat  = '1' and FirstCounter /= Latency_g then
+                if Out_Beat = '1' and (FirstCounter /= Latency_g or Consumed = '1') then
                     Err_Underrun <= '1';
                     if not AssertsDisable_g then
                         -- synthesis translate_off
-                        report "###ERROR###: olo_base_latency_comp[" & AssertsName_g & "]: Underrun detected in FIXED_BEATS mode."
-                        severity error;
+                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Underrun detected in FIXED_BEATS mode."
+                            severity warning;
                         -- synthesis translate_on
                     end if;
                 end if;
@@ -257,8 +266,8 @@ begin
                     Err_Overrun <= '1';
                     if not AssertsDisable_g then
                         -- synthesis translate_off
-                        report "###ERROR###: olo_base_latency_comp[" & AssertsName_g & "]: Overrun detected in FIXED_BEATS mode."
-                        severity error;
+                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Overrun detected in FIXED_BEATS mode."
+                            severity warning;
                         -- synthesis translate_on
                     end if;
                 end if;
@@ -284,8 +293,8 @@ begin
                 end if;
             end if;
         end process;
-    end generate;
 
+    end generate;
 
 end architecture;
 

@@ -374,3 +374,11 @@ def add_configs(olo_tb):
     # Test a different value for static settings
     named_config(tb,tb_configs | {'RegisterReady_g': False, 'Width_g': 8, 'RuntimeCfg_g' : False, 'Mode_g' : "SMOOTH"})
     named_config(tb,tb_configs | {'RegisterReady_g': False, 'Width_g': 8, 'RuntimeCfg_g' : False, 'Mode_g' : "BLOCK"})
+
+
+    ### olo_base_latency_comp ###
+    latency_comp_tb = 'olo_base_latency_comp_tb'
+    tb = olo_tb.test_bench(latency_comp_tb)  
+    for Mode in ["DYNAMIC", "FIXED_CYCLES", "FIXED_BEATS"]:
+        for Latency in [2, 5]:
+            named_config(tb, {'Latency_g': Latency, 'Mode_g': Mode})

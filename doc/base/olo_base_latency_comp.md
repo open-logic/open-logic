@@ -61,12 +61,14 @@ where the latency cannot be compensated successfully.
 
 ## Generics
 
-| Name            | Type     | Default   | Description                                                  |
-| :-------------- | :------- | --------- | :----------------------------------------------------------- |
-| Width_g         | positive | -         | Data width                                                   |
-| Mode_g          | string   | "DYNAMIC" | Operation mode. Possible values are:<br />"DYNAMIC": Dynamically adjust latency to match the processing element<br />"FIXED_CYCLES": Fixed latency in clock cycles as specified by _Latency_g_<br />"FIXED_BEATS": Fixed latency in data-beats as specified by _Latency_g_ |
-| Latency_g       | positive | 32        | The meanin of this generic is as follows, depending on the value of _Mode_g_:<br />"DYNAMIC": **Maximum** latency in beats/samples<br />"FIXED_CYCLES": Exact latency in clock cycles<br />"FIXED_BEATS": Exact latency in beats/samples |
-| RamBehavior_g   | string   | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). <br>This generic only plays a role for very large _Latency_g_ values that map into BRAMs|
+| Name             | Type     | Default   | Description                                                                                                                                                                                                                                                                |
+| :--------------- | :------- | --------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Width_g          | positive | -         | Data width                                                                                                                                                                                                                                                                 |
+| Mode_g           | string   | "DYNAMIC" | Operation mode. Possible values are:<br />"DYNAMIC": Dynamically adjust latency to match the processing element<br />"FIXED_CYCLES": Fixed latency in clock cycles as specified by _Latency_g_<br />"FIXED_BEATS": Fixed latency in data-beats as specified by _Latency_g_ |
+| Latency_g        | positive | 32        | The meanin of this generic is as follows, depending on the value of _Mode_g_:<br />"DYNAMIC": **Maximum** latency in beats/samples<br />"FIXED_CYCLES": Exact latency in clock cycles<br />"FIXED_BEATS": Exact latency in beats/samples                                   |
+| AssertsDisable_g | boolean  | false     | Disable assertion reports (errors/warnings) for under- and overflow                                                                                                                                                                                                        |
+| AssertsName_g    | string   | "No Name" | Name used in assertion reports to identify the instance of the entity                                                                                                                                                                                                      |
+| RamBehavior_g    | string   | "RBW"     | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). <br>This generic only plays a role for very large _Latency_g_ values that map into BRAMs                                       |
 
 ## Interfaces
 
@@ -98,6 +100,15 @@ the handshaking signals.
 
 **Note**: The direction of _Out_Valid_ is input in this case because the entity is non-intrusive and does not modify
 the handshaking signals.
+
+### Error Outputs
+
+| Name         | In/Out | Length    | Default | Description                                                                |
+| :----------- | :----- | :-------- | ------- | :------------------------------------------------------------------------- |
+| Err_Overrun  | out    | 1         | N/A     | Overrun error signal indicating input data was lost due to backpressure    |
+| Err_Underrun | out    | 1         | N/A     | Underrun error signal indicating output data was not present when expected |
+
+Error outputs stay asserted once they are set until the next reset.
 
 ## Architecture
 
