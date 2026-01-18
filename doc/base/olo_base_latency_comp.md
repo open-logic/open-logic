@@ -116,5 +116,4 @@ add reference to latency_comp to cordic
 
 
 TODO Add altera/libero SRL extraction to delay_srl.
-TODO Add RAMStyle to delay/latency_comp
-ShiftReg component (for shift reg with correct ram style attributes)
+TODO Add RAMStyle to delay/latency_comp, document efficient mapping to shift reg
