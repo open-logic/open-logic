@@ -309,3 +309,15 @@ entities:
           Mode_g: '"SMOOTH"'
           RegisterReady_g: False
           RuntimeCfg_g: false
+  # olo_base_latency_comp
+  - entity_name: "olo_base_latency_comp"
+    fixed_generics:
+      Width_g: 32
+      Latency_g: 30
+    configurations:
+      - name: "dynamic"
+        generics: 
+          Mode_g: '"DYNAMIC"'
+      - name: "fixed_cycles"
+        generics: 
+          Mode_g: '"FIXED_CYCLES"'

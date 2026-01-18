@@ -28,6 +28,7 @@ src/base/vhdl/olo_base_fifo_packet.vhd
 src/base/vhdl/olo_base_dyn_sft.vhd
 src/base/vhdl/olo_base_delay_cfg.vhd
 src/base/vhdl/olo_base_delay.vhd
+src/base/vhdl/olo_base_latency_comp.vhd
 src/base/vhdl/olo_base_decode_firstbit.vhd
 src/base/vhdl/olo_base_crc.vhd
 src/base/vhdl/olo_base_crc_check.vhd

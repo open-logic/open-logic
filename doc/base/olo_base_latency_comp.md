@@ -107,3 +107,14 @@ Error outputs stay asserted once they are set until the next reset.
 **TBD** show different architectures and mention that DYNAMIC works best for technologies with distributed RAMs
 
 **TBD** Document FIFO depth for dynamic mode
+
+Document efficiency (Vivado: Fixed30 = 42, Dynamic30=150 or 40+BRAM, Cologne)
+
+Document WBR for LUTRAM (some technologies like AMD, try to be sure)
+
+add reference to latency_comp to cordic
+
+
+TODO Add altera/libero SRL extraction to delay_srl.
+TODO Add RAMStyle to delay/latency_comp
+ShiftReg component (for shift reg with correct ram style attributes)
