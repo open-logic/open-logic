@@ -27,7 +27,7 @@ The _olo_base_latency_comp_ entity is non-intrusive in the sense that it does no
 It does simply delay the data and executes extensive checking and error reporting in case of failure to compensate
 the latency.
 
-The entity has three modes of operation:
+The entity has two modes of operation:
 
 - _DYNAMIC_
   - The latency is adjusted dynamically to match the latency of the processing element.
@@ -38,10 +38,6 @@ The entity has three modes of operation:
   - The latency is fixed to a constant number of clock cycles specified by the generic _Latency_g_.
   - This mode requires the latency of the processing element to be known and fixed.
   - This mode does allow to process one sample per clock-cycle
-- _FIXED_BEATS_
-  - The latency is fixed to a constant number of data-beats (according to _Valid/Ready_ handshaking)
-  - This mode requires the latency of the processing element to be known and fixed.
-  - In this mode is useful for cases where the sample rate is significantly lower thant the clock rate
 
 Main aim of thiis entity is to simplify the creation of maintainable code that works independently of smaller
 changes in the main processing element. The entity also increases maintainability by reporting errors in cases
@@ -55,17 +51,13 @@ where the latency cannot be compensated successfully.
 
 **TBD**
 
-### FIXED_BEATS Mode
-
-**TBD**
-
 ## Generics
 
 | Name             | Type     | Default   | Description                                                                                                                                                                                                                                                                |
 | :--------------- | :------- | --------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Width_g          | positive | -         | Data width                                                                                                                                                                                                                                                                 |
-| Mode_g           | string   | "DYNAMIC" | Operation mode. Possible values are:<br />"DYNAMIC": Dynamically adjust latency to match the processing element<br />"FIXED_CYCLES": Fixed latency in clock cycles as specified by _Latency_g_<br />"FIXED_BEATS": Fixed latency in data-beats as specified by _Latency_g_ |
-| Latency_g        | positive | 32        | The meanin of this generic is as follows, depending on the value of _Mode_g_:<br />"DYNAMIC": **Maximum** latency in beats/samples<br />"FIXED_CYCLES": Exact latency in clock cycles<br />"FIXED_BEATS": Exact latency in beats/samples                                   |
+| Mode_g           | string   | "DYNAMIC" | Operation mode. Possible values are:<br />"DYNAMIC": Dynamically adjust latency to match the processing element<br />"FIXED_CYCLES": Fixed latency in clock cycles as specified by _Latency_g_                                                                             |
+| Latency_g        | positive | 32        | The meanin of this generic is as follows, depending on the value of _Mode_g_:<br />"DYNAMIC": **Maximum** latency in beats/samples<br />"FIXED_CYCLES": Exact latency in clock cycles<br />Range 2 ... 2^31-1                                                              |
 | AssertsDisable_g | boolean  | false     | Disable assertion reports (errors/warnings) for under- and overflow                                                                                                                                                                                                        |
 | AssertsName_g    | string   | "No Name" | Name used in assertion reports to identify the instance of the entity                                                                                                                                                                                                      |
 | RamBehavior_g    | string   | "RBW"     | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). <br>This generic only plays a role for very large _Latency_g_ values that map into BRAMs                                       |
@@ -113,3 +105,5 @@ Error outputs stay asserted once they are set until the next reset.
 ## Architecture
 
 **TBD** show different architectures and mention that DYNAMIC works best for technologies with distributed RAMs
+
+**TBD** Document FIFO depth for dynamic mode

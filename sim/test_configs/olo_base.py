@@ -379,6 +379,12 @@ def add_configs(olo_tb):
     ### olo_base_latency_comp ###
     latency_comp_tb = 'olo_base_latency_comp_tb'
     tb = olo_tb.test_bench(latency_comp_tb)  
-    for Mode in ["DYNAMIC", "FIXED_CYCLES", "FIXED_BEATS"]:
+    for Mode in ["DYNAMIC", "FIXED_CYCLES"]:
+        for Latency in [2, 5]:
+            named_config(tb, {'Latency_g': Latency, 'Mode_g': Mode})
+
+    latency_comp_tb = 'olo_base_latency_comp_lolevel_tb'
+    tb = olo_tb.test_bench(latency_comp_tb)  
+    for Mode in ["DYNAMIC", "FIXED_CYCLES"]:
         for Latency in [2, 5]:
             named_config(tb, {'Latency_g': Latency, 'Mode_g': Mode})

@@ -71,7 +71,7 @@ architecture rtl of olo_base_latency_comp is
 begin
 
     -- *** Assertions ***
-    assert ModeUpper_c = "DYNAMIC" or ModeUpper_c = "FIXED_CYCLES" or ModeUpper_c = "FIXED_BEATS"
+    assert ModeUpper_c = "DYNAMIC" or ModeUpper_c = "FIXED_CYCLES"
         report "###ERROR###: olo_base_latency_comp[" & AssertsName_g & "]: Unknown Mode_g - " & Mode_g
         severity error;
 
@@ -215,79 +215,6 @@ begin
                 -- Reset
                 if Rst = '1' then
                     Data_Latched <= '0';
-                    Err_Overrun  <= '0';
-                    Err_Underrun <= '0';
-                end if;
-            end if;
-        end process;
-
-    end generate;
-
-    -- *** FIXED_BEATS Mode ***
-    g_fixed_beats : if ModeUpper_c = "FIXED_BEATS" generate
-        signal FirstCounter : integer range 0 to Latency_g;
-        signal Consumed     : std_logic;
-    begin
-
-        -- Delay Line
-        i_delay : entity work.olo_base_delay
-            generic map (
-                Width_g       => Width_g,
-                Delay_g       => Latency_g,
-                RstState_g    => true,
-                RamBehavior_g => RamBehaviorUpper_c
-            )
-            port map (
-                Clk       => Clk,
-                Rst       => Rst,
-                In_Data   => In_Data,
-                In_Valid  => In_Beat,
-                Out_Data  => Out_Data
-            );
-
-        -- Error Detection
-        p_errors : process (Clk) is
-        begin
-            if rising_edge(Clk) then
-
-                -- Underrun
-                if Out_Beat = '1' and (FirstCounter /= Latency_g or Consumed = '1') then
-                    Err_Underrun <= '1';
-                    if not AssertsDisable_g then
-                        -- synthesis translate_off
-                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Underrun detected in FIXED_BEATS mode."
-                            severity warning;
-                        -- synthesis translate_on
-                    end if;
-                end if;
-
-                -- Overrun
-                if In_Beat = '1' and FirstCounter = Latency_g  and Out_Beat = '0' and Consumed = '0' then
-                    Err_Overrun <= '1';
-                    if not AssertsDisable_g then
-                        -- synthesis translate_off
-                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Overrun detected in FIXED_BEATS mode."
-                            severity warning;
-                        -- synthesis translate_on
-                    end if;
-                end if;
-
-                -- Level Update
-                if In_Beat = '1' and FirstCounter /= Latency_g then
-                    FirstCounter <= FirstCounter + 1;
-                end if;
-
-                -- Detect if current data was consumed
-                if In_Beat = '1' then
-                    Consumed <= '0';
-                elsif Out_Beat = '1' then
-                    Consumed <= '1';
-                end if;
-
-                -- Reset
-                if Rst = '1' then
-                    Consumed     <= '1';
-                    FirstCounter <= 0;
                     Err_Overrun  <= '0';
                     Err_Underrun <= '0';
                 end if;
