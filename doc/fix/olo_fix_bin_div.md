@@ -23,7 +23,7 @@ The algorithm can be implemented in two different modes:
 
 - **SERIAL**
   - Iterations are executed one after the other
-  - A new sample can be accepted every _width(OutFmt_g) + 5_ clock cycles
+  - A new sample can be accepted every _width(OutFmt_g) + 6_ clock cycles
   - Lowest possible resource usage
 - **PIPELINED**
   - Iterations are implemented in individual pipeline stages
