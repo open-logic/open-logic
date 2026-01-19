@@ -30,19 +30,19 @@ The algorithm can be implemented in two different modes:
   - Every clock cycle a new sample can be accepted
   - Highest possible throughput
 
-Division by zero returns the highest possible value for _Saturate_g_ = "Sat_s"_ and an undefined value otherwise.
+Division by zero returns the highest possible value when _Saturate_g = "Sat_s"_ and an undefined value otherwise.
 
 ### Latency
 
 The latency of the entity depends on several factors and can best be determined in the simulation.
 
-Note: Latency is not guaranteed to be constant accross different version. It's therefore best to design user logic
+Note: Latency is not guaranteed to be constant across different versions. It's therefore best to design user logic
 to be independent of the latency of this block.
 
-In the current version the implementation can be calculated as follows:
+In the current version the latency can be calculated as follows:
 
-- _Mode_g = SERIAL_: _Latency_ = width(_OutFmt_g_) + 5
-- _Mode_g = PIPELINED_: _Latency_ = width(_OutFmt_g_) + 5
+- _Mode_g_ = "SERIAL": _Latency_ = _OutFmt_g.I_ + _OutFmt_g.F_ + 6
+- _Mode_g_ = "PIPELINED": _Latency_ = _OutFmt_g.I_ + _OutFmt_g.F_ + 6
 
 ## Generics
 
@@ -86,6 +86,6 @@ implements it over the whole processing chain using [olo_base_flowctrl_handler](
 ## Detail
 
 The entity converts numerator and denominator to unsigned numbers, so the division can be implemented
-using a simple non-restoriding division algorithm. At the output the sign is then restored correctly.
+using a simple non-restoring division algorithm. At the output the sign is then restored correctly.
 
 ![olo_fix_bin_div_block_diagram](./entities/olo_fix_bin_div.drawio.png)
