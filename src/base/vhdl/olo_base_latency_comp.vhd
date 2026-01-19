@@ -35,7 +35,9 @@ entity olo_base_latency_comp is
         Latency_g        : positive range 2 to positive'high := 30;
         AssertsDisable_g : boolean                           := false;
         AssertsName_g    : string                            := "No Name";
-        RamBehavior_g    : string                            := "RBW"
+        RamBehavior_g    : string                            := "RBW";
+        RamStyle_g       : string                            := "auto";
+        Resource_g       : string                            := "AUTO"
     );
     port (
         -- Control Ports
@@ -93,6 +95,7 @@ begin
                 AlmFullOn_g     => false,
                 AlmEmptyOn_g    => false,
                 RamBehavior_g   => RamBehaviorUpper_c,
+                RamStyle_g      => RamStyle_g,
                 ReadyRstState_g => '1'
             )
             port map (
@@ -162,7 +165,9 @@ begin
                 Width_g       => Width_g+1,
                 Delay_g       => Latency_g-1,
                 RstState_g    => true,
-                RamBehavior_g => RamBehaviorUpper_c
+                RamBehavior_g => RamBehaviorUpper_c,
+                Resource_g    => Resource_g,
+                RamStyle_g    => RamStyle_g
             )
             port map (
                 Clk      => Clk,

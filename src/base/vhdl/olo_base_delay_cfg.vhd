@@ -36,7 +36,8 @@ entity olo_base_delay_cfg is
         Width_g         : positive;
         MaxDelay_g      : positive := 256;
         SupportZero_g   : boolean  := false;
-        RamBehavior_g   : string   := "RBW"
+        RamBehavior_g   : string   := "RBW";
+        RamStyle_g      : string   := "auto"
     );
     port (
         -- Control Ports
@@ -99,7 +100,8 @@ begin
             generic map (
                 Depth_g         => 2**log2ceil(MaxDelay_g),
                 Width_g         => Width_g,
-                RamBehavior_g   => RamBehavior_g
+                RamBehavior_g   => RamBehavior_g,
+                RamStyle_g      => RamStyle_g
             )
             port map (
                 Clk     => Clk,

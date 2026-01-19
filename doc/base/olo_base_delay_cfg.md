@@ -34,6 +34,7 @@ During those 5 samples, the content of (_Out_Data_) is undefined. This is illust
 | MaxDelay_g    | positive | 256     | Maximum delay in samples / data-beats                        |
 | SupportZero_g | boolean  | false   | Selects if zero-delay pass-through (_Delay_=0) is supported or not.<br />Supporting zero-delay pass-through adds a combinatorial path directly from the input to the output which is suboptimal for timing performance. Hence this generic should be set to _false_ unless there is a real need for zero-delay pass-through. |
 | RamBehavior_g | string   | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
+| RamStyle_g    | string   | "auto"  | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes _ram_style_ and _ramstyle_ which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 
 ## Interfaces
 

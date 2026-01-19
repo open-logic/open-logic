@@ -52,9 +52,14 @@ _Valid_ signals shall be connected to the _In_Valid_ input of _olo_base_delay_.
 | BramThreshold_g | positive | 128     | In case of _Resource_g_="AUTO", BlockRAM is used when _Delay_g_ > _BramThreshold_g_ and shift registers are used otherwise.<br />Must be greater or equal to 3. |
 | RstState_g      | boolean  | true    | true: 0 is outputted for the first _Delay_g_ data beats after reset<br />false: No special handling for reset, the content of the delay-line is output after reset. |
 | RamBehavior_g   | string   | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
+| RamStyle_g      | string   | "auto"  | Through this generic, the exact resource to use for implementation can be controlled for _Resource_g="BLOCK"_. This generic is applied to the attributes _ram_style_ and _ramstyle_ which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 
 Note that BlockRAM as resource are only a valid choice for _Delay_g_ >= 3. For lower _Delay_g_ values, "SRL" or "AUTO"
 must be chosen as resource.
+
+For technologies that do not support shift-register implementation in LUTs, _Resource_g="BLOCK"_ often is more resource
+efficient even for moderate delay values to avoid a large number of FFs (given that blockram utilization is not
+critial).
 
 ## Interfaces
 

@@ -37,7 +37,8 @@ entity olo_base_delay is
         Resource_g      : string                            := "AUTO";
         BramThreshold_g : positive range 3 to positive'high := 128;
         RstState_g      : boolean                           := True;
-        RamBehavior_g   : string                            := "RBW"
+        RamBehavior_g   : string                            := "RBW";
+        RamStyle_g      : string                            := "auto"
     );
     port (
         -- Control Ports
@@ -81,7 +82,9 @@ begin
 
         -- Synthesis attributes
         attribute shreg_extract of SrlSig : signal is ShregExtract_AllowExtraction_c;
-        attribute srl_style of SrlSig     : signal is SrlStyle_Srl_c;
+        attribute srl_style of SrlSig     : signal is SrlStyle_Srl_c; -- AMD
+        attribute ramstyle of SrlSig      : signal is RamStyle_MLAB_c; -- Altera
+
     begin
 
         p_srl : process (Clk) is
@@ -135,7 +138,8 @@ begin
             generic map (
                 Depth_g         => MemTaps_c,
                 Width_g         => Width_g,
-                RamBehavior_g   => RamBehavior_g
+                RamBehavior_g   => RamBehavior_g,
+                RamStyle_g      => RamStyle_g
             )
             port map (
                 Clk     => Clk,

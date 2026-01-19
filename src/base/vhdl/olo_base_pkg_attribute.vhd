@@ -107,6 +107,7 @@ package olo_base_pkg_attribute is
     -- Tools:
     -- - Quartus (Altera)
     attribute ramstyle : string;
+    constant RamStyle_MLAB_c : string := "MLAB"; -- Also used to forse shift-registers in distributed RAMs
 
     -- Tools:
     -- - Efinity (Efinix)

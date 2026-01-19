@@ -61,6 +61,12 @@ where the latency cannot be compensated successfully.
 | AssertsDisable_g | boolean  | false     | Disable assertion reports (errors/warnings) for under- and overflow                                                                                                                                                                                                        |
 | AssertsName_g    | string   | "No Name" | Name used in assertion reports to identify the instance of the entity                                                                                                                                                                                                      |
 | RamBehavior_g    | string   | "RBW"     | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). <br>This generic only plays a role for very large _Latency_g_ values that map into BRAMs                                       |
+| Resource_g       | string   | "AUTO"    | Through this generic, the delay implementation for _Mode_g="FIXED_CYCLES" can be controlled.:<br />see [olo_base_delay](./olo_base_delay.md) for details |
+| RamStyle_g       | string   | "auto"    | Through this generic, the exact resource to use for implementation can be controlled for _Mode_g="FIXED_CYCLES" and _Resource_g="BLOCK"_ and for _Mode_g="DYNAMIC". <br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
+
+For technologies that do not support shift-register implementation in LUTs and _Mode_g="FIXED_CYCLES"_,
+_Resource_g="BLOCK" often is more resource efficient even for moderate delay values to avoid a large number of FFs
+(given that blockram utilization is not critial).
 
 ## Interfaces
 
