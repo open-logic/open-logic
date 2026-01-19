@@ -14,22 +14,22 @@ VHDL Source: [olo_base_latency_comp](../../src/base/vhdl/olo_base_latency_comp.v
 
 ## Description
 
-This component does compensate the latency of a processing elelement by delaying data that bypasses the processing
+This component does compensate the latency of a processing element by delaying data that bypasses the processing
 element by delaying the bypass data-path. This is visualized by the figure below. In the setup depicted in the figure,
 _Filter Data_ and _Bypass Data_ arriving on the input in the same cycle reaches the output in the same cycle.
 
 Note that the block only works for processing elements that do not change the sample rate (i.e one output sample is
 produced for each input sample).
 
-Input samples are shifted into the delay when both _In_Valid_ and _In_Ready_ are high. Output samples are considred
+Input samples are shifted into the delay when both _In_Valid_ and _In_Ready_ are high. Output samples are considered
 as read when both _Out_Valid_ and _Out_Ready_ are high.
 
 ![Latency Compensation Concept](./misc/olo_base_latency_comp_concept.drawio.png)
 
-The data going through the _olo_base_latency_comp_entity may be the same data that goes through the processing element
+The data going through the _olo_base_latency_comp_ entity may be the same data that goes through the processing element
 or it may be different data (e.g. metadata associated with the data going through the processing element).
 
-The _olo_base_latency_comp_ entity is non-intrusive in the sense that it does not modify the hanshaking signals.
+The _olo_base_latency_comp_ entity is non-intrusive in the sense that it does not modify the handshaking signals.
 It does simply delay the data and executes extensive checking and error reporting in case of failure to compensate
 the latency.
 
@@ -45,7 +45,7 @@ The entity has two modes of operation:
   - This mode requires the latency of the processing element to be known and fixed.
   - This mode does allow to process one sample per clock-cycle
 
-Main aim of this entty is to simplify the creation of maintainable code that works independently of smaller
+Main aim of this entity is to simplify the creation of maintainable code that works independently of smaller
 changes in the main processing element. The entity also increases maintainability by reporting errors in cases
 where the latency cannot be compensated successfully.
 
@@ -91,16 +91,16 @@ Notes to the figure:
 | :--------------- | :------- | --------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Width_g          | positive | -         | Data width                                                                                                                                                                                                                                                                 |
 | Mode_g           | string   | "DYNAMIC" | Operation mode. Possible values are:<br />"DYNAMIC": Dynamically adjust latency to match the processing element<br />"FIXED_CYCLES": Fixed latency in clock cycles as specified by _Latency_g_                                                                             |
-| Latency_g        | positive | 32        | The meanin of this generic is as follows, depending on the value of _Mode_g_:<br />"DYNAMIC": **Maximum** latency in beats/samples<br />"FIXED_CYCLES": Exact latency in clock cycles<br />Range 2 ... 2^31-1                                                              |
-| AssertsDisable_g | boolean  | false     | Disable assertion reports (errors/warnings) for under- and overflow                                                                                                                                                                                                        |
+| Latency_g        | positive | 32        | The meaning of this generic is as follows, depending on the value of _Mode_g_:<br />"DYNAMIC": **Maximum** latency in beats/samples<br />"FIXED_CYCLES": Exact latency in clock cycles<br />Range 2 ... 2^31-1                                                              |
+| AssertsDisable_g | boolean  | false     | Disable assertion reports (errors/warnings) for under- and overflow (can be used if this is expected)                                                                                                                                                                      |
 | AssertsName_g    | string   | "No Name" | Name used in assertion reports to identify the instance of the entity                                                                                                                                                                                                      |
 | RamBehavior_g    | string   | "RBW"     | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). <br>This generic only plays a role for very large _Latency_g_ values that map into BRAMs                                       |
-| Resource_g       | string   | "AUTO"    | Through this generic, the delay implementation for _Mode_g="FIXED_CYCLES" can be controlled.:<br />see [olo_base_delay](./olo_base_delay.md) for details |
-| RamStyle_g       | string   | "auto"    | Through this generic, the exact resource to use for implementation can be controlled for _Mode_g="FIXED_CYCLES" and _Resource_g="BLOCK"_ and for _Mode_g="DYNAMIC". <br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
+| Resource_g       | string   | "AUTO"    | Through this generic, the delay implementation for _Mode_g="FIXED_CYCLES" can be controlled.:<br />see [olo_base_delay](./olo_base_delay.md) for details                                                                                                                   |
+| RamStyle_g       | string   | "auto"    | Through this generic, the exact resource to use for implementation can be controlled for _Mode_g="FIXED_CYCLES" and _Resource_g="BLOCK"_ and for _Mode_g="DYNAMIC". <br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md).                 |
 
 For technologies that do not support shift-register implementation in LUTs and _Mode_g="FIXED_CYCLES"_,
 _Resource_g="BLOCK" often is more resource efficient even for moderate delay values to avoid a large number of FFs
-(given that blockram utilization is not critial).
+(given that blockram utilization is not critical).
 
 ## Interfaces
 
@@ -140,13 +140,13 @@ the handshaking signals.
 | Err_Overrun  | out    | 1         | N/A     | Overrun error signal indicating input data was lost due to backpressure    |
 | Err_Underrun | out    | 1         | N/A     | Underrun error signal indicating output data was not present when expected |
 
-Error outputs stay asserted once they are set until the next reset.
+Error outputs stay asserted once they are set (sticky) until the next reset.
 
 ## Architecture
 
 ### DYNAMIC Mode
 
-In _DYNAMIC_ mode the lateny is adjusted dynamically using an internal FIFO. Note that for implementation reasons,
+In _DYNAMIC_ mode the latency is adjusted dynamically using an internal FIFO. Note that for implementation reasons,
 the FIFO depth is _Latency_g_ + 2. This may be considered to most efficiently parametrize the entity.
 
 ![Dynamic Architecture](./misc/olo_base_latency_comp_dynamic.drawio.png)
