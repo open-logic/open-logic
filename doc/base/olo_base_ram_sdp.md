@@ -35,6 +35,9 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 | InitString_g    | string   | ""      | Initialization data for the memory formatted as comma separated list of hex calues (e.g. "0x1234, 0x0ABC"). Each value _MUST_ have the 0x prefix.<br />The first value goes to address 0, the second one to address 1 and so on. |
 | InitFormat_g    | string   | "NONE"  | "NONE": RAM is not initialized<br />"HEX": RAM is initialized with InitString_g interpreted as list of hex values.<br />**Note:** Not all technologies support RAM initialization. Check the documentation of your technology/tools for details. |
 
+For some technologies, _RamBehavior_g="WBR" must be used to allow mapping RAM to distributed memory. It's best to
+verify correct mappping by a quick test-synthesis with the target toolchain.
+
 ## Interfaces
 
 | Name    | In/Out | Length                | Default | Description                                                  |

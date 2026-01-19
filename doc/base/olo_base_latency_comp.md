@@ -16,7 +16,13 @@ VHDL Source: [olo_base_latency_comp](../../src/base/vhdl/olo_base_latency_comp.v
 
 This component does compensate the latency of a processing elelement by delaying data that bypasses the processing
 element by delaying the bypass data-path. This is visualized by the figure below. In the setup depicted in the figure,
-data arriving on the input in the same cycle reaches the output in the same cycle.
+_Filter Data_ and _Bypass Data_ arriving on the input in the same cycle reaches the output in the same cycle.
+
+Note that the block only works for processing elements that do not change the sample rate (i.e one output sample is
+produced for each input sample).
+
+Input samples are shifted into the delay when both _In_Valid_ and _In_Ready_ are high. Output samples are considred
+as read when both _Out_Valid_ and _Out_Ready_ are high.
 
 ![Latency Compensation Concept](./misc/olo_base_latency_comp_concept.drawio.png)
 
@@ -39,17 +45,45 @@ The entity has two modes of operation:
   - This mode requires the latency of the processing element to be known and fixed.
   - This mode does allow to process one sample per clock-cycle
 
-Main aim of thiis entity is to simplify the creation of maintainable code that works independently of smaller
+Main aim of this entty is to simplify the creation of maintainable code that works independently of smaller
 changes in the main processing element. The entity also increases maintainability by reporting errors in cases
 where the latency cannot be compensated successfully.
 
 ### DYNAMIC Mode
 
-**TBD**
+_DYNAMIC_ mode has the advantage that the exact delay does not have to be known at the cost of increased LUT usage
+for implementing the underlying FIFO. This mode also can be used with processing elements that have non-constant
+latency.
+
+![Dynamic Wave](./misc/olo_base_latency_comp_dynamic_wave.png)
+
+Notes to the figure:
+
+- Samples B and C are ignored because either _In_Valid_ is low or _In_Ready_ is low.
+- Non-constant latency is handled by only providing the next sample after the last one has been read (both _Out_Valid_
+  and _Out_Ready_ high).
+- After sample E an underrun is detected because a sample is read but none was written.
 
 ### FIXED_CYCLES Mode
 
-**TBD**
+_FIXED_CYCLES_ mode has the advantage that the exact delay is known and fixed, which can reduce LUT usage compared to
+the _DYNAMIC_ mode. This mode requires the latency of the processing element to be known and constant.
+
+An overrun error is reported only when the last sample was not read before the next sample arrives at the output.
+Limited backpressure (_In_Ready_ low) is supported as long as the output is accepted before the next sample arrives.
+
+An underrun is detected if an output sample is read when no sample is present from the delay line.
+
+Below figure depicts _Latency_g=3_.
+
+![Fixed Cycles Wave](./misc/olo_base_latency_comp_fixedcycles_wave.png)
+
+Notes to the figure:
+
+- Samples B and C are ignored because either _In_Valid_ is low or _In_Ready_ is low.
+- As long as no new sample arrives, handshaking is tolerated without error (see sample A)
+- After sample F an underrun is detected because a sample is read but none was written.
+- After sample E an overrun is detected because E was not read before F arrived.
 
 ## Generics
 
@@ -110,16 +144,19 @@ Error outputs stay asserted once they are set until the next reset.
 
 ## Architecture
 
-**TBD** show different architectures and mention that DYNAMIC works best for technologies with distributed RAMs
+### DYNAMIC Mode
 
-**TBD** Document FIFO depth for dynamic mode
+In _DYNAMIC_ mode the lateny is adjusted dynamically using an internal FIFO. Note that for implementation reasons,
+the FIFO depth is _Latency_g_ + 2. This may be considered to most efficiently parametrize the entity.
 
-Document efficiency (Vivado: Fixed30 = 42, Dynamic30=150 or 40+BRAM, Cologne)
+![Dynamic Architecture](./misc/olo_base_latency_comp_dynamic.drawio.png)
 
-Document WBR for LUTRAM (some technologies like AMD, try to be sure)
+### FIXED_CYCLES Mode
 
-add reference to latency_comp to cordic
+In _FIXED_CYCLES_ mode the latency is compensated through a fixed delay line and handshaking tolerance
+is added through a single storage state at the output.
 
+To detect overruns, the validity of samples (_In_Valid_ and _In_Ready_ both high) is shifted through the
+delay line together with the data.
 
-TODO Add altera/libero SRL extraction to delay_srl.
-TODO Add RAMStyle to delay/latency_comp, document efficient mapping to shift reg
+![Fixed Cycles Architecture](./misc/olo_base_latency_comp_fixedcycles.drawio.png)

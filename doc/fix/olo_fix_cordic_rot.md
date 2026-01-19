@@ -55,7 +55,7 @@ be controlled through the generic _GainCorrCoefFmt_g_.
 The latency of the entity depends on several factors and can best be determined in the simulation.
 
 Note: Latency is not guaranteed to be constant accross different version. It's therefore best to design user logic
-to be independent of the latency of this block.
+to be independent of the latency of this block (e.g. through [olo_base_latency_comp](../base/olo_base_latency_comp.md)).
 
 ## Generics
 

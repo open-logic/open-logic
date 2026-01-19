@@ -1,0 +1,12 @@
+{
+  signal: [
+    {name: 'Clk',          wave: 'p..........'},
+    {name: 'In_Data',      wave: 'x34567x....', data: ['A', 'B', 'C', 'D', 'E']},
+    {name: 'In_Valid',     wave: '0101..0....'},
+    {name: 'In_Ready',     wave: '1..01......'},
+    {name: 'Out_Data',     wave: 'x..3.x6.7x.', data: ['A', 'D', 'E']},
+    {name: 'Out_Valid',    wave: '0..1.0.1..0'},
+    {name: 'Out_Ready',    wave: '0...1.....0'},
+    {name: 'Err_Underrun', wave: '0.........1'}
+  ],
+}
