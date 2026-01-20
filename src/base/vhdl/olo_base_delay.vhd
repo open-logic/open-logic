@@ -83,7 +83,7 @@ begin
         -- Synthesis attributes
         attribute shreg_extract of SrlSig : signal is ShregExtract_AllowExtraction_c;
         attribute srl_style of SrlSig     : signal is SrlStyle_Srl_c; -- AMD
-        attribute ramstyle of SrlSig      : signal is RamStyle_MLAB_c; -- Altera
+        attribute ramstyle of SrlSig      : signal is RamStyle_Mlab_c; -- Altera
 
     begin
 
