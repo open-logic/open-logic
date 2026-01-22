@@ -53,8 +53,18 @@ be controlled through the generic GainCorrCoefFmt_g.
 
 The latency of the entity depends on several factors and can best be determined in the simulation.
 
-Note: Latency is not guaranteed to be constant accross different version. It's therefore best to design user logic
+Note: Latency is not guaranteed to be constant across different version. It's therefore best to design user logic
 to be independent of the latency of this block (e.g. through [olo_base_latency_comp](../base/olo_base_latency_comp.md)).
+
+In the current version the latency can be approximated as follows:
+
+- _Mode_g_ = "PIPELINED" with gain correction: _Latency_ = 6 + _Iterations_g_
+- _Mode_g_ = "PIPELINED" without gain correction (_GainCorrCoefFmt_g_ = "NONE"): _Latency_ = 5 + _Iterations_g_
+- _Mode_g_ = "SERIAL" with gain correction: _Latency_ = 5 + _Iterations_g_
+- _Mode_g_ = "SERIAL" without gain correction (_GainCorrCoefFmt_g_ = "NONE"): _Latency_ = 4 + _Iterations_g_
+
+Note that for "SERIAL" mode the latency only applies if input samples are provided at least _Iteragions_g_ clock cycles
+apart. Otherwise the latency is non-constant (input samples may be accepted earlier and delayed internally).
 
 ## Generics
 

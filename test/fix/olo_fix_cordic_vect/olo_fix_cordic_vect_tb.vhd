@@ -21,6 +21,7 @@ library vunit_lib;
 library olo;
     use olo.en_cl_fix_pkg.all;
     use olo.olo_fix_pkg.all;
+    use olo.olo_base_pkg_math.all;
 
 library work;
     use work.olo_test_fix_stimuli_pkg.all;
@@ -53,6 +54,11 @@ architecture sim of olo_fix_cordic_vect_tb is
     -----------------------------------------------------------------------------------------------
     constant Clk_Frequency_c : real := 100.0e6; -- 100 MHz
     constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
+
+    -- Latency calculation
+    constant GainLatency_c     : natural := choose(GainCorrCoefFmt_g = "NONE", 0, 1);
+    constant BaseLatency_c     : natural := choose(Mode_g = "PIPELINED", 5, 4);
+    constant ExpectedLatency_c : natural := BaseLatency_c + GainLatency_c + Iterations_g;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
@@ -130,6 +136,28 @@ begin
 
         -- TB done
         test_runner_cleanup(runner);
+    end process;
+
+    -----------------------------------------------------------------------------------------------
+    -- Latency Check Process
+    -----------------------------------------------------------------------------------------------
+    p_latency_check : process is
+        variable StartTime_v     : time;
+        variable ActualLatency_v : natural;
+    begin
+
+        -- Wait for first sample to enter
+        wait until rising_edge(Clk) and In_Valid = '1' and In_Ready = '1';
+        StartTime_v := now;
+
+        -- Wait for first sample to exit
+        wait until rising_edge(Clk) and Out_Valid = '1';
+
+        -- Check latency
+        ActualLatency_v := (now - StartTime_v) / Clk_Period_c;
+        check_equal(ActualLatency_v, ExpectedLatency_c, msg => "Latency mismatch!");
+        wait;
+
     end process;
 
     -----------------------------------------------------------------------------------------------

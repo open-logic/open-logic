@@ -450,8 +450,8 @@ begin
             ResultFmt_g => to_string(OutFmt_c),
             Round_g     => to_string(Round_c),
             Saturate_g  => to_string(Saturate_c),
-            RoundReg_g  => "AUTO",
-            SatReg_g    => "AUTO"
+            RoundReg_g  => choose(Round_c = Trunc_s, "NO", "YES"),
+            SatReg_g    => choose(Saturate_c = None_s, "NO", "YES")
         )
         port map (
             Clk         => Clk,
@@ -468,8 +468,8 @@ begin
             ResultFmt_g => to_string(OutFmt_c),
             Round_g     => to_string(Round_c),
             Saturate_g  => to_string(Saturate_c),
-            RoundReg_g  => "AUTO",
-            SatReg_g    => "AUTO"
+            RoundReg_g  => choose(Round_c = Trunc_s, "NO", "YES"),
+            SatReg_g    => choose(Saturate_c = None_s, "NO", "YES")
         )
         port map (
             Clk         => Clk,
