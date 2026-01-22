@@ -96,3 +96,13 @@ through [cla-assistant.io](https://cla-assistant.io/open-logic/open-logic).
 
 You may add your own copiright notice to any file you contribute to. However, for contributions to be accepted, you
 must sign the [Contributor License Agreement](https://cla-assistant.io/open-logic/open-logic).
+
+### Gernerative AI Policy
+
+Generative AI may be used for contributions as long as the contributor is fully aware of the content generated,
+takes full responsibility for it and ensured that no copyrighted content from third parties is included.
+
+The usage of genenerative AI beyond accepting inline code suggestions (e.g. GitHub Copilot) is restricted as follows:
+
+- It is forbidden for any contributions towards features funded by [NLnet](https://nlnet.nl/)
+- It mus be disclosed in the pull request description
