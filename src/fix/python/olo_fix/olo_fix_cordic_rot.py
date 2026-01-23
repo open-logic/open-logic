@@ -96,6 +96,7 @@ class olo_fix_cordic_rot:
 
         # iterations
         if iterations > 32:              raise ValueError("olo_fix_cordic_rot: iterations_g must be <= 32")
+        if iterations < 3:               raise ValueError("olo_fix_cordic_rot: iterations_g must be >= 3")
         self._iterations = iterations
 
         # gain_corr_coef_fmt

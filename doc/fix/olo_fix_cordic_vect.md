@@ -63,9 +63,6 @@ In the current version the latency can be approximated as follows:
 - _Mode_g_ = "SERIAL" with gain correction: _Latency_ = 5 + _Iterations_g_
 - _Mode_g_ = "SERIAL" without gain correction (_GainCorrCoefFmt_g_ = "NONE"): _Latency_ = 4 + _Iterations_g_
 
-Note that for "SERIAL" mode the latency only applies if input samples are provided at least _Iteragions_g_ clock cycles
-apart. Otherwise the latency is non-constant (input samples may be accepted earlier and delayed internally).
-
 ## Generics
 
 | Name              | Type     | Default     | Description                                                                                                                                                                                                                                                          |
@@ -75,7 +72,7 @@ apart. Otherwise the latency is non-constant (input samples may be accepted earl
 | OutAngFmt_g       | string   | -           | Output angle format <br>Must be (0,0,x) <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,0,15)")                                                                                                                                                     |
 | IntXyFmt_g        | string   | "AUTO"      | Internal format for X/Y values. <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations) for details |
 | IntAngFmt_g       | string   | "AUTO"      | Internal format for angles <br>With "AUTO" the format is chosen automatically. <br>For manual control, specify a string representation of a (1,-1,x) _en_cl_fix Format_t_ (e.g. "(1,-1,15)"). Refer to [Format Considerations](#format-considerations) for details   |
-| Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 1 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details                                                                                                                                             |
+| Iterations_g      | positive | 16          | Number of CORDIC iterations. <br>Range: 3 .. 32 <br>Refer to [Format Considerations](#format-considerations) for details                                                                                                                                             |
 | Mode_g            | string   | "PIPELINED" | CORDIC operation mode<br />"SERIAL": one iteration per clock cycle<br />"PIPELINED": Pipelined mode (one sample per clock cycle)                                                                                                                                     |
 | GainCorrCoefFmt_g | string   | "(0,0,17)"  | Format of the gain correction coefficient, specify a string representation of a signed _en_cl_fix Format_t_ (e.g. "(1,1,15)"). Refer to [Format Considerations](#format-considerations). <br> To disable the internal gain compensation, choose "NONE"               |
 | Round_g           | string   | "Trunc_s"   | Rounding mode <br />String representation of an _en_cl_fix FixRound_t_.                                                                                                                                                                                              |

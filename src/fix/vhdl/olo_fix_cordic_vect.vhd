@@ -38,13 +38,13 @@ entity olo_fix_cordic_vect is
         InFmt_g           : string;
         OutMagFmt_g       : string;
         OutAngFmt_g       : string;
-        IntXyFmt_g        : string  := "AUTO";
-        IntAngFmt_g       : string  := "AUTO";
-        Iterations_g      : natural := 16;
-        Mode_g            : string  := "PIPELINED";
-        GainCorrCoefFmt_g : string  := "(0,0,17)";
-        Round_g           : string  := FixRound_Trunc_c;
-        Saturate_g        : string  := FixSaturate_Warn_c
+        IntXyFmt_g        : string                 := "AUTO";
+        IntAngFmt_g       : string                 := "AUTO";
+        Iterations_g      : positive range 3 to 32 := 16;
+        Mode_g            : string                 := "PIPELINED";
+        GainCorrCoefFmt_g : string                 := "(0,0,17)";
+        Round_g           : string                 := FixRound_Trunc_c;
+        Saturate_g        : string                 := FixSaturate_Warn_c
     );
     port (
         -- Control Signals
@@ -225,9 +225,6 @@ begin
     assert IntAngFmt_c.I = -1
         report "###ERROR###: olo_fix_cordic_vect: IntAngFmt_g must be (1,-1,x)"
         severity error;
-    assert Iterations_g <= 32
-        report "###ERROR###: olo_fix_cordic_rot: Iterations_g must be <= 32"
-        severity error;
     assert ModeUpper_c = "PIPELINED" or ModeUpper_c = "SERIAL"
         report "###ERROR###: olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
         severity error;
@@ -300,23 +297,39 @@ begin
     -- *** Serial Implementation ***
     g_serial : if ModeUpper_c = "SERIAL" generate
         -- Signals
-        signal Xin, Yin  : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
-        signal XIn_Valid : std_logic;
-        signal Quadin    : std_logic_vector(1 downto 0);
-        signal X, Y      : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
-        signal Z         : std_logic_vector(cl_fix_width(IntAngFmt_c)-1 downto 0);
-        signal CordVld   : std_logic;
-        signal IterCnt   : integer range 0 to Iterations_g-1;
-        signal Quad      : std_logic_vector(1 downto 0);
+        signal Xin, Yin   : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
+        signal XIn_Valid  : std_logic;
+        signal Quadin     : std_logic_vector(1 downto 0);
+        signal X, Y       : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
+        signal Z          : std_logic_vector(cl_fix_width(IntAngFmt_c)-1 downto 0);
+        signal CordVld    : std_logic;
+        signal IterCnt    : integer range 0 to Iterations_g-1;
+        signal Quad       : std_logic_vector(1 downto 0);
+        signal InReadyCnt : integer range 0 to Iterations_g-1;
+        signal In_Ready_I : std_logic;
 
         -- Constants
         constant Z0_c : std_logic_vector(cl_fix_width(IntAngFmt_c)-1 downto 0) := (others => '0');
     begin
-        In_Ready <= not XIn_Valid;
+        In_Ready <= In_Ready_I;
 
         p_cordic_serial : process (Clk) is
         begin
             if rising_edge(Clk) then
+                -- In Ready Handling
+                if In_Ready_I = '1' and In_Valid = '1' then
+                    In_Ready_I <= '0';
+                    InReadyCnt <= 0;
+                end if;
+
+                if In_Ready_I = '0' then
+                    InReadyCnt <= InReadyCnt + 1;
+                    -- Block for Iterations_g-1 cycles
+                    if InReadyCnt = Iterations_g - 2 then
+                        In_Ready_I <= '1';
+                    end if;
+                end if;
+
                 -- Input latching
                 if XIn_Valid = '0' and In_Valid = '1' then
                     XIn_Valid <= '1';
@@ -370,10 +383,11 @@ begin
 
                 -- Reset
                 if Rst = '1' then
-                    XIn_Valid <= '0';
-                    IterCnt   <= 0;
-                    GcVld     <= '0';
-                    CordVld   <= '0';
+                    XIn_Valid  <= '0';
+                    IterCnt    <= 0;
+                    GcVld      <= '0';
+                    CordVld    <= '0';
+                    In_Ready_I <= '1';
                 end if;
             end if;
         end process;
