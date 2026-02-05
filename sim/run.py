@@ -65,7 +65,7 @@ if 'VUNIT_SIMULATOR' not in os.environ:
         os.environ['VUNIT_SIMULATOR'] = 'modelsim'
 
 # Parse VUnit Arguments
-vu = VUnit.from_argv(compile_builtins=False, argv=argv)
+vu = VUnit.from_argv(argv=argv)
 vu.add_vhdl_builtins()
 vu.add_com()
 vu.add_verification_components()
