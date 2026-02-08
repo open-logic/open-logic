@@ -17,7 +17,9 @@ runs:
         cache: 'pip'
     - name: Install Python Requiremetns
       shell: bash
-      run: pip install -r ./.github/workflows/requirements.txt
+      run: |
+        pip install "setuptools<70" setuptools_scm wheel
+        pip install --no-build-isolation -r ./.github/workflows/requirements.txt
     #Setup APT Get packages (Uncached - complex and little benefit in time)
     - name: Install APT packages
       shell: bash
