@@ -204,3 +204,9 @@ be used. For deciding which option to use, the following considerations shall be
 | --------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_fix_cordic_vect](./fix/olo_fix_cordic_vect.md) | CORDIC vectoring mode - cartesian to polar conversion |
 | [olo_fix_cordic_rot](./fix/olo_fix_cordic_rot.md)   | CORDIC rotating mode - polar to cartesian conversion |
+
+### CIC Filters
+
+| Entity                                              | Description                                                                                                        |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [olo_fix_cic_dec_tdm](./fix/olo_fix_cic_dec_tdm.md) | CIC decimator (TDM input, TDM output), single- or multi-channel, ratio fixed or runtime configurable               |

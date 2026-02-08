@@ -50,6 +50,7 @@ package olo_fix_pkg is
 
     -- Functions
     function fixFmtWidthFromString (fmt : string) return natural;
+    function fixFmtWidthFromStringTolerant(fmt : string) return natural;
 
     -- Register is required if:
     -- - logic is present and regMode is "AUTO"
@@ -71,6 +72,12 @@ package body olo_fix_pkg is
 
     function fixFmtWidthFromString (fmt : string) return natural is
         constant FixFmt_c : FixFormat_t := cl_fix_format_from_string(fmt);
+    begin
+        return cl_fix_width(FixFmt_c);
+    end function;
+
+    function fixFmtWidthFromStringTolerant(fmt : string) return natural is
+        constant FixFmt_c : FixFormat_t := fixFmtFromStringTolerant(fmt);
     begin
         return cl_fix_width(FixFmt_c);
     end function;
@@ -107,7 +114,7 @@ package body olo_fix_pkg is
     function fixFmtFromStringTolerant (fmt : string) return FixFormat_t is
         type State_t is (BracketOpen_s, IntBits_s, FracBits_s, BracketClose_s, Done_s);
 
-        variable Result_v : FixFormat_t := (0, 0, 0);
+        variable Result_v : FixFormat_t := FixFmt_Unused_c;
         variable State_v  : State_t     := BracketOpen_s;
     begin
 

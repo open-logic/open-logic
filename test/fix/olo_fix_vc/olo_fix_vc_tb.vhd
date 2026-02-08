@@ -52,8 +52,10 @@ architecture sim of olo_fix_vc_tb is
     signal Rst       : std_logic;
     signal Valid     : std_logic;
     signal Ready     : std_logic;
+    signal Last      : std_logic;
     signal Data      : std_logic_vector(fixFmtWidthFromString(Fmt_g) - 1 downto 0);
     signal DataSlave : std_logic_vector(fixFmtWidthFromString(Fmt_g) - 1 downto 0);
+    signal LastSlave : std_logic;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -136,6 +138,32 @@ begin
                 fix_checker_check_file (net, CheckerSlave_c, FileOut_c, Stall_Probability => 0.5, Stall_Max_Cycles => 4);
             end if;
 
+            -- *** Packet Mode ***
+            if run("Packet-Mode") then
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Mode => stimuli_mode_packet);
+                fix_checker_check_file (net, Checker_c, FileOut_c, Mode => checker_mode_packet);
+            end if;
+
+            -- *** Packet Mode Stall ***
+            if run("Packet-Mode-Stall") then
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Mode => stimuli_mode_packet);
+                fix_checker_check_file (net, Checker_c, FileOut_c, Mode => checker_mode_packet,
+                                        Stall_Probability               => 1.0, Stall_Min_Cycles => 3, Stall_Max_Cycles => 3);
+            end if;
+
+            -- *** TDM Mode ***
+            if run("TDM-Mode") then
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Mode => stimuli_mode_tdm, Tdm_Slots => 4);
+                fix_checker_check_file (net, Checker_c, FileOut_c, Mode => checker_mode_tdm, Tdm_Slots => 4);
+            end if;
+
+            -- *** TDM Mode Stall ***
+            if run("TDM-Mode-Stall") then
+                fix_stimuli_play_file (net, Stimuli_c, FileIn_c, Mode => stimuli_mode_tdm, Tdm_Slots => 4);
+                fix_checker_check_file (net, Checker_c, FileOut_c, Mode => checker_mode_tdm, Tdm_Slots => 4,
+                                        Stall_Probability               => 1.0, Stall_Min_Cycles => 3, Stall_Max_Cycles => 3);
+            end if;
+
             -- *** Wait until done ***
             wait_until_idle(net, as_sync(Stimuli_c));
             wait_until_idle(net, as_sync(Checker_c));
@@ -168,6 +196,7 @@ begin
             Rst      => Rst,
             Ready    => Ready,
             Valid    => Valid,
+            Last     => Last,
             Data     => Data
         );
 
@@ -181,6 +210,7 @@ begin
             Clk      => Clk,
             Ready    => Ready,
             Valid    => Valid,
+            Last     => Last,
             Data     => Data
         );
 
@@ -195,6 +225,7 @@ begin
             Rst      => Rst,
             Ready    => Ready,
             Valid    => Valid,
+            Last     => LastSlave,
             Data     => DataSlave
         );
 
@@ -208,6 +239,7 @@ begin
             Clk      => Clk,
             Ready    => Ready,
             Valid    => Valid,
+            Last     => LastSlave,
             Data     => DataSlave
         );
 
