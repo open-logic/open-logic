@@ -3,6 +3,7 @@ PyGithub
 google-cloud-storage
 vsg==3.27
 numpy
+scipy
 matplotlib
 prettytable
 pyyaml
