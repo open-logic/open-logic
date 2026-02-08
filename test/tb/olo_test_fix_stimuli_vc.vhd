@@ -23,6 +23,12 @@ package olo_test_fix_stimuli_pkg is
         p_actor : actor_t;
     end record;
 
+    type olo_fix_stimuli_mode_t is (
+        stimuli_mode_stream,
+        stimuli_mode_packet,
+        stimuli_mode_tdm
+    );
+
     -- *** Master Operations ***
 
     -- Transaction
@@ -30,10 +36,12 @@ package olo_test_fix_stimuli_pkg is
         signal net        : inout network_t;
         stimuli           : olo_test_fix_stimuli_t;
         file_path         : string;
-        stall_probability : real     := 0.0;
-        stall_max_cycles  : positive := 1;
-        stall_min_cycles  : positive := 1;
-        msg               : string   := "");
+        mode              : olo_fix_stimuli_mode_t := stimuli_mode_stream;
+        tdm_slots         : positive               := 1;
+        stall_probability : real                   := 0.0;
+        stall_max_cycles  : positive               := 1;
+        stall_min_cycles  : positive               := 1;
+        msg               : string                 := "");
 
     -- *** VUnit Operations ***
     -- Message Types
@@ -56,10 +64,12 @@ package body olo_test_fix_stimuli_pkg is
         signal net        : inout network_t;
         stimuli           : olo_test_fix_stimuli_t;
         file_path         : string;
-        stall_probability : real     := 0.0;
-        stall_max_cycles  : positive := 1;
-        stall_min_cycles  : positive := 1;
-        msg               : string   := "") is
+        mode              : olo_fix_stimuli_mode_t := stimuli_mode_stream;
+        tdm_slots         : positive               := 1;
+        stall_probability : real                   := 0.0;
+        stall_max_cycles  : positive               := 1;
+        stall_min_cycles  : positive               := 1;
+        msg               : string                 := "") is
         -- Declarations
         variable msg_v  : msg_t := new_msg(fix_stimuli_play_file_msg);
     begin
@@ -69,6 +79,8 @@ package body olo_test_fix_stimuli_pkg is
 
         -- Create message7
         push_string(msg_v, file_path);
+        push(msg_v, olo_fix_stimuli_mode_t'pos(mode));
+        push(msg_v, tdm_slots);
         push(msg_v, stall_probability);
         push(msg_v, stall_max_cycles);
         push(msg_v, stall_min_cycles);
@@ -127,6 +139,7 @@ entity olo_test_fix_stimuli_vc is
         rst      : in    std_logic;
         ready    : in    std_logic := '1';
         valid    : inout std_logic; -- input for slave, output for master
+        last     : out   std_logic;
         data     : out   std_logic_vector(cl_fix_width(fmt)-1 downto 0)
     );
 end entity;
@@ -145,6 +158,8 @@ begin
         variable msg_type          : msg_type_t;
         variable msg_p             : string_ptr_t;
         variable file_path_p       : string_ptr_t;
+        variable mode              : olo_fix_stimuli_mode_t;
+        variable tdm_slots         : positive;
         variable stall_probability : real;
         variable stall_max_cycles  : positive;
         variable stall_min_cycles  : positive;
@@ -152,14 +167,20 @@ begin
         -- File
         file data_file : text;
 
-        variable line_v   : line;
-        variable fmt_v    : FixFormat_t;
-        variable data_slv : std_logic_vector(cl_fix_width(fmt)-1 downto 0);
-        variable good     : boolean;
+        variable line_v        : line;
+        variable next_line_v   : line;
+        variable fmt_v         : FixFormat_t;
+        variable data_slv      : std_logic_vector(cl_fix_width(fmt)-1 downto 0);
+        variable next_data_slv : std_logic_vector(cl_fix_width(fmt)-1 downto 0);
+        variable good          : boolean;
+        variable has_data      : boolean;
+        variable next_has_data : boolean;
 
         -- Others
         variable stall_random : real;
         variable stall_cycles : positive;
+        variable slot_cnt     : natural;
+        variable is_last      : boolean;
     begin
 
         -- Initialize
@@ -168,6 +189,7 @@ begin
         else
             valid <= 'Z';
         end if;
+        last <= '0';
         data <= (others => 'U');
         random_v.InitSeed(random_v'instance_name);
 
@@ -184,6 +206,8 @@ begin
             if msg_type = fix_stimuli_play_file_msg then
                 -- Pop Transaction
                 file_path_p       := new_string_ptr(pop_string(request_msg));
+                mode              := olo_fix_stimuli_mode_t'val(integer'(pop(request_msg)));
+                tdm_slots         := pop(request_msg);
                 stall_probability := pop(request_msg);
                 stall_max_cycles  := pop(request_msg);
                 stall_min_cycles  := pop(request_msg);
@@ -196,21 +220,60 @@ begin
                 readline(data_file, line_v);
                 fmt_v := cl_fix_format_from_string(line_v.all);
                 assert fmt_v = fmt
-                    report to_string(msg_p) & "Format mismatch: expected " & to_string(fmt) &
+                    report "olo_test_fix_stimuli - " & to_string(msg_p) & "Format mismatch: expected " & to_string(fmt) &
                            ", got " & to_string(fmt_v) & " in file " & to_string(file_path_p)
                     severity error;
 
-                -- Iterate through lines in file
-                while not endfile(data_file) loop
-                    -- Read line
+                -- Read first data line
+                if not endfile(data_file) then
                     readline(data_file, line_v);
                     hread(line_v, data_slv, good);
                     assert good
-                        report to_string(msg_p) & "- Failed to read from file" & to_string(file_path_p)
+                        report "olo_test_fix_stimuli - " & to_string(msg_p) & "- Failed to read from file" & to_string(file_path_p)
                         severity error;
+                    has_data := true;
+                else
+                    has_data := false;
+                end if;
+
+                slot_cnt := 0;
+
+                -- Iterate through lines in file
+                while has_data loop
+                    -- Try read next line
+                    if not endfile(data_file) then
+                        readline(data_file, next_line_v);
+                        hread(next_line_v, next_data_slv, good);
+                        assert good
+                            report "olo_test_fix_stimuli - " & to_string(msg_p) & "- Failed to read from file" & to_string(file_path_p)
+                            severity error;
+                        next_has_data := true;
+                    else
+                        next_has_data := false;
+                    end if;
+
+                    -- Determine Last
+                    is_last := false;
+                    if mode = stimuli_mode_packet and not next_has_data then
+                        is_last := true;
+                    elsif mode = stimuli_mode_tdm and slot_cnt = tdm_slots - 1 then
+                        is_last := true;
+                    end if;
+
+                    -- Update slot counter
+                    if slot_cnt = tdm_slots - 1 then
+                        slot_cnt := 0;
+                    else
+                        slot_cnt := slot_cnt + 1;
+                    end if;
 
                     -- Apply Data
                     data <= data_slv;
+                    if is_last then
+                        last <= '1';
+                    else
+                        last <= '0';
+                    end if;
 
                     -- Wait for ready signal if timing master
                     if is_timing_master then
@@ -222,6 +285,7 @@ begin
                         if stall_random < stall_probability then
                             -- Remove data
                             valid <= '0';
+                            last  <= '0';
                             data  <= (others => 'U');
 
                             -- Wait for stall
@@ -235,6 +299,10 @@ begin
                     else
                         wait until rising_edge(clk) and ready = '1' and valid = '1';
                     end if;
+
+                    -- Move next to current
+                    data_slv := next_data_slv;
+                    has_data := next_has_data;
                 end loop;
 
                 -- Close the file
@@ -244,6 +312,7 @@ begin
                 if is_timing_master then
                     valid <= '0';
                 end if;
+                last <= '0';
                 data <= (others => 'U');
 
             elsif msg_type = wait_until_idle_msg then

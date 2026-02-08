@@ -35,7 +35,7 @@ package olo_base_pkg_math is
 
     function log2ceil (arg : in natural) return natural;
 
-    function log2ceil(arg : in real) return natural;
+    function log2ceil (arg : in real) return natural;
 
     function isPower2 (arg : in natural) return boolean;
 
@@ -206,18 +206,18 @@ package body olo_base_pkg_math is
     end function;
 
     -- *** Log2Ceil real ***
-    function log2ceil(arg : in real) return natural is
-        variable v : real    := arg;
-        variable r : natural := 0;
+    function log2ceil (arg : in real) return natural is
+        variable v        : real    := arg;
+        variable Result_v : natural := 0;
     begin
 
         -- Calculat elog2
         while v > 1.0 loop
-            v := v / 2.0;
-            r := r + 1;
+            v        := v / 2.0;
+            Result_v := Result_v + 1;
         end loop;
 
-        return r;
+        return Result_v;
     end function;
 
     -- *** isPower2 ***
