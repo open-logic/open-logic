@@ -166,4 +166,3 @@ This value is then multiplied with the gain correction coefficient and rounded/s
 Saturate_g_ generics to produce the output in format _OutFmt_g_.
 
 ![Gain Correction Detail](./cic/cic_gain_corr.drawio.png)
-
