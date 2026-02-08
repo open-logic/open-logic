@@ -329,8 +329,8 @@ begin
     -----------------------------------------------------------------------------------------------
     -- *** Gain Correction Chain ***
     g_gc : if GainCorrCoefFmtUpper_c /= "NONE" generate
-        signal GcIn_0    : std_logic_vector(cl_fix_width(GcInFmt_c) - 1 downto 0);
-        signal GcCoef_0  : std_logic_vector(cl_fix_width(GainCorrCoefFmt_c) - 1 downto 0);
+        signal GcIn_0   : std_logic_vector(cl_fix_width(GcInFmt_c) - 1 downto 0);
+        signal GcCoef_0 : std_logic_vector(cl_fix_width(GainCorrCoefFmt_c) - 1 downto 0);
     begin
 
         GcIn_0 <= cl_fix_resize(r.DiffVal(Order_g), DiffFmt_c, GcInFmt_c, Trunc_s, None_s);

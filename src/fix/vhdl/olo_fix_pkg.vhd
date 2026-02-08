@@ -50,7 +50,7 @@ package olo_fix_pkg is
 
     -- Functions
     function fixFmtWidthFromString (fmt : string) return natural;
-    function fixFmtWidthFromStringTolerant(fmt : string) return natural;
+    function fixFmtWidthFromStringTolerant (fmt : string) return natural;
 
     -- Register is required if:
     -- - logic is present and regMode is "AUTO"
@@ -76,7 +76,7 @@ package body olo_fix_pkg is
         return cl_fix_width(FixFmt_c);
     end function;
 
-    function fixFmtWidthFromStringTolerant(fmt : string) return natural is
+    function fixFmtWidthFromStringTolerant (fmt : string) return natural is
         constant FixFmt_c : FixFormat_t := fixFmtFromStringTolerant(fmt);
     begin
         return cl_fix_width(FixFmt_c);

@@ -27,10 +27,6 @@ library work;
     use work.olo_test_fix_stimuli_pkg.all;
     use work.olo_test_fix_checker_pkg.all;
 
--- TODO: Test ratio change
--- TODO: Test ratio 1
--- TODO: Add all important test cases in python
-
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
@@ -62,14 +58,14 @@ architecture sim of olo_fix_cic_dec_tdm_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk       : std_logic                                                      := '0';
-    signal Rst       : std_logic                                                      := '0';
-    signal Cfg_Ratio    : std_logic_vector(log2ceil(Ratio_g) - 1 downto 0)            := (others => 'X');
-    signal Cfg_Shift    : std_logic_vector(7 downto 0)                                := (others => 'X');
+    signal Clk          : std_logic                                                                       := '0';
+    signal Rst          : std_logic                                                                       := '0';
+    signal Cfg_Ratio    : std_logic_vector(log2ceil(Ratio_g) - 1 downto 0)                                := (others => 'X');
+    signal Cfg_Shift    : std_logic_vector(7 downto 0)                                                    := (others => 'X');
     signal Cfg_GainCorr : std_logic_vector(fixFmtWidthFromStringTolerant(GainCorrCoefFmt_g) - 1 downto 0) := (others => 'X');
-    signal In_Valid     : std_logic := '0';
-    signal In_Data      : std_logic_vector(fixFmtWidthFromString(InFmt_g) - 1 downto 0) := (others => '0');
-    signal In_Last      : std_logic := '0';
+    signal In_Valid     : std_logic                                                                       := '0';
+    signal In_Data      : std_logic_vector(fixFmtWidthFromString(InFmt_g) - 1 downto 0)                   := (others => '0');
+    signal In_Last      : std_logic                                                                       := '0';
     signal Out_Valid    : std_logic;
     signal Out_Data     : std_logic_vector(fixFmtWidthFromString(OutFmt_g) - 1 downto 0);
     signal Out_Last     : std_logic;
@@ -79,12 +75,12 @@ architecture sim of olo_fix_cic_dec_tdm_tb is
     -----------------------------------------------------------------------------------------------
     -- *** Verification Compnents ***
     constant Stimuli_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant Checker_c   : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant Checker_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
 
     -- *** Constants ***
-    constant InFile_c : string := output_path(runner_cfg) & "In_Interleaved.fix";
-    constant Outfile_c  : string := output_path(runner_cfg) & "Out_Interleaved.fix";
-    constant OutFileMin1_c  : string := output_path(runner_cfg) & "Out_Rminus1_Interleaved.fix";
+    constant InFile_c      : string := output_path(runner_cfg) & "In_Interleaved.fix";
+    constant Outfile_c     : string := output_path(runner_cfg) & "Out_Interleaved.fix";
+    constant OutFileMin1_c : string := output_path(runner_cfg) & "Out_Rminus1_Interleaved.fix";
 
 begin
 
@@ -94,10 +90,10 @@ begin
     test_runner_watchdog(runner, 10 ms);
 
     p_control : process is
-        variable Ratio_v : real := real(Ratio_g);
-        variable CicGain_v : real;
+        variable Ratio_v     : real := real(Ratio_g);
+        variable CicGain_v   : real;
         variable CicGrowth_v : real;
-        variable GainCorr_v : real;
+        variable GainCorr_v  : real;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -109,12 +105,12 @@ begin
             -- During Reset set config ports (if not fixed)
             Ratio_v := real(Ratio_g);
             if not FixedRatio_g then
-                CicGain_v := (Ratio_v*real(DiffDelay_g))**real(Order_g);
-                CicGrowth_v := ceil(log2(CicGain_v));
-                GainCorr_v := 2.0**CicGrowth_v/CicGain_v;
-                Cfg_Shift <= toUslv(integer(CicGrowth_v), Cfg_Shift'length);
+                CicGain_v    := (Ratio_v * real(DiffDelay_g))**real(Order_g);
+                CicGrowth_v  := ceil(log2(CicGain_v));
+                GainCorr_v   := 2.0**CicGrowth_v / CicGain_v;
+                Cfg_Shift    <= toUslv(integer(CicGrowth_v), Cfg_Shift'length);
                 Cfg_GainCorr <= cl_fix_from_real(GainCorr_v, fixFmtFromStringTolerant(GainCorrCoefFmt_g));
-                Cfg_Ratio <= toUslv(integer(Ratio_v)-1, Cfg_Ratio'length);
+                Cfg_Ratio    <= toUslv(integer(Ratio_v) - 1, Cfg_Ratio'length);
             end if;
             wait for 1 us;
             wait until rising_edge(Clk);
@@ -129,7 +125,7 @@ begin
 
             -- *** Second run with delay ***
             if run("Throttled") then
-                fix_stimuli_play_file (net, Stimuli_c, InFile_c); -- Using streaming mode should also be fine 
+                fix_stimuli_play_file (net, Stimuli_c, InFile_c); -- Using streaming mode should also be fine
                 fix_checker_check_file (net, Checker_c, Outfile_c, Mode => checker_mode_tdm, Tdm_Slots => Channels_g);
             end if;
 
@@ -137,18 +133,18 @@ begin
             if run("RatioChange") then
                 -- Cosimulation creates ratio R-1
                 if not FixedRatio_g then
-                    Ratio_v := real(Ratio_g-1);
+                    Ratio_v      := real(Ratio_g - 1);
                     wait until rising_edge(Clk);
-                    Rst <= '1';
-                    CicGain_v := (Ratio_v*real(DiffDelay_g))**real(Order_g);
-                    CicGrowth_v := ceil(log2(CicGain_v));
-                    GainCorr_v := 2.0**CicGrowth_v/CicGain_v;
-                    Cfg_Shift <= toUslv(integer(CicGrowth_v), Cfg_Shift'length);
+                    Rst          <= '1';
+                    CicGain_v    := (Ratio_v * real(DiffDelay_g))**real(Order_g);
+                    CicGrowth_v  := ceil(log2(CicGain_v));
+                    GainCorr_v   := 2.0**CicGrowth_v / CicGain_v;
+                    Cfg_Shift    <= toUslv(integer(CicGrowth_v), Cfg_Shift'length);
                     Cfg_GainCorr <= cl_fix_from_real(GainCorr_v, fixFmtFromStringTolerant(GainCorrCoefFmt_g));
-                    Cfg_Ratio <= toUslv(integer(Ratio_v)-1, Cfg_Ratio'length);
+                    Cfg_Ratio    <= toUslv(integer(Ratio_v) - 1, Cfg_Ratio'length);
                     wait for 1 us;
                     wait until rising_edge(Clk);
-                    Rst <= '0';
+                    Rst          <= '0';
                     wait until rising_edge(Clk);
                 end if;
                 -- This only can be tested for runtime configurable ratio
@@ -192,17 +188,17 @@ begin
             Saturate_g        => Saturate_g
         )
         port map (
-            Clk       => Clk,
-            Rst       => Rst,
+            Clk          => Clk,
+            Rst          => Rst,
             Cfg_Ratio    => Cfg_Ratio,
             Cfg_Shift    => Cfg_Shift,
             Cfg_GainCorr => Cfg_GainCorr,
-            In_Valid  => In_Valid,
-            In_Data   => In_Data,
-            In_Last   => In_Last,
-            Out_Valid => Out_Valid,
-            Out_Data  => Out_Data,
-            Out_Last  => Out_Last
+            In_Valid     => In_Valid,
+            In_Data      => In_Data,
+            In_Last      => In_Last,
+            Out_Valid    => Out_Valid,
+            Out_Data     => Out_Data,
+            Out_Last     => Out_Last
         );
 
     -----------------------------------------------------------------------------------------------
