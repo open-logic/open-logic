@@ -23,6 +23,8 @@ package olo_test_fix_stimuli_pkg is
         p_actor : actor_t;
     end record;
 
+    type olo_test_fix_stimuli_array_t is array (natural range <>) of olo_test_fix_stimuli_t;
+
     type olo_fix_stimuli_mode_t is (
         stimuli_mode_stream,
         stimuli_mode_packet,
@@ -49,6 +51,9 @@ package olo_test_fix_stimuli_pkg is
 
     -- Constructor
     impure function new_olo_test_fix_stimuli return olo_test_fix_stimuli_t;
+
+    -- Array Constructor
+    impure function new_olo_test_fix_stimuli_array (size : natural) return olo_test_fix_stimuli_array_t;
 
     -- Casts
     impure function as_sync (instance : olo_test_fix_stimuli_t) return sync_handle_t;
@@ -94,6 +99,18 @@ package body olo_test_fix_stimuli_pkg is
     impure function new_olo_test_fix_stimuli return olo_test_fix_stimuli_t is
     begin
         return (p_actor => new_actor);
+    end function;
+
+    -- Array Constructor
+    impure function new_olo_test_fix_stimuli_array (size : natural) return olo_test_fix_stimuli_array_t is
+        variable arr : olo_test_fix_stimuli_array_t(0 to size - 1);
+    begin
+
+        for i in arr'range loop
+            arr(i) := new_olo_test_fix_stimuli;
+        end loop;
+
+        return arr;
     end function;
 
     -- Casts
