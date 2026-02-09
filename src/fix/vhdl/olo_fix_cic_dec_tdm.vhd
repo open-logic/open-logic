@@ -242,8 +242,8 @@ begin
             end if;
         end loop;
 
+        -- *** Gain Coefficient Register ***
         if GainCorrCoefFmtUpper_c /= "NONE" then
-            -- *** Gain Coefficient Register ***
             v.GcCoef := Cfg_GainCorr;
         end if;
 
@@ -330,10 +330,28 @@ begin
     -- *** Gain Correction Chain ***
     g_gc : if GainCorrCoefFmtUpper_c /= "NONE" generate
         signal GcIn_0   : std_logic_vector(cl_fix_width(GcInFmt_c) - 1 downto 0);
+        signal GcVld_0  : std_logic;
         signal GcCoef_0 : std_logic_vector(cl_fix_width(GainCorrCoefFmt_c) - 1 downto 0);
     begin
 
-        GcIn_0 <= cl_fix_resize(r.DiffVal(Order_g), DiffFmt_c, GcInFmt_c, Trunc_s, None_s);
+        -- Resize
+        i_gc_resize : entity work.olo_fix_resize
+            generic map (
+                AFmt_g      => to_string(DiffFmt_c),
+                ResultFmt_g => to_string(GcInFmt_c),
+                Round_g     => FixRound_Trunc_c,
+                Saturate_g  => Saturate_g,
+                RoundReg_g  => "auto",
+                SatReg_g    => "auto"
+            )
+            port map (
+                Clk        => Clk,
+                Rst        => Rst,
+                In_Valid   => r.VldDiff(Order_g),
+                In_A       => r.DiffVal(Order_g),
+                Out_Valid  => GcVld_0,
+                Out_Result => GcIn_0
+            );
 
         -- Multiplier
         GcCoef_0 <= FixedGc_c when FixedRatio_g else r.GcCoef;
@@ -352,7 +370,7 @@ begin
             port map (
                 Clk        => Clk,
                 Rst        => Rst,
-                In_Valid   => r.VldDiff(Order_g),
+                In_Valid   => GcVld_0,
                 In_A       => GcIn_0,
                 In_B       => GcCoef_0,
                 Out_Valid  => CompOutVld,
