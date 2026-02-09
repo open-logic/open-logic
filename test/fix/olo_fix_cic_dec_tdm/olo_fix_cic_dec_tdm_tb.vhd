@@ -125,7 +125,12 @@ begin
 
             -- *** Second run with delay ***
             if run("Throttled") then
-                fix_stimuli_play_file (net, Stimuli_c, InFile_c); -- Using streaming mode should also be fine
+                fix_stimuli_play_file (net, Stimuli_c, InFile_c,
+                                       stall_probability => 1.0,
+                                       stall_max_cycles  => 5,
+                                       stall_min_cycles  => 5,
+                                       Mode              => stimuli_mode_tdm,
+                                       Tdm_Slots         => Channels_g); -- Using streaming mode should also be fine
                 fix_checker_check_file (net, Checker_c, Outfile_c, Mode => checker_mode_tdm, Tdm_Slots => Channels_g);
             end if;
 
