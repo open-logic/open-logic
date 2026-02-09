@@ -27,7 +27,7 @@ library olo;
 entity olo_base_wconv_xn2n_tb is
     generic (
         runner_cfg      : string;
-        WidthRatio_g    : positive range 2 to 3 := 2
+        WidthRatio_g    : positive range 1 to 3 := 2
     );
 end entity;
 
@@ -167,24 +167,26 @@ begin
             end if;
 
             if run("PartialWord") then
-                -- Test word(0) enabled
-                checkCounerValue(net, 3, '0');
-                check_axi_stream(net, AxisSlave_c, toUslv(7, OutWidth_c), tlast => '1', blocking => false, msg => "lastWord a");
-                push_axi_stream(net, AxisMaster_c, counterValue(3), tuser => onesVector(WidthRatio_g), tlast => '0');
-                push_axi_stream(net, AxisMaster_c, toUslv(7, inWidth_c), tuser => toUslv(1, WidthRatio_g), tlast => '1');
-                -- Test word(1) enabled
-                checkCounerValue(net, 4, '0');
-                check_axi_stream(net, AxisSlave_c, toUslv(9, OutWidth_c), tlast => '1', blocking => false, msg => "lastWord b");
-                push_axi_stream(net, AxisMaster_c, counterValue(4), tuser => onesVector(WidthRatio_g), tlast => '0');
-                push_axi_stream(net, AxisMaster_c, toUslv(9*16, inWidth_c), tuser => toUslv(2#10#, WidthRatio_g), tlast => '1');
-                -- Test words 0 and 2 enabled
-                if WidthRatio_g >= 3 then
-                    checkCounerValue(net, 5, '0');
-                    check_axi_stream(net, AxisSlave_c, toUslv(5, OutWidth_c), tlast => '0', blocking => false, msg => "first word c");
-                    check_axi_stream(net, AxisSlave_c, toUslv(3, OutWidth_c), tlast => '1', blocking => false, msg => "last word c");
-                    push_axi_stream(net, AxisMaster_c, counterValue(5), tuser => onesVector(WidthRatio_g), tlast => '0');
-                    push_axi_stream(net, AxisMaster_c, toUslv(3*2**8+5, inWidth_c), tuser => toUslv(2#101#, WidthRatio_g), tlast => '1');
-
+                -- The test only applies for Ratio >= 2
+                if WidthRatio_g >= 2 then
+                    -- Test word(0) enabled
+                    checkCounerValue(net, 3, '0');
+                    check_axi_stream(net, AxisSlave_c, toUslv(7, OutWidth_c), tlast => '1', blocking => false, msg => "lastWord a");
+                    push_axi_stream(net, AxisMaster_c, counterValue(3), tuser => onesVector(WidthRatio_g), tlast => '0');
+                    push_axi_stream(net, AxisMaster_c, toUslv(7, inWidth_c), tuser => toUslv(1, WidthRatio_g), tlast => '1');
+                    -- Test word(1) enabled
+                    checkCounerValue(net, 4, '0');
+                    check_axi_stream(net, AxisSlave_c, toUslv(9, OutWidth_c), tlast => '1', blocking => false, msg => "lastWord b");
+                    push_axi_stream(net, AxisMaster_c, counterValue(4), tuser => onesVector(WidthRatio_g), tlast => '0');
+                    push_axi_stream(net, AxisMaster_c, toUslv(9*16, inWidth_c), tuser => toUslv(2#10#, WidthRatio_g), tlast => '1');
+                    -- Test words 0 and 2 enabled
+                    if WidthRatio_g >= 3 then
+                        checkCounerValue(net, 5, '0');
+                        check_axi_stream(net, AxisSlave_c, toUslv(5, OutWidth_c), tlast => '0', blocking => false, msg => "first word c");
+                        check_axi_stream(net, AxisSlave_c, toUslv(3, OutWidth_c), tlast => '1', blocking => false, msg => "last word c");
+                        push_axi_stream(net, AxisMaster_c, counterValue(5), tuser => onesVector(WidthRatio_g), tlast => '0');
+                        push_axi_stream(net, AxisMaster_c, toUslv(3*2**8+5, inWidth_c), tuser => toUslv(2#101#, WidthRatio_g), tlast => '1');
+                    end if;
                 end if;
             end if;
 
