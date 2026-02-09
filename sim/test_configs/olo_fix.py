@@ -459,4 +459,54 @@ def add_configs(olo_tb):
     # Shorter formasts
     named_config(tb, default_generics  | {'InFmt_g': '(0,0,8)', 'OutFmt_g': '(0,0,8)'},
                     pre_config=cosim,
-                    short_name=f'ShortFormats')     
+                    short_name=f'ShortFormats')    
+
+    ### olo_fix_cic_dec_par_tdm ###
+    tb = olo_tb.test_bench('olo_fix_cic_dec_par_tdm_tb')    
+    #Test formats and round/sat modes
+    default_generics = {
+        'Channels_g': '1',
+        'Order_g': '3',
+        'Ratio_g': '4',
+        'FixedRatio_g': 'False',
+        'DiffDelay_g': '1',
+        'InFmt_g': '(1, 0, 11)',
+        'OutFmt_g': '(1, 0, 15)',
+        'GainCorrCoefFmt_g': '(0, 1, 16)',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+    # The same cosimulation file works for both testbenches.
+    cosim = olo_fix_cic_dec_tdm.cosim.cosim
+
+    for Channels in ['1', '3']:
+        for FixedRatio in ['False', 'True']:
+            # Default
+            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}'},
+                            pre_config=cosim,
+                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-Default')           
+
+            # Different Ratios & Orders
+            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'Order_g': '6', 'Ratio_g': '5'},
+                            pre_config=cosim,
+                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-Order=6-Ratio=3')                 
+
+            # Different Diff Delay
+            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'DiffDelay_g': '2'},
+                            pre_config=cosim,
+                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-DiffDelay=2')
+
+            #Gain Correction off
+            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'GainCorrCoefFmt_g': 'NONE'},
+                            pre_config=cosim,
+                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-NoGc')
+
+    # Overflow
+    named_config(tb, default_generics  | {'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'OutFmt_g': '(1, -2, 15)'},
+                    pre_config=cosim,
+                    short_name=f'Overflow')      
+
+    # Shorter formasts
+    named_config(tb, default_generics  | {'InFmt_g': '(0,0,8)', 'OutFmt_g': '(0,0,8)'},
+                    pre_config=cosim,
+                    short_name=f'ShortFormats')    

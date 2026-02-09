@@ -220,11 +220,11 @@ begin
             if r.Rcnt = 0 then
                 v.VldParTdm := '1';
                 -- synthesis translate_off
-                assert fromUslv(Ratio_v) >= Channels_g - 1
+                assert fromUslv(Ratio_v) >= Channels_g - 1 or Rst = '1' or not rising_edge(Clk)
                     report "olo_fix_cic_dec_par_tdm: Ratio must be at least equal to Channels_g"
                     severity error;
                 -- synthesis translate_on
-                v.Rcnt := to_integer(unsigned(Cfg_Ratio));
+                v.Rcnt := to_integer(unsigned(Ratio_v));
             else
                 v.Rcnt := r.Rcnt - 1;
             end if;
@@ -290,9 +290,6 @@ begin
     p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
-            assert Channels_g >= 2
-                report "###ERROR###: psi_fix_cic_dec_fix_nch_tdm_tdm: Channels_g must be >= 2"
-                severity error;
             r <= r_next;
             if Rst = '1' then
                 r.VldAccu   <= (others => '0');
@@ -310,7 +307,6 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Input TDM Validation
     -----------------------------------------------------------------------------------------------
-    -- *** Gain Correction Chain ***
     -- *** Gain Correction Chain ***
     g_gc : if GainCorrCoefFmtUpper_c /= "NONE" generate
         signal GcIn_0   : std_logic_vector(cl_fix_width(GcInFmt_c) - 1 downto 0);
