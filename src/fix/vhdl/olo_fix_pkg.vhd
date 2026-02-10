@@ -86,7 +86,7 @@ package body olo_fix_pkg is
     function fixImplementReg (
         logicPresent : boolean;
         regMode      : string) return boolean is
-        variable Result_v  : boolean := false;
+        variable Result_v : boolean := false;
     begin
 
         -- Calculate register requirement
