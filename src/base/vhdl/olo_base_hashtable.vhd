@@ -76,7 +76,7 @@ architecture rtl of olo_base_hashtable is
     );
 
     -- Hashtable states
-    type HtState_t is (Idle_s, SearchInit_s, NextKey_s, Clear_s, SearchKey_s, Write_s, Read_s, ClusterComp_s, Remove_s);
+    type HtState_t is (Idle_s, SearchInit_s, NextKey_s, Clear_s, SearchKey_s, Write_s, Read_s, HashCompute_s, ClusterComp_s, Remove_s);
 
     -- Register signals
     type Reg_r is record
@@ -88,6 +88,7 @@ architecture rtl of olo_base_hashtable is
         key_found    : std_logic;
         after_search : HtState_t;
         user_data    : Data_r;
+        hash         : unsigned(PairsIdx_c-1 downto 0);
     end record;
 
     signal RegNext, RegCurr : Reg_r;
@@ -196,7 +197,7 @@ begin
                         RegNext.after_search <= Read_s;
                         RegNext.ht_state     <= SearchInit_s;
                     elsif In_Remove = '1' then
-                        RegNext.after_search <= ClusterComp_s;
+                        RegNext.after_search <= HashCompute_s;
                         RegNext.ht_state     <= SearchInit_s;
                     elsif In_Clear = '1' then
                         RegNext.wr_idx   <= to_unsigned(0, RegNext.wr_idx'length);
@@ -226,7 +227,7 @@ begin
                     RegNext.key_found <= '1';
                     RegNext.ht_state  <= RegCurr.after_search;
                     RegNext.cnt       <= to_unsigned(0, RegNext.cnt'length);
-                    if RegCurr.after_search = ClusterComp_s then
+                    if RegCurr.after_search = HashCompute_s then
                         -- Setup cluster for compression
                         RegNext.rd_idx <= RegCurr.rd_idx + 1;
                         RegNext.wr_idx <= RegCurr.rd_idx;
@@ -297,11 +298,18 @@ begin
                     RegNext.ht_state <= Idle_s;
                 end if;
 
+            when HashCompute_s =>
+                -- Compute hash
+                -- Computed hash is stored here to break critical path (ram-hash-cluster)
+                -- and hopefully improve performance
+                RegNext.hash <= Hash_Out;
+                RegNext.ht_state <= ClusterComp_s;
+
             when ClusterComp_s =>
                 -- Cluster compression
                 Ram_WrAddr <= RegCurr.wr_idx;
                 if RegCurr.key_found = '1' then
-                    if Ram_RdData.used <= '0' then -- Done
+                    if Ram_RdData.used = '0' then -- Done
                         Ram_WrEna        <= '1';
                         RegNext.ht_state <= Remove_s;
                     else
@@ -313,6 +321,7 @@ begin
                         if RegCurr.cnt = Depth_g-1 then -- Full hashtable cluster compressed
                             RegNext.ht_state <= Remove_s;
                         else
+                            RegNext.ht_state <= HashCompute_s;
                             RegNext.cnt    <= RegCurr.cnt + 1;
                             RegNext.rd_idx <= RegCurr.rd_idx + 1;
                             Ram_RdAddr     <= RegCurr.rd_idx + 1;
@@ -383,8 +392,8 @@ begin
     --  cannot exist -> !A!B!C is undefined
     -- With the 2 previous assumptions, equation can be rewritten
     -- R = A(!BC + B!C) + !A(BC + !B!C) = A xor !(B xor C)
-    Hash_OutCluster <= '1' when ((RegCurr.rd_idx > RegCurr.wr_idx) and ((Hash_Out <= RegCurr.wr_idx) or (Hash_Out > RegCurr.rd_idx))) or
-                                ((RegCurr.rd_idx < RegCurr.wr_idx) and ((Hash_Out <= RegCurr.wr_idx) and (Hash_Out > RegCurr.rd_idx))) else
+    Hash_OutCluster <= '1' when ((RegCurr.rd_idx > RegCurr.wr_idx) and ((RegCurr.hash <= RegCurr.wr_idx) or (RegCurr.hash > RegCurr.rd_idx))) or
+                                ((RegCurr.rd_idx < RegCurr.wr_idx) and ((RegCurr.hash <= RegCurr.wr_idx) and (RegCurr.hash > RegCurr.rd_idx))) else
                        '0';
 
     -- Ram
