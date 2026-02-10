@@ -25,6 +25,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -156,7 +157,7 @@ begin
         -- For Write and Rad with strict ordering, wait until write is done
         if r.Write_0 = '1' or r.Clear_0 = '1' or r.ClearAll_0 = '1' then
             InWrReady_v := '0';
-            if StrictOrdering_g and RamBehavior_g = "RBW" then
+            if StrictOrdering_g and compareNoCase(RamBehavior_g, "RBW") then
                 -- If the ordering is not strict or the ram writes befor read, we camm continue reading immediately
                 InRdReady_v := '0';
             else

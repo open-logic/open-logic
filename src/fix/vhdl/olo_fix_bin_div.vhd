@@ -61,9 +61,6 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_fix_bin_div is
 
-    -- String upping
-    constant ModeUpper_c : string := toUpper(Mode_g);
-
     -- Formats
     constant NumFmt_c   : FixFormat_t   := cl_fix_format_from_string(NumFmt_g);
     constant DenomFmt_c : FixFormat_t   := cl_fix_format_from_string(DenomFmt_g);
@@ -85,14 +82,14 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Addertions
     -----------------------------------------------------------------------------------------------
-    assert ModeUpper_c = "PIPELINED" or ModeUpper_c = "SERIAL"
+    assert compareNoCase(Mode_g, "PIPELINED") or compareNoCase(Mode_g, "SERIAL")
         report "###ERROR###: olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
         severity error;
 
     -----------------------------------------------------------------------------------------------
     -- Serial implementation
     -----------------------------------------------------------------------------------------------
-    g_serial : if ModeUpper_c = "SERIAL" generate
+    g_serial : if compareNoCase(Mode_g, "SERIAL") generate
         -- types
         type State_t is (Idle_s, Init1_s, Init2_s, Calc_s, Output_s);
 
@@ -228,7 +225,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Pipelined implementation
     -----------------------------------------------------------------------------------------------
-    g_pipelined : if ModeUpper_c = "PIPELINED" generate
+    g_pipelined : if compareNoCase(Mode_g, "PIPELINED") generate
 
         -- types
         type DenomComp_a is array (natural range <>) of std_logic_vector(cl_fix_width(DenomCompFmt_c)-1 downto 0);

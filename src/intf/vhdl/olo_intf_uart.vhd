@@ -25,6 +25,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -68,7 +69,7 @@ architecture rtl of olo_intf_uart is
     function parityBit (Data : std_logic_vector) return std_logic is
         variable Parity_v : std_logic := '0';
     begin
-        if Parity_g = "none" then
+        if compareNoCase(Parity_g, "none") then
             return '0';
         end if;
 
@@ -77,7 +78,7 @@ architecture rtl of olo_intf_uart is
             Parity_v := Parity_v xor Data(i);
         end loop;
 
-        if Parity_g = "even" then
+        if compareNoCase(Parity_g, "even") then
             return Parity_v;
         else
             return not Parity_v;
@@ -86,9 +87,9 @@ architecture rtl of olo_intf_uart is
 
     function stopStrobeCount return natural is
     begin
-        if StopBits_g = "1" then
+        if compareNoCase(StopBits_g, "1") then
             return 2;
-        elsif StopBits_g = "1.5" then
+        elsif compareNoCase(StopBits_g, "1.5") then
             return 3;
         else
             return 4;
@@ -101,7 +102,7 @@ architecture rtl of olo_intf_uart is
         -- Start Bit
         Bits_v := Bits_v + 1;
         -- Parity Bit
-        if Parity_g /= "none" then
+        if not compareNoCase(Parity_g, "none") then
             Bits_v := Bits_v + 1;
         end if;
         return Bits_v;
@@ -263,7 +264,7 @@ begin
                     end if;
                     -- Switch to next state after last bit
                     if r.RxCount = DataBits_g*2 - 1 then
-                        if Parity_g = "none" then
+                        if compareNoCase(Parity_g, "none") then
                             v.StateRx := Stop_s;
                         else
                             v.StateRx := Parity_s;

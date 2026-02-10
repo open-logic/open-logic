@@ -76,9 +76,8 @@ end entity;
 architecture rtl of olo_base_fifo_packet is
 
     -- Constants
-    constant SmallRamStyle_c    : string := choose(toLower(SmallRamStyle_g) = "same", RamStyle_g, SmallRamStyle_g);
-    constant SmallRamBehavior_c : string := choose(toLower(SmallRamBehavior_g) = "same", RamBehavior_g, SmallRamBehavior_g);
-    constant FeatureSet_c       : string := toLower(FeatureSet_g);
+    constant SmallRamStyle_c    : string := choose(compareNoCase(SmallRamStyle_g, "same"), RamStyle_g, SmallRamStyle_g);
+    constant SmallRamBehavior_c : string := choose(compareNoCase(SmallRamBehavior_g, "same"), RamBehavior_g, SmallRamBehavior_g);
 
     -- Range definitions
     subtype Addr_c is integer range log2ceil(Depth_g) downto 0; -- one additional bit to differentiate between full/empty
@@ -133,7 +132,7 @@ begin
         report "olo_base_fifo_packet: only power of two Depth_g is allowed"
         severity error;
 
-    assert FeatureSet_c = "full" or FeatureSet_c = "drop_only"
+    assert compareNoCase(FeatureSet_g, "full") or compareNoCase(FeatureSet_g, "drop_only")
         report "olo_base_fifo_packet: FeatureSet_g must be FULL or DROP_ONLY"
         severity error;
 
@@ -240,7 +239,7 @@ begin
         -- Suppress deactivated feature sets
         OutNext_v   := '0';
         OutRepeat_v := '0';
-        if FeatureSet_c = "full" then
+        if compareNoCase(FeatureSet_g, "full") then
             OutNext_v   := Out_Next;
             OutRepeat_v := Out_Repeat;
         end if;
@@ -276,7 +275,7 @@ begin
                     v.RdPacketEnd := unsigned(RdPacketEnd);
                     v.RdValid     := '1';
                     -- Packet size is only supported in FULL mode
-                    if FeatureSet_c = "full" then
+                    if compareNoCase(FeatureSet_g, "full") then
                         v.RdSize := unsigned(RdPacketEnd) - r.RdAddr + 1;
                     end if;
 
@@ -333,7 +332,7 @@ begin
 
         RamRdAddr <= std_logic_vector(v.RdAddr);
         Out_Valid <= r.RdValid;
-        if FeatureSet_c /= "full" then
+        if not compareNoCase(FeatureSet_g, "full") then
             OutLast_v := OutLastDropOnly; -- Override default assignment further up in the process
             Out_Size  <= (others => 'X');
         else
@@ -407,7 +406,7 @@ begin
     -- Main RAM
     b_ram : block is
         -- RAM stores last for drop_only feature set
-        constant RamWidth_c : natural := choose(FeatureSet_c = "full", Width_g, Width_g+1);
+        constant RamWidth_c : natural := choose(compareNoCase(FeatureSet_g, "full"), Width_g, Width_g+1);
 
         signal RamInData  : std_logic_vector(RamWidth_c-1 downto 0);
         signal RamOutData : std_logic_vector(RamWidth_c-1 downto 0);
@@ -415,7 +414,7 @@ begin
 
         p_map : process (all) is
         begin
-            if FeatureSet_c = "full" then
+            if compareNoCase(FeatureSet_g, "full") then
                 -- Input
                 RamInData <= In_Data;
                 -- Output
@@ -449,7 +448,7 @@ begin
     end block;
 
     -- FIFO transfer packet ends for full feature set
-    g_small_fifo : if FeatureSet_c = "full" generate
+    g_small_fifo : if compareNoCase(FeatureSet_g, "full") generate
 
         i_pktend_fifo : entity work.olo_base_fifo_sync
             generic map (
@@ -473,7 +472,7 @@ begin
     end generate;
 
     -- For drop_only feature set only the last end address must be latched
-    g_no_small_fifo : if FeatureSet_c /= "full" generate
+    g_no_small_fifo : if not compareNoCase(FeatureSet_g, "full") generate
 
         FifoInReady <= '1';
 

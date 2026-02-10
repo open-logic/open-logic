@@ -68,9 +68,6 @@ end entity;
 
 architecture rtl of olo_base_crc_check is
 
-    -- *** constants ***
-    constant Mode_c : string := toLower(Mode_g);
-
     -- *** Types ***
     type Fsm_t is (First_s, Others_s);
 
@@ -95,7 +92,7 @@ begin
     assert CrcPolynomial_g'length <= DataWidth_g
         report "###ERROR###: olo_base_crc_check - Polynomial_g must be smaller or equal width than DataWidth_g"
         severity error;
-    assert Mode_c = "drop" or Mode_c = "flag"
+    assert compareNoCase(Mode_g, "drop") or compareNoCase(Mode_g, "flag")
         report "###ERROR###: olo_base_crc_check - Mode_g must be FLAG or DROP"
         severity error;
 
@@ -185,7 +182,7 @@ begin
         );
 
     -- For DROP a packet FIFO is required
-    g_drop : if Mode_c = "drop" generate
+    g_drop : if compareNoCase(Mode_g, "drop") generate
 
         i_fifo : entity work.olo_base_fifo_packet
             generic map (
@@ -213,7 +210,7 @@ begin
         Out_CrcErr <= Pl_CrcErr;
     end generate;
 
-    g_flag : if Mode_c = "flag" generate
+    g_flag : if compareNoCase(Mode_g, "flag") generate
         signal InData  : std_logic_vector(DataWidth_g+1 downto 0);
         signal OutData : std_logic_vector(DataWidth_g+1 downto 0);
     begin

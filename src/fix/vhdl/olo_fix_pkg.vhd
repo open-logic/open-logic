@@ -26,6 +26,7 @@ library ieee;
 library work;
     use work.en_cl_fix_pkg.all;
     use work.en_cl_fix_private_pkg.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Header
@@ -85,16 +86,15 @@ package body olo_fix_pkg is
     function fixImplementReg (
         logicPresent : boolean;
         regMode      : string) return boolean is
-        constant RegMode_c : string  := toLower(regMode);
         variable Result_v  : boolean := false;
     begin
 
         -- Calculate register requirement
-        if RegMode_c = "yes" then
+        if compareNoCase(regMode, "yes") then
             Result_v := true;
-        elsif RegMode_c = "no" then
+        elsif compareNoCase(regMode, "no") then
             Result_v := false;
-        elsif RegMode_c = "auto" then
+        elsif compareNoCase(regMode, "auto") then
             Result_v := logicPresent;
         -- coverage off
         -- unreachable
