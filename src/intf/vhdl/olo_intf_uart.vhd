@@ -143,11 +143,11 @@ begin
         report "olo_intf_uart - BaudRate_g must be greater than 0"
         severity error;
 
-    assert StopBits_g = "1" or StopBits_g = "1.5" or StopBits_g = "2"
+    assert compareNoCase(StopBits_g, "1") or compareNoCase(StopBits_g, "1.5") or compareNoCase(StopBits_g, "2")
         report "olo_intf_uart - StopBits_g must be 1, 1.5 or 2"
         severity error;
 
-    assert Parity_g = "none" or Parity_g = "even" or Parity_g = "odd"
+    assert compareNoCase(Parity_g, "none") or compareNoCase(Parity_g, "even") or compareNoCase(Parity_g, "odd")
         report "olo_intf_uart - Parity_g must be none, even or odd"
         severity error;
 
