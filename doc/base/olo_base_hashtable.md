@@ -26,15 +26,16 @@ The memory is described in a way that it utilizes RAM resources (Block-RAM or di
 | KeyWidth_g        | positive  | -         | Width of key |
 | ValueWidth_g      | positive  | -         | Width of Value |
 | Hash_g            | Hash_t    | DIVISION  | Hashing algorithm used |
-| LcgMult_g         | positive  | 1103515245 | Multiplier used in the LCG (Default value from libc) |
-| LcgIncr_g         | positive  | 12345     | Multiplier used in the LCG (Default value from libc) |
+| Hash_Lcg_Mult_g   | positive  | 1103515245 | Multiplier used in the LCG (Default value from libc) |
+| Hash_Lcg_Incr_g   | positive  | 12345     | Multiplier used in the LCG (Default value from libc) |
 | RamStyle_g        | string   | "auto"  | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info |
 | RamBehavior_g     | string   | "RBW"   | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info  |
 | ClearAfterReset_g | boolean | true | Clear memory after a reset to prevent erroneous values |
 
 Current supported hash algorithms are:
+* *HASH*: Key is hashed using the CRC32 method
 * *DIVISION*: Key's value is used as-is, except for modulo against depth of hashtable to obtain a valid index
-* *LCG*: [Linear Congruential Generator](https://en.wikipedia.org/wiki/Linear_congruential_generator) PRNG algorithm is used. The multiplier and increment for the algorithm can be chosen using _LcgMult_g_ and _LcgIncr_g_ respectively. Modulus is width of the hastable's indices
+* *LCG*: [Linear Congruential Generator](https://en.wikipedia.org/wiki/Linear_congruential_generator) PRNG algorithm is used. The multiplier and increment for the algorithm can be chosen using _Hash_Lcg_Mult_g_ and _Hash_Lcg_Incr_g_ respectively. Modulus is width of the hashtable's indices (to always obtain a valid index within the hashtable's memory)
 
 ## Interfaces
 
@@ -45,6 +46,15 @@ Current supported hash algorithms are:
 | Clk  | in     | 1      | -       | Clock                                           |
 | Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_) |
 
+### Axis Handshaking
+
+| Name      | In/Out | Length        | Description                                  |
+| :-------  | :----- | :--------     | :------------------------------------------- |
+| In_Ready  | out    | 1             | Axi-Stream handshaking signal that hashtable is ready to accept an operation |
+| In_Valid  | in     | 1             | Axi_Stream handshaking signal that an operation is requested |
+| Out_Ready | in     | 1             | Axi-Stream handshaking signal that user is ready to accept data |
+| Out_Valid | out    | 1             | Axi_Stream handshaking signal that hashtable has data for the user |
+
 ### Input
 
 | Name     | In/Out | Length        | Default   | Latency (ticks) | Description                                  |
@@ -53,15 +63,13 @@ Current supported hash algorithms are:
 | In_Value | in     | _ValueWidth_g_ | -         | N/A | Input Value                                  |
 | In_Write      | in     | 1         | -         | search_key + 1 | (Over)Write In_Key-In_Value pair                 |
 | In_Read       | in     | 1         | -         | search_key + Out_Ready_delay + 1 | Read Out_Value corresponding to In_Key           |
-| In_Remove     | in     | 1         | -         | search_key + cluster_comp + 1 | Remove Key-Value pair corresponding to In_Key    |
+| In_Remove     | in     | 1         | -         | search_key + cluster_comp*2 + 1 | Remove Key-Value pair corresponding to In_Key    |
 | In_Clear      | in     | 1         | -         | Width_g | Clear All Key-Value pairs from memory            |
 | In_NextKey    | in     | 1         | -         | distance_from_next_key | Find next valid Out_Key in memory                |
-| In_Ready      | out    | 1         | -         | N/A. | Axi-Stream handshaking signal that hashtable is ready to accept an operation |
-| In_Valid      | in     | 1         | -         | N/A. | Axi_Stream handshaking signal that an operation is requested |
 
-Operations are given in order of priority: if multiple operations are requested, only the highest in the list is performed
+Only one operation must be given to the hashtable at a time
 
-Latency of search_key is: *1 + element_position_in_cluster*
+Latency of *search_key* is: *1 + element_position_in_cluster*
 
 Latency of *cluster_comp* is: *1 + (cluster_size - element_position_in_cluster)*
 
@@ -71,8 +79,6 @@ Latency of *cluster_comp* is: *1 + (cluster_size - element_position_in_cluster)*
 | :-------- | :----- | :--------        | ------- | :-------------------------------------------- |
 | Out_Key   | out    | _KeyWidth_g_      | N/A     | Stored key output |
 | Out_Value | out    | _ValueWidth_g_    | N/A     | Output value                                  |
-| Out_Ready      | in    | 1         | -         | Axi-Stream handshaking signal that user is ready to accept data |
-| Out_Valid      | out     | 1         | -         | Axi_Stream handshaking signal that hashtable has data for the user |
 | Out_KeyUnknown    | out    | 1                | N/A     | _In_Key_ does not exist in the hashtable (WR/RM/RD operations)  |
 
 ### Status
