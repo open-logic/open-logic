@@ -302,7 +302,7 @@ begin
                 -- Compute hash
                 -- Computed hash is stored here to break critical path (ram-hash-cluster)
                 -- and hopefully improve performance
-                RegNext.hash <= Hash_Out;
+                RegNext.hash     <= Hash_Out;
                 RegNext.ht_state <= ClusterComp_s;
 
             when ClusterComp_s =>
@@ -322,10 +322,10 @@ begin
                             RegNext.ht_state <= Remove_s;
                         else
                             RegNext.ht_state <= HashCompute_s;
-                            RegNext.cnt    <= RegCurr.cnt + 1;
-                            RegNext.rd_idx <= RegCurr.rd_idx + 1;
-                            Ram_RdAddr     <= RegCurr.rd_idx + 1;
-                            Ram_RdEna      <= '1';
+                            RegNext.cnt      <= RegCurr.cnt + 1;
+                            RegNext.rd_idx   <= RegCurr.rd_idx + 1;
+                            Ram_RdAddr       <= RegCurr.rd_idx + 1;
+                            Ram_RdEna        <= '1';
                         end if;
                     end if;
                 else
