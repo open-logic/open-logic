@@ -73,7 +73,7 @@ class olo_fix_cordic_vect:
         # int_xy_fmt
         if isinstance(int_xy_fmt, str):
             #String
-            if int_xy_fmt == "AUTO":
+            if int_xy_fmt.upper() == "AUTO":
                 # Note: Ignoring CORDIC growth, abs(z) still grows by up to sqrt(2) because sqrt(1**2 + 1**2) = sqrt(2).
                 #       Then, CORDIC growth is asymptotically ~1.647. So overall growth is ~2.33 ==> +2 integer bits needed in the worst case.
                 self._int_xy_fmt = FixFormat(1, self._in_fmt.I + 2, max(self._out_mag_fmt.F, self._out_ang_fmt.F - self._in_fmt.I) + 4)
@@ -87,7 +87,7 @@ class olo_fix_cordic_vect:
         # int_ang_fmt
         if isinstance(int_ang_fmt, str):
             #String
-            if int_ang_fmt == "AUTO":
+            if int_ang_fmt.upper() == "AUTO":
                 self._int_ang_fmt = FixFormat(1, -1, self._out_ang_fmt.F + 3)
             else:
                 raise ValueError("olo_fix_cordic_vect: int_ang_fmt_g must be 'AUTO' or a FixFormat")
@@ -106,7 +106,7 @@ class olo_fix_cordic_vect:
         # gain_corr_coef_fmt
         if isinstance(gain_corr_coef_fmt, str):
             # String
-            if gain_corr_coef_fmt == "NONE":
+            if gain_corr_coef_fmt.upper() == "NONE":
                 self._gain_comp_on = False
                 self._gain_comp_coef = 0
                 self._gain_comp_coef_fmt = FixFormat(0,0,0) 

@@ -26,6 +26,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -268,10 +269,10 @@ begin
     end process;
 
     -- Optional pipeline stage for speed optimization
-    RamWrAddr <= std_logic_vector(ri.WrAddr(log2ceil(Depth_g) - 1 downto 0)) when Optimization_g = "LATENCY" else
+    RamWrAddr <= std_logic_vector(ri.WrAddr(log2ceil(Depth_g) - 1 downto 0)) when compareNoCase(Optimization_g, "LATENCY") else
                  std_logic_vector(ri.WrAddrReg(log2ceil(Depth_g) - 1 downto 0));
-    RamWr     <= ri_next.RamWr when Optimization_g = "LATENCY" else ri.RamWr;
-    RamWrData <= In_Data when Optimization_g = "LATENCY" else ri.DataReg;
+    RamWr     <= ri_next.RamWr when compareNoCase(Optimization_g, "LATENCY") else ri.RamWr;
+    RamWrData <= In_Data when compareNoCase(Optimization_g, "LATENCY") else ri.DataReg;
 
     i_ram : entity work.olo_base_ram_sdp
         generic map (
@@ -292,7 +293,7 @@ begin
         );
 
     -- Wr -> Rd Sync
-    WrAddrGrayIn <= ri_next.WrAddrGray when Optimization_g = "LATENCY" else ri.WrAddrGray; -- optional register stage
+    WrAddrGrayIn <= ri_next.WrAddrGray when compareNoCase(Optimization_g, "LATENCY") else ri.WrAddrGray; -- optional register stage
 
     i_cc_wr_rd : entity work.olo_base_cc_bits
         generic map (
@@ -309,7 +310,7 @@ begin
         );
 
     -- Rd -> Wr Sync
-    RdAddrGrayIn <= ro_next.RdAddrGray when Optimization_g = "LATENCY" else ro.RdAddrGray; -- optional register stage
+    RdAddrGrayIn <= ro_next.RdAddrGray when compareNoCase(Optimization_g, "LATENCY") else ro.RdAddrGray; -- optional register stage
 
     i_cc_rd_wr : entity work.olo_base_cc_bits
         generic map (

@@ -72,7 +72,7 @@ class olo_fix_cordic_rot:
         # int_xy_fmt
         if isinstance(int_xy_fmt, str):
             #String
-            if int_xy_fmt == "AUTO":
+            if int_xy_fmt.upper() == "AUTO":
                 self._int_xy_fmt = FixFormat(1, in_mag_fmt.I + 1, out_fmt.F + 3)
             else:
                 raise ValueError("olo_fix_cordic_rot: int_xy_fmt_g must be 'AUTO' or a FixFormat")
@@ -84,7 +84,7 @@ class olo_fix_cordic_rot:
         # int_ang_fmt
         if isinstance(int_ang_fmt, str):
             #String
-            if int_ang_fmt == "AUTO":
+            if int_ang_fmt.upper() == "AUTO":
                 self._int_ang_fmt = FixFormat(1, -2, in_ang_fmt.F + 3)
             else:
                 raise ValueError("olo_fix_cordic_rot: int_ang_fmt_g must be 'AUTO' or a FixFormat")
@@ -102,7 +102,7 @@ class olo_fix_cordic_rot:
         # gain_corr_coef_fmt
         if isinstance(gain_corr_coef_fmt, str):
             # String
-            if gain_corr_coef_fmt == "NONE":
+            if gain_corr_coef_fmt.upper() == "NONE":
                 self._gain_comp_on = False
                 self._gain_comp_coef = 0
                 self._gain_comp_coef_fmt = FixFormat(0,0,0) 

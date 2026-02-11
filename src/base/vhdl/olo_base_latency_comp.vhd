@@ -62,10 +62,6 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_latency_comp is
 
-    -- String upping
-    constant ModeUpper_c        : string := toUpper(Mode_g);
-    constant RamBehaviorUpper_c : string := toUpper(RamBehavior_g);
-
     -- Entity wide signals
     signal In_Beat  : std_logic;
     signal Out_Beat : std_logic;
@@ -73,7 +69,7 @@ architecture rtl of olo_base_latency_comp is
 begin
 
     -- *** Assertions ***
-    assert ModeUpper_c = "DYNAMIC" or ModeUpper_c = "FIXED_CYCLES"
+    assert compareNoCase(Mode_g, "DYNAMIC") or compareNoCase(Mode_g, "FIXED_CYCLES")
         report "###ERROR###: olo_base_latency_comp[" & AssertsName_g & "]: Unknown Mode_g - " & Mode_g
         severity error;
 
@@ -82,7 +78,7 @@ begin
     Out_Beat <= Out_Valid and Out_Ready;
 
     -- *** DYNAMIC Mode ***
-    g_dynamic : if ModeUpper_c = "DYNAMIC" generate
+    g_dynamic : if compareNoCase(Mode_g, "DYNAMIC") generate
         signal In_Rdy  : std_logic;
         signal Out_Vld : std_logic;
     begin
@@ -94,7 +90,7 @@ begin
                 Depth_g         => Latency_g+2,
                 AlmFullOn_g     => false,
                 AlmEmptyOn_g    => false,
-                RamBehavior_g   => RamBehaviorUpper_c,
+                RamBehavior_g   => RamBehavior_g,
                 RamStyle_g      => RamStyle_g,
                 ReadyRstState_g => '1'
             )
@@ -147,7 +143,7 @@ begin
     end generate;
 
     -- *** FIXED_CYCLES Mode ***
-    g_fixed_cycles : if ModeUpper_c = "FIXED_CYCLES" generate
+    g_fixed_cycles : if compareNoCase(Mode_g, "FIXED_CYCLES") generate
         signal Delay_Data   : std_logic_vector(Width_g-1 downto 0);
         signal Delay_Beat   : std_logic;
         signal Data_Latched : std_logic;
@@ -165,7 +161,7 @@ begin
                 Width_g       => Width_g+1,
                 Delay_g       => Latency_g-1,
                 RstState_g    => true,
-                RamBehavior_g => RamBehaviorUpper_c,
+                RamBehavior_g => RamBehavior_g,
                 Resource_g    => Resource_g,
                 RamStyle_g    => RamStyle_g
             )
