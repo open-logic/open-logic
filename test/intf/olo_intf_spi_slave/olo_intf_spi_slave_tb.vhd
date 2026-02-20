@@ -144,10 +144,10 @@ architecture sim of olo_intf_spi_slave_tb is
     signal TxCheckOngoing : boolean    := false;
 
     procedure applyTx (
-        Data         : std_logic_vector(TransWidth_g - 1 downto 0);
-        DelayCycles  : integer := 0;
-        WaitReady    : boolean := true;
-        msg          : string  := "") is
+        Data        : std_logic_vector(TransWidth_g - 1 downto 0);
+        DelayCycles : integer := 0;
+        WaitReady   : boolean := true;
+        msg         : string  := "") is
         variable Msg_v : msg_t := new_msg(TxMsg_c);
     begin
         push(Msg_v, Data);
@@ -353,7 +353,7 @@ begin
                 end if;
             end if;
 
-           if run("3ConsecutiveTransactions-TxNoWaitForReady") then
+            if run("3ConsecutiveTransactions-TxNoWaitForReady") then
                 -- Only execute when enabled
                 if ConsecutiveTransactions_g then
                     -- Define Data
@@ -367,18 +367,13 @@ begin
 
                     -- Expect RX Data
                     if LsbFirst_g then
-
                         expectRx(Mosi48_v(TransWidth_g-1 downto 0), "Word 0");
                         expectRx(Mosi48_v(TransWidth_g*2-1 downto TransWidth_g), "Word 1");
                         expectRx(Mosi48_v(TransWidth_g*3-1 downto TransWidth_g*2), "Word 2");
-
                     else
-
                         expectRx(Mosi48_v(TransWidth_g*3-1 downto TransWidth_g*2), "Word 0");
                         expectRx(Mosi48_v(TransWidth_g*2-1 downto TransWidth_g), "Word 1");
                         expectRx(Mosi48_v(TransWidth_g-1 downto 0), "Word 2");
-
-
                     end if;
 
                     -- Expect Responses
@@ -390,7 +385,6 @@ begin
 
                     -- Apply Data
                     if LsbFirst_g then
-
                         applyTx(Miso48_v(TransWidth_g-1 downto 0), 0, WaitReady => true, msg => "Word 0");
                         applyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 0, WaitReady => false, msg => "Word 1");
                         applyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 0, WaitReady => false, msg => "Word 2");
@@ -674,10 +668,10 @@ begin
             -- process message
             if MsgType_v = TxMsg_c then
                 -- pop information
-                Data_v         := pop(Msg_v);
-                DelayCycles_v  := pop(Msg_v);
-                WaitReady_v    := pop(Msg_v);
-                MsgPtr_v       := new_string_ptr(pop_string(Msg_v));
+                Data_v        := pop(Msg_v);
+                DelayCycles_v := pop(Msg_v);
+                WaitReady_v   := pop(Msg_v);
+                MsgPtr_v      := new_string_ptr(pop_string(Msg_v));
 
                 -- Apply Data
                 if WaitReady_v then
@@ -686,11 +680,12 @@ begin
                     for i in 1 to DelayCycles_v loop
                         wait until rising_edge(Clk);
                     end loop;
+
                 end if;
 
                 Tx_Valid <= '1';
                 Tx_Data  <= Data_v;
-                wait until rising_edge(Clk) and Tx_Ready = '1'; 
+                wait until rising_edge(Clk) and Tx_Ready = '1';
                 wait until falling_edge(Clk);
                 Tx_Data  <= (others => 'X');
                 Tx_Valid <= '0';
