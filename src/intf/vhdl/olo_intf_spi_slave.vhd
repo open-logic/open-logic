@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024 by Oliver Bruendler, Switzerland
+-- Copyright (c) 2024-2025 by Oliver Bruendler, Switzerland
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -170,7 +170,7 @@ begin
             when LatchTx_s =>
                 v.BitCnt := 0;
                 -- Latch data
-                if Tx_Valid = '1' then
+                if Tx_Valid = '1' and r.Tx_Ready = '1' then
                     v.ShiftReg    := Tx_Data;
                     v.Tx_Ready    := '0';
                     v.DataLatched := '1';

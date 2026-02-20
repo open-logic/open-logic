@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024 by Oliver Bruendler, Switzerland
+-- Copyright (c) 2024-2025 by Oliver Bruendler, Switzerland
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -146,11 +146,13 @@ architecture sim of olo_intf_spi_slave_tb is
     procedure applyTx (
         Data        : std_logic_vector(TransWidth_g - 1 downto 0);
         DelayCycles : integer := 0;
+        WaitReady   : boolean := true;
         msg         : string  := "") is
         variable Msg_v : msg_t := new_msg(TxMsg_c);
     begin
         push(Msg_v, Data);
         push(Msg_v, DelayCycles);
+        push(Msg_v, WaitReady);
         push_string(Msg_v, msg);
         push(TxQueue_c, Msg_v);
     end procedure;
@@ -296,17 +298,17 @@ begin
 
                     -- First word applied immediately
                     if LsbFirst_g then
-                        applyTx(Miso48_v(TransWidth_g-1 downto 0), 0, "Word 0");
+                        applyTx(Miso48_v(TransWidth_g-1 downto 0), 0, msg => "Word 0");
                     else
-                        applyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 0, "Word 0");
+                        applyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 0, msg => "Word 0");
                     end if;
 
                     -- Other TX Data applied with delay (there should be at least one clock cycle of time)
                     for i in 1 to 2 loop
                         if LsbFirst_g then
-                            applyTx(Miso48_v(TransWidth_g*(i+1)-1 downto TransWidth_g*i), TxVldDelay_v, "Word " & to_string(i));
+                            applyTx(Miso48_v(TransWidth_g*(i+1)-1 downto TransWidth_g*i), TxVldDelay_v, msg => "Word " & to_string(i));
                         else
-                            applyTx(Miso48_v(TransWidth_g*(3-i)-1 downto TransWidth_g*(2-i)), TxVldDelay_v, "Word " & to_string(i));
+                            applyTx(Miso48_v(TransWidth_g*(3-i)-1 downto TransWidth_g*(2-i)), TxVldDelay_v, msg => "Word " & to_string(i));
                         end if;
                     end loop;
 
@@ -341,13 +343,57 @@ begin
 
                     -- Apply TX Data
                     if LsbFirst_g then
-                        applyTx(Miso48_v(TransWidth_g-1 downto 0), 0, "Word 0"); -- First one immediately
-                        applyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), TxVldDelay_v, "Word 1");
+                        applyTx(Miso48_v(TransWidth_g-1 downto 0), 0, msg => "Word 0"); -- First one immediately
+                        applyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), TxVldDelay_v, msg => "Word 1");
                     else
-                        applyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 0, "Word 0");
-                        applyTx(Miso48_v(TransWidth_g-1 downto 0), TxVldDelay_v, "Word 1"); -- First one immediately
+                        applyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 0, msg => "Word 0");
+                        applyTx(Miso48_v(TransWidth_g-1 downto 0), TxVldDelay_v, msg => "Word 1"); -- First one immediately
                     end if;
-                    applyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 1, "Word 2"); -- aborted transaction;
+                    applyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 1, msg => "Word 2"); -- aborted transaction;
+                end if;
+            end if;
+
+            if run("3ConsecutiveTransactions-TxNoWaitForReady") then
+                -- Only execute when enabled
+                if ConsecutiveTransactions_g then
+                    -- Define Data
+                    Mosi48_v := x"81F13C81468F";
+                    Miso48_v := x"3C183C8F6481";
+
+                    -- Start Transaction
+                    spi_master_push_transaction (net, Master_c, TransWidth_g*3,
+                        Mosi48_v(TransWidth_g*3-1 downto 0), Miso48_v(TransWidth_g*3-1 downto 0),
+                        msg => "3 Consecutive Transactions");
+
+                    -- Expect RX Data
+                    if LsbFirst_g then
+                        expectRx(Mosi48_v(TransWidth_g-1 downto 0), "Word 0");
+                        expectRx(Mosi48_v(TransWidth_g*2-1 downto TransWidth_g), "Word 1");
+                        expectRx(Mosi48_v(TransWidth_g*3-1 downto TransWidth_g*2), "Word 2");
+                    else
+                        expectRx(Mosi48_v(TransWidth_g*3-1 downto TransWidth_g*2), "Word 0");
+                        expectRx(Mosi48_v(TransWidth_g*2-1 downto TransWidth_g), "Word 1");
+                        expectRx(Mosi48_v(TransWidth_g-1 downto 0), "Word 2");
+                    end if;
+
+                    -- Expect Responses
+                    for i in 0 to 2 loop
+                        expectResp(Sent => '1');
+                    end loop;
+
+                    expectResp(CleanEnd => '1');
+
+                    -- Apply Data
+                    if LsbFirst_g then
+                        applyTx(Miso48_v(TransWidth_g-1 downto 0), 0, WaitReady => true, msg => "Word 0");
+                        applyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 0, WaitReady => false, msg => "Word 1");
+                        applyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 0, WaitReady => false, msg => "Word 2");
+                    else
+                        applyTx(Miso48_v(TransWidth_g*3-1 downto TransWidth_g*2), 0, WaitReady => true, msg => "Word 0");
+                        applyTx(Miso48_v(TransWidth_g*2-1 downto TransWidth_g), 0, WaitReady => false, msg => "Word 1");
+                        applyTx(Miso48_v(TransWidth_g-1 downto 0), 0, WaitReady => false, msg => "Word 2");
+                    end if;
+
                 end if;
             end if;
 
@@ -386,7 +432,7 @@ begin
                 expectResp(CleanEnd => '1');
 
                 -- Apply TX Data
-                applyTx(Miso16_v(D'Range), 0);
+                applyTx(Miso16_v(D'Range), 0, msg => "Word 0");
             end if;
 
             -- *** CSn going high in the middle of a transaction ***
@@ -410,7 +456,7 @@ begin
                 expectResp(Aborted => '1');
 
                 -- Apply TX Data
-                applyTx(Miso16_v(D'Range), 0);
+                applyTx(Miso16_v(D'Range), 0, msg => "Word 0");
 
                 -- Successful Transaction
                 -- Define Data
@@ -429,7 +475,7 @@ begin
                 expectResp(CleanEnd => '1');
 
                 -- Apply TX Data
-                applyTx(Miso16_v(D'Range), 0);
+                applyTx(Miso16_v(D'Range), 0, msg => "Word 0");
             end if;
 
             -- *** Wait until done ***
@@ -603,6 +649,7 @@ begin
         variable MsgType_v     : msg_type_t;
         variable Data_v        : std_logic_vector(TransWidth_g - 1 downto 0);
         variable DelayCycles_v : integer;
+        variable WaitReady_v   : boolean;
         variable MsgPtr_v      : string_ptr_t;
     begin
 
@@ -623,20 +670,25 @@ begin
                 -- pop information
                 Data_v        := pop(Msg_v);
                 DelayCycles_v := pop(Msg_v);
+                WaitReady_v   := pop(Msg_v);
                 MsgPtr_v      := new_string_ptr(pop_string(Msg_v));
 
                 -- Apply Data
-                wait_for_value_stdl(Tx_Ready, '1', 1 ms, "Tx_Ready not asserted: " & to_string(MsgPtr_v));
+                if WaitReady_v then
+                    wait_for_value_stdl(Tx_Ready, '1', 1 ms, "Tx_Ready not asserted: " & to_string(MsgPtr_v));
 
-                for i in 1 to DelayCycles_v loop
-                    wait until rising_edge(Clk);
-                end loop;
+                    for i in 1 to DelayCycles_v loop
+                        wait until rising_edge(Clk);
+                    end loop;
+
+                end if;
 
                 Tx_Valid <= '1';
                 Tx_Data  <= Data_v;
-                wait until rising_edge(Clk);
-                Tx_Valid <= '0';
+                wait until rising_edge(Clk) and Tx_Ready = '1';
                 wait until falling_edge(Clk);
+                Tx_Data  <= (others => 'X');
+                Tx_Valid <= '0';
                 check_equal(Tx_Ready, '0', "Tx_Ready not de-asserted: " & to_string(MsgPtr_v));
             else
                 error("Unexpected message type in vc_tx");
