@@ -26,6 +26,8 @@ package olo_test_fix_checker_pkg is
         p_actor : actor_t;
     end record;
 
+    type olo_test_fix_checker_array_t is array (natural range <>) of olo_test_fix_checker_t;
+
     -- *** Master Operations ***
 
     -- Transaction
@@ -46,6 +48,9 @@ package olo_test_fix_checker_pkg is
 
     -- Constructor
     impure function new_olo_test_fix_checker return olo_test_fix_checker_t;
+
+    -- Array Constructor
+    impure function new_olo_test_fix_checker_array (size : natural) return olo_test_fix_checker_array_t;
 
     -- Casts
     impure function as_sync (instance : olo_test_fix_checker_t) return sync_handle_t;
@@ -91,6 +96,18 @@ package body olo_test_fix_checker_pkg is
     impure function new_olo_test_fix_checker return olo_test_fix_checker_t is
     begin
         return (p_actor => new_actor);
+    end function;
+
+    -- Array Constructor
+    impure function new_olo_test_fix_checker_array (size : natural) return olo_test_fix_checker_array_t is
+        variable arr : olo_test_fix_checker_array_t(0 to size - 1);
+    begin
+
+        for i in arr'range loop
+            arr(i) := new_olo_test_fix_checker;
+        end loop;
+
+        return arr;
     end function;
 
     -- Casts

@@ -174,7 +174,7 @@ class olo_fix_cic_dec:
 
         # Gain Compensation
         if self._gain_comp_on:
-            sig_gc_in = cl_fix_resize(sig_diff[self.order], self.diff_fmt, self.gcin_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+            sig_gc_in = cl_fix_resize(sig_diff[self.order], self.diff_fmt, self.gcin_fmt, FixRound.Trunc_s, self.saturate)
             sig_gc_out = cl_fix_mult(sig_gc_in, self.gcin_fmt,
                                   self._gain_comp_coef, self._gain_comp_coef_fmt,
                                   self.out_fmt, self.round, self.saturate)
