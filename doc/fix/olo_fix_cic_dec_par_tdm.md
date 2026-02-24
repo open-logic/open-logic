@@ -1,23 +1,26 @@
 <img src="../Logo.png" alt="Logo" width="400">
 
-# olo_fix_cic_dec_tdm
+# olo_fix_cic_dec_par_tdm
 
 [Back to **Entity List**](../EntityList.md)
 
 ## Status Information
 
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_fix_cic_dec_tdm.json?cacheSeconds=0)
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_cic_dec_tdm.json?cacheSeconds=0)
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_cic_dec_tdm.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_fix_cic_dec_par_tdm.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_cic_dec_par_tdm.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_cic_dec_par_tdm.json?cacheSeconds=0)
 
-VHDL Source: [olo_fix_cic_dec_tdm.vhd](../../src/fix/vhdl/olo_fix_cic_dec_tdm.vhd)<br />
+VHDL Source: [olo_fix_cic_dec_par_tdm.vhd](../../src/fix/vhdl/olo_fix_cic_dec_par_tdm.vhd)<br />
 Bit-true Model: [olo_fix_cic_dec.py](../../src/fix/python/olo_fix/olo_fix_cic_dec.py)
 
 ## Description
 
-This entity implements a CIC decimator of configurable order. It supports one or multiple channels
-(time-division-multiplexed). The decimation ratio can either be runtime configurable or fixed (i.e. compile-time
-configured).
+This entity implements a CIC decimator of configurable order. I takes one or multiple channels in parallel on the input
+side and produces a time-division-multiplexed output stream with the same number of channels. The decimation ratio can
+either be runtime configurable or fixed (i.e. compile-time configured).
+
+Because the input side is parallel, the filter supports one sample per clock cycle per channel on the input side. So for
+all channels the input sample rate can be up to the clock frequency.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
@@ -33,6 +36,9 @@ The modes can be summarized as follows:
   - The user is responsible for applying the correct values to the configuration ports _Cfg_xxx_ (see formulas in
     [Runtime Ratio Configuration](#runtime-ratio-configuration)).
   - The ratio is only allowed to be changed when the CIC is in reset (i.e. _Rst_=1_).
+
+Note that for obvious reasons the decimation ratio must be at least _Channels_g_ because otherwise the output
+bandwidth would not be sufficient to carry all output sampples time-division-multiplexed.
 
 ### CIC Gain Handling
 
@@ -112,15 +118,10 @@ The formulas for the values to apply are given in section [CIC Gain Handling](#c
 
 ### Input Data
 
-| Name     | In/Out | Length           | Default | Description                               |
-| :------- | :----- | :--------------- | ------- | :---------------------------------------- |
-| In_Valid | in     | 1                | '1'     | Input valid                               |
-| In_Data  | in     | _width(InFmt_g)_ | -       | Input data                                |
-| In_Last  | in     | 1                | '0'     | TDM frame boundary (optional)<br>see [TDM Conventions](../Conventions.md#tdm-time-division-multiplexing)   |
-
-The signal _In_Last_ is optional and only used to check if the input TDM frame boundaries are correct. Errors are
-reported if this signal is asserted at the wrong time. If the signal is de-asserted, no checks are performed. Therefore
-it is valid to not connect this signal or connect it to a constant '0'.
+| Name     | In/Out | Length                        | Default | Description                               |
+| :------- | :----- | :---------------------------- | ------- | :---------------------------------------- |
+| In_Valid | in     | 1                             | '1'     | Input valid                               |
+| In_Data  | in     | _width(InFmt_g)_*_Channels_g_ | -       | Input data<br> Channel-0 = In_Data\[N-1:0\] <br> Channel-1 = In_Data\[2*N-1:N\] <br> ...  |
 
 ### Output Data
 
@@ -137,16 +138,14 @@ it is valid to not connect this signal or connect it to a constant '0'.
 The architecture of the CIC decimator is pretty standard and shown in the figure below. Colors denote different
 implementation options.
 
-- Red: _Channels_g = 1_
-- Green: _Channels_g > 1_ (TDM)
 - Blue: _FixedRatio_g = true_ (fixed ratio mode)
 - Purple: _FixedRatio_g = false_ (configurable ratio mode)
 - Orange: _GainCorrCoefFmt_g_ = "NONE"_ (shift-only gain correction)
 - Yellow: _GainCorrCoefFmt_g_ != "NONE"_ (multiplier-based gain correction)
 
-The figure shows _Order_g = 2_.
+The figure shows _Order_g = 2_ and _Channels_g = 3_ (10 bit per channel).
 
-![Architecture](./cic/olo_fix_cic_dec_tdm.drawio.png)
+![Architecture](./cic/olo_fix_cic_dec_par_tdm.drawio.png).
 
 The parameters _RamBehavior_g_, _Resource_g_, and _RamStyle_g_ are forwarded to all _olo_base_delay_ instances. They
 are impoortant only for cases with enough channels to make usage of RAM (distributed or block RAM) for the
