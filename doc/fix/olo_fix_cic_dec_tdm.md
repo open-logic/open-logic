@@ -149,7 +149,7 @@ The figure shows _Order_g = 2_.
 ![Architecture](./cic/olo_fix_cic_dec_tdm.drawio.png)
 
 The parameters _RamBehavior_g_, _Resource_g_, and _RamStyle_g_ are forwarded to all _olo_base_delay_ instances. They
-are impoortant onyl for cases with enough channels to make usage of RAM (distributed or block RAM=) for the
+are impoortant only for cases with enough channels to make usage of RAM (distributed or block RAM) for the
 delay lines attractive.
 
 Note that for _FixedRatio_g = false_ a dynamic shifter is required, which consumes more resources than a fixed
