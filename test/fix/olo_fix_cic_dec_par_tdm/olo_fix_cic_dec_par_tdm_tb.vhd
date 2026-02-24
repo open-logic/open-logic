@@ -106,7 +106,7 @@ begin
 
             -- Reset
             wait until rising_edge(Clk);
-            Rst <= '1';       
+            Rst <= '1';
             -- During Reset set config ports (if not fixed)
             Ratio_v := real(Ratio_g);
             if not FixedRatio_g then
