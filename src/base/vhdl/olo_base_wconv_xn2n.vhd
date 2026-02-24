@@ -79,9 +79,10 @@ begin
         Out_Valid <= In_Valid and In_WordEna(0);
         Out_Last  <= In_Last;
     end generate;
-    
+
     -- *** Width Conversion Required ***
     g_conv : if RatioInt_c > 1 generate
+
         p_comb : process (all) is
             variable v         : TwoProcess_r;
             variable IsReady_v : std_logic;
@@ -137,6 +138,7 @@ begin
                 end if;
             end if;
         end process;
+
     end generate;
 
 end architecture;
