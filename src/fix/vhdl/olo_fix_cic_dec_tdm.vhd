@@ -78,13 +78,10 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_fix_cic_dec_tdm is
 
-    -- String upping
-    constant GainCorrCoefFmtUpper_c : string := toUpper(GainCorrCoefFmt_g);
-
     -- Formats
     constant InFmt_c           : FixFormat_t := cl_fix_format_from_string(InFmt_g);
     constant OutFmt_c          : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
-    constant GainCorrCoefFmt_c : FixFormat_t := fixFmtFromStringTolerant(GainCorrCoefFmtUpper_c);
+    constant GainCorrCoefFmt_c : FixFormat_t := fixFmtFromStringTolerant(GainCorrCoefFmt_g);
 
     -- Constants
     constant MaxCicGain_c    : real    := (real(Ratio_g) * real(DiffDelay_g))**real(Order_g);
@@ -142,10 +139,10 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Assertions
     -----------------------------------------------------------------------------------------------
-    assert (GainCorrCoefFmtUpper_c = "NONE" or GainCorrCoefFmt_c.I = 1)
+    assert (compareNoCase(GainCorrCoefFmt_g, "NONE") or GainCorrCoefFmt_c.I = 1)
         report "olo_fix_cic_dec_tdm: Gain correction coefficient format must have 1 integer bit (or be NONE)"
         severity failure;
-    assert (GainCorrCoefFmtUpper_c = "NONE" or GainCorrCoefFmt_c.S = 0)
+    assert (compareNoCase(GainCorrCoefFmt_g, "NONE") or GainCorrCoefFmt_c.S = 0)
         report "olo_fix_cic_dec_tdm: Gain correction coefficient format must be unsigned (or be NONE)"
         severity failure;
 
@@ -242,8 +239,8 @@ begin
             end if;
         end loop;
 
-        -- *** Gain Coefficient Register ***
-        if GainCorrCoefFmtUpper_c /= "NONE" then
+        if not compareNoCase(GainCorrCoefFmt_g, "NONE") then
+            -- *** Gain Coefficient Register ***
             v.GcCoef := Cfg_GainCorr;
         end if;
 
@@ -328,7 +325,7 @@ begin
     -- Component Instantiations
     -----------------------------------------------------------------------------------------------
     -- *** Gain Correction Chain ***
-    g_gc : if GainCorrCoefFmtUpper_c /= "NONE" generate
+    g_gc : if not compareNoCase(GainCorrCoefFmt_g, "NONE") generate
         signal GcIn_0   : std_logic_vector(cl_fix_width(GcInFmt_c) - 1 downto 0);
         signal GcVld_0  : std_logic;
         signal GcCoef_0 : std_logic_vector(cl_fix_width(GainCorrCoefFmt_c) - 1 downto 0);
@@ -379,7 +376,7 @@ begin
 
     end generate;
 
-    g_no_gc : if GainCorrCoefFmtUpper_c = "NONE" generate
+    g_no_gc : if compareNoCase(GainCorrCoefFmt_g, "NONE") generate
 
         i_resize_out : entity work.olo_fix_resize
             generic map (

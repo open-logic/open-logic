@@ -26,6 +26,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_attribute.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -62,10 +63,10 @@ architecture rtl of olo_base_delay is
 begin
 
     -- *** Assertions ***
-    assert Resource_g = "AUTO" or Resource_g = "SRL" or Resource_g = "BRAM"
+    assert compareNoCase(Resource_g, "AUTO") or compareNoCase(Resource_g, "SRL") or compareNoCase(Resource_g, "BRAM")
         report "###ERROR###: olo_base_delay: Unknown Resource_g - " & Resource_g
         severity error;
-    assert Resource_g /= "BRAM" or Delay_g >= 3
+    assert not compareNoCase(Resource_g, "BRAM") or Delay_g >= 3
         report "###ERROR###: olo_base_delay: Delay_g >= 3 required for Resource_g=BRAM"
         severity error;
     assert BramThreshold_g > 3
@@ -73,7 +74,7 @@ begin
         severity error;
 
     -- *** SRL ***
-    g_srl : if (Delay_g > 1) and ((Resource_g = "SRL") or ((Resource_g = "AUTO") and (Delay_g < BramThreshold_g))) generate
+    g_srl : if (Delay_g > 1) and ((compareNoCase(Resource_g, "SRL")) or ((compareNoCase(Resource_g, "AUTO")) and (Delay_g < BramThreshold_g))) generate
         -- local types
         type Srl_t is array (0 to MemTaps_c - 1) of std_logic_vector(Width_g - 1 downto 0);
 
@@ -101,7 +102,7 @@ begin
     end generate;
 
     -- *** BRAM ***
-    g_bram : if (Delay_g > 1) and ((Resource_g = "BRAM") or ((Resource_g = "AUTO") and (Delay_g >= BramThreshold_g))) generate
+    g_bram : if (Delay_g > 1) and ((compareNoCase(Resource_g, "BRAM")) or ((compareNoCase(Resource_g, "AUTO")) and (Delay_g >= BramThreshold_g))) generate
         signal RdAddr, WrAddr : std_logic_vector(log2ceil(MemTaps_c) - 1 downto 0) := (others => '0');
     begin
 

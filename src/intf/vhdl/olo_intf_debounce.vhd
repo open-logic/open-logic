@@ -25,6 +25,7 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_array.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -85,7 +86,7 @@ architecture struct of olo_intf_debounce is
 
 begin
 
-    assert Mode_g = "GLITCH_FILTER" or Mode_g = "LOW_LATENCY"
+    assert compareNoCase(Mode_g, "GLITCH_FILTER") or compareNoCase(Mode_g, "LOW_LATENCY")
         report "olo_intf_debounce: Illegal Mode_g - " & Mode_g
         severity failure;
 
@@ -119,7 +120,7 @@ begin
             end if;
 
             -- GLITCH_FILTER mode
-            if Mode_g = "GLITCH_FILTER" then
+            if compareNoCase(Mode_g, "GLITCH_FILTER") then
                 -- Only forward signal once stable
                 if r.IsStable(i) = '1' then
                     v.DataOut(i) := r.LastState(i);
@@ -127,7 +128,7 @@ begin
             end if;
 
             -- LOW_LATENCY mode
-            if Mode_g = "LOW_LATENCY" then
+            if compareNoCase(Mode_g, "LOW_LATENCY") then
                 -- Forward new state whenever signal is stable (including first edge)
                 if r.IsStable(i) = '1' then
                     v.DataOut(i) := DataSync(i);
