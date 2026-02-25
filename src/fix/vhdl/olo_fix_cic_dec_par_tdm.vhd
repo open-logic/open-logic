@@ -227,7 +227,7 @@ begin
         -- First differentiator
         if VldDiff_0 = '1' then
             -- Differentiate
-            v.DiffVal(1) := cl_fix_sub(DiffIn_0,    DiffFmt_c,
+            v.DiffVal(1) := cl_fix_sub(DiffIn_0, DiffFmt_c,
                                        DiffDel(0), DiffFmt_c,
                                        DiffFmt_c, Trunc_s, None_s);
         end if;
@@ -237,7 +237,7 @@ begin
         for stage in 1 to Order_g-1 loop
             if r.VldDiff(stage) = '1' then
                 -- Differentiate
-                v.DiffVal(stage+1) := cl_fix_sub(r.DiffVal(stage),    DiffFmt_c,
+                v.DiffVal(stage+1) := cl_fix_sub(r.DiffVal(stage), DiffFmt_c,
                                                  DiffDel(stage), DiffFmt_c,
                                                  DiffFmt_c, Trunc_s, None_s);
             end if;
