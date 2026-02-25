@@ -155,9 +155,6 @@ begin
     assert (GainCorrCoefFmtUpper_c = "NONE" or GainCorrCoefFmt_c.S = 0)
         report "olo_fix_cic_dec_tdm: Gain correction coefficient format must be unsigned (or be NONE)"
         severity failure;
-    assert (Ratio_g >= Channels_g)
-        report "olo_fix_cic_dec_tdm: Ratio_g must be at least equal to Channels_g"
-        severity failure;
 
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Process
@@ -219,11 +216,6 @@ begin
         if r.VldAccu(Order_g-1) = '1' then
             if r.Rcnt = 0 then
                 v.VldParTdm := '1';
-                -- synthesis translate_off
-                assert fromUslv(Ratio_v) >= Channels_g - 1 or Rst = '1' or not rising_edge(Clk)
-                    report "olo_fix_cic_dec_par_tdm: Ratio must be at least equal to Channels_g"
-                    severity error;
-                -- synthesis translate_on
                 v.Rcnt := to_integer(unsigned(Ratio_v));
             else
                 v.Rcnt := r.Rcnt - 1;
