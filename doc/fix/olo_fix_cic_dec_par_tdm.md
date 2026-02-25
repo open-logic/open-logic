@@ -37,8 +37,11 @@ The modes can be summarized as follows:
     [Runtime Ratio Configuration](#runtime-ratio-configuration)).
   - The ratio is only allowed to be changed when the CIC is in reset (i.e. _Rst_=1_).
 
-Note that for obvious reasons the decimation ratio must be at least _Channels_g_ because otherwise the output
-bandwidth would not be sufficient to carry all output sampples time-division-multiplexed.
+Due to the parallel input and TDM output handling, the user is responsible for ensuring that the output bandwidth is
+not exceeding the bandwidth required based on the input sample rate and the decimation ratio. Below condition
+always must hold true:
+
+![Bandwidth Condition](./cic/fs_par_tdm.png)
 
 ### CIC Gain Handling
 
@@ -146,6 +149,11 @@ implementation options.
 The figure shows _Order_g = 2_ and _Channels_g = 3_ (10 bit per channel).
 
 ![Architecture](./cic/olo_fix_cic_dec_par_tdm.drawio.png).
+
+Important for efficiency is the order of decimation, parallel to TDM conversion and shift. The decimation must happen
+first in order to ensure the bandwidth of the parallel to TDM converter on the output (TDM) side is as low as possible.
+Thanks to the shift happening on the TDM side, only one shifter is required for all channels, which is significantly
+more efficient than shifting before the TDM conversion.
 
 The parameters _RamBehavior_g_, _Resource_g_, and _RamStyle_g_ are forwarded to all _olo_base_delay_ instances. They
 are impoortant only for cases with enough channels to make usage of RAM (distributed or block RAM) for the
