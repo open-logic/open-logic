@@ -1,0 +1,22 @@
+------------------------------------------------------------------------------
+-- Header Guards
+------------------------------------------------------------------------------
+`ifndef {{pkg_name}}_SVH
+`define {{pkg_name}}_SVH
+	
+package {{pkg_name}};
+
+    // Constants
+    {% for constant in constants %}
+    {{constant}}
+    {% endfor %}
+
+    // Vectors
+    {% for vector in vectors %}
+    {{vector}}
+    {% endfor %}
+
+endpackage : {{pkg_name}}
+
+`endif // {{pkg_name}}_SVH
+
