@@ -38,7 +38,7 @@ The modes can be summarized as follows:
   - The ratio is only allowed to be changed when the CIC is in reset (i.e. _Rst_=1_).
 
 Due to the parallel input and TDM output handling, the user is responsible for ensuring that the output bandwidth is
-not exceeding the bandwidth required based on the input sample rate and the decimation ratio. Below condition 
+not exceeding the bandwidth required based on the input sample rate and the decimation ratio. Below condition
 always must hold true:
 
 ![Bandwidth Condition](./cic/fs_par_tdm.png)
