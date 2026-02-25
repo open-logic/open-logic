@@ -216,7 +216,7 @@ begin
         if r.VldAccu(Order_g-1) = '1' then
             if r.Rcnt = 0 then
                 v.VldParTdm := '1';
-                v.Rcnt := to_integer(unsigned(Ratio_v));
+                v.Rcnt      := to_integer(unsigned(Ratio_v));
             else
                 v.Rcnt := r.Rcnt - 1;
             end if;
