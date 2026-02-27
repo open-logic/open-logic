@@ -14,9 +14,6 @@ from jinja2 import Environment, FileSystemLoader
 import os
 from collections import namedtuple
 
-# TODO: Add as_string for vectors
-# TODO: Test package generation for as_string options
-# TODO: VUnit unit test for VHDL package
 # TODO: Add to olo_fix tutorial (VHDL)
 # TODO: Add to olo_fix tutorial (Verilog)
 # TODO: Document and reference ot olo_fix tutorial

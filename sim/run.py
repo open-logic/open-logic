@@ -11,6 +11,14 @@ from functools import partial
 # Import open-logic test configurations
 # .. they are in separate files to keep the size of run.py in range
 from test_configs import olo_axi, olo_intf, olo_fix, olo_base
+from codegen import generate as codegen_generate
+
+########################################################################################################################
+# Code Generators
+########################################################################################################################
+# Code-generator tests must generate code before VUnit detects files because the files must be present for VUnit
+# to detect them.
+codegen_generate()
 
 ########################################################################################################################
 # Setup
