@@ -214,17 +214,25 @@ class olo_fix_pkg_writer:
         """
         if member_data.type is int:
             type_str = "IntegerArray_t"
-            value_str = "(" + ", ".join(str(v) for v in member_data.value) + ")"
+            value_str = ", ".join(str(v) for v in member_data.value)
         elif member_data.type is float:
             type_str = "RealArray_t"
-            value_str = "(" + ", ".join(self._float_str(v) for v in member_data.value) + ")"
+            value_str = ", ".join(self._float_str(v) for v in member_data.value)
         elif member_data.type is FixFormat:
             type_str = "FixFormatArray_t"
-            value_str = "(" + ", ".join(str(v) for v in member_data.value) + ")"
+            value_str = ", ".join(str(v) for v in member_data.value)
         else:
             raise ValueError(f"Type {member_data.type} is not supported for vectors")
-        range = f"(0 to {len(member_data.value)-1})"
-        return f"constant {name} : {type_str}{range} := {value_str};"
+        
+
+        # Return sring representation of array
+        if member_data.as_string:
+            type_str = "string"
+            return f'constant {name} : {type_str} := "{value_str}";'
+        # Return array reporesentation (with parenthesis)
+        else:
+            range = f"(0 to {len(member_data.value)-1})"
+            return f"constant {name} : {type_str}{range} := ({value_str});"
     
     def _verilog_vector_declaration(self, name : str, member_data : MemberData) -> str:
         """
@@ -233,15 +241,27 @@ class olo_fix_pkg_writer:
         :param member_data: MemberData object containing type, value, and as_string
         :return: Verilog constant declaration as string
         """
+        # Create value arrays
         if member_data.type is int:
-            value_str = "{" + ", ".join(str(v) for v in member_data.value) + "}"
+            value_str = ", ".join(str(v) for v in member_data.value)
         elif member_data.type is float:
-            value_str = "{" + ", ".join(self._float_str(v) for v in member_data.value) + "}"
+            value_str = ", ".join(self._float_str(v) for v in member_data.value)
         elif member_data.type is FixFormat:
-            raise ValueError("FixFormat type is not supported for Verilog vectors")
+            value_str = ", ".join(str(v) for v in member_data.value)
         else:
-            raise ValueError(f"Type {member_data.type} is not supported for Verilog vectors")
-        return f"localparam {self._VERILOG_TYPES[member_data.type]} {name} [0:{len(member_data.value)-1}] = '{value_str};"
+            raise ValueError(f"Type {member_data.type} is not supported for vectors")     
+
+        # Return native representation
+        if not member_data.as_string: 
+            # Fix format is not avaialble natively
+            if member_data.type is FixFormat:
+                raise ValueError("FixFormat type is not supported for Verilog vectors")
+            # Return native array
+            return f"localparam {self._VERILOG_TYPES[member_data.type]} {name} [0:{len(member_data.value)-1}] = '{{{value_str}}};"
+        
+        # Return string representation
+        else:
+            return f'localparam string {name} = "{value_str}";'
     
     def _float_str(self, value : float) -> str:
         """

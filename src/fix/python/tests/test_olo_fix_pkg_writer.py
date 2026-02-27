@@ -95,6 +95,15 @@ class TestOloFixPkgWriter(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.dut._vhdl_vector_declaration("invalidVector", MemberData(list, [[1], [2], [3]], False))  # Unsupported type
 
+    def test_vhdl_vector_declaration_as_string(self):
+        self.assertEqual(self.dut._vhdl_vector_declaration("vectorIntAsString", MemberData(int, [1, 2, 3], True)), 'constant vectorIntAsString : string := "1, 2, 3";')
+        self.assertEqual(self.dut._vhdl_vector_declaration("vectorFloatAsString", MemberData(float, [1.0, 2.0, 3.0], True)), 'constant vectorFloatAsString : string := "1.0, 2.0, 3.0";')
+        self.assertEqual(self.dut._vhdl_vector_declaration("vectorFixFormatAsString", MemberData(FixFormat, [FixFormat(1, 3, 8), FixFormat(1, 5, 16)], True)), 'constant vectorFixFormatAsString : string := "(1, 3, 8), (1, 5, 16)";')
+
+         # Unsupported type
+        with self.assertRaises(ValueError):
+            self.dut._vhdl_vector_declaration("invalidVectorAsString", MemberData(list, [[1], [2], [3]], True))  # Unsupported type 
+
     def test_verilog_vector_declaration(self):
         self.assertEqual(self.dut._verilog_vector_declaration("vectorInt", MemberData(int, [1, 2, 3], False)), "localparam int vectorInt [0:2] = '{1, 2, 3};")
         self.assertEqual(self.dut._verilog_vector_declaration("vectorFloat", MemberData(float, [1.0, 2.0, 3.0], False)), "localparam real vectorFloat [0:2] = '{1.0, 2.0, 3.0};")
@@ -106,6 +115,16 @@ class TestOloFixPkgWriter(unittest.TestCase):
         # Unsupported type
         with self.assertRaises(ValueError):
             self.dut._verilog_vector_declaration("invalidVector", MemberData(list, [[1], [2], [3]], False))  # Unsupported type
+
+    def test_verilog_vector_declaration_as_string(self):
+        self.assertEqual(self.dut._verilog_vector_declaration("vectorIntAsString", MemberData(int, [1, 2, 3], True)), 'localparam string vectorIntAsString = "1, 2, 3";')
+        self.assertEqual(self.dut._verilog_vector_declaration("vectorFloatAsString", MemberData(float, [1.0, 2.0, 3.0], True)), 'localparam string vectorFloatAsString = "1.0, 2.0, 3.0";')
+        self.assertEqual(self.dut._verilog_vector_declaration("vectorFixFormatAsString", MemberData(FixFormat, [FixFormat(1, 3, 8), FixFormat(1, 5, 16)], True)), 'localparam string vectorFixFormatAsString = "(1, 3, 8), (1, 5, 16)";')
+
+         # Unsupported type
+        with self.assertRaises(ValueError):
+            self.dut._verilog_vector_declaration("invalidVectorAsString", MemberData(list, [[1], [2], [3]], True))  # Unsupported type
+
 
     # Add Constants
     def test_add_constant(self):
@@ -139,6 +158,9 @@ class TestOloFixPkgWriter(unittest.TestCase):
         self.dut.add_vector("vectorFloat", float, [1.0, 2.0, 3.0])
         self.dut.add_vector("vectorFixFormat", FixFormat, [FixFormat(1, 8, 8), FixFormat(1, 16, 16)])
 
+        self.dut.add_constant("constIntAsString", int, 42, as_string=True)
+        self.dut.add_vector("vectorIntAsString", int, [1, 2, 3], as_string=True)
+
         temp_dir = tempfile.mkdtemp()
         try:
             self.dut.write_vhdl_pkg("my_pkg", temp_dir, olo_library="olo_lib")
@@ -157,6 +179,8 @@ class TestOloFixPkgWriter(unittest.TestCase):
             self.assertIn("constant vectorInt : IntegerArray_t(0 to 2) := (1, 2, 3);", content)
             self.assertIn("constant vectorFloat : RealArray_t(0 to 2) := (1.0, 2.0, 3.0);", content)
             self.assertIn("constant vectorFixFormat : FixFormatArray_t(0 to 1) := ((1, 8, 8), (1, 16, 16));", content)
+            self.assertIn('constant constIntAsString : string := "42";', content)
+            self.assertIn('constant vectorIntAsString : string := "1, 2, 3";', content)
         finally:
             shutil.rmtree(temp_dir)
 
@@ -168,6 +192,9 @@ class TestOloFixPkgWriter(unittest.TestCase):
 
         self.dut.add_vector("vectorInt", int, [1, 2, 3])
         self.dut.add_vector("vectorFloat", float, [1.0, 2.0, 3.0])
+
+        self.dut.add_constant("constIntAsString", int, 42, as_string=True)
+        self.dut.add_vector("vectorIntAsString", int, [1, 2, 3], as_string=True)
 
         temp_dir = tempfile.mkdtemp()
         try:
@@ -185,6 +212,8 @@ class TestOloFixPkgWriter(unittest.TestCase):
             self.assertIn('localparam string constString = "Hello";', content)
             self.assertIn("localparam int vectorInt [0:2] = '{1, 2, 3};", content)
             self.assertIn("localparam real vectorFloat [0:2] = '{1.0, 2.0, 3.0};", content)
+            self.assertIn('localparam string constIntAsString = "42";', content)
+            self.assertIn('localparam string vectorIntAsString = "1, 2, 3";', content)
         finally:
             shutil.rmtree(temp_dir)
 
