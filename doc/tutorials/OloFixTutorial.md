@@ -378,7 +378,7 @@ bit-true model for all fixed-point mathematics components.
 ### Algorithm Implementation
 
 The easiest way to hand-over information like number formats and constants from the Python model to the HDL
-implementatio is using the _olo_fix_pkg_writer_. 
+implementatio is using the _olo_fix_pkg_writer_.
 
 This is achieved by below code in [Simulation.py](./OloFixTutorial/Files/Simulation.py):
 
@@ -907,7 +907,7 @@ module olo_fix_tutorial_controller (
     ....
 ```
 
-All signal widths and formats are taken from the verilog header file generated from python. For this to 
+All signal widths and formats are taken from the verilog header file generated from python. For this to
 work, the header file must be included at the very top of the implementaiton verilog file:
 
 ```verilog

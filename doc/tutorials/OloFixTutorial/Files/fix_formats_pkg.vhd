@@ -38,8 +38,6 @@ package fix_formats_pkg is
 
     constant FmtI_c : FixFormat_t := (1, 4, 12);
 
-    -- Vectors
-
 end package;
 
 ---------------------------------------------------------------------------------------------------

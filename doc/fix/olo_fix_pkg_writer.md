@@ -43,6 +43,7 @@ end package;
 ```
 
 And a Verilog header file with the following content:
+
 ```verilog
 package my_hdr;
     localparam int SomeInt = 5;
@@ -109,5 +110,3 @@ Write Verilog header file.
 - _pkg_name_: Name of the header file
   - The file-name is `<pkg_name>.vh`
 - _out_dir_: Directory to write the header file to
-
-
