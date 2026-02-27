@@ -14,8 +14,6 @@ from jinja2 import Environment, FileSystemLoader
 import os
 from collections import namedtuple
 
-# TODO: Add to olo_fix tutorial (VHDL)
-# TODO: Add to olo_fix tutorial (Verilog)
 # TODO: Document and reference ot olo_fix tutorial
 
 # ---------------------------------------------------------------------------------------------------
