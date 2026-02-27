@@ -377,14 +377,28 @@ bit-true model for all fixed-point mathematics components.
 
 ### Algorithm Implementation
 
-Note that number formats are described in a package [fix_formats_pkg.vhd](./OloFixTutorial/Files/fix_formats_pkg.vhd)
-because they are used in multiple places (two RTL implementations and testbench).
+The easiest way to hand-over information like number formats and constants from the Python model to the HDL
+implementatio is using the _olo_fix_pkg_writer_.
 
-The content of this package is easy to map to the number format definitions in Python discussed before. For two
-examples the Python code is given as comment.
+This is achieved by below code in [Simulation.py](./OloFixTutorial/Files/Simulation.py):
+
+```python
+# Write VHDL Formats Package
+out_dir = os.path.abspath(os.path.dirname(__file__))
+vhdl_pkg_writer = olo_fix_pkg_writer()
+vhdl_pkg_writer.add_constant("FmtIn_c", FixFormat, FMT_IN)
+vhdl_pkg_writer.add_constant("FmtOut_c", FixFormat, FMT_OUT)
+...
+vhdl_pkg_writer.write_vhdl_pkg("fix_formats_pkg", out_dir)
+```
+
+The resulting VHDL package can be viewed at [fix_formats_pkg.vhd](./OloFixTutorial/Files/fix_formats_pkg.vhd).
+
+Alternatively (e.g. if _olo_fix_ entities are used without doing a python model first), the formats could be defined
+in VHDL manually as shown below. However, transferring them from Python to HDL automatically is more safe regarding
+consistency.
 
 ```vhdl
-    -- FMT_IN = FixFormat(1, 3, 8)
     constant FmtIn_c      : FixFormat_t := (1, 3, 8); 
     constant FmtOut_c     : FixFormat_t := (1, 3, 8);
     constant FmtKp_c      : FixFormat_t := (0, 8, 4);
@@ -393,7 +407,6 @@ examples the Python code is given as comment.
     constant FmtIlimNeg_c : FixFormat_t := (1, FmtIlim_c.I, FmtIlim_c.F);
     constant FmtErr_c     : FixFormat_t := cl_fix_sub_fmt(FmtIn_c, FmtIn_c);
     constant FmtPpart_c   : FixFormat_t := FmtOut_c;
-    --FMT_IMULT = cl_fix_mult_fmt(FMT_ERR, FMT_KI)
     constant FmtImult_c   : FixFormat_t := cl_fix_mult_fmt(FmtErr_c, FmtKi_c); 
     constant FmtIadd_c    : FixFormat_t := cl_fix_add_fmt(FmtIlim_c, FmtImult_c);
     constant FmtI_c       : FixFormat_t := (FmtIadd_c.S, FmtIlim_c.I, FmtIadd_c.F);
@@ -849,45 +862,60 @@ exist in _cl_fix_).
 _Open Logic_ is committed to being usable from verilog as well. Hence _olo_fix_ can also be used from verilog - in
 contrast to _cl_fix_ which is not accessible for verilog users.
 
+The same _olo_fix_pkg_writer_ can also be used to generate a verilog header file with the required definitions. Because
+in verilog the format type is not present, the formats are defined as strings and the with is stored in a separate
+constant to simplify signal declarations.
+
+Again, the code to create teh package can be found at the bottom of
+[Simulation.py](./OloFixTutorial/Files/Simulation.py):
+
+```python
+# Write Verilog Formats Package
+verilog_pkg_writer = olo_fix_pkg_writer()
+# Formats (as string because Verilog does not have a fix format)
+verilog_pkg_writer.add_constant("FmtIn_c", FixFormat, FMT_IN, as_string=True)
+verilog_pkg_writer.add_constant("FmtOut_c", FixFormat, FMT_OUT, as_string=True)
+...
+# Widths for siganl declarations
+verilog_pkg_writer.add_constant("FmtIn_w", int, cl_fix_width(FMT_IN))
+verilog_pkg_writer.add_constant("FmtOut_w", int, cl_fix_width(FMT_OUT))
+...
+verilog_pkg_writer.write_verilog_header("fix_formats_hdr", out_dir)
+```
+
+The resulting verilog header file can be viewed at [fix_formats_hdr.svh](./OloFixTutorial/Files/fix_formats_hdr.vh).
+
 An _olo_fix_ based verilog implementation of the same controller is given in
 [controller_verilog.sv](./OloFixTutorial/Files/controller_verilog.sv).
 
-Unfortunately no option was found to define port and signal widths based on fixed-point formats. Therefore ports
-and signals must be declared with the correct width manually.
-
-**Note: If you are an experienced verilog user, any contributions to improve this would be highly appreciated!**
-
 ```verilog
-odule olo_fix_tutorial_controller (
+module olo_fix_tutorial_controller (
     input wire Clk,
     input wire Rst,
-    input wire [7:0] Cfg_Ki,    // (0, 4, 4)
-    input wire [11:0] Cfg_Kp,   // (0, 8, 4)
-    input wire [7:0] Cfg_ILim,  // (0, 4, 4)
+    input wire [FmtKi_w-1:0] Cfg_Ki,
+    input wire [FmtKp_w-1:0] Cfg_Kp,
+    input wire [FmtIlim_w-1:0] Cfg_ILim,
     ...
 );
 
     // Static Signals
-    wire [8:0] ILimNeg; // (1, 4, 4)
+    wire [FmtIlimNeg_w-1:0] ILimNeg;
 
     // Dynamic Signals
-    wire [12:0] Error; // (1, 4, 8)
+    wire [FmtErr_w-1:0] Error;
     wire Error_Valid;
     ....
 ```
 
-Fixed point formats are defined as strings:
+All signal widths and formats are taken from the verilog header file generated from python. For this to
+work, the header file must be included at the very top of the implementaiton verilog file:
 
 ```verilog
-    // Formats
-    localparam string FmtIn_c      = "(1, 3, 8)";
-    localparam string FmtOut_c     = "(1, 3, 8)";
-    ...
-    localparam string FmtImult_c   = "(1, 8, 12)"; // Define manually, functions like cl_fix_mult_fmt are not available
+`include "fix_formats_hdr.vh"
+import fix_formats_hdr::*;
 ```
 
-As mentioned, the format definition and signal/port declaration is a bit more manual (and hence more error prone than
-in VHDL). However, instantiation looks rather similar then.
+Instantiation looks rather similar to VHDL then.
 
 ```verilog
     \olo.olo_fix_neg #(                  

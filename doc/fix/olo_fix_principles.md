@@ -180,3 +180,12 @@ common set of functions:
   - Processes the _next_ sample(s) of a signal. Arrays can be passed.
   - The state of the object is not reset before the signal is processed.
   - Use case: Calculate a filter sample by sample
+
+## Python to HDL Worklow
+
+Instead of defining the very same number formats in Python and HDL, it is strongly suggested to use the
+[olo_fix_pkg_writer](./olo_fix_pkg_writer.md) to generate the HDL package with all the formats defined and constants
+defined in Python.
+
+This way Python is the single source of truth and all definitions are automatically transferred to HDL which
+significantly reduces the risk for errors and inconsistencies between the Python model and HDL implementation.

@@ -1,6 +1,6 @@
 source ../../../../tools/questa/vcom_sources.tcl
 vcom ./fix_formats_pkg.vhd
-
+vlog ./fix_formats_hdr.vh
 set StdArithNoWarnings 1
 set NumericStdNoWarnings 1
 
