@@ -14,8 +14,6 @@ from jinja2 import Environment, FileSystemLoader
 import os
 from collections import namedtuple
 
-# TODO: Document and reference ot olo_fix tutorial
-
 # ---------------------------------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------------------------------

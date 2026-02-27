@@ -389,7 +389,7 @@ vhdl_pkg_writer = olo_fix_pkg_writer()
 vhdl_pkg_writer.add_constant("FmtIn_c", FixFormat, FMT_IN)
 vhdl_pkg_writer.add_constant("FmtOut_c", FixFormat, FMT_OUT)
 ...
-vhdl_pkg_writer.write_package("fix_formats_pkg", out_dir)
+vhdl_pkg_writer.write_vhdl_pkg("fix_formats_pkg", out_dir)
 ```
 
 The resulting VHDL package can be viewed at [fix_formats_pkg.vhd](./OloFixTutorial/Files/fix_formats_pkg.vhd).
