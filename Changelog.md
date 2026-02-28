@@ -2,6 +2,62 @@
 
 # Changelog
 
+## 4.4.0
+
+28-Feb-2026
+
+### Added Features
+
+- Added _log2ceil()_ function for real values to _olo_base_pkg_math_
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_cic_dec_tdm_
+  - CIC decimator with time-division multiplexed input and output
+  - Supports one or multiple channels
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_cic_dec_par_tdm_
+  - CIC decimator with parallel input and time-division multiplexed output
+  - Supports one or multiple channels
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_pkg_writer_
+  - Python script to automatically generate VHDL packages and verilog headers to contain data from python
+  - Used to pass parameters and number formats for fixed-point processing from Python to HDL
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Backward Compatible Changes
+
+- Update tools in CI Pipeline
+  - Python 3.10 -> Python 3.13
+  - GHDL 3.0.0 -> GHDL 4.1.0
+  - NVC 1.13.3  -> NVC 1.19.0
+  - VUnit 4.7.0 -> VUnit 5.0.0.dev7
+
+- Make all string generics case-insensitive
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Allow _InWidth_g=_OutWidth_g_ in _olo_base_wconv_n2xn_
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- Fix TX hanshaking issue in _olo_intf_spi_slave_
+  - When _Tx_Valid_ was asserted after _Tx_Ready_ data was wrongly transferred
+  - Reported by: [borjarevuelta-tec](https://github.com/borjarevuelta-tec)
+
+### Reporters
+
+- [borjarevuelta-tec](https://github.com/borjarevuelta-tec)
+
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+
 ## 4.3.0
 
 25-Jan-2026
