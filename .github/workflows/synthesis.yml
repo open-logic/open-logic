@@ -54,7 +54,8 @@ jobs:
         run : |
           source $LOCAL_TOOLS
           cd .github/workflows
-          pip3 install -r requirements.txt
+          pip install "setuptools<70" setuptools_scm wheel
+          pip install --no-build-isolation -r requirements.txt
       # Synthesis for different areas
       - name: base
         run: |
