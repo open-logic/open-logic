@@ -26,6 +26,7 @@ library ieee;
 library work;
     use work.en_cl_fix_pkg.all;
     use work.en_cl_fix_private_pkg.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Header
@@ -50,6 +51,7 @@ package olo_fix_pkg is
 
     -- Functions
     function fixFmtWidthFromString (fmt : string) return natural;
+    function fixFmtWidthFromStringTolerant (fmt : string) return natural;
 
     -- Register is required if:
     -- - logic is present and regMode is "AUTO"
@@ -75,19 +77,24 @@ package body olo_fix_pkg is
         return cl_fix_width(FixFmt_c);
     end function;
 
+    function fixFmtWidthFromStringTolerant (fmt : string) return natural is
+        constant FixFmt_c : FixFormat_t := fixFmtFromStringTolerant(fmt);
+    begin
+        return cl_fix_width(FixFmt_c);
+    end function;
+
     function fixImplementReg (
         logicPresent : boolean;
         regMode      : string) return boolean is
-        constant RegMode_c : string  := toLower(regMode);
-        variable Result_v  : boolean := false;
+        variable Result_v : boolean := false;
     begin
 
         -- Calculate register requirement
-        if RegMode_c = "yes" then
+        if compareNoCase(regMode, "yes") then
             Result_v := true;
-        elsif RegMode_c = "no" then
+        elsif compareNoCase(regMode, "no") then
             Result_v := false;
-        elsif RegMode_c = "auto" then
+        elsif compareNoCase(regMode, "auto") then
             Result_v := logicPresent;
         -- coverage off
         -- unreachable
@@ -107,7 +114,7 @@ package body olo_fix_pkg is
     function fixFmtFromStringTolerant (fmt : string) return FixFormat_t is
         type State_t is (BracketOpen_s, IntBits_s, FracBits_s, BracketClose_s, Done_s);
 
-        variable Result_v : FixFormat_t := (0, 0, 0);
+        variable Result_v : FixFormat_t := FixFmt_Unused_c;
         variable State_v  : State_t     := BracketOpen_s;
     begin
 

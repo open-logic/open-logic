@@ -1,8 +1,9 @@
-vunit_hdl 
+vunit_hdl==5.0.0.dev7 
 PyGithub 
 google-cloud-storage
 vsg==3.27
 numpy
+scipy
 matplotlib
 prettytable
 pyyaml

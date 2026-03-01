@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : "open-logic:open-logic-dev:fix:4.3.0"
+name : "open-logic:open-logic-dev:fix:4.4.0"
 description : "local files (release plus WIP); Fixed point mathematics see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#fix"
 
 filesets:
@@ -10,6 +10,8 @@ filesets:
       - "vhdl/olo_fix_add.vhd"
       - "vhdl/olo_fix_addsub.vhd"
       - "vhdl/olo_fix_bin_div.vhd"
+      - "vhdl/olo_fix_cic_dec_par_tdm.vhd"
+      - "vhdl/olo_fix_cic_dec_tdm.vhd"
       - "vhdl/olo_fix_compare.vhd"
       - "vhdl/olo_fix_cordic_rot.vhd"
       - "vhdl/olo_fix_cordic_vect.vhd"
@@ -30,7 +32,7 @@ filesets:
     file_type : "vhdlSource-2008"
     logical_name : "olo"
     depend :
-      - "^open-logic:open-logic-dev:base:4.3.0"
+      - "^open-logic:open-logic-dev:base:4.4.0"
       - "^open-logic:open-logic-dev:en_cl_fix:2.3.2"
 
 

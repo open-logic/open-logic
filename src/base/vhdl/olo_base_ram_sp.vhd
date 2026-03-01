@@ -246,10 +246,10 @@ architecture rtl of olo_private_ram_sp_nobe is
 begin
 
     -- Assertionsa
-    assert InitFormat_g = "NONE" or InitFormat_g = "HEX"
+    assert compareNoCase(InitFormat_g, "NONE") or compareNoCase(InitFormat_g, "HEX")
         report "olo_base_ram_sp: InitFormat_g must be NONE or HEX. Got: " & InitFormat_g
         severity error;
-    assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR"
+    assert compareNoCase(RamBehavior_g, "RBW") or compareNoCase(RamBehavior_g, "WBR")
         report "olo_base_ram_sp: RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g
         severity error;
 
@@ -257,13 +257,13 @@ begin
     p_ram : process (Clk) is
     begin
         if rising_edge(Clk) then
-            if RamBehavior_g = "RBW" then
+            if compareNoCase(RamBehavior_g, "RBW") then
                 RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
             end if;
             if WrEna = '1' then
                 Mem_v(to_integer(unsigned(Addr))) := WrData;
             end if;
-            if RamBehavior_g = "WBR" then
+            if not compareNoCase(RamBehavior_g, "RBW") then
                 RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
             end if;
 

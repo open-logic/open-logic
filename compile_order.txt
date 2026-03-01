@@ -5,10 +5,10 @@ src/base/vhdl/olo_base_pkg_array.vhd
 src/base/vhdl/olo_base_pkg_math.vhd
 src/base/vhdl/olo_base_tdm_mux.vhd
 src/base/vhdl/olo_base_strobe_gen.vhd
-src/intf/vhdl/olo_intf_debounce.vhd
 src/base/vhdl/olo_base_strobe_div.vhd
 src/base/vhdl/olo_base_reset_gen.vhd
 src/base/vhdl/olo_base_pkg_string.vhd
+src/intf/vhdl/olo_intf_debounce.vhd
 src/base/vhdl/olo_base_ram_tdp.vhd
 src/base/vhdl/olo_base_ram_sp.vhd
 src/base/vhdl/olo_base_ram_sdp.vhd
@@ -71,6 +71,8 @@ src/fix/vhdl/olo_fix_from_real.vhd
 src/fix/vhdl/olo_fix_cordic_vect.vhd
 src/fix/vhdl/olo_fix_cordic_rot.vhd
 src/fix/vhdl/olo_fix_compare.vhd
+src/fix/vhdl/olo_fix_cic_dec_tdm.vhd
+src/fix/vhdl/olo_fix_cic_dec_par_tdm.vhd
 src/fix/vhdl/olo_fix_bin_div.vhd
 src/fix/vhdl/olo_fix_addsub.vhd
 src/fix/vhdl/olo_fix_add.vhd

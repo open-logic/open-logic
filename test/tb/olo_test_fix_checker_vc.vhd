@@ -18,10 +18,15 @@ library vunit_lib;
 
 package olo_test_fix_checker_pkg is
 
+    -- *** Types ***
+    type olo_fix_checker_mode_t is (checker_mode_stream, checker_mode_packet, checker_mode_tdm);
+
     -- *** VUnit instance type ***
     type olo_test_fix_checker_t is record
         p_actor : actor_t;
     end record;
+
+    type olo_test_fix_checker_array_t is array (natural range <>) of olo_test_fix_checker_t;
 
     -- *** Master Operations ***
 
@@ -30,10 +35,12 @@ package olo_test_fix_checker_pkg is
         signal net        : inout network_t;
         checker           : olo_test_fix_checker_t;
         file_path         : string;
-        stall_probability : real     := 0.0;
-        stall_max_cycles  : positive := 1;
-        stall_min_cycles  : positive := 1;
-        msg               : string   := "");
+        mode              : olo_fix_checker_mode_t := checker_mode_stream;
+        tdm_slots         : positive               := 1;
+        stall_probability : real                   := 0.0;
+        stall_max_cycles  : positive               := 1;
+        stall_min_cycles  : positive               := 1;
+        msg               : string                 := "");
 
     -- *** VUnit Operations ***
     -- Message Types
@@ -41,6 +48,9 @@ package olo_test_fix_checker_pkg is
 
     -- Constructor
     impure function new_olo_test_fix_checker return olo_test_fix_checker_t;
+
+    -- Array Constructor
+    impure function new_olo_test_fix_checker_array (size : natural) return olo_test_fix_checker_array_t;
 
     -- Casts
     impure function as_sync (instance : olo_test_fix_checker_t) return sync_handle_t;
@@ -56,10 +66,12 @@ package body olo_test_fix_checker_pkg is
         signal net        : inout network_t;
         checker           : olo_test_fix_checker_t;
         file_path         : string;
-        stall_probability : real     := 0.0;
-        stall_max_cycles  : positive := 1;
-        stall_min_cycles  : positive := 1;
-        msg               : string   := "") is
+        mode              : olo_fix_checker_mode_t := checker_mode_stream;
+        tdm_slots         : positive               := 1;
+        stall_probability : real                   := 0.0;
+        stall_max_cycles  : positive               := 1;
+        stall_min_cycles  : positive               := 1;
+        msg               : string                 := "") is
         -- Declarations
         variable msg_v  : msg_t := new_msg(fix_checker_check_file_msg);
     begin
@@ -69,6 +81,8 @@ package body olo_test_fix_checker_pkg is
 
         -- Create message
         push_string(msg_v, file_path);
+        push(msg_v, olo_fix_checker_mode_t'pos(mode));
+        push(msg_v, tdm_slots);
         push(msg_v, stall_probability);
         push(msg_v, stall_max_cycles);
         push(msg_v, stall_min_cycles);
@@ -82,6 +96,18 @@ package body olo_test_fix_checker_pkg is
     impure function new_olo_test_fix_checker return olo_test_fix_checker_t is
     begin
         return (p_actor => new_actor);
+    end function;
+
+    -- Array Constructor
+    impure function new_olo_test_fix_checker_array (size : natural) return olo_test_fix_checker_array_t is
+        variable arr : olo_test_fix_checker_array_t(0 to size - 1);
+    begin
+
+        for i in arr'range loop
+            arr(i) := new_olo_test_fix_checker;
+        end loop;
+
+        return arr;
     end function;
 
     -- Casts
@@ -126,6 +152,7 @@ entity olo_test_fix_checker_vc is
         clk      : in    std_logic;
         ready    : inout std_logic; -- input for slave, output for master
         valid    : in    std_logic;
+        last     : in    std_logic := '0';
         data     : in    std_logic_vector(cl_fix_width(fmt)-1 downto 0)
     );
 end entity;
@@ -144,6 +171,8 @@ begin
         variable msg_type          : msg_type_t;
         variable msg_p             : string_ptr_t;
         variable file_path_p       : string_ptr_t;
+        variable mode              : olo_fix_checker_mode_t;
+        variable tdm_slots         : positive;
         variable stall_probability : real;
         variable stall_max_cycles  : positive;
         variable stall_min_cycles  : positive;
@@ -151,15 +180,22 @@ begin
         -- File
         file data_file : text;
 
-        variable line_v   : line;
-        variable fmt_v    : FixFormat_t;
-        variable data_slv : std_logic_vector(cl_fix_width(fmt)-1 downto 0);
-        variable good     : boolean;
+        variable line_v        : line;
+        variable next_line_v   : line;
+        variable fmt_v         : FixFormat_t;
+        variable data_slv      : std_logic_vector(cl_fix_width(fmt)-1 downto 0);
+        variable next_data_slv : std_logic_vector(cl_fix_width(fmt)-1 downto 0);
+        variable good          : boolean;
+        variable has_data      : boolean;
+        variable next_has_data : boolean;
 
         -- Others
         variable stall_random : real;
         variable stall_cycles : positive;
         variable line_number  : positive;
+        variable slot_cnt     : natural;
+        variable is_last      : boolean;
+        variable last_check   : std_logic;
     begin
 
         -- Initialize
@@ -180,6 +216,8 @@ begin
             if msg_type = fix_checker_check_file_msg then
                 -- Pop Transaction
                 file_path_p       := new_string_ptr(pop_string(request_msg));
+                mode              := olo_fix_checker_mode_t'val(integer'(pop(request_msg)));
+                tdm_slots         := pop(request_msg);
                 stall_probability := pop(request_msg);
                 stall_max_cycles  := pop(request_msg);
                 stall_min_cycles  := pop(request_msg);
@@ -193,13 +231,58 @@ begin
                 readline(data_file, line_v);
                 fmt_v       := cl_fix_format_from_string(line_v.all);
                 assert fmt_v = fmt
-                    report to_string(msg_p) & "Format mismatch: expected " & to_string(fmt) &
+                    report "olo_test_fix_checker_vc - " & to_string(msg_p) & "Format mismatch: expected " & to_string(fmt) &
                            ", got " & to_string(fmt_v) & " in file " & to_string(file_path_p)
                     severity error;
                 line_number := line_number + 1;
 
+                -- Read first data line
+                if not endfile(data_file) then
+                    readline(data_file, line_v);
+                    hread(line_v, data_slv, good);
+                    assert good
+                        report "olo_test_fix_checker_vc - " & to_string(msg_p) & "- Failed to read from file" & to_string(file_path_p)
+                        severity error;
+                    has_data := true;
+                else
+                    has_data := false;
+                end if;
+
+                slot_cnt := 0;
+
                 -- Iterate through lines in file
-                while not endfile(data_file) loop
+                while has_data loop
+                    -- Try read next line
+                    if not endfile(data_file) then
+                        readline(data_file, next_line_v);
+                        hread(next_line_v, next_data_slv, good);
+                        assert good
+                            report "olo_test_fix_checker_vc - " & to_string(msg_p) & "- Failed to read from file" & to_string(file_path_p)
+                            severity error;
+                        next_has_data := true;
+                    else
+                        next_has_data := false;
+                    end if;
+
+                    -- Determine Last
+                    is_last := false;
+                    if mode = checker_mode_packet and not next_has_data then
+                        is_last := true;
+                    elsif mode = checker_mode_tdm and slot_cnt = tdm_slots - 1 then
+                        is_last := true;
+                    end if;
+                    if is_last then
+                        last_check := '1';
+                    else
+                        last_check := '0';
+                    end if;
+
+                    -- Update slot counter
+                    if slot_cnt = tdm_slots - 1 then
+                        slot_cnt := 0;
+                    else
+                        slot_cnt := slot_cnt + 1;
+                    end if;
 
                     -- Wait for ready signal if timing master
                     if is_timing_master then
@@ -223,19 +306,34 @@ begin
                         wait until rising_edge(clk) and ready = '1' and valid = '1';
                     end if;
 
-                    -- Read line
-                    readline(data_file, line_v);
-                    hread(line_v, data_slv, good);
-                    assert good
-                        report to_string(msg_p) & "- Failed to read from file" & to_string(file_path_p)
-                        severity error;
-
                     -- Apply Data
                     check_equal(data, data_slv, "olo_test_fix - " & to_string(msg_p) &
                                                 " - file " & to_string(file_path_p) &
                                                 " - line " & to_string(line_number));
+
+                    -- Check Last
+                    if mode = checker_mode_tdm then
+                        check_equal(last, last_check, "olo_test_fix - " & to_string(msg_p) &
+                                                      " - Last Mismatch in TDM slot " & to_string(slot_cnt) &
+                                                      " - file " & to_string(file_path_p) &
+                                                      " - line " & to_string(line_number));
+                    elsif mode = checker_mode_packet then
+                        if last = '1' then
+                            check_equal(last, last_check, "olo_test_fix - " & to_string(msg_p) &
+                                                          " - Last Asserted Early - file " & to_string(file_path_p) &
+                                                          " - line " & to_string(line_number));
+                        else
+                            check_equal(last, last_check, "olo_test_fix - " & to_string(msg_p) &
+                                                          " - Last Missing - file " & to_string(file_path_p) &
+                                                          " - line " & to_string(line_number));
+                        end if;
+                    end if;
+
                     line_number := line_number + 1;
 
+                    -- Move next to current
+                    data_slv := next_data_slv;
+                    has_data := next_has_data;
                 end loop;
 
                 -- Close the file

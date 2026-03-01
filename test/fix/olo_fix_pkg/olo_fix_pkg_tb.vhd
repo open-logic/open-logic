@@ -55,6 +55,10 @@ begin
                 check_equal(fixFmtWidthFromString("(0 ,2 ,4)"), 6, "fixFmtWidthFromString(0 ,2 ,4) wrong");
                 check_equal(fixFmtWidthFromString(" (0,2,4) "), 6, "fixFmtWidthFromString (0,2,4)  wrong");
 
+            elsif run("fixFmtWidthFromStringTolerant") then
+                check_equal(fixFmtWidthFromStringTolerant("(1,2,4)"), 7, "fixFmtWidthFromString(1,2,4) wrong");
+                check_equal(fixFmtWidthFromStringTolerant("No-Fmt"), 1, "fixFmtWidthFromStringTolerant(No-Fmt) wrong");
+
             elsif run("fixImplementReg") then
                 check_equal(fixImplementReg(false, "AUTO"), false, "fixImplementReg(false, AUTO) wrong");
                 check_equal(fixImplementReg(true,  "AUTO"), true,  "fixImplementReg(true,  AUTO) wrong");
@@ -81,12 +85,12 @@ begin
 
                 Format_v := fixFmtFromStringTolerant("NONE");
                 check_equal(Format_v.S, 0, "fixFmtFromStringTolerant(NONE) S wrong");
-                check_equal(Format_v.I, 0, "fixFmtFromStringTolerant(NONE) I wrong");
+                check_equal(Format_v.I, 1, "fixFmtFromStringTolerant(NONE) I wrong");
                 check_equal(Format_v.F, 0, "fixFmtFromStringTolerant(NONE) F wrong");
 
                 Format_v := fixFmtFromStringTolerant("(0,-1,3");
                 check_equal(Format_v.S, 0, "fixFmtFromStringTolerant(0,-1,3 S wrong");
-                check_equal(Format_v.I, 0, "fixFmtFromStringTolerant(0,-1,3 I wrong");
+                check_equal(Format_v.I, 1, "fixFmtFromStringTolerant(0,-1,3 I wrong");
                 check_equal(Format_v.F, 0, "fixFmtFromStringTolerant(0,-1,3 F wrong");
 
             else

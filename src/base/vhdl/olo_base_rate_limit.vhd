@@ -68,9 +68,6 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_rate_limit is
 
-    -- Constants
-    constant ModeUpper_c : string := toUpper(Mode_g);
-
     -- Signals
     signal Input_Ready : std_logic;
     signal Input_Valid : std_logic;
@@ -84,8 +81,8 @@ begin
                ") must be <= Period_g (" & integer'image(Period_g) & ")"
         severity failure;
 
-    assert ModeUpper_c = "SMOOTH" or ModeUpper_c = "BLOCK"
-        report "olo_base_rate_limit: Mode_g must be either ""SMOOTH"" or ""BLOCK"", got """ & ModeUpper_c & """"
+    assert compareNoCase(Mode_g, "SMOOTH") or compareNoCase(Mode_g, "BLOCK")
+        report "olo_base_rate_limit: Mode_g must be either ""SMOOTH"" or ""BLOCK"", got """ & Mode_g & """"
         severity failure;
 
     -- *** Add Input Register if Required ***
@@ -186,7 +183,7 @@ begin
             OutputTransfer_v := (Out_Valid_i = '1' and Out_Ready = '1');
 
             -- SMOOTH Mode Logic
-            if ModeUpper_c = "SMOOTH" then
+            if compareNoCase(Mode_g, "SMOOTH") then
 
                 -- Update counter: either decrement (on transfer) OR increment (building credit)
                 if OutputTransfer_v then

@@ -11,6 +11,14 @@ from functools import partial
 # Import open-logic test configurations
 # .. they are in separate files to keep the size of run.py in range
 from test_configs import olo_axi, olo_intf, olo_fix, olo_base
+from codegen import generate as codegen_generate
+
+########################################################################################################################
+# Code Generators
+########################################################################################################################
+# Code-generator tests must generate code before VUnit detects files because the files must be present for VUnit
+# to detect them.
+codegen_generate()
 
 ########################################################################################################################
 # Setup
@@ -65,7 +73,7 @@ if 'VUNIT_SIMULATOR' not in os.environ:
         os.environ['VUNIT_SIMULATOR'] = 'modelsim'
 
 # Parse VUnit Arguments
-vu = VUnit.from_argv(compile_builtins=False, argv=argv)
+vu = VUnit.from_argv(argv=argv)
 vu.add_vhdl_builtins()
 vu.add_com()
 vu.add_verification_components()
@@ -122,7 +130,7 @@ olo_tb.set_sim_option('nvc.heap_size', '5000M')
 
 # Disable IEEE numeric_std warnings to avoid slow simulation speed due to X-propagation
 olo_tb.set_sim_option('ghdl.sim_flags', ['--ieee-asserts=disable'])
-olo_tb.set_sim_option('nvc.sim_flags', ['--ieee-warnings=off'])
+olo_tb.set_sim_option('nvc.global_flags', ['--ieee-warnings=off'])
 vu.set_sim_option("disable_ieee_warnings", True)
 
 

@@ -62,6 +62,17 @@ begin
                 check_equal(toLower("123 &- abCD"), "123 &- abcd", "toLower 5");
             end if;
 
+            if run("compareNoCase") then
+                check_equal(compareNoCase("Hello", "hello"), true, "compareNoCase 1");
+                check_equal(compareNoCase("Hello", "HELLO"), true, "compareNoCase 2");
+                check_equal(compareNoCase("Hello", "hElLo"), true, "compareNoCase 3");
+                check_equal(compareNoCase("Hello", "World"), false, "compareNoCase 4");
+                check_equal(compareNoCase("  Hello ", "hello"), true, "compareNoCase 6");
+                check_equal(compareNoCase("  Hello ", "hello "), true, "compareNoCase 7");
+                check_equal(compareNoCase("  Hello ", " hello "), true, "compareNoCase 8");
+                check_equal(compareNoCase("  Hello  ", "  World  "), false, "compareNoCase 9");
+            end if;
+
             if run("trim") then
                 check_equal(trim("Hello"), "Hello", "trim 1");
                 check_equal(trim(" Hello"), "Hello", "trim 2");

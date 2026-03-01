@@ -75,8 +75,6 @@ architecture rtl of olo_base_crc is
     constant XorValueResized_c     : std_logic_vector(CrcWidth_c-1 downto 0) := std_logic_vector(resize(signed(XorOutput_g), CrcWidth_c));
     constant InitialValue_c        : std_logic_vector(CrcWidth_c-1 downto 0) := choose(InitialValue_g = "0", ZeroPoly_c, InitialValueResized_c);
     constant XorOutput_c           : std_logic_vector(CrcWidth_c-1 downto 0) := choose(XorOutput_g = "0", ZeroPoly_c, XorValueResized_c);
-    constant BitOrder_c            : string                                  := toUpper(BitOrder_g);
-    constant ByteOrder_c           : string                                  := toUpper(ByteOrder_g);
 
     -- Signals
     signal LfsrReg     : std_logic_vector(CrcWidth_c-1 downto 0);
@@ -85,13 +83,13 @@ architecture rtl of olo_base_crc is
 
 begin
 
-    assert BitOrder_c = "MSB_FIRST" or BitOrder_c = "LSB_FIRST"
+    assert compareNoCase(BitOrder_g, "MSB_FIRST") or compareNoCase(BitOrder_g, "LSB_FIRST")
         report "###ERROR###: olo_base_crc - Illegal value for BitOrder_g"
         severity error;
-    assert ByteOrder_c = "NONE" or ByteOrder_c = "LSB_FIRST" or ByteOrder_c = "MSB_FIRST"
+    assert compareNoCase(ByteOrder_g, "NONE") or compareNoCase(ByteOrder_g, "LSB_FIRST") or compareNoCase(ByteOrder_g, "MSB_FIRST")
         report "###ERROR###: olo_base_crc - Illegal value for ByteOrder_g"
         severity error;
-    assert ByteOrder_c = "NONE" or DataWidth_g mod 8 = 0
+    assert compareNoCase(ByteOrder_g, "NONE") or DataWidth_g mod 8 = 0
         report "###ERROR###: olo_base_crc - For DataWidth_g not being a multiple of 8, only ByteOrder_g=NONE is allowed"
         severity error;
     assert InitialValue_c'length = CrcWidth_c
@@ -136,12 +134,12 @@ begin
             end if;
 
             -- Handle Input permutation (LFSR always processes MSB first)
-            if BitOrder_c = "MSB_FIRST" then
-                if ByteOrder_c = "LSB_FIRST" then
+            if compareNoCase(BitOrder_g, "MSB_FIRST") then
+                if compareNoCase(ByteOrder_g, "LSB_FIRST") then
                     Input_v(InputHigh_v downto 0) := invertByteOrder(Input_v(InputHigh_v downto 0));
                 end if;
             else
-                if ByteOrder_c = "MSB_FIRST" then
+                if compareNoCase(ByteOrder_g, "MSB_FIRST") then
                     Input_v(InputHigh_v downto 0) := invertByteOrder(Input_v(InputHigh_v downto 0));
                 end if;
                 Input_v(InputHigh_v downto 0) := invertBitOrder(Input_v(InputHigh_v downto 0));
