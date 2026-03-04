@@ -333,10 +333,10 @@ begin
                 end if;
 
             when Remove_s =>
-                -- Removing last key moved
+                -- Removing last displaced key (or removed key if no cluster compression was necessary)
                 Ram_WrData       <= DataClear_c;
                 Ram_WrEna        <= '1';
-                Ram_WrAddr       <= RegCurr.rd_idx;
+                Ram_WrAddr       <= RegCurr.wr_idx;
                 RegNext.pairs    <= RegCurr.pairs - 1;
                 RegNext.ht_state <= Idle_s;
 
