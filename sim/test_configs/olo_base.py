@@ -320,3 +320,11 @@ def add_configs(olo_tb):
     for BitFlip in [True, False]:
         for InvertOutput in [True, False]:
             named_config(tb, {'BitflipOutput_g': BitFlip, 'InvertOutput_g' : InvertOutput})
+
+    ### olo_base_hashtable ###
+    ht_tb = 'olo_base_hashtable_tb'
+    tb = olo_tb.test_bench(ht_tb)
+    for HashAlgo in ['LCG', 'DIVISION', 'CRC32']:
+        named_config(tb, {'Hash_g' : HashAlgo,})
+    for resetClear in [True, False]:
+        named_config(tb, {'ClearAfterReset_g' : resetClear,})

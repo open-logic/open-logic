@@ -15,19 +15,20 @@ library olo;
 entity olo_base_hashtable_tb is
     generic (
         runner_cfg : string;
-        Depth_g : positive := 8;
-        KeyWidth_g : positive := 16;
-        ValueWidth_g : positive := 32;
         Hash_g : string := "LCG";
-        Hash_Lcg_Mult_g : positive := 1103515245;
-        Hash_Lcg_Incr_g : positive := 12345;
-        RamStyle_g : string := "auto";
-        RamBehavior_g : string := "RBW";
         ClearAfterReset_g : boolean := true
     );
 end entity;
 
 architecture tb of olo_base_hashtable_tb is
+
+    constant Depth_g : positive := 8;
+    constant KeyWidth_g : positive := 16;
+    constant ValueWidth_g : positive := 32;
+    constant Hash_Lcg_Mult_g : positive := 1103515245;
+    constant Hash_Lcg_Incr_g : positive := 12345;
+    constant RamStyle_g : string := "auto";
+    constant RamBehavior_g : string := "RBW";
 
     constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master(
         data_length => KeyWidth_g + ValueWidth_g,
