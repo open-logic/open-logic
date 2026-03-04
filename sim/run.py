@@ -28,6 +28,7 @@ class Simulator(Enum):
     GHDL = 1
     MODELSIM = 2
     NVC = 3
+    RIVIERAPRO = 4
 
 #Execute from sim directory
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -50,6 +51,9 @@ if "--nvc" in sys.argv:
 if "--ghdl" in sys.argv:
     SIMULATOR = Simulator.GHDL
     argv.remove("--ghdl")
+if "--rivierapro" in sys.argv:
+    SIMULATOR = Simulator.RIVIERAPRO
+    argv.remove("--rivierapro")
 if "--coverage" in sys.argv:
     USE_COVERAGE = True
     argv.remove("--coverage")
@@ -69,6 +73,8 @@ if 'VUNIT_SIMULATOR' not in os.environ:
         os.environ['VUNIT_SIMULATOR'] = 'ghdl'
     elif SIMULATOR == Simulator.NVC:
         os.environ['VUNIT_SIMULATOR'] = 'nvc'
+    elif SIMULATOR == Simulator.RIVIERAPRO:
+        os.environ['VUNIT_SIMULATOR'] = 'rivierapro'
     else:
         os.environ['VUNIT_SIMULATOR'] = 'modelsim'
 
