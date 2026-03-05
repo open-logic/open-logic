@@ -226,7 +226,8 @@ begin
 
     --Show passing tests messages
     show(get_logger(default_checker), display_handler, pass);
-    test_runner_watchdog(runner, 5 us);
+    -- Setup watchdog
+    test_runner_watchdog(runner, 6 us);
 
     main : process
     variable storedPairs : integer := 0;
