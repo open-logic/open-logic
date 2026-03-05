@@ -358,6 +358,12 @@ begin
                 end if;
                 RegCurr.pairs  <= to_unsigned(0, PairsIdx_c+1);
                 RegCurr.wr_idx <= to_unsigned(0, PairsIdx_c);
+                RegCurr.rd_idx <= to_unsigned(0, PairsIdx_c);
+                RegCurr.cnt <= to_unsigned(0, PairsIdx_c);
+                RegCurr.key_found <= '0';
+                RegCurr.after_search <= Idle_s;
+                RegCurr.user_data <= DataClear_c;
+                RegCurr.hash <= to_unsigned(0, PairsIdx_c);
             else
                 RegCurr <= RegNext;
             end if;
