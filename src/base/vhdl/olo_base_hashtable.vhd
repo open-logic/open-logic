@@ -46,6 +46,7 @@ entity olo_base_hashtable is
         -- Result
         Out_KeyUnknown    : out   std_logic;
         -- Status Interface --
+        Status_Busy       : out   std_logic;
         Status_Full       : out   std_logic;
         Status_Pairs      : out   std_logic_vector(log2ceil(Depth_g) downto 0)
     );
@@ -92,6 +93,7 @@ architecture rtl of olo_base_hashtable is
     end record;
 
     signal RegNext, RegCurr : Reg_r;
+    signal Reset_State : HtState_t;
 
     signal Ram_WrAddr, Ram_RdAddr : unsigned(PairsIdx_c-1 downto 0);
     signal Ram_WrEna, Ram_RdEna   : std_logic;
@@ -172,12 +174,14 @@ begin
         Ram_WrData <= Ram_RdData; -- Write data is read data by default
         Out_Valid  <= '0';
         Hash_InKey <= Ram_RdData.key;
+        Status_Busy <= '1';
 
         -- FSM
         case RegCurr.ht_state is
             when Idle_s =>
                 -- Hashtable ready for new operation
                 In_Ready <= '1';
+                Status_Busy <= '0';
                 if In_Valid <= '1' then -- AXIS handshake
                     -- synthesis off
                     -- Only one operation can be requested at a time
@@ -347,15 +351,12 @@ begin
     end process;
 
     -- Register process
+    Reset_State <= Clear_s when ClearAfterReset_g else Idle_s; 
     p_reg : process (Clk, Rst) is
     begin
         if rising_edge(Clk) then
             if Rst = '1' then
-                if ClearAfterReset_g then
-                    RegCurr.ht_state <= Clear_s;
-                else
-                    RegCurr.ht_state <= Idle_s;
-                end if;
+                RegCurr.ht_state <= Reset_State;
                 RegCurr.pairs  <= to_unsigned(0, PairsIdx_c+1);
                 RegCurr.wr_idx <= to_unsigned(0, PairsIdx_c);
                 RegCurr.rd_idx <= to_unsigned(0, PairsIdx_c);

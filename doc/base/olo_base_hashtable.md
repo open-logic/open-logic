@@ -85,6 +85,7 @@ Latency of *cluster_comp* is: *1 + (cluster_size - element_position_in_cluster)*
 
 | Name              | In/Out | Length           | Default | Description                                                     |
 | :--------         | :----- | :--------------- | ------- | :----------------------                                         |
+| Status_Busy       | out | 1 | N/A | Busy |
 | Status_Full          | out    | 1                | N/A     | Full                                                            |
 | Status_Pairs          | out    | _log2ceil(Depth_g)_+1 | N/A     | Number of Key-Value pairs stored |
 

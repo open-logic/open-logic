@@ -67,6 +67,7 @@ architecture tb of olo_base_hashtable_tb is
     signal Out_Valid : std_logic := '0';
     signal Out_Ready : std_logic := '0';
     signal Out_KeyUnknown : std_logic := '0';
+    signal Status_Busy : std_logic := '0';
     signal Status_Full : std_logic := '0';
     signal Status_Pairs : std_logic_vector(PAIRS_IDX downto 0) := (others => '0');
 
@@ -186,6 +187,7 @@ begin
         Out_Valid => Out_Valid,
         Out_Ready => Out_Ready,
         Out_KeyUnknown => Out_KeyUnknown,
+        Status_Busy => Status_Busy,
         Status_Full => Status_Full,
         Status_Pairs => Status_Pairs
     );
@@ -253,9 +255,11 @@ begin
             if run("ResetValues") then 
                 --Check Reset Values
                 if ClearAfterReset_g then
-                    check(In_Ready = '0', "Hashtable clearing after reset");
+                    check(In_Ready = '0', "Hashtable AXIS clearing after reset");
+                    check(Status_Busy = '1', "Hashtable status clearing after reset");
                 else
-                    check(In_Ready = '1', "Hashtable ready after reset");
+                    check(In_Ready = '1', "Hashtable AXIS ready after reset");
+                    check(Status_Busy = '0', "Hashtable status ready after reset");
                 end if;
                 check(Out_Valid = '0', "No data output after reset");
                 check(Status_Full = '0', "Hashtable not full after reset");
@@ -283,11 +287,7 @@ begin
                         to_hstring(TestValues(i));
                 end loop;
                 --Wait for hashtable to be ready
-                --NOTE: This behaviour isn't technically standard AXI-STREAM protocol as we are waiting for a slave
-                --interface to be ready. The standard specifies that a slave can wait for a master (valid = '1') but
-                --not the inverse. In this testbench, however, we need the hashtable to be ready before sending
-                --requests but keep in mind that is not how it should be used in HW designs
-                wait until In_Ready = '1';
+                wait until Status_Busy = '0';
                 --Store all pairs
                 report "Store all pairs";
                 storedPairs := 0;
@@ -404,7 +404,9 @@ begin
                     Hash_Lcg_Incr_g,
                     ValueWidth_g));
                 --Wait for hashtable to be ready
-                wait until In_Ready = '1';
+                report "Wait for hashtable to be ready";
+                wait until Status_Busy = '0';
+                report "Non-blocking transactions";
                 --Send 2 non-blocking write transactions
                 for i in 0 to 1 loop
                     HtWrite(net, TestKeys(i), TestValues(i), false);
@@ -416,6 +418,7 @@ begin
                 for i in 0 to 1 loop
                     HtRead(net, TestKeys(i), false);
                 end loop;
+                report "Blocking transactions";
                 --Wait for a moment (enough for hashtable to have to hold read transaction)
                 wait for 200 ns;
                 --Blocking read (and result check) for hashtable output (second read waits for hashtable)
