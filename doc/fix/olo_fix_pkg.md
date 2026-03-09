@@ -73,6 +73,28 @@ needed.
 function fixFmtWidthFromString (fmt : string) return natural;
 ```
 
+### Dynamic Shift Function
+
+The way `cl_fix_shift` from the _en_cl_fix_ package is written, many synthesis tools cannot synthesize it for varaible
+shifts. Therefore a dynamic shift function is implemented in _olo_fix_pkg_ that can be used in the _olo_fix_ components
+instead of `cl_fix_shift` when variable shifts are required.
+
+```vhdl
+function fixDynShift(   a : std_logic_vector;
+                        aFmt : FixFormat_t;
+                        shift : integer; 
+                        minShift : integer := 0;
+                        maxShift : integer;
+                        rFmt : FixFormat_t;
+                        rnd : FixRound_t := Trunc_s;
+                        sat : FixSaturate_t := None_s) return std_logic_vector;
+```
+
+The function works exactly the same as `cl_fix_shift` but taking additional parameters for minimum and maximum shift.
+
+Note that the shift direction is left (like in `cl_fix_shift`) if the shift value is positive and right if the shift
+value is negative.
+
 ### Internal Functions
 
 The following functions are used in _Open Logic_ internally but they are not intended for use by the user and hence

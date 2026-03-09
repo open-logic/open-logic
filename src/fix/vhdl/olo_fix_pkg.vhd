@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2025 by Oliver Bründler
+-- Copyright (c) 2025-2026 by Oliver Bruendler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -27,6 +27,7 @@ library work;
     use work.en_cl_fix_pkg.all;
     use work.en_cl_fix_private_pkg.all;
     use work.olo_base_pkg_string.all;
+    use work.olo_base_pkg_math.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Header
@@ -63,6 +64,18 @@ package olo_fix_pkg is
 
     -- Return fixed-point format from string and tolerate wrong strings (returning 0,0,0)
     function fixFmtFromStringTolerant (fmt : string) return FixFormat_t;
+
+    -- Dynamic shifting function
+    -- Required because synthesis tools do not accept variable shifts the way cl_fix_shift is writtin.
+    function fixDynShift (
+        a        : std_logic_vector;
+        aFmt     : FixFormat_t;
+        shift    : integer;
+        minShift : integer       := 0;
+        maxShift : integer;
+        rFmt     : FixFormat_t;
+        rnd      : FixRound_t    := Trunc_s;
+        sat      : FixSaturate_t := None_s) return std_logic_vector;
 
 end package;
 
@@ -152,6 +165,42 @@ package body olo_fix_pkg is
         end if;
 
         return Result_v;
+    end function;
+
+    function fixDynShift (
+        a        : std_logic_vector;
+        aFmt     : FixFormat_t;
+        shift    : integer;
+        minShift : integer       := 0;
+        maxShift : integer;
+        rFmt     : FixFormat_t;
+        rnd      : FixRound_t    := Trunc_s;
+        sat      : FixSaturate_t := None_s) return std_logic_vector is
+        -- Local declaratoins
+        constant FullFmt_c : FixFormat_t := (max(aFmt.S, rFmt.S), max(aFmt.I+maxShift, rFmt.I), max(aFmt.F-minShift, rFmt.F+1)); -- Additional bit for rounding
+        variable FullA_v   : std_logic_vector(cl_fix_width(FullFmt_c)-1 downto 0);
+        variable FullOut_v : std_logic_vector(FullA_v'range);
+    begin
+        -- assertions
+        -- synthesis translate_off
+        assert shift >= minShift
+            report "olo_fix_pkg.fixDynShift: Shift must be >= minShift"
+            severity error;
+        assert shift <= maxShift
+            report "olo_fix_pkg.fixDynShift: Shift must be <= maxShift"
+            severity error;
+        -- synthesis translate_on
+
+        -- Implementation
+        FullA_v := cl_fix_resize(a, aFmt, FullFmt_c);
+
+        for i in minShift to maxShift loop -- make a loop to ensure the shift is a constant (required by the tools)
+            if i = shift then
+                FullOut_v := cl_fix_shift(FullA_v, FullFmt_c, i, FullFmt_c, Trunc_s, None_s);
+            end if;
+        end loop;
+
+        return cl_fix_resize(FullOut_v, FullFmt_c, rFmt, rnd, sat);
     end function;
 
 end package body;

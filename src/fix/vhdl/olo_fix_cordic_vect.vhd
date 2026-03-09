@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2025 by Oliver Bruendler
+-- Copyright (c) 2025-2026 by Oliver Bruendler
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -135,7 +135,7 @@ architecture rtl of olo_fix_cordic_vect is
         yLast       : std_logic_vector;
         shift       : integer) return std_logic_vector is
         -- Declarations
-        constant YShifted_c : std_logic_vector := cl_fix_shift(yLast, IntXyFmt_c, -shift, IntXyFmt_c, Trunc_s, None_s);
+        constant YShifted_c : std_logic_vector := fixDynShift(yLast, IntXyFmt_c, -shift, -Iterations_g, 0, IntXyFmt_c, Trunc_s, None_s);
     begin
 
         if signed(yLast) < 0 then
@@ -156,7 +156,7 @@ architecture rtl of olo_fix_cordic_vect is
         yLast       : std_logic_vector;
         shift       : integer) return std_logic_vector is
         -- Declarations
-        constant XShifted_c : std_logic_vector := cl_fix_shift(xLast, IntXyFmt_c, -shift, IntXyFmt_c, Trunc_s, None_s);
+        constant XShifted_c : std_logic_vector := fixDynShift(xLast, IntXyFmt_c, -shift, -Iterations_g, 0, IntXyFmt_c, Trunc_s, None_s);
     begin
 
         if signed(yLast) < 0 then

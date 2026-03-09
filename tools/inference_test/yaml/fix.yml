@@ -114,30 +114,45 @@ entities:
           ResultFmt_g: '"(0,4,4)"'
   # olo_fix_cordic_rot
   - entity_name: "olo_fix_cordic_rot"
+    fixed_generics:
+      InMagFmt_g: '"(0, 0, 16)"'
+      InAngFmt_g: '"(0, 0, 15)"'
+      OutFmt_g: '"(1, 0, 16)"'
     configurations:
-      - name: "default"
-        generics:
-          InMagFmt_g: '"(0, 0, 16)"'
-          InAngFmt_g: '"(0, 0, 15)"'
-          OutFmt_g: '"(1, 0, 16)"'
+      - name: "pipelined"
+        generics:   
+          Mode_g: '"Pipelined"'
+      - name: "serial"
+        generics:   
+          Mode_g: '"Serial"'
           GainCorrCoefFmt_g: '"NONE"'
   # olo_fix_cordic_vect
   - entity_name: "olo_fix_cordic_vect"
+    fixed_generics:
+      InFmt_g: '"(1, 0, 16)"'
+      OutAngFmt_g: '"(0, 0, 15)"'
+      OutMagFmt_g: '"(0, 1, 16)"'
     configurations:
-      - name: "default"
-        generics:
-          InFmt_g: '"(1, 0, 16)"'
-          OutAngFmt_g: '"(0, 0, 15)"'
-          OutMagFmt_g: '"(0, 1, 16)"'
+      - name: "pipelined"
+        generics:   
+          Mode_g: '"Pipelined"'
+      - name: "serial"
+        generics:   
+          Mode_g: '"Serial"'
           GainCorrCoefFmt_g: '"NONE"'
   # olo_fix_bin_div
   - entity_name: "olo_fix_bin_div"
+    fixed_generics:
+      NumFmt_g: '"(0, 2, 10)"'
+      DenomFmt_g: '"(1, 3, 4)"'
+      OutFmt_g: '"(1, 8, 12)"'
     configurations:
-      - name: "default"
+      - name: "pipelined"
         generics:   
-          NumFmt_g: '"(0, 2, 10)"'
-          DenomFmt_g: '"(1, 3, 4)"'
-          OutFmt_g: '"(1, 8, 12)"'
+          Mode_g: '"Pipelined"'
+      - name: "serial"
+        generics:   
+          Mode_g: '"Serial"'
   # olo_fix_cic_dec_tdm
   - entity_name: "olo_fix_cic_dec_tdm"
     configurations:
