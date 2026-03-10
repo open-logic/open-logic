@@ -2,6 +2,39 @@
 
 # Changelog
 
+## 4.4.1
+
+10-Mar-2026
+
+### Added Features
+
+- Added _fixDynShift()_ function to _olo_fix_pkg_
+  - Dynamically shift a fixed-point number by a variable amount of bits
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Backward Compatible Changes
+
+- None
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- MAke CORDIC (rotation and vecotring) synthesizable in Mode_g=Serial
+  - Affected entities: _olo_fix_cordic_rot_, _olo_fix_cordic_vect_
+  - The entities did fail synthesis with the setting Mode_g=Serial
+  - Reported by: [Niv Cohen](https://github.com/niv-cohen-ks)
+
+### Reporters
+
+- [Niv Cohen](https://github.com/niv-cohen-ks)
+
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+
 ## 4.4.0
 
 28-Feb-2026

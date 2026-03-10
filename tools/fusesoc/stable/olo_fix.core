@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : "open-logic:open-logic:fix:4.4.0"
+name : "open-logic:open-logic:fix:4.4.1"
 description : "stable release (downloaded from GitHub); Fixed point mathematics see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#fix"
 
 filesets:
@@ -32,7 +32,7 @@ filesets:
     file_type : "vhdlSource-2008"
     logical_name : "olo"
     depend :
-      - "^open-logic:open-logic:base:4.4.0"
+      - "^open-logic:open-logic:base:4.4.1"
       - "^open-logic:open-logic:en_cl_fix:2.3.2"
 
 
@@ -44,5 +44,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 4.4.0
+  version : 4.4.1
   
