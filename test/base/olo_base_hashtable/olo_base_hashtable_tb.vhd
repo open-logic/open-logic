@@ -287,7 +287,9 @@ begin
                         to_hstring(TestValues(i));
                 end loop;
                 --Wait for hashtable to be ready
-                wait until Status_Busy = '0';
+                if Status_Busy = '1' then
+                    wait until Status_Busy = '0';
+                end if;
                 --Store all pairs
                 report "Store all pairs";
                 storedPairs := 0;
@@ -405,7 +407,9 @@ begin
                     ValueWidth_g));
                 --Wait for hashtable to be ready
                 report "Wait for hashtable to be ready";
-                wait until Status_Busy = '0';
+                if Status_Busy = '1' then
+                    wait until Status_Busy = '0';
+                end if;
                 report "Non-blocking transactions";
                 --Send 2 non-blocking write transactions
                 for i in 0 to 1 loop
