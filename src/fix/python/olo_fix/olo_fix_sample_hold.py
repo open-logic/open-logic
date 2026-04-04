@@ -53,12 +53,11 @@ class olo_fix_sample_hold:
         :return: Result (float if out_samples=1, otherwise numpy array of floats)
         """
         #  Apply new input
-        if input is not None:
-            if isinstance(input, (float, int)):
-                input = [input]
-            self._hold_value = input[-1] #Hold the last sample of the input sequence
-            for sample in input:
-                self._hold_value = sample
+        if input != None:
+            if isinstance(input, (float, int)) or (isinstance(input, np.ndarray) and input.ndim == 0):
+                self._hold_value = input
+            else:
+                self._hold_value = input[-1] #Hold the last sample of the input sequence
 
         # Product output
         if out_samples == 1:

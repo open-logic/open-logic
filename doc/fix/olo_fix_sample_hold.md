@@ -21,11 +21,12 @@ sample is taken.
 This can be used for example as a simiple synchronization mechanism for data-streams with different sample rates
 or to synchronize feedback paths to the sample rate of the input.
 
+An example of using the _olo_fix_sample_hold_ for feedback synchronization can be found in the Open Logic Fixed Point
+Tutorial (see [OloFixTutorial](../tutorials/OloFixTutorial.md)).
+
 TODO: Figure for feedback synchronization
 
 TODO: Figure to synchronize two different data-streams
-
-TODO: Add to tutorial
 
 **Latency** of this entity is 1 clock cycle.
 
@@ -68,5 +69,3 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 ### Python Model
 
 TODO: add details about the python model (+ sample code)
-
-

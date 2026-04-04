@@ -42,6 +42,9 @@ class TestOloFixSampleHold(unittest.TestCase):
         self.assertEqual(dut.next(out_samples=1), cl_fix_from_real(1.0, self.FMT))
         dut.next(input=3.0)
         self.assertEqual(dut.next(out_samples=1), cl_fix_from_real(3.0, self.FMT))
+        # Use float value
+        dut.next(input=2.5)
+        self.assertEqual(dut.next(out_samples=1), cl_fix_from_real(2.5, self.FMT))
 
     def test_hold_last_of_sequence(self):
         """When multiple input samples are given, the last one is held"""
