@@ -24,7 +24,6 @@ or to synchronize feedback paths to the sample rate of the input.
 For details about the two use-cases, refer to the documentation of
 [olo_base_sample_hold](../base/olo_base_sample_hold.md) which is the bit-vector version of this entity.
 
-
 **Latency** of this entity is 1 clock cycle.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
