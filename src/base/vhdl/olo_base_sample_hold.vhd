@@ -7,11 +7,11 @@
 ---------------------------------------------------------------------------------------------------
 -- Description
 ---------------------------------------------------------------------------------------------------
--- This entity implements a sample and hold for fixed-point numbers. The output holds the last
+-- This entity implements a sample and hold. The output holds the last
 -- sampled value until a new sample is taken.
 --
 -- Documentation:
--- https://github.com/open-logic/open-logic/blob/main/doc/fix/olo_fix_sample_hold.md
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_sample_hold.md
 --
 -- Note: The link points to the documentation of the latest release. If you
 --       use an older version, the documentation might not match the code.
@@ -26,16 +26,14 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
-    use work.en_cl_fix_pkg.all;
-    use work.olo_fix_pkg.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
 ---------------------------------------------------------------------------------------------------
-entity olo_fix_sample_hold is
+entity olo_base_sample_hold is
     generic (
-        Fmt_g        : string;
-        ResetValue_g : real    := 0.0;
+        Width_g      : positive;
+        ResetValue_g : std_logic_vector;
         ResetValid_g : boolean := true
     );
     port (
@@ -43,10 +41,10 @@ entity olo_fix_sample_hold is
         Clk       : in    std_logic;
         Rst       : in    std_logic;
         -- Input
-        In_Data   : in    std_logic_vector(fixFmtWidthFromString(Fmt_g) - 1 downto 0);
+        In_Data   : in    std_logic_vector(Width_g - 1 downto 0);
         In_Valid  : in    std_logic;
         -- Output
-        Out_Data  : out   std_logic_vector(fixFmtWidthFromString(Fmt_g) - 1 downto 0);
+        Out_Data  : out   std_logic_vector(Width_g - 1 downto 0);
         Out_Valid : out   std_logic
     );
 end entity;
@@ -54,30 +52,41 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 -- Architecture
 ---------------------------------------------------------------------------------------------------
-architecture rtl of olo_fix_sample_hold is
-
-    -- String to en_cl_fix
-    constant Fmt_c : FixFormat_t := cl_fix_format_from_string(Fmt_g);
+architecture rtl of olo_base_sample_hold is
 
     -- Reset value as std_logic_vector
-    constant RstVal_c : std_logic_vector(cl_fix_width(Fmt_c) - 1 downto 0) := cl_fix_from_real(ResetValue_g, Fmt_c);
+    constant RstVal_c   : std_logic_vector(Width_g - 1 downto 0) := ResetValue_g;
+    constant RstValid_c : std_logic                              := choose(ResetValid_g, '1', '0');
+
+    -- Registers
+    signal Data  : std_logic_vector(Width_g - 1 downto 0);
+    signal Valid : std_logic;
 
 begin
 
-    -- Instantiate base sample hold
-    i_sample_hold : entity work.olo_base_sample_hold
-        generic map (
-            Width_g      => fixFmtWidthFromString(Fmt_g),
-            ResetValue_g => RstVal_c,
-            ResetValid_g => ResetValid_g
-        )
-        port map (
-            Clk       => Clk,
-            Rst       => Rst,
-            In_Data   => In_Data,
-            In_Valid  => In_Valid,
-            Out_Data  => Out_Data,
-            Out_Valid => Out_Valid
-        );
+    -- Assertions
+    -- synthesis translate_off
+    assert ResetValue_g'length = Width_g
+        report "Rolo_base_sample_hold - ResetValue_g must have the same length as Width_g"
+        severity failure;
+    -- synthesis translate_on
+
+    -- Sample and hold process
+    p_sample_hold : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            -- Sample on valid
+            if In_Valid = '1' then
+                Out_Data  <= In_Data;
+                Out_Valid <= '1';
+            end if;
+
+            -- Reset
+            if Rst = '1' then
+                Out_Data  <= RstVal_c;
+                Out_Valid <= RstValid_c;
+            end if;
+        end if;
+    end process;
 
 end architecture;

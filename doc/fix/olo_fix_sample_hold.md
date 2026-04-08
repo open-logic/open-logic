@@ -21,39 +21,14 @@ sample is taken.
 This can be used for example as a simiple synchronization mechanism for data-streams with different sample rates
 or to synchronize feedback paths to the sample rate of the input.
 
+For details about the two use-cases, refer to the documentation of
+[olo_base_sample_hold](../base/olo_base_sample_hold.md) which is the bit-vector version of this entity.
+
+
 **Latency** of this entity is 1 clock cycle.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
-
-### Feedback Synchronization
-
-_olo_fix_sample_hold_ can be used to synchronize feedback paths to the sample rate of the input as depicted in the
-fiture below.
-
-![Feedback Synchronization](./misc/sample_hold_fdbk_arch.drawio.png)
-
-Below wave depicts that _Out_Data_ might be invalid when new samples arrive (e.g. during _In_Data=B_). By adding
-a _olo_fix_sample_hold_ in the feedback path, _Feedback_Data_ is ensured to stay valid until the next sample arrives.
-
-![Feedback Synchronization Wave](./misc/sample_hold_fdbk_wave.png)
-
-An example of using the _olo_fix_sample_hold_ for feedback synchronization can be found in the Open Logic Fixed Point
-Tutorial (see [OloFixTutorial](../tutorials/OloFixTutorial.md)).
-
-### Data-Stream Synchronization
-
-Where data-streams with different sample rates need to be synchronized, _olo_fix_sample_hold_ can be used to hold the
-last value of the faster data-stream until a new sample arrives on the slower data-stream.
-
-![Data-Stream Synchronization](./misc/sample_hold_sync_arch.drawio.png)
-
-The _olo_fix_sample_hold_ ensures that the data from ADC-B is held valid until consumed together with data from ADC-A.
-
-![Data-Stream Synchronization Wave](./misc/sample_hold_sync_wave.png)
-
-Of course this solution only satisfies simple synchronization requirements. Depending on the application, resampling
-might be required which is not covered by _olo_fix_sample_hold_.
 
 ## Generics
 

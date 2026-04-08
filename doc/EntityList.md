@@ -135,6 +135,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_crc](./base/olo_base_crc.md) | CRC calculation engine |
 | [olo_base_crc_append](./base/olo_base_crc_append.md) | Append CRC to AXI4-Stream packets |
 | [olo_base_crc_check](./base/olo_base_crc_check.md) | Check CRC of AXI4-Stream packets and drop invalid packets |
+| [olo_base_sample_hold](./base/olo_base_sample_hold.md) | Sample and hold for bit-vectors. Holds the last sampled value until a new sample is taken. |
 
 ## axi
 
