@@ -1,0 +1,10 @@
+{
+  signal: [
+    {name: 'Clk',           wave: 'p............'},
+    {name: 'AdcA_Data',     wave: 'x..3x....4x..', data: ['A-1', 'A-2', 'A-3']},
+    {name: 'AdcA_Valid',    wave: '0..10....10..'},
+    {name: 'AdcB_Data',     wave: 'x3x....4x....', data: ['B-1', 'B-2', 'B-3', 'D', 'E', 'F']},
+    {name: 'AdcB_Valid',    wave: '010....10....'},
+    {name: 'Sync_Data',     wave: '2.3.....4....', data: ['Init', 'B-1', 'B-2', 'C', 'D', 'E', 'F']},
+  ],
+}

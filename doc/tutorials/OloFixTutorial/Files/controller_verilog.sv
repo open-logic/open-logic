@@ -30,7 +30,6 @@ module olo_fix_tutorial_controller (
     wire [FmtI_w-1:0] ILimited;
     wire ILimited_Valid;
     reg [FmtI_w-1:0] Integrator;
-    reg Integrator_Valid;
 
     //--------------------------------------------
     // Static Calculations
@@ -127,18 +126,17 @@ module olo_fix_tutorial_controller (
         .Out_Result(ILimited)
     );
 
-    always @(posedge Clk) begin
-        // Normal Operation
-        if (ILimited_Valid) begin
-            Integrator <= ILimited;
-        end
-        Integrator_Valid <= ILimited_Valid;
-        // Reset
-        if (Rst) begin
-            Integrator <= 17'b0;
-            Integrator_Valid <= 1'b0;
-        end
-    end
+    \olo.olo_fix_sample_hold #(                  
+        .Fmt_g(FmtI_c),
+        .ResetValue_g(0.0),
+        .ResetValid_g(0)
+    ) i_integrator (
+        .Clk(Clk),
+        .Rst(Rst),
+        .In_Valid(ILimited_Valid),
+        .In_Data(ILimited),
+        .Out_Data(Integrator)
+    );
 
     // Output Adder
     \olo.olo_fix_add #(                  

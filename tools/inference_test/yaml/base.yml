@@ -321,3 +321,10 @@ entities:
       - name: "fixed_cycles"
         generics: 
           Mode_g: '"FIXED_CYCLES"'
+  # olo_base_sample_hold
+  - entity_name: "olo_base_sample_hold"
+    configurations:
+      - name: "default"
+        generics:   
+          Width_g: '8'
+          ResetValue_g: '"11001010"'

@@ -59,6 +59,7 @@ src/fix/vhdl/olo_fix_to_real.vhd
 src/fix/vhdl/olo_fix_sim_stimuli.vhd
 src/fix/vhdl/olo_fix_sim_from_real.vhd
 src/fix/vhdl/olo_fix_sim_checker.vhd
+src/fix/vhdl/olo_fix_sample_hold.vhd
 src/fix/vhdl/olo_fix_private_optional_reg.vhd
 src/fix/vhdl/olo_fix_saturate.vhd
 src/fix/vhdl/olo_fix_round.vhd
