@@ -171,3 +171,11 @@ entities:
           Order_g: '3'
           InFmt_g: '"(1, 0, 15)"'
           OutFmt_g: '"(1, 0, 15)"'
+  # olo_fix_cplx_add
+  - entity_name: "olo_fix_cplx_add"
+    configurations:
+      - name: "1-8-8-->0-4-4"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          BFmt_g: '"(1,8,8)"'
+          ResultFmt_g: '"(0,4,4)"'

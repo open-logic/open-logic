@@ -56,21 +56,21 @@ architecture sim of olo_fix_cplx_add_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk        : std_logic := '0';
-    signal Rst        : std_logic := '0';
-    signal In_Valid   : std_logic;
-    signal In_Last    : std_logic;
-    signal InA_I      : std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
-    signal InA_Q      : std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
-    signal InA_IQ     : std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
-    signal InB_I      : std_logic_vector(fixFmtWidthFromString(BFmt_g) - 1 downto 0);
-    signal InB_Q      : std_logic_vector(fixFmtWidthFromString(BFmt_g) - 1 downto 0);
-    signal InB_IQ     : std_logic_vector(fixFmtWidthFromString(BFmt_g) - 1 downto 0);
-    signal Out_Valid  : std_logic;
-    signal Out_Last   : std_logic;
-    signal Out_I      : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
-    signal Out_Q      : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
-    signal Out_IQ     : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
+    signal Clk       : std_logic := '0';
+    signal Rst       : std_logic := '0';
+    signal In_Valid  : std_logic;
+    signal In_Last   : std_logic;
+    signal InA_I     : std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
+    signal InA_Q     : std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
+    signal InA_IQ    : std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
+    signal InB_I     : std_logic_vector(fixFmtWidthFromString(BFmt_g) - 1 downto 0);
+    signal InB_Q     : std_logic_vector(fixFmtWidthFromString(BFmt_g) - 1 downto 0);
+    signal InB_IQ    : std_logic_vector(fixFmtWidthFromString(BFmt_g) - 1 downto 0);
+    signal Out_Valid : std_logic;
+    signal Out_Last  : std_logic;
+    signal Out_I     : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
+    signal Out_Q     : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
+    signal Out_IQ    : std_logic_vector(fixFmtWidthFromString(ResultFmt_g) - 1 downto 0);
 
     -- TB signals
     signal In_Valid_Par : std_logic;
@@ -80,30 +80,30 @@ architecture sim of olo_fix_cplx_add_tb is
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
     -- *** Verification Compnents ***
-    constant StimuliAI_c  : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant StimuliAQ_c  : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant StimuliAIQ_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant StimuliBI_c  : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant StimuliBQ_c  : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant StimuliBIQ_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant StimuliAI_c   : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant StimuliAQ_c   : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant StimuliAiq_c  : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant StimuliBI_c   : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant StimuliBQ_c   : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant StimuliBiq_c  : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
     constant StimuliLast_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant CheckerI_c   : olo_test_fix_checker_t := new_olo_test_fix_checker;
-    constant CheckerQ_c   : olo_test_fix_checker_t := new_olo_test_fix_checker;
-    constant CheckerIQ_c  : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant CheckerI_c    : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant CheckerQ_c    : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant CheckerIQ_c   : olo_test_fix_checker_t := new_olo_test_fix_checker;
     constant CheckerLast_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
 
     -- *** Constants ***
-    constant AIFile_c      : string := output_path(runner_cfg) & "AI.fix";
-    constant AQFile_c      : string := output_path(runner_cfg) & "AQ.fix";
-    constant AIQFile_c     : string := output_path(runner_cfg) & "AIQ.fix";
-    constant BIFile_c      : string := output_path(runner_cfg) & "BI.fix";
-    constant BQFile_c      : string := output_path(runner_cfg) & "BQ.fix";
-    constant BIQFile_c     : string := output_path(runner_cfg) & "BIQ.fix";
+    constant AiFile_c        : string := output_path(runner_cfg) & "AI.fix";
+    constant AqFile_c        : string := output_path(runner_cfg) & "AQ.fix";
+    constant AiqFile_c       : string := output_path(runner_cfg) & "AIQ.fix";
+    constant BiFile_c        : string := output_path(runner_cfg) & "BI.fix";
+    constant BqFile_c        : string := output_path(runner_cfg) & "BQ.fix";
+    constant BiqFile_c       : string := output_path(runner_cfg) & "BIQ.fix";
     constant CheckerIFile_c  : string := output_path(runner_cfg) & "Result_I.fix";
     constant CheckerQFile_c  : string := output_path(runner_cfg) & "Result_Q.fix";
-    constant CheckerIQFile_c : string := output_path(runner_cfg) & "Result_IQ.fix";
-    constant LastParFile_c     : string := output_path(runner_cfg) & "LastPar.fix";
-    constant LastTdmFile_c     : string := output_path(runner_cfg) & "LastTdm.fix";
+    constant CheckerIqFile_c : string := output_path(runner_cfg) & "Result_IQ.fix";
+    constant LastParFile_c   : string := output_path(runner_cfg) & "LastPar.fix";
+    constant LastTdmFile_c   : string := output_path(runner_cfg) & "LastTdm.fix";
 
 begin
 
@@ -129,19 +129,19 @@ begin
             -- *** First Run ***
             if run("FullSpeed") then
                 if IqHandling_g = "Parallel" then
-                    fix_stimuli_play_file (net, StimuliAI_c, AIFile_c);
-                    fix_stimuli_play_file (net, StimuliAQ_c, AQFile_c);
-                    fix_stimuli_play_file (net, StimuliBI_c, BIFile_c);
-                    fix_stimuli_play_file (net, StimuliBQ_c, BQFile_c);
+                    fix_stimuli_play_file (net, StimuliAI_c, AiFile_c);
+                    fix_stimuli_play_file (net, StimuliAQ_c, AqFile_c);
+                    fix_stimuli_play_file (net, StimuliBI_c, BiFile_c);
+                    fix_stimuli_play_file (net, StimuliBQ_c, BqFile_c);
                     fix_stimuli_play_file (net, StimuliLast_c, LastParFile_c);
                     fix_checker_check_file (net, CheckerI_c, CheckerIFile_c);
                     fix_checker_check_file (net, CheckerQ_c, CheckerQFile_c);
                     fix_checker_check_file (net, CheckerLast_c, LastParFile_c);
-                else   
-                    fix_stimuli_play_file (net, StimuliAIQ_c, AIQFile_c);
-                    fix_stimuli_play_file (net, StimuliBIQ_c, BIQFile_c);
+                else
+                    fix_stimuli_play_file (net, StimuliAiq_c, AiqFile_c);
+                    fix_stimuli_play_file (net, StimuliBiq_c, BiqFile_c);
                     fix_stimuli_play_file (net, StimuliLast_c, LastTdmFile_c);
-                    fix_checker_check_file (net, CheckerIQ_c, CheckerIQFile_c);
+                    fix_checker_check_file (net, CheckerIQ_c, CheckerIqFile_c);
                     fix_checker_check_file (net, CheckerLast_c, LastTdmFile_c);
                 end if;
             end if;
@@ -149,19 +149,19 @@ begin
             -- *** Second run with delay ***
             if run("Throttled") then
                 if IqHandling_g = "Parallel" then
-                    fix_stimuli_play_file (net, StimuliAI_c, AIFile_c, stall_probability => 0.5, stall_max_cycles => 10);
-                    fix_stimuli_play_file (net, StimuliAQ_c, AQFile_c);
-                    fix_stimuli_play_file (net, StimuliBI_c, BIFile_c);
-                    fix_stimuli_play_file (net, StimuliBQ_c, BQFile_c);
+                    fix_stimuli_play_file (net, StimuliAI_c, AiFile_c, stall_probability => 0.5, stall_max_cycles => 10);
+                    fix_stimuli_play_file (net, StimuliAQ_c, AqFile_c);
+                    fix_stimuli_play_file (net, StimuliBI_c, BiFile_c);
+                    fix_stimuli_play_file (net, StimuliBQ_c, BqFile_c);
                     fix_stimuli_play_file (net, StimuliLast_c, LastParFile_c);
                     fix_checker_check_file (net, CheckerI_c, CheckerIFile_c);
                     fix_checker_check_file (net, CheckerQ_c, CheckerQFile_c);
                     fix_checker_check_file (net, CheckerLast_c, LastParFile_c);
-                else   
-                    fix_stimuli_play_file (net, StimuliAIQ_c, AIQFile_c, stall_probability => 0.5, stall_max_cycles => 10);
-                    fix_stimuli_play_file (net, StimuliBIQ_c, BIQFile_c);
+                else
+                    fix_stimuli_play_file (net, StimuliAiq_c, AiqFile_c, stall_probability => 0.5, stall_max_cycles => 10);
+                    fix_stimuli_play_file (net, StimuliBiq_c, BiqFile_c);
                     fix_stimuli_play_file (net, StimuliLast_c, LastTdmFile_c);
-                    fix_checker_check_file (net, CheckerIQ_c, CheckerIQFile_c);
+                    fix_checker_check_file (net, CheckerIQ_c, CheckerIqFile_c);
                     fix_checker_check_file (net, CheckerLast_c, LastTdmFile_c);
                 end if;
             end if;
@@ -169,10 +169,10 @@ begin
             -- *** Wait until done ***
             wait_until_idle(net, as_sync(StimuliAI_c));
             wait_until_idle(net, as_sync(StimuliAQ_c));
-            wait_until_idle(net, as_sync(StimuliAIQ_c));
+            wait_until_idle(net, as_sync(StimuliAiq_c));
             wait_until_idle(net, as_sync(StimuliBI_c));
             wait_until_idle(net, as_sync(StimuliBQ_c));
-            wait_until_idle(net, as_sync(StimuliBIQ_c));
+            wait_until_idle(net, as_sync(StimuliBiq_c));
             wait_until_idle(net, as_sync(CheckerI_c));
             wait_until_idle(net, as_sync(CheckerQ_c));
             wait_until_idle(net, as_sync(CheckerIQ_c));
@@ -200,31 +200,30 @@ begin
         In_Valid <= In_Valid_Tdm;
     end generate;
 
-
     i_dut : entity olo.olo_fix_cplx_add
         generic map (
-            AFmt_g      => AFmt_g,
-            BFmt_g      => BFmt_g,
-            ResultFmt_g => ResultFmt_g,
-            Round_g     => Round_g,
-            Saturate_g  => Saturate_g,
-            OpRegs_g    => OpRegs_g,
-            RoundReg_g  => RoundReg_g,
-            SatReg_g    => SatReg_g,
+            AFmt_g       => AFmt_g,
+            BFmt_g       => BFmt_g,
+            ResultFmt_g  => ResultFmt_g,
+            Round_g      => Round_g,
+            Saturate_g   => Saturate_g,
+            OpRegs_g     => OpRegs_g,
+            RoundReg_g   => RoundReg_g,
+            SatReg_g     => SatReg_g,
             IqHandling_g => IqHandling_g
         )
         port map (
-            Clk         => Clk,
-            Rst         => Rst,
-            In_Valid    => In_Valid,
-            In_Last     => In_Last,
+            Clk          => Clk,
+            Rst          => Rst,
+            In_Valid     => In_Valid,
+            In_Last      => In_Last,
             InA_I        => InA_I,
             InA_Q        => InA_Q,
             InA_IQ       => InA_IQ,
             InB_I        => InB_I,
             InB_Q        => InB_Q,
             InB_IQ       => InB_IQ,
-            Out_Valid   => Out_Valid,
+            Out_Valid    => Out_Valid,
             Out_I        => Out_I,
             Out_Q        => Out_Q,
             Out_IQ       => Out_IQ,
@@ -290,7 +289,7 @@ begin
 
     vc_stimuli_aiq : entity work.olo_test_fix_stimuli_vc
         generic map (
-            Instance         => StimuliAIQ_c,
+            Instance         => StimuliAiq_c,
             Fmt              => cl_fix_format_from_string(AFmt_g)
         )
         port map (
@@ -302,7 +301,7 @@ begin
 
     vc_stimuli_biq : entity work.olo_test_fix_stimuli_vc
         generic map (
-            Instance         => StimuliBIQ_c,
+            Instance         => StimuliBiq_c,
             Fmt              => cl_fix_format_from_string(BFmt_g),
             Is_Timing_Master => false
         )

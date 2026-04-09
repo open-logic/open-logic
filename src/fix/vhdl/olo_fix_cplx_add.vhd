@@ -73,14 +73,15 @@ end entity;
 architecture rtl of olo_fix_cplx_add is
 
     -- Calculate Latency
-    constant Latency_c : natural := OpRegs_g + 
-                                    choose(compareNoCase(RoundReg_g, "YES"), 1, 0) + 
+    constant Latency_c : natural := OpRegs_g +
+                                    choose(compareNoCase(RoundReg_g, "YES"), 1, 0) +
                                     choose(compareNoCase(SatReg_g, "YES"), 1, 0);
 
 begin
 
     -- Parallel Component Handling
     g_parallel : if compareNoCase(IqHandling_g, "Parallel") generate
+
         i_add_i : entity work.olo_fix_add
             generic map (
                 AFmt_g      => AFmt_g,
@@ -122,9 +123,10 @@ begin
                 Out_Valid   => open,
                 Out_Result  => Out_Q
             );
+
     end generate;
 
-  -- TDM Component Handling
+    -- TDM Component Handling
     g_tdm : if compareNoCase(IqHandling_g, "TDM") generate
 
         i_add : entity work.olo_fix_add
@@ -146,23 +148,23 @@ begin
                 In_B        => InB_IQ,
                 Out_Valid   => Out_Valid,
                 Out_Result  => Out_IQ
-            );  
+            );
 
     end generate;
 
     -- Last Signal Handling
     i_last : entity work.olo_base_delay
         generic map (
-            Width_g => 1,
-            Delay_g => Latency_c,
+            Width_g    => 1,
+            Delay_g    => Latency_c,
             Resource_g => "SRL",
             RstState_g => true
         )
         port map (
-            Clk => Clk,
-            Rst => Rst,
-            In_Data(0) => In_Last,
-            In_Valid => '1',
+            Clk         => Clk,
+            Rst         => Rst,
+            In_Data(0)  => In_Last,
+            In_Valid    => '1',
             Out_Data(0) => Out_Last
         );
 
