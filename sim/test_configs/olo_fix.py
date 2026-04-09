@@ -510,3 +510,38 @@ def add_configs(olo_tb):
     named_config(tb, default_generics  | {'InFmt_g': '(0,0,8)', 'OutFmt_g': '(0,0,8)'},
                     pre_config=cosim,
                     short_name=f'ShortFormats')    
+    
+
+    ### olo_fix_cplx_add  ###
+    tb = olo_tb.test_bench('olo_fix_cplx_add_tb')  
+
+    #Test formats and round/sat modes
+    default_generics = {
+        'AFmt_g': '(1,8,4)',
+        'BFmt_g': '(1,5,7)',
+        'ResultFmt_g': '(0,6,3)',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'OpRegs_g': 1,
+        'RoundReg_g': "YES",
+        'SatReg_g': "YES",
+        'IqHandling_g': 'TDM'
+    }
+    cosim = olo_fix_cplx_add.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    for IqHandling in ['Parallel', 'TDM']:
+        # Different rounding
+        for Round in ['NonSymPos_s', 'Trunc_s']:
+            for Sat in ['Sat_s', 'None_s']:
+                named_config(tb, default_generics  | {'Round_g': Round, 'Saturate_g': Sat, 'IqHandling_g': IqHandling},
+                                pre_config=cosim)
+
+        # Different register settings
+        for OpRegs in [0, 4]:
+            named_config(tb, default_generics | {'OpRegs_g': OpRegs, 'IqHandling_g': IqHandling}, pre_config=cosim)
+        for RoundReg in ['NO', 'AUTO']:
+            named_config(tb, default_generics | {'RoundReg_g': RoundReg, 'IqHandling_g': IqHandling}, pre_config=cosim)
+        for SatReg in ['NO', 'AUTO']:
+            named_config(tb, default_generics | {'SatReg_g': SatReg, 'IqHandling_g': IqHandling}, pre_config=cosim)
