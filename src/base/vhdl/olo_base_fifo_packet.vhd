@@ -38,6 +38,7 @@ entity olo_base_fifo_packet is
     generic (
         Width_g             : positive;
         Depth_g             : positive;
+        MaxPacketSize_g     : integer                           := -1;
         FeatureSet_g        : string                            := "FULL";
         RamStyle_g          : string                            := "auto";
         RamBehavior_g       : string                            := "RBW";
@@ -76,8 +77,9 @@ end entity;
 architecture rtl of olo_base_fifo_packet is
 
     -- Constants
-    constant SmallRamStyle_c    : string := choose(compareNoCase(SmallRamStyle_g, "same"), RamStyle_g, SmallRamStyle_g);
-    constant SmallRamBehavior_c : string := choose(compareNoCase(SmallRamBehavior_g, "same"), RamBehavior_g, SmallRamBehavior_g);
+    constant SmallRamStyle_c    : string  := choose(compareNoCase(SmallRamStyle_g, "same"), RamStyle_g, SmallRamStyle_g);
+    constant SmallRamBehavior_c : string  := choose(compareNoCase(SmallRamBehavior_g, "same"), RamBehavior_g, SmallRamBehavior_g);
+    constant MaxPktSize_c       : natural := choose(MaxPacketSize_g = -1, Depth_g, minimum(MaxPacketSize_g, Depth_g));
 
     -- Range definitions
     subtype Addr_c is integer range log2ceil(Depth_g) downto 0; -- one additional bit to differentiate between full/empty
@@ -136,6 +138,10 @@ begin
         report "olo_base_fifo_packet: FeatureSet_g must be FULL or DROP_ONLY"
         severity error;
 
+    assert MaxPacketSize_g = -1 or (MaxPacketSize_g >= 1 and MaxPacketSize_g <= Depth_g)
+        report "olo_base_fifo_packet: MaxPacketSize_g must be -1 (auto) or in range 1 to Depth_g"
+        severity error;
+
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
     -----------------------------------------------------------------------------------------------
@@ -191,7 +197,7 @@ begin
             end if;
 
             -- Detect packets larger than allowed
-            if r.WrSize = Depth_g then
+            if r.WrSize = MaxPktSize_c then
                 v.DropLatch := '1';
             else
                 v.WrSize := r.WrSize + 1;
