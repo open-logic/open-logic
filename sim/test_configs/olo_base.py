@@ -271,6 +271,11 @@ def add_configs(olo_tb):
         named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': False, 'FeatureSet_g' : FeatureSet}) #Some checks require non-random stall
         named_config(tb_hs, {'FeatureSet_g' : FeatureSet})
 
+    fifo_packet_tb_perf = 'olo_base_fifo_packet_perf_tb'
+    tb_perf = olo_tb.test_bench(fifo_packet_tb_perf)
+    for MaxPackets in [2, 8]:
+        named_config(tb_perf, {'MaxPackets_g': MaxPackets})
+
     ### olo_base_cam ###
     cam_tb = 'olo_base_cam_tb'
     tb = olo_tb.test_bench(cam_tb)
