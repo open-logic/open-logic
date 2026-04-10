@@ -28,6 +28,9 @@ library olo;
 entity olo_base_fifo_packet_perf_tb is
     generic(
         MaxPackets_g                    : integer := 8;
+        Depth_g                         : integer := 32;
+        -- Maximum throughput is only possible when MaxPacketSize = Depth / 2
+        MaxPacketSize_g                 : integer := Depth_g / 2;
         runner_cfg                      : string
     );
 end entity;
@@ -63,16 +66,21 @@ architecture sim of olo_base_fifo_packet_perf_tb is
             exp_axi_beat.tuser, msg, blocking);
     end procedure check_axi_stream;
 
+    function choose(s : boolean; t : integer_vector; f : integer_vector) return integer_vector is
+    begin
+        if s then
+            return t;
+        else
+            return f;
+        end if;
+    end function choose;
+
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
 
     constant Width_c                    : integer := 16;
     constant FeatureSet_c               : string  := "FULL";
-
-    -- Maximum throughput is only possible when MaxPacketSize = Depth / 2
-    constant Depth_c                    : integer := 32;
-    constant MaxPacketSize_c            : integer := Depth_c / 2;
 
     constant ClockFrequency_c           : real := 100.0e6;
     constant ClockPeriod_c              : time := (1 sec) / ClockFrequency_c;
@@ -119,7 +127,18 @@ architecture sim of olo_base_fifo_packet_perf_tb is
         logger                          => get_logger("tb:tready_checker"));
 
     -- Test throughput specific constants
-    constant PacketSizeInBeats_c        : integer_vector := (2, MaxPacketSize_c/2, MaxPacketSize_c);
+
+    -- The legacy implementation (MaxPacketSize_g = -1) will never achieve full-throughput due to
+    -- the reasons explained in https://github.com/open-logic/open-logic/issues/284. Therefore,
+    -- for this test to pass in "legacy" mode the packet size in beats is at maximum Depth_g/2.
+    constant LegacyTest_PacketSizeInBeats_c : integer_vector := (2, MaxPacketSize_g/4, MaxPacketSize_g/2);
+
+    -- In the extended implementation (MaxPacketSize_g > 0), the full-throughput is only achieved
+    -- when the maximum packet size is half of the depth, allowing half of the FIFO to be written
+    -- while the other half is being read at the same time.
+    constant ExtendedTest_PacketSizeInBeats_c : integer_vector := (2, MaxPacketSize_g/2, MaxPacketSize_g);
+
+    constant PacketSizeInBeats_c        : integer_vector := choose(MaxPacketSize_g = -1, LegacyTest_PacketSizeInBeats_c, ExtendedTest_PacketSizeInBeats_c);
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
@@ -133,11 +152,11 @@ architecture sim of olo_base_fifo_packet_perf_tb is
     signal In_Drop                      : std_logic := '0';
     signal In_IsDropped                 : std_logic;
     signal PacketLevel                  : std_logic_vector(log2ceil(MaxPackets_g+1)-1 downto 0);
-    signal FreeWords                    : std_logic_vector(log2ceil(Depth_c+1)-1 downto 0);
+    signal FreeWords                    : std_logic_vector(log2ceil(Depth_g+1)-1 downto 0);
     signal Out_Valid                    : std_logic;
     signal Out_Ready                    : std_logic := '0';
     signal Out_Data                     : std_logic_vector(Width_c-1 downto 0);
-    signal Out_Size                     : std_logic_vector(log2ceil(Depth_c+1)-1 downto 0);
+    signal Out_Size                     : std_logic_vector(log2ceil(Depth_g+1)-1 downto 0);
     signal Out_Last                     : std_logic;
     signal Out_Next                     : std_logic := '0';
     signal Out_Repeat                   : std_logic := '0';
@@ -261,8 +280,8 @@ begin
     i_dut : entity olo.olo_base_fifo_packet
     generic map(
         Width_g                         => Width_c,
-        Depth_g                         => Depth_c,
-        MaxPacketSize_g                 => MaxPacketSize_c,
+        Depth_g                         => Depth_g,
+        MaxPacketSize_g                 => MaxPacketSize_g,
         FeatureSet_g                    => FeatureSet_c,
         RamStyle_g                      => "auto",
         RamBehavior_g                   => "RBW",
