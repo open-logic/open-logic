@@ -131,7 +131,7 @@ architecture sim of olo_base_fifo_packet_perf_tb is
     -- The legacy implementation (MaxPacketSize_g = -1) will never achieve full-throughput due to
     -- the reasons explained in https://github.com/open-logic/open-logic/issues/284. Therefore,
     -- for this test to pass in "legacy" mode the packet size in beats is at maximum Depth_g/2.
-    constant LegacyTest_PacketSizeInBeats_c : integer_vector := (2, MaxPacketSize_g/4, MaxPacketSize_g/2);
+    constant LegacyTest_PacketSizeInBeats_c : integer_vector := (2, Depth_g/4, Depth_g/2);
 
     -- In the extended implementation (MaxPacketSize_g > 0), the full-throughput is only achieved
     -- when the maximum packet size is half of the depth, allowing half of the FIFO to be written
@@ -322,8 +322,7 @@ begin
         TValid                          => In_Valid,
         TReady                          => In_Ready,
         TData                           => In_Data,
-        TLast                           => In_Last,
-        TUser(0)                        => In_Drop
+        TLast                           => In_Last
     );
 
     -----------------------------------------------------------------------------------------------
