@@ -15,64 +15,37 @@ Bit-true Model: [olo_fix_cplx_mult](../../src/fix/python/olo_fix/olo_fix_cplx_mu
 
 ## Description
 
-This entity performs multiplication of two complex fixed-point numbers. The entity also can be configured to operate
-as mixer (complex to complex, complex to real or real to complex).
+This entity performs multiplication of two complex fixed-point numbers. 
 
-For complex multiplication with _IqHandling_g=Parallel_, a 3 (_Mode_g=MULT3_) or 4 (_Mode_g=MULT4_)  multiplier
+The entity also can be configured to operate
+as mixer (complex to complex) by selection _Mode_g=MIX_. In mixer mode the imaginary part of _In_B_ is inverted.
+
+For _IqHandling_g=Parallel_, a 3 (_Implementation_g=MULT3_) or 4 (_Implementation_g=MULT4_)  multiplier
 architecture can be chosen.
 
-I (in-phase) and Q (quadrature-phase) can be handled parallel or TDM on inputs and outputs.
+I (in-phase) and Q (quadrature-phase) can be handled parallel or TDM.
 
-The list below gives an overview about which ports are used for different configurations.
-
-- _Mode_g=MULT3/MULT4/MIX-CPLX-CPLX_, _IqHandling_g=TDM_
-  - InA_IQ
-  - InB_IQ
-  - Out_IQ
-- _Mode_g=MULT3/MULT4/MIX-CPLX-CPLX_, _IqHandling_g=Parallel_
-  - InA_I, InA_Q
-  - InB_I, InB_Q
-  - Out_I, Out_Q
-- _Mode_g=MIX-CPLX-REAL_, _IqHandling_g=TDM_
-  - InA_IQ
-  - InB_IQ
-  - Out_I
-- _Mode_g=MIX-CPLX-REAL_, _IqHandling_g=Parallel_
-  - InA_I, InA_Q
-  - InB_I, InB_Q
-  - Out_I
-- _Mode_g=MIX-REAL-CPLX_, _IqHandling_g=TDM_
-  - InA_I (signal)
-  - InB_IQ (mixing frequency)
-  - Out_IQ
-- _Mode_g=MIX-REAL-CPLX_, _IqHandling_g=Parallel_
-  - InA_I (signal)
-  - InB_I, InB_Q (mixing frequency)
-  - Out_I, OutQ
-
-
-**Latency** of this entity is _OpRegs_g_ clock cycles plus optional rounding and saturation registers. The default
-generics lead to a latency of **TODO** clock cycles.
-
-TODO: Add a link to I/Q handling and describe this in olo_fix_principles.
+**Latency** The latency of this entity heavily depends on the configuration but it is constant for any generic
+configuration.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
 
 ## Generics
 
-| Name         | Type    | Default    | Description                                                  |
-| :----------- | :------ | ---------- | :----------------------------------------------------------- |
-| AFmt_g       | string  | -          | Input A format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
-| BFmt_g       | string  | -          | Input B format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
-| ResultFmt_g  | string  | -          | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
-| Round_g      | string  | "Trunc_s"  | Rounding mode<br />String representation of an _en_cl_fix FixRound_t_. |
-| Saturate_g   | string  | "Warn_s"   | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
-| MultRegs_g   | natural | 1          | Number of pipeline stages for the multiplication                  |
-| RoundReg_g   | string  | "YES"      | Presence of rounding pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if rounding is needed according to the formats chosen |
-| SatReg_g     | string  | "YES"      | Presence of saturation pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if saturation is needed according to the formats chosen |
-| IqHandling_g | string  | "Parallel" | "Parallel" - I/Q arrive in parallel, ports _InA_I_ and _InA_Q_ are used <br> "TDM" - I/Q arrive TDM, port _InA_IQ_ is used |
-| Mode_g       | string  | "MULT4"     | Operation mode:<br>"MULT4" -  4 multiplier multiplication<br>"MULT3" - 3 multiplier multiplication<br> "MIX-CPLX-CPLX" - Complex to complex mixer<br>"MIX-REAL-CPLX" - Real to complex mixer<br>"MIX-CPLX-REAL" - Complex to real mixer |
+| Name             | Type    | Default    | Description                                                  |
+| :--------------- | :------ | ---------- | :----------------------------------------------------------- |
+| Mode_g           | string  | "MULT"     | Operation mode:<br>"MULT" -  compliex multiplication<br>""MIX" - Complex to complex mixer |
+| Implementation_g | string  | "MULT3"    | Multiplier architecture for _Mode_g=MULT_<br>"MULT3": 3 multipliers<br>"MULT4": 4 multipliers (k1=a*c, k2=b*d, k3=a*d, k4=b*c) |
+| IqHandling_g     | string  | "Parallel" | "Parallel" - I/Q arrive in parallel, ports _InA_I_ and _InA_Q_ are used <br> "TDM" - I/Q arrive TDM, port _InA_IQ_ is used |
+| AFmt_g           | string  | -          | Input A format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
+| BFmt_g           | string  | -          | Input B format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
+| ResultFmt_g      | string  | -          | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
+| Round_g          | string  | "Trunc_s"  | Rounding mode<br />String representation of an _en_cl_fix FixRound_t_. |
+| Saturate_g       | string  | "Warn_s"   | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
+| MultRegs_g       | natural | 1          | Number of pipeline stages for the multiplication                  |
+| RoundReg_g       | string  | "YES"      | Presence of rounding pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if rounding is needed according to the formats chosen |
+| SatReg_g         | string  | "YES"      | Presence of saturation pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if saturation is needed according to the formats chosen |
 
 ## Interfaces
 
@@ -110,21 +83,59 @@ When used as a mixer, _InA_ is the signal to be mixed and _InB_ is the mixing fr
 
 ## Detail
 
-TODO: Describe implementation modes.
+### 4 Multiplier IQ-Parallel Architecture
 
-TODO: Figure - multiplier
+This architecture is implemented when:
 
-TODO: Figure - mixer complex input
+- _Implementation_g="MULT4"_
+- _IqHandling_g="Parallel"_
 
-TODO: Figure - mixer real input
+This is the most straightforward architecture. It implements the following mathematics:
 
-### 3 Multiplier Architecture
-A = (a + bi)
-B = (c + di)
+> A = (a + bi)<br>
+> B = (c + di)<br>
+> Re = a x c - b x d<br>
+> Im = a x d + b x c<br>
 
-k1 = a x c
-k2 = b x d
-k3 = (a + b) x (c + d)
+The figure below shows the architecture. It is optimized for mapping into Multiply-Add DSP blocks.
 
-Re = k1 - k2
-Im = k3 - k1 - k2
+![4 Multiplier Architecture](./entities/olo_fix_cplx_mult_4par.drawio.png)
+
+Note that for _Mode_g=MULT_ the black operations apply. For _Mode_g=MIX_ the red operations apply, which corresponds
+to inverting the imaginary part of _InB_.
+
+### 3 Multiplier IQ-Parallel Architecture
+
+This architecture is implemented when:
+
+- _Implementation_g="MULT3"_
+- _IqHandling_g="Parallel"_
+
+This architecture does save one multiplier at the cost of more adders and a more complex routing. 
+It implements the following mathematics:
+
+> A = (a + bi)<br>
+> B = (c + di)<br>
+> k1 = a x c<br>
+> k2 = b x d<br>
+> k3 = (a + b) x (c + d)<br>
+> Re = k1 - k2<br>
+> Im = k3 - k1 - k2<br>
+
+The figure below shows the architecture. 
+
+![3 Multiplier Architecture](./entities/olo_fix_cplx_mult_3par.drawio.png)
+
+## TDM Architecture
+
+This architecture is implemented when:
+- _IqHandling_g="TDM"_
+
+It does implement the same mathematics as the 4 multiplier architecture, but I and Q are handled in a time-multiplexed
+manner. As a result, only two multipliers are needed and selecting between I and Q samples can also happen
+by a delay of a clock cycle instead of a multiplexer.
+
+![TDM Architecture](./entities/olo_fix_cplx_mult_tdm.drawio.png)
+
+Note that for _Mode_g=MULT_ the black operations apply. For _Mode_g=MIX_ the red operations apply, which corresponds
+to inverting the imaginary part of _InB_.

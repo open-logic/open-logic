@@ -21,8 +21,6 @@ parallel or TDM on inputs and outputs.
 **Latency** of this entity is _OpRegs_g_ clock cycles plus optional rounding and saturation registers. The default
 generics lead to a latency of 3 clock cycles.
 
-TODO: Add a link to I/Q handling and describe this in olo_fix_principles.
-
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
 
