@@ -117,3 +117,14 @@ TODO: Figure - multiplier
 TODO: Figure - mixer complex input
 
 TODO: Figure - mixer real input
+
+### 3 Multiplier Architecture
+A = (a + bi)
+B = (c + di)
+
+k1 = a x c
+k2 = b x d
+k3 = (a + b) x (c + d)
+
+Re = k1 - k2
+Im = k3 - k1 - k2
