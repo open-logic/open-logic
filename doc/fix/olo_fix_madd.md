@@ -22,7 +22,7 @@ The _olo_fix_madd_ entity performs a multiply-add operation with optional pre-ad
 supported by many FPGAs as a hard-wired DSP block and hence it can be implemented very efficiently.
 
 Note that the entity does not support any rounding or saturation at the output because most hard-wirded DSP blocks
-do not support this or at least not in a consistent and inferrable way. Where not all bits of the result can be 
+do not support this or at least not in a consistent and inferrable way. Where not all bits of the result can be
 represented, trunction is applied.
 
 Inputs _InA_ and _InC_ (if used) are rintended to be dynamic signals. _InB_ is intended to be either a dynamic signal
@@ -38,6 +38,7 @@ When the generic _PreAdd_g_ is set to true, the entity performs the following op
 ![MADD with pre-adder](./entities/olo_fix_madd_preadd.drawio.png)
 
 **Latency** of this entity is _MultRegs_g_+3 clock cycles for _PreAdd_g=true_.
+
 ### Pre-Adder Disabled
 
 When the generic _PreAdd_g_ is set to false, the entity performs the following operation:
@@ -53,6 +54,7 @@ Note that in this case, _InC_Data_ and _InC_Valid_ are not used and can be left 
 | Name           | Type    | Default    | Description                                                  |
 | :------------- | :------ | ---------- | :----------------------------------------------------------- |
 | PreAdd_g       | boolean | false      | Presence of pre-adder stage                                  |
+| Operation_g    | string  | "Add"      | Operation to perform in the adder chain<br />"Add": Out = MaccIn + Mult<br />"Sub": Out = MaccIn - Mult |
 | AFmt_g         | string  | -          | Input A format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | BFmt_g         | string  | -          | Input B format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | CFmt_g         | string  | "(0,0,0)"  | Input C format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")<br>Ignored for _PreAdd_g=false_ |
@@ -60,7 +62,9 @@ Note that in this case, _InC_Data_ and _InC_Valid_ are not used and can be left 
 | MultRegs_g     | natural | 1          | Number of pipeline stages for the multiplication                  |
 | InBIsCoef_g    | boolean | false      | Whether _InB_ is a static coefficient that should be stored in a DSP block register (true) or a dynamic signal (false) |
 
-When using the 
+When choosing number formats, keep in mind that in case _PreAdd_g=true_, the pre-adder multiplier input has one
+bit more than _AFmt_g_ and _CFmt_g_ to avoid overflow in the pre-adder stage. This is an important consideration
+for mapping the logic optimally to hard-wirde DSP blocks.
 
 ## Interfaces
 
@@ -75,10 +79,10 @@ When using the
 
 | Name       | In/Out | Length          | Default | Description                                                                     |
 | :--------- | :----- | :-------------- | ------- | :------------------------------------------------------------------------------ |
-| InA_Data   | in     | _width(AFmt_g)_ | 0       | Input data A<br />Format: _AFmt_g_         |
+| InA_Data   | in     | _width(AFmt_g)_ | -       | Input data A<br />Format: _AFmt_g_         |
 | InC_Data   | in     | _width(CFmt_g)_ | 0       | Input data C (only used for _PreAdd_g=true_)<br />Format: _CFmt_g_ |
 | InAC_Valid | in     | 1               | '1'     | AXI4-Stream handshaking signal for _InA_ and _InC_ |
-| InB_Data   | in     | _width(BFmt_g)_ | 0       | Input data B<br />Format: _BFmt_g_ |
+| InB_Data   | in     | _width(BFmt_g)_ | -       | Input data B<br />Format: _BFmt_g_ |
 | InB_Valid  | in     | 1               | '1'     | AXI4-Stream handshaking signal for _InB_ |
 
 ### Adder Chain Input
@@ -106,4 +110,3 @@ shall be produced when only the coefficient is changed (_InB_Valid_='1') but onl
 (_InAC_Valid_='1').
 
 ![B Static](./entities/olo_fix_madd_coef.drawio.png)
-

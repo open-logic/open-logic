@@ -551,3 +551,22 @@ def add_configs(olo_tb):
             for SatReg in ['NO', 'AUTO']:
                 named_config(tb, default_generics | {'SatReg_g': SatReg, 'IqHandling_g': IqHandling, 'Operation_g': Operation}, 
                              pre_config=cosim)
+                
+    ### olo_fix_madd  ###
+    tb = olo_tb.test_bench('olo_fix_madd_tb')  
+
+    #Test formats and round/sat modes
+    default_generics = {
+        'PreAdd_g': False,
+        'Operation_g': "Add",
+        'MultRegs_g': 1,
+        'InBIsCoef_g': False
+    }
+
+    named_config(tb, default_generics, short_name='default')
+
+    for Operation in ['Add', 'Sub']:
+        for PreAdd in [False, True]:
+            for MultRegs in [1, 3]:
+                for InBIsCoef in [False, True]:
+                    named_config(tb, {'PreAdd_g': PreAdd, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef})
