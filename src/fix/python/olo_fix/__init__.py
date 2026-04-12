@@ -23,4 +23,5 @@ from .olo_fix_bin_div import *
 from .olo_fix_cic_dec import *
 from .olo_fix_pkg_writer import *
 from .olo_fix_cplx_addsub import *
+from .olo_fix_cplx_mult import *
 

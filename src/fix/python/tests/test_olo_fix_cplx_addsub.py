@@ -72,5 +72,9 @@ class TestOloFixCplxAdd(unittest.TestCase):
         self.assertListEqual(resi, list(np.real(self.expected_add)))
         self.assertListEqual(resq, list(np.imag(self.expected_add)))
 
+    def test_illegal_operation(self):
+        with self.assertRaises(ValueError):
+            olo_fix_cplx_addsub(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 8, 8), operation="INVALID")
+
 if __name__ == '__main__':
     unittest.main()
