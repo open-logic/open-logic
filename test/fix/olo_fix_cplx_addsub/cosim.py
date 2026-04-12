@@ -13,7 +13,7 @@ import numpy as np
 
 #Import olo_fix
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../src/fix/python")))
-from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_cplx_add, olo_fix_plots
+from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_cplx_addsub, olo_fix_plots
 from en_cl_fix_pkg import *
 
 def cosim(output_path : str = None, 
@@ -26,6 +26,7 @@ def cosim(output_path : str = None,
     ResultFmt_g = olo_fix_utils.fix_format_from_string(generics["ResultFmt_g"])
     Round_g = FixRound[generics["Round_g"]]
     Saturate_g = FixSaturate[generics["Saturate_g"]]
+    Operation_g = generics["Operation_g"]
 
     #Calculation
     np.random.seed(42)  # Set the seed for reproducibility
@@ -37,13 +38,17 @@ def cosim(output_path : str = None,
     inb_i = cl_fix_from_real(inb_i, BFmt_g)
     inb_q = np.random.uniform(cl_fix_min_value(BFmt_g), cl_fix_max_value(BFmt_g), 100)
     inb_q = cl_fix_from_real(inb_q, BFmt_g)
-    dut = olo_fix_cplx_add(AFmt_g, BFmt_g, ResultFmt_g, Round_g, Saturate_g)
+    dut = olo_fix_cplx_addsub(AFmt_g, BFmt_g, ResultFmt_g, Round_g, Saturate_g, Operation_g)
     out_i, out_q = dut.process(ina_i, ina_q, inb_i, inb_q)
 
     # Plot if enabled
     if not cosim_mode:
-        py_out_i = ina_i + inb_i
-        py_out_q = ina_q + inb_q
+        if Operation_g == "add":
+            py_out_i = ina_i + inb_i
+            py_out_q = ina_q + inb_q
+        elif Operation_g == "sub":
+            py_out_i = ina_i - inb_i
+            py_out_q = ina_q - inb_q
         olo_fix_plots.plot_subplots({"Python vs. Fix" : {"Fix_i" : out_i, 
                                                          "Fix_q" : out_q, 
                                                          "Python_i" : py_out_i, 
@@ -75,6 +80,7 @@ if __name__ == "__main__":
         "BFmt_g": "(1, 4, 4)",
         "ResultFmt_g": "(0, 4, 4)",
         "Round_g": "NonSymPos_s",
-        "Saturate_g": "Sat_s"
+        "Saturate_g": "Sat_s",
+        "Operation_g": "sub"
     }
     cosim(generics=generics, cosim_mode=False)

@@ -30,7 +30,7 @@ library work;
 -- Entity
 ---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_fix_cplx_add_tb is
+entity olo_fix_cplx_addsub_tb is
     generic (
         AFmt_g       : string  := "(1,1,8)";
         BFmt_g       : string  := "(1,1,8)";
@@ -41,11 +41,12 @@ entity olo_fix_cplx_add_tb is
         RoundReg_g   : string  := "YES";
         SatReg_g     : string  := "YES";
         IqHandling_g : string  := "Parallel";
+        Operation_g  : string  := "Add";
         runner_cfg   : string
     );
 end entity;
 
-architecture sim of olo_fix_cplx_add_tb is
+architecture sim of olo_fix_cplx_addsub_tb is
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -200,7 +201,7 @@ begin
         In_Valid <= In_Valid_Tdm;
     end generate;
 
-    i_dut : entity olo.olo_fix_cplx_add
+    i_dut : entity olo.olo_fix_cplx_addsub
         generic map (
             AFmt_g       => AFmt_g,
             BFmt_g       => BFmt_g,
@@ -210,7 +211,8 @@ begin
             OpRegs_g     => OpRegs_g,
             RoundReg_g   => RoundReg_g,
             SatReg_g     => SatReg_g,
-            IqHandling_g => IqHandling_g
+            IqHandling_g => IqHandling_g,
+            Operation_g  => Operation_g
         )
         port map (
             Clk          => Clk,

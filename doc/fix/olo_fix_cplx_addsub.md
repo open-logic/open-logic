@@ -33,6 +33,7 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | AFmt_g       | string  | -          | Input A format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | BFmt_g       | string  | -          | Input B format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | ResultFmt_g  | string  | -          | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
+| Operation_g  | string  | "Add"      | Operation to perform<br />"Add": Perform addition<br />"Sub": Perform subtraction |
 | Round_g      | string  | "Trunc_s"  | Rounding mode<br />String representation of an _en_cl_fix FixRound_t_. |
 | Saturate_g   | string  | "Warn_s"   | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
 | OpRegs_g     | natural | 1          | Number of pipeline stages for the operation                  |
