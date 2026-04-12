@@ -18,15 +18,18 @@ Bit-true Model: [olo_fix_cplx_mult](../../src/fix/python/olo_fix/olo_fix_cplx_mu
 This entity performs multiplication of two complex fixed-point numbers. The entity also can be configured to operate
 as mixer (complex to complex, complex to real or real to complex).
 
+For complex multiplication with _IqHandling_g=Parallel_, a 3 (_Mode_g=MULT3_) or 4 (_Mode_g=MULT4_)  multiplier
+architecture can be chosen.
+
 I (in-phase) and Q (quadrature-phase) can be handled parallel or TDM on inputs and outputs.
 
 The list below gives an overview about which ports are used for different configurations.
 
-- _Mode_g=MULT/MIX-CPLX-CPLX_, _IqHandling_g=TDM_
+- _Mode_g=MULT3/MULT4/MIX-CPLX-CPLX_, _IqHandling_g=TDM_
   - InA_IQ
   - InB_IQ
   - Out_IQ
-- _Mode_g=MULT/MIX-CPLX-CPLX_, _IqHandling_g=Parallel_
+- _Mode_g=MULT3/MULT4/MIX-CPLX-CPLX_, _IqHandling_g=Parallel_
   - InA_I, InA_Q
   - InB_I, InB_Q
   - Out_I, Out_Q
@@ -65,11 +68,11 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | ResultFmt_g  | string  | -          | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
 | Round_g      | string  | "Trunc_s"  | Rounding mode<br />String representation of an _en_cl_fix FixRound_t_. |
 | Saturate_g   | string  | "Warn_s"   | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
-| OpRegs_g     | natural | 1          | Number of pipeline stages for the operation                  |
+| MultRegs_g   | natural | 1          | Number of pipeline stages for the multiplication                  |
 | RoundReg_g   | string  | "YES"      | Presence of rounding pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if rounding is needed according to the formats chosen |
 | SatReg_g     | string  | "YES"      | Presence of saturation pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if saturation is needed according to the formats chosen |
 | IqHandling_g | string  | "Parallel" | "Parallel" - I/Q arrive in parallel, ports _InA_I_ and _InA_Q_ are used <br> "TDM" - I/Q arrive TDM, port _InA_IQ_ is used |
-| Mode_g       | string  | "MULT"     | Operation mode:<br> "MULT" - Multiplication<br> "MIX-CPLX-CPLX" - Complex to complex mixer<br>"MIX-REAL-CPLX" - Real to complex mixer<br>"MIX-CPLX-REAL" - Complex to real mixer |
+| Mode_g       | string  | "MULT4"     | Operation mode:<br>"MULT4" -  4 multiplier multiplication<br>"MULT3" - 3 multiplier multiplication<br> "MIX-CPLX-CPLX" - Complex to complex mixer<br>"MIX-REAL-CPLX" - Real to complex mixer<br>"MIX-CPLX-REAL" - Complex to real mixer |
 
 ## Interfaces
 
@@ -77,8 +80,8 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Clk  | in     | 1      | '0'     | Clock<br />Not required if all registers are disabled (_OpRegs_g=0, RoundReg_g="NO", SatReg_g="NO"_) |
-| Rst  | in     | 1      | '0'     | Reset input (high-active, synchronous to _Clk_)<br />Not required if all registers are disabled (_OpRegs_g=0, RoundReg_g="NO", SatReg_g="NO"_) |
+| Clk  | in     | 1      | '0'     | Clock                                                        |
+| Rst  | in     | 1      | '0'     | Reset input (high-active, synchronous to _Clk_)              |
 
 ### Input Data
 
@@ -93,7 +96,7 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | In_Valid | in     | 1               | '1'     | AXI4-Stream handshaking signal for _InA_ and _InB_                              |
 | In_Last  | in     | 1               | '0'     | Used for optional TDM synchroinzation for _IqHandling=TDM_.                     |
 
-When used as a mixerm, _InA_ is the signal to be mixed and _InB_ is the mixing frequency.
+When used as a mixer, _InA_ is the signal to be mixed and _InB_ is the mixing frequency.
 
 ### Output Data
 
