@@ -25,7 +25,7 @@ class olo_fix_cplx_mult:
                  result_fmt : FixFormat,
                  round : FixRound = FixRound.Trunc_s,
                  saturate : FixSaturate = FixSaturate.Warn_s,
-                 Mode_g : str = "MULT"):
+                 mode : str = "MULT"):
         """
         Constructor of the olo_fix_cplx_mult class
         
@@ -34,7 +34,7 @@ class olo_fix_cplx_mult:
         :param result_fmt: Format of the result
         :param round: Rounding mode
         :param saturate: Saturation mode
-        :param Mode_g: Mode of operation ("MULT" or "MIX")
+        :param mode: Mode of operation ("MULT" or "MIX")
         """
         self._a_fmt = a_fmt
         self._b_fmt = b_fmt
@@ -43,7 +43,7 @@ class olo_fix_cplx_mult:
         self._saturate = saturate
         self._mult_fmt = cl_fix_mult_fmt(a_fmt, b_fmt)
         self._sum_fmt = cl_fix_sub_fmt(self._mult_fmt, self._mult_fmt)
-        mode = Mode_g.upper()
+        mode = mode.upper()
         if mode not in ["MULT", "MIX"]:
             raise ValueError("Invalid mode. Supported modes are 'MULT' and 'MIX'.")
         self._mode = mode

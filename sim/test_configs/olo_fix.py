@@ -570,3 +570,24 @@ def add_configs(olo_tb):
             for MultRegs in [1, 3]:
                 for InBIsCoef in [False, True]:
                     named_config(tb, {'PreAdd_g': PreAdd, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef})
+
+    ### olo_fix_cplx_mult  ###
+    tb = olo_tb.test_bench('olo_fix_cplx_mult_tb')  
+
+    #Test formats and round/sat modes
+    default_generics = {
+        'Mode_g': "MIX",
+        'Implementation_g' : "MULT3",
+        'IqHandling_g': 'Parallel',
+        'AFmt_g': '(1,4,4)',
+        'BFmt_g': '(1,4,4)',
+        'ResultFmt_g': '(1,9,8)',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'MultRegs_g': 1,
+        'RoundReg_g': "YES",
+        'SatReg_g': "YES"
+    }
+    cosim = olo_fix_cplx_mult.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')

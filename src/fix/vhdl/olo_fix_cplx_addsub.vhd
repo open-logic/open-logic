@@ -7,8 +7,7 @@
 ---------------------------------------------------------------------------------------------------
 -- Description
 ---------------------------------------------------------------------------------------------------
--- This entity implements the cl_fix_add function as entity. Includes pipeline stages
--- and allows usage from Verilog.
+-- This entity implements complex addtion/subtraction.
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/fix/olo_fix_cplx_addsub.md
@@ -72,6 +71,8 @@ entity olo_fix_cplx_addsub is
 end entity;
 
 architecture rtl of olo_fix_cplx_addsub is
+
+    -- TODO: Calculate latency for "AUTO" register mode
 
     -- Calculate Latency
     constant Latency_c : natural := OpRegs_g +

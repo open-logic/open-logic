@@ -203,7 +203,7 @@ Many _Open Logic_ fixed-point componets that support complex numbers do implemen
   - In-phase is transmitted first, quadrature-phase second.
   - The _Last_ signal can be used to indicate quadrature-phase samples - this allows resynchronization in case of a
   - lost sample or starting the stream at an arbitrary point.
-
+  - In many cases reduces resource consumption to around 50% of the _Parallel_ I/Q handling version
 Conversion between the two can be achieved by the entities commonly used for TDM/parallel conversion:
 
 | Entity                                               | Description                                                  |
