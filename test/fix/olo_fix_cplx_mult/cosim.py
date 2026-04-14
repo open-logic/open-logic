@@ -66,7 +66,11 @@ def cosim(output_path : str = None,
                                                          "Python_i" : py_out.real, 
                                                          "Python_q" : py_out.imag},
                                      "Error" : {"Error_i" : error.real, 
-                                                "Error_q" : error.imag}})
+                                                "Error_q" : error.imag},
+                                     "Input" : {"ina_i" : ina_i, 
+                                                "ina_q" : ina_q, 
+                                                "inb_i" : inb_i, 
+                                                "inb_q" : inb_q}})
 
     #Write Files
     if cosim_mode:

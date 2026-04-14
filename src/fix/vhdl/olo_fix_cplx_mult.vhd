@@ -31,7 +31,9 @@ library work;
 
 -- TODO: Add missing pipelines tage to mult 4 doc figures
 -- TODO: Balance pipeline stages in mult 3 doc figure (and add added pipeline stages)
+-- TODO: Test synthesize all 3 implementations (16-bit formats)
 -- TODO: Document - some tools require enough multiplier registers to map code to only 3 DSPs (otherwise no benefit over 4 DSP - try your tools)
+-- TODO: Update I/Q TDM figure
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -42,7 +44,7 @@ entity olo_fix_cplx_mult is
         -- Functionality
         Mode_g           : string  := "MULT";
         Implementation_g : string  := "MULT4";     -- TODO: Revert MULT4
-        IqHandling_g     : string  := "Parallel";
+        IqHandling_g     : string  := "TDM";
         -- Formats / Round / Saturate
         AFmt_g           : string := "(1,0,15)";  -- TODO Clear
         BFmt_g           : string := "(1,0,15)";  -- TODO Clear
@@ -273,6 +275,9 @@ begin
             constant OutIFullFmt_c : FixFormat_t := cl_fix_addsub_fmt(MultFmt_c, MultFmt_c);
             constant OutQFullFmt_c : FixFormat_t := cl_fix_addsub_fmt(K3Fmt_c, cl_fix_addsub_fmt(MultFmt_c, MultFmt_c));
 
+            -- TODO: Properly name pipelines tages (0, 1, n2, ...)
+            -- TODO: Move formates to main arch for latency calculation based on round/sat
+
             -- Signals
             signal In_Valid_Reg : std_logic;
             signal InA_Q_Reg : std_logic_vector(InA_Q'range);
@@ -461,7 +466,192 @@ begin
 
         end generate;
 
-     
+    end generate;
+
+    --------------------------------------------
+    -- TDM I/Q
+    --------------------------------------------
+    -- TODO: Add InA_IQ to figure
+    g_tdm : if compareNoCase(IqHandling_g, "TDM") generate
+        -- Formats
+        constant MultFmt_c  : FixFormat_t := cl_fix_mult_fmt(AFmt_c, BFmt_c);
+        constant SumFmt_c   : FixFormat_t := cl_fix_addsub_fmt(MultFmt_c, MultFmt_c);
+
+        -- Constants
+        constant Stages_c : natural := 4+MultRegs_g;
+
+        -- TODO: Test resync
+        
+        -- Signals
+        signal IsQ : std_logic;
+        signal Valid_I          : std_logic_vector(0 to Stages_c-1);
+        signal Valid_Q          : std_logic_vector(0 to Stages_c-1);
+        signal InA_0            : std_logic_vector(InA_IQ'range);
+        signal InB_0            : std_logic_vector(InB_IQ'range);
+        signal MultI_1n         : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+        signal MultI_Hold_1n    : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+        signal AddI_2n          : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
+        signal HoldB_1          : std_logic_vector(InB_IQ'range);
+        signal MultQ_InA_1      : std_logic_vector(InA_IQ'range);
+        signal MultQ_InB_1      : std_logic_vector(InB_IQ'range);
+        signal MultI_Valid      : std_logic;
+        signal MultQ_Valid      : std_logic;
+        signal MultQ_2n         : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+        signal MultQ_Hold_2n    : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+        signal AddQ_3n          : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
+        signal Full_IQ          : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
+        signal Full_Valid       : std_logic;
+
+        -- Attributes
+        attribute use_dsp : string;
+        attribute use_dsp of AddI_2n : signal is "no";
+        attribute use_dsp of AddQ_3n : signal is "no";        
+    begin
+
+        -- Clocked Process
+        p_reg : process(Clk) is
+        begin
+            if rising_edge(Clk) then
+                
+                -- Shift valids
+                Valid_I(0) <= In_Valid and not IsQ;
+                Valid_Q(0) <= In_Valid and IsQ;
+                Valid_I(1 to Valid_I'high) <= Valid_I(0 to Valid_I'high-1);
+                Valid_Q(1 to Valid_Q'high) <= Valid_Q(0 to Valid_Q'high-1);
+                
+                -- I/Q detection
+                if In_Valid = '1' then
+                    -- Resych - after Last the next sample is I
+                    if In_Last = '1' then
+                        IsQ <= '0';
+                    -- otherwise toggle
+                    else
+                        IsQ <= not IsQ;
+                    end if;
+                end if;
+
+                -- Input Registers
+                if In_Valid = '1' then
+                    InA_0 <= InA_IQ;
+                    InB_0 <= InB_IQ;
+                end if;
+
+                -- I Path registers
+                if Valid_I(MultRegs_g) = '1' then
+                    MultI_Hold_1n <= MultI_1n;
+                end if;
+                if Valid_Q(MultRegs_g) = '1' then
+                    if compareNoCase(Mode_g, "MULT") then
+                        AddI_2n <= cl_fix_sub(MultI_Hold_1n, MultFmt_c, MultI_1n, MultFmt_c, SumFmt_c);
+                    else
+                        AddI_2n <= cl_fix_add(MultI_Hold_1n, MultFmt_c, MultI_1n, MultFmt_c, SumFmt_c);
+                    end if;
+                end if;
+
+                -- Q Path registers
+                if Valid_I(0) = '1' or Valid_Q(0) = '1' then
+                    HoldB_1 <= InB_0;
+                end if;
+                MultQ_InA_1 <= InA_0;
+                if In_Valid = '1' and IsQ = '1' then
+                    MultQ_InB_1 <= InB_IQ;
+                else
+                    MultQ_InB_1 <= HoldB_1; -- I part
+                end if;
+                if Valid_Q(MultRegs_g) = '1' then
+                    MultQ_Hold_2n <= MultQ_2n;
+                end if;
+                if Valid_Q(MultRegs_g+1) = '1' then
+                    if compareNoCase(Mode_g, "MULT") then
+                        AddQ_3n <= cl_fix_add(MultQ_2n, MultFmt_c, MultQ_Hold_2n, MultFmt_c, SumFmt_c);
+                    else
+                        AddQ_3n <= cl_fix_sub(MultQ_2n, MultFmt_c, MultQ_Hold_2n, MultFmt_c, SumFmt_c);
+                    end if;
+
+                end if;
+
+                -- I/Q Merge
+                Full_Valid <= '0';
+                if Valid_Q(MultRegs_g+1) = '1' then
+                    Full_IQ <= AddI_2n;
+                    Full_Valid <= '1';
+                elsif Valid_Q(MultRegs_g+2) = '1' then
+                    Full_IQ <= AddQ_3n;
+                    Full_Valid <= '1';
+                end if;
+
+                -- Reset
+                if Rst = '1' then
+                    IsQ <= '0';
+                    Valid_I <= (others => '0');
+                    Valid_Q <= (others => '0');
+                    Full_Valid <= '0';
+                end if;
+            end if;
+        end process;
+
+        -- Valid merging
+        MultI_Valid <= Valid_I(0) or Valid_Q(0);
+        MultQ_Valid <= Valid_Q(1) or Valid_Q(0);
+
+        -- I-path multiplier
+        i_mult_i : entity work.olo_fix_mult
+            generic map (
+                AFmt_g        => AFmt_g,
+                BFmt_g        => BFmt_g,
+                ResultFmt_g   => to_string(MultFmt_c),
+                OpRegs_g      => MultRegs_g,
+                RoundReg_g    => "NO",
+                SatReg_g      => "NO"
+            )
+            port map (
+                Clk         => Clk,
+                Rst         => Rst,
+                In_Valid    => MultI_Valid,
+                In_A        => InA_0,
+                In_B        => InB_0,
+                Out_Result  => MultI_1n
+            );
+
+        -- Q-path multiplier
+        i_mult_q : entity work.olo_fix_mult
+            generic map (
+                AFmt_g        => AFmt_g,
+                BFmt_g        => BFmt_g,
+                ResultFmt_g   => to_string(MultFmt_c),
+                OpRegs_g      => MultRegs_g,
+                RoundReg_g    => "NO",
+                SatReg_g      => "NO"
+            )
+            port map (
+                Clk         => Clk,
+                Rst         => Rst,
+                In_Valid    => MultQ_Valid,
+                In_A        => MultQ_InA_1,
+                In_B        => MultQ_InB_1,
+                Out_Result  => MultQ_2n
+            );
+            
+            -- I/QQ resize
+            i_resize_q : entity work.olo_fix_resize
+                generic map (
+                    AFmt_g      => to_string(SumFmt_c),
+                    ResultFmt_g => ResultFmt_g,
+                    Round_g     => Round_g,
+                    Saturate_g  => Saturate_g,
+                    RoundReg_g  => RoundReg_g,
+                    SatReg_g    => SatReg_g
+                )
+                port map (
+                    Clk         => Clk,
+                    Rst         => Rst,
+                    In_Valid    => Full_Valid,
+                    In_A        => Full_IQ,
+                    Out_Result  => Out_IQ,
+                    Out_Valid   => Out_Valid
+                );
+
+    
     end generate;
 
     -- Last Signal Handling

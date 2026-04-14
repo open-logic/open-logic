@@ -576,9 +576,9 @@ def add_configs(olo_tb):
 
     #Test formats and round/sat modes
     default_generics = {
-        'Mode_g': "MIX",
+        'Mode_g': "MULT",
         'Implementation_g' : "MULT3",
-        'IqHandling_g': 'Parallel',
+        'IqHandling_g': 'TDM',
         'AFmt_g': '(1,4,4)',
         'BFmt_g': '(1,4,4)',
         'ResultFmt_g': '(1,9,8)',

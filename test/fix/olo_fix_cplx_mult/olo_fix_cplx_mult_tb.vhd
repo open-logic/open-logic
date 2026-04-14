@@ -112,7 +112,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- TB Control
     -----------------------------------------------------------------------------------------------
-    test_runner_watchdog(runner, 10 ms);
+    test_runner_watchdog(runner, 1 ms);
 
     p_control : process is
     begin
@@ -160,7 +160,7 @@ begin
                     fix_checker_check_file (net, CheckerQ_c, CheckerQFile_c);
                     --fix_checker_check_file (net, CheckerLast_c, LastParFile_c);
                 else
-                    fix_stimuli_play_file (net, StimuliAiq_c, AiqFile_c, stall_probability => 0.5, stall_max_cycles => 10);
+                    fix_stimuli_play_file (net, StimuliAiq_c, AiqFile_c, stall_probability => 1.0, stall_max_cycles => 10, stall_min_cycles => 10); --TODO: Reviert
                     fix_stimuli_play_file (net, StimuliBiq_c, BiqFile_c);
                     --fix_stimuli_play_file (net, StimuliLast_c, LastTdmFile_c);
                     fix_checker_check_file (net, CheckerIQ_c, CheckerIqFile_c);
