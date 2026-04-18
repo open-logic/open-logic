@@ -127,9 +127,12 @@ It implements the following mathematics:
 > Re = k1 - k2<br>
 > Im = k3 - k1 - k2<br>
 
-The figure below shows the architecture. 
+The figure below shows the architecture.
 
 ![3 Multiplier Architecture](./entities/olo_fix_cplx_mult_3par.drawio.png)
+
+**Important**: Some synthesis tools require an increased _MultRegs_g_ to really implement it with 3 multipliers. If you
+see 4 multipliers being implemented, try increasing _MultRegs_g_.
 
 **Latency** This architecture has a latency of _MultRegs_g_+ 5 + _resize_latency_ clock cycles.
 

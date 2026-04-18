@@ -29,11 +29,7 @@ library work;
     use work.en_cl_fix_pkg.all;
     use work.olo_fix_pkg.all;
 
--- TODO: Add missing pipelines tage to mult 4 doc figures
--- TODO: Balance pipeline stages in mult 3 doc figure (and add added pipeline stages)
 -- TODO: Test synthesize all 3 implementations (16-bit formats)
--- TODO: Document - some tools require enough multiplier registers to map code to only 3 DSPs (otherwise no benefit over 4 DSP - try your tools)
--- TODO: Update I/Q TDM figure
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -302,15 +298,15 @@ begin
             signal Out_I_Full_N2 : std_logic_vector(cl_fix_width(OutIFullFmt_c) - 1 downto 0);
             signal Out_I_Full_N3 : std_logic_vector(Out_I_Full_N2'range);
             signal Out_I_Full_N4 : std_logic_vector(Out_I_Full_N2'range);
-            signal Out_Q_Null_N3 : std_logic_vector(cl_fix_width(OutQFullFmt_c) - 1 downto 0);
-            signal Out_Q_Full_N4 : std_logic_vector(Out_Q_Null_N3'range);
+            signal Out_Q_Full_N3 : std_logic_vector(cl_fix_width(OutQFullFmt_c) - 1 downto 0);
+            signal Out_Q_Full_N4 : std_logic_vector(Out_Q_Full_N3'range);
             signal Out_Full_Valid_N2_N3 : std_logic;
             signal Out_Full_Valid_N2_N4 : std_logic;
 
             -- Attributes
             attribute use_dsp : string;
             attribute use_dsp of Out_I_Full_N2 : signal is "no";
-            attribute use_dsp of Out_Q_Null_N3 : signal is "no";
+            attribute use_dsp of Out_Q_Full_N3 : signal is "no";
 
         begin
 
@@ -350,11 +346,11 @@ begin
                     end if;
                     Out_I_Full_N3 <= Out_I_Full_N2;
                     Out_I_Full_N4 <= Out_I_Full_N3;
-                    Out_Q_Null_N3 <= cl_fix_sub(K3_N2, K3Fmt_c, K1_N2, MultFmt_c, OutQFullFmt_c);
+                    Out_Q_Full_N3 <= cl_fix_sub(K3_N2, K3Fmt_c, K1_N2, MultFmt_c, OutQFullFmt_c);
                     if compareNoCase(Mode_g, "MULT") then
-                        Out_Q_Full_N4 <= cl_fix_sub(Out_Q_Null_N3, OutQFullFmt_c, K2_N3, MultFmt_c, OutQFullFmt_c);
+                        Out_Q_Full_N4 <= cl_fix_sub(Out_Q_Full_N3, OutQFullFmt_c, K2_N3, MultFmt_c, OutQFullFmt_c);
                     else
-                        Out_Q_Full_N4 <= cl_fix_add(Out_Q_Null_N3, OutQFullFmt_c, K2_N3, MultFmt_c, OutQFullFmt_c);
+                        Out_Q_Full_N4 <= cl_fix_add(Out_Q_Full_N3, OutQFullFmt_c, K2_N3, MultFmt_c, OutQFullFmt_c);
                     end if;
                     Out_Full_Valid_N2_N3 <= K3_Valid_N2;
                     Out_Full_Valid_N2_N4 <= Out_Full_Valid_N2_N3;
@@ -490,7 +486,6 @@ begin
     -----------------------------------------------------------------------------------------------
     -- TDM I/Q
     -----------------------------------------------------------------------------------------------
-    -- TODO: Add InA_IQ to figure
     g_tdm : if compareNoCase(IqHandling_g, "TDM") generate
         -- Formats
         constant MultFmt_c  : FixFormat_t := cl_fix_mult_fmt(AFmt_c, BFmt_c);
@@ -516,7 +511,7 @@ begin
         signal MultI_Valid      : std_logic;
         signal MultQ_Valid      : std_logic;
         signal MultQ_N1         : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
-        signal MultQ_Hold_N3    : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+        signal MultQ_Hold_N2    : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
         signal AddQ_N3          : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
         signal full_IQ_N2       : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
         signal Full_Valid_N2    : std_logic;
@@ -580,13 +575,13 @@ begin
                     MultQ_InB_1 <= HoldB_1; -- I part
                 end if;
                 if Valid_Q(MultRegs_g) = '1' then
-                    MultQ_Hold_N3 <= MultQ_N1;
+                    MultQ_Hold_N2 <= MultQ_N1;
                 end if;
                 if Valid_Q(MultRegs_g+1) = '1' then
                     if compareNoCase(Mode_g, "MULT") then
-                        AddQ_N3 <= cl_fix_add(MultQ_N1, MultFmt_c, MultQ_Hold_N3, MultFmt_c, SumFmt_c);
+                        AddQ_N3 <= cl_fix_add(MultQ_N1, MultFmt_c, MultQ_Hold_N2, MultFmt_c, SumFmt_c);
                     else
-                        AddQ_N3 <= cl_fix_sub(MultQ_N1, MultFmt_c, MultQ_Hold_N3, MultFmt_c, SumFmt_c);
+                        AddQ_N3 <= cl_fix_sub(MultQ_N1, MultFmt_c, MultQ_Hold_N2, MultFmt_c, SumFmt_c);
                     end if;
 
                 end if;
