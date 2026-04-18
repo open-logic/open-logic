@@ -41,8 +41,6 @@ entity olo_fix_cplx_mult_tb is
         Round_g          : string  := "NonSymPos_s";
         Saturate_g       : string  := "Sat_s";
         MultRegs_g       : natural := 1;
-        RoundReg_g       : string  := "YES";
-        SatReg_g         : string  := "YES";
         runner_cfg       : string
     );
 end entity;
@@ -92,7 +90,7 @@ architecture sim of olo_fix_cplx_mult_tb is
     constant CheckerI_c    : olo_test_fix_checker_t := new_olo_test_fix_checker;
     constant CheckerQ_c    : olo_test_fix_checker_t := new_olo_test_fix_checker;
     constant CheckerIQ_c   : olo_test_fix_checker_t := new_olo_test_fix_checker;
-    --constant CheckerLast_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant CheckerLast_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
 
     -- *** Constants ***
     constant AiFile_c        : string := output_path(runner_cfg) & "AI.fix";
@@ -104,8 +102,8 @@ architecture sim of olo_fix_cplx_mult_tb is
     constant CheckerIFile_c  : string := output_path(runner_cfg) & "Result_I.fix";
     constant CheckerQFile_c  : string := output_path(runner_cfg) & "Result_Q.fix";
     constant CheckerIqFile_c : string := output_path(runner_cfg) & "Result_IQ.fix";
-    --constant LastParFile_c   : string := output_path(runner_cfg) & "LastPar.fix";
-    --constant LastTdmFile_c   : string := output_path(runner_cfg) & "LastTdm.fix";
+    constant LastParFile_c   : string := output_path(runner_cfg) & "LastPar.fix";
+    constant LastTdmFile_c   : string := output_path(runner_cfg) & "LastTdm.fix";
 
 begin
 
@@ -135,16 +133,16 @@ begin
                     fix_stimuli_play_file (net, StimuliAQ_c, AqFile_c);
                     fix_stimuli_play_file (net, StimuliBI_c, BiFile_c);
                     fix_stimuli_play_file (net, StimuliBQ_c, BqFile_c);
-                    --fix_stimuli_play_file (net, StimuliLast_c, LastParFile_c);
+                    fix_stimuli_play_file (net, StimuliLast_c, LastParFile_c);
                     fix_checker_check_file (net, CheckerI_c, CheckerIFile_c);
                     fix_checker_check_file (net, CheckerQ_c, CheckerQFile_c);
-                    --fix_checker_check_file (net, CheckerLast_c, LastParFile_c);
+                    fix_checker_check_file (net, CheckerLast_c, LastParFile_c);
                 else
                     fix_stimuli_play_file (net, StimuliAiq_c, AiqFile_c);
                     fix_stimuli_play_file (net, StimuliBiq_c, BiqFile_c);
-                    --fix_stimuli_play_file (net, StimuliLast_c, LastTdmFile_c);
+                    fix_stimuli_play_file (net, StimuliLast_c, LastTdmFile_c);
                     fix_checker_check_file (net, CheckerIQ_c, CheckerIqFile_c);
-                    --fix_checker_check_file (net, CheckerLast_c, LastTdmFile_c);
+                    fix_checker_check_file (net, CheckerLast_c, LastTdmFile_c);
                 end if;
             end if;
 
@@ -155,16 +153,16 @@ begin
                     fix_stimuli_play_file (net, StimuliAQ_c, AqFile_c);
                     fix_stimuli_play_file (net, StimuliBI_c, BiFile_c);
                     fix_stimuli_play_file (net, StimuliBQ_c, BqFile_c);
-                    --fix_stimuli_play_file (net, StimuliLast_c, LastParFile_c);
+                    fix_stimuli_play_file (net, StimuliLast_c, LastParFile_c);
                     fix_checker_check_file (net, CheckerI_c, CheckerIFile_c);
                     fix_checker_check_file (net, CheckerQ_c, CheckerQFile_c);
-                    --fix_checker_check_file (net, CheckerLast_c, LastParFile_c);
+                    fix_checker_check_file (net, CheckerLast_c, LastParFile_c);
                 else
-                    fix_stimuli_play_file (net, StimuliAiq_c, AiqFile_c, stall_probability => 1.0, stall_max_cycles => 10, stall_min_cycles => 10); --TODO: Reviert
+                    fix_stimuli_play_file (net, StimuliAiq_c, AiqFile_c, stall_probability => 1.0, stall_max_cycles => 10, stall_min_cycles => 10); --TODO: Revert min to 1
                     fix_stimuli_play_file (net, StimuliBiq_c, BiqFile_c);
-                    --fix_stimuli_play_file (net, StimuliLast_c, LastTdmFile_c);
+                    fix_stimuli_play_file (net, StimuliLast_c, LastTdmFile_c);
                     fix_checker_check_file (net, CheckerIQ_c, CheckerIqFile_c);
-                    --fix_checker_check_file (net, CheckerLast_c, LastTdmFile_c);
+                    fix_checker_check_file (net, CheckerLast_c, LastTdmFile_c);
                 end if;
             end if;
 
@@ -178,8 +176,8 @@ begin
             wait_until_idle(net, as_sync(CheckerI_c));
             wait_until_idle(net, as_sync(CheckerQ_c));
             wait_until_idle(net, as_sync(CheckerIQ_c));
-            --wait_until_idle(net, as_sync(StimuliLast_c));
-            --wait_until_idle(net, as_sync(CheckerLast_c));
+            wait_until_idle(net, as_sync(StimuliLast_c));
+            wait_until_idle(net, as_sync(CheckerLast_c));
             wait for 1 us;
 
         end loop;
@@ -214,9 +212,7 @@ begin
             ResultFmt_g      => ResultFmt_g,
             Round_g          => Round_g,
             Saturate_g       => Saturate_g,
-            MultRegs_g       => MultRegs_g,
-            RoundReg_g       => RoundReg_g,
-            SatReg_g         => SatReg_g
+            MultRegs_g       => MultRegs_g
         )
         port map (
             Clk          => Clk,
@@ -319,19 +315,19 @@ begin
             Data     => InB_IQ
         );
 
-    --vc_stimuli_last : entity work.olo_test_fix_stimuli_vc
-    --    generic map (
-    --        Instance         => StimuliLast_c,
-    --        Fmt              => (0,1,0),
-    --        Is_Timing_Master => false
-    --    )
-    --    port map (
-    --        Clk      => Clk,
-    --        Rst      => Rst,
-    --        Valid    => In_Valid,
-    --        Ready    => In_Valid,
-    --        Data(0)  => In_Last
-    --    );
+    vc_stimuli_last : entity work.olo_test_fix_stimuli_vc
+        generic map (
+            Instance         => StimuliLast_c,
+            Fmt              => (0,1,0),
+            Is_Timing_Master => false
+        )
+        port map (
+            Clk      => Clk,
+            Rst      => Rst,
+            Valid    => In_Valid,
+            Ready    => In_Valid,
+            Data(0)  => In_Last
+        );
 
     vc_checker_i : entity work.olo_test_fix_checker_vc
         generic map (
@@ -366,16 +362,15 @@ begin
             Data     => Out_IQ
         );
 
-    --vc_checker_last : entity work.olo_test_fix_checker_vc
-    --    generic map (
-    --        Instance         => CheckerLast_c,
-    --        Fmt              => (0,1,0),
-    --        Is_Timing_Master => false
-    --    )
-    --    port map (
-    --        Clk      => Clk,
-    --        Valid    => Out_Valid,
-    --        Data(0)  => Out_Last
-    --    );
+    vc_checker_last : entity work.olo_test_fix_checker_vc
+        generic map (
+            Instance         => CheckerLast_c,
+            Fmt              => (0,1,0)
+        )
+        port map (
+            Clk      => Clk,
+            Valid    => Out_Valid,
+            Data(0)  => Out_Last
+        );
 
 end architecture;

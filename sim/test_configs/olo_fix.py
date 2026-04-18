@@ -584,10 +584,10 @@ def add_configs(olo_tb):
         'ResultFmt_g': '(1,9,8)',
         'Round_g': 'NonSymPos_s',
         'Saturate_g': 'Sat_s',
-        'MultRegs_g': 1,
-        'RoundReg_g': "YES",
-        'SatReg_g': "YES"
+        'MultRegs_g': 1
     }
     cosim = olo_fix_cplx_mult.cosim.cosim
 
-    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+    named_config(tb, default_generics | {'IqHandling_g': 'TDM'}, pre_config=cosim, short_name='TDM')
+    named_config(tb, default_generics | {'Implementation_g': 'MULT4', 'IqHandling_g': 'Parallel'}, pre_config=cosim, short_name='MULT4')
+    named_config(tb, default_generics | {'Implementation_g': 'MULT3', 'IqHandling_g': 'Parallel'}, pre_config=cosim, short_name='MULT3')

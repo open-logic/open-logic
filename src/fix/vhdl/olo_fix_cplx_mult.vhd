@@ -43,18 +43,16 @@ entity olo_fix_cplx_mult is
     generic (
         -- Functionality
         Mode_g           : string  := "MULT";
-        Implementation_g : string  := "MULT4";     -- TODO: Revert MULT4
-        IqHandling_g     : string  := "TDM";
+        Implementation_g : string  := "MULT3";
+        IqHandling_g     : string  := "Parallel";
         -- Formats / Round / Saturate
-        AFmt_g           : string := "(1,0,15)";  -- TODO Clear
-        BFmt_g           : string := "(1,0,15)";  -- TODO Clear
-        ResultFmt_g      : string := "(1,0,15)";  -- TODO Clear
+        AFmt_g           : string;
+        BFmt_g           : string;
+        ResultFmt_g      : string;
         Round_g          : string  := FixRound_Trunc_c;
         Saturate_g       : string  := FixSaturate_Warn_c;
         -- Registers
-        MultRegs_g       : natural := 1;
-        RoundReg_g       : string  := "YES";
-        SatReg_g         : string  := "YES"
+        MultRegs_g       : natural := 1
     );
     port (
         -- Control Ports
@@ -85,14 +83,17 @@ architecture rtl of olo_fix_cplx_mult is
     constant BFmt_c      : FixFormat_t := cl_fix_format_from_string(BFmt_g);
     constant ResultFmt_c : FixFormat_t := cl_fix_format_from_string(ResultFmt_g);
 
-    -- TODO: Calculate latency for "AUTO" register mode
-    -- TODO: Calculate Mult3 latency
-    -- TODO: Add last to TB
+    -- Round/Sat Registers
+    constant RoundReg_c : string := choose(compareNoCase(Round_g, FixRound_Trunc_c), "NO", "YES");
+    constant SatReg_c : string := choose(compareNoCase(Saturate_g, FixSaturate_Warn_c) or (compareNoCase(Saturate_g, FixSaturate_None_c)), "NO", "YES");
 
     -- Calculate Latency
-    constant LatencyRoundSat_c : natural := choose(compareNoCase(RoundReg_g, "YES"), 1, 0) + choose(compareNoCase(SatReg_g, "YES"), 1, 0);
-    constant LatencyMult4_c : natural := 1 + 1 + MultRegs_g + 1 + LatencyRoundSat_c;
-    constant Latency_c : natural := LatencyMult4_c;
+    constant LatencyRoundSat_c : natural := choose(RoundReg_c = "YES", 1, 0) + choose(SatReg_c = "YES", 1, 0);
+    constant LatencyMult4_c : natural := MultRegs_g + 3 + LatencyRoundSat_c;
+    constant LatencyMult3_c : natural := MultRegs_g + 5 + LatencyRoundSat_c;
+    constant LatencyTDM_c : natural := MultRegs_g + 4 + LatencyRoundSat_c;
+    constant Latency_c : natural := choose(compareNoCase(IqHandling_g, "TDM"), LatencyTDM_c,
+                                           choose(compareNoCase(Implementation_g, "MULT4"), LatencyMult4_c, LatencyMult3_c));
 
     -- Mult vs. Mix Operations
     constant Op_MultAdd_MixSub_c : string := choose(compareNoCase(Mode_g, "MULT"), "Add", "Sub");
@@ -103,47 +104,50 @@ begin
     -- Assertions
     -- synthesis translate_off
     assert compareNoCase(Mode_g, "MULT") or compareNoCase(Mode_g, "MIX")
-        report "olo_fix_cplx_mult: Invalid Mode_g: " & Mode_g severity error;
+        report "olo_fix_cplx_mult: Invalid Mode_g: " & Mode_g
+        severity error;
     assert compareNoCase(IqHandling_g, "Parallel") or compareNoCase(IqHandling_g, "TDM")
-        report "olo_fix_cplx_mult: Invalid IqHandling_g: " & IqHandling_g severity error;
+        report "olo_fix_cplx_mult: Invalid IqHandling_g: " & IqHandling_g
+        severity error;
     assert compareNoCase(Implementation_g, "MULT4") or compareNoCase(Implementation_g, "MULT3")
-        report "olo_fix_cplx_mult: Invalid Implementation_g: " & Implementation_g severity error;
+        report "olo_fix_cplx_mult: Invalid Implementation_g: " & Implementation_g
+        severity error;
     -- synthesis translate_on
 
     -- Parallel Component Handling
     g_parallel : if compareNoCase(IqHandling_g, "Parallel") generate
 
-        --------------------------------------------
+        -------------------------------------------------------------------------------------------
         -- Parallel I/Q, 4 Multiplier Implementation
-        --------------------------------------------
+        -------------------------------------------------------------------------------------------
 
         g_mult4 : if compareNoCase(Implementation_g, "MULT4") generate
             constant MultFmt_c  : FixFormat_t := cl_fix_mult_fmt(AFmt_c, BFmt_c);
             constant ChainFmt_c : FixFormat_t := cl_fix_addsub_fmt(MultFmt_c, MultFmt_c);
-            signal In_Valid_Reg : std_logic;
-            signal InA_Q_Reg : std_logic_vector(InA_Q'range);
-            signal InB_Q_Reg : std_logic_vector(InB_Q'range);
-            signal InA_I_Reg : std_logic_vector(InA_I'range);
-            signal II_Out : std_logic_vector(cl_fix_width(ChainFmt_c) - 1 downto 0);
-            signal QI_Out : std_logic_vector(cl_fix_width(ChainFmt_c) - 1 downto 0);
-            signal Out_I_Full : std_logic_vector(cl_fix_width(ChainFmt_c) - 1 downto 0);
-            signal Out_Q_Full : std_logic_vector(cl_fix_width(ChainFmt_c) - 1 downto 0);
-            signal Macc_Valid : std_logic;
+            signal In_Valid_0 : std_logic;
+            signal InA_Q_0 : std_logic_vector(InA_Q'range);
+            signal InB_Q_0 : std_logic_vector(InB_Q'range);
+            signal InA_I_0 : std_logic_vector(InA_I'range);
+            signal II_Out_N1 : std_logic_vector(cl_fix_width(ChainFmt_c) - 1 downto 0);
+            signal QI_Out_N1 : std_logic_vector(cl_fix_width(ChainFmt_c) - 1 downto 0);
+            signal Out_I_Full_N2 : std_logic_vector(cl_fix_width(ChainFmt_c) - 1 downto 0);
+            signal Out_Q_Full_N2 : std_logic_vector(cl_fix_width(ChainFmt_c) - 1 downto 0);
+            signal Valid_N2 : std_logic;
         begin
 
             -- Pipeline stage
             p_reg : process(Clk) is
             begin
-                if rising_edge(Clk) then  
+                if rising_edge(Clk) then
                     -- Normal Operation
-                    In_Valid_Reg <= In_Valid;
-                    InA_Q_Reg <= InA_Q;
-                    InB_Q_Reg <= InB_Q;
-                    InA_I_Reg <= InA_I;
-                    
+                    In_Valid_0 <= In_Valid;
+                    InA_Q_0 <= InA_Q;
+                    InB_Q_0 <= InB_Q;
+                    InA_I_0 <= InA_I;
+
                     -- Reset
                     if Rst = '1' then
-                        In_Valid_Reg <= '0';
+                        In_Valid_0 <= '0';
                     end if;
                 end if;
             end process;
@@ -163,7 +167,7 @@ begin
                     InA_Data    => InA_I,
                     InB_Valid   => In_Valid,
                     InB_Data    => InB_I,
-                    Out_Data    => II_Out
+                    Out_Data    => II_Out_N1
                 );
 
             -- Q x Q multiply add
@@ -178,13 +182,13 @@ begin
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    InAC_Valid  => In_Valid_Reg,
-                    InA_Data    => InA_Q_Reg,
-                    InB_Valid   => In_Valid_Reg,
-                    InB_Data    => InB_Q_Reg,
-                    MaccIn      => II_Out,
-                    Out_Data    => Out_I_Full,
-                    Out_Valid   => Macc_Valid
+                    InAC_Valid  => In_Valid_0,
+                    InA_Data    => InA_Q_0,
+                    InB_Valid   => In_Valid_0,
+                    InB_Data    => InB_Q_0,
+                    MaccIn      => II_Out_N1,
+                    Out_Data    => Out_I_Full_N2,
+                    Out_Valid   => Valid_N2
                 );
 
             -- I resize
@@ -194,14 +198,14 @@ begin
                     ResultFmt_g => ResultFmt_g,
                     Round_g     => Round_g,
                     Saturate_g  => Saturate_g,
-                    RoundReg_g  => RoundReg_g,
-                    SatReg_g    => SatReg_g
+                    RoundReg_g  => RoundReg_c,
+                    SatReg_g    => SatReg_c
                 )
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => Macc_Valid,
-                    In_A        => Out_I_Full,
+                    In_Valid    => Valid_N2,
+                    In_A        => Out_I_Full_N2,
                     Out_Valid   => Out_Valid,
                     Out_Result  => Out_I
                 );
@@ -221,7 +225,7 @@ begin
                     InA_Data    => InA_Q,
                     InB_Valid   => In_Valid,
                     InB_Data    => InB_I,
-                    Out_Data    => QI_Out
+                    Out_Data    => QI_Out_N1
                 );
 
             -- I x Q multiply add
@@ -236,12 +240,12 @@ begin
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    InAC_Valid  => In_Valid_Reg,
-                    InA_Data    => InA_I_Reg,
-                    InB_Valid   => In_Valid_Reg,
-                    InB_Data    => InB_Q_Reg,
-                    MaccIn      => QI_Out,
-                    Out_Data    => Out_Q_Full
+                    InAC_Valid  => In_Valid_0,
+                    InA_Data    => InA_I_0,
+                    InB_Valid   => In_Valid_0,
+                    InB_Data    => InB_Q_0,
+                    MaccIn      => QI_Out_N1,
+                    Out_Data    => Out_Q_Full_N2
                 );
 
             -- Q resize
@@ -251,22 +255,22 @@ begin
                     ResultFmt_g => ResultFmt_g,
                     Round_g     => Round_g,
                     Saturate_g  => Saturate_g,
-                    RoundReg_g  => RoundReg_g,
-                    SatReg_g    => SatReg_g
+                    RoundReg_g  => RoundReg_c,
+                    SatReg_g    => SatReg_c
                 )
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => Macc_Valid,
-                    In_A        => Out_Q_Full,
+                    In_Valid    => Valid_N2,
+                    In_A        => Out_Q_Full_N2,
                     Out_Result  => Out_Q
                 );
-        
+
         end generate;
 
-        --------------------------------------------
+        -------------------------------------------------------------------------------------------
         -- Parallel I/Q, 3 Multiplier Implementation
-        --------------------------------------------
+        -------------------------------------------------------------------------------------------
         g_mult3 : if compareNoCase(Implementation_g, "MULT3") generate
             -- Formats
             constant MultFmt_c  : FixFormat_t := cl_fix_mult_fmt(AFmt_c, BFmt_c);
@@ -275,99 +279,98 @@ begin
             constant OutIFullFmt_c : FixFormat_t := cl_fix_addsub_fmt(MultFmt_c, MultFmt_c);
             constant OutQFullFmt_c : FixFormat_t := cl_fix_addsub_fmt(K3Fmt_c, cl_fix_addsub_fmt(MultFmt_c, MultFmt_c));
 
-            -- TODO: Properly name pipelines tages (0, 1, n2, ...)
-            -- TODO: Move formates to main arch for latency calculation based on round/sat
-
             -- Signals
-            signal In_Valid_Reg : std_logic;
-            signal InA_Q_Reg : std_logic_vector(InA_Q'range);
-            signal InB_Q_Reg : std_logic_vector(InB_Q'range);
-            signal InA_I_Reg : std_logic_vector(InA_I'range);
-            signal InB_I_Reg : std_logic_vector(InB_I'range);
-            signal Mult1_Valid : std_logic;
-            signal K1 : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
-            signal K1_Reg : std_logic_vector(K1'range);
-            signal K2 : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
-            signal K2_Reg : std_logic_vector(K2'range);
-            signal K2_Reg2 : std_logic_vector(K2'range);
-            signal K3 : std_logic_vector(cl_fix_width(K3Fmt_c) - 1 downto 0);
-            signal K3_Valid : std_logic;
-            signal Preadd_A : std_logic_vector(cl_fix_width(PreAddFmt_c) - 1 downto 0);
-            signal Preadd_A_Reg : std_logic_vector(Preadd_A'range);
-            signal Preadd_B : std_logic_vector(cl_fix_width(PreAddFmt_c) - 1 downto 0);
-            signal Preadd_B_Reg : std_logic_vector(Preadd_B'range);
-            signal Preadd_Valid : std_logic;
-            signal Preadd_Valid_Reg : std_logic;
-            signal Out_I_Full : std_logic_vector(cl_fix_width(OutIFullFmt_c) - 1 downto 0);
-            signal Out_I_Full_Reg : std_logic_vector(Out_I_Full'range);
-            signal Out_I_Full_Reg2 : std_logic_vector(Out_I_Full'range);
-            signal Out_Q_Full : std_logic_vector(cl_fix_width(OutQFullFmt_c) - 1 downto 0);
-            signal Out_Q_Full_Reg : std_logic_vector(Out_Q_Full'range);
-            signal Out_Full_Valid : std_logic;
-            signal Out_Full_Valid_Reg : std_logic;
+            signal In_Valid_0 : std_logic;
+            signal InA_Q_0 : std_logic_vector(InA_Q'range);
+            signal InB_Q_0 : std_logic_vector(InB_Q'range);
+            signal InA_I_0 : std_logic_vector(InA_I'range);
+            signal InB_I_0 : std_logic_vector(InB_I'range);
+            signal Mult1_Valid_N3 : std_logic;
+            signal K1_N1 : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+            signal K1_N2 : std_logic_vector(K1_N1'range);
+            signal K2_N1 : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+            signal K2_N2 : std_logic_vector(K2_N1'range);
+            signal K2_N3 : std_logic_vector(K2_N1'range);
+            signal K3_N2 : std_logic_vector(cl_fix_width(K3Fmt_c) - 1 downto 0);
+            signal K3_Valid_N2 : std_logic;
+            signal Preadd_A_1 : std_logic_vector(cl_fix_width(PreAddFmt_c) - 1 downto 0);
+            signal Preadd_A_2 : std_logic_vector(Preadd_A_1'range);
+            signal Preadd_B_1 : std_logic_vector(cl_fix_width(PreAddFmt_c) - 1 downto 0);
+            signal Preadd_B_2 : std_logic_vector(Preadd_B_1'range);
+            signal Preadd_Valid_1 : std_logic;
+            signal Preadd_Valid_2 : std_logic;
+            signal Out_I_Full_N2 : std_logic_vector(cl_fix_width(OutIFullFmt_c) - 1 downto 0);
+            signal Out_I_Full_N3 : std_logic_vector(Out_I_Full_N2'range);
+            signal Out_I_Full_N4 : std_logic_vector(Out_I_Full_N2'range);
+            signal Out_Q_Null_N3 : std_logic_vector(cl_fix_width(OutQFullFmt_c) - 1 downto 0);
+            signal Out_Q_Full_N4 : std_logic_vector(Out_Q_Null_N3'range);
+            signal Out_Full_Valid_N2_N3 : std_logic;
+            signal Out_Full_Valid_N2_N4 : std_logic;
 
             -- Attributes
             attribute use_dsp : string;
-            attribute use_dsp of Out_I_Full : signal is "no";
-            attribute use_dsp of Out_Q_Full : signal is "no";
-    
+            attribute use_dsp of Out_I_Full_N2 : signal is "no";
+            attribute use_dsp of Out_Q_Null_N3 : signal is "no";
+
         begin
 
             -- Pipeline stage
             p_reg : process(Clk) is
             begin
-                if rising_edge(Clk) then  
+                if rising_edge(Clk) then
                     -- Normal Operation
-                    In_Valid_Reg <= In_Valid;
-                    InA_Q_Reg <= InA_Q;
-                    InB_Q_Reg <= InB_Q;
-                    InA_I_Reg <= InA_I;
-                    InB_I_Reg <= InB_I;
+                    In_Valid_0 <= In_Valid;
+                    InA_Q_0 <= InA_Q;
+                    InB_Q_0 <= InB_Q;
+                    InA_I_0 <= InA_I;
+                    InB_I_0 <= InB_I;
 
                     -- Pre adders
-                    Preadd_Valid <= In_Valid_Reg;
-                    Preadd_A <= cl_fix_add(InA_I_Reg, AFmt_c, InA_Q_Reg, AFmt_c, PreAddFmt_c);
+                    Preadd_Valid_1 <= In_Valid_0;
+                    Preadd_A_1 <= cl_fix_add(InA_I_0, AFmt_c, InA_Q_0, AFmt_c, PreAddFmt_c);
                     if compareNoCase(Mode_g, "MULT") then
-                        Preadd_B <= cl_fix_add(InB_I_Reg, BFmt_c, InB_Q_Reg, BFmt_c, PreAddFmt_c);
+                        Preadd_B_1 <= cl_fix_add(InB_I_0, BFmt_c, InB_Q_0, BFmt_c, PreAddFmt_c);
                     else
-                        Preadd_B <= cl_fix_sub(InB_I_Reg, BFmt_c, InB_Q_Reg, BFmt_c, PreAddFmt_c);
+                        Preadd_B_1 <= cl_fix_sub(InB_I_0, BFmt_c, InB_Q_0, BFmt_c, PreAddFmt_c);
                     end if;
-                    Preadd_A_Reg <= Preadd_A;
-                    Preadd_B_Reg <= Preadd_B;
-                    Preadd_Valid_Reg <= Preadd_Valid;
+                    Preadd_A_2 <= Preadd_A_1;
+                    Preadd_B_2 <= Preadd_B_1;
+                    Preadd_Valid_2 <= Preadd_Valid_1;
 
-                    -- K1/K2 latency compensation
-                    K1_Reg <= K1;
-                    K2_Reg <= K2;
-                    K2_Reg2 <= K2_Reg;
+                    -- K1_N1/K2_N1 latency compensation
+                    K1_N2 <= K1_N1;
+                    K2_N2 <= K2_N1;
+                    K2_N3 <= K2_N2;
 
                     -- Out I calculation
                     if compareNoCase(Mode_g, "MULT") then
-                        Out_I_Full <= cl_fix_sub(K1, MultFmt_c, K2, MultFmt_c, OutIFullFmt_c);
+                        Out_I_Full_N2 <= cl_fix_sub(K1_N1, MultFmt_c, K2_N1, MultFmt_c, OutIFullFmt_c);
                     else
-                        Out_I_Full <= cl_fix_add(K1, MultFmt_c, K2, MultFmt_c, OutIFullFmt_c);
+                        Out_I_Full_N2 <= cl_fix_add(K1_N1, MultFmt_c, K2_N1, MultFmt_c, OutIFullFmt_c);
                     end if;
-                    Out_I_Full_Reg <= Out_I_Full;
-                    Out_I_Full_Reg2 <= Out_I_Full_Reg;
-                    Out_Q_Full <= cl_fix_sub(K3, K3Fmt_c, K1_Reg, MultFmt_c, OutQFullFmt_c);
+                    Out_I_Full_N3 <= Out_I_Full_N2;
+                    Out_I_Full_N4 <= Out_I_Full_N3;
+                    Out_Q_Null_N3 <= cl_fix_sub(K3_N2, K3Fmt_c, K1_N2, MultFmt_c, OutQFullFmt_c);
                     if compareNoCase(Mode_g, "MULT") then
-                        Out_Q_Full_Reg <= cl_fix_sub(Out_Q_Full, OutQFullFmt_c, K2_Reg2, MultFmt_c, OutQFullFmt_c);
+                        Out_Q_Full_N4 <= cl_fix_sub(Out_Q_Null_N3, OutQFullFmt_c, K2_N3, MultFmt_c, OutQFullFmt_c);
                     else
-                        Out_Q_Full_Reg <= cl_fix_add(Out_Q_Full, OutQFullFmt_c, K2_Reg2, MultFmt_c, OutQFullFmt_c);
+                        Out_Q_Full_N4 <= cl_fix_add(Out_Q_Null_N3, OutQFullFmt_c, K2_N3, MultFmt_c, OutQFullFmt_c);
                     end if;
-                    Out_Full_Valid <= K3_Valid;
-                    Out_Full_Valid_Reg <= Out_Full_Valid;
+                    Out_Full_Valid_N2_N3 <= K3_Valid_N2;
+                    Out_Full_Valid_N2_N4 <= Out_Full_Valid_N2_N3;
 
                     -- Reset
                     if Rst = '1' then
-                        In_Valid_Reg <= '0';
-                        Preadd_Valid <= '0';
-                        Out_Full_Valid <= '0';
+                        In_Valid_0 <= '0';
+                        Preadd_Valid_1 <= '0';
+                        Preadd_Valid_2 <= '0';
+                        Out_Full_Valid_N2_N3 <= '0';
+                        Out_Full_Valid_N2_N4 <= '0';
                     end if;
                 end if;
             end process;
 
-            -- K1 multiplier
+            -- K1_N1 multiplier
             i_k1 : entity work.olo_fix_mult
                 generic map (
                     AFmt_g        => AFmt_g,
@@ -380,14 +383,14 @@ begin
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => In_Valid_Reg,
-                    In_A        => InA_I_Reg,
-                    In_B        => InB_I_Reg,
-                    Out_Result  => K1,
-                    Out_Valid   => Mult1_Valid
+                    In_Valid    => In_Valid_0,
+                    In_A        => InA_I_0,
+                    In_B        => InB_I_0,
+                    Out_Result  => K1_N1,
+                    Out_Valid   => Mult1_Valid_N3
                 );
 
-            -- K2 multiplier
+            -- K2_N1 multiplier
             i_k2 : entity work.olo_fix_mult
                 generic map (
                     AFmt_g        => AFmt_g,
@@ -400,13 +403,13 @@ begin
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => In_Valid_Reg,
-                    In_A        => InA_Q_Reg,
-                    In_B        => InB_Q_Reg,
-                    Out_Result  => K2
+                    In_Valid    => In_Valid_0,
+                    In_A        => InA_Q_0,
+                    In_B        => InB_Q_0,
+                    Out_Result  => K2_N1
                 );
 
-            -- K3 multiplier
+            -- K3_N2 multiplier
             i_k3 : entity work.olo_fix_mult
                 generic map (
                     AFmt_g        => to_string(PreAddFmt_c),
@@ -419,11 +422,11 @@ begin
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => Preadd_Valid_Reg,
-                    In_A        => Preadd_A_Reg,
-                    In_B        => Preadd_B_Reg,
-                    Out_Result  => K3,
-                    Out_Valid   => K3_Valid
+                    In_Valid    => Preadd_Valid_2,
+                    In_A        => Preadd_A_2,
+                    In_B        => Preadd_B_2,
+                    Out_Result  => K3_N2,
+                    Out_Valid   => K3_Valid_N2
                 );
 
             -- I resize
@@ -433,14 +436,14 @@ begin
                     ResultFmt_g => ResultFmt_g,
                     Round_g     => Round_g,
                     Saturate_g  => Saturate_g,
-                    RoundReg_g  => RoundReg_g,
-                    SatReg_g    => SatReg_g
+                    RoundReg_g  => RoundReg_c,
+                    SatReg_g    => SatReg_c
                 )
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => Out_Full_Valid_Reg,
-                    In_A        => Out_I_Full_Reg2,
+                    In_Valid    => Out_Full_Valid_N2_N4,
+                    In_A        => Out_I_Full_N4,
                     Out_Valid   => Out_Valid,
                     Out_Result  => Out_I
                 );
@@ -453,24 +456,40 @@ begin
                     ResultFmt_g => ResultFmt_g,
                     Round_g     => Round_g,
                     Saturate_g  => Saturate_g,
-                    RoundReg_g  => RoundReg_g,
-                    SatReg_g    => SatReg_g
+                    RoundReg_g  => RoundReg_c,
+                    SatReg_g    => SatReg_c
                 )
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => Out_Full_Valid_Reg,
-                    In_A        => Out_Q_Full_Reg,
+                    In_Valid    => Out_Full_Valid_N2_N4,
+                    In_A        => Out_Q_Full_N4,
                     Out_Result  => Out_Q
                 );
 
         end generate;
 
+        -- Last Signal Handling
+        i_last : entity work.olo_base_delay
+            generic map (
+                Width_g    => 1,
+                Delay_g    => Latency_c,
+                Resource_g => "SRL",
+                RstState_g => true
+            )
+            port map (
+                Clk         => Clk,
+                Rst         => Rst,
+                In_Data(0)  => In_Last,
+                In_Valid    => '1',
+                Out_Data(0) => Out_Last
+            );
+
     end generate;
 
-    --------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TDM I/Q
-    --------------------------------------------
+    -----------------------------------------------------------------------------------------------
     -- TODO: Add InA_IQ to figure
     g_tdm : if compareNoCase(IqHandling_g, "TDM") generate
         -- Formats
@@ -481,44 +500,46 @@ begin
         constant Stages_c : natural := 4+MultRegs_g;
 
         -- TODO: Test resync
-        
+
         -- Signals
-        signal IsQ : std_logic;
+        signal IsQ              : std_logic;
         signal Valid_I          : std_logic_vector(0 to Stages_c-1);
         signal Valid_Q          : std_logic_vector(0 to Stages_c-1);
         signal InA_0            : std_logic_vector(InA_IQ'range);
         signal InB_0            : std_logic_vector(InB_IQ'range);
-        signal MultI_1n         : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
-        signal MultI_Hold_1n    : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
-        signal AddI_2n          : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
+        signal MultI_N0         : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+        signal MultI_Hold_N1    : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+        signal AddI_N1          : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
         signal HoldB_1          : std_logic_vector(InB_IQ'range);
         signal MultQ_InA_1      : std_logic_vector(InA_IQ'range);
         signal MultQ_InB_1      : std_logic_vector(InB_IQ'range);
         signal MultI_Valid      : std_logic;
         signal MultQ_Valid      : std_logic;
-        signal MultQ_2n         : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
-        signal MultQ_Hold_2n    : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
-        signal AddQ_3n          : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
-        signal Full_IQ          : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
-        signal Full_Valid       : std_logic;
+        signal MultQ_N1         : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+        signal MultQ_Hold_N3    : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
+        signal AddQ_N3          : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
+        signal full_IQ_N2       : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
+        signal Full_Valid_N2    : std_logic;
+
+        signal LastMasked       : std_logic;
 
         -- Attributes
         attribute use_dsp : string;
-        attribute use_dsp of AddI_2n : signal is "no";
-        attribute use_dsp of AddQ_3n : signal is "no";        
+        attribute use_dsp of AddI_N1 : signal is "no";
+        attribute use_dsp of AddQ_N3 : signal is "no";
     begin
 
         -- Clocked Process
         p_reg : process(Clk) is
         begin
             if rising_edge(Clk) then
-                
+
                 -- Shift valids
                 Valid_I(0) <= In_Valid and not IsQ;
                 Valid_Q(0) <= In_Valid and IsQ;
                 Valid_I(1 to Valid_I'high) <= Valid_I(0 to Valid_I'high-1);
                 Valid_Q(1 to Valid_Q'high) <= Valid_Q(0 to Valid_Q'high-1);
-                
+
                 -- I/Q detection
                 if In_Valid = '1' then
                     -- Resych - after Last the next sample is I
@@ -538,13 +559,13 @@ begin
 
                 -- I Path registers
                 if Valid_I(MultRegs_g) = '1' then
-                    MultI_Hold_1n <= MultI_1n;
+                    MultI_Hold_N1 <= MultI_N0;
                 end if;
                 if Valid_Q(MultRegs_g) = '1' then
                     if compareNoCase(Mode_g, "MULT") then
-                        AddI_2n <= cl_fix_sub(MultI_Hold_1n, MultFmt_c, MultI_1n, MultFmt_c, SumFmt_c);
+                        AddI_N1 <= cl_fix_sub(MultI_Hold_N1, MultFmt_c, MultI_N0, MultFmt_c, SumFmt_c);
                     else
-                        AddI_2n <= cl_fix_add(MultI_Hold_1n, MultFmt_c, MultI_1n, MultFmt_c, SumFmt_c);
+                        AddI_N1 <= cl_fix_add(MultI_Hold_N1, MultFmt_c, MultI_N0, MultFmt_c, SumFmt_c);
                     end if;
                 end if;
 
@@ -559,25 +580,25 @@ begin
                     MultQ_InB_1 <= HoldB_1; -- I part
                 end if;
                 if Valid_Q(MultRegs_g) = '1' then
-                    MultQ_Hold_2n <= MultQ_2n;
+                    MultQ_Hold_N3 <= MultQ_N1;
                 end if;
                 if Valid_Q(MultRegs_g+1) = '1' then
                     if compareNoCase(Mode_g, "MULT") then
-                        AddQ_3n <= cl_fix_add(MultQ_2n, MultFmt_c, MultQ_Hold_2n, MultFmt_c, SumFmt_c);
+                        AddQ_N3 <= cl_fix_add(MultQ_N1, MultFmt_c, MultQ_Hold_N3, MultFmt_c, SumFmt_c);
                     else
-                        AddQ_3n <= cl_fix_sub(MultQ_2n, MultFmt_c, MultQ_Hold_2n, MultFmt_c, SumFmt_c);
+                        AddQ_N3 <= cl_fix_sub(MultQ_N1, MultFmt_c, MultQ_Hold_N3, MultFmt_c, SumFmt_c);
                     end if;
 
                 end if;
 
                 -- I/Q Merge
-                Full_Valid <= '0';
+                Full_Valid_N2 <= '0';
                 if Valid_Q(MultRegs_g+1) = '1' then
-                    Full_IQ <= AddI_2n;
-                    Full_Valid <= '1';
+                    full_IQ_N2 <= AddI_N1;
+                    Full_Valid_N2 <= '1';
                 elsif Valid_Q(MultRegs_g+2) = '1' then
-                    Full_IQ <= AddQ_3n;
-                    Full_Valid <= '1';
+                    full_IQ_N2 <= AddQ_N3;
+                    Full_Valid_N2 <= '1';
                 end if;
 
                 -- Reset
@@ -585,7 +606,7 @@ begin
                     IsQ <= '0';
                     Valid_I <= (others => '0');
                     Valid_Q <= (others => '0');
-                    Full_Valid <= '0';
+                    Full_Valid_N2 <= '0';
                 end if;
             end if;
         end process;
@@ -610,7 +631,7 @@ begin
                 In_Valid    => MultI_Valid,
                 In_A        => InA_0,
                 In_B        => InB_0,
-                Out_Result  => MultI_1n
+                Out_Result  => MultI_N0
             );
 
         -- Q-path multiplier
@@ -629,9 +650,9 @@ begin
                 In_Valid    => MultQ_Valid,
                 In_A        => MultQ_InA_1,
                 In_B        => MultQ_InB_1,
-                Out_Result  => MultQ_2n
+                Out_Result  => MultQ_N1
             );
-            
+
             -- I/QQ resize
             i_resize_q : entity work.olo_fix_resize
                 generic map (
@@ -639,35 +660,38 @@ begin
                     ResultFmt_g => ResultFmt_g,
                     Round_g     => Round_g,
                     Saturate_g  => Saturate_g,
-                    RoundReg_g  => RoundReg_g,
-                    SatReg_g    => SatReg_g
+                    RoundReg_g  => RoundReg_c,
+                    SatReg_g    => SatReg_c
                 )
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => Full_Valid,
-                    In_A        => Full_IQ,
+                    In_Valid    => Full_Valid_N2,
+                    In_A        => full_IQ_N2,
                     Out_Result  => Out_IQ,
                     Out_Valid   => Out_Valid
                 );
 
-    
+            -- Last Signal Handling
+            LastMasked <= In_Last and IsQ and In_Valid;
+
+            i_last : entity work.olo_base_delay
+                generic map (
+                    Width_g    => 1,
+                    Delay_g    => Latency_c,
+                    Resource_g => "SRL",
+                    RstState_g => true
+                )
+                port map (
+                    Clk         => Clk,
+                    Rst         => Rst,
+                    In_Data(0)  => LastMasked,
+                    In_Valid    => '1',
+                    Out_Data(0) => Out_Last
+                );
+
     end generate;
 
-    -- Last Signal Handling
-    i_last : entity work.olo_base_delay
-        generic map (
-            Width_g    => 1,
-            Delay_g    => Latency_c,
-            Resource_g => "SRL",
-            RstState_g => true
-        )
-        port map (
-            Clk         => Clk,
-            Rst         => Rst,
-            In_Data(0)  => In_Last,
-            In_Valid    => '1',
-            Out_Data(0) => Out_Last
-        );
+
 
 end architecture;

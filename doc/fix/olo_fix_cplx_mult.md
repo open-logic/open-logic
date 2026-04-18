@@ -26,7 +26,7 @@ architecture can be chosen.
 I (in-phase) and Q (quadrature-phase) can be handled parallel or TDM.
 
 **Latency** The latency of this entity heavily depends on the configuration but it is constant for any generic
-configuration.
+configuration. See detailed calculations in the [Detail](#detail) section below.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
@@ -44,8 +44,6 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | Round_g          | string  | "Trunc_s"  | Rounding mode<br />String representation of an _en_cl_fix FixRound_t_. |
 | Saturate_g       | string  | "Warn_s"   | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
 | MultRegs_g       | natural | 1          | Number of pipeline stages for the multiplication                  |
-| RoundReg_g       | string  | "YES"      | Presence of rounding pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if rounding is needed according to the formats chosen |
-| SatReg_g         | string  | "YES"      | Presence of saturation pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if saturation is needed according to the formats chosen |
 
 ## Interfaces
 
@@ -104,6 +102,13 @@ The figure below shows the architecture. It is optimized for mapping into Multip
 Note that for _Mode_g=MULT_ the black operations apply. For _Mode_g=MIX_ the red operations apply, which corresponds
 to inverting the imaginary part of _InB_.
 
+**Latency** This architecture has a latency of _MultRegs_g_+ 3 + _resize_latency_ clock cycles.
+
+Where _resize_latency_ is calculated as follows:
+
+- +1 cycle if _Round_g_ is NOT "Trunc_s"
+- +1 cycle if _Saturate_g_ is NOT "None_s"/"Warn_s"
+
 ### 3 Multiplier IQ-Parallel Architecture
 
 This architecture is implemented when:
@@ -126,6 +131,13 @@ The figure below shows the architecture.
 
 ![3 Multiplier Architecture](./entities/olo_fix_cplx_mult_3par.drawio.png)
 
+**Latency** This architecture has a latency of _MultRegs_g_+ 5 + _resize_latency_ clock cycles.
+
+Where _resize_latency_ is calculated as follows:
+
+- +1 cycle if _Round_g_ is NOT "Trunc_s"
+- +1 cycle if _Saturate_g_ is NOT "None_s"/"Warn_s"
+
 ## TDM Architecture
 
 This architecture is implemented when:
@@ -139,3 +151,10 @@ by a delay of a clock cycle instead of a multiplexer.
 
 Note that for _Mode_g=MULT_ the black operations apply. For _Mode_g=MIX_ the red operations apply, which corresponds
 to inverting the imaginary part of _InB_.
+
+**Latency** This architecture has a latency of _MultRegs_g_+ 4 + _resize_latency_ clock cycles.
+
+Where _resize_latency_ is calculated as follows:
+
+- +1 cycle if _Round_g_ is NOT "Trunc_s"
+- +1 cycle if _Saturate_g_ is NOT "None_s"/"Warn_s"

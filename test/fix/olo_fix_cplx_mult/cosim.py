@@ -82,10 +82,15 @@ def cosim(output_path : str = None,
         writer.write_cosim_file(inb_q, BFmt_g, "BQ.fix")
         writer.write_cosim_file(out_i, ResultFmt_g, "Result_I.fix")
         writer.write_cosim_file(out_q, ResultFmt_g, "Result_Q.fix")
+        last_spl = np.random.randint(0,2, size=len(ina_i)).astype(float)
+        writer.write_cosim_file(last_spl, FixFormat(0,1,0), "LastPar.fix")
         # Write I/Q interleaved
         writer.write_cosim_file(np.column_stack((ina_i, ina_q)).ravel(), AFmt_g, "AIQ.fix")
         writer.write_cosim_file(np.column_stack((inb_i, inb_q)).ravel(), BFmt_g, "BIQ.fix")
         writer.write_cosim_file(np.column_stack((out_i, out_q)).ravel(), ResultFmt_g, "Result_IQ.fix")
+        last_q_only = np.ravel(np.column_stack((np.zeros_like(last_spl), last_spl)))
+        writer.write_cosim_file(last_q_only, FixFormat(0,1,0), "LastTdm.fix")
+
     return True
 
 if __name__ == "__main__":
