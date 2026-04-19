@@ -137,6 +137,7 @@ class ControllerOloFix (ControllerBase):
         self._i_add = olo_fix_add(FMT_I, FMT_IMULT, FMT_IADD)
         self._i_limit = olo_fix_limit(FMT_IADD, FMT_ILIM_NEG, FMT_ILIM, FMT_I)
         self._out_add = olo_fix_add(FMT_I, FMT_PPART, FMT_OUT, round=FixRound.NonSymPos_s, saturate=FixSaturate.Sat_s)
+        self._integrator = olo_fix_sample_hold(fmt=FMT_I, reset_value=0.0)
 
     def simulate(self, actual) -> float:
         # Error
@@ -147,8 +148,10 @@ class ControllerOloFix (ControllerBase):
 
         # I Part
         i_1 = self._i_mult.process(error, self._ki)
-        i_presat = self._i_add.process(self._integrator, i_1)
-        self._integrator = self._i_limit.process(i_presat, self._ilim_neg, self._ilim)
+        i_value = self._integrator.next(out_samples=1) # Get sample and hold value
+        i_presat = self._i_add.process(i_value, i_1)
+        lim_out = self._i_limit.process(i_presat, self._ilim_neg, self._ilim)
+        self._integrator.next(input=lim_out) # Update sample and hold value for the next iteration
 
         # Output
-        return self._out_add.process(self._integrator, p_part)
+        return self._out_add.process(lim_out, p_part)
