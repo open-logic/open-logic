@@ -54,8 +54,8 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | Name     | In/Out | Length              | Default | Description                                                  |
 | :------- | :----- | :------------------ | ------- | :----------------------------------------------------------- |
 | In_Data  | in     | _width(InFmt_g)_    | -       | Input data<br />Format: _InFmt_g_                            |
-| In_LimLo | in     | _width(LoLimFmt_g)_ | -       | Input lower limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _LoLimFmt_g_ |
-| In_LimHi | in     | _width(HiLimFmt_g)_ | -       | Input upper limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _HiLimFmt_g_ |
+| In_LimLo | in     | _width(LoLimFmt_g)_ | 0       | Input lower limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _LoLimFmt_g_ |
+| In_LimHi | in     | _width(HiLimFmt_g)_ | 0       | Input upper limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _HiLimFmt_g_ |
 | In_Valid | in     | 1                   | '1'     | AXI4-Stream handshaking signal for _In_A_ and _In_B_         |
 
 ### Output Data

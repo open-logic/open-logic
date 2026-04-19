@@ -79,8 +79,8 @@ And of course the conversion into the other direction (7-bit to 8-bit) is possib
 
 | Name       | Type     | Default | Description                                                  |
 | :--------- | :------- | ------- | :----------------------------------------------------------- |
-| InWidth_g  | positive | -       | Input width in bits.                                         |
-| OutWidth_g | positive | -       | Output width in bits.                                        |
+| InWidth_g  | positive | 16      | Input width in bits.                                         |
+| OutWidth_g | positive | 24      | Output width in bits.                                        |
 | UseBe_g    | boolean  | false   | true: Use _In_Be_ and _Out_Be_, only allowed for _InWidth_g_/_OutWidth_g_ being multiples of 8<br />false: _In_Be_ and _Out_Be_ are un |
 
 ## Interfaces

@@ -87,14 +87,14 @@ tristate buffers.
 
 ### Response Interface
 
-| Name         | In/Out | Length | Default                                                      | Description |
-| :----------- | :----- | :----- | ------------------------------------------------------------ | :---------- |
-| Resp_Valid   | out    | 1      | AXI-S handshaking signal for _Resp_..._<br />The response interface does not support backpressure. Hence no _Ready_ signal is provided. |             |
-| Resp_Command | out    | 3      | Type of the command that completed. See _Cmd_Command_ for details. |             |
-| Resp_Data    | out    | 8      | Received data <br />Only utilized for _I2cCmd_Receive_c_ resp. _CmdType="100"_ |             |
-| Resp_Ack     | out    | 1      | **1** =\> ACK received, **0** =\> NACK received <br />Note that polarity is inverted compared to the acknowledge bit on the I2C bus.<br />Only utilized for _I2cCmd_Send_c_ resp. _CmdType="011"_ |             |
-| Resp_ArbLost | out    | 1      | '1' indicates that the command failed because arbitration was lost. |             |
-| Resp_SeqErr  | out    | 1      | The command failed because of wrong command sequence (e.g. attempt to do a _I2cCmd_Start_c_ in the middle of an ongoing transfer). |             |
+| Name         | In/Out | Length | Default | Description |
+| :----------- | :----- | :----- | ------- | :---------- |
+| Resp_Valid   | out    | 1      | N/A     | AXI-S handshaking signal for _Resp_..._<br />The response interface does not support backpressure. Hence no _Ready_ signal is provided. |
+| Resp_Command | out    | 3      | N/A     | Type of the command that completed. See _Cmd_Command_ for details. |
+| Resp_Data    | out    | 8      | N/A     | Received data <br />Only utilized for _I2cCmd_Receive_c_ resp. _CmdType="100"_ |
+| Resp_Ack     | out    | 1      | N/A     | **1** =\> ACK received, **0** =\> NACK received <br />Note that polarity is inverted compared to the acknowledge bit on the I2C bus.<br />Only utilized for _I2cCmd_Send_c_ resp. _CmdType="011"_ |
+| Resp_ArbLost | out    | 1      | N/A     | '1' indicates that the command failed because arbitration was lost. |
+| Resp_SeqErr  | out    | 1      | N/A     | The command failed because of wrong command sequence (e.g. attempt to do a _I2cCmd_Start_c_ in the middle of an ongoing transfer). |
 
 ### Status Interface
 
