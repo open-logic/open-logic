@@ -6,6 +6,32 @@
 
 Note that components are split into categories.
 
+## Table of Contents
+
+- [Entity List](#entity-list)
+  - [Table of Contents](#table-of-contents)
+  - [base](#base)
+    - [Packages (olo\_base\_pkg\_\<...\>)](#packages-olo_base_pkg_)
+    - [Clock Crossings (_olo\_base\_cc_\<...\>\_)](#clock-crossings-olo_base_cc_)
+    - [RAM Implementations (olo\_base\_ram\_\<...\>)](#ram-implementations-olo_base_ram_)
+    - [FIFO Implementations (olo\_base\_fifo\_\<...\>)](#fifo-implementations-olo_base_fifo_)
+    - [Width Conversions (olo\_base\_wconv\_\<...\>)](#width-conversions-olo_base_wconv_)
+    - [Arbiters (olo\_base\_arb\_\<...\>)](#arbiters-olo_base_arb_)
+    - [TDM (olo\_base\_tdm\_\<...\>)](#tdm-olo_base_tdm_)
+    - [Timing Related Entities](#timing-related-entities)
+    - [Miscellaneous](#miscellaneous)
+  - [axi](#axi)
+  - [intf](#intf)
+  - [fix](#fix)
+    - [Packages](#packages)
+    - [Testbench Utilities](#testbench-utilities)
+    - [Design Utilities](#design-utilities)
+    - [Basic Operations](#basic-operations)
+    - [Simple Mathematics](#simple-mathematics)
+    - [CORDIC](#cordic)
+    - [CIC Filters](#cic-filters)
+    - [Miscellaneous](#miscellaneous-1)
+
 ## base
 
 This area contains all base functionality that is required in most FPGA designs.
@@ -109,6 +135,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_crc](./base/olo_base_crc.md) | CRC calculation engine |
 | [olo_base_crc_append](./base/olo_base_crc_append.md) | Append CRC to AXI4-Stream packets |
 | [olo_base_crc_check](./base/olo_base_crc_check.md) | Check CRC of AXI4-Stream packets and drop invalid packets |
+| [olo_base_sample_hold](./base/olo_base_sample_hold.md) | Sample and hold for bit-vectors. Holds the last sampled value until a new sample is taken. |
 
 ## axi
 
@@ -226,3 +253,9 @@ be used. For deciding which option to use, the following considerations shall be
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | [olo_fix_cic_dec_tdm](./fix/olo_fix_cic_dec_tdm.md)         | CIC decimator (TDM input, TDM output), single- or multi-channel, ratio fixed or runtime configurable               |
 | [olo_fix_cic_dec_par_tdm](./fix/olo_fix_cic_dec_par_tdm.md) | CIC decimator (parallel input, TDM output), single- or multi-channel, ratio fixed or runtime configurable          |
+
+### Miscellaneous
+
+| Entity                                              | Description                                                                                              |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [olo_fix_sample_hold](./fix/olo_fix_sample_hold.md) | Sample and hold a fixed point number - output holds the last sampled value until a new sample is taken.  |

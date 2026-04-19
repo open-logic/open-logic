@@ -256,3 +256,9 @@ entities:
           Out_I: 16
           Out_Q: 16
           Out_IQ: 16
+  # olo_fix_sample_hold
+  - entity_name: "olo_fix_sample_hold"
+    configurations:
+      - name: "default"
+        generics:   
+          Fmt_g: '"(1, 8, 4)"'

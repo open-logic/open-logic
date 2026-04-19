@@ -608,3 +608,10 @@ def add_configs(olo_tb):
                         overrides['Saturate_g'] = Sat
                         named_config(tb, default_generics | overrides, pre_config=cosim)
 
+                    short_name=f'ShortFormats')   
+
+    ### olo_fix_sample_hold ###
+    tb = olo_tb.test_bench('olo_fix_sample_hold_tb')
+
+    for ResetValid in ['True', 'False']:
+            named_config(tb, {'ResetValid_g': ResetValid}) 
