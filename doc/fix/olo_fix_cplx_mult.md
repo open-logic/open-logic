@@ -15,7 +15,7 @@ Bit-true Model: [olo_fix_cplx_mult](../../src/fix/python/olo_fix/olo_fix_cplx_mu
 
 ## Description
 
-This entity performs multiplication of two complex fixed-point numbers. 
+This entity performs multiplication of two complex fixed-point numbers.
 
 The entity also can be configured to operate
 as mixer (complex to complex) by selection _Mode_g=MIX_. In mixer mode the imaginary part of _In_B_ is inverted.
@@ -116,7 +116,7 @@ This architecture is implemented when:
 - _Implementation_g="MULT3"_
 - _IqHandling_g="Parallel"_
 
-This architecture does save one multiplier at the cost of more adders and a more complex routing. 
+This architecture does save one multiplier at the cost of more adders and a more complex routing.
 It implements the following mathematics:
 
 > A = (a + bi)<br>
@@ -144,11 +144,17 @@ Where _resize_latency_ is calculated as follows:
 ## TDM Architecture
 
 This architecture is implemented when:
-- _IqHandling_g="TDM"_
+
+- _IqHandling_g="TDM"
 
 It does implement the same mathematics as the 4 multiplier architecture, but I and Q are handled in a time-multiplexed
 manner. As a result, only two multipliers are needed and selecting between I and Q samples can also happen
 by a delay of a clock cycle instead of a multiplexer.
+
+The _Last_ signal _MUST_ be applied on _Q_ samples only because _I_ is the first sample in a pair
+and therefor cannot be the last of a TDM burst. _I_ samples with _Last_='1' will be ignored and
+used for I/Q resynchronization (the first sample after will be interpereted as the first I sample of the next
+TDM burst).
 
 ![TDM Architecture](./entities/olo_fix_cplx_mult_tdm.drawio.png)
 
