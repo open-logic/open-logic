@@ -20,8 +20,8 @@ from en_cl_fix_pkg import *
 class TestOloFixCplxMult(unittest.TestCase):
 
     def setUp(self):
-        self.dut_mix = olo_fix_cplx_mult(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 10, 10), Mode_g="MIX")
-        self.dut_mult = olo_fix_cplx_mult(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 10, 10), Mode_g="MULT")
+        self.dut_mix = olo_fix_cplx_mult(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 10, 10), mode="MIX")
+        self.dut_mult = olo_fix_cplx_mult(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 10, 10), mode="MULT")
 
         self.a = [-5.5+0j, 3.25+1.25j, -1.0-1.25j, 0.0+0.0j, 4.5-0.5j]
         self.b = [1.5+0j, -2.25-0.25j, 0.5+0.5j, 0.0+0.0j, -4.5+0.5j]
@@ -74,7 +74,7 @@ class TestOloFixCplxMult(unittest.TestCase):
 
     def test_illegal_operation(self):
         with self.assertRaises(ValueError):
-            olo_fix_cplx_mult(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 10, 10), Mode_g="INVALID") 
+            olo_fix_cplx_mult(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 10, 10), mode="INVALID") 
 
 if __name__ == '__main__':
     unittest.main()
