@@ -72,8 +72,6 @@ end entity;
 
 architecture rtl of olo_fix_cplx_addsub is
 
-    -- TODO: Calculate latency for "AUTO" register mode
-
     -- Calculate Latency
     constant Latency_c : natural := OpRegs_g +
                                     choose(compareNoCase(RoundReg_g, "YES"), 1, 0) +
@@ -86,9 +84,11 @@ begin
     -- Assertions
     -- synthesis translate_off
     assert compareNoCase(Operation_g, "Add") or compareNoCase(Operation_g, "Sub")
-        report "olo_fix_cplx_addsubsub: Invalid Operation_g: " & Operation_g severity error;
+        report "olo_fix_cplx_addsubsub: Invalid Operation_g: " & Operation_g
+        severity error;
     assert compareNoCase(IqHandling_g, "Parallel") or compareNoCase(IqHandling_g, "TDM")
-        report "olo_fix_cplx_addsubsub: Invalid IqHandling_g: " & IqHandling_g severity error;
+        report "olo_fix_cplx_addsubsub: Invalid IqHandling_g: " & IqHandling_g
+        severity error;
     -- synthesis translate_on
 
     -- Parallel Component Handling
@@ -140,7 +140,7 @@ begin
 
         end generate;
 
-        i_sub : if not IsAdd_c generate
+        g_sub : if not IsAdd_c generate
 
             i_i : entity work.olo_fix_sub
                 generic map (
@@ -184,7 +184,8 @@ begin
                     Out_Result  => Out_Q
                 );
 
-        end generate;   
+        end generate;
+
     end generate;
 
     -- TDM Component Handling
@@ -212,6 +213,7 @@ begin
                     Out_Valid   => Out_Valid,
                     Out_Result  => Out_IQ
                 );
+
         end generate;
 
         g_sub : if not IsAdd_c generate
@@ -236,7 +238,7 @@ begin
                     Out_Valid   => Out_Valid,
                     Out_Result  => Out_IQ
                 );
-        
+
         end generate;
 
     end generate;
