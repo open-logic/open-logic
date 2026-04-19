@@ -510,7 +510,6 @@ def add_configs(olo_tb):
     named_config(tb, default_generics  | {'InFmt_g': '(0,0,8)', 'OutFmt_g': '(0,0,8)'},
                     pre_config=cosim,
                     short_name=f'ShortFormats')    
-    
 
     ### olo_fix_cplx_addsub  ###
     tb = olo_tb.test_bench('olo_fix_cplx_addsub_tb')  
@@ -607,8 +606,6 @@ def add_configs(olo_tb):
                         overrides['Round_g'] = Round
                         overrides['Saturate_g'] = Sat
                         named_config(tb, default_generics | overrides, pre_config=cosim)
-
-                    short_name=f'ShortFormats')   
 
     ### olo_fix_sample_hold ###
     tb = olo_tb.test_bench('olo_fix_sample_hold_tb')
