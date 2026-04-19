@@ -85,11 +85,27 @@ def cosim(output_path : str = None,
         last_spl = np.random.randint(0,2, size=len(ina_i)).astype(float)
         writer.write_cosim_file(last_spl, FixFormat(0,1,0), "LastPar.fix")
         # Write I/Q interleaved
-        writer.write_cosim_file(np.column_stack((ina_i, ina_q)).ravel(), AFmt_g, "AIQ.fix")
-        writer.write_cosim_file(np.column_stack((inb_i, inb_q)).ravel(), BFmt_g, "BIQ.fix")
-        writer.write_cosim_file(np.column_stack((out_i, out_q)).ravel(), ResultFmt_g, "Result_IQ.fix")
+        ina_iq = np.column_stack((ina_i, ina_q)).ravel()
+        inb_iq = np.column_stack((inb_i, inb_q)).ravel()
+        out_iq = np.column_stack((out_i, out_q)).ravel()
+        writer.write_cosim_file(ina_iq, AFmt_g, "AIQ.fix")
+        writer.write_cosim_file(inb_iq, BFmt_g, "BIQ.fix")
+        writer.write_cosim_file(out_iq, ResultFmt_g, "Result_IQ.fix")
         last_q_only = np.ravel(np.column_stack((np.zeros_like(last_spl), last_spl)))
         writer.write_cosim_file(last_q_only, FixFormat(0,1,0), "LastTdm.fix")
+        # Write resync tests (10 samples, I marked as last, another 10 samples)
+        resync_ina_iq = np.concatenate((ina_iq[0:10], ina_iq[0:1], ina_iq[0:10]))
+        resync_inb_iq = np.concatenate((inb_iq[0:10], inb_iq[0:1], inb_iq[0:10]))
+        resync_out_iq = np.concatenate((out_iq[0:10], out_iq[0:10]))
+        writer.write_cosim_file(resync_ina_iq, AFmt_g, "Resync_AIQ.fix")
+        writer.write_cosim_file(resync_inb_iq, BFmt_g, "Resync_BIQ.fix")
+        writer.write_cosim_file(resync_out_iq, ResultFmt_g, "Resync_ResultIQ.fix")
+        resync_last = np.concatenate((last_q_only[0:10], [1.0], last_q_only[0:10]))
+        writer.write_cosim_file(resync_last, FixFormat(0,1,0), "Resync_LastIn.fix")
+        resync_last_out = np.concatenate((last_q_only[0:10], last_q_only[0:10]))
+        writer.write_cosim_file(resync_last_out, FixFormat(0,1,0), "Resync_LastOut.fix")
+
+
 
     return True
 

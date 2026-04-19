@@ -579,8 +579,8 @@ def add_configs(olo_tb):
         'Mode_g': "MULT",
         'Implementation_g' : "MULT3",
         'IqHandling_g': 'TDM',
-        'AFmt_g': '(1,4,4)',
-        'BFmt_g': '(1,4,4)',
+        'AFmt_g': '(1,8,8)',
+        'BFmt_g': '(1,8,8)',
         'ResultFmt_g': '(1,9,8)',
         'Round_g': 'NonSymPos_s',
         'Saturate_g': 'Sat_s',
@@ -588,6 +588,23 @@ def add_configs(olo_tb):
     }
     cosim = olo_fix_cplx_mult.cosim.cosim
 
-    named_config(tb, default_generics | {'IqHandling_g': 'TDM'}, pre_config=cosim, short_name='TDM')
-    named_config(tb, default_generics | {'Implementation_g': 'MULT4', 'IqHandling_g': 'Parallel'}, pre_config=cosim, short_name='MULT4')
-    named_config(tb, default_generics | {'Implementation_g': 'MULT3', 'IqHandling_g': 'Parallel'}, pre_config=cosim, short_name='MULT3')
+    for Mode in ['MULT', 'MIX']:
+        for IqHandling in ['Parallel', 'TDM']:
+            for Implementation in ['MULT4', 'MULT3']:
+                if IqHandling == 'TDM' and Implementation == 'MULT4':
+                    # Parallel Iq does not have different mult implementations
+                    continue
+                overrides = {'Mode_g': Mode, 'IqHandling_g': IqHandling, 'Implementation_g': Implementation}
+
+                # Differnet Mult Regs
+                for MultRegs in [1, 3]:
+                    overrides['MultRegs_g'] = MultRegs
+                    named_config(tb, default_generics | overrides, pre_config=cosim)
+
+                # Different rounding / saturaion
+                for Round in ['NonSymNeg_s', 'Trunc_s']:
+                    for Sat in ['SatWarn_s', 'None_s']:
+                        overrides['Round_g'] = Round
+                        overrides['Saturate_g'] = Sat
+                        named_config(tb, default_generics | overrides, pre_config=cosim)
+

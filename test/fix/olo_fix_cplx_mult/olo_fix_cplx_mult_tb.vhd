@@ -104,6 +104,11 @@ architecture sim of olo_fix_cplx_mult_tb is
     constant CheckerIqFile_c : string := output_path(runner_cfg) & "Result_IQ.fix";
     constant LastParFile_c   : string := output_path(runner_cfg) & "LastPar.fix";
     constant LastTdmFile_c   : string := output_path(runner_cfg) & "LastTdm.fix";
+    constant AResyncFile_c    : string := output_path(runner_cfg) & "Resync_AIQ.fix";
+    constant BResyncFile_c    : string := output_path(runner_cfg) & "Resync_BIQ.fix";
+    constant CheckerIqResyncFile_c : string := output_path(runner_cfg) & "Resync_ResultIQ.fix";
+    constant ResyncLastInFile_c : string := output_path(runner_cfg) & "Resync_LastIn.fix";
+    constant ResyncLastOutFile_c : string := output_path(runner_cfg) & "Resync_LastOut.fix";
 
 begin
 
@@ -158,11 +163,33 @@ begin
                     fix_checker_check_file (net, CheckerQ_c, CheckerQFile_c);
                     fix_checker_check_file (net, CheckerLast_c, LastParFile_c);
                 else
-                    fix_stimuli_play_file (net, StimuliAiq_c, AiqFile_c, stall_probability => 1.0, stall_max_cycles => 10, stall_min_cycles => 10); --TODO: Revert min to 1
+                    fix_stimuli_play_file (net, StimuliAiq_c, AiqFile_c, stall_probability => 1.0, stall_max_cycles => 10, stall_min_cycles => 1);
                     fix_stimuli_play_file (net, StimuliBiq_c, BiqFile_c);
                     fix_stimuli_play_file (net, StimuliLast_c, LastTdmFile_c);
                     fix_checker_check_file (net, CheckerIQ_c, CheckerIqFile_c);
                     fix_checker_check_file (net, CheckerLast_c, LastTdmFile_c);
+                end if;
+            end if;
+
+            if run("IqResync-Throttled") then
+                -- Only applies to I/Q TDM mode
+                if IqHandling_g = "TDM" then
+                    fix_stimuli_play_file (net, StimuliAiq_c, AResyncFile_c, stall_probability => 1.0, stall_max_cycles => 10, stall_min_cycles => 1);
+                    fix_stimuli_play_file (net, StimuliBiq_c, BResyncFile_c);
+                    fix_stimuli_play_file (net, StimuliLast_c, ResyncLastInFile_c);
+                    fix_checker_check_file (net, CheckerIQ_c, CheckerIqResyncFile_c);
+                    fix_checker_check_file (net, CheckerLast_c, ResyncLastOutFile_c);
+                end if;
+            end if;
+
+            if run("IqResync-FullSpeed") then
+                -- Only applies to I/Q TDM mode
+                if IqHandling_g = "TDM" then
+                    fix_stimuli_play_file (net, StimuliAiq_c, AResyncFile_c);
+                    fix_stimuli_play_file (net, StimuliBiq_c, BResyncFile_c);
+                    fix_stimuli_play_file (net, StimuliLast_c, ResyncLastInFile_c);
+                    fix_checker_check_file (net, CheckerIQ_c, CheckerIqResyncFile_c);
+                    fix_checker_check_file (net, CheckerLast_c, ResyncLastOutFile_c);
                 end if;
             end if;
 

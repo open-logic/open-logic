@@ -29,8 +29,6 @@ library work;
     use work.en_cl_fix_pkg.all;
     use work.olo_fix_pkg.all;
 
--- TODO: Test synthesize all 3 implementations (16-bit formats)
-
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
 ---------------------------------------------------------------------------------------------------
@@ -487,14 +485,12 @@ begin
     -- TDM I/Q
     -----------------------------------------------------------------------------------------------
     g_tdm : if compareNoCase(IqHandling_g, "TDM") generate
-        -- Formats
+        -- Formatsp
         constant MultFmt_c  : FixFormat_t := cl_fix_mult_fmt(AFmt_c, BFmt_c);
         constant SumFmt_c   : FixFormat_t := cl_fix_addsub_fmt(MultFmt_c, MultFmt_c);
 
         -- Constants
         constant Stages_c : natural := 4+MultRegs_g;
-
-        -- TODO: Test resync
 
         -- Signals
         signal IsQ              : std_logic;
