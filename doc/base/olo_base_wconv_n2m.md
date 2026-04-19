@@ -107,7 +107,7 @@ And of course the conversion into the other direction (7-bit to 8-bit) is possib
 | Name      | In/Out | Length         | Default | Description                                            |
 | :-------- | :----- | :------------- | ------- | :----------------------------------------------------- |
 | Out_Data  | out    | _OutWidth_g_   | N/A     | Output data                                            |
-| Out_Be    | out    | _OutWidth_g_/8 | all '1' | Output byte enables <br />Only used for _UseBe_g_=true |
+| Out_Be    | out    | _OutWidth_g_/8 | N/A     | Output byte enables <br />Only used for _UseBe_g_=true |
 | Out_Valid | out    | 1              | N/A     | AXI4-Stream handshaking signal for _Out_Data_          |
 | Out_Ready | in     | 1              | '1'     | AXI4-Stream handshaking signal for _Out_Data_          |
 | Out_Last  | out    | 1              | N/A     | AXI4-Stream end of packet signaling for _Out_Data_     |

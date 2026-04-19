@@ -51,7 +51,7 @@ entity olo_fix_cordic_rot is
         Clk       : in    std_logic;
         Rst       : in    std_logic;
         -- Input
-        In_Valid  : in    std_logic;
+        In_Valid  : in    std_logic := '1';
         In_Ready  : out   std_logic;
         In_Mag    : in    std_logic_vector(fixFmtWidthFromString(InMagFmt_g)-1 downto 0);
         In_Ang    : in    std_logic_vector(fixFmtWidthFromString(InAngFmt_g)-1 downto 0);

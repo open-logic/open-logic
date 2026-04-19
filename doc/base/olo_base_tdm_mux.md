@@ -60,7 +60,7 @@ _olo_base_tdm_mux_.
 | In_Data  | in     | _Width_g_ | -                        | Input data                                                   |
 | In_Valid | in     | 1         | '1'                      | AXI4-Stream handshaking signal for _In_Data_                 |
 | In_Last  | in     | 1         | '0'                      | AXI4-Stream Last signal. Can be used to signal the last channel in TDM bursts or packet boundaries (but must be asserted on the last input channel in this case). |
-| In_ChSel | in     | in        | _ceil(log2(Channels_g))_ | Channel select. Samples together with channel 0 data on _In_Data_ |
+| In_ChSel | in     | in        | -                        | Channel select. Samples together with channel 0 data on _In_Data_ |
 
 ### Output Data
 
