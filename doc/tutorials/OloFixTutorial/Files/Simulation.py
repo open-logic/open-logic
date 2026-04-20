@@ -8,10 +8,11 @@
 # Imports
 # ---------------------------------------------------------------------------------------------------
 # Add olo_fix to the path
+import string
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../src/fix/python")))
-from olo_fix import olo_fix_cosim
+from olo_fix import olo_fix_cosim, olo_fix_pkg_writer
 from en_cl_fix_pkg import *
 
 # Imports
@@ -110,4 +111,47 @@ writer.write_cosim_file(actual_values["EnClFix"], FMT_IN, "InputActual.fix")
 writer.write_cosim_file(target, FMT_IN, "InputTarget.fix")
 writer.write_cosim_file(control_values["EnClFix"], FMT_OUT, "Output.fix")
 
+# Write VHDL Formats Package
+out_dir = os.path.abspath(os.path.dirname(__file__))
+vhdl_pkg_writer = olo_fix_pkg_writer()
+vhdl_pkg_writer.add_constant("FmtIn_c", FixFormat, FMT_IN)
+vhdl_pkg_writer.add_constant("FmtOut_c", FixFormat, FMT_OUT)
+vhdl_pkg_writer.add_constant("FmtKp_c", FixFormat, FMT_KP)
+vhdl_pkg_writer.add_constant("FmtKi_c", FixFormat, FMT_KI)
+vhdl_pkg_writer.add_constant("FmtIlim_c", FixFormat, FMT_ILIM)
+vhdl_pkg_writer.add_constant("FmtIlimNeg_c", FixFormat, FMT_ILIM_NEG)
+vhdl_pkg_writer.add_constant("FmtErr_c", FixFormat, FMT_ERR)
+vhdl_pkg_writer.add_constant("FmtPpart_c", FixFormat, FMT_PPART)
+vhdl_pkg_writer.add_constant("FmtImult_c", FixFormat, FMT_IMULT)
+vhdl_pkg_writer.add_constant("FmtIadd_c", FixFormat, FMT_IADD)
+vhdl_pkg_writer.add_constant("FmtI_c", FixFormat, FMT_I)
+vhdl_pkg_writer.write_vhdl_pkg("fix_formats_pkg", out_dir)
+
+# Write Verilog Formats Package
+verilog_pkg_writer = olo_fix_pkg_writer()
+# Formats (as string because Verilog does not have a fix format)
+verilog_pkg_writer.add_constant("FmtIn_c", FixFormat, FMT_IN, as_string=True)
+verilog_pkg_writer.add_constant("FmtOut_c", FixFormat, FMT_OUT, as_string=True)
+verilog_pkg_writer.add_constant("FmtKp_c", FixFormat, FMT_KP, as_string=True)
+verilog_pkg_writer.add_constant("FmtKi_c", FixFormat, FMT_KI, as_string=True)
+verilog_pkg_writer.add_constant("FmtIlim_c", FixFormat, FMT_ILIM, as_string=True)
+verilog_pkg_writer.add_constant("FmtIlimNeg_c", FixFormat, FMT_ILIM_NEG, as_string=True)
+verilog_pkg_writer.add_constant("FmtErr_c", FixFormat, FMT_ERR, as_string=True)
+verilog_pkg_writer.add_constant("FmtPpart_c", FixFormat, FMT_PPART, as_string=True)
+verilog_pkg_writer.add_constant("FmtImult_c", FixFormat, FMT_IMULT, as_string=True)
+verilog_pkg_writer.add_constant("FmtIadd_c", FixFormat, FMT_IADD, as_string=True)
+verilog_pkg_writer.add_constant("FmtI_c", FixFormat, FMT_I, as_string=True)
+# Widths for siganl declarations
+verilog_pkg_writer.add_constant("FmtIn_w", int, cl_fix_width(FMT_IN))
+verilog_pkg_writer.add_constant("FmtOut_w", int, cl_fix_width(FMT_OUT))
+verilog_pkg_writer.add_constant("FmtKp_w", int, cl_fix_width(FMT_KP))
+verilog_pkg_writer.add_constant("FmtKi_w", int, cl_fix_width(FMT_KI))
+verilog_pkg_writer.add_constant("FmtIlim_w", int, cl_fix_width(FMT_ILIM))
+verilog_pkg_writer.add_constant("FmtIlimNeg_w", int, cl_fix_width(FMT_ILIM_NEG))
+verilog_pkg_writer.add_constant("FmtErr_w", int, cl_fix_width(FMT_ERR))   
+verilog_pkg_writer.add_constant("FmtPpart_w", int, cl_fix_width(FMT_PPART))
+verilog_pkg_writer.add_constant("FmtImult_w", int, cl_fix_width(FMT_IMULT))
+verilog_pkg_writer.add_constant("FmtIadd_w", int, cl_fix_width(FMT_IADD))
+verilog_pkg_writer.add_constant("FmtI_w", int, cl_fix_width(FMT_I))
+verilog_pkg_writer.write_verilog_header("fix_formats_hdr", out_dir)
 

@@ -6,6 +6,32 @@
 
 Note that components are split into categories.
 
+## Table of Contents
+
+- [Entity List](#entity-list)
+  - [Table of Contents](#table-of-contents)
+  - [base](#base)
+    - [Packages (olo\_base\_pkg\_\<...\>)](#packages-olo_base_pkg_)
+    - [Clock Crossings (_olo\_base\_cc_\<...\>\_)](#clock-crossings-olo_base_cc_)
+    - [RAM Implementations (olo\_base\_ram\_\<...\>)](#ram-implementations-olo_base_ram_)
+    - [FIFO Implementations (olo\_base\_fifo\_\<...\>)](#fifo-implementations-olo_base_fifo_)
+    - [Width Conversions (olo\_base\_wconv\_\<...\>)](#width-conversions-olo_base_wconv_)
+    - [Arbiters (olo\_base\_arb\_\<...\>)](#arbiters-olo_base_arb_)
+    - [TDM (olo\_base\_tdm\_\<...\>)](#tdm-olo_base_tdm_)
+    - [Timing Related Entities](#timing-related-entities)
+    - [Miscellaneous](#miscellaneous)
+  - [axi](#axi)
+  - [intf](#intf)
+  - [fix](#fix)
+    - [Packages](#packages)
+    - [Testbench Utilities](#testbench-utilities)
+    - [Design Utilities](#design-utilities)
+    - [Basic Operations](#basic-operations)
+    - [Simple Mathematics](#simple-mathematics)
+    - [CORDIC](#cordic)
+    - [CIC Filters](#cic-filters)
+    - [Miscellaneous](#miscellaneous-1)
+
 ## base
 
 This area contains all base functionality that is required in most FPGA designs.
@@ -84,17 +110,24 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Convert from TDM to parallel (see [Conventions](./Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
 | [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Convert from parallel to TDM (see [Conventions](./Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
 
+### Timing Related Entities
+
+| Entity                                                       | Description                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [olo_base_delay](./base/olo_base_delay.md)                   | Fixed duration delay (fixed number of data-beats)            |
+| [olo_base_delay_cfg](./base/olo_base_delay_cfg.md)           | Configurable duration delay (runtime configurable number of data-beats) |
+| [olo_base_strobe_gen](./base/olo_base_strobe_gen.md)         | Strobe generator. Generate pulses at a fixed frequency       |
+| [olo_base_strobe_div](./base/olo_base_strobe_div.md)         | Strobe divider. Only forward every N'th pulse (divide event frequency). <br />Can also be used to convert single-cycle pulses to acknowledged events (pulse stays active until acknowledged). |
+| [olo_base_rate_limit](./base/olo_base_rate_limit.md) | Rate limiter for AXI4-Stream interfaces - limits the data rate to a specified maximum value. |
+| [olo_base_latency_comp](./base/olo_base_latency_comp.md) | Latency compensator for AXI4-Stream interfaces - delays data bypassing a processing element to compensate for the latency |
+
 ### Miscellaneous
 
 | Entity                                                       | Description                                                  |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | [olo_base_pl_stage](./base/olo_base_pl_stage.md)             | Implements one or more pipeline stages (register stages) - with or without support for backpressure (Ready) |
-| [olo_base_delay](./base/olo_base_delay.md)                   | Fixed duration delay (fixed number of data-beats)            |
-| [olo_base_delay_cfg](./base/olo_base_delay_cfg.md)           | Configurable duration delay (runtime configurable number of data-beats) |
 | [olo_base_dyn_sft](./base/olo_base_dyn_sft.md)               | Dynamic barrel shifter (number of bits to shift is configurable per sample at runtime) |
 | [olo_base_prbs](./base/olo_base_prbs.md)                     | PRBS (pseudo random binary sequence) generator based on linear feedback shift register (LFSR) implementation. |
-| [olo_base_strobe_gen](./base/olo_base_strobe_gen.md)         | Strobe generator. Generate pulses at a fixed frequency       |
-| [olo_base_strobe_div](./base/olo_base_strobe_div.md)         | Strobe divider. Only forward every N'th pulse (divide event frequency). <br />Can also be used to convert single-cycle pulses to acknowledged events (pulse stays active until acknowledged). |
 | [olo_base_reset_gen](./base/olo_base_reset_gen.md)           | Reset generator - Generates reset pulses of specified duration after configuration and upon request |
 | [olo_base_cam](./base/olo_base_cam.md)                       | Content addressable memory                                   |
 | [olo_base_flowctrl_handler](./base/olo_base_flowctrl_handler.md) | Implements full flow-control (including Ready/back-pressure) around processing entities that do not support Ready/back-pressure natively. |
@@ -102,8 +135,7 @@ See [Conventions](./Conventions.md) for a description about TDM (time-division-m
 | [olo_base_crc](./base/olo_base_crc.md) | CRC calculation engine |
 | [olo_base_crc_append](./base/olo_base_crc_append.md) | Append CRC to AXI4-Stream packets |
 | [olo_base_crc_check](./base/olo_base_crc_check.md) | Check CRC of AXI4-Stream packets and drop invalid packets |
-| [olo_base_rate_limit](./base/olo_base_rate_limit.md) | Rate limiter for AXI4-Stream interfaces - limits the data rate to a specified maximum value. |
-| [olo_base_latency_comp](./base/olo_base_latency_comp.md) | Latency compensator for AXI4-Stream interfaces - delays data bypassing a processing element to compensate for the latency |
+| [olo_base_sample_hold](./base/olo_base_sample_hold.md) | Sample and hold for bit-vectors. Holds the last sampled value until a new sample is taken. |
 
 ## axi
 
@@ -166,6 +198,13 @@ Below packages contain basic definitions like number format types etc.
 | [olo_fix_sim_stimuli](./fix/olo_fix_sim_stimuli.md) | Read co-simulation file generated by Python and apply its content to the DUT in a HDL simulation. |
 | [olo_fix_sim_checker](./fix/olo_fix_sim_checker.md) | Read co-simulation file generated by Python and check outputs of the DUT in a HDL simulation against it. |
 
+### Design Utilities
+
+| Python File                                         | Description                                                  |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_fix_pkg_writer](./fix/olo_fix_pkg_writer.md)   | Generate HDL (VHDL or Verilog) package with all number formats defined in Python. |
+| [olo_fix_cosim](./fix/olo_fix_cosim.md)                 | Python utilities for co-simulation with HDL simulators. Generate co-simulation files that can be read by [olo_fix_sim_stimuli](./fix/olo_fix_sim_stimuli.md) and [olo_fix_sim_checker](./fix/olo_fix_sim_checker.md) in HDL simulations. |
+
 ### Basic Operations
 
 | Entity                                          | Description                                                  |
@@ -204,3 +243,16 @@ be used. For deciding which option to use, the following considerations shall be
 | --------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_fix_cordic_vect](./fix/olo_fix_cordic_vect.md) | CORDIC vectoring mode - cartesian to polar conversion |
 | [olo_fix_cordic_rot](./fix/olo_fix_cordic_rot.md)   | CORDIC rotating mode - polar to cartesian conversion |
+
+### CIC Filters
+
+| Entity                                                      | Description                                                                                                        |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [olo_fix_cic_dec_tdm](./fix/olo_fix_cic_dec_tdm.md)         | CIC decimator (TDM input, TDM output), single- or multi-channel, ratio fixed or runtime configurable               |
+| [olo_fix_cic_dec_par_tdm](./fix/olo_fix_cic_dec_par_tdm.md) | CIC decimator (parallel input, TDM output), single- or multi-channel, ratio fixed or runtime configurable          |
+
+### Miscellaneous
+
+| Entity                                              | Description                                                                                              |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [olo_fix_sample_hold](./fix/olo_fix_sample_hold.md) | Sample and hold a fixed point number - output holds the last sampled value until a new sample is taken.  |

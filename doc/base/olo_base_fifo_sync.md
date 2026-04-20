@@ -35,7 +35,7 @@ can be added on the read side of the FIFO.
 | Name            | Type      | Default | Description                                                  |
 | :-------------- | :-------- | ------- | :----------------------------------------------------------- |
 | Width_g         | positive  | -       | Number of bits per FIFO entry (word-width)                   |
-| Depth_g         | positive  | .       | Number of FIFO entries                                       |
+| Depth_g         | positive  | -       | Number of FIFO entries                                       |
 | AlmFullOn_g     | boolean   | false   | If set to true, the _AlmFull_ (almost full) status flag is generated (otherwise it is omitted) |
 | AlmFullLevel_g  | natural   | 0       | Level to generate _AlmFull_ flag at. <br>Has no effect if _AlmFullOn_g_ = false |
 | AlmEmptyOn_g    | boolean   | false   | If set to true, the _AlmEmpty_ (almost empty) status flag is generated (otherwise it is omitted) |

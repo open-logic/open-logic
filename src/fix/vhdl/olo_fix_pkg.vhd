@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2025 by Oliver Bründler
+-- Copyright (c) 2025-2026 by Oliver Bruendler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
@@ -26,6 +26,8 @@ library ieee;
 library work;
     use work.en_cl_fix_pkg.all;
     use work.en_cl_fix_private_pkg.all;
+    use work.olo_base_pkg_string.all;
+    use work.olo_base_pkg_math.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Header
@@ -50,6 +52,7 @@ package olo_fix_pkg is
 
     -- Functions
     function fixFmtWidthFromString (fmt : string) return natural;
+    function fixFmtWidthFromStringTolerant (fmt : string) return natural;
 
     -- Register is required if:
     -- - logic is present and regMode is "AUTO"
@@ -61,6 +64,18 @@ package olo_fix_pkg is
 
     -- Return fixed-point format from string and tolerate wrong strings (returning 0,0,0)
     function fixFmtFromStringTolerant (fmt : string) return FixFormat_t;
+
+    -- Dynamic shifting function
+    -- Required because synthesis tools do not accept variable shifts the way cl_fix_shift is writtin.
+    function fixDynShift (
+        a        : std_logic_vector;
+        aFmt     : FixFormat_t;
+        shift    : integer;
+        minShift : integer       := 0;
+        maxShift : integer;
+        rFmt     : FixFormat_t;
+        rnd      : FixRound_t    := Trunc_s;
+        sat      : FixSaturate_t := None_s) return std_logic_vector;
 
 end package;
 
@@ -75,19 +90,24 @@ package body olo_fix_pkg is
         return cl_fix_width(FixFmt_c);
     end function;
 
+    function fixFmtWidthFromStringTolerant (fmt : string) return natural is
+        constant FixFmt_c : FixFormat_t := fixFmtFromStringTolerant(fmt);
+    begin
+        return cl_fix_width(FixFmt_c);
+    end function;
+
     function fixImplementReg (
         logicPresent : boolean;
         regMode      : string) return boolean is
-        constant RegMode_c : string  := toLower(regMode);
-        variable Result_v  : boolean := false;
+        variable Result_v : boolean := false;
     begin
 
         -- Calculate register requirement
-        if RegMode_c = "yes" then
+        if compareNoCase(regMode, "yes") then
             Result_v := true;
-        elsif RegMode_c = "no" then
+        elsif compareNoCase(regMode, "no") then
             Result_v := false;
-        elsif RegMode_c = "auto" then
+        elsif compareNoCase(regMode, "auto") then
             Result_v := logicPresent;
         -- coverage off
         -- unreachable
@@ -107,7 +127,7 @@ package body olo_fix_pkg is
     function fixFmtFromStringTolerant (fmt : string) return FixFormat_t is
         type State_t is (BracketOpen_s, IntBits_s, FracBits_s, BracketClose_s, Done_s);
 
-        variable Result_v : FixFormat_t := (0, 0, 0);
+        variable Result_v : FixFormat_t := FixFmt_Unused_c;
         variable State_v  : State_t     := BracketOpen_s;
     begin
 
@@ -145,6 +165,42 @@ package body olo_fix_pkg is
         end if;
 
         return Result_v;
+    end function;
+
+    function fixDynShift (
+        a        : std_logic_vector;
+        aFmt     : FixFormat_t;
+        shift    : integer;
+        minShift : integer       := 0;
+        maxShift : integer;
+        rFmt     : FixFormat_t;
+        rnd      : FixRound_t    := Trunc_s;
+        sat      : FixSaturate_t := None_s) return std_logic_vector is
+        -- Local declaratoins
+        constant FullFmt_c : FixFormat_t := (max(aFmt.S, rFmt.S), max(aFmt.I+maxShift, rFmt.I), max(aFmt.F-minShift, rFmt.F+1)); -- Additional bit for rounding
+        variable FullA_v   : std_logic_vector(cl_fix_width(FullFmt_c)-1 downto 0);
+        variable FullOut_v : std_logic_vector(FullA_v'range);
+    begin
+        -- assertions
+        -- synthesis translate_off
+        assert shift >= minShift
+            report "olo_fix_pkg.fixDynShift: Shift must be >= minShift"
+            severity error;
+        assert shift <= maxShift
+            report "olo_fix_pkg.fixDynShift: Shift must be <= maxShift"
+            severity error;
+        -- synthesis translate_on
+
+        -- Implementation
+        FullA_v := cl_fix_resize(a, aFmt, FullFmt_c);
+
+        for i in minShift to maxShift loop -- make a loop to ensure the shift is a constant (required by the tools)
+            if i = shift then
+                FullOut_v := cl_fix_shift(FullA_v, FullFmt_c, i, FullFmt_c, Trunc_s, None_s);
+            end if;
+        end loop;
+
+        return cl_fix_resize(FullOut_v, FullFmt_c, rFmt, rnd, sat);
     end function;
 
 end package body;

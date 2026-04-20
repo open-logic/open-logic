@@ -70,7 +70,7 @@ Interface for data to be sent over UART.
 | Name    | In/Out | Length | Default | Description          |
 | :------ | :----- | :----- | ------- | :------------------- |
 | Uart_Tx | out    | 1      | N/A     | UART transmit signal |
-| Uart_Rx | in     | 1      | '0'     | UART receive signal  |
+| Uart_Rx | in     | 1      | '1'     | UART receive signal  |
 
 ## Detailed Description
 

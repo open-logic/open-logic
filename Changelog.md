@@ -2,6 +2,142 @@
 
 # Changelog
 
+## 4.4.1
+
+10-Mar-2026
+
+### Added Features
+
+- Added _fixDynShift()_ function to _olo_fix_pkg_
+  - Dynamically shift a fixed-point number by a variable amount of bits
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Backward Compatible Changes
+
+- None
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- MAke CORDIC (rotation and vecotring) synthesizable in Mode_g=Serial
+  - Affected entities: _olo_fix_cordic_rot_, _olo_fix_cordic_vect_
+  - The entities did fail synthesis with the setting Mode_g=Serial
+  - Reported by: [Niv Cohen](https://github.com/niv-cohen-ks)
+
+### Reporters
+
+- [Niv Cohen](https://github.com/niv-cohen-ks)
+
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+
+## 4.4.0
+
+28-Feb-2026
+
+### Added Features
+
+- Added _log2ceil()_ function for real values to _olo_base_pkg_math_
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_cic_dec_tdm_
+  - CIC decimator with time-division multiplexed input and output
+  - Supports one or multiple channels
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_cic_dec_par_tdm_
+  - CIC decimator with parallel input and time-division multiplexed output
+  - Supports one or multiple channels
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_pkg_writer_
+  - Python script to automatically generate VHDL packages and verilog headers to contain data from python
+  - Used to pass parameters and number formats for fixed-point processing from Python to HDL
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Backward Compatible Changes
+
+- Update tools in CI Pipeline
+  - Python 3.10 -> Python 3.13
+  - GHDL 3.0.0 -> GHDL 4.1.0
+  - NVC 1.13.3  -> NVC 1.19.0
+  - VUnit 4.7.0 -> VUnit 5.0.0.dev7
+
+- Make all string generics case-insensitive
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Allow _InWidth_g=_OutWidth_g_ in _olo_base_wconv_n2xn_
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- Fix TX hanshaking issue in _olo_intf_spi_slave_
+  - When _Tx_Valid_ was asserted after _Tx_Ready_ data was wrongly transferred
+  - Reported by: [borjarevuelta-tec](https://github.com/borjarevuelta-tec)
+
+### Reporters
+
+- [borjarevuelta-tec](https://github.com/borjarevuelta-tec)
+
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+
+## 4.3.0
+
+25-Jan-2026
+
+### Added Features
+
+- Added _olo_fix_cordic_rot_ and _olo_fix_cordic_vect_
+  - CORDIC algorithm for rotation and vectoring
+  - Supports pipelined and serial modes
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_bin_div_
+  - Binary divider for fixed-point numbers
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_base_latency_comp_
+  - Latency compensation component
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Backward Compatible Changes
+
+- Various documentation improvements
+
+- Initialization improvement for _olo_base_cc_reset_
+  - Use reset value as initial value to improve synthesis on Altera Arria 10
+  - Contributed by: [LukiLeu](https://github.com/LukiLeu)
+
+- Improved resource control by adding more generics to _olo_base_delay_ and _olo_base_delay_cfg_
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- None
+
+### Reporters
+
+- None
+
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+- [LukiLeu](https://github.com/LukiLeu)
+
 ## 4.2.0
 
 09-Dec-2025

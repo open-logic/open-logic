@@ -157,7 +157,15 @@ developing the algorithm and an HDL simulator.
 
 _Open Logic_ also provides python and HDL components to exchange inputs and expected outputs between Python and the HDL
 simulation. This allows easily verifying if the HDL implementation of an algorithm really exactly matches its Python
-model.
+model. [olo_fix_cosim](./olo_fix_cosim.md) can be used to write data from python into co-simulation files.
+[olo_fix_sim_stimuli](./olo_fix_sim_stimuli.md) can be used to read the data from the co-simulation files and apply it
+as stimulus in the HDL simulation and [olo_fix_sim_checker](./olo_fix_sim_checker.md) can be used to read the expected
+output from the co-simulation files and compare it with the actual output from the HDL simulation.
+
+Additionally, _Open Logic_ provides [olo_fix_pkg_writer](./olo_fix_pkg_writer.md) to generate the HDL package with all
+key design parameters defined in Python. This allows to automatically transfer things like constants, filter
+coefficients or number formats from Python to HDL which significantly reduces the risk for errors and inconsistencies
+between the Python model and HDL implementation.
 
 ![Image](./principles/olo_fix_cosim.drawio.png)
 
@@ -180,3 +188,12 @@ common set of functions:
   - Processes the _next_ sample(s) of a signal. Arrays can be passed.
   - The state of the object is not reset before the signal is processed.
   - Use case: Calculate a filter sample by sample
+
+## Python to HDL Worklow
+
+Instead of defining the very same number formats in Python and HDL, it is strongly suggested to use the
+[olo_fix_pkg_writer](./olo_fix_pkg_writer.md) to generate the HDL package with all the formats defined and constants
+defined in Python.
+
+This way Python is the single source of truth and all definitions are automatically transferred to HDL which
+significantly reduces the risk for errors and inconsistencies between the Python model and HDL implementation.

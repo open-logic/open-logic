@@ -121,7 +121,7 @@ def add_configs(olo_tb):
     ### olo_base_wconv_xn2n ###
     wconv_xn2n_tb = 'olo_base_wconv_xn2n_tb'
     tb = olo_tb.test_bench(wconv_xn2n_tb)
-    for Ratio in [2, 3]:
+    for Ratio in [1, 2, 3]:
         named_config(tb, {'WidthRatio_g': Ratio})
 
     ### olo_base_wconv_n2xn ###

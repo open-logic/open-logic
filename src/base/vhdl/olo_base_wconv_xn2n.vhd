@@ -71,64 +71,74 @@ begin
     assert floor(RatioReal_c) = ceil(RatioReal_c)
         report "olo_base_wconv_xn2n: Ratio OutWidth_g/InWidth_g must be an integer number"
         severity error;
-    assert OutWidth_g < InWidth_g
-        report "olo_base_wconv_n2xn: OutWidth_g must be smaller than InWidth_g"
-        severity error;
 
-    p_comb : process (all) is
-        variable v         : TwoProcess_r;
-        variable IsReady_v : std_logic;
-    begin
-        -- *** hold variables stable ***
-        v := r;
+    -- *** Direct wire-through for no width conversion ***
+    g_no_conv : if RatioInt_c = 1 generate
+        Out_Data  <= In_Data;
+        In_Ready  <= Out_Ready;
+        Out_Valid <= In_Valid and In_WordEna(0);
+        Out_Last  <= In_Last;
+    end generate;
 
-        -- Halt detection
-        IsReady_v := '1';
-        if unsigned(r.DataVld(r.DataVld'high downto 1)) /= 0 then
-            IsReady_v := '0';
-        elsif r.DataVld(0) = '1' and Out_Ready = '0' then
-            IsReady_v := '0';
-        end if;
+    -- *** Width Conversion Required ***
+    g_conv : if RatioInt_c > 1 generate
 
-        -- Get new data
-        if IsReady_v = '1' and In_Valid = '1' then
-            v.Data    := In_Data;
-            v.DataVld := In_WordEna;
-            -- Assert last to the correct data-word
-            v.DataLast := (others => '0');
+        p_comb : process (all) is
+            variable v         : TwoProcess_r;
+            variable IsReady_v : std_logic;
+        begin
+            -- *** hold variables stable ***
+            v := r;
 
-            -- Loop over all input sub-words and assert last to the correct output word
-            for i in RatioInt_c-1 downto 0 loop
-                if In_WordEna(i) = '1' and In_Last = '1' then
-                    v.DataLast(i) := '1';
-                    exit;
-                end if;
-            end loop;
-
-        elsif (Out_Ready = '1') and (unsigned(r.DataVld) /= 0) then
-            v.Data     := zerosVector(OutWidth_g) & r.Data(r.Data'left downto OutWidth_g);
-            v.DataVld  := '0' & r.DataVld(r.DataVld'left downto 1);
-            v.DataLast := '0' & r.DataLast(r.DataLast'left downto 1);
-        end if;
-
-        -- Outputs
-        Out_Data  <= r.Data(OutWidth_g - 1 downto 0);
-        In_Ready  <= IsReady_v;
-        Out_Valid <= r.DataVld(0);
-        Out_Last  <= r.DataLast(0);
-
-        -- *** assign signal ***
-        r_next <= v;
-    end process;
-
-    p_seq : process (Clk) is
-    begin
-        if rising_edge(Clk) then
-            r <= r_next;
-            if Rst = '1' then
-                r.DataVld <= (others => '0');
+            -- Halt detection
+            IsReady_v := '1';
+            if unsigned(r.DataVld(r.DataVld'high downto 1)) /= 0 then
+                IsReady_v := '0';
+            elsif r.DataVld(0) = '1' and Out_Ready = '0' then
+                IsReady_v := '0';
             end if;
-        end if;
-    end process;
+
+            -- Get new data
+            if IsReady_v = '1' and In_Valid = '1' then
+                v.Data    := In_Data;
+                v.DataVld := In_WordEna;
+                -- Assert last to the correct data-word
+                v.DataLast := (others => '0');
+
+                -- Loop over all input sub-words and assert last to the correct output word
+                for i in RatioInt_c-1 downto 0 loop
+                    if In_WordEna(i) = '1' and In_Last = '1' then
+                        v.DataLast(i) := '1';
+                        exit;
+                    end if;
+                end loop;
+
+            elsif (Out_Ready = '1') and (unsigned(r.DataVld) /= 0) then
+                v.Data     := zerosVector(OutWidth_g) & r.Data(r.Data'left downto OutWidth_g);
+                v.DataVld  := '0' & r.DataVld(r.DataVld'left downto 1);
+                v.DataLast := '0' & r.DataLast(r.DataLast'left downto 1);
+            end if;
+
+            -- Outputs
+            Out_Data  <= r.Data(OutWidth_g - 1 downto 0);
+            In_Ready  <= IsReady_v;
+            Out_Valid <= r.DataVld(0);
+            Out_Last  <= r.DataLast(0);
+
+            -- *** assign signal ***
+            r_next <= v;
+        end process;
+
+        p_seq : process (Clk) is
+        begin
+            if rising_edge(Clk) then
+                r <= r_next;
+                if Rst = '1' then
+                    r.DataVld <= (others => '0');
+                end if;
+            end if;
+        end process;
+
+    end generate;
 
 end architecture;

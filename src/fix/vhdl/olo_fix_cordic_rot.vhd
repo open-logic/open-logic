@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2025 by Oliver Bruendler
+-- Copyright (c) 2025-2026 by Oliver Bruendler
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ entity olo_fix_cordic_rot is
         Clk       : in    std_logic;
         Rst       : in    std_logic;
         -- Input
-        In_Valid  : in    std_logic;
+        In_Valid  : in    std_logic := '1';
         In_Ready  : out   std_logic;
         In_Mag    : in    std_logic_vector(fixFmtWidthFromString(InMagFmt_g)-1 downto 0);
         In_Ang    : in    std_logic_vector(fixFmtWidthFromString(InAngFmt_g)-1 downto 0);
@@ -67,25 +67,19 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_fix_cordic_rot is
 
-    -- String upping
-    constant IntXyFmtUpper_c        : string := toUpper(IntXyFmt_g);
-    constant IntAngFmtUpper_c       : string := toUpper(IntAngFmt_g);
-    constant ModeUpper_c            : string := toUpper(Mode_g);
-    constant GainCorrCoefFmtUpper_c : string := toUpper(GainCorrCoefFmt_g);
-
     -- Formats
     constant InMagFmt_c        : FixFormat_t   := cl_fix_format_from_string(InMagFmt_g);
     constant InAngFmt_c        : FixFormat_t   := cl_fix_format_from_string(InAngFmt_g);
     constant OutFmt_c          : FixFormat_t   := cl_fix_format_from_string(OutFmt_g);
-    constant IntXyFmt_c        : FixFormat_t   := choose(IntXyFmtUpper_c = "AUTO",
+    constant IntXyFmt_c        : FixFormat_t   := choose(compareNoCase(IntXyFmt_g, "AUTO"),
                                                          (1, InMagFmt_c.I + 1, InMagFmt_c.F + 3),
-                                                         fixFmtFromStringTolerant(IntXyFmtUpper_c));
-    constant IntAngFmt_c       : FixFormat_t   := choose(IntAngFmtUpper_c = "AUTO",
+                                                         fixFmtFromStringTolerant(IntXyFmt_g));
+    constant IntAngFmt_c       : FixFormat_t   := choose(compareNoCase(IntAngFmt_g, "AUTO"),
                                                          (1, -2, InAngFmt_c.F + 3),
-                                                         fixFmtFromStringTolerant(IntAngFmtUpper_c));
-    constant GainCorrCoefFmt_c : FixFormat_t   := choose(GainCorrCoefFmtUpper_c = "NONE",
+                                                         fixFmtFromStringTolerant(IntAngFmt_g));
+    constant GainCorrCoefFmt_c : FixFormat_t   := choose(compareNoCase(GainCorrCoefFmt_g, "NONE"),
                                                          FixFmt_Unused_c,
-                                                         fixFmtFromStringTolerant(GainCorrCoefFmtUpper_c));
+                                                         fixFmtFromStringTolerant(GainCorrCoefFmt_g));
     constant Round_c           : FixRound_t    := cl_fix_round_from_string(Round_g);
     constant Saturate_c        : FixSaturate_t := cl_fix_saturate_from_string(Saturate_g);
 
@@ -135,7 +129,7 @@ architecture rtl of olo_fix_cordic_rot is
         zLast        : std_logic_vector;
         shift        : integer) return std_logic_vector is
         -- Declarations
-        constant YShifted_c : std_logic_vector := cl_fix_shift(yLast, IntXyFmt_c, -shift, IntXyFmt_c, Trunc_s, None_s);
+        constant YShifted_c : std_logic_vector := fixDynShift(yLast, IntXyFmt_c, -shift, -Iterations_g, 0, IntXyFmt_c, Trunc_s, None_s);
     begin
 
         if signed(zLast) > 0 then
@@ -157,7 +151,7 @@ architecture rtl of olo_fix_cordic_rot is
         zLast        : std_logic_vector;
         shift        : integer) return std_logic_vector is
         -- Declarations
-        constant XShifted_c : std_logic_vector := cl_fix_shift(xLast, IntXyFmt_c, -shift, IntXyFmt_c, Trunc_s, None_s);
+        constant XShifted_c : std_logic_vector := fixDynShift(xLast, IntXyFmt_c, -shift, -Iterations_g, 0, IntXyFmt_c, Trunc_s, None_s);
     begin
 
         if signed(zLast) > 0 then
@@ -222,12 +216,12 @@ begin
     assert IntAngFmt_c.I = -2
         report "###ERROR###: olo_fix_cordic_rot: IntAngFmt_g must be (1,-2,x)"
         severity error;
-    assert ModeUpper_c = "PIPELINED" or ModeUpper_c = "SERIAL"
+    assert compareNoCase(Mode_g, "PIPELINED") or compareNoCase(Mode_g, "SERIAL")
         report "###ERROR###: olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
         severity error;
 
     -- *** Pipelined Implementation ***
-    g_pipelined : if ModeUpper_c = "PIPELINED" generate
+    g_pipelined : if compareNoCase(Mode_g, "PIPELINED") generate
         signal X, Y : IntArr_t(0 to Iterations_g);
         signal Z    : AngArr_t(0 to Iterations_g);
         signal Vld  : std_logic_vector(0 to Iterations_g);
@@ -277,7 +271,7 @@ begin
     end generate;
 
     -- *** Serial Implementation ***
-    g_serial : if ModeUpper_c = "SERIAL" generate
+    g_serial : if compareNoCase(Mode_g, "SERIAL") generate
         signal Xin, Yin   : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
         signal Zin        : std_logic_vector(cl_fix_width(IntAngFmt_c)-1 downto 0);
         signal XIn_Valid  : std_logic;
@@ -369,7 +363,7 @@ begin
 
     -- *** Gain Correction and Input registers***
     -- Compensation Enabled
-    g_gain_comp : if GainCorrCoefFmtUpper_c /= "NONE" generate
+    g_gain_comp : if not compareNoCase(GainCorrCoefFmt_g, "NONE") generate
         signal In_Mag_Reg   : std_logic_vector(cl_fix_width(InMagFmt_c)-1 downto 0);
         signal In_Ang_Reg   : std_logic_vector(cl_fix_width(InAngFmt_c)-1 downto 0);
         signal In_Valid_Reg : std_logic;
@@ -417,7 +411,7 @@ begin
     end generate;
 
     -- Compensation EnablDisabled
-    g_no_gain_comp : if GainCorrCoefFmtUpper_c = "NONE" generate
+    g_no_gain_comp : if compareNoCase(GainCorrCoefFmt_g, "NONE") generate
         signal In_Mag_Reg   : std_logic_vector(cl_fix_width(InMagFmt_c)-1 downto 0);
         signal In_Ang_Reg   : std_logic_vector(cl_fix_width(InAngFmt_c)-1 downto 0);
         signal In_Valid_Reg : std_logic;

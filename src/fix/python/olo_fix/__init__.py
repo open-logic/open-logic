@@ -20,4 +20,7 @@ from .olo_fix_limit import *
 from .olo_fix_cordic_rot import *
 from .olo_fix_cordic_vect import *
 from .olo_fix_bin_div import *
+from .olo_fix_cic_dec import *
+from .olo_fix_pkg_writer import *
+from .olo_fix_sample_hold import *
 

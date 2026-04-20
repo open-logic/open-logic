@@ -68,7 +68,7 @@ for state in ["dev", "stable"]:
 
         # Get all VHDL files
         os.chdir(f"{repoRoot}/src/{area}/vhdl")
-        vhdlFiles = os.listdir()
+        vhdlFiles = sorted(os.listdir())
 
         # TCL files
         tcldir = f"{repoRoot}/src/{area}/tcl"
@@ -128,7 +128,7 @@ for state in ["dev", "stable"]:
     # 3rd party repo en_cl_fix
     # Get all VHDL files
     os.chdir(f"{repoRoot}/3rdParty/en_cl_fix/hdl")
-    vhdlFiles = os.listdir()
+    vhdlFiles = sorted(os.listdir())
     # Navigate to cl_fix root
     os.chdir("..")
     # Select proper repo root or .core file as reference

@@ -46,7 +46,7 @@ can be added on the read side of the FIFO.
 | RamStyle_g      | string    | "auto"    | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes _ram_style_ and _ramstyle_ which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 | RamBehavior_g   | string    | "RBW"     | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 | ReadyRstState_g | std_logic | '1'       | Controls the status of the _In_Ready_ signal in during reset.<br> Choose '1' for minimal logic on the (often timing-critical) _In_Ready_ path. |
-| Optimization_g  | string    | "LATENCY" | "LATENCY" - optimize for minimum time until a word written is showing up at the output<br />"SPEED" - optimize for highest possible clock speed (at the cost of more latency) |
+| Optimization_g  | string    | "SPEED"   | "LATENCY" - optimize for minimum time until a word written is showing up at the output<br />"SPEED" - optimize for highest possible clock speed (at the cost of more latency) |
 | SyncStages_g    | positive  | 2         | Number of synchronization stages. <br />Note that more synchronization stages also mean a higher latency until written data is visible on the read side.<br />Range: 2 ... 4 |
 
 ## Interfaces

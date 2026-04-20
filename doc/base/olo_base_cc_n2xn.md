@@ -29,7 +29,7 @@ information.
 
 | Name    | Type     | Default | Description         |
 | :------ | :------- | ------- | :------------------ |
-| Width_g | positive | -       | Data width in bits. |
+| Width_g | positive | 8       | Data width in bits. |
 
 ## Interfaces
 

@@ -26,6 +26,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -74,7 +75,7 @@ architecture rtl of olo_base_dyn_sft is
 begin
 
     -- *** Assertions ***
-    assert Direction_g = "LEFT" or Direction_g = "RIGHT"
+    assert compareNoCase(Direction_g, "LEFT") or compareNoCase(Direction_g, "RIGHT")
         report "###ERROR###: olo_base_dyn_sft - Direction_g must be LEFT or RIGHT"
         severity error;
     assert MaxShift_g <= Width_g
@@ -103,7 +104,7 @@ begin
 
             -- Shift implementation
             Select_v := to_integer(unsigned(r.Shift(stg)(SelBitsPerStageLimited_c - 1 downto 0)));
-            if Direction_g = "RIGHT" then
+            if compareNoCase(Direction_g, "RIGHT") then
                 if SignExtend_g then
                     TempData_v := (others => r.Data(stg)(Width_g - 1));
                 else
@@ -111,7 +112,7 @@ begin
                 end if;
                 TempData_v(2 * Width_g - 1 - Select_v * StepSize_v downto Width_g - Select_v * StepSize_v) := r.Data(stg);
                 v.Data(stg + 1)                                                                            := TempData_v(2 * Width_g - 1 downto Width_g);
-            elsif Direction_g = "LEFT" then
+            elsif compareNoCase(Direction_g, "LEFT") then
                 TempData_v                                                                   := (others => '0');
                 TempData_v(Select_v * StepSize_v + Width_g - 1 downto Select_v * StepSize_v) := r.Data(stg);
                 v.Data(stg + 1)                                                              := TempData_v(Width_g - 1 downto 0);

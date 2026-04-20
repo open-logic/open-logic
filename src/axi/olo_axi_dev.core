@@ -1,20 +1,20 @@
 CAPI=2:
 
-name : "open-logic:open-logic-dev:axi:4.2.0"
+name : "open-logic:open-logic-dev:axi:4.4.1"
 description : "local files (release plus WIP); AXI related modules see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#axi"
 
 filesets:
   rtl:
     files:
-      - "vhdl/olo_axi_master_simple.vhd"
-      - "vhdl/olo_axi_pl_stage.vhd"
-      - "vhdl/olo_axi_master_full.vhd"
       - "vhdl/olo_axi_lite_slave.vhd"
+      - "vhdl/olo_axi_master_full.vhd"
+      - "vhdl/olo_axi_master_simple.vhd"
       - "vhdl/olo_axi_pkg_protocol.vhd"
+      - "vhdl/olo_axi_pl_stage.vhd"
     file_type : "vhdlSource-2008"
     logical_name : "olo"
     depend :
-      - "^open-logic:open-logic-dev:base:4.2.0"
+      - "^open-logic:open-logic-dev:base:4.4.1"
 
 
 targets:

@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2025 by Oliver Bruendler
+-- Copyright (c) 2025-2026 by Oliver Bruendler
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -51,7 +51,7 @@ entity olo_fix_cordic_vect is
         Clk       : in    std_logic;
         Rst       : in    std_logic;
         -- Input
-        In_Valid  : in    std_logic;
+        In_Valid  : in    std_logic := '1';
         In_Ready  : out   std_logic;
         In_I      : in    std_logic_vector(fixFmtWidthFromString(InFmt_g)-1 downto 0);
         In_Q      : in    std_logic_vector(fixFmtWidthFromString(InFmt_g)-1 downto 0);
@@ -67,25 +67,19 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_fix_cordic_vect is
 
-    -- String upping
-    constant IntXyFmtUpper_c        : string := toUpper(IntXyFmt_g);
-    constant IntAngFmtUpper_c       : string := toUpper(IntAngFmt_g);
-    constant ModeUpper_c            : string := toUpper(Mode_g);
-    constant GainCorrCoefFmtUpper_c : string := toUpper(GainCorrCoefFmt_g);
-
     -- Formats
     constant InFmt_c           : FixFormat_t   := cl_fix_format_from_string(InFmt_g);
     constant OutMagFmt_c       : FixFormat_t   := cl_fix_format_from_string(OutMagFmt_g);
     constant OutAngFmt_c       : FixFormat_t   := cl_fix_format_from_string(OutAngFmt_g);
-    constant IntXyFmt_c        : FixFormat_t   := choose(IntXyFmtUpper_c = "AUTO",
+    constant IntXyFmt_c        : FixFormat_t   := choose(compareNoCase(IntXyFmt_g, "AUTO"),
                                                          (1, InFmt_c.I + 2, max(OutMagFmt_c.F, OutAngFmt_c.F - InFmt_c.I) + 4),
-                                                         fixFmtFromStringTolerant(IntXyFmtUpper_c));
-    constant IntAngFmt_c       : FixFormat_t   := choose(IntAngFmtUpper_c = "AUTO",
+                                                         fixFmtFromStringTolerant(IntXyFmt_g));
+    constant IntAngFmt_c       : FixFormat_t   := choose(compareNoCase(IntAngFmt_g, "AUTO"),
                                                          (1, -1, OutAngFmt_c.F + 3),
-                                                         fixFmtFromStringTolerant(IntAngFmtUpper_c));
-    constant GainCorrCoefFmt_c : FixFormat_t   := choose(GainCorrCoefFmtUpper_c = "NONE",
+                                                         fixFmtFromStringTolerant(IntAngFmt_g));
+    constant GainCorrCoefFmt_c : FixFormat_t   := choose(compareNoCase(GainCorrCoefFmt_g, "NONE"),
                                                          FixFmt_Unused_c,
-                                                         fixFmtFromStringTolerant(GainCorrCoefFmtUpper_c));
+                                                         fixFmtFromStringTolerant(GainCorrCoefFmt_g));
     constant Round_c           : FixRound_t    := cl_fix_round_from_string(Round_g);
     constant Saturate_c        : FixSaturate_t := cl_fix_saturate_from_string(Saturate_g);
 
@@ -141,7 +135,7 @@ architecture rtl of olo_fix_cordic_vect is
         yLast       : std_logic_vector;
         shift       : integer) return std_logic_vector is
         -- Declarations
-        constant YShifted_c : std_logic_vector := cl_fix_shift(yLast, IntXyFmt_c, -shift, IntXyFmt_c, Trunc_s, None_s);
+        constant YShifted_c : std_logic_vector := fixDynShift(yLast, IntXyFmt_c, -shift, -Iterations_g, 0, IntXyFmt_c, Trunc_s, None_s);
     begin
 
         if signed(yLast) < 0 then
@@ -162,7 +156,7 @@ architecture rtl of olo_fix_cordic_vect is
         yLast       : std_logic_vector;
         shift       : integer) return std_logic_vector is
         -- Declarations
-        constant XShifted_c : std_logic_vector := cl_fix_shift(xLast, IntXyFmt_c, -shift, IntXyFmt_c, Trunc_s, None_s);
+        constant XShifted_c : std_logic_vector := fixDynShift(xLast, IntXyFmt_c, -shift, -Iterations_g, 0, IntXyFmt_c, Trunc_s, None_s);
     begin
 
         if signed(yLast) < 0 then
@@ -225,12 +219,12 @@ begin
     assert IntAngFmt_c.I = -1
         report "###ERROR###: olo_fix_cordic_vect: IntAngFmt_g must be (1,-1,x)"
         severity error;
-    assert ModeUpper_c = "PIPELINED" or ModeUpper_c = "SERIAL"
+    assert compareNoCase(Mode_g, "PIPELINED") or compareNoCase(Mode_g, "SERIAL")
         report "###ERROR###: olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
         severity error;
 
     -- *** Pipelined Implementation ***
-    g_pipelined : if ModeUpper_c = "PIPELINED" generate
+    g_pipelined : if compareNoCase(Mode_g, "PIPELINED") generate
         signal IReg, Qreg : std_logic_vector(cl_fix_width(InFmt_c)-1 downto 0);
         signal VldReg     : std_logic;
         signal X, Y       : IntArr_t(0 to Iterations_g);
@@ -295,7 +289,7 @@ begin
     end generate;
 
     -- *** Serial Implementation ***
-    g_serial : if ModeUpper_c = "SERIAL" generate
+    g_serial : if compareNoCase(Mode_g, "SERIAL") generate
         -- Signals
         signal Xin, Yin   : std_logic_vector(cl_fix_width(IntXyFmt_c)-1 downto 0);
         signal XIn_Valid  : std_logic;
@@ -396,7 +390,7 @@ begin
 
     -- *** Gain Correction ***
     -- No correction
-    g_no_gain_comp : if GainCorrCoefFmtUpper_c = "NONE" generate
+    g_no_gain_comp : if compareNoCase(GainCorrCoefFmt_g, "NONE") generate
 
         -- Resize Magnitued
         i_resize_mag : entity work.olo_fix_resize
@@ -434,7 +428,7 @@ begin
     end generate;
 
     -- Compensation Enabled
-    g_gain_comp : if GainCorrCoefFmtUpper_c /= "NONE" generate
+    g_gain_comp : if not compareNoCase(GainCorrCoefFmt_g, "NONE") generate
 
         i_mult_mag : entity work.olo_fix_mult
             generic map (

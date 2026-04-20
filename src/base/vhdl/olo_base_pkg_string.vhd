@@ -31,6 +31,11 @@ package olo_base_pkg_string is
     function toUpper (a : in string) return string;
     function toLower (a : in string) return string;
 
+    -- Case Insensitive Comparison
+    function compareNoCase (
+        a : in string;
+        b : in string) return boolean;
+
     -- Remove Whitespaces
     function trim (a : in string) return string;
 
@@ -88,6 +93,14 @@ package body olo_base_pkg_string is
         end loop;
 
         return Res_v;
+    end function;
+
+    -- *** compareNoCase() ***
+    function compareNoCase (
+        a : in string;
+        b : in string) return boolean is
+    begin
+        return toUpper(trim(a)) = toUpper(trim(b));
     end function;
 
     -- *** trim() ***

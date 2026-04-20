@@ -277,14 +277,14 @@ architecture rtl of olo_private_ram_tdp_nobe is
 begin
 
     -- Assertions
-    assert InitFormat_g = "NONE" or InitFormat_g = "HEX"
+    assert compareNoCase(InitFormat_g, "NONE") or compareNoCase(InitFormat_g, "HEX")
         report "olo_base_ram_tdp: InitFormat_g must be NONE or HEX. Got: " & InitFormat_g
         severity error;
-    assert RamBehavior_g = "RBW" or RamBehavior_g = "WBR"
+    assert compareNoCase(RamBehavior_g, "RBW") or compareNoCase(RamBehavior_g, "WBR")
         report "olo_base_ram_tdp: RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g
         severity error;
 
-    g_wbr : if RamBehavior_g = "WBR" generate
+    g_wbr : if compareNoCase(RamBehavior_g, "WBR") generate
 
         -- Port A
         p_porta : process (A_Clk) is
@@ -318,7 +318,7 @@ begin
 
     end generate;
 
-    g_rbw : if RamBehavior_g = "RBW" generate
+    g_rbw : if compareNoCase(RamBehavior_g, "RBW") generate
 
         -- Port A
         p_porta : process (A_Clk) is

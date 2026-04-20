@@ -1,46 +1,35 @@
 
+`include "fix_formats_hdr.vh"
+import fix_formats_hdr::*;
+
 module olo_fix_tutorial_controller (
     input wire Clk,
     input wire Rst,
-    input wire [7:0] Cfg_Ki,    // (0, 4, 4)
-    input wire [11:0] Cfg_Kp,   // (0, 8, 4)
-    input wire [7:0] Cfg_ILim,  // (0, 4, 4)
+    input wire [FmtKi_w-1:0] Cfg_Ki,
+    input wire [FmtKp_w-1:0] Cfg_Kp,
+    input wire [FmtIlim_w-1:0] Cfg_ILim,
     input wire In_Valid,
-    input wire [11:0] In_Actual, // (1, 3, 8)
-    input wire [11:0] In_Target, // (1, 3, 8)
+    input wire [FmtIn_w-1:0] In_Actual,
+    input wire [FmtIn_w-1:0] In_Target,
     output wire Out_Valid,
-    output wire [11:0] Out_Result // (1, 3, 8)
+    output wire [FmtOut_w-1:0] Out_Result
 );
 
     // Static Signals
-    wire [8:0] ILimNeg; // (1, 4, 4)
+    wire [FmtIlimNeg_w-1:0] ILimNeg;
 
     // Dynamic Signals
-    wire [12:0] Error; // (1, 4, 8)
+    wire [FmtErr_w-1:0] Error;
     wire Error_Valid;
-    wire [11:0] Ppart; // (1, 3, 8)
+    wire [FmtPpart_w-1:0] Ppart;
     wire Ppart_Valid;
-    wire [20:0] I1; // (1, 8, 12)
+    wire [FmtImult_w-1:0] I1;
     wire I1_Valid;
-    wire [21:0] IPresat; // (1, 9, 12)
+    wire [FmtIadd_w-1:0] IPresat;
     wire IPresat_Valid;
-    wire [16:0] ILimited; // (1, 4, 12)
+    wire [FmtI_w-1:0] ILimited;
     wire ILimited_Valid;
-    reg [16:0] Integrator; // (1, 9, 12)
-    reg Integrator_Valid;
-
-    // Formats
-    localparam string FmtIn_c      = "(1, 3, 8)";
-    localparam string FmtOut_c     = "(1, 3, 8)";
-    localparam string FmtKp_c      = "(0, 8, 4)";
-    localparam string FmtKi_c      = "(0, 4, 4)";
-    localparam string FmtIlim_c    = "(0, 4, 4)";
-    localparam string FmtIlimNeg_c = "(1, 4, 4)";
-    localparam string FmtErr_c     = "(1, 4, 8)";
-    localparam string FmtPpart_c   = "(1, 3, 8)";
-    localparam string FmtImult_c   = "(1, 8, 12)";
-    localparam string FmtIadd_c    = "(1, 9, 12)";
-    localparam string FmtI_c       = "(1, 4, 12)";
+    reg [FmtI_w-1:0] Integrator;
 
     //--------------------------------------------
     // Static Calculations
@@ -137,18 +126,17 @@ module olo_fix_tutorial_controller (
         .Out_Result(ILimited)
     );
 
-    always @(posedge Clk) begin
-        // Normal Operation
-        if (ILimited_Valid) begin
-            Integrator <= ILimited;
-        end
-        Integrator_Valid <= ILimited_Valid;
-        // Reset
-        if (Rst) begin
-            Integrator <= 17'b0;
-            Integrator_Valid <= 1'b0;
-        end
-    end
+    \olo.olo_fix_sample_hold #(                  
+        .Fmt_g(FmtI_c),
+        .ResetValue_g(0.0),
+        .ResetValid_g(0)
+    ) i_integrator (
+        .Clk(Clk),
+        .Rst(Rst),
+        .In_Valid(ILimited_Valid),
+        .In_Data(ILimited),
+        .Out_Data(Integrator)
+    );
 
     // Output Adder
     \olo.olo_fix_add #(                  

@@ -33,7 +33,7 @@ This block contains _Open Logic_ clock crossings, refer to
 | Name       | In/Out | Length | Default | Description                                                  |
 | :--------- | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Clk        | in     | 1      | -       | Clock                                                        |
-| Rst        | in     | 1      | '0'     | Reset input (high-active, synchronous to _Clk_)              |
+| Rst        | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_)              |
 | ClkTest    | in     | 1      | -       | Clock input of the clock to be measured.                     |
 | Freq_Hz    | out    | 32     | -       | Measured clock frequency of _ClkTest_ in Hz. Updated once per second and always holds the last measured value (also between _Freq_Valid_ pulses). |
 | Freq_Valid | out    | 1      | -       | AXI4-Stream handshaking signal for _Freq_Valid_. Pulses high every second when a new _Freq_Hz_ value is available. |
