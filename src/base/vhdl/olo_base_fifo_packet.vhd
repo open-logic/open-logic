@@ -140,6 +140,10 @@ begin
         report "olo_base_fifo_packet: FeatureSet_g must be FULL or DROP_ONLY"
         severity error;
 
+    assert compareNoCase(Optimization_g, "throughput") or compareNoCase(Optimization_g, "speed")
+        report "olo_base_fifo_packet: Optimization_g must be THROUGHPUT or SPEED"
+        severity error;
+
     assert MaxPacketSize_g = -1 or (MaxPacketSize_g >= 1 and MaxPacketSize_g <= Depth_g)
         report "olo_base_fifo_packet: MaxPacketSize_g must be -1 (auto) or in range 1 to Depth_g"
         severity error;
