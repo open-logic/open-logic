@@ -32,7 +32,8 @@ library olo;
 entity olo_base_fifo_packet_hs_tb is
     generic (
         runner_cfg      : string;
-        FeatureSet_g    : string := "FULL"
+        FeatureSet_g    : string := "FULL";
+        Optimization_g  : string := "THROUGHPUT"
     );
 end entity;
 
@@ -80,6 +81,7 @@ begin
     test_runner_watchdog(runner, 10 ms);
 
     p_control : process is
+        variable FreeWords_v : integer := 0;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -106,20 +108,24 @@ begin
 
             if run("NormalPacket") then
 
+                FreeWords_v := Depth_c;
+
                 -- Push Packet
                 In_Valid <= '1';
                 In_Data  <= x"0001";
-                check_equal(FreeWords, Depth_c, "FreeWords");
+                check_equal(FreeWords, FreeWords_v, "FreeWords 0");
                 wait until rising_edge(Clk);
                 wait until falling_edge(Clk);
+                FreeWords_v := FreeWords_v - 1;
 
-                check_equal(FreeWords, Depth_c-1, "FreeWords");
+                check_equal(FreeWords, FreeWords_v, "FreeWords 1");
                 In_Data <= x"0002";
                 In_Last <= '1';
                 wait until rising_edge(Clk);
                 wait until falling_edge(Clk);
+                FreeWords_v := FreeWords_v - 1;
 
-                check_equal(FreeWords, Depth_c-2, "FreeWords");
+                check_equal(FreeWords, FreeWords_v, "FreeWords 2");
                 In_Valid <= '0';
 
                 -- Check Packet
@@ -130,21 +136,25 @@ begin
                 check_equal(Out_Last, '0', "Out_Last");
                 wait until falling_edge(Clk);
 
-                check_equal(FreeWords, Depth_c-2, "FreeWords");
+                check_equal(FreeWords, FreeWords_v, "FreeWords 3");
                 wait until rising_edge(Clk) and Out_Valid = '1';
 
                 check_equal(Out_Data, 2, "Out_Data");
                 check_equal(Out_Last, '1', "Out_Last");
                 wait until falling_edge(Clk);
 
-                check_equal(FreeWords, Depth_c-2, "FreeWords");
+                if Optimization_g = "THROUGHPUT" then
+                    FreeWords_v := FreeWords_v + 1;
+                end if;
+
+                check_equal(FreeWords, FreeWords_v, "FreeWords 4");
                 wait until rising_edge(Clk);
 
                 check_equal(Out_Valid, '0', "Out_Valid");
                 wait until rising_edge(Clk);
                 wait until falling_edge(Clk);
 
-                check_equal(FreeWords, Depth_c, "FreeWords");
+                check_equal(FreeWords, Depth_c, "FreeWords 5");
             end if;
 
             -- *** In_Drop operation between samples ***
@@ -236,7 +246,7 @@ begin
 
             -- *** Out_Next operation between samples ***
             if run("Next-BeforePacket") then -- ignored
-                if FeatureSet_g = "FULL" then
+                if FeatureSet_g /= "DROP_ONLY" then
 
                     -- Next Before Packet
                     Out_Next <= '1';
@@ -283,7 +293,7 @@ begin
             end if;
 
             if run("Next-BeforeReady") then -- detected
-                if FeatureSet_g = "FULL" then
+                if FeatureSet_g /= "DROP_ONLY" then
                     -- Push Packet
                     In_Valid <= '1';
                     In_Data  <= x"0001";
@@ -327,7 +337,7 @@ begin
             end if;
 
             if run("Next-DuringPacket") then  -- detected
-                if FeatureSet_g = "FULL" then
+                if FeatureSet_g /= "DROP_ONLY" then
                     -- Push Packet
                     In_Valid <= '1';
                     In_Data  <= x"0001";
@@ -678,7 +688,8 @@ begin
             RamBehavior_g       => "RBW",
             SmallRamStyle_g     => "same",
             SmallRamBehavior_g  => "same",
-            MaxPackets_g        => MaxPackets_c
+            MaxPackets_g        => MaxPackets_c,
+            Optimization_g      => Optimization_g
         )
         port map (
             Clk           => Clk,

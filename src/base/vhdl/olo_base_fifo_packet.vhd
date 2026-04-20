@@ -44,6 +44,7 @@ entity olo_base_fifo_packet is
         RamBehavior_g       : string                            := "RBW";
         SmallRamStyle_g     : string                            := "auto";
         SmallRamBehavior_g  : string                            := "same";
+        Optimization_g      : string                            := "THROUGHPUT";
         MaxPackets_g        : positive range 2 to positive'high := 17
     );
     port (
@@ -80,6 +81,7 @@ architecture rtl of olo_base_fifo_packet is
     constant SmallRamStyle_c    : string  := choose(compareNoCase(SmallRamStyle_g, "same"), RamStyle_g, SmallRamStyle_g);
     constant SmallRamBehavior_c : string  := choose(compareNoCase(SmallRamBehavior_g, "same"), RamBehavior_g, SmallRamBehavior_g);
     constant MaxPktSize_c       : natural := choose(MaxPacketSize_g = -1, Depth_g, minimum(MaxPacketSize_g, Depth_g));
+    constant ThroughputOpt_c     : boolean := compareNoCase(Optimization_g, "THROUGHPUT") and not compareNoCase(FeatureSet_g, "full"); -- Throughput optimization is not possible for FULL feature set
 
     -- Range definitions
     subtype Addr_c is integer range log2ceil(Depth_g) downto 0; -- one additional bit to differentiate between full/empty
@@ -134,13 +136,19 @@ begin
         report "olo_base_fifo_packet: only power of two Depth_g is allowed"
         severity error;
 
-    assert compareNoCase(FeatureSet_g, "full") or compareNoCase(FeatureSet_g, "drop_only")
+    assert compareNoCase(FeatureSet_g, "full") or compareNoCase(FeatureSet_g, "drop_only") or compareNoCase(FeatureSet_g, "drop_skip_only")
         report "olo_base_fifo_packet: FeatureSet_g must be FULL or DROP_ONLY"
         severity error;
 
     assert MaxPacketSize_g = -1 or (MaxPacketSize_g >= 1 and MaxPacketSize_g <= Depth_g)
         report "olo_base_fifo_packet: MaxPacketSize_g must be -1 (auto) or in range 1 to Depth_g"
         severity error;
+
+    assert not compareNoCase(Optimization_g, "THROUGHPUT") or not compareNoCase(FeatureSet_g, "full")
+        report "olo_base_fifo_packet: Optimization_g = THROUGHPUT and FeatureSet_g = full are not compatible"
+        severity error;
+
+     -- MaxPackets_g is only relevant for FULL feature set with THROUGHPUT optimization
 
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
@@ -246,8 +254,10 @@ begin
         OutNext_v   := '0';
         OutRepeat_v := '0';
         if compareNoCase(FeatureSet_g, "full") then
-            OutNext_v   := Out_Next;
             OutRepeat_v := Out_Repeat;
+        end if;
+        if not compareNoCase(FeatureSet_g, "drop_only") then
+            OutNext_v := Out_Next;
         end if;
 
         -- FSM
@@ -280,8 +290,8 @@ begin
                     end if;
                     v.RdPacketEnd := unsigned(RdPacketEnd);
                     v.RdValid     := '1';
-                    -- Packet size is only supported in FULL mode
-                    if compareNoCase(FeatureSet_g, "full") then
+                    -- Packet size is not supported in drop_only mode
+                    if not compareNoCase(FeatureSet_g, "drop_only") then
                         v.RdSize := unsigned(RdPacketEnd) - r.RdAddr + 1;
                     end if;
 
@@ -328,6 +338,24 @@ begin
                     -- To to idle cycle for fetch after packet completed
                     v.RdValid := '0';
                     v.RdFsm   := Fetch_s;
+      
+                    -- Fast-path for back-to-back packets: If the next packet is already valid, skip the idle cycle and directly go to data state
+                    if RdPacketEndValid = '1' and ThroughputOpt_c then
+                        v.RdPacketStart := r.RdAddr;
+                        FifoOutRdy <= '1';
+                        v.RdRepeat := '0';
+                        if unsigned(RdPacketEnd)-1 = r.RdAddr then
+                            v.RdFsm := Last_s;
+                        else
+                            v.RdFsm := Data_s;
+                        end if;
+                        v.RdPacketEnd := unsigned(RdPacketEnd);
+                        v.RdValid     := '1';
+                        -- Packet size is not supported in drop_only mode
+                        if not compareNoCase(FeatureSet_g, "drop_only") then
+                            v.RdSize := unsigned(RdPacketEnd) - r.RdAddr;
+                        end if;
+                    end if;
                 end if;
 
             -- coverage off
@@ -335,10 +363,13 @@ begin
             -- coverage on
 
         end case;
+        if ThroughputOpt_c then
+            v.RdPacketStart := r.RdAddr;
+        end if;
 
         RamRdAddr <= std_logic_vector(v.RdAddr);
         Out_Valid <= r.RdValid;
-        if not compareNoCase(FeatureSet_g, "full") then
+        if compareNoCase(FeatureSet_g, "drop_only") then
             OutLast_v := OutLastDropOnly; -- Override default assignment further up in the process
             Out_Size  <= (others => 'X');
         else
@@ -412,7 +443,7 @@ begin
     -- Main RAM
     b_ram : block is
         -- RAM stores last for drop_only feature set
-        constant RamWidth_c : natural := choose(compareNoCase(FeatureSet_g, "full"), Width_g, Width_g+1);
+        constant RamWidth_c : natural := choose(not compareNoCase(FeatureSet_g, "drop_only"), Width_g, Width_g+1);
 
         signal RamInData  : std_logic_vector(RamWidth_c-1 downto 0);
         signal RamOutData : std_logic_vector(RamWidth_c-1 downto 0);
@@ -420,7 +451,7 @@ begin
 
         p_map : process (all) is
         begin
-            if compareNoCase(FeatureSet_g, "full") then
+            if not compareNoCase(FeatureSet_g, "drop_only") then
                 -- Input
                 RamInData <= In_Data;
                 -- Output
@@ -454,12 +485,12 @@ begin
     end block;
 
     -- FIFO transfer packet ends for full feature set
-    g_small_fifo : if compareNoCase(FeatureSet_g, "full") generate
+    g_small_fifo : if not compareNoCase(FeatureSet_g, "drop_only") generate
 
         i_pktend_fifo : entity work.olo_base_fifo_sync
             generic map (
                 Width_g         => log2ceil(Depth_g)+1,
-                Depth_g         => MaxPackets_g-1,     -- One packet is currently read out (not in the FIFO anymore)
+                Depth_g         => choose(ThroughputOpt_c, MaxPackets_g, MaxPackets_g-1),     -- One packet is currently read out (not in the FIFO anymore) - except for throughout optimization mode
                 RamStyle_g      => SmallRamStyle_c,
                 RamBehavior_g   => SmallRamBehavior_c,
                 ReadyRstState_g => '0'
@@ -478,7 +509,7 @@ begin
     end generate;
 
     -- For drop_only feature set only the last end address must be latched
-    g_no_small_fifo : if not compareNoCase(FeatureSet_g, "full") generate
+    g_no_small_fifo : if compareNoCase(FeatureSet_g, "drop_only") generate
 
         FifoInReady <= '1';
 
