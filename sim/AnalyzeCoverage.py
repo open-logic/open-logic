@@ -23,12 +23,18 @@ parser.add_argument(
     default=0.0,
     help="Minimum coverage percentage required (default: 0.0)."
 )
+parser.add_argument(
+    "--simulator",
+    choices=["modelsim", "nvc"],
+    default="nvc",
+    help="Simulator to use for coverage analysis (default: nvc)."
+)
 args = parser.parse_args()
 
 ########################################################################################################################
 # Types
 ########################################################################################################################
-class Entity:
+class EntityModelsim:
     def __init__(self):
         self.name = None
         self.statements = None
@@ -46,23 +52,62 @@ class Entity:
         parts = line.split()
         self.branches = float(parts[-1].replace("%", ""))
 
+class EntityNvc:
+    def __init__(self):
+        self.name = None
+        self.statements = None
+        self.branches = 100.0 #Default 100%, if there are no branches the default is never modified
+
+    def parse_name_line(self, line : str):
+        filename = line.split(":")[-1]
+        self.name = filename.split(".")[0].strip()
+
+    def parse_statement_line(self, line : str):
+        parts = line.split(":")
+        self.statements = float(parts[-1].split("%")[0].strip())
+
+    def parse_branch_line(self, line : str):
+        parts = line.split(":")
+        self.branches = float(parts[-1].split("%")[0].strip())
+
 
 ########################################################################################################################
 # Script
 ########################################################################################################################
 #*** Parse Coverage File from Modelsim ***
-os.system("vcover report -byfile -nocomment coverage_data > coverage_report.txt")
-fd = open("coverage_report.txt")
+if args.simulator == "modelsim":
+    os.system("vcover report -byfile -nocomment coverage_data > coverage_report.txt")
+    filename = "coverage_report.txt"
+elif args.simulator == "nvc":
+    filename = "nvc_coverage.txt"
+else:
+    raise ValueError(f"Unsupported simulator: {args.simulator}")
+fd = open(filename)
+
 entities = []
 for line in fd.readlines():
-    if "File:" in line:
-        entity = Entity()
-        entity.parse_name_line(line)
-    if "Branches" in line:
-        entity.parse_branch_line(line)
-    if "Statements" in line:
-        entity.parse_statement_line(line)
-        entities.append(entity)
+
+    # Modelsim Parsing
+    if args.simulator == "modelsim":
+        if "File:" in line:
+            entity = EntityModelsim()
+            entity.parse_name_line(line)
+        if "Branches" in line:
+            entity.parse_branch_line(line)
+        if "Statements" in line:
+            entity.parse_statement_line(line)
+            entities.append(entity)
+
+    # NVC Parsing
+    elif args.simulator == "nvc":
+        if "code coverage results for:" in line:
+            entity = EntityNvc()
+            entity.parse_name_line(line)
+        if "branch:" in line:
+            entity.parse_branch_line(line)
+        if "statement:" in line:
+            entity.parse_statement_line(line)
+            entities.append(entity)
 
 #*** Generate Output ***
 print("Entity:                        Statements Branches")

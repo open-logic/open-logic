@@ -53,8 +53,8 @@ if "--ghdl" in sys.argv:
 if "--coverage" in sys.argv:
     USE_COVERAGE = True
     argv.remove("--coverage")
-    if SIMULATOR != Simulator.MODELSIM:
-        raise "Coverage is only allowed with --modelsim"
+    if SIMULATOR != Simulator.MODELSIM and SIMULATOR != Simulator.NVC:
+        raise "Coverage is only allowed with --modelsim or --nvc"
 if "--vhdl_ls" in sys.argv:
     GENERATE_VHDL_LS_TOML = True
     argv.remove("--vhdl_ls")
@@ -137,6 +137,7 @@ vu.set_sim_option("disable_ieee_warnings", True)
 if USE_COVERAGE:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
     olo.set_compile_option('modelsim.vlog_flags', ['+cover=bs'])
+    olo_tb.set_sim_option("nvc.elab_flags", ["--cover"])
     olo_tb.set_sim_option("enable_coverage", True)
     #Add coverage for package TBs (otherwise coverage does not work)
     for f in olo_tb.get_source_files("*_pkg_*_tb.vhd"):
@@ -145,7 +146,12 @@ if USE_COVERAGE:
         f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
 
     def post_run(results):
-        results.merge_coverage(file_name='coverage_data')
+        if SIMULATOR == Simulator.MODELSIM:
+            results.merge_coverage(file_name='coverage_data')
+        if SIMULATOR == Simulator.NVC:
+            os.system('nvc --cover-merge --output coverage_data ./*.ncdb')
+            os.system('nvc --cover-report --per-file --output nvc_coverage coverage_data > nvc_coverage.txt 2>&1')
+            #os.system('nvc --cover-export --format=cobertura --output=coverage_nvc.xml ./*.ncdb')
 else:
     def post_run(results):
         pass
