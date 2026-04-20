@@ -43,8 +43,8 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Clk  | in     | 1      | '0'     | Clock                                                        |
-| Rst  | in     | 1      | '0'     | Reset input (high-active, synchronous to _Clk_)              |
+| Clk  | in     | 1      | -       | Clock                                                        |
+| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_)              |
 
 ### Input Data
 

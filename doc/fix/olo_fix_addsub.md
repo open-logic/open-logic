@@ -51,7 +51,7 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | :------- | :----- | :-------------- | ------- | :---------------------------------------- |
 | In_A     | in     | _width(AFmt_g)_ | -       | Input data<br />Format: _AFmt_g_          |
 | In_B     | in     | _width(BFmt_g)_ | -       | Input data<br />Format: _BFmt_g_          |
-| In_Add   | in     | 1               | -       | '1' = Addition, '0' = Subtraction         |
+| In_Add   | in     | 1               | '1'     | '1' = Addition, '0' = Subtraction         |
 | In_Valid | in     | 1               | '1'     | AXI4-Stream handshaking signal for _In_ |
 
 ### Output Data

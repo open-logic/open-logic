@@ -29,8 +29,8 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | Name             | Type    | Default   | Description                                                  |
 | :--------------- | :------ | --------- | :----------------------------------------------------------- |
 | InFmt_g          | string  | -         | Data input format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
-| LoLimFmt_g       | string  | "(1,1,1)" | Lower limit format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")<br />Default given only for the user not having to assign the generic if _UseFixedLimits_g=true_ |
-| HiLimFmt_g       | string  | "(1,1,1)" | Upper limit format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")<br />Default given only for the user not having to assign the generic if _UseFixedLimits_g=true_ |
+| LimLoFmt_g       | string  | "(1,1,1)" | Lower limit format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")<br />Default given only for the user not having to assign the generic if _UseFixedLimits_g=true_ |
+| LimHiFmt_g       | string  | "(1,1,1)" | Upper limit format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")<br />Default given only for the user not having to assign the generic if _UseFixedLimits_g=true_ |
 | ResultFmt_g      | string  | -         | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
 | Round_g          | string  | "Trunc_s" | Rounding mode<br />String representation of an _en_cl_fix FixRound_t_. |
 | Saturate_g       | string  | "Warn_s"  | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
@@ -46,16 +46,16 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Clk  | in     | 1      | '0'     | Clock<br />Not required if all registers are disabled (_OpRegs_g=0, RoundReg_g="NO", SatReg_g="NO"_) |
-| Rst  | in     | 1      | '0'     | Reset input (high-active, synchronous to _Clk_)<br />Not required if all registers are disabled (_OpRegs_g=0, RoundReg_g="NO", SatReg_g="NO"_) |
+| Clk  | in     | 1      | -       | Clock                                                        |
+| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_)              |
 
 ### Input Data
 
 | Name     | In/Out | Length              | Default | Description                                                  |
 | :------- | :----- | :------------------ | ------- | :----------------------------------------------------------- |
 | In_Data  | in     | _width(InFmt_g)_    | -       | Input data<br />Format: _InFmt_g_                            |
-| In_LimLo | in     | _width(LoLimFmt_g)_ | -       | Input lower limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _LoLimFmt_g_ |
-| In_LimHi | in     | _width(HiLimFmt_g)_ | -       | Input upper limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _HiLimFmt_g_ |
+| In_LimLo | in     | _width(LoLimFmt_g)_ | 0       | Input lower limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _LoLimFmt_g_ |
+| In_LimHi | in     | _width(HiLimFmt_g)_ | 0       | Input upper limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _HiLimFmt_g_ |
 | In_Valid | in     | 1                   | '1'     | AXI4-Stream handshaking signal for _In_A_ and _In_B_         |
 
 ### Output Data

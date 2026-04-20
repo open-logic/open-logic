@@ -59,8 +59,8 @@ This entity does only do a width conversion but not clock crossing. If a double-
 | Name       | In/Out | Length                   | Default | Description                                                  |
 | :--------- | :----- | :----------------------- | ------- | :----------------------------------------------------------- |
 | In_Data    | in     | _InWidth_g_              | -       | Input data                                                   |
-| In_WordEna | in     | _InWidth_g_/_OutWidth_g_ |         | Input word-enable. Works like byte-enable but with one bit per output-word. At least one word must be enabled together with the assertion of _In_Last_. |
-| In_Valid   | in     | 1                        | all '1' | AXI4-Stream handshaking signal for _In_Data_                 |
+| In_WordEna | in     | _InWidth_g_/_OutWidth_g_ | all '1' | Input word-enable. Works like byte-enable but with one bit per output-word. At least one word must be enabled together with the assertion of _In_Last_. |
+| In_Valid   | in     | 1                        | -       | AXI4-Stream handshaking signal for _In_Data_                 |
 | In_Ready   | out    | 1                        | N/A     | AXI4-Stream handshaking signal for _In_Data_                 |
 | In_Last    | in     | 1                        | '0'     | AXI4-Stream end of packet signaling for _In_Data_            |
 

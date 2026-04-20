@@ -1,6 +1,6 @@
 <img src="../Logo.png" alt="Logo" width="400">
 
-# olo_fix_from_real
+# olo_fix_sim_from_real
 
 [Back to **Entity List**](../EntityList.md)
 
@@ -44,11 +44,11 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 ## Generics
 
-| Name        | Type    | Default   | Description                                                  |
-| :---------- | :------ | --------- | :----------------------------------------------------------- |
-| ResultFmt_g | string  | -         | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
-| Saturate_g  | string  | "Sat_s"   | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
-| Value_g     | real    | 0.0       | Generic to be used for compile-time static inputs. <br> Leave unconnected if _In_Value_ is used. |
+| Name        | Type    | Default     | Description                                                  |
+| :---------- | :------ | ----------- | :----------------------------------------------------------- |
+| ResultFmt_g | string  | -           | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
+| Saturate_g  | string  | "SatWarn_s" | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
+| Value_g     | real    | 0.0         | Generic to be used for compile-time static inputs. <br> Leave unconnected if _In_Value_ is used. |
 
 ## Interfaces
 

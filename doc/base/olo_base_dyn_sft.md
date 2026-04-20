@@ -46,10 +46,10 @@ The number of bits to shift can be selected at runtime for each data-sample.
 
 ### Output Data
 
-| Name     | In/Out | Length    | Default | Description                                   |
-| :------- | :----- | :-------- | ------- | :-------------------------------------------- |
-| Out_Data | out    | _Width_g_ | N/A     | Output data                                   |
-| In_Valid | out    | 1         | '1'     | AXI4-Stream handshaking signal for _Out_Data_ |
+| Name      | In/Out | Length    | Default | Description                                   |
+| :-------- | :----- | :-------- | ------- | :-------------------------------------------- |
+| Out_Data  | out    | _Width_g_ | N/A     | Output data                                   |
+| Out_Valid | out    | 1         | N/A     | AXI4-Stream handshaking signal for _Out_Data_ |
 
 ## Architecture
 
