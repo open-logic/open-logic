@@ -500,7 +500,7 @@ begin
         i_pktend_fifo : entity work.olo_base_fifo_sync
             generic map (
                 Width_g         => log2ceil(Depth_g)+1,
-                Depth_g         => choose(ThroughputOpt_c, MaxPackets_g, MaxPackets_g-1),     -- One packet is currently read out (not in the FIFO anymore) - except for throughout optimization mode
+                Depth_g         => choose(ThroughputOpt_c and MaxPackets_g = 2, MaxPackets_g, MaxPackets_g-1), -- Throughput optimization requires at least 2 packets to work
                 RamStyle_g      => SmallRamStyle_c,
                 RamBehavior_g   => SmallRamBehavior_c,
                 ReadyRstState_g => '0'

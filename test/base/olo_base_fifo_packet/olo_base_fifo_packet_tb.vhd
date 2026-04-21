@@ -32,7 +32,8 @@ entity olo_base_fifo_packet_tb is
         RandomStall_g   : boolean := false;
         RandomPackets_g : integer := 100;
         FeatureSet_g    : string  := "FULL";
-        Optimization_g   : string  := "THROUGHPUT";
+        Optimization_g  : string  := "THROUGHPUT";
+        UsePacketSize_g : boolean := true;
         runner_cfg      : string
     );
 end entity;
@@ -42,9 +43,10 @@ architecture sim of olo_base_fifo_packet_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant Width_c      : integer := 16;
-    constant Depth_c      : integer := 32;
-    constant MaxPackets_c : integer := 4;
+    constant Width_c         : integer := 16;
+    constant Depth_c         : integer := 32;
+    constant MaxPackets_c    : integer := 4;
+    constant MaxPacketSize_c : integer := choose(UsePacketSize_g, Depth_c / 2, Depth_c); 
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -145,7 +147,7 @@ architecture sim of olo_base_fifo_packet_tb is
             if repeatAt = i then
                 Repeat_v := '1';
             end if;
-            if FeatureSet_g = "FULL" then
+            if FeatureSet_g /= "DROP_ONLY" then
                 push_axi_stream(net, AxisNextRepeatMaster_c, Repeat_v & Next_v);
             end if;
             -- Data
@@ -156,7 +158,7 @@ architecture sim of olo_base_fifo_packet_tb is
                 wait for OutDelay_v;
             end if;
             -- for FULL check size
-            if FeatureSet_g = "FULL" then
+            if FeatureSet_g /= "DROP_ONLY" then
                 if pktsize = -1 then
                     Size_v := toUslv(size, Size_v'length);
                 else
@@ -274,30 +276,41 @@ begin
             end if;
 
             if run("WraparoundInPacket") then
-                testPacket(net, Depth_c-5, 1);
+                -- fill FIFO to Depth-5 without exceeding MaxPacketSize to avoid dropping
+                testPacket(net, Depth_c/2, 1);
+                testPacket(net, Depth_c/2-5, 2);
+                -- Test wrapping packet
                 testPacket(net, 10, 16#100#);
             end if;
 
             if run("WraparoundBetweenPackets") then
-                testPacket(net, Depth_c-5, 1);
+                -- fill FIFO without exceeding MaxPacketSize to avoid dropping
+                testPacket(net, Depth_c/2, 1);
+                testPacket(net, Depth_c/2, 10);
+                -- Packets after wraparound
                 testPacket(net, 5, 16#100#);
                 testPacket(net, 10, 16#200#);
             end if;
 
             -- Required to accomplish full coverage
             if run("RdAddrWraparoundInLast") then
-                testPacket(net, Depth_c-5, 1);
-                testPacket(net, Depth_c-5, 16#100#);
+                testPacket(net, Depth_c/2, 1);
+                testPacket(net, Depth_c/2-5, 10);
+                testPacket(net, Depth_c/2, 20);
+                testPacket(net, Depth_c/2-5, 20);
                 testPacket(net, 10, 16#200#);
                 testPacket(net, 10, 16#300#);
             end if;
 
             -- Required to accomplish full coverage
             if run("RdAddrWraparoundInData") then
-                testPacket(net, Depth_c-5, 1);
-                testPacket(net, Depth_c-5, 16#100#);
-                testPacket(net, 20, 16#200#);
-                testPacket(net, 3, 16#300#);
+                testPacket(net, Depth_c/2, 1);
+                testPacket(net, Depth_c/2-5, 10);
+                testPacket(net, Depth_c/2, 20);
+                testPacket(net, Depth_c/2-5, 30);
+                testPacket(net, 10, 16#200#);
+                testPacket(net, 10, 16#300#);
+                testPacket(net, 3, 16#400#);
             end if;
 
             -- *** Size=1 Packets ***
@@ -319,13 +332,15 @@ begin
             end if;
 
             if run("WraparoundAfterSize1") then
-                testPacket(net, Depth_c-1, 1);
+                testPacket(net, Depth_c/2, 1);
+                testPacket(net, Depth_c/2-1, 10);
                 testPacket(net, 1, 16#100#);
                 testPacket(net, 10, 16#200#);
             end if;
 
             if run("WraparoundBeforeSize1") then
-                testPacket(net, Depth_c-10, 1);
+                testPacket(net, Depth_c/2, 1);
+                testPacket(net, Depth_c/2-10, 10);
                 testPacket(net, 10, 16#100#);
                 testPacket(net, 1, 16#200#);
                 testPacket(net, 10, 16#300#);
@@ -362,19 +377,22 @@ begin
             end if;
 
             if run("DropPacket-ContainingWraparound-SplBeforeWrap") then
-                testPacket(net, Depth_c-5, 1);
+                testPacket(net, Depth_c/2, 1);
+                testPacket(net, Depth_c/2-5, 30);
                 pushPacket(net, 10, 16#100#, dropAt => 1);
                 testPacket(net, 12, 16#200#);
             end if;
 
             if run("DropPacket-ContainingWraparound-SplAfterWrap") then
-                testPacket(net, Depth_c-5, 1);
+                testPacket(net, Depth_c/2, 1);
+                testPacket(net, Depth_c/2-5, 30);
                 pushPacket(net, 10, 16#100#, dropAt => 8);
                 testPacket(net, 12, 16#200#);
             end if;
 
             if run("DropPacket-AfterWraparound") then
-                testPacket(net, Depth_c-10, 2);
+                testPacket(net, Depth_c/2, 1);
+                testPacket(net, Depth_c/2-10, 2);
                 testPacket(net, 10, 16#100#);
                 pushPacket(net, 2, 16#200#, dropAt => 1);
                 testPacket(net, 10, 16#300#);
@@ -476,7 +494,8 @@ begin
 
             if run("RepeatPacket-ContainingWraparound-SplBeforeWrap") then
                 if FeatureSet_g = "FULL" then
-                    testPacket(net, Depth_c-5, 1);
+                    testPacket(net, Depth_c/2, 1);
+                    testPacket(net, Depth_c/2-5, 10);
                     pushPacket(net, 10, 16#100#);
                     checkPacket(net, 10, 16#100#, repeatAt => 2);
                     checkPacket(net, 10, 16#100#);
@@ -486,7 +505,8 @@ begin
 
             if run("RepeatPacket-ContainingWraparound-SplAfterWrap") then
                 if FeatureSet_g = "FULL" then
-                    testPacket(net, Depth_c-5, 1);
+                    testPacket(net, Depth_c/2, 1);
+                    testPacket(net, Depth_c/2-5, 10);
                     pushPacket(net, 10, 16#100#);
                     checkPacket(net, 10, 16#100#, repeatAt => 8);
                     checkPacket(net, 10, 16#100#);
@@ -497,7 +517,7 @@ begin
             -- *** Next Packet Test (Output Side) ***
 
             if run("NextPacketMiddle") then
-                if FeatureSet_g = "FULL" then
+                if FeatureSet_g /= "DROP_ONLY" then
 
                     -- Loop over different skip positions
                     for nextWord in 0 to 2 loop
@@ -512,7 +532,7 @@ begin
             end if;
 
             if run("NextPacketFirstPacket") then
-                if FeatureSet_g = "FULL" then
+                if FeatureSet_g /= "DROP_ONLY" then
                     pushPacket(net, 3, 1);
                     checkPacket(net, 1, 1, nextAt => 0, pktSize => 3);
                     testPacket(net, 3, 32);
@@ -520,7 +540,7 @@ begin
             end if;
 
             if run("NextPacketMiddleSize1") then
-                if FeatureSet_g = "FULL" then
+                if FeatureSet_g /= "DROP_ONLY" then
                     testPacket(net, 3, 1);
                     pushPacket(net, 1, 16);
                     checkPacket(net, 1, 16, nextAt => 0);
@@ -529,7 +549,7 @@ begin
             end if;
 
             if run("NextPacketMulti") then
-                if FeatureSet_g = "FULL" then
+                if FeatureSet_g /= "DROP_ONLY" then
                     testPacket(net, 3, 1);
                     pushPacket(net, 3, 16);
                     checkPacket(net, 1, 16, nextAt => 0, pktSize => 3);
@@ -540,8 +560,9 @@ begin
             end if;
 
             if run("NextPacket-ContainingWraparound-SplBeforeWrap") then
-                if FeatureSet_g = "FULL" then
-                    testPacket(net, Depth_c-5, 1);
+                if FeatureSet_g /= "DROP_ONLY" then
+                    testPacket(net, Depth_c/2, 1);
+                    testPacket(net, Depth_c/2-5, 10);
                     pushPacket(net, 10, 16#100#);
                     checkPacket(net, 3, 16#100#, nextAt => 2, pktSize => 10);
                     testPacket(net, 3, 16#200#);
@@ -549,8 +570,9 @@ begin
             end if;
 
             if run("NextPacket-ContainingWraparound-SplAfterWrap") then
-                if FeatureSet_g = "FULL" then
-                    testPacket(net, Depth_c-5, 1);
+                if FeatureSet_g /= "DROP_ONLY" then
+                    testPacket(net, Depth_c/2, 1);
+                    testPacket(net, Depth_c/2-5, 10);
                     pushPacket(net, 10, 16#100#);
                     checkPacket(net, 8, 16#100#, nextAt => 7, pktSize => 10);
                     testPacket(net, 3, 16#200#);
@@ -558,8 +580,9 @@ begin
             end if;
 
             if run("NextPacket-ContainingWraparound-Multi") then
-                if FeatureSet_g = "FULL" then
-                    testPacket(net, Depth_c-15, 1);
+                if FeatureSet_g /= "DROP_ONLY" then
+                    testPacket(net, Depth_c/2, 1);
+                    testPacket(net, Depth_c/2-15, 10);
 
                     -- Three packets
                     for pkt in 1 to 3 loop
@@ -636,7 +659,8 @@ begin
 
             if run("NextRepeatPacket-ContainingWraparound") then
                 if FeatureSet_g = "FULL" then
-                    testPacket(net, Depth_c-15, 1);
+                    testPacket(net, Depth_c/2, 1);
+                    testPacket(net, Depth_c/2-15, 10);
                     pushPacket(net, 10, 16#100#);
 
                     -- Three packets
@@ -670,13 +694,13 @@ begin
                 wait for 100*ClockPeriod_c;
 
                 -- For FULL the input is blocked when full
-                if FeatureSet_g = "FULL" then
-                    --check_equal(PacketLevel, MaxPackets_c, "PacketLevel 2");
+                if FeatureSet_g /= "DROP_ONLY" then
+                    check_equal(PacketLevel, MaxPackets_c, "PacketLevel 2");
                 -- For DROP_ONLY it does overflow
                 else
                     Level_v := MaxPackets_c+4;
                     Level_v := Level_v mod 2**PacketLevel'length;
-                    --check_equal(PacketLevel, Level_v, "PacketLevel 2");
+                    check_equal(PacketLevel, Level_v, "PacketLevel 2");
                 end if;
 
                 -- Readout all packets
@@ -713,7 +737,7 @@ begin
 
             if run("MaxSizedPacket-Middle") then
                 testPacket(net, 3, 1);
-                testPacket(net, Depth_c, 16);
+                testPacket(net, MaxPacketSize_c, 16);
                 testPacket(net, 3, 32);
             end if;
 
@@ -738,7 +762,7 @@ begin
                     else
                         DropAt_v := PacketSize_v+1; -- Don't drop
                     end if;
-                    IsDroppedAt_v := choose(PacketSize_v > Depth_c, Depth_c, PacketSize_v+1);
+                    IsDroppedAt_v := choose(PacketSize_v > MaxPacketSize_c, MaxPacketSize_c, PacketSize_v+1);
                     PktDropped_v  := (IsDroppedAt_v <= PacketSize_v) or (DropAt_v <= PacketSize_v);
                     pushPacket(net, PacketSize_v, 16#100#*pkt, dropAt => DropAt_v, isDroppedAt => IsDroppedAt_v);
 
@@ -807,6 +831,7 @@ begin
             Width_g             => Width_c,
             Depth_g             => Depth_c,
             FeatureSet_g        => FeatureSet_g,
+            MaxPacketSize_g     => choose(UsePacketSize_g, MaxPacketSize_c, -1),
             RamStyle_g          => "auto",
             RamBehavior_g       => "RBW",
             SmallRamStyle_g     => "same",
@@ -854,7 +879,7 @@ begin
         signal OutSize : std_logic_vector(Out_Size'range);
     begin
         -- Do only check size for FULL feature set
-        OutSize <= Out_Size when FeatureSet_g = "FULL" else (others => '0');
+        OutSize <= Out_Size when FeatureSet_g /= "DROP_ONLY" else (others => '0');
 
         vc_response : entity vunit_lib.axi_stream_slave
             generic map (
