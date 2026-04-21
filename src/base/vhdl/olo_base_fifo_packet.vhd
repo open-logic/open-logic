@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- Copyright (c) 2024-2025 by Oliver Bruendler
+-- Copyright (c) 2024-2026 by Oliver Bruendler
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -40,11 +40,11 @@ entity olo_base_fifo_packet is
         Depth_g             : positive;
         MaxPacketSize_g     : integer                           := -1;
         FeatureSet_g        : string                            := "FULL";
+        Optimization_g      : string                            := "SPEED";
         RamStyle_g          : string                            := "auto";
         RamBehavior_g       : string                            := "RBW";
         SmallRamStyle_g     : string                            := "auto";
         SmallRamBehavior_g  : string                            := "same";
-        Optimization_g      : string                            := "THROUGHPUT";
         MaxPackets_g        : positive range 2 to positive'high := 17
     );
     port (
@@ -344,6 +344,8 @@ begin
                     v.RdFsm   := Fetch_s;
       
                     -- Fast-path for back-to-back packets: If the next packet is already valid, skip the idle cycle and directly go to data state
+                    -- This is used for Optimization_g=THROUGHPUT to achieve maximum throughput for back-to-back packets at the cost of
+                    -- slightly lower clock frequency. It is NOT suppprted for the FULL feature set because repeating packets is not possible in this case.
                     if RdPacketEndValid = '1' and ThroughputOpt_c then
                         v.RdPacketStart := r.RdAddr;
                         FifoOutRdy <= '1';
@@ -367,10 +369,14 @@ begin
             -- coverage on
 
         end case;
+
+        -- In throughput optimization mode, free up space in the FIFO whenver read (allowed because packets
+        -- are never repeated in this mode). 
         if ThroughputOpt_c then
             v.RdPacketStart := r.RdAddr;
         end if;
 
+        -- Output handling
         RamRdAddr <= std_logic_vector(v.RdAddr);
         Out_Valid <= r.RdValid;
         if compareNoCase(FeatureSet_g, "drop_only") then

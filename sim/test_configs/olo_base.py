@@ -277,9 +277,10 @@ def add_configs(olo_tb):
 
     fifo_packet_tb_perf = 'olo_base_fifo_packet_perf_tb'
     tb_perf = olo_tb.test_bench(fifo_packet_tb_perf)
-    for MaxPackets in [2, 8]:
-        named_config(tb_perf, {'MaxPackets_g': MaxPackets, 'Depth_g': 32, 'MaxPacketSize_g': 16}) # maximum throughput only when MaxPacketSize_g = Depth_g / 2
-        named_config(tb_perf, {'MaxPackets_g': MaxPackets, 'Depth_g': 32, 'MaxPacketSize_g': -1})
+    for FeatureSet in ["DROP_ONLY", "DROP_SKIP_ONLY "]: #FULL is not supporting back to back packets
+        for MaxPackets in [2, 8]:
+            named_config(tb_perf, {'MaxPackets_g': MaxPackets, 'Depth_g': 32, 'MaxPacketSize_g': 16, 'FeatureSet_g': FeatureSet}) # maximum throughput only when MaxPacketSize_g = Depth_g / 2
+            named_config(tb_perf, {'MaxPackets_g': MaxPackets, 'Depth_g': 32, 'MaxPacketSize_g': -1, 'FeatureSet_g': FeatureSet})
 
     ### olo_base_cam ###
     cam_tb = 'olo_base_cam_tb'

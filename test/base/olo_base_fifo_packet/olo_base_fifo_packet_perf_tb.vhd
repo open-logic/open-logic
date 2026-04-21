@@ -29,6 +29,7 @@ entity olo_base_fifo_packet_perf_tb is
     generic(
         MaxPackets_g                    : integer := 8;
         Depth_g                         : integer := 32;
+        FeatureSet_g                    : string  := "DROP_ONLY";
         -- Maximum throughput is only possible when MaxPacketSize = Depth / 2
         MaxPacketSize_g                 : integer := Depth_g / 2;
         runner_cfg                      : string
@@ -80,7 +81,6 @@ architecture sim of olo_base_fifo_packet_perf_tb is
     -----------------------------------------------------------------------------------------------
 
     constant Width_c                    : integer := 16;
-    constant FeatureSet_c               : string  := "drop_skip_only";
 
     constant ClockFrequency_c           : real := 100.0e6;
     constant ClockPeriod_c              : time := (1 sec) / ClockFrequency_c;
@@ -201,7 +201,7 @@ begin
     begin
         test_runner_setup(runner, runner_cfg);
         while test_suite loop
-            expect(net, TReady_Checker_c, "0", now + 5 ns, 0 ns);
+            expect(net, TReady_Checker_c, choose(FeatureSet_g="DROP_ONLY", "1", "0"), now + 5 ns, 0 ns);
             Rst <= '1';
             wait for 100 ns;
             wait until rising_edge(Clk);
@@ -256,7 +256,7 @@ begin
                             check_axi_stream(net, AxisSlave_c, ExpAxisBeat_v);
                             ExpAxisBeat_v.TData := std_logic_vector(unsigned(ExpAxisBeat_v.TData) + 1);
                             -- The Out_Size port shall be monitored while popping data from the AXI4-Stream interface.
-                            if FeatureSet_c /= "drop_only" then
+                            if FeatureSet_g /= "DROP_ONLY" then
                                 check_equal(Checker_c, to_integer(unsigned(Out_Size)), PacketSizeInBeats_c(packet), "Packet " & to_string(packet) & " has wrong size.");
                             end if;
                         end loop;
@@ -284,7 +284,7 @@ begin
         Width_g                         => Width_c,
         Depth_g                         => Depth_g,
         MaxPacketSize_g                 => MaxPacketSize_g,
-        FeatureSet_g                    => FeatureSet_c,
+        FeatureSet_g                    => FeatureSet_g,
         RamStyle_g                      => "auto",
         RamBehavior_g                   => "RBW",
         SmallRamStyle_g                 => "same",
@@ -348,12 +348,12 @@ begin
     -- TReady Signal Checker VC
     -----------------------------------------------------------------------------------------------
 
-    --i_tready_checker : entity vunit_lib.std_logic_checker
-    --generic map(
-    --    signal_checker                  => TReady_Checker_c
-    --)
-    --port map(
-    --    value(0)                        => In_Ready
-    --);
+    i_tready_checker : entity vunit_lib.std_logic_checker
+    generic map(
+        signal_checker                  => TReady_Checker_c
+    )
+    port map(
+        value(0)                        => In_Ready
+    );
 
 end architecture;
