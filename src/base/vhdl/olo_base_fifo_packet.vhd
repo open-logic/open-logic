@@ -342,7 +342,7 @@ begin
                     -- To to idle cycle for fetch after packet completed
                     v.RdValid := '0';
                     v.RdFsm   := Fetch_s;
-      
+
                     -- Fast-path for back-to-back packets: If the next packet is already valid, skip the idle cycle and directly go to data state
                     -- This is used for Optimization_g=THROUGHPUT to achieve maximum throughput for back-to-back packets at the cost of
                     -- slightly lower clock frequency. It is NOT suppprted for the FULL feature set because repeating packets is not possible in this case.
@@ -371,7 +371,7 @@ begin
         end case;
 
         -- In throughput optimization mode, free up space in the FIFO whenver read (allowed because packets
-        -- are never repeated in this mode). 
+        -- are never repeated in this mode).
         if ThroughputOpt_c then
             v.RdPacketStart := r.RdAddr;
         end if;
