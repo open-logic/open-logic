@@ -48,7 +48,7 @@ architecture sim of olo_base_fifo_packet_perf_tb is
         axi_stream        : axi_stream_master_t;
         variable axi_beat : in axi_stream_transaction_t) is
     begin
-        pushAxiStream(net, axi_stream, axi_beat.tdata, choose(axi_beat.tlast, '1', '0'), axi_beat.tkeep,
+        push_axi_stream (net, axi_stream, axi_beat.tdata, choose(axi_beat.tlast, '1', '0'), axi_beat.tkeep,
             axi_beat.tstrb, axi_beat.tid, axi_beat.tdest, axi_beat.tuser);
     end procedure;
 
@@ -60,7 +60,7 @@ architecture sim of olo_base_fifo_packet_perf_tb is
         msg                   : string  := "";
         blocking              : boolean := true) is
     begin
-        checkAxiStream(net, axi_stream, exp_axi_beat.tdata, choose(exp_axi_beat.tlast, '1', '0'),
+        check_axi_stream (net, axi_stream, exp_axi_beat.tdata, choose(exp_axi_beat.tlast, '1', '0'),
             exp_axi_beat.tkeep, exp_axi_beat.tstrb, exp_axi_beat.tid, exp_axi_beat.tdest,
             exp_axi_beat.tuser, msg, blocking);
     end procedure;
