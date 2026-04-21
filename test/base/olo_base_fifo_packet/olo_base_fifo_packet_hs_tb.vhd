@@ -111,16 +111,16 @@ begin
                 FreeWords_v := Depth_c;
 
                 -- Push Packet
-                In_Valid <= '1';
-                In_Data  <= x"0001";
+                In_Valid    <= '1';
+                In_Data     <= x"0001";
                 check_equal(FreeWords, FreeWords_v, "FreeWords 0");
                 wait until rising_edge(Clk);
                 wait until falling_edge(Clk);
                 FreeWords_v := FreeWords_v - 1;
 
                 check_equal(FreeWords, FreeWords_v, "FreeWords 1");
-                In_Data <= x"0002";
-                In_Last <= '1';
+                In_Data     <= x"0002";
+                In_Last     <= '1';
                 wait until rising_edge(Clk);
                 wait until falling_edge(Clk);
                 FreeWords_v := FreeWords_v - 1;

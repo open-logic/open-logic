@@ -81,7 +81,8 @@ architecture rtl of olo_base_fifo_packet is
     constant SmallRamStyle_c    : string  := choose(compareNoCase(SmallRamStyle_g, "same"), RamStyle_g, SmallRamStyle_g);
     constant SmallRamBehavior_c : string  := choose(compareNoCase(SmallRamBehavior_g, "same"), RamBehavior_g, SmallRamBehavior_g);
     constant MaxPktSize_c       : natural := choose(MaxPacketSize_g = -1, Depth_g, minimum(MaxPacketSize_g, Depth_g));
-    constant ThroughputOpt_c     : boolean := compareNoCase(Optimization_g, "THROUGHPUT") and not compareNoCase(FeatureSet_g, "full"); -- Throughput optimization is not possible for FULL feature set
+    -- Throughput optimization is not possible for FULL feature set
+    constant ThroughputOpt_c    : boolean := compareNoCase(Optimization_g, "THROUGHPUT") and not compareNoCase(FeatureSet_g, "full");
 
     -- Range definitions
     subtype Addr_c is integer range log2ceil(Depth_g) downto 0; -- one additional bit to differentiate between full/empty
@@ -152,7 +153,7 @@ begin
         report "olo_base_fifo_packet: Optimization_g = THROUGHPUT and FeatureSet_g = full are not compatible"
         severity error;
 
-     -- MaxPackets_g is only relevant for FULL feature set with THROUGHPUT optimization
+    -- MaxPackets_g is only relevant for FULL/DROP_SKIP_ONLY feature set with THROUGHPUT optimization
 
     -----------------------------------------------------------------------------------------------
     -- Combinatorial Proccess
@@ -348,8 +349,8 @@ begin
                     -- slightly lower clock frequency. It is NOT suppprted for the FULL feature set because repeating packets is not possible in this case.
                     if RdPacketEndValid = '1' and ThroughputOpt_c then
                         v.RdPacketStart := r.RdAddr;
-                        FifoOutRdy <= '1';
-                        v.RdRepeat := '0';
+                        FifoOutRdy      <= '1';
+                        v.RdRepeat      := '0';
                         if unsigned(RdPacketEnd)-1 = r.RdAddr then
                             v.RdFsm := Last_s;
                         else
@@ -500,7 +501,8 @@ begin
         i_pktend_fifo : entity work.olo_base_fifo_sync
             generic map (
                 Width_g         => log2ceil(Depth_g)+1,
-                Depth_g         => choose(ThroughputOpt_c and MaxPackets_g = 2, MaxPackets_g, MaxPackets_g-1), -- Throughput optimization requires at least 2 packets to work
+                -- Throughput optimization requires at least 2 packets to work
+                Depth_g         => choose(ThroughputOpt_c and MaxPackets_g = 2, MaxPackets_g, MaxPackets_g-1),
                 RamStyle_g      => SmallRamStyle_c,
                 RamBehavior_g   => SmallRamBehavior_c,
                 ReadyRstState_g => '0'

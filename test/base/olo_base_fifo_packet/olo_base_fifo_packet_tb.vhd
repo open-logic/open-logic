@@ -46,7 +46,7 @@ architecture sim of olo_base_fifo_packet_tb is
     constant Width_c         : integer := 16;
     constant Depth_c         : integer := 32;
     constant MaxPackets_c    : integer := 4;
-    constant MaxPacketSize_c : integer := choose(UsePacketSize_g, Depth_c / 2, Depth_c); 
+    constant MaxPacketSize_c : integer := choose(UsePacketSize_g, Depth_c / 2, Depth_c);
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
