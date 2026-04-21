@@ -76,11 +76,11 @@ The FIFO can be optimized for two targets.
 - _SPEED_: The FIFO is optimized for best clock speed.
   - Due to implementation reasons the FIFO introduces one stall cycle per packet on the read-side in this mode. Hence
     the FIFO throughput is suboptimal for small packets.
-  - This mode is supported for all _Feature_Set_g_ options.
-- _THROUGHPUT:_ The FIFO is optimized for best throughput.
+  - This mode is supported for all _FeatureSet_g_ options.
+- _THROUGHPUT_: The FIFO is optimized for best throughput.
   - In this mode no stall cycles are introduced on the read side. Hence the FIFO can achieve a throughput of 100% even
     for small packets.
-  - This mode is only supported for _Feature_Set_g=DROP_ONLY_ and _Feature_Set_g=DROP_SKIP_ONLY_.
+  - This mode is only supported for _FeatureSet_g=DROP_ONLY_ and _FeatureSet_g=DROP_SKIP_ONLY_.
 
 ## Generics
 
@@ -139,7 +139,7 @@ readout of the packet.
 
 | Name         | In/Out | Length                       | Default | Description                                                  |
 | :----------- | :----- | :--------------------------- | ------- | :----------------------------------------------------------- |
-| PacketLevel  | out    | ceil(log2(_MaxPackets_g_+1)) | N/A     | Number of packets stored in the FIFO. The counter is incremented _after_ a packet was written completely and decremented _after_ the packet was read completely or skipped (due to _Out_Next_).<br> **Note:** Because in 'FeatureSet_g=DROP_ONLY` the packet number is not limited, _PacketLevel_ will wrap around on overflow unless the user ensures 'MaxPackets_g' is never exceeded. |
+| PacketLevel  | out    | ceil(log2(_MaxPackets_g_+1)) | N/A     | Number of packets stored in the FIFO. The counter is incremented _after_ a packet was written completely and decremented _after_ the packet was read completely or skipped (due to _Out_Next_).<br> **Note:** Because in _FeatureSet_g=DROP_ONLY_ the packet number is not limited, _PacketLevel_ will wrap around on overflow unless the user ensures 'MaxPackets_g' is never exceeded. |
 | FreeWords    | out    | ceil(log2(_Depth_g_+1))      | N/A     | Available space in the FIFO. The counter is decremented _during_ writing of the packet as the individual words are written.<br> The counter is increased _after_ the packet was read completely or skipped (due to _Out_Next_) for _Optimization_g=SPEED_<br> The Counter is increased with every word read for _Optimization_g=THROUGHPUT_.<br> The counter is also increased if a packet is dropped (due to _In_Drop_ or its size exceeding _Depth_g_ or _MaxPacketSize_g_)  |
 
 ## Details
@@ -164,7 +164,7 @@ The _olo_base_fifo_packet_ does stop accepting new packets when _MaxPackets_g_ i
 #### FeatureSet_g = DROP_ONLY
 
 The architecture is similar to the _FULL_ feature set, just that the small FIFO for storing the end-addresses of packets
-is omitted and replaced by simply handing over the end address of the last completelyy written packet to the read logic.
+is omitted and replaced by simply handing over the end address of the last completely written packet to the read logic.
 
 This option can be especially useful if the packet size varies a lot and for
 target technologies where distributed RAM is not available and hence the

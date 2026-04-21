@@ -137,7 +137,7 @@ begin
         severity error;
 
     assert compareNoCase(FeatureSet_g, "full") or compareNoCase(FeatureSet_g, "drop_only") or compareNoCase(FeatureSet_g, "drop_skip_only")
-        report "olo_base_fifo_packet: FeatureSet_g must be FULL or DROP_ONLY"
+        report "olo_base_fifo_packet: FeatureSet_g must be FULL, DROP_SKIP_ONLY or DROP_ONLY"
         severity error;
 
     assert compareNoCase(Optimization_g, "throughput") or compareNoCase(Optimization_g, "speed")
