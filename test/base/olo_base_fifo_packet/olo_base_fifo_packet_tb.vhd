@@ -709,16 +709,15 @@ begin
                     -- For DROP_ONLY the input is never blocked and the packet-level freely increases. For FULL
                     -- it is limited to MaxPackets_c-1 because one packet is always readout.
                     Level_v := MaxPackets_c+3 - pkt;
-                    if FeatureSet_g = "FULL" then
+                    if FeatureSet_g /= "DROP_ONLY" then
                         Level_v := minimum(Level_v, MaxPackets_c-1);
                     else
                         Level_v := Level_v mod 2**PacketLevel'length;
                     end if;
                     -- Only works with non-random input timing
-                    -- .. PPacket level is not supported for DROP_ONLY
                     if not RandomStall_g then
                         wait until rising_edge(Clk);
-                        --check_equal(PacketLevel, Level_v, "PacketLevel 2");
+                        check_equal(PacketLevel, Level_v, "PacketLevel 2");
                     end if;
                 end loop;
 
