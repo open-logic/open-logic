@@ -78,6 +78,19 @@ if 'VUNIT_SIMULATOR' not in os.environ:
     else:
         os.environ['VUNIT_SIMULATOR'] = 'modelsim'
 
+# Rivierapro workaround: VUnit's format_generic only quotes values containing spaces,
+# but Rivierapro parses unquoted values like "(1,8,4)" as VHDL aggregates instead of
+# strings, rejecting them and falling back to the default generic value.
+# Quoting values that contain '(', ')', or ',' fixes this.
+if os.environ.get('VUNIT_SIMULATOR') == 'rivierapro':
+    import vunit.sim_if.rivierapro as _rp
+    def _rivierapro_format_generic(value):
+        value_str = str(value)
+        if any(c in value_str for c in '(), '):
+            return f'"{value_str}"'
+        return value_str
+    _rp.format_generic = _rivierapro_format_generic
+
 # Parse VUnit Arguments
 vu = VUnit.from_argv(argv=argv)
 vu.add_vhdl_builtins()
