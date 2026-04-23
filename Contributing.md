@@ -6,7 +6,7 @@
 
 Of course you are more than welcome to contribute to the project. This document explains how you can do so.
 
-There [YouTube Video](https://www.youtube.com/watch?v=Ugm9VoZOdo0) about contributing to _Open Logic_ aavailable,
+There [YouTube Video](https://www.youtube.com/watch?v=Ugm9VoZOdo0) about contributing to _Open Logic_ available,
 which is a good and quick starting point.
 
 ## Be a _Good_ User
@@ -110,4 +110,4 @@ takes full responsibility for it and ensured that no copyrighted content from th
 The usage of genenerative AI beyond accepting inline code suggestions (e.g. GitHub Copilot) is restricted as follows:
 
 - It is forbidden for any contributions towards features funded by [NLnet](https://nlnet.nl/)
-- It mus be disclosed in the pull request description
+- It must be disclosed in the pull request description
