@@ -112,12 +112,12 @@ architecture rtl of olo_base_fifo_packet is
         PacketLevel    : unsigned(log2ceil(MaxPackets_g + 1)-1 downto 0);
     end record;
 
-    -- Write address have the MSB (unused for RAM adressing) inverted. This leads to ReadAddr = WriteAddr indicating
+    -- Write address have the MSB (unused for RAM addressing) inverted. This leads to ReadAddr = WriteAddr indicating
     -- .. the full condition (and not the empty condition).
 
     signal r, r_next : TwoProcess_r;
 
-    -- Instntiation signals
+    -- Instantiation signals
     signal RamRdAddr        : std_logic_vector(Addr_c);
     signal FifoInReady      : std_logic;
     signal RdPacketEnd      : std_logic_vector(Addr_c);
@@ -156,7 +156,7 @@ begin
     -- MaxPackets_g is only relevant for FULL/DROP_SKIP_ONLY feature set with THROUGHPUT optimization
 
     -----------------------------------------------------------------------------------------------
-    -- Combinatorial Proccess
+    -- Combinatorial Process
     -----------------------------------------------------------------------------------------------
     p_comb : process (all) is
         variable v           : TwoProcess_r;
@@ -177,7 +177,7 @@ begin
         RamWrEna    <= '0';
         FifoInValid <= '0';
 
-        -- Implement getting free aftter Full
+        -- Implement getting free after Full
         if r.WrAddr /= r.RdPacketStart then
             v.Full := '0';
         end if;
@@ -346,7 +346,7 @@ begin
 
                     -- Fast-path for back-to-back packets: If the next packet is already valid, skip the idle cycle and directly go to data state
                     -- This is used for Optimization_g=THROUGHPUT to achieve maximum throughput for back-to-back packets at the cost of
-                    -- slightly lower clock frequency. It is NOT suppprted for the FULL feature set because repeating packets is not possible in this case.
+                    -- slightly lower clock frequency. It is NOT supported for the FULL feature set because repeating packets is not possible in this case.
                     if RdPacketEndValid = '1' and ThroughputOpt_c then
                         v.RdPacketStart := r.RdAddr;
                         FifoOutRdy      <= '1';
@@ -366,12 +366,12 @@ begin
                 end if;
 
             -- coverage off
-            when others => null; -- unreacable code
+            when others => null; -- unreachable code
             -- coverage on
 
         end case;
 
-        -- In throughput optimization mode, free up space in the FIFO whenver read (allowed because packets
+        -- In throughput optimization mode, free up space in the FIFO whenever read (allowed because packets
         -- are never repeated in this mode).
         if ThroughputOpt_c then
             v.RdPacketStart := r.RdAddr;
@@ -419,7 +419,7 @@ begin
     end process;
 
     -----------------------------------------------------------------------------------------------
-    -- Sequential Proccess
+    -- Sequential Process
     -----------------------------------------------------------------------------------------------
     p_seq : process (Clk) is
     begin
