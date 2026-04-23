@@ -477,15 +477,20 @@ If you want to run simulations on your PC, you need the following prerequisites:
 To run the simulations, navigate to _\<root\>/sim_ and execute the following command:
 
 ```shell
-python3 run.py            # For GHDL
-python3 run.py --modelsim # For Modelsim/QuestaSim
-python3 run.py --nvc      # For NVC
+python3 run.py              # For GHDL
+python3 run.py --modelsim   # For Modelsim/QuestaSim
+python3 run.py --rivierapro # For Riviera Pro (see note below)
+python3 run.py --nvc        # For NVC
 ```
 
 Tipp: For faster runtimes, you may want to use multiple threads to execute simulations. This can be achieved by adding
 the argument `-p 16` (16 is the number of threads, you may use any other number fitting your CPU).
 
 You should now see an output indicating that all tests pass. <br>
+
+**Note:** Riviera Pro is not actively maintained and regression-tested by Open Logic due to the unavailability of a free
+or donated license. You may use it but it is up to the users to maintain the corresponding code and fix any issues that
+may arise.
 
 ![simulation](./general/Simulation.png)
 

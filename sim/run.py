@@ -75,6 +75,7 @@ if 'VUNIT_SIMULATOR' not in os.environ:
         os.environ['VUNIT_SIMULATOR'] = 'nvc'
     elif SIMULATOR == Simulator.RIVIERAPRO:
         os.environ['VUNIT_SIMULATOR'] = 'rivierapro'
+        print("Warning: Riviera Pro is not actively maintained by Open Logic, see HowTo document.")
     else:
         os.environ['VUNIT_SIMULATOR'] = 'modelsim'
 
