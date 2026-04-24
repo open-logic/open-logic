@@ -79,7 +79,7 @@ The FIFO can be optimized for two targets.
   - This mode is supported for all _FeatureSet_g_ options.
 - _THROUGHPUT_: The FIFO is optimized for best throughput.
   - In this mode no stall cycles are introduced on the read side. Hence the FIFO can achieve a throughput of 100% even
-    for small packets.
+    for small packets as long they are more than 3 data-beats in size.
   - This mode is only supported for _FeatureSet_g=DROP_ONLY_ and _FeatureSet_g=DROP_SKIP_ONLY_.
 
 ## Generics
