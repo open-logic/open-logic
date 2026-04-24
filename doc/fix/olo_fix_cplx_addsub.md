@@ -15,8 +15,8 @@ Bit-true Model: [olo_fix_cplx_addsub](../../src/fix/python/olo_fix/olo_fix_cplx_
 
 ## Description
 
-This entity performs addition or subtraction of two complex fixed-point numbers. (I in-phase) and Q (quadrature-phase) can be handled
-parallel or TDM on inputs and outputs.
+This entity performs addition or subtraction of two complex fixed-point numbers. (I in-phase) and Q (quadrature-phase)
+can be handled parallel or TDM on inputs and outputs.
 
 **Latency** of this entity is _OpRegs_g_ clock cycles plus optional rounding and saturation registers. The default
 generics lead to a latency of 3 clock cycles.
