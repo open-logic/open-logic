@@ -26,7 +26,7 @@ parser.add_argument(
 parser.add_argument(
     "--simulator",
     choices=["modelsim", "nvc"],
-    default="nvc",
+    default="modelsim",
     help="Simulator to use for coverage analysis (default: nvc)."
 )
 args = parser.parse_args()
