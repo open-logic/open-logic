@@ -68,7 +68,12 @@ class EntityNvc:
 
     def parse_branch_line(self, line : str):
         parts = line.split(":")
-        self.branches = float(parts[-1].split("%")[0].strip())
+        self.branches = parts[-1].split("%")[0].strip()
+        # If there are no branches, the coverage is 100%
+        if self.branches == "N.A.":
+            self.branches = 100.0
+        else:
+            self.branches = float(self.branches)
 
 
 ########################################################################################################################
