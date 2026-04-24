@@ -1,21 +1,21 @@
 <img src="../Logo.png" alt="Logo" width="400">
 
-# olo_fix_cplx_add
+# olo_fix_cplx_addsub
 
 [Back to **Entity List**](../EntityList.md)
 
 ## Status Information
 
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_fix_cplx_add.json?cacheSeconds=0)
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_cplx_add.json?cacheSeconds=0)
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_cplx_add.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_fix_cplx_addsub.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_cplx_addsub.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_cplx_addsub.json?cacheSeconds=0)
 
-VHDL Source: [olo_fix_cplx_add](../../src/fix/vhdl/olo_fix_cplx_add.vhd)<br />
-Bit-true Model: [olo_fix_cplx_add](../../src/fix/python/olo_fix/olo_fix_cplx_add.py)
+VHDL Source: [olo_fix_cplx_addsub](../../src/fix/vhdl/olo_fix_cplx_addsub.vhd)<br />
+Bit-true Model: [olo_fix_cplx_addsub](../../src/fix/python/olo_fix/olo_fix_cplx_addsub.py)
 
 ## Description
 
-This entity performs addition of two complex fixed-point numbers. I in-phase) and Q (quadrature-phase) canbe handled
+This entity performs addition or subtraction of two complex fixed-point numbers. (I in-phase) and Q (quadrature-phase) can be handled
 parallel or TDM on inputs and outputs.
 
 **Latency** of this entity is _OpRegs_g_ clock cycles plus optional rounding and saturation registers. The default
@@ -55,11 +55,11 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | InA_I    | in     | _width(AFmt_g)_ | 0       | Input data in-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_         |
 | InA_Q    | in     | _width(AFmt_g)_ | 0       | Input data quadrature-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_ |
 | InA_IQ   | in     | _width(AFmt_g)_ | 0       | Input data for _IqHandling_g=TDM_<br />Format: _AFmt_g_                       |
-| InB_I    | in     | _width(AFmt_g)_ | 0       | Input data in-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_         |
-| InB_Q    | in     | _width(AFmt_g)_ | 0       | Input data quadrature-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_ |
-| InB_IQ   | in     | _width(AFmt_g)_ | 0       | Input data for _IqHandling_g=TDM_<br />Format: _AFmt_g_                       |
+| InB_I    | in     | _width(BFmt_g)_ | 0       | Input data in-phase for _IqHandling_g=Parallel_<br />Format: _BFmt_g_         |
+| InB_Q    | in     | _width(BFmt_g)_ | 0       | Input data quadrature-phase for _IqHandling_g=Parallel_<br />Format: _BFmt_g_ |
+| InB_IQ   | in     | _width(BFmt_g)_ | 0       | Input data for _IqHandling_g=TDM_<br />Format: _BFmt_g_                       |
 | In_Valid | in     | 1               | '1'     | AXI4-Stream handshaking signal for _InA_ and _InB_                            |
-| In_Last  | in     | 1               | '0'     | Used for optional TDM synchroinzation for _IqHandling=TDM_.                   |
+| In_Last  | in     | 1               | '0'     | Used for optional TDM synchronization for _IqHandling=TDM_.                   |
 
 ### Output Data
 
@@ -68,8 +68,8 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | Out_I      | out    | _width(ResultFmt_g)_ | N/A     | Result data in-phase for _IqHandling_g=Parallel_<br />Format _ResultFmt_g_         |
 | Out_Q      | out    | _width(ResultFmt_g)_ | N/A     | Result data quadrature-phase for _IqHandling_g=Parallel_<br />Format _ResultFmt_g_ |
 | Out_IQ     | out    | _width(ResultFmt_g)_ | N/A     | Result data for _IqHandling_g=TDM_<br />Format _ResultFmt_g_                       |
-| Out_Valid  | out    | 1                    | N/A     | AXI-S handshaking signal for _Out_Result_                                          |
-| Out_Last   | out    | 1                    | N/A     | Used for optional TDM synchroinzation for _IqHandling=TDM_.                        |
+| Out_Valid  | out    | 1                    | N/A     | AXI4-Stream handshaking signal for _Out_I_, _Out_Q_, _Out_IQ_                      |
+| Out_Last   | out    | 1                    | N/A     | Used for optional TDM synchronization for _IqHandling=TDM_.                        |
 
 ## Detail
 

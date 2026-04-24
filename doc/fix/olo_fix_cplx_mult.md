@@ -20,10 +20,13 @@ This entity performs multiplication of two complex fixed-point numbers.
 The entity also can be configured to operate
 as mixer (complex to complex) by selection _Mode_g=MIX_. In mixer mode the imaginary part of _In_B_ is inverted.
 
+I (in-phase) and Q (quadrature-phase) can be handled parallel or TDM.
+
 For _IqHandling_g=Parallel_, a 3 (_Implementation_g=MULT3_) or 4 (_Implementation_g=MULT4_)  multiplier
 architecture can be chosen.
 
-I (in-phase) and Q (quadrature-phase) can be handled parallel or TDM.
+For _IqHandling_g=TDM_, an architecture exploiting the time-multiplexing of I and Q samples is implemented,
+which requires only 2 multipliers.
 
 **Latency** The latency of this entity heavily depends on the configuration but it is constant for any generic
 configuration. See detailed calculations in the [Detail](#detail) section below.
@@ -35,9 +38,9 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 | Name             | Type    | Default    | Description                                                  |
 | :--------------- | :------ | ---------- | :----------------------------------------------------------- |
-| Mode_g           | string  | "MULT"     | Operation mode:<br>"MULT" -  compliex multiplication<br>""MIX" - Complex to complex mixer |
+| Mode_g           | string  | "MULT"     | Operation mode:<br>"MULT" -  complex multiplication<br>"MIX" - Complex to complex mixer |
 | Implementation_g | string  | "MULT3"    | Multiplier architecture for _Mode_g=MULT_<br>"MULT3": 3 multipliers<br>"MULT4": 4 multipliers (k1=a*c, k2=b*d, k3=a*d, k4=b*c) |
-| IqHandling_g     | string  | "Parallel" | "Parallel" - I/Q arrive in parallel, ports _InA_I_ and _InA_Q_ are used <br> "TDM" - I/Q arrive TDM, port _InA_IQ_ is used |
+| IqHandling_g     | string  | "Parallel" | "Parallel" - I/Q arrive in parallel, ports _InA_I_ and _InA_Q_ are used <br> "TDM" - I/Q arrive TDM, ports _InA_IQ_ and _InB_IQ_ are used |
 | AFmt_g           | string  | -          | Input A format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | BFmt_g           | string  | -          | Input B format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | ResultFmt_g      | string  | -          | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
@@ -61,11 +64,11 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | InA_I    | in     | _width(AFmt_g)_ | 0       | Input data A in-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_         |
 | InA_Q    | in     | _width(AFmt_g)_ | 0       | Input data A quadrature-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_ |
 | InA_IQ   | in     | _width(AFmt_g)_ | 0       | Input data A for _IqHandling_g=TDM_<br />Format: _AFmt_g_                       |
-| InB_I    | in     | _width(AFmt_g)_ | 0       | Input data B in-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_         |
-| InB_Q    | in     | _width(AFmt_g)_ | 0       | Input data B quadrature-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_ |
-| InB_IQ   | in     | _width(AFmt_g)_ | 0       | Input data B for _IqHandling_g=TDM_<br />Format: _AFmt_g_                       |
+| InB_I    | in     | _width(BFmt_g)_ | 0       | Input data B in-phase for _IqHandling_g=Parallel_<br />Format: _BFmt_g_         |
+| InB_Q    | in     | _width(BFmt_g)_ | 0       | Input data B quadrature-phase for _IqHandling_g=Parallel_<br />Format: _BFmt_g_ |
+| InB_IQ   | in     | _width(BFmt_g)_ | 0       | Input data B for _IqHandling_g=TDM_<br />Format: _BFmt_g_                       |
 | In_Valid | in     | 1               | '1'     | AXI4-Stream handshaking signal for _InA_ and _InB_                              |
-| In_Last  | in     | 1               | '0'     | Used for optional TDM synchroinzation for _IqHandling=TDM_.                     |
+| In_Last  | in     | 1               | '0'     | Used for optional TDM synchronization for _IqHandling_g=TDM_.                   |
 
 When used as a mixer, _InA_ is the signal to be mixed and _InB_ is the mixing frequency.
 
@@ -77,7 +80,7 @@ When used as a mixer, _InA_ is the signal to be mixed and _InB_ is the mixing fr
 | Out_Q      | out    | _width(ResultFmt_g)_ | N/A     | Result data quadrature-phase for _IqHandling_g=Parallel_<br />Format _ResultFmt_g_ |
 | Out_IQ     | out    | _width(ResultFmt_g)_ | N/A     | Result data for _IqHandling_g=TDM_<br />Format _ResultFmt_g_                       |
 | Out_Valid  | out    | 1                    | N/A     | AXI-S handshaking signal for _Out_Result_                                          |
-| Out_Last   | out    | 1                    | N/A     | Used for optional TDM synchroinzation for _IqHandling=TDM_.                        |
+| Out_Last   | out    | 1                    | N/A     | Used for optional TDM synchronization for _IqHandling_g=TDM_.                      |
 
 ## Detail
 
@@ -145,15 +148,15 @@ Where _resize_latency_ is calculated as follows:
 
 This architecture is implemented when:
 
-- _IqHandling_g="TDM"
+- _IqHandling_g="TDM"_
 
 It does implement the same mathematics as the 4 multiplier architecture, but I and Q are handled in a time-multiplexed
 manner. As a result, only two multipliers are needed and selecting between I and Q samples can also happen
 by a delay of a clock cycle instead of a multiplexer.
 
 The _Last_ signal _MUST_ be applied on _Q_ samples only because _I_ is the first sample in a pair
-and therefor cannot be the last of a TDM burst. _I_ samples with _Last_='1' will be ignored and
-used for I/Q resynchronization (the first sample after will be interpereted as the first I sample of the next
+and therefore cannot be the last of a TDM burst. _I_ samples with _Last_='1' will be ignored and
+used for I/Q resynchronization (the first sample after will be interpreted as the first I sample of the next
 TDM burst).
 
 ![TDM Architecture](./entities/olo_fix_cplx_mult_tdm.drawio.png)
@@ -161,7 +164,9 @@ TDM burst).
 Note that for _Mode_g=MULT_ the black operations apply. For _Mode_g=MIX_ the red operations apply, which corresponds
 to inverting the imaginary part of _InB_.
 
-**Latency** This architecture has a latency of _MultRegs_g_+ 4 + _resize_latency_ clock cycles.
+**Latency** This architecture has a latency of _MultRegs_g_+ 4 + _resize_latency_ clock cycles. The latency applies
+from input of the Q sample to output of the Q sample. The I sample latency is not constant because the I output
+can only be produced after the Q sample has been received on the input side.
 
 Where _resize_latency_ is calculated as follows:
 

@@ -192,24 +192,25 @@ significantly reduces the risk for errors and inconsistencies between the Python
 
 ## Complex Numbers Representation
 
-Many _Open Logic_ fixed-point componets that support complex numbers do implement two interface options:
+Many _Open Logic_ fixed-point components that support complex numbers implement two interface options:
 
 - _Parallel_ I/Q handling
-  - In this case the in-phase and quadrature-phase part of the complex number are handled separately and arrive in
+  - In this case the in-phase and quadrature-phase parts of the complex number are handled separately and arrive in
     parallel on separate ports (e.g. _InA_I_ and _InA_Q_).
 - _TDM_ I/Q handling
-  - In this case the in-phase and quadrature-phase part of the complex number are arriving on the same port
+  - In this case the in-phase and quadrature-phase parts of the complex number are arriving on the same port
     (e.g. _InA_IQ_) in a time-division multiplexed way.
   - In-phase is transmitted first, quadrature-phase second.
   - The _Last_ signal can be used to indicate quadrature-phase samples - this allows resynchronization in case of a
-  - lost sample or starting the stream at an arbitrary point.
+    lost sample or starting the stream at an arbitrary point.
   - In many cases reduces resource consumption to around 50% of the _Parallel_ I/Q handling version
+
 Conversion between the two can be achieved by the entities commonly used for TDM/parallel conversion:
 
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
-| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Convert from TDM to parallel (see [Conventions](./Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
-| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Convert from parallel to TDM (see [Conventions](./Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
+| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Convert from TDM to parallel (see [Conventions](../Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
+| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Convert from parallel to TDM (see [Conventions](../Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
 
 The TDM handling follows the [TDM Conventions](../Conventions.md#tdm-time-division-multiplexing).
 

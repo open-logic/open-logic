@@ -15,17 +15,17 @@ Bit-true Model: N/A - used as base for other entities, no direct bit-true model 
 
 ## Description
 
-The entity is **not indended for standalone use** but serves as base for other entities like FIR filters. Nevertheless,
+The entity is **not intended for standalone use** but serves as base for other entities like FIR filters. Nevertheless,
 the entity is documented and provided to the user, so that it can be used as a building block for custom entities.
 
 The _olo_fix_madd_ entity performs a multiply-add operation with optional pre-adder. This is a construct that is
 supported by many FPGAs as a hard-wired DSP block and hence it can be implemented very efficiently.
 
-Note that the entity does not support any rounding or saturation at the output because most hard-wirded DSP blocks
+Note that the entity does not support any rounding or saturation at the output because most hard-wired DSP blocks
 do not support this or at least not in a consistent and inferrable way. Where not all bits of the result can be
-represented, trunction is applied.
+represented, truncation is applied.
 
-Inputs _InA_ and _InC_ (if used) are rintended to be dynamic signals. _InB_ is intended to be either a dynamic signal
+Inputs _InA_ and _InC_ (if used) are intended to be dynamic signals. _InB_ is intended to be either a dynamic signal
 as well or a static coefficient that is stored inside a DSP block register (_InBIsCoef_g=true_).
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
@@ -45,7 +45,7 @@ When the generic _PreAdd_g_ is set to false, the entity performs the following o
 
 ![MADD without pre-adder](./entities/olo_fix_madd_basic.drawio.png)
 
-Note that in this case, _InC_Data_ and _InC_Valid_ are not used and can be left unconnected.
+Note that in this case, _InC_Data_ is not used and can be left unconnected.
 
 **Latency** of this entity is _MultRegs_g_+2 clock cycles for _PreAdd_g=false_.
 
@@ -64,7 +64,7 @@ Note that in this case, _InC_Data_ and _InC_Valid_ are not used and can be left 
 
 When choosing number formats, keep in mind that in case _PreAdd_g=true_, the pre-adder multiplier input has one
 bit more than _AFmt_g_ and _CFmt_g_ to avoid overflow in the pre-adder stage. This is an important consideration
-for mapping the logic optimally to hard-wirde DSP blocks.
+for mapping the logic optimally to hard-wired DSP blocks.
 
 ## Interfaces
 
@@ -96,14 +96,14 @@ for mapping the logic optimally to hard-wirde DSP blocks.
 | Name       | In/Out | Length                 | Default | Description                                                                        |
 | :--------- | :----- | :--------------------- | ------- | :--------------------------------------------------------------------------------- |
 | Out_Data   | out    | _width(AddChainFmt_g)_ | N/A     | Result data<br />Format: _AddChainFmt_g_<br>Can be connected to _MaccIn_ of the next stage |
-| Out_Valid  | out    | 1                      | N/A     | AXI-S handshaking signal for _Out_Data_                                          |
+| Out_Valid  | out    | 1                      | N/A     | AXI4-Stream handshaking signal for _Out_Data_                                    |
 
 ## Detail
 
 ### Valid Handling
 
 _Out_Valid_ is asserted when the result of any change of an input indicated by _InAC_Valid_ or _InB_Valid_ is available
-at the output. _Out_Valid_ is also asserted if only one of the input valid signals is asserted.
+at the output.
 
 For _InBIsCoef_g=true_, _Out_Valid_ is only asserted after _InAC_Valid_ was asserted. Reasoning is that no output sample
 shall be produced when only the coefficient is changed (_InB_Valid_='1') but only when the data changes
