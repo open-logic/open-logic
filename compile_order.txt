@@ -1,3 +1,4 @@
+src/ft/vhdl/olo_ft_pkg_ecc.vhd
 src/base/vhdl/olo_base_pkg_attribute.vhd
 src/intf/vhdl/olo_intf_sync.vhd
 src/base/vhdl/olo_base_pl_stage.vhd
@@ -6,11 +7,13 @@ src/base/vhdl/olo_base_pkg_math.vhd
 src/base/vhdl/olo_base_tdm_mux.vhd
 src/base/vhdl/olo_base_strobe_gen.vhd
 src/base/vhdl/olo_base_strobe_div.vhd
+src/base/vhdl/olo_base_sample_hold.vhd
 src/base/vhdl/olo_base_reset_gen.vhd
 src/base/vhdl/olo_base_pkg_string.vhd
 src/intf/vhdl/olo_intf_debounce.vhd
 src/base/vhdl/olo_base_ram_tdp.vhd
 src/base/vhdl/olo_base_ram_sp.vhd
+src/ft/vhdl/olo_ft_ram_sp.vhd
 src/base/vhdl/olo_base_ram_sdp.vhd
 src/base/vhdl/olo_base_pkg_logic.vhd
 src/intf/vhdl/olo_intf_uart.vhd

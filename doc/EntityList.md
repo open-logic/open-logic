@@ -31,6 +31,9 @@ Note that components are split into categories.
     - [CORDIC](#cordic)
     - [CIC Filters](#cic-filters)
     - [Miscellaneous](#miscellaneous-1)
+  - [ft](#ft)
+    - [Packages (olo\_ft\_pkg\_\<...\>)](#packages-olo_ft_pkg_)
+    - [RAM Implementations (olo\_ft\_ram\_\<...\>)](#ram-implementations-olo_ft_ram_)
 
 ## base
 
@@ -256,3 +259,19 @@ be used. For deciding which option to use, the following considerations shall be
 | Entity                                              | Description                                                                                              |
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | [olo_fix_sample_hold](./fix/olo_fix_sample_hold.md) | Sample and hold a fixed point number - output holds the last sampled value until a new sample is taken.  |
+
+## ft
+
+This area contains fault-tolerant entities for use in radiation-sensitive environments (space, avionics, automotive, high-altitude). All entities use SECDED Hamming code (Single Error Correction, Double Error Detection) and follow a transparent wrapper pattern - ECC is invisible to the user, with data encoded on write and decoded/corrected on read.
+
+### Packages (olo_ft_pkg_\<...\>)
+
+| Package                                       | Description                                                  |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| [olo_ft_pkg_ecc](./ft/olo_ft_pkg_ecc.md)      | SECDED Hamming code functions for ECC-protected memories. **For internal use within Open Logic only** |
+
+### RAM Implementations (olo_ft_ram_\<...\>)
+
+| Entity                                   | Description                                                  |
+| ---------------------------------------- | ------------------------------------------------------------ |
+| [olo_ft_ram_sp](./ft/olo_ft_ram_sp.md)   | ECC-protected single port RAM (SECDED Hamming)               |
