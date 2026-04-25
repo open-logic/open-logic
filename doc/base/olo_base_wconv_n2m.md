@@ -79,8 +79,8 @@ And of course the conversion into the other direction (7-bit to 8-bit) is possib
 
 | Name       | Type     | Default | Description                                                  |
 | :--------- | :------- | ------- | :----------------------------------------------------------- |
-| InWidth_g  | positive | -       | Input width in bits.                                         |
-| OutWidth_g | positive | -       | Output width in bits.                                        |
+| InWidth_g  | positive | 16      | Input width in bits.                                         |
+| OutWidth_g | positive | 24      | Output width in bits.                                        |
 | UseBe_g    | boolean  | false   | true: Use _In_Be_ and _Out_Be_, only allowed for _InWidth_g_/_OutWidth_g_ being multiples of 8<br />false: _In_Be_ and _Out_Be_ are un |
 
 ## Interfaces
@@ -107,7 +107,7 @@ And of course the conversion into the other direction (7-bit to 8-bit) is possib
 | Name      | In/Out | Length         | Default | Description                                            |
 | :-------- | :----- | :------------- | ------- | :----------------------------------------------------- |
 | Out_Data  | out    | _OutWidth_g_   | N/A     | Output data                                            |
-| Out_Be    | out    | _OutWidth_g_/8 | all '1' | Output byte enables <br />Only used for _UseBe_g_=true |
+| Out_Be    | out    | _OutWidth_g_/8 | N/A     | Output byte enables <br />Only used for _UseBe_g_=true |
 | Out_Valid | out    | 1              | N/A     | AXI4-Stream handshaking signal for _Out_Data_          |
 | Out_Ready | in     | 1              | '1'     | AXI4-Stream handshaking signal for _Out_Data_          |
 | Out_Last  | out    | 1              | N/A     | AXI4-Stream end of packet signaling for _Out_Data_     |

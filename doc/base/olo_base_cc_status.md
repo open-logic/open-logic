@@ -35,7 +35,7 @@ information.
 
 | Name         | Type     | Default | Description                                            |
 | :----------- | :------- | ------- | :----------------------------------------------------- |
-| Width_g      | positive | 1       | Width of the data-signal to clock-cross                |
+| Width_g      | positive | -       | Width of the data-signal to clock-cross                |
 | SyncStages_g | positive | 2       | Number of synchronization stages. <br />Range: 2 ... 4 |
 
 ## Interfaces

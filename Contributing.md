@@ -6,6 +6,9 @@
 
 Of course you are more than welcome to contribute to the project. This document explains how you can do so.
 
+There [YouTube Video](https://www.youtube.com/watch?v=Ugm9VoZOdo0) about contributing to _Open Logic_ available,
+which is a good and quick starting point.
+
 ## Be a _Good_ User
 
 The easiest way of doing so, is by simply using _Open Logic_ - and report any issues you find. That may be an idea for a
@@ -22,9 +25,11 @@ helpfulness):
 - A screenshot of a waveform
 - A textual description
 
+As a good user, please follow the [Code of conduct](./CODE_OF_CONDUCT.md).
+
 ## Financial Contributions
 
-You can donate through [GitHub sponsors](https://github.com/sponsors/open-logi). **In case your company better like
+You can donate through [GitHub sponsors](https://github.com/sponsors/open-logic). **In case your company better like
 buying services than doing donations** - you can also find things to buy on the GitHub sponsors page (e.g. workshops or
 priority support).
 
@@ -105,4 +110,4 @@ takes full responsibility for it and ensured that no copyrighted content from th
 The usage of genenerative AI beyond accepting inline code suggestions (e.g. GitHub Copilot) is restricted as follows:
 
 - It is forbidden for any contributions towards features funded by [NLnet](https://nlnet.nl/)
-- It mus be disclosed in the pull request description
+- It must be disclosed in the pull request description

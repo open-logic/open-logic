@@ -130,7 +130,7 @@ transaction. If some application or tool require these signals, the user should 
 | Rd_Data  | out    | _AxiDataWidth_g_ | -       | Read data                                                    |
 | Rd_Last  | out    | 1                | -       | Indicates last word of data related to a _CmdRd_ command. <br />The bit is related to the user command (_CmdRd_) and only set for the last AXI burst related to one user-command. |
 | Rd_Valid | out    | 1                | -       | AXI-S handshaking signal for _Rd_                            |
-| Rd_Ready | in     | 1                | '0'     | AXI-S handshaking signal for _Rd_                            |
+| Rd_Ready | in     | 1                | '1'     | AXI-S handshaking signal for _Rd_                            |
 
 ### User Response Interface
 

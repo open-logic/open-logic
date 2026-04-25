@@ -43,8 +43,6 @@ maximum performance anyways.
 | AxiAddrWidth_g    | positive | 8       | AXI4 address width (width of _AwAddr_ and _ArAddr_ signals)  |
 | AxiDataWidth_g    | positive | 32      | AXI data width (must be a power of 2)                        |
 | ReadTimeoutClks_g | positive | 100     | Read timeout in clock cycles (see [Description](#description)) |
-| IdWidth_g         | natural  | 0       | Width of the signals _AwId_, _ArId_, _BId_ and _RId_ signals in bits. |
-| UserWidth_g       | natural  | 0       | Width of the siginals _AwUser_, _ArUser_, _WUser_, _BUser_ and _RUser_ in bits. |
 
 ## Interfaces
 

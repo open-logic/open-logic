@@ -51,7 +51,7 @@ entity olo_fix_cordic_rot is
         Clk       : in    std_logic;
         Rst       : in    std_logic;
         -- Input
-        In_Valid  : in    std_logic;
+        In_Valid  : in    std_logic := '1';
         In_Ready  : out   std_logic;
         In_Mag    : in    std_logic_vector(fixFmtWidthFromString(InMagFmt_g)-1 downto 0);
         In_Ang    : in    std_logic_vector(fixFmtWidthFromString(InAngFmt_g)-1 downto 0);
@@ -72,7 +72,7 @@ architecture rtl of olo_fix_cordic_rot is
     constant InAngFmt_c        : FixFormat_t   := cl_fix_format_from_string(InAngFmt_g);
     constant OutFmt_c          : FixFormat_t   := cl_fix_format_from_string(OutFmt_g);
     constant IntXyFmt_c        : FixFormat_t   := choose(compareNoCase(IntXyFmt_g, "AUTO"),
-                                                         (1, InMagFmt_c.I + 1, InMagFmt_c.F + 3),
+                                                         (1, InMagFmt_c.I + 1, OutFmt_c.F + 3),
                                                          fixFmtFromStringTolerant(IntXyFmt_g));
     constant IntAngFmt_c       : FixFormat_t   := choose(compareNoCase(IntAngFmt_g, "AUTO"),
                                                          (1, -2, InAngFmt_c.F + 3),

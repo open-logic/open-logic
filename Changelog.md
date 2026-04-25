@@ -2,6 +2,84 @@
 
 # Changelog
 
+## 4.5.0
+
+25-Apr-2026
+
+### Added Features
+
+- Added _olo_base_sample_hold_
+  - Sample and hold component for bit-vectors
+  - Contributed by: [obruendl](htpps://github.com/obruendl)
+
+- Added _olo_fix_sample_hold_
+  - Sample and hold component for fixed-point numbers
+  - Contributed by: [obruendl](htpps://github.com/obruendl)
+
+- Support Riviera Pro as simulator for running Open Logic regression tests
+  - Contributed by: [aruede](https://github.com/aruede)
+  - Note: This feature is **NOT** actively maintained by Open Logic due to the unavailability of a free or donated
+   license
+
+- Added _MaxPacketSize_g_ to _olo_base_fifo_packet_
+  - Maximum packet size to accept for _olo_base_fifo_packet_ (larger packets will be dropped)
+  - Contributed by: [tasgomes](https://github.com/tasgomes)
+
+- Added _Optimization_g_ generic to _olo_base_fifo_packet_
+  - Optimize for clock speed (backwards compatibility) or for no stall cycles (new)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+  - Reported by: [tasgomes](https://github.com/tasgomes)
+
+- Added _FeatureSet_g=DROP_SKIP_ONLY_ to _olo_base_fifo_packet_
+  - Optimized implementation supporting dropping and skipping packets but not supporting repeating packets
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_cplx_mult_
+  - Complex fixed-point multiplier with support for mixer operation
+  - Contains 4-multiplier, 3-multiplier and TDM I/Q handling implementations
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_cplx_addsub_
+  - Complex fixed-point adder/subtractor
+  - Supports parallel and TDM I/Q handling
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_madd_
+  - Multiply-add entity with optional pre-adder stage (used to build MACC chains e.g. for FIR filters)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Backward Compatible Changes
+
+- Various documentation improvements
+  - Some contributed by: [MartinHanl](https://github.com/MartinHanl)
+  - Some reported by: [absort0](https://github.com/absort0)
+
+- Added Code of Conduct
+  - Reported by: [absort0](https://github.com/absort0)
+  
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- Fixinternal XY-Format for olo_fix_cordic_rot when IntXyFmt_g=AUTO
+  - The format in VHDL did not match documentation and the python model
+  - Reported by: [abdomit](https://github.com/abdomit)
+
+### Reporters
+
+- [absort0](https://github.com/absort0)
+- [abdomit](https://github.com/abdomit)
+- [tasgomes](https://github.com/tasgomes)
+  
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+- [MartinHanl](https://github.com/MartinHanl)
+- [aruede](https://github.com/aruede)
+- [tasgomes](https://github.com/tasgomes)
+
 ## 4.4.1
 
 10-Mar-2026

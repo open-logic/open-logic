@@ -27,7 +27,8 @@ An [Introduction Video](https://www.youtube.com/watch?v=hh3bS1SiIQs&t=6s) to ope
 [Open Logic YouTube channel](https://www.youtube.com/@OpenLogicFPGA). If you are new to Open Logic, this is a good
 starting point.
 
-Maintainer: [obruendl](mailto:oli.bruendler@gmx.ch)
+Maintainer: [obruendl](mailto:oli.bruendler@gmx.ch) - Preferred way of contact is LinkedIn: [oliver-bruendler](
+www.linkedin.com/in/oliver-bruendler)
 
 If you appreciate the project, consider **supporting it with a small donation**. If you're part of a commercial company
 that prefers purchasing services over making voluntary donations, that's no problem. You can also **purchase offerings**

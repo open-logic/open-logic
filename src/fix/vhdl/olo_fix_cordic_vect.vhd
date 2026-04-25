@@ -51,7 +51,7 @@ entity olo_fix_cordic_vect is
         Clk       : in    std_logic;
         Rst       : in    std_logic;
         -- Input
-        In_Valid  : in    std_logic;
+        In_Valid  : in    std_logic := '1';
         In_Ready  : out   std_logic;
         In_I      : in    std_logic_vector(fixFmtWidthFromString(InFmt_g)-1 downto 0);
         In_Q      : in    std_logic_vector(fixFmtWidthFromString(InFmt_g)-1 downto 0);

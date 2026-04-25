@@ -157,7 +157,15 @@ developing the algorithm and an HDL simulator.
 
 _Open Logic_ also provides python and HDL components to exchange inputs and expected outputs between Python and the HDL
 simulation. This allows easily verifying if the HDL implementation of an algorithm really exactly matches its Python
-model.
+model. [olo_fix_cosim](./olo_fix_cosim.md) can be used to write data from python into co-simulation files.
+[olo_fix_sim_stimuli](./olo_fix_sim_stimuli.md) can be used to read the data from the co-simulation files and apply it
+as stimulus in the HDL simulation and [olo_fix_sim_checker](./olo_fix_sim_checker.md) can be used to read the expected
+output from the co-simulation files and compare it with the actual output from the HDL simulation.
+
+Additionally, _Open Logic_ provides [olo_fix_pkg_writer](./olo_fix_pkg_writer.md) to generate the HDL package with all
+key design parameters defined in Python. This allows to automatically transfer things like constants, filter
+coefficients or number formats from Python to HDL which significantly reduces the risk for errors and inconsistencies
+between the Python model and HDL implementation.
 
 ![Image](./principles/olo_fix_cosim.drawio.png)
 
@@ -189,3 +197,37 @@ defined in Python.
 
 This way Python is the single source of truth and all definitions are automatically transferred to HDL which
 significantly reduces the risk for errors and inconsistencies between the Python model and HDL implementation.
+
+## Complex Numbers Representation
+
+Many _Open Logic_ fixed-point components that support complex numbers implement two interface options:
+
+- _Parallel_ I/Q handling
+  - In this case the in-phase and quadrature-phase parts of the complex number are handled separately and arrive in
+    parallel on separate ports (e.g. _InA_I_ and _InA_Q_).
+- _TDM_ I/Q handling
+  - In this case the in-phase and quadrature-phase parts of the complex number are arriving on the same port
+    (e.g. _InA_IQ_) in a time-division multiplexed way.
+  - In-phase is transmitted first, quadrature-phase second.
+  - The _Last_ signal can be used to indicate quadrature-phase samples - this allows resynchronization in case of a
+    lost sample or starting the stream at an arbitrary point.
+  - In many cases reduces resource consumption to around 50% of the _Parallel_ I/Q handling version
+
+Conversion between the two can be achieved by the entities commonly used for TDM/parallel conversion:
+
+| Entity                                               | Description                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Convert from TDM to parallel (see [Conventions](../Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
+| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Convert from parallel to TDM (see [Conventions](../Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
+
+The TDM handling follows the [TDM Conventions](../Conventions.md#tdm-time-division-multiplexing).
+
+Below is an example waveform for TDM I/Q handling. Note that _Last_ is only applied for every second sample which
+is perfectly fine according to [TDM Conventions](../Conventions.md#tdm-time-division-multiplexing).
+
+![IQ-TDM](./principles/iq_tdm.png)
+
+Note that complex number handling only is implemented for operations where the separate handling of in-phase and
+quadrature-phase does not lead to the same result as handling complex numbers. Operations that can be applied
+to in-phase and quadrature-phase separately (e.g. FIR filters, CIC filters) do not have a complex number handling
+option.
