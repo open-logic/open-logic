@@ -190,9 +190,9 @@ entities:
           AddChainFmt_g: '"(1,30,12)"'
           PreAdd_g: true
         in_reduce:
-          InA_Data: 17
-          InB_Data: 18
-          InC_Data: 17
+          InA_Data: 16
+          InB_Data: 16
+          InC_Data: 16
           MaccIn: 43
         out_reduce:
           Out_Data: 43
