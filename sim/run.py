@@ -152,6 +152,7 @@ olo_tb.set_sim_option('nvc.heap_size', '5000M')
 olo_tb.set_sim_option('ghdl.sim_flags', ['--ieee-asserts=disable'])
 olo_tb.set_sim_option('nvc.global_flags', ['--ieee-warnings=off'])
 vu.set_sim_option("disable_ieee_warnings", True)
+vu.set_sim_option("modelsim.vopt_flags", ["-O0"])# Disable optimization - it's faster for Open Logic to run without
 
 
 if USE_COVERAGE:
