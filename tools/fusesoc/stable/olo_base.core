@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : "open-logic:open-logic:base:4.4.1"
+name : "open-logic:open-logic:base:4.5.0"
 description : "stable release (downloaded from GitHub); Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base"
 
 filesets:
@@ -42,6 +42,7 @@ filesets:
       - "src/base/vhdl/olo_base_ram_tdp.vhd"
       - "src/base/vhdl/olo_base_rate_limit.vhd"
       - "src/base/vhdl/olo_base_reset_gen.vhd"
+      - "src/base/vhdl/olo_base_sample_hold.vhd"
       - "src/base/vhdl/olo_base_strobe_div.vhd"
       - "src/base/vhdl/olo_base_strobe_gen.vhd"
       - "src/base/vhdl/olo_base_tdm_mux.vhd"
@@ -71,5 +72,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 4.4.1
+  version : 4.5.0
   

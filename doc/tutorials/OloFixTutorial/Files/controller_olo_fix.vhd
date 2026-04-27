@@ -47,18 +47,17 @@ architecture rtl of olo_fix_tutorial_controller is
     signal ILimNeg : std_logic_vector(cl_fix_width(FmtIlimNeg_c) - 1 downto 0);
 
     -- Dynamic
-    signal Error            : std_logic_vector(cl_fix_width(FmtErr_c) - 1 downto 0);
-    signal Error_Valid      : std_logic;
-    signal Ppart            : std_logic_vector(cl_fix_width(FmtPpart_c) - 1 downto 0);
-    signal Ppart_Valid      : std_logic;
-    signal I1               : std_logic_vector(cl_fix_width(FmtImult_c) - 1 downto 0);
-    signal I1_Valid         : std_logic;
-    signal IPresat          : std_logic_vector(cl_fix_width(FmtIadd_c) - 1 downto 0);
-    signal IPresat_Valid    : std_logic;
-    signal ILimited         : std_logic_vector(cl_fix_width(FmtI_c) - 1 downto 0);
-    signal ILimited_Valid   : std_logic;
-    signal Integrator       : std_logic_vector(cl_fix_width(FmtI_c) - 1 downto 0);
-    signal Integrator_Valid : std_logic;
+    signal Error          : std_logic_vector(cl_fix_width(FmtErr_c) - 1 downto 0);
+    signal Error_Valid    : std_logic;
+    signal Ppart          : std_logic_vector(cl_fix_width(FmtPpart_c) - 1 downto 0);
+    signal Ppart_Valid    : std_logic;
+    signal I1             : std_logic_vector(cl_fix_width(FmtImult_c) - 1 downto 0);
+    signal I1_Valid       : std_logic;
+    signal IPresat        : std_logic_vector(cl_fix_width(FmtIadd_c) - 1 downto 0);
+    signal IPresat_Valid  : std_logic;
+    signal ILimited       : std_logic_vector(cl_fix_width(FmtI_c) - 1 downto 0);
+    signal ILimited_Valid : std_logic;
+    signal Integrator     : std_logic_vector(cl_fix_width(FmtI_c) - 1 downto 0);
 
 begin
 
@@ -169,21 +168,19 @@ begin
             Out_Result => ILimited
         );
 
-    p_feedback : process (Clk) is
-    begin
-        if rising_edge(Clk) then
-            -- Normal Operation
-            if ILimited_Valid = '1' then
-                Integrator <= ILimited;
-            end if;
-            Integrator_Valid <= ILimited_Valid;
-            -- Reset
-            if Rst = '1' then
-                Integrator       <= (others => '0');
-                Integrator_Valid <= '0';
-            end if;
-        end if;
-    end process;
+    i_feedback : entity olo.olo_fix_sample_hold
+        generic map (
+            Fmt_g         => to_string(FmtI_c),
+            ResetValue_g  => 0.0,
+            ResetValid_g  => false
+        )
+        port map (
+            Clk         => Clk,
+            Rst         => Rst,
+            In_Valid    => ILimited_Valid,
+            In_Data     => ILimited,
+            Out_Data    => Integrator
+        );
 
     -- Output Adder
     i_out_add : entity olo.olo_fix_add

@@ -28,6 +28,7 @@ class Simulator(Enum):
     GHDL = 1
     MODELSIM = 2
     NVC = 3
+    RIVIERAPRO = 4
 
 #Execute from sim directory
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -50,6 +51,9 @@ if "--nvc" in sys.argv:
 if "--ghdl" in sys.argv:
     SIMULATOR = Simulator.GHDL
     argv.remove("--ghdl")
+if "--rivierapro" in sys.argv:
+    SIMULATOR = Simulator.RIVIERAPRO
+    argv.remove("--rivierapro")
 if "--coverage" in sys.argv:
     USE_COVERAGE = True
     argv.remove("--coverage")
@@ -69,8 +73,24 @@ if 'VUNIT_SIMULATOR' not in os.environ:
         os.environ['VUNIT_SIMULATOR'] = 'ghdl'
     elif SIMULATOR == Simulator.NVC:
         os.environ['VUNIT_SIMULATOR'] = 'nvc'
+    elif SIMULATOR == Simulator.RIVIERAPRO:
+        os.environ['VUNIT_SIMULATOR'] = 'rivierapro'
+        print("Warning: Riviera Pro is not actively maintained by Open Logic, see HowTo document.")
     else:
         os.environ['VUNIT_SIMULATOR'] = 'modelsim'
+
+# Rivierapro workaround: VUnit's format_generic only quotes values containing spaces,
+# but Rivierapro parses unquoted values like "(1,8,4)" as VHDL aggregates instead of
+# strings, rejecting them and falling back to the default generic value.
+# Quoting values that contain '(', ')', or ',' fixes this.
+if os.environ.get('VUNIT_SIMULATOR') == 'rivierapro':
+    import vunit.sim_if.rivierapro as _rp
+    def _rivierapro_format_generic(value):
+        value_str = str(value)
+        if any(c in value_str for c in '(), '):
+            return f'"{value_str}"'
+        return value_str
+    _rp.format_generic = _rivierapro_format_generic
 
 # Parse VUnit Arguments
 vu = VUnit.from_argv(argv=argv)
@@ -132,6 +152,7 @@ olo_tb.set_sim_option('nvc.heap_size', '5000M')
 olo_tb.set_sim_option('ghdl.sim_flags', ['--ieee-asserts=disable'])
 olo_tb.set_sim_option('nvc.global_flags', ['--ieee-warnings=off'])
 vu.set_sim_option("disable_ieee_warnings", True)
+vu.set_sim_option("modelsim.vopt_flags", ["-O0"])# Disable optimization - it's faster for Open Logic to run without
 
 
 if USE_COVERAGE:

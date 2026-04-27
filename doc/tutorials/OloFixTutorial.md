@@ -229,6 +229,8 @@ value and that it is able to hold it also after _R2_ changed its value around sa
 In this step, the controller model is converted from floating-point to fixed-point (still in Python). This is best
 explained based on a block diagram including the number formats.
 
+Note that a sample and hold block is used to keep the value of the integrator from one sample to the next.
+
 From here on many fixed-point formats are used. If you are not familiar to them yet, it is strongly suggested that you
 go through [en_cl_fix documentation](https://github.com/open-logic/en_cl_fix/blob/open-logic/README.md) and
 [olo_fix_principles](../fix/olo_fix_principles.md) now.
@@ -301,6 +303,7 @@ class ControllerOloFix (ControllerBase):
         self._i_add = olo_fix_add(FMT_I, FMT_IMULT, FMT_IADD)
         self._i_limit = olo_fix_limit(FMT_IADD, FMT_ILIM_NEG, FMT_ILIM, FMT_I)
         self._out_add = olo_fix_add(FMT_I, FMT_PPART, FMT_OUT, round=FixRound.NonSymPos_s, saturate=FixSaturate.Sat_s)
+        self._integrator = olo_fix_sample_hold(fmt=FMT_I, reset_value=0.0)
 ```
 
 In the simulation method, the signal is routed through the processing instances exactly as it is to be expected from
@@ -316,11 +319,13 @@ the block diagram.
 
         # I Part
         i_1 = self._i_mult.process(error, self._ki)
-        i_presat = self._i_add.process(self._integrator, i_1)
-        self._integrator = self._i_limit.process(i_presat, self._ilim_neg, self._ilim)
+        i_value = self._integrator.next(out_samples=1) # Get sample and hold value
+        i_presat = self._i_add.process(i_value, i_1)
+        lim_out = self._i_limit.process(i_presat, self._ilim_neg, self._ilim)
+        self._integrator.next(input=lim_out) # Update sample and hold value for the next iteration
 
         # Output
-        return self._out_add.process(self._integrator, p_part)
+        return self._out_add.process(lim_out, p_part)
 ```
 
 ### Simulation
@@ -493,31 +498,6 @@ tutorial is provided in [Appendix C](#appendix-c-verilog-rtl-implementation)
 Like all other Open Logic entities, _olo_fix_ entities are documented. For the code given above refer to
  [olo_fix_sub](../fix/olo_fix_sub.md).
 
-The _olo_fix_ entities used are fully pipelined. They can take one sample every clock cycle and as a result present the
-signal at the output also for only one clock cycle (indicated by the corresponding _*\_Valid_ signal). Usually this is
-fine but the Integrator must keep its value until the next sample arrives. This is implemented as a latch in a native
-VHDL process. This sample shows that _olo_fix_ mathematics can be easily mixed and matched with any other VHDL code.
-
-```vhdl
-...
-    p_feedback : process(Clk)
-    begin
-        if rising_edge(Clk) then
-            -- Normal Operation
-            if ILimited_Valid = '1' then
-                Integrator <= ILimited;
-            end if;
-            Integrator_Valid <= ILimited_Valid;
-            -- Reset
-            if Rst = '1' then
-                Integrator <= (others => '0');
-                Integrator_Valid <= '0';
-            end if;
-        end if;
-    end process;
-...
-```
-
 ### Pipeline Equalization
 
 You might have noticed that the P-part multiplier has 8 register stages for the operation, which is a significant
@@ -553,6 +533,9 @@ same time at the output adder (_olo_fix_add_).
 The imbalance around the _olo_fix_neg_ for the calculation of the lower integration limit may seem suspicious.
 However, keep in mind that parameters (_KP, KI, ILIM_) are considered static - and hence their value won't change when
 the controller is running. As a result, this imbalance does not have any effect.
+
+The register at the output of _olo_fix_sample_hold_ does not have any impact because the loop latency is much
+shorter than the sample period.
 
 ### Synthesis Results
 

@@ -1,0 +1,22 @@
+{
+  signal: [
+    {name: 'Clk',          wave: 'p............'},
+    {name: 'In_Data',      wave: 'x34567x......', data: ['A', 'B', 'C', 'D', 'E', 'F']},
+    {name: 'In_Valid',     wave: '01....0......',
+                           node: '.A'},
+    {name: 'In_Ready',     wave: '1....0...1...'},
+    {name: 'In_Level',     wave: '2.2222...2222', data: ['0', '1', '2', '3', '4', '3', '2', '1', '0'],
+                           node: '..B......F'},
+    {name: 'Full',         wave: '0....1...0...'},
+    {name: 'Out_Data',     wave: 'x..3....456x.', data: ['A', 'B', 'C', 'D', 'E', 'F']},
+    {name: 'Out_Valid',    wave: '0..1.......0.'},
+    {name: 'Out_Ready',    wave: '0......1.....',
+                           node: '.......D'},
+    {name: 'Out_Level',    wave: '2..2222.2222.', data: ['0', '1', '2', '3', '4', '3', '2', '1', '0'],
+                           node: '...C....E'},
+    {name: 'Empty',        wave: '1..0.......1.'},
+  ],
+  edge: [
+    'A->B 1', 'A->C 2', 'D->E 1', 'D->F 2'
+  ]
+}

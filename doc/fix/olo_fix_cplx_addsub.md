@@ -1,0 +1,76 @@
+<img src="../Logo.png" alt="Logo" width="400">
+
+# olo_fix_cplx_addsub
+
+[Back to **Entity List**](../EntityList.md)
+
+## Status Information
+
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_fix_cplx_addsub.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_cplx_addsub.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_cplx_addsub.json?cacheSeconds=0)
+
+VHDL Source: [olo_fix_cplx_addsub](../../src/fix/vhdl/olo_fix_cplx_addsub.vhd)<br />
+Bit-true Model: [olo_fix_cplx_addsub](../../src/fix/python/olo_fix/olo_fix_cplx_addsub.py)
+
+## Description
+
+This entity performs addition or subtraction of two complex fixed-point numbers. (I in-phase) and Q (quadrature-phase)
+can be handled parallel or TDM on inputs and outputs.
+
+**Latency** of this entity is _OpRegs_g_ clock cycles plus optional rounding and saturation registers. The default
+generics lead to a latency of 3 clock cycles.
+
+For details about the fixed-point number format used in _Open Logic_, refer to the
+[fixed point principles](./olo_fix_principles.md).
+
+## Generics
+
+| Name         | Type    | Default    | Description                                                  |
+| :----------- | :------ | ---------- | :----------------------------------------------------------- |
+| AFmt_g       | string  | -          | Input A format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
+| BFmt_g       | string  | -          | Input B format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
+| ResultFmt_g  | string  | -          | Format of the result<br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
+| Operation_g  | string  | "Add"      | Operation to perform<br />"Add": Perform addition<br />"Sub": Perform subtraction |
+| Round_g      | string  | "Trunc_s"  | Rounding mode<br />String representation of an _en_cl_fix FixRound_t_. |
+| Saturate_g   | string  | "Warn_s"   | Saturation mode<br />String representation of an _en_cl_fix FixSaturate_t_. |
+| OpRegs_g     | natural | 1          | Number of pipeline stages for the operation                  |
+| RoundReg_g   | string  | "YES"      | Presence of rounding pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if rounding is needed according to the formats chosen |
+| SatReg_g     | string  | "YES"      | Presence of saturation pipeline stage<br />"YES": Always implement register<br />"NO": Never implement register<br />"AUTO": Implement register if saturation is needed according to the formats chosen |
+| IqHandling_g | string  | "Parallel" | "Parallel" - I/Q arrive in parallel, ports _InA_I_ and _InA_Q_ are used <br> "TDM" - I/Q arrive TDM, port _InA_IQ_ is used |
+
+## Interfaces
+
+### Control
+
+| Name | In/Out | Length | Default | Description                                                  |
+| :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
+| Clk  | in     | 1      | '0'     | Clock<br />Not required if all registers are disabled (_OpRegs_g=0, RoundReg_g="NO", SatReg_g="NO"_) |
+| Rst  | in     | 1      | '0'     | Reset input (high-active, synchronous to _Clk_)<br />Not required if all registers are disabled (_OpRegs_g=0, RoundReg_g="NO", SatReg_g="NO"_) |
+
+### Input Data
+
+| Name     | In/Out | Length          | Default | Description                                                                   |
+| :------- | :----- | :-------------- | ------- | :---------------------------------------------------------------------------- |
+| InA_I    | in     | _width(AFmt_g)_ | 0       | Input data in-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_         |
+| InA_Q    | in     | _width(AFmt_g)_ | 0       | Input data quadrature-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_ |
+| InA_IQ   | in     | _width(AFmt_g)_ | 0       | Input data for _IqHandling_g=TDM_<br />Format: _AFmt_g_                       |
+| InB_I    | in     | _width(BFmt_g)_ | 0       | Input data in-phase for _IqHandling_g=Parallel_<br />Format: _BFmt_g_         |
+| InB_Q    | in     | _width(BFmt_g)_ | 0       | Input data quadrature-phase for _IqHandling_g=Parallel_<br />Format: _BFmt_g_ |
+| InB_IQ   | in     | _width(BFmt_g)_ | 0       | Input data for _IqHandling_g=TDM_<br />Format: _BFmt_g_                       |
+| In_Valid | in     | 1               | '1'     | AXI4-Stream handshaking signal for _InA_ and _InB_                            |
+| In_Last  | in     | 1               | '0'     | Used for optional TDM synchronization for _IqHandling=TDM_.                   |
+
+### Output Data
+
+| Name       | In/Out | Length               | Default | Description                                                                        |
+| :--------- | :----- | :------------------- | ------- | :--------------------------------------------------------------------------------- |
+| Out_I      | out    | _width(ResultFmt_g)_ | N/A     | Result data in-phase for _IqHandling_g=Parallel_<br />Format _ResultFmt_g_         |
+| Out_Q      | out    | _width(ResultFmt_g)_ | N/A     | Result data quadrature-phase for _IqHandling_g=Parallel_<br />Format _ResultFmt_g_ |
+| Out_IQ     | out    | _width(ResultFmt_g)_ | N/A     | Result data for _IqHandling_g=TDM_<br />Format _ResultFmt_g_                       |
+| Out_Valid  | out    | 1                    | N/A     | AXI4-Stream handshaking signal for _Out_I_, _Out_Q_, _Out_IQ_                      |
+| Out_Last   | out    | 1                    | N/A     | Used for optional TDM synchronization for _IqHandling=TDM_.                        |
+
+## Detail
+
+No detail description required.

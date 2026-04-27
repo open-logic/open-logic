@@ -37,7 +37,7 @@ This component offers the following additional features compared to [olo_base_fi
     occurs and the transmission is aborted. In this situation the user logic can assert _Out_Repeat_ to read the same
     packet again and retry the transmission.
 
-Below samples assumes _Depth_g_=32.
+Below samples assumes _Depth_g_=32  and _Optimiization_g_=SPEED.
 
 ![BasicWaveform](./fifo/olo_base_fifo_packet_basic.png)
 
@@ -52,10 +52,8 @@ for different technologies (some technologies implement one, some the other beha
 The FIFO contains a large RAM for packet data and a small [olo_base_fifo_sync](./olo_base_fifo_sync.md) for storing the
 sizes of individual packets.
 
-**Note:** Due to implementation reasons the FIFO introduces one stall cycle per packet on the read-side. Hence the FIFO
-throughput is suboptimal for very small packets.
-
 Packets exceeding _Depth_g_ cannot be processed in store and forward mode and are therefore dropped automatically.
+Additionally packets exceeding _MaxPacketSize_g_ are dropped if _MaxPacketSize_g_ is set to any other value than -1.
 
 ### Feature Set
 
@@ -63,11 +61,26 @@ The FIFO supports two features sets (_FeatureSet_g_):
 
 - _FULL_: Exactly as described above
 - _DROP_ONLY_: Only supports dropping packets on the write side. Skipping and repeating packets on the read side is not
-- supported. _Out_Size_ is not provided.
+   supported. _Out_Size_ is not provided.
+- _DROP_SKIP_ONLY_: Supports dropping packets on the write side and skipping packets on the read side. Repeating packets
+   on the read side is not supported.
 
 The _DROP_ONLY_ feature set requires less resources and does not limit the number of packets that can be stored in the
 FIFO. This prevents backpressure due to reaching the maximum packet count - which is especially useful for cases where
 the packet size varies a lot or there are a huge number of very small packets.
+
+### Optimization
+
+The FIFO can be optimized for two targets.
+
+- _SPEED_: The FIFO is optimized for best clock speed.
+  - Due to implementation reasons the FIFO introduces one stall cycle per packet on the read-side in this mode. Hence
+    the FIFO throughput is suboptimal for small packets.
+  - This mode is supported for all _FeatureSet_g_ options.
+- _THROUGHPUT_: The FIFO is optimized for best throughput.
+  - In this mode no stall cycles are introduced on the read side. Hence the FIFO can achieve a throughput of 100% even
+    for small packets as long they are more than 3 data-beats in size.
+  - This mode is only supported for _FeatureSet_g=DROP_ONLY_ and _FeatureSet_g=DROP_SKIP_ONLY_.
 
 ## Generics
 
@@ -75,7 +88,9 @@ the packet size varies a lot or there are a huge number of very small packets.
 | :----------------- | :-------- | ------- | :----------------------------------------------------------- |
 | Width_g            | positive  | -       | Number of bits per FIFO entry (word-width)                   |
 | Depth_g            | positive  | -       | Number of FIFO entries                                       |
-| FeatureSet_g       | string    | "FULL"  | Feature set to implement:<br> _FULL_: All Features<br> _DROP_ONLY_: No _Out_Repeat_, _Out_Next_ and _Out_Size_ |
+| MaxPacketSize_g    | integer   | -1      | Maximum allowed packet size in number of words/data-beats. <br> -1: No limit is enforced, only packets > _Depth_g_ are discarded <br> _Positive Integer_: Packets > _MaxPacketSize_g_ are discarded |
+| FeatureSet_g       | string    | "FULL"  | Feature set to implement:<br> _FULL_: All Features<br> _DROP_ONLY_: No _Out_Repeat_, _Out_Next_ and _Out_Size_<br> _DROP_SKIP_ONLY_: No _Out_Repeat_ |
+| Optimization_g     | string    | "SPEED"  | Optimization target:<br> _SPEED_: Optimized for best clock speed (introduces one stall cycle per packet on the read side)<br> _THROUGHPUT_: Optimized for best throughput (no stall cycles on the read side, but only supported for _DROP_ONLY_ and _DROP_SKIP_ONLY_) |
 | RamStyle_g         | string    | "auto"  | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes _ram_style_ and _ramstyle_ which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 | RamBehavior_g      | string    | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 | SmallRamStyle_g    | string    | "auto"  | Same as _RamStyle_g_ but applies to the small FIFO for packet sizes instead of the main RAM. <br>Offers the additional option "same" to use the same value as for _RamStyle_g_. <br>**Not used for _FeatureSet_g=DROP_ONLY_** |
@@ -112,7 +127,7 @@ the packet size varies a lot or there are a huge number of very small packets.
 | Out_Last   | out    | 1                       | N/A     | AXI4-Stream end of packet signaling for _Out_Data_ |
 | Out_Size   | out    | ceil(log2(_Depth_g_+1)) | N/A     | Indicates the size of the current packet in words/data-beats. <br>**Not used for _FeatureSet_g=DROP_ONLY_** |
 | Out_Next   | in     | 1                       | '0'     | Assert this signal for aborting readout of the current packet and jump to the next one. <br>**Not used for _FeatureSet_g=DROP_ONLY_** |
-| Out_Repeat | in     | 1                       | '0'     | Assert this signal for repeating this packet one more time after it was read completely (or it was aborted due to _Out_Next_). <br>**Not used for _FeatureSet_g=DROP_ONLY_** |
+| Out_Repeat | in     | 1                       | '0'     | Assert this signal for repeating this packet one more time after it was read completely (or it was aborted due to _Out_Next_). <br>**Not used for _FeatureSet_g=DROP_ONLY_ and _FeatureSet_g=DROP_SKIP_ONLY_** |
 
 For aborting the current packet and repeating it one more time, _Out_Next_ and _Out_Repeat_ can be asserted both at the
 same time.
@@ -124,14 +139,14 @@ readout of the packet.
 
 | Name         | In/Out | Length                       | Default | Description                                                  |
 | :----------- | :----- | :--------------------------- | ------- | :----------------------------------------------------------- |
-| PacketLevel  | out    | ceil(log2(_MaxPackets_g_+1)) | N/A     | Number of packets stored in the FIFO. The counter is incremented _after_ a packet was written completely and decremented _after_ the packet was read completely or skipped (due to _Out_Next_).<br> **Note:** Because in 'FeatureSet_g=DROP_ONLY` the packet number is not limited, _PacketLevel_ will wrap around on overflow unless the user ensures 'MaxPackets_g' is never exceeded. |
-| FreeWords    | out    | ceil(log2(_Depth_g_+1))      | N/A     | Available space in the FIFO. The counter is decremented _during_ writing of the packet as the individual words are written and increased _after_ the packet was read completely or skipped (due to _Out_Next_). The counter is also increased if a packet is dropped (due to _In_Drop_ or its size exceeding _Depth_g_)  |
+| PacketLevel  | out    | ceil(log2(_MaxPackets_g_+1)) | N/A     | Number of packets stored in the FIFO. The counter is incremented _after_ a packet was written completely and decremented _after_ the packet was read completely or skipped (due to _Out_Next_).<br> **Note:** Because in _FeatureSet_g=DROP_ONLY_ the packet number is not limited, _PacketLevel_ will wrap around on overflow unless the user ensures 'MaxPackets_g' is never exceeded. |
+| FreeWords    | out    | ceil(log2(_Depth_g_+1))      | N/A     | Available space in the FIFO. The counter is decremented _during_ writing of the packet as the individual words are written.<br> The counter is increased _after_ the packet was read completely or skipped (due to _Out_Next_) for _Optimization_g=SPEED_<br> The counter is increased with every word read for _Optimization_g=THROUGHPUT_.<br> The counter is also increased if a packet is dropped (due to _In_Drop_ or its size exceeding _Depth_g_ or _MaxPacketSize_g_)  |
 
 ## Details
 
 ### Architecture
 
-#### FeatureSet_g = FULL
+#### FeatureSet_g = FULL / DROP_SKIP_ONLY
 
 The FIFO works like a normal FIFO, just that it contains a small FIFO storing the end address for each packet. This
 allows to calculate the packet size on the read size for indication through _Out_Size_ and asserting _Out_Last_ on the
@@ -149,7 +164,7 @@ The _olo_base_fifo_packet_ does stop accepting new packets when _MaxPackets_g_ i
 #### FeatureSet_g = DROP_ONLY
 
 The architecture is similar to the _FULL_ feature set, just that the small FIFO for storing the end-addresses of packets
-is omitted and replaced by simply handing over the end address of the last completelyy written packet to the read logic.
+is omitted and replaced by simply handing over the end address of the last completely written packet to the read logic.
 
 This option can be especially useful if the packet size varies a lot and for
 target technologies where distributed RAM is not available and hence the
@@ -188,7 +203,7 @@ easy understanding of the waveforms and to be in-line with the AXI4-Stream hands
 
 ### Skipping Packets on Read Side
 
-**This feature is only supported for _FeatureSet_g=FULL_**.
+**This feature is only supported for _FeatureSet_g=FULL_ and _FeatureSet_g=DROP_SKIP_ONLY_**.
 
 For skipping the rest of a packet on the read side, the _Out_Next_ signal is aserted anywhere between (including) the
 transaction of the first data word and the transaction of the last data word. Asserting the signal on the last data word

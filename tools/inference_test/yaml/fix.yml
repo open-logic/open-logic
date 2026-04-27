@@ -171,3 +171,94 @@ entities:
           Order_g: '3'
           InFmt_g: '"(1, 0, 15)"'
           OutFmt_g: '"(1, 0, 15)"'
+  # olo_fix_cplx_addsub
+  - entity_name: "olo_fix_cplx_addsub"
+    configurations:
+      - name: "1-8-8-->0-4-4"
+        generics:
+          AFmt_g: '"(1,8,8)"'
+          BFmt_g: '"(1,8,8)"'
+          ResultFmt_g: '"(0,4,4)"'
+  # olo_fix_madd
+  - entity_name: "olo_fix_madd"
+    configurations:
+      - name: "16+16x16"
+        generics:
+          AFmt_g: '"(1,9,6)"'
+          CFmt_g: '"(1,9,6)"'
+          BFmt_g: '"(1,9,6)"'
+          AddChainFmt_g: '"(1,30,12)"'
+          PreAdd_g: true
+        in_reduce:
+          InA_Data: 16
+          InB_Data: 16
+          InC_Data: 16
+          MaccIn: 43
+        out_reduce:
+          Out_Data: 43
+  # olo_fix_cplx_mult
+  - entity_name: "olo_fix_cplx_mult"
+    configurations:
+      - name: MULT3
+        generics:
+          Mode_g: '"MULT"'
+          Implementation_g: '"MULT3"'
+          AFmt_g: '"(1,0,15)"'
+          BFmt_g: '"(1,0,15)"'
+          ResultFmt_g: '"(1,0,15)"'
+          MultRegs_g: 2
+        in_reduce:
+          InA_I: 16
+          InA_Q: 16
+          InA_IQ: 16
+          InB_I: 16
+          InB_Q: 16
+          InB_IQ: 16
+        out_reduce:
+          Out_I: 16
+          Out_Q: 16
+          Out_IQ: 16
+      - name: MULT4
+        generics:
+          Mode_g: '"MULT"'
+          Implementation_g: '"MULT4"'
+          AFmt_g: '"(1,0,15)"'
+          BFmt_g: '"(1,0,15)"'
+          ResultFmt_g: '"(1,0,15)"'
+          MultRegs_g: 2
+        in_reduce:
+          InA_I: 16
+          InA_Q: 16
+          InA_IQ: 16
+          InB_I: 16
+          InB_Q: 16
+          InB_IQ: 16
+        out_reduce:
+          Out_I: 16
+          Out_Q: 16
+          Out_IQ: 16
+      - name: TDM
+        generics:
+          Mode_g: '"MULT"'
+          IqHandling_g: '"TDM"'
+          AFmt_g: '"(1,0,15)"'
+          BFmt_g: '"(1,0,15)"'
+          ResultFmt_g: '"(1,0,15)"'
+          MultRegs_g: 2
+        in_reduce:
+          InA_I: 16
+          InA_Q: 16
+          InA_IQ: 16
+          InB_I: 16
+          InB_Q: 16
+          InB_IQ: 16
+        out_reduce:
+          Out_I: 16
+          Out_Q: 16
+          Out_IQ: 16
+  # olo_fix_sample_hold
+  - entity_name: "olo_fix_sample_hold"
+    configurations:
+      - name: "default"
+        generics:   
+          Fmt_g: '"(1, 8, 4)"'

@@ -45,9 +45,9 @@ Below figure provides an example waveform for both modes of operation.
 | Name      | In/Out | Length    | Default | Description                                                  |
 | :-------- | :----- | :-------- | ------- | :----------------------------------------------------------- |
 | Clk       | in     | 1         | -       | Clock                                                        |
-| Rst       | in     | 1         | '0'     | Reset input (high-active, synchronous to _Clk_)<br />For synchronizers the reset is normally not required. |
+| Rst       | in     | 1         | -       | Reset input (high-active, synchronous to _Clk_)<br />For synchronizers the reset is normally not required. |
 | DataAsync | in     | _Width_g_ | -       | Vector of independent input bits (asynchronous external input). |
-| DataSync  | out    | _Width_g_ | N/A     | Vector of synchronized and debounced output bits (synchronous to _Clk_) |
+| DataOut   | out    | _Width_g_ | N/A     | Vector of synchronized and debounced output bits (synchronous to _Clk_) |
 
 ## Architecture
 
