@@ -10,7 +10,7 @@ from functools import partial
 
 # Import open-logic test configurations
 # .. they are in separate files to keep the size of run.py in range
-from test_configs import olo_axi, olo_intf, olo_fix, olo_base
+from test_configs import olo_axi, olo_intf, olo_fix, olo_base, olo_ft
 from codegen import generate as codegen_generate
 
 ########################################################################################################################
@@ -104,7 +104,7 @@ vu.add_compile_option('nvc.a_flags', ['--relaxed'])
 ########################################################################################################################
 
 # Load all TB configs. For the exact configurations, see the test_configs folder.
-for area in [olo_base, olo_axi, olo_intf, olo_fix]:
+for area in [olo_base, olo_axi, olo_intf, olo_fix, olo_ft]:
     area.add_configs(olo_tb)
 
 ########################################################################################################################
@@ -130,7 +130,10 @@ olo_tb.set_sim_option('nvc.heap_size', '5000M')
 
 # Disable IEEE numeric_std warnings to avoid slow simulation speed due to X-propagation
 olo_tb.set_sim_option('ghdl.sim_flags', ['--ieee-asserts=disable'])
-olo_tb.set_sim_option('nvc.global_flags', ['--ieee-warnings=off'])
+try:
+    olo_tb.set_sim_option('nvc.global_flags', ['--ieee-warnings=off'])
+except ValueError:
+    pass  # nvc.global_flags not supported in older VUnit versions
 vu.set_sim_option("disable_ieee_warnings", True)
 
 
