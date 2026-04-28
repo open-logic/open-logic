@@ -29,6 +29,14 @@ args = parser.parse_args()
 # Types
 ########################################################################################################################
 class Entity:
+    @classmethod
+    def fill_manually(cls, name : str, statements : float, branches : float):
+        entity = cls()
+        entity.name = name
+        entity.statements = statements
+        entity.branches = branches
+        return entity
+
     def __init__(self):
         self.name = None
         self.statements = None
@@ -63,6 +71,16 @@ for line in fd.readlines():
     if "Statements" in line:
         entity.parse_statement_line(line)
         entities.append(entity)
+
+#*** Enforce report for entities without statements ***
+# These entities do not aturally not show up in reports. We can add them if they are missing (and like this
+# we for sure do not override real coverage results)
+enforc_entities = ["olo_fix_cplx_addsub"]
+for enforce_entity in enforc_entities:
+    if not enforc_entities in [entity.name for entity in entities]:
+        print(f"Adding missing entity {enforce_entity} with 100% coverage")
+        entities.append(Entity.fill_manually(enforce_entity, 100.0, 100.0))
+
 
 #*** Generate Output ***
 print("Entity:                        Statements Branches")
