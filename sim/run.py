@@ -7,6 +7,7 @@ import os
 import sys
 from enum import Enum
 from functools import partial
+import uuid
 
 # Import open-logic test configurations
 # .. they are in separate files to keep the size of run.py in range
@@ -139,7 +140,12 @@ if USE_COVERAGE:
     olo.set_compile_option('modelsim.vlog_flags', ['+cover=bs'])
     olo_tb.set_sim_option("nvc.elab_flags", ["--cover"])
     olo_tb.set_sim_option("enable_coverage", True)
-    #Add coverage for package TBs (otherwise coverage does not work)
+    # NVC by default overwrites the coverage file, we therefore pass unique names to each case
+    for tb in olo_tb.get_test_benches("*"):
+          for config in tb._test_bench._configs.values():
+              config.set_sim_option("nvc.elab_flags", ["--cover", f"--cover-file={tb.name}_{uuid.uuid4()}.ncdb"])
+    
+    # Add coverage for package TBs (otherwise coverage does not work)
     for f in olo_tb.get_source_files("*_pkg_*_tb.vhd"):
         f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
     for f in olo_tb.get_source_files("*_pkg_tb.vhd"):

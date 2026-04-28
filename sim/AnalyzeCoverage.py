@@ -64,7 +64,12 @@ class EntityNvc:
 
     def parse_statement_line(self, line : str):
         parts = line.split(":")
-        self.statements = float(parts[-1].split("%")[0].strip())
+        self.statements = parts[-1].split("%")[0].strip()
+        if self.statements == "N.A.":
+            self.statements = 100.0
+            print("Warning: Statement coverage is N.A., setting to 100% for entity " + self.name)
+        else:
+            self.statements = float(self.statements)
 
     def parse_branch_line(self, line : str):
         parts = line.split(":")
@@ -116,7 +121,10 @@ for line in fd.readlines():
 
 #*** Generate Output ***
 print("Entity:                        Statements Branches")
-for entity in entities:
+for entity in sorted(entities, key=lambda e: e.name):
+    #Do not show TBs
+    if entity.name.endswith("_tb"):
+        continue
     # Print coverage
     print(f"{entity.name:25}: {entity.statements:9}% {entity.branches:9}%")
     # Crate badge
