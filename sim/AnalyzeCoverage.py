@@ -75,7 +75,7 @@ for line in fd.readlines():
 #*** Enforce report for entities without statements ***
 # These entities do not aturally not show up in reports. We can add them if they are missing (and like this
 # we for sure do not override real coverage results)
-enforc_entities = ["olo_fix_cplx_addsub"]
+enforc_entities = ["olo_fix_cplx_addsub", "olo_fix_sample_hold"]
 for enforce_entity in enforc_entities:
     if not enforc_entities in [entity.name for entity in entities]:
         print(f"Adding missing entity {enforce_entity} with 100% coverage")
