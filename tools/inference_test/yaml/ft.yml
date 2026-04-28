@@ -22,11 +22,11 @@ entities:
         generics: { Width_g: 32, EccPipeline_g: 0, RdLatency_g: 1 }
       - name: "w64-ecc0-lat1"
         generics: { Width_g: 64, EccPipeline_g: 0, RdLatency_g: 1 }
-        in_reduce: { WrData: 64 }
+        in_reduce: { WrData: 64, WrEccBitFlip: 72 }
         out_reduce: { RdData: 64 }
       - name: "w128-ecc0-lat1"
         generics: { Width_g: 128, EccPipeline_g: 0, RdLatency_g: 1 }
-        in_reduce: { WrData: 128 }
+        in_reduce: { WrData: 128, WrEccBitFlip: 137 }
         out_reduce: { RdData: 128 }
       - name: "w16-ecc1-lat1"
         generics: { Width_g: 16, EccPipeline_g: 1, RdLatency_g: 1 }
@@ -34,11 +34,11 @@ entities:
         generics: { Width_g: 32, EccPipeline_g: 1, RdLatency_g: 1 }
       - name: "w64-ecc1-lat1"
         generics: { Width_g: 64, EccPipeline_g: 1, RdLatency_g: 1 }
-        in_reduce: { WrData: 64 }
+        in_reduce: { WrData: 64, WrEccBitFlip: 72 }
         out_reduce: { RdData: 64 }
       - name: "w128-ecc1-lat1"
         generics: { Width_g: 128, EccPipeline_g: 1, RdLatency_g: 1 }
-        in_reduce: { WrData: 128 }
+        in_reduce: { WrData: 128, WrEccBitFlip: 137 }
         out_reduce: { RdData: 128 }
       - name: "w16-ecc0-lat2"
         generics: { Width_g: 16, EccPipeline_g: 0, RdLatency_g: 2 }
@@ -46,11 +46,11 @@ entities:
         generics: { Width_g: 32, EccPipeline_g: 0, RdLatency_g: 2 }
       - name: "w64-ecc0-lat2"
         generics: { Width_g: 64, EccPipeline_g: 0, RdLatency_g: 2 }
-        in_reduce: { WrData: 64 }
+        in_reduce: { WrData: 64, WrEccBitFlip: 72 }
         out_reduce: { RdData: 64 }
       - name: "w128-ecc0-lat2"
         generics: { Width_g: 128, EccPipeline_g: 0, RdLatency_g: 2 }
-        in_reduce: { WrData: 128 }
+        in_reduce: { WrData: 128, WrEccBitFlip: 137 }
         out_reduce: { RdData: 128 }
       - name: "w16-ecc1-lat2"
         generics: { Width_g: 16, EccPipeline_g: 1, RdLatency_g: 2 }
@@ -58,9 +58,9 @@ entities:
         generics: { Width_g: 32, EccPipeline_g: 1, RdLatency_g: 2 }
       - name: "w64-ecc1-lat2"
         generics: { Width_g: 64, EccPipeline_g: 1, RdLatency_g: 2 }
-        in_reduce: { WrData: 64 }
+        in_reduce: { WrData: 64, WrEccBitFlip: 72 }
         out_reduce: { RdData: 64 }
       - name: "w128-ecc1-lat2"
         generics: { Width_g: 128, EccPipeline_g: 1, RdLatency_g: 2 }
-        in_reduce: { WrData: 128 }
+        in_reduce: { WrData: 128, WrEccBitFlip: 137 }
         out_reduce: { RdData: 128 }
