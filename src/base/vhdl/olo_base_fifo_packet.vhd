@@ -80,7 +80,7 @@ architecture rtl of olo_base_fifo_packet is
     -- Constants
     constant SmallRamStyle_c    : string  := choose(compareNoCase(SmallRamStyle_g, "same"), RamStyle_g, SmallRamStyle_g);
     constant SmallRamBehavior_c : string  := choose(compareNoCase(SmallRamBehavior_g, "same"), RamBehavior_g, SmallRamBehavior_g);
-    constant MaxPktSize_c       : natural := choose(MaxPacketSize_g = -1, Depth_g, minimum(MaxPacketSize_g, Depth_g));
+    constant MaxPktSize_c       : natural := choose(MaxPacketSize_g = -1, Depth_g, work.olo_base_pkg_math.min(MaxPacketSize_g, Depth_g));
     -- Throughput optimization is not possible for FULL feature set
     constant ThroughputOpt_c    : boolean := compareNoCase(Optimization_g, "THROUGHPUT") and not compareNoCase(FeatureSet_g, "full");
 
