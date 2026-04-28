@@ -40,8 +40,8 @@ This is useful in **radiation-hardened** designs where single-event upsets (SEUs
 | WrData       | in     | _Width_g_             | -       | Write data                                                   |
 | WrEccBitFlip | in     | _eccCodewordWidth(Width_g)_ | (others => '0') | ECC error injection for testing/BIST. Each '1' bit XORs (flips) the corresponding bit of the stored codeword. Popcount 1 = SEC-correctable, popcount 2 = DED-detectable.<br>See [Error Injection](#error-injection). |
 | RdData       | out    | _Width_g_             | N/A     | Read data (corrected if a single-bit error was detected)     |
-| RdSecErr     | out    | 1                     | N/A     | Single error corrected flag. '1' when a single-bit error was detected and corrected. |
-| RdDedErr     | out    | 1                     | N/A     | Double error detected flag. '1' when an uncorrectable double-bit error was detected. Read data is unreliable in this case. |
+| RdEccSec     | out    | 1                     | N/A     | Single error corrected flag. '1' when a single-bit error was detected and corrected. |
+| RdEccDed     | out    | 1                     | N/A     | Double error detected flag. '1' when an uncorrectable double-bit error was detected. Read data is unreliable in this case. |
 
 ## Detailed Description
 
@@ -49,7 +49,7 @@ This is useful in **radiation-hardened** designs where single-event upsets (SEUs
 
 ```
 Write path:  WrData -> eccEncode -> XOR bit-flip injection -> wider internal RAM
-Read path:   wider internal RAM -> eccSyndromeAndParity -> eccCorrectData + SecErr/DedErr -> [optional ECC pipeline]
+Read path:   wider internal RAM -> eccSyndromeAndParity -> eccCorrectData + EccSec/EccDed -> [optional ECC pipeline]
 ```
 
 The ECC encoding is combinational on the write path. The internal RAM (an instance of _olo_base_ram_sp_ with wider
@@ -81,9 +81,9 @@ fully verify the SECDED codec.
 
 | Popcount of WrEccBitFlip | Meaning              | Behavior                                                        |
 | :----------------------- | :------------------- | :-------------------------------------------------------------- |
-| 0                        | No injection         | Codeword stored unchanged. _RdSecErr_ = '0', _RdDedErr_ = '0'.  |
-| 1                        | Single-bit error     | SEC-correctable. _RdSecErr_ = '1', _RdDedErr_ = '0', data corrected. |
-| 2                        | Double-bit error     | DED-detectable. _RdSecErr_ = '0', _RdDedErr_ = '1', data unreliable. |
+| 0                        | No injection         | Codeword stored unchanged. _RdEccSec_ = '0', _RdEccDed_ = '0'.  |
+| 1                        | Single-bit error     | SEC-correctable. _RdEccSec_ = '1', _RdEccDed_ = '0', data corrected. |
+| 2                        | Double-bit error     | DED-detectable. _RdEccSec_ = '0', _RdEccDed_ = '1', data unreliable. |
 | ≥ 3                      | Outside SECDED range | Detection behavior is undefined - the SECDED Hamming code only guarantees correct classification for at most 2 bit errors. |
 
 Codeword bit 0 is the overall parity bit, bits at power-of-2 positions (1, 2, 4, 8, ...) are Hamming parity bits, and
