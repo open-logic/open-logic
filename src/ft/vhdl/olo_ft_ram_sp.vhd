@@ -46,7 +46,7 @@ entity olo_ft_ram_sp is
         Addr         : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         WrEna        : in    std_logic                               := '1';
         WrData       : in    std_logic_vector(Width_g - 1 downto 0);
-        WrEccBitFlip : in    std_logic_vector(1 downto 0)            := "00";
+        WrEccBitFlip : in    std_logic_vector(eccCodewordWidth(Width_g) - 1 downto 0) := (others => '0');
         RdData       : out   std_logic_vector(Width_g - 1 downto 0);
         RdSecErr     : out   std_logic;
         RdDedErr     : out   std_logic
@@ -78,10 +78,8 @@ begin
     -- Encode write data
     Wr_Encoded <= eccEncode(WrData);
 
-    -- Error injection (flip codeword bits for testing / BIST)
-    Wr_Injected(CodewordWidth_c - 1 downto 2) <= Wr_Encoded(CodewordWidth_c - 1 downto 2);
-    Wr_Injected(1)                             <= Wr_Encoded(1) xor WrEccBitFlip(1);
-    Wr_Injected(0)                             <= Wr_Encoded(0) xor WrEccBitFlip(0);
+    -- Error injection (XOR full bit-flip pattern into the encoded codeword for testing / BIST)
+    Wr_Injected <= Wr_Encoded xor WrEccBitFlip;
 
     -- Internal RAM with wider codeword width
     i_ram : entity work.olo_base_ram_sp

@@ -38,7 +38,7 @@ This is useful in **radiation-hardened** designs where single-event upsets (SEUs
 | Addr         | in     | _ceil(log2(Depth_g))_ | -       | Address                                                      |
 | WrEna        | in     | 1                     | '1'     | Write enable                                                 |
 | WrData       | in     | _Width_g_             | -       | Write data                                                   |
-| WrEccBitFlip | in     | 2                     | "00"    | ECC error injection for testing/BIST. Each bit flips the corresponding bit in the stored codeword.<br>"01" = single-bit error, "11" = double-bit error.<br>See [Error Injection](#error-injection). |
+| WrEccBitFlip | in     | _eccCodewordWidth(Width_g)_ | (others => '0') | ECC error injection for testing/BIST. Each '1' bit XORs (flips) the corresponding bit of the stored codeword. Popcount 1 = SEC-correctable, popcount 2 = DED-detectable.<br>See [Error Injection](#error-injection). |
 | RdData       | out    | _Width_g_             | N/A     | Read data (corrected if a single-bit error was detected)     |
 | RdSecErr     | out    | 1                     | N/A     | Single error corrected flag. '1' when a single-bit error was detected and corrected. |
 | RdDedErr     | out    | 1                     | N/A     | Double error detected flag. '1' when an uncorrectable double-bit error was detected. Read data is unreliable in this case. |
@@ -74,12 +74,20 @@ The SECDED Hamming code adds parity bits to each stored word:
 
 ### Error Injection
 
-The _WrEccBitFlip_ port allows deliberate injection of bit errors into stored codewords. This is useful for testing the
-ECC mechanism in simulation and for built-in self-test (BIST) in hardware.
+The _WrEccBitFlip_ port allows arbitrary bit-flip patterns to be XORed into the stored codeword on each write. This is
+useful for testing the ECC mechanism in simulation and for built-in self-test (BIST) in hardware. The port is the
+full codeword width (_eccCodewordWidth(Width_g)_), so any bit position can be exercised - which is needed to
+fully verify the SECDED codec.
 
-- Setting bit 0 to '1' flips bit 0 of the stored codeword (overall parity bit)
-- Setting bit 1 to '1' flips bit 1 of the stored codeword (first Hamming parity bit)
-- Setting both bits to '1' injects a double-bit error
+| Popcount of WrEccBitFlip | Meaning              | Behavior                                                        |
+| :----------------------- | :------------------- | :-------------------------------------------------------------- |
+| 0                        | No injection         | Codeword stored unchanged. _RdSecErr_ = '0', _RdDedErr_ = '0'.  |
+| 1                        | Single-bit error     | SEC-correctable. _RdSecErr_ = '1', _RdDedErr_ = '0', data corrected. |
+| 2                        | Double-bit error     | DED-detectable. _RdSecErr_ = '0', _RdDedErr_ = '1', data unreliable. |
+| ≥ 3                      | Outside SECDED range | Detection behavior is undefined - the SECDED Hamming code only guarantees correct classification for at most 2 bit errors. |
+
+Codeword bit 0 is the overall parity bit, bits at power-of-2 positions (1, 2, 4, 8, ...) are Hamming parity bits, and
+all remaining positions hold data bits. See [olo_ft_pkg_ecc](./olo_ft_pkg_ecc.md) for the full codeword layout.
 
 ### Constraints
 
