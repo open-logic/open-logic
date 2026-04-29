@@ -356,6 +356,9 @@ begin
     p_reg : process (Clk, Rst) is
     begin
         if rising_edge(Clk) then
+            RegCurr <= RegNext;
+
+            -- Reset
             if Rst = '1' then
                 RegCurr.ht_state <= Reset_State;
                 RegCurr.pairs  <= to_unsigned(0, PairsIdx_c+1);
@@ -366,8 +369,6 @@ begin
                 RegCurr.after_search <= Idle_s;
                 RegCurr.user_data <= DataClear_c;
                 RegCurr.hash <= to_unsigned(0, PairsIdx_c);
-            else
-                RegCurr <= RegNext;
             end if;
         end if;
     end process;
