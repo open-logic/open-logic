@@ -1,3 +1,22 @@
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2026 by Oliver Bruendler
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
+-- Description
+---------------------------------------------------------------------------------------------------
+-- This entity implements a hash-table.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/base/olo_base_hashtable.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
+
+---------------------------------------------------------------------------------------------------
+-- Libraries
+---------------------------------------------------------------------------------------------------
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
@@ -7,15 +26,18 @@ library olo;
     use olo.olo_base_pkg_logic.all;
     use olo.olo_base_pkg_string.all;
 
+---------------------------------------------------------------------------------------------------
+-- Entity
+---------------------------------------------------------------------------------------------------
 entity olo_base_hashtable is
     generic (
         Depth_g                 : positive;
         KeyWidth_g              : positive;
         ValueWidth_g            : positive;
-        Hash_g                  : string   := "CRC32";
-        RamStyle_g              : string   := "auto";
-        RamBehavior_g           : string   := "RBW";
-        ClearAfterReset_g       : boolean  := true
+        Hash_g                  : string  := "CRC32";
+        RamStyle_g              : string  := "auto";
+        RamBehavior_g           : string  := "RBW";
+        ClearAfterReset_g       : boolean := true
     );
     port (
         -- Sync interface --
@@ -91,7 +113,7 @@ architecture rtl of olo_base_hashtable is
     end record;
 
     signal RegNext, RegCurr : Reg_r;
-    signal Reset_State : HtState_t;
+    signal Reset_State      : HtState_t;
 
     signal Ram_WrAddr, Ram_RdAddr : unsigned(PairsIdx_c-1 downto 0);
     signal Ram_WrEna, Ram_RdEna   : std_logic;
@@ -163,22 +185,22 @@ begin
         variable Ops_v : std_logic_vector(4 downto 0);
     begin
         -- Default values
-        RegNext    <= RegCurr; -- Keep current register values by default
-        In_Ready   <= '0';
-        Ram_RdEna  <= '0';
-        Ram_RdAddr <= (others => '0');
-        Ram_WrAddr <= (others => '0');
-        Ram_WrEna  <= '0';
-        Ram_WrData <= Ram_RdData; -- Write data is read data by default
-        Out_Valid  <= '0';
-        Hash_InKey <= Ram_RdData.key;
+        RegNext     <= RegCurr; -- Keep current register values by default
+        In_Ready    <= '0';
+        Ram_RdEna   <= '0';
+        Ram_RdAddr  <= (others => '0');
+        Ram_WrAddr  <= (others => '0');
+        Ram_WrEna   <= '0';
+        Ram_WrData  <= Ram_RdData; -- Write data is read data by default
+        Out_Valid   <= '0';
+        Hash_InKey  <= Ram_RdData.key;
         Status_Busy <= '1';
 
         -- FSM
         case RegCurr.ht_state is
             when Idle_s =>
                 -- Hashtable ready for new operation
-                In_Ready <= '1';
+                In_Ready    <= '1';
                 Status_Busy <= '0';
                 if In_Valid = '1' then -- AXIS handshake
                     -- synthesis off
@@ -352,7 +374,8 @@ begin
     end process;
 
     -- Register process
-    Reset_State <= Clear_s when ClearAfterReset_g else Idle_s; 
+    Reset_State <= Clear_s when ClearAfterReset_g else Idle_s;
+
     p_reg : process (Clk, Rst) is
     begin
         if rising_edge(Clk) then
@@ -360,15 +383,15 @@ begin
 
             -- Reset
             if Rst = '1' then
-                RegCurr.ht_state <= Reset_State;
-                RegCurr.pairs  <= to_unsigned(0, PairsIdx_c+1);
-                RegCurr.wr_idx <= to_unsigned(0, PairsIdx_c);
-                RegCurr.rd_idx <= to_unsigned(0, PairsIdx_c);
-                RegCurr.cnt <= to_unsigned(0, PairsIdx_c);
-                RegCurr.key_found <= '0';
+                RegCurr.ht_state     <= Reset_State;
+                RegCurr.pairs        <= to_unsigned(0, PairsIdx_c+1);
+                RegCurr.wr_idx       <= to_unsigned(0, PairsIdx_c);
+                RegCurr.rd_idx       <= to_unsigned(0, PairsIdx_c);
+                RegCurr.cnt          <= to_unsigned(0, PairsIdx_c);
+                RegCurr.key_found    <= '0';
                 RegCurr.after_search <= Idle_s;
-                RegCurr.user_data <= DataClear_c;
-                RegCurr.hash <= to_unsigned(0, PairsIdx_c);
+                RegCurr.user_data    <= DataClear_c;
+                RegCurr.hash         <= to_unsigned(0, PairsIdx_c);
             end if;
         end if;
     end process;
