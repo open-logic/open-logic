@@ -180,13 +180,3 @@ Implemented for the following \<A\> / \<T\> combinations:
 
 - t_ainteger / integer
 - t_areal / real
-
-### lcgPrng()
-
-Return the pseudo-random number following `a` using the Linear Congruential Generator algorithm. However, the modulus is exclusively done using bitwise truncation
-
-```vhdl
-function lcgPrng(a : unsigned; mult, incr, modBits : integer) return unsigned
-```
-
-The implementation is compatible with hardware descriptions
