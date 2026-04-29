@@ -1,12 +1,10 @@
 ########################################################################################################################
 # Imports
 ########################################################################################################################
-from vunit import VUnit
+
+from vunit import VUnit, VUnitCLI
 from glob import glob
 import os
-import sys
-from enum import Enum
-from functools import partial
 
 # Import open-logic test configurations
 # .. they are in separate files to keep the size of run.py in range
@@ -24,60 +22,69 @@ codegen_generate()
 # Setup
 ########################################################################################################################
 
-class Simulator(Enum):
-    GHDL = 1
-    MODELSIM = 2
-    NVC = 3
-    RIVIERAPRO = 4
-
-#Execute from sim directory
+# Execute from sim directory
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-#Argument handling
-argv = sys.argv[1:]
-SIMULATOR = Simulator.GHDL
-USE_COVERAGE = False
-GENERATE_VHDL_LS_TOML = False
-GENERATE_COMPILE_LIST = False
+cli = VUnitCLI()
+group = cli.parser.add_mutually_exclusive_group()
+group.add_argument(
+    "--modelsim",
+    action="store_true",
+    default=False,
+    help="Use Modelsim/Questa as simulator",
+)
+group.add_argument(
+    "--nvc",
+    action="store_true",
+    default=False,
+    help="Use NVC as simulator",
+)
+group.add_argument(
+    "--ghdl",
+    action="store_true",
+    default=True,
+    help="Use GHDL as simulator (default)",
+)
+group.add_argument(
+    "--rivierapro",
+    action="store_true",
+    default=False,
+    help="Use Riviera-PRO as simulator",
+)
+cli.parser.add_argument(
+    "--coverage",
+    action="store_true",
+    default=False,
+    help="Enables simulation coverage",
+)
+cli.parser.add_argument(
+    "--vhdl_ls",
+    action="store_true",
+    default=False,
+    help="Generate VHDL LS TOML configuration file",
+)
+cli.parser.add_argument(
+    "--compile_list",
+    action="store_true",
+    default=False,
+    help="Generate compile order list and exit",
+)
 
-#Simulator Selection
-#.. The environment variable VUNIT_SIMULATOR has precedence over the commandline options.
-if "--modelsim" in sys.argv:
-    SIMULATOR = Simulator.MODELSIM
-    argv.remove("--modelsim")
-if "--nvc" in sys.argv:
-    SIMULATOR = Simulator.NVC
-    argv.remove("--nvc")
-if "--ghdl" in sys.argv:
-    SIMULATOR = Simulator.GHDL
-    argv.remove("--ghdl")
-if "--rivierapro" in sys.argv:
-    SIMULATOR = Simulator.RIVIERAPRO
-    argv.remove("--rivierapro")
-if "--coverage" in sys.argv:
-    USE_COVERAGE = True
-    argv.remove("--coverage")
-    if SIMULATOR != Simulator.MODELSIM:
-        raise "Coverage is only allowed with --modelsim"
-if "--vhdl_ls" in sys.argv:
-    GENERATE_VHDL_LS_TOML = True
-    argv.remove("--vhdl_ls")
-if "--compile_list" in sys.argv:
-    GENERATE_COMPILE_LIST = True
-    argv.remove("--compile_list")
+args = cli.parse_args()
 
-
-# Obviously the simulator must be chosen before sources are added
+# Set simulator environment variable if not already set
 if 'VUNIT_SIMULATOR' not in os.environ:
-    if SIMULATOR == Simulator.GHDL:
-        os.environ['VUNIT_SIMULATOR'] = 'ghdl'
-    elif SIMULATOR == Simulator.NVC:
-        os.environ['VUNIT_SIMULATOR'] = 'nvc'
-    elif SIMULATOR == Simulator.RIVIERAPRO:
-        os.environ['VUNIT_SIMULATOR'] = 'rivierapro'
+    # Simulator selection logic
+    if args.modelsim:
+        simulator = 'modelsim'
+    elif args.nvc:
+        simulator = 'nvc'
+    elif args.rivierapro:
+        simulator = 'rivierapro'
         print("Warning: Riviera Pro is not actively maintained by Open Logic, see HowTo document.")
-    else:
-        os.environ['VUNIT_SIMULATOR'] = 'modelsim'
+    else:  # args.ghdl is default True
+        simulator = 'ghdl'
+    os.environ['VUNIT_SIMULATOR'] = simulator
 
 # Rivierapro workaround: VUnit's format_generic only quotes values containing spaces,
 # but Rivierapro parses unquoted values like "(1,8,4)" as VHDL aggregates instead of
@@ -92,8 +99,12 @@ if os.environ.get('VUNIT_SIMULATOR') == 'rivierapro':
         return value_str
     _rp.format_generic = _rivierapro_format_generic
 
+# Only allow coverage for modelsim or nvc
+if args.coverage and simulator not in ['modelsim', 'nvc']:
+    raise Exception("Coverage is only allowed with --modelsim or --nvc.")
+
 # Parse VUnit Arguments
-vu = VUnit.from_argv(argv=argv)
+vu = VUnit.from_args(args=args)
 vu.add_vhdl_builtins()
 vu.add_com()
 vu.add_verification_components()
@@ -132,8 +143,8 @@ for area in [olo_base, olo_axi, olo_intf, olo_fix]:
 ########################################################################################################################
 
 # Generate compile list if needed
-if GENERATE_COMPILE_LIST:
-    #Generate list of files in the compile order
+if args.compile_list:
+    # Generate list of files in the compile order
     compile_order = []
     vunit_compile_order = [item for item in vu.get_compile_order() if item.library.name == "olo"]
     for item in vunit_compile_order:
@@ -156,24 +167,28 @@ vu.set_sim_option("disable_ieee_warnings", True)
 vu.set_sim_option("modelsim.vopt_flags", ["+acc"])
 olo_tb.set_sim_option("modelsim.three_step_flow", True)
 
-if USE_COVERAGE:
+if args.coverage:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
     olo.set_compile_option('modelsim.vlog_flags', ['+cover=bs'])
     olo_tb.set_sim_option("enable_coverage", True)
-    #Add coverage for package TBs (otherwise coverage does not work)
+    # Add coverage for package TBs (otherwise coverage does not work)
     for f in olo_tb.get_source_files("*_pkg_*_tb.vhd"):
         f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
     for f in olo_tb.get_source_files("*_pkg_tb.vhd"):
         f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
 
     def post_run(results):
-        results.merge_coverage(file_name='coverage_data')
+        if simulator == 'modelsim':
+            results.merge_coverage(file_name='coverage_data')
+        if simulator == 'nvc':
+            os.system('nvc --cover-merge --output coverage_data ./*.ncdb')
+            os.system('nvc --cover-report --per-file --output nvc_coverage coverage_data > nvc_coverage.txt 2>&1')
 else:
     def post_run(results):
         pass
 
 # Generate VHDL LS Config if needed
-if GENERATE_VHDL_LS_TOML:
+if args.vhdl_ls:
     from create_vhdl_ls_config import create_configuration
     from pathlib import Path
     create_configuration(output_path=Path('..'), vunit_proj=vu)
@@ -181,6 +196,3 @@ if GENERATE_VHDL_LS_TOML:
 
 # Run
 vu.main(post_run=post_run)
-
-#Coverage analysis
-#cover report -byfile -nocomment coverage_data
