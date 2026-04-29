@@ -25,17 +25,14 @@ The memory is described in a way that it utilizes RAM resources (Block-RAM or di
 | Depth_g           | positive  | -         | Number of storable elements. Must be a power of two |
 | KeyWidth_g        | positive  | -         | Width of key |
 | ValueWidth_g      | positive  | -         | Width of Value |
-| Hash_g            | Hash_t    | DIVISION  | Hashing algorithm used |
-| Hash_Lcg_Mult_g   | positive  | 1103515245 | Multiplier used in the LCG (Default value from libc) |
-| Hash_Lcg_Incr_g   | positive  | 12345     | Multiplier used in the LCG (Default value from libc) |
-| RamStyle_g        | string   | "auto"  | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info |
-| RamBehavior_g     | string   | "RBW"   | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info  |
-| ClearAfterReset_g | boolean | true | Clear memory after a reset to prevent erroneous values |
+| Hash_g            | Hash_t    | "MODULO"  | Hashing algorithm used <br> |
+| RamStyle_g        | string    | "auto"    | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info |
+| RamBehavior_g     | string    | "RBW"     | Passed to [*olo_base_ram_sdp*](./olo_base_ram_sdp.md). Refer to the documentation of this component for more info  |
+| ClearAfterReset_g | boolean   | true      | Clear memory after a reset to prevent erroneous values |
 
 Current supported hash algorithms are:
-* *HASH*: Key is hashed using the CRC32 method
-* *DIVISION*: Key's value is used as-is, except for modulo against depth of hashtable to obtain a valid index
-* *LCG*: [Linear Congruential Generator](https://en.wikipedia.org/wiki/Linear_congruential_generator) PRNG algorithm is used. The multiplier and increment for the algorithm can be chosen using _Hash_Lcg_Mult_g_ and _Hash_Lcg_Incr_g_ respectively. Modulus is width of the hashtable's indices (to always obtain a valid index within the hashtable's memory)
+* *CRC32*: Key is hashed using the CRC32 method
+* *MODULO*: Key's value is used as-is, except for modulo against depth of hashtable to obtain a valid index
 
 ## Interfaces
 

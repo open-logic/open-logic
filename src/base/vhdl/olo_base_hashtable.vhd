@@ -12,9 +12,7 @@ entity olo_base_hashtable is
         Depth_g                 : positive;
         KeyWidth_g              : positive;
         ValueWidth_g            : positive;
-        Hash_g                  : string   := "LCG";
-        Hash_Lcg_Mult_g         : positive := 1103515245; --  For LCG. From GCC's implementation
-        Hash_Lcg_Incr_g         : positive := 12345; --  For LCG. From GCC's implementation
+        Hash_g                  : string   := "CRC32";
         RamStyle_g              : string   := "auto";
         RamBehavior_g           : string   := "RBW";
         ClearAfterReset_g       : boolean  := true
@@ -157,7 +155,7 @@ begin
         report "olo_base_hashtable - Memory underuse over 2x: Not enough different key values to fill half the hashtable"
         severity warning;
     -- Check Hash Function
-    assert Hash_c = "LCG" or Hash_c = "DIVISION" or Hash_c = "CRC32"
+    assert Hash_c = "CRC32" or Hash_c = "MODULO"
         report "###ERROR###: olo_base_hashtable - Illegal value for Hash_g"
         severity error;
 
@@ -182,7 +180,7 @@ begin
                 -- Hashtable ready for new operation
                 In_Ready <= '1';
                 Status_Busy <= '0';
-                if In_Valid <= '1' then -- AXIS handshake
+                if In_Valid = '1' then -- AXIS handshake
                     -- synthesis off
                     -- Only one operation can be requested at a time
                     Ops_v := (4 => In_Read,
@@ -191,7 +189,7 @@ begin
                               1 => In_NextKey,
                               0 => In_Clear);
                     assert (std_logic_vector(unsigned(Ops_v)-1) and Ops_v) = "00000"
-                        report "Only one hashtable operation should be requested at a time";
+                        report "olo_base_hashtable - Only one hashtable operation should be requested at a time";
                     -- synthesis on
                     RegNext.user_data <= (In_Key, In_Value, '1'); -- Memorise input data
                     if In_Write = '1' then
@@ -344,8 +342,11 @@ begin
                 RegNext.pairs    <= RegCurr.pairs - 1;
                 RegNext.ht_state <= Idle_s;
 
+            -- Unrechable code
+            -- coverage off
             when others =>
                 null;
+            -- coverage on
         end case;
 
     end process;
@@ -372,14 +373,7 @@ begin
     end process;
 
     -- Hash
-    g_hash_lcb : if Hash_c = "LCG" generate
-        Hash_Out <= lcgPrng(unsigned(Hash_InKey),
-                            Hash_Lcg_Mult_g,
-                            Hash_Lcg_Incr_g,
-                            Hash_Out'length);
-    end generate;
-
-    g_hash_div : if Hash_c = "DIVISION" generate
+    g_hash_div : if Hash_c = "MODULO" generate
         Hash_Out <= unsigned(Hash_InKey(Hash_Out'range));
     end generate;
 

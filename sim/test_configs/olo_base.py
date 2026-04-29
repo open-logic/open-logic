@@ -324,7 +324,7 @@ def add_configs(olo_tb):
     ### olo_base_hashtable ###
     ht_tb = 'olo_base_hashtable_tb'
     tb = olo_tb.test_bench(ht_tb)
-    for HashAlgo in ['LCG', 'DIVISION', 'CRC32']:
+    for HashAlgo in ['MODULO', 'CRC32']:
         named_config(tb, {'Hash_g' : HashAlgo,})
     for resetClear in [True, False]:
         named_config(tb, {'ClearAfterReset_g' : resetClear,})

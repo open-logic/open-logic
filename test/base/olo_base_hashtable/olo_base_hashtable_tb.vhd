@@ -8,6 +8,9 @@ library vunit_lib;
     use vunit_lib.check_pkg.all;
     context vunit_lib.vc_context;
 
+library osvvm;
+    use osvvm.RandomPkg.all;
+
 library olo;
     use olo.olo_base_pkg_math.all;
     use olo.olo_base_pkg_logic.all;
@@ -15,7 +18,7 @@ library olo;
 entity olo_base_hashtable_tb is
     generic (
         runner_cfg : string;
-        Hash_g : string := "LCG";
+        Hash_g : string := "CRC32";
         ClearAfterReset_g : boolean := true
     );
 end entity;
@@ -25,10 +28,9 @@ architecture tb of olo_base_hashtable_tb is
     constant Depth_g : positive := 8;
     constant KeyWidth_g : positive := 16;
     constant ValueWidth_g : positive := 32;
-    constant Hash_Lcg_Mult_g : positive := 1103515245;
-    constant Hash_Lcg_Incr_g : positive := 12345;
     constant RamStyle_g : string := "auto";
     constant RamBehavior_g : string := "RBW";
+    shared variable Random_v  : RandomPType;
 
     constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master(
         data_length => KeyWidth_g + ValueWidth_g,
@@ -271,16 +273,8 @@ begin
                 TestKeys(0) := TEST_KEY(KeyWidth_g-1 downto 0);
                 TestValues(0) := TEST_VALUE(ValueWidth_g-1 downto 0);
                 for i in 1 to Depth_g loop
-                    TestKeys(i) := std_logic_vector(lcgPrng(
-                        unsigned(TestKeys(i-1)), 
-                        Hash_Lcg_Mult_g, 
-                        Hash_Lcg_Incr_g,
-                        KeyWidth_g));
-                    TestValues(i) := std_logic_vector(lcgPrng(
-                        unsigned(TestValues(i-1)), 
-                        Hash_Lcg_Mult_g, 
-                        Hash_Lcg_Incr_g,
-                        ValueWidth_g));
+                    TestKeys(i) := Random_v.RandSlv(KeyWidth_g);
+                    TestValues(i) := Random_v.RandSlv(ValueWidth_g);
                     report "Key " & integer'image(i) & ": " & 
                         to_hstring(TestKeys(i));
                     report "Value " & integer'image(i) & ": " & 
@@ -335,11 +329,7 @@ begin
                 check_equal(KeysFound, Depth_g, "Check all keys found");
                 --Modify existing key
                 report "Modify existing key";
-                TestValues(0) := std_logic_vector(lcgPrng(
-                    unsigned(TestValues(Depth_g-1)), 
-                    Hash_Lcg_Mult_g, 
-                    Hash_Lcg_Incr_g,
-                    ValueWidth_g));
+                TestValues(0) := Random_v.RandSlv(ValueWidth_g);
                 --Try to write new value on existing key
                 report "Try to write new value on existing key";
                 HtWrite(net, TestKeys(0), TestValues(0), true);
@@ -395,16 +385,8 @@ begin
                 --Prepare test pairs
                 TestKeys(0) := TEST_KEY(KeyWidth_g-1 downto 0);
                 TestValues(0) := TEST_VALUE(ValueWidth_g-1 downto 0);
-                TestKeys(1) := std_logic_vector(lcgPrng(
-                    unsigned(TestKeys(0)), 
-                    Hash_Lcg_Mult_g, 
-                    Hash_Lcg_Incr_g,
-                    KeyWidth_g));
-                TestValues(1) := std_logic_vector(lcgPrng(
-                    unsigned(TestValues(0)), 
-                    Hash_Lcg_Mult_g, 
-                    Hash_Lcg_Incr_g,
-                    ValueWidth_g));
+                TestKeys(1) := Random_v.RandSlv(KeyWidth_g);
+                TestValues(1) := Random_v.RandSlv(ValueWidth_g);
                 --Wait for hashtable to be ready
                 report "Wait for hashtable to be ready";
                 if Status_Busy = '1' then
