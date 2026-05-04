@@ -568,7 +568,11 @@ def add_configs(olo_tb):
         for PreAdd in [False, True]:
             for MultRegs in [1, 3]:
                 for InBIsCoef in [False, True]:
-                    named_config(tb, {'PreAdd_g': PreAdd, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef})
+                    if PreAdd:
+                        for PreAddOp in ['Add', 'Sub']:
+                            named_config(tb, {'PreAdd_g': PreAdd, 'PreAddOp_g': PreAddOp, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef})
+                    else:
+                        named_config(tb, {'PreAdd_g': PreAdd, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef})
 
     ### olo_fix_cplx_mult  ###
     tb = olo_tb.test_bench('olo_fix_cplx_mult_tb')  
