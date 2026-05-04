@@ -591,6 +591,8 @@ def add_configs(olo_tb):
     }
     cosim = olo_fix_cplx_mult.cosim.cosim
 
+    # named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
     for Mode in ['MULT', 'MIX']:
         for IqHandling in ['Parallel', 'TDM']:
             for Implementation in ['MULT4', 'MULT3']:

@@ -268,44 +268,41 @@ begin
         -------------------------------------------------------------------------------------------
         g_mult3 : if compareNoCase(Implementation_g, "MULT3") generate
             -- Formats
-            constant MultFmt_c     : FixFormat_t := cl_fix_mult_fmt(AFmt_c, BFmt_c);
-            constant PreAddFmt_c   : FixFormat_t := cl_fix_addsub_fmt(AFmt_c, AFmt_c);
-            constant K3Fmt_c       : FixFormat_t := cl_fix_mult_fmt(PreAddFmt_c, PreAddFmt_c);
-            constant OutIFullFmt_c : FixFormat_t := cl_fix_addsub_fmt(MultFmt_c, MultFmt_c);
-            constant OutQFullFmt_c : FixFormat_t := cl_fix_addsub_fmt(K3Fmt_c, cl_fix_addsub_fmt(MultFmt_c, MultFmt_c));
+            constant K1PreAddFmt_c : FixFormat_t := cl_fix_addsub_fmt(AFmt_c, AFmt_c);
+            constant K1Fmt_c       : FixFormat_t := cl_fix_mult_fmt(K1PreAddFmt_c, BFmt_c);
+            constant K2PreAddFmt_c : FixFormat_t := cl_fix_addsub_fmt(BFmt_c, BFmt_c);
+            constant K2MultFmt_c   : FixFormat_t := cl_fix_mult_fmt(K2PreAddFmt_c, AFmt_c);
+            constant FullQFmt_c    : FixFormat_t := cl_fix_addsub_fmt(K2MultFmt_c, K1Fmt_c);
+            constant K3PreAddFmt_c : FixFormat_t := cl_fix_addsub_fmt(BFmt_c, BFmt_c);
+            constant K3MultFmt_c   : FixFormat_t := cl_fix_mult_fmt(K3PreAddFmt_c, AFmt_c);
+            constant FullIFmt_c    : FixFormat_t := cl_fix_addsub_fmt(K3MultFmt_c, K1Fmt_c);
 
-            -- Signals
-            signal In_Valid_0           : std_logic;
-            signal InA_Q_0              : std_logic_vector(InA_Q'range);
-            signal InB_Q_0              : std_logic_vector(InB_Q'range);
-            signal InA_I_0              : std_logic_vector(InA_I'range);
-            signal InB_I_0              : std_logic_vector(InB_I'range);
-            signal Mult1_Valid_N3       : std_logic;
-            signal K1_N1                : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
-            signal K1_N2                : std_logic_vector(K1_N1'range);
-            signal K2_N1                : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
-            signal K2_N2                : std_logic_vector(K2_N1'range);
-            signal K2_N3                : std_logic_vector(K2_N1'range);
-            signal K3_N2                : std_logic_vector(cl_fix_width(K3Fmt_c) - 1 downto 0);
-            signal K3_Valid_N2          : std_logic;
-            signal Preadd_A_1           : std_logic_vector(cl_fix_width(PreAddFmt_c) - 1 downto 0);
-            signal Preadd_A_2           : std_logic_vector(Preadd_A_1'range);
-            signal Preadd_B_1           : std_logic_vector(cl_fix_width(PreAddFmt_c) - 1 downto 0);
-            signal Preadd_B_2           : std_logic_vector(Preadd_B_1'range);
-            signal Preadd_Valid_1       : std_logic;
-            signal Preadd_Valid_2       : std_logic;
-            signal Out_I_Full_N2        : std_logic_vector(cl_fix_width(OutIFullFmt_c) - 1 downto 0);
-            signal Out_I_Full_N3        : std_logic_vector(Out_I_Full_N2'range);
-            signal Out_I_Full_N4        : std_logic_vector(Out_I_Full_N2'range);
-            signal Out_Q_Full_N3        : std_logic_vector(cl_fix_width(OutQFullFmt_c) - 1 downto 0);
-            signal Out_Q_Full_N4        : std_logic_vector(Out_Q_Full_N3'range);
-            signal Out_Full_Valid_N2_N3 : std_logic;
-            signal Out_Full_Valid_N2_N4 : std_logic;
+            -- Operations
+            constant K2PreAddOp_c  : string := choose(compareNoCase(Mode_g, "MULT"), "Sub", "Add");
+            constant K2PostAddOp_c : string := choose(compareNoCase(Mode_g, "MULT"), "Add", "Sub");
+            constant K3PreAddOp_c  : string := choose(compareNoCase(Mode_g, "MULT"), "Add", "Sub");
 
-            -- Attributes
-            attribute use_dsp : string;
-            attribute use_dsp of Out_I_Full_N2 : signal is "no";
-            attribute use_dsp of Out_Q_Full_N3 : signal is "no";
+            -- Registers
+            signal In_Valid_0 : std_logic;
+            signal InA_Q_0    : std_logic_vector(InA_Q'range);
+            signal InB_Q_0    : std_logic_vector(InB_Q'range);
+            signal InA_I_0    : std_logic_vector(InA_I'range);
+            signal InB_I_0    : std_logic_vector(InB_I'range);
+            signal In_Valid_1 : std_logic;
+            signal InA_I_1    : std_logic_vector(InA_I'range);
+            signal InB_I_1    : std_logic_vector(InB_I'range);
+            signal InA_Q_1    : std_logic_vector(InA_Q'range);
+            signal InB_Q_1    : std_logic_vector(InB_Q'range);
+
+            -- Instantiation
+            signal K1_N2          : std_logic_vector(cl_fix_width(K1Fmt_c) - 1 downto 0);
+            signal K1K2_N2        : std_logic_vector(cl_fix_width(FullQFmt_c) - 1 downto 0);
+            signal K1_Valid_N2    : std_logic;
+            signal FullQ_N3       : std_logic_vector(cl_fix_width(FullQFmt_c) - 1 downto 0);
+            signal FullQ_Valid_N3 : std_logic;
+            signal K1K3_N2        : std_logic_vector(cl_fix_width(FullIFmt_c) - 1 downto 0);
+            signal FullI_N3       : std_logic_vector(cl_fix_width(FullIFmt_c) - 1 downto 0);
+            signal FullI_Valid_N3 : std_logic;
 
         begin
 
@@ -320,114 +317,104 @@ begin
                     InA_I_0    <= InA_I;
                     InB_I_0    <= InB_I;
 
-                    -- Pre adders
-                    Preadd_Valid_1 <= In_Valid_0;
-                    Preadd_A_1     <= cl_fix_add(InA_I_0, AFmt_c, InA_Q_0, AFmt_c, PreAddFmt_c);
-                    if compareNoCase(Mode_g, "MULT") then
-                        Preadd_B_1 <= cl_fix_add(InB_I_0, BFmt_c, InB_Q_0, BFmt_c, PreAddFmt_c);
-                    else
-                        Preadd_B_1 <= cl_fix_sub(InB_I_0, BFmt_c, InB_Q_0, BFmt_c, PreAddFmt_c);
-                    end if;
-                    Preadd_A_2     <= Preadd_A_1;
-                    Preadd_B_2     <= Preadd_B_1;
-                    Preadd_Valid_2 <= Preadd_Valid_1;
-
-                    -- K1_N1/K2_N1 latency compensation
-                    K1_N2 <= K1_N1;
-                    K2_N2 <= K2_N1;
-                    K2_N3 <= K2_N2;
-
-                    -- Out I calculation
-                    if compareNoCase(Mode_g, "MULT") then
-                        Out_I_Full_N2 <= cl_fix_sub(K1_N1, MultFmt_c, K2_N1, MultFmt_c, OutIFullFmt_c);
-                    else
-                        Out_I_Full_N2 <= cl_fix_add(K1_N1, MultFmt_c, K2_N1, MultFmt_c, OutIFullFmt_c);
-                    end if;
-                    Out_I_Full_N3 <= Out_I_Full_N2;
-                    Out_I_Full_N4 <= Out_I_Full_N3;
-                    Out_Q_Full_N3 <= cl_fix_sub(K3_N2, K3Fmt_c, K1_N2, MultFmt_c, OutQFullFmt_c);
-                    if compareNoCase(Mode_g, "MULT") then
-                        Out_Q_Full_N4 <= cl_fix_sub(Out_Q_Full_N3, OutQFullFmt_c, K2_N3, MultFmt_c, OutQFullFmt_c);
-                    else
-                        Out_Q_Full_N4 <= cl_fix_add(Out_Q_Full_N3, OutQFullFmt_c, K2_N3, MultFmt_c, OutQFullFmt_c);
-                    end if;
-                    Out_Full_Valid_N2_N3 <= K3_Valid_N2;
-                    Out_Full_Valid_N2_N4 <= Out_Full_Valid_N2_N3;
+                    In_Valid_1 <= In_Valid_0;
+                    InA_I_1    <= InA_I_0;
+                    InB_I_1    <= InB_I_0;
+                    InA_Q_1    <= InA_Q_0;
+                    InB_Q_1    <= InB_Q_0;
 
                     -- Reset
                     if Rst = '1' then
-                        In_Valid_0           <= '0';
-                        Preadd_Valid_1       <= '0';
-                        Preadd_Valid_2       <= '0';
-                        Out_Full_Valid_N2_N3 <= '0';
-                        Out_Full_Valid_N2_N4 <= '0';
+                        In_Valid_0 <= '0';
+                        In_Valid_1 <= '0';
                     end if;
                 end if;
             end process;
 
-            -- K1_N1 multiplier
-            i_k1 : entity work.olo_fix_mult
+            -- K1 MADD
+            i_k1 : entity work.olo_fix_madd
                 generic map (
+                    -- Functionality
+                    PreAdd_g      => true,
+                    PreAddOp_g    => "Add",
                     AFmt_g        => AFmt_g,
-                    BFmt_g        => BFmt_g,
-                    ResultFmt_g   => to_string(MultFmt_c),
-                    OpRegs_g      => MultRegs_g+1,
-                    RoundReg_g    => "NO",
-                    SatReg_g      => "NO"
+                    BFmt_g        => AFmt_g,
+                    CFmt_g        => BFmt_g,
+                    AddChainFmt_g => to_string(K1Fmt_c),
+                    MultRegs_g    => MultRegs_g
                 )
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => In_Valid_0,
-                    In_A        => InA_I_0,
-                    In_B        => InB_I_0,
-                    Out_Result  => K1_N1,
-                    Out_Valid   => Mult1_Valid_N3
+                    InAC_Valid  => In_Valid_0,
+                    InA_Data    => InA_I_0,
+                    InC_Data    => InA_Q_0,
+                    InB_Valid   => In_Valid_0,
+                    InB_Data    => InB_I_0,
+                    Out_Valid   => K1_Valid_N2,
+                    Out_Data    => K1_N2
                 );
 
-            -- K2_N1 multiplier
-            i_k2 : entity work.olo_fix_mult
+            -- K2 MADD
+            K1K2_N2 <= cl_fix_resize(K1_N2, K1Fmt_c, FullQFmt_c);
+
+            i_k2 : entity work.olo_fix_madd
                 generic map (
-                    AFmt_g        => AFmt_g,
+                    -- Functionality
+                    PreAdd_g      => true,
+                    PreAddOp_g    => K2PreAddOp_c,
+                    Operation_g   => K2PostAddOp_c,
+                    AFmt_g        => BFmt_g,
                     BFmt_g        => BFmt_g,
-                    ResultFmt_g   => to_string(MultFmt_c),
-                    OpRegs_g      => MultRegs_g+1,
-                    RoundReg_g    => "NO",
-                    SatReg_g      => "NO"
+                    CFmt_g        => AFmt_g,
+                    AddChainFmt_g => to_string(FullQFmt_c),
+                    MultRegs_g    => MultRegs_g
                 )
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => In_Valid_0,
-                    In_A        => InA_Q_0,
-                    In_B        => InB_Q_0,
-                    Out_Result  => K2_N1
+                    InAC_Valid  => In_Valid_1,
+                    InA_Data    => InB_Q_1,
+                    InC_Data    => InB_I_1,
+                    InB_Valid   => In_Valid_1,
+                    InB_Data    => InA_I_1,
+                    MaccIn      => K1K2_N2,
+                    Out_Valid   => FullQ_Valid_N3,
+                    Out_Data    => FullQ_N3
                 );
 
-            -- K3_N2 multiplier
-            i_k3 : entity work.olo_fix_mult
+            -- K3 MADD
+            K1K3_N2 <= cl_fix_resize(K1_N2, K1Fmt_c, FullIFmt_c);
+
+            i_k3 : entity work.olo_fix_madd
                 generic map (
-                    AFmt_g        => to_string(PreAddFmt_c),
-                    BFmt_g        => to_string(PreAddFmt_c),
-                    ResultFmt_g   => to_string(K3Fmt_c),
-                    OpRegs_g      => MultRegs_g,
-                    RoundReg_g    => "NO",
-                    SatReg_g      => "NO"
+                    -- Functionality
+                    PreAdd_g      => true,
+                    PreAddOp_g    => K3PreAddOp_c,
+                    Operation_g   => "Sub",
+                    AFmt_g        => BFmt_g,
+                    BFmt_g        => BFmt_g,
+                    CFmt_g        => AFmt_g,
+                    AddChainFmt_g => to_string(FullIFmt_c),
+                    MultRegs_g    => MultRegs_g
                 )
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => Preadd_Valid_2,
-                    In_A        => Preadd_A_2,
-                    In_B        => Preadd_B_2,
-                    Out_Result  => K3_N2,
-                    Out_Valid   => K3_Valid_N2
+                    InAC_Valid  => In_Valid_1,
+                    InA_Data    => InB_I_1,
+                    InC_Data    => InB_Q_1,
+                    InB_Valid   => In_Valid_1,
+                    InB_Data    => InA_Q_1,
+                    MaccIn      => K1K3_N2,
+                    Out_Valid   => FullI_Valid_N3,
+                    Out_Data    => FullI_N3
                 );
 
             -- I resize
             i_resize_i : entity work.olo_fix_resize
                 generic map (
-                    AFmt_g      => to_string(OutIFullFmt_c),
+                    AFmt_g      => to_string(FullIFmt_c),
                     ResultFmt_g => ResultFmt_g,
                     Round_g     => Round_g,
                     Saturate_g  => Saturate_g,
@@ -437,8 +424,8 @@ begin
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => Out_Full_Valid_N2_N4,
-                    In_A        => Out_I_Full_N4,
+                    In_Valid    => FullI_Valid_N3,
+                    In_A        => FullI_N3,
                     Out_Valid   => Out_Valid,
                     Out_Result  => Out_I
                 );
@@ -446,7 +433,7 @@ begin
             -- Q resize
             i_resize_q : entity work.olo_fix_resize
                 generic map (
-                    AFmt_g      => to_string(OutQFullFmt_c),
+                    AFmt_g      => to_string(FullQFmt_c),
                     ResultFmt_g => ResultFmt_g,
                     Round_g     => Round_g,
                     Saturate_g  => Saturate_g,
@@ -456,8 +443,8 @@ begin
                 port map (
                     Clk         => Clk,
                     Rst         => Rst,
-                    In_Valid    => Out_Full_Valid_N2_N4,
-                    In_A        => Out_Q_Full_N4,
+                    In_Valid    => FullQ_Valid_N3,
+                    In_A        => FullQ_N3,
                     Out_Result  => Out_Q
                 );
 
