@@ -37,6 +37,7 @@ entity olo_fix_madd is
         -- Functionality
         PreAdd_g      : boolean := false;
         InBIsCoef_g   : boolean := false;
+        PreAddOp_g    : string  := "Add";
         Operation_g   : string  := "Add";
         -- Formats / Round / Saturate
         AFmt_g        : string;
@@ -92,6 +93,9 @@ begin
     assert compareNoCase(Operation_g, "Add") or compareNoCase(Operation_g, "Sub")
         report "olo_fix_madd - Invalid Operation_g. Allowed values are 'Add' and 'Sub'."
         severity error;
+    assert compareNoCase(PreAddOp_g, "Add") or compareNoCase(PreAddOp_g, "Sub")
+        report "olo_fix_madd - Invalid PreAddOp_g. Allowed values are 'Add' and 'Sub'."
+        severity error;
     -- synthesis translate_on
 
     -- *** Input side ***
@@ -123,7 +127,11 @@ begin
                 end if;
 
                 -- Stage 1 - pre add
-                MulInAC  <= cl_fix_add(A_0, AFmt_c, C_0, CFmt_c, PreAddFmt_c);
+                if compareNoCase(PreAddOp_g, "Add") then
+                    MulInAC <= cl_fix_add(A_0, AFmt_c, C_0, CFmt_c, PreAddFmt_c);
+                else
+                    MulInAC <= cl_fix_sub(A_0, AFmt_c, C_0, CFmt_c, PreAddFmt_c);
+                end if;
                 MulInB   <= B_0;
                 MulInVld <= Vld_0;
 
