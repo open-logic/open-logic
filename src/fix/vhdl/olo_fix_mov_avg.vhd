@@ -46,7 +46,7 @@ entity olo_fix_mov_avg is
         Saturate_g        : string := FixSaturate_Warn_c;
         -- Registers
         RoundReg_g        : string := "YES";
-        SatReg_g          : string := "YES"
+        SatReg_g          : string := "YES";
         -- Resource control generics
         RamBehavior_g     : string := "RBW";
         RamStyle_g        : string := "auto";
