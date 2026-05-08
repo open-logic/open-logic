@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------
-# Copyright (c) 2025 by Oliver Bründler
+# Copyright (c) 2025-2026 by Oliver Bründler
 # All rights reserved.
 # Authors: Oliver Bruendler
 # ---------------------------------------------------------------------------------------------------
@@ -618,3 +618,45 @@ def add_configs(olo_tb):
 
     for ResetValid in ['True', 'False']:
             named_config(tb, {'ResetValid_g': ResetValid}) 
+
+    ### olo_fix_mov_avg ###
+    tb = olo_tb.test_bench('olo_fix_mov_avg_tb')
+    #Test formats and round/sat modes
+    default_generics = {
+        'InFmt_g': '(1,4,8)',
+        'OutFmt_g': '(1,4,8)',
+        'Taps_g' : 3,
+        'GainCorrCoefFmt_g': '(0,1,16)',
+        'GainCorrDataFmt_g': 'AUTO',
+        'GainCorrType_g': 'EXACT',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'RoundReg_g': "YES",
+        'SatReg_g': "YES"
+    }
+    cosim = olo_fix_mov_avg.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    # Different taps
+    for Taps in [1, 5]:
+        named_config(tb, default_generics | {'Taps_g': Taps}, pre_config=cosim)
+    # Different gain correction formats
+    named_config(tb, default_generics | {'GainCorrCoefFmt_g': '(0,1,4)'}, pre_config=cosim)
+    # Different gain correctio ndata Formats (incl. overflow)
+    named_config(tb, default_generics | {'GainCorrDataFmt_g': '(1,0,8)'}, pre_config=cosim)
+    # Different gain correction types
+    for GainCorrType in ['EXACT', 'SHIFT', 'NONE']:
+        # Rounding mode
+        for Round in ['NonSymPos_s', 'Trunc_s']:
+            for Sat in ['Sat_s', 'None_s']:
+                named_config(tb, default_generics  | {'Round_g': Round, 'Saturate_g': Sat, 'GainCorrType_g': GainCorrType},
+                             pre_config=cosim)
+        # No regs
+        SatReg = 'AUTO'
+        RoundReg = 'NO'
+        named_config(tb, default_generics  | {'Round_g': Round, 'Saturate_g': Sat, 'GainCorrType_g': GainCorrType, 'RoundReg_g': RoundReg, 'SatReg_g': SatReg},
+                        pre_config=cosim)
+    # Test gain correction through shift for power2 taps
+    named_config(tb, default_generics | {'Taps_g': 4, 'GainCorrType_g': 'EXACT'}, pre_config=cosim)
+

@@ -62,7 +62,7 @@ if __name__ == "__main__":
         "OutFmt_g": "(1, 4, 8)",
         "Taps_g": "3",
         "GainCorrCoefFmt_g": "(0, 1, 16)",
-        "GainCorrDataFmt_g": "(1,2,8)",
+        "GainCorrDataFmt_g": "AUTO",
         "GainCorrType_g": "EXACT",
         "Round_g": "NonSymPos_s",
         "Saturate_g": "Sat_s"
