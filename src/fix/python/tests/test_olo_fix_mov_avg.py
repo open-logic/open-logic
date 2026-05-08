@@ -85,5 +85,18 @@ class TestOloFixMovAvg(unittest.TestCase):
             olo_fix_mov_avg(taps=3, in_fmt=FixFormat(1, 8, 8), out_fmt=FixFormat(1, 8, 8), gain_corr_type="EXACT", gain_corr_data_fmt="INVALID")
         with self.assertRaises(ValueError):
             olo_fix_mov_avg(taps=3, in_fmt=FixFormat(1, 8, 8), out_fmt=FixFormat(1, 8, 8), gain_corr_type="EXACT", gain_corr_data_fmt=123)
+
+    def test_invalid_gain_corr_coef_fmt_signed(self):
+        # S must be 0 (unsigned)
+        with self.assertRaises(ValueError):
+            olo_fix_mov_avg(taps=3, in_fmt=FixFormat(1, 8, 8), out_fmt=FixFormat(1, 8, 8), gain_corr_coef_fmt=FixFormat(1, 1, 16))
+
+    def test_invalid_gain_corr_coef_fmt_int_bits(self):
+        # I must be 1
+        with self.assertRaises(ValueError):
+            olo_fix_mov_avg(taps=3, in_fmt=FixFormat(1, 8, 8), out_fmt=FixFormat(1, 8, 8), gain_corr_coef_fmt=FixFormat(0, 2, 16))
+        with self.assertRaises(ValueError):
+            olo_fix_mov_avg(taps=3, in_fmt=FixFormat(1, 8, 8), out_fmt=FixFormat(1, 8, 8), gain_corr_coef_fmt=FixFormat(0, 0, 16))
+
 if __name__ == '__main__':
     unittest.main()

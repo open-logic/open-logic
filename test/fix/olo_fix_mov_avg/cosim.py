@@ -24,10 +24,10 @@ def cosim(output_path : str = None,
     InFmt_g = olo_fix_utils.fix_format_from_string(generics["InFmt_g"])
     OutFmt_g = olo_fix_utils.fix_format_from_string(generics["OutFmt_g"])
     Taps_g = int(generics["Taps_g"])
-    GainCorrCoefFmt_g = generics["GainCorrCoefFmt_g"]
-    if GainCorrCoefFmt_g.upper() != "AUTO":
-        GainCorrCoefFmt_g = olo_fix_utils.fix_format_from_string(GainCorrCoefFmt_g)
+    GainCorrCoefFmt_g = olo_fix_utils.fix_format_from_string(generics["GainCorrCoefFmt_g"])
     GainCorrDataFmt_g = generics["GainCorrDataFmt_g"]
+    if GainCorrDataFmt_g != "AUTO":
+        GainCorrDataFmt_g = olo_fix_utils.fix_format_from_string(GainCorrDataFmt_g)
     GainCorrType_g = generics["GainCorrType_g"]
     Round_g = FixRound[generics["Round_g"]]
     Saturate_g = FixSaturate[generics["Saturate_g"]]
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         "OutFmt_g": "(1, 4, 8)",
         "Taps_g": "3",
         "GainCorrCoefFmt_g": "(0, 1, 16)",
-        "GainCorrDataFmt_g": "AUTO",
+        "GainCorrDataFmt_g": "(1,2,8)",
         "GainCorrType_g": "EXACT",
         "Round_g": "NonSymPos_s",
         "Saturate_g": "Sat_s"
