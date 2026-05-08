@@ -23,6 +23,9 @@ library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
+library work;
+    use work.olo_base_pkg_math.all;
+
 ---------------------------------------------------------------------------------------------------
 -- Package Header
 ---------------------------------------------------------------------------------------------------
@@ -74,22 +77,6 @@ end package;
 ---------------------------------------------------------------------------------------------------
 package body olo_ft_pkg_ecc is
 
-    -- Helper: check if a positive integer is a power of 2
-    function isPow2 (
-        N : positive
-    ) return boolean is
-        variable Val_v : natural;
-    begin
-        Val_v := N;
-        while Val_v > 1 loop
-            if Val_v mod 2 /= 0 then
-                return false;
-            end if;
-            Val_v := Val_v / 2;
-        end loop;
-        return true;
-    end function;
-
     -- Calculate number of Hamming parity bits needed (excluding overall parity)
     -- Finds smallest m such that 2^m >= DataWidth + m + 1
     function eccParityBits (
@@ -131,7 +118,7 @@ package body olo_ft_pkg_ecc is
         -- Place data bits at non-power-of-2 Hamming positions (1-indexed)
         DataIdx_v := 0;
         for i in 1 to HammingLen_c loop
-            if not isPow2(i) then
+            if not isPower2(i) then
                 Codeword_v(i) := DataNorm_v(DataIdx_v);
                 DataIdx_v     := DataIdx_v + 1;
             end if;
@@ -217,7 +204,7 @@ package body olo_ft_pkg_ecc is
         -- Extract data bits from non-power-of-2 positions
         DataIdx_v := 0;
         for i in 1 to HammingLen_c loop
-            if not isPow2(i) then
+            if not isPower2(i) then
                 Data_v(DataIdx_v) := CwCorrected_v(i);
                 DataIdx_v         := DataIdx_v + 1;
             end if;
