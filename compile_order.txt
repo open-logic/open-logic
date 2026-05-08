@@ -68,6 +68,7 @@ src/fix/vhdl/olo_fix_resize.vhd
 src/fix/vhdl/olo_fix_sub.vhd
 src/fix/vhdl/olo_fix_neg.vhd
 src/fix/vhdl/olo_fix_mult.vhd
+src/fix/vhdl/olo_fix_mov_avg.vhd
 src/fix/vhdl/olo_fix_madd.vhd
 src/fix/vhdl/olo_fix_limit.vhd
 src/fix/vhdl/olo_fix_from_real.vhd
