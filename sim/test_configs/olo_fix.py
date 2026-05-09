@@ -613,6 +613,23 @@ def add_configs(olo_tb):
                         overrides['Saturate_g'] = Sat
                         named_config(tb, default_generics | overrides, pre_config=cosim)
 
+    ### olo_fix_mix_r2c ###
+    tb = olo_tb.test_bench('olo_fix_mix_r2c_tb')
+    default_generics = {
+        'InFmt_g'   : '(1,8,8)',
+        'MixFmt_g'  : '(1,0,15)',
+        'OutFmt_g'  : '(1,9,8)',
+        'Round_g'   : 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'MultRegs_g': 1
+    }
+    cosim = olo_fix_mix_r2c.cosim.cosim
+    for MultRegs in [1, 3]:
+        named_config(tb, default_generics | {'MultRegs_g': MultRegs}, pre_config=cosim)
+    for Round in ['Trunc_s', 'NonSymNeg_s']:
+        for Sat in ['None_s', 'SatWarn_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat}, pre_config=cosim)
+
     ### olo_fix_sample_hold ###
     tb = olo_tb.test_bench('olo_fix_sample_hold_tb')
 
