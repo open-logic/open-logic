@@ -22,7 +22,7 @@ if {[llength $mem_cells] > 0} {
       set launch_clk [get_clocks -of_objects [get_cell -hierarchical g_async.Mem_v*]]
       set latch_clk [get_clocks -of_objects [get_cell -hierarchical g_async.RdPipe_reg[1][*]]]
 
-      set period [get_property -min PERIOD [get_clocks "$launch_clk $latch_clk"]]
+      set period [get_property -min PERIOD [concat $launch_clk $latch_clk]]
 
       set_max_delay -from $launch_clk -to [get_cell -hierarchical g_async.RdPipe_reg[1][*]] -datapath_only $period
 
