@@ -53,6 +53,15 @@ _GainCorrType_g_:
 | RamStyle_g         | string   | "auto"       | Resource control for the tap delay line mapped to RAM. Normally not used except for large _Taps_g_<br />For details refer to [olo_base_delay](../base/olo_base_delay.md) |
 | Resource_g         | string   | "AUTO"       | Resource control for the tap delay line. Normally not used except for large _Taps_g_<br />For details refer to [olo_base_delay](../base/olo_base_delay.md) |
 
+The following generics normally do not need to be changed from their default values. They are only relevant for
+specific resource optimiation scenarios:
+
+- GainCorrCoefFmt_g
+- GainCorrDataFmt_g
+- RamBehavior_g
+- RamStyle_g
+- Resource_g
+
 ## Interfaces
 
 ### Control
