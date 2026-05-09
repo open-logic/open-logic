@@ -10,7 +10,7 @@
 set launch_clk [get_clocks -of_objects [get_cell RstRqstB2A*]]
 set latch_clk [get_clocks -of_objects [get_cell RstRqstA2B*]]
 
-set period [expr [get_property -min PERIOD [concat $launch_clk $latch_clk]]]
+set period [get_property -min PERIOD [concat $launch_clk $latch_clk]]
 
 set_max_delay -from $launch_clk -to [get_cell RstRqst*] -datapath_only $period
 set_max_delay -from $latch_clk -to [get_cell RstRqst*] -datapath_only $period
