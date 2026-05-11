@@ -24,6 +24,7 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_array.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Package Header
@@ -73,6 +74,12 @@ package olo_base_pkg_logic is
     function getLeadingSetBitIndex (vec : in std_logic_vector) return integer;
 
     function getTrailingSetBitIndex (vec : in std_logic_vector) return integer;
+
+    -- Build a std_logic_vector of given width with bits set at the given indexes,
+    -- all other bits cleared. Useful for constructing bit-flip patterns or masks.
+    function setBits (indexes : in IntegerArray_t; width : in positive) return std_logic_vector;
+    function setBits (idx     : in natural;        width : in positive) return std_logic_vector;
+    function setBits (idxA    : in natural; idxB  : in natural; width : in positive) return std_logic_vector;
 
     -- LFSR / CRC / PRBS Polynomials
     -- 1 for the x^n positions used
@@ -336,6 +343,31 @@ package body olo_base_pkg_logic is
     function getTrailingSetBitIndex (vec : in std_logic_vector) return integer is
     begin
         return getSetBitIndex(vec, fromMsb => false);
+    end function;
+
+    -- *** SetBits ***
+    function setBits (indexes : in IntegerArray_t; width : in positive) return std_logic_vector is
+        variable Result_v : std_logic_vector(width - 1 downto 0) := (others => '0');
+    begin
+        for i in indexes'range loop
+            Result_v(indexes(i)) := '1';
+        end loop;
+        return Result_v;
+    end function;
+
+    function setBits (idx : in natural; width : in positive) return std_logic_vector is
+        variable Result_v : std_logic_vector(width - 1 downto 0) := (others => '0');
+    begin
+        Result_v(idx) := '1';
+        return Result_v;
+    end function;
+
+    function setBits (idxA : in natural; idxB : in natural; width : in positive) return std_logic_vector is
+        variable Result_v : std_logic_vector(width - 1 downto 0) := (others => '0');
+    begin
+        Result_v(idxA) := '1';
+        Result_v(idxB) := '1';
+        return Result_v;
     end function;
 
 end package body;

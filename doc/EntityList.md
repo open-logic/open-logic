@@ -264,11 +264,22 @@ be used. For deciding which option to use, the following considerations shall be
 
 This area contains fault-tolerant entities for use in radiation-sensitive environments (space, avionics, automotive, high-altitude). All entities use SECDED Hamming code (Single Error Correction, Double Error Detection) and follow a transparent wrapper pattern - ECC is invisible to the user, with data encoded on write and decoded/corrected on read.
 
+The cross-cutting concepts (codeword layout, ECC overhead, error injection semantics, status flags, ECC pipeline,
+common constraints) are described once in
+[Open Logic Fault-Tolerance Principles](./ft/olo_ft_principles.md) and referenced from the per-entity docs.
+
 ### Packages (olo_ft_pkg_\<...\>)
 
 | Package                                       | Description                                                  |
 | --------------------------------------------- | ------------------------------------------------------------ |
 | [olo_ft_pkg_ecc](./ft/olo_ft_pkg_ecc.md)      | SECDED Hamming code functions for ECC-protected memories. **For internal use within Open Logic only** |
+
+### ECC Codec (olo_ft_ecc_\<...\>)
+
+| Entity                                          | Description                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| [olo_ft_ecc_encode](./ft/olo_ft_ecc_encode.md)  | SECDED encoder with optional pipeline and bit-flip injection (Verilog-callable) |
+| [olo_ft_ecc_decode](./ft/olo_ft_ecc_decode.md)  | SECDED decoder with optional pipeline (Verilog-callable)     |
 
 ### RAM Implementations (olo_ft_ram_\<...\>)
 
