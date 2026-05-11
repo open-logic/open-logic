@@ -20,35 +20,45 @@
   <rect x="190" y="160" width="140" height="60" rx="8" ry="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
   <text x="260" y="195" text-anchor="middle">eccEncode</text>
 
-  <!-- WrEccBitFlip input -->
-  <text x="380" y="130" text-anchor="middle">WrEccBitFlip</text>
-  <line x1="380" y1="138" x2="380" y2="175" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Error-injection inputs (latched) — moved up to give the Inj Latch breathing room -->
+  <text x="375" y="55" text-anchor="end">ErrInj_BitFlip</text>
+  <text x="390" y="55" text-anchor="start">ErrInj_Valid</text>
+  <line x1="345" y1="63" x2="345" y2="86" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="415" y1="63" x2="415" y2="86" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Inj Latch box (compact) -->
+  <rect x="315" y="88" width="130" height="42" rx="6" ry="6" fill="#e1d5e7" stroke="#9673a6" stroke-width="2"/>
+  <text x="380" y="108" text-anchor="middle">Inj Latch</text>
+  <text x="380" y="123" text-anchor="middle" font-size="11" fill="#555">cleared on WrEna='1'</text>
+
+  <!-- Arrow from latch bottom into the XOR -->
+  <line x1="380" y1="130" x2="380" y2="172" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
 
   <!-- XOR gate -->
   <circle cx="380" cy="190" r="18" fill="#fff" stroke="#000" stroke-width="2"/>
   <text x="380" y="195" text-anchor="middle" font-weight="bold">XOR</text>
-  <line x1="330" y1="190" x2="362" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="330" y1="190" x2="360" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
 
-  <!-- olo_base_ram_sp block (centred on y=190) -->
-  <rect x="430" y="110" width="200" height="160" rx="10" ry="10" fill="#f8cecc" stroke="#b85450" stroke-width="2"/>
-  <text x="530" y="170" text-anchor="middle" font-style="italic">olo_base_ram_sp</text>
-  <text x="530" y="190" text-anchor="middle" font-size="11" fill="#555">codeword-wide</text>
-  <text x="530" y="208" text-anchor="middle" font-size="11" fill="#555">RamRdLatency_g</text>
+  <!-- olo_base_ram_sp block (centred on y=190, height 60) -->
+  <rect x="430" y="160" width="200" height="60" rx="10" ry="10" fill="#f8cecc" stroke="#b85450" stroke-width="2"/>
+  <text x="530" y="180" text-anchor="middle" font-style="italic">olo_base_ram_sp</text>
+  <text x="530" y="197" text-anchor="middle" font-size="11" fill="#555">codeword-wide</text>
+  <text x="530" y="212" text-anchor="middle" font-size="11" fill="#555">RamRdLatency_g</text>
 
-  <line x1="398" y1="190" x2="425" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="398" y1="190" x2="428" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
 
   <!-- WrEna / Addr inputs into RAM -->
-  <text x="465" y="330" text-anchor="middle">WrEna</text>
-  <line x1="465" y1="310" x2="465" y2="272" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="595" y="330" text-anchor="middle">Addr</text>
-  <line x1="595" y1="310" x2="595" y2="272" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="465" y="280" text-anchor="middle">WrEna</text>
+  <line x1="465" y1="260" x2="465" y2="222" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="595" y="280" text-anchor="middle">Addr</text>
+  <line x1="595" y1="260" x2="595" y2="222" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
 
   <!-- Decoder block (centred on y=190) -->
   <rect x="670" y="130" width="180" height="120" rx="8" ry="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
   <text x="760" y="175" text-anchor="middle">eccSyndromeAndParity</text>
   <text x="760" y="197" text-anchor="middle">eccCorrectData</text>
   <text x="760" y="225" text-anchor="middle" font-size="11" fill="#555">+ EccSec / EccDed</text>
-  <line x1="630" y1="190" x2="665" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="630" y1="190" x2="668" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
 
   <!-- Optional ECC pipeline registers (centred on y=190) -->
   <rect x="890" y="130" width="140" height="120" rx="8" ry="8" fill="#fff2cc" stroke="#d6b656" stroke-width="2" stroke-dasharray="6,4"/>
@@ -72,9 +82,11 @@
 
   <!-- Legend -->
   <rect x="40" y="365" width="20" height="14" fill="#dae8fc" stroke="#6c8ebf"/>
-  <text x="68" y="377">combinational logic from olo_ft_pkg_ecc</text>
+  <text x="68" y="377">Combinational logic (olo_ft_pkg_ecc)</text>
   <rect x="340" y="365" width="20" height="14" fill="#f8cecc" stroke="#b85450"/>
-  <text x="368" y="377">wrapped olo_base entity</text>
-  <rect x="560" y="365" width="20" height="14" fill="#fff2cc" stroke="#d6b656" stroke-dasharray="6,4"/>
-  <text x="588" y="377">optional pipeline (EccPipeline_g)</text>
+  <text x="368" y="377">Wrapped olo_base_ram_sp</text>
+  <rect x="560" y="365" width="20" height="14" fill="#e1d5e7" stroke="#9673a6"/>
+  <text x="588" y="377">Registered Error Injection</text>
+  <rect x="800" y="365" width="20" height="14" fill="#fff2cc" stroke="#d6b656" stroke-dasharray="6,4"/>
+  <text x="828" y="377">Optional pipeline registers (EccPipeline_g)</text>
 </svg>
