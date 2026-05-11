@@ -262,3 +262,11 @@ entities:
       - name: "default"
         generics:   
           Fmt_g: '"(1, 8, 4)"'
+  # olo_fix_mov_avg
+  - entity_name: "olo_fix_mov_avg"
+    configurations:
+      - name: "default"
+        generics:   
+          InFmt_g: '"(1, 0, 15)"'
+          OutFmt_g: '"(1, 0, 15)"'
+          Taps_g: 23
