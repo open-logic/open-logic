@@ -46,11 +46,18 @@ The "Parity Bits" column counts Hamming parity bits plus one overall-parity bit 
 
 ## Error Injection
 
-Every ECC-protected entity exposes a bit-flip injection port (_WrEccBitFlip_, _Wr_EccBitFlip_, _A_WrEccBitFlip_,
-_B_WrEccBitFlip_ or _In_EccBitFlip_ depending on the entity). The port is the full codeword width
-([eccCodewordWidth](./olo_ft_pkg_ecc.md#ecccodewordwidth)(_Width_g_) bits) and is XORed into the stored codeword,
-so any single-bit or double-bit error pattern can be exercised. Useful in simulation for verifying the ECC
-mechanism and in hardware for BIST.
+Every ECC-protected entity exposes a paired error-injection interface:
+
+- _ErrInj_BitFlip_ (or _A_ErrInj_BitFlip_ / _B_ErrInj_BitFlip_ / _In_ErrInj_BitFlip_ on the sister entities)
+  is the codeword-wide flip pattern. The port is
+  [eccCodewordWidth](./olo_ft_pkg_ecc.md#ecccodewordwidth)(_Width_g_) bits wide and is XORed into the encoded
+  codeword before storage, so any single-bit or double-bit error pattern can be exercised.
+- _ErrInj_Valid_ is a strobe. While '1', the current _ErrInj_BitFlip_ value is latched into an internal
+  register. The latched pattern is applied to the next write and cleared after that write completes.
+
+This decouples error injection from write timing. Preload the pattern any cycle, and it is applied to
+the next user write whenever that happens. If _ErrInj_Valid_ = '1' and the write enable is also '1' in the
+same cycle, the pattern is applied immediately without going through the latch.
 
 | Popcount of injection | Meaning              | Behavior                                                                                 |
 | :-------------------- | :------------------- | :--------------------------------------------------------------------------------------- |

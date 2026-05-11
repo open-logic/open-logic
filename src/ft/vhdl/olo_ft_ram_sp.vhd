@@ -41,15 +41,16 @@ entity olo_ft_ram_sp is
         EccPipeline_g  : natural  := 0
     );
     port (
-        Clk          : in    std_logic;
-        Addr         : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        WrEna        : in    std_logic                               := '1';
-        WrData       : in    std_logic_vector(Width_g - 1 downto 0);
-        WrEccBitFlip : in    std_logic_vector(eccCodewordWidth(Width_g) - 1 downto 0) := (others => '0');
-        RdData       : out   std_logic_vector(Width_g - 1 downto 0);
-        RdValid      : out   std_logic;
-        RdEccSec     : out   std_logic;
-        RdEccDed     : out   std_logic
+        Clk            : in    std_logic;
+        Addr           : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
+        WrEna          : in    std_logic                               := '1';
+        WrData         : in    std_logic_vector(Width_g - 1 downto 0);
+        ErrInj_BitFlip : in    std_logic_vector(eccCodewordWidth(Width_g) - 1 downto 0) := (others => '0');
+        ErrInj_Valid   : in    std_logic                               := '0';
+        RdData         : out   std_logic_vector(Width_g - 1 downto 0);
+        RdValid        : out   std_logic;
+        RdEccSec       : out   std_logic;
+        RdEccDed       : out   std_logic
     );
 end entity;
 
@@ -64,9 +65,32 @@ architecture rtl of olo_ft_ram_sp is
     signal Wr_Codeword : std_logic_vector(CodewordWidth_c - 1 downto 0);
     signal Rd_Codeword : std_logic_vector(CodewordWidth_c - 1 downto 0);
 
+    -- Pending bit-flip latch: holds the next pattern to be applied to the next write.
+    signal ErrInj_Pending : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
+    -- Combinational select: newly-loaded pattern if ErrInj_Valid='1', else the pending one.
+    signal ErrInj_Active  : std_logic_vector(CodewordWidth_c - 1 downto 0);
+
     signal RdValidPipe : std_logic_vector(1 to TotalReadLatency_c) := (others => '0');
 
 begin
+
+    -- Active flip pattern this cycle: latched pattern under normal operation, or the freshly
+    -- presented pattern when ErrInj_Valid='1'. WrEna='1' clears the latch after the pattern is
+    -- applied; while WrEna='0' the latch persists so a preloaded pattern survives idle cycles.
+    ErrInj_Active <= ErrInj_BitFlip when ErrInj_Valid = '1' else ErrInj_Pending;
+
+    p_pending : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            if WrEna = '1' then
+                -- Pattern (if any) was applied to this write; clear so it isn't re-applied.
+                ErrInj_Pending <= (others => '0');
+            elsif ErrInj_Valid = '1' then
+                -- Preload for a future write.
+                ErrInj_Pending <= ErrInj_BitFlip;
+            end if;
+        end if;
+    end process;
 
     -- Encode write data (combinational + injection)
     i_enc : entity work.olo_ft_ecc_encode
@@ -77,7 +101,7 @@ begin
         port map (
             Clk          => Clk,
             In_Data      => WrData,
-            In_BitFlip   => WrEccBitFlip,
+            In_BitFlip   => ErrInj_Active,
             Out_Codeword => Wr_Codeword
         );
 
