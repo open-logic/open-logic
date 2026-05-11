@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 400" width="1240" height="400" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#000"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect width="100%" height="100%" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="620" y="26" text-anchor="middle" font-size="15" font-weight="bold">olo_ft_ram_sp - Architecture</text>
+
+  <!-- WrData input -->
+  <text x="80" y="185" text-anchor="middle">WrData</text>
+  <line x1="115" y1="190" x2="190" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- eccEncode block -->
+  <rect x="190" y="160" width="140" height="60" rx="8" ry="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+  <text x="260" y="195" text-anchor="middle">eccEncode</text>
+
+  <!-- WrEccBitFlip input -->
+  <text x="380" y="130" text-anchor="middle">WrEccBitFlip</text>
+  <line x1="380" y1="138" x2="380" y2="175" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- XOR gate -->
+  <circle cx="380" cy="190" r="18" fill="#fff" stroke="#000" stroke-width="2"/>
+  <text x="380" y="195" text-anchor="middle" font-weight="bold">XOR</text>
+  <line x1="330" y1="190" x2="362" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- olo_base_ram_sp block (centred on y=190) -->
+  <rect x="430" y="110" width="200" height="160" rx="10" ry="10" fill="#f8cecc" stroke="#b85450" stroke-width="2"/>
+  <text x="530" y="170" text-anchor="middle" font-style="italic">olo_base_ram_sp</text>
+  <text x="530" y="190" text-anchor="middle" font-size="11" fill="#555">codeword-wide</text>
+  <text x="530" y="208" text-anchor="middle" font-size="11" fill="#555">RamRdLatency_g</text>
+
+  <line x1="398" y1="190" x2="425" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- WrEna / Addr inputs into RAM -->
+  <text x="465" y="330" text-anchor="middle">WrEna</text>
+  <line x1="465" y1="310" x2="465" y2="272" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="595" y="330" text-anchor="middle">Addr</text>
+  <line x1="595" y1="310" x2="595" y2="272" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Decoder block (centred on y=190) -->
+  <rect x="670" y="130" width="180" height="120" rx="8" ry="8" fill="#dae8fc" stroke="#6c8ebf" stroke-width="2"/>
+  <text x="760" y="175" text-anchor="middle">eccSyndromeAndParity</text>
+  <text x="760" y="197" text-anchor="middle">eccCorrectData</text>
+  <text x="760" y="225" text-anchor="middle" font-size="11" fill="#555">+ EccSec / EccDed</text>
+  <line x1="630" y1="190" x2="665" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Optional ECC pipeline registers (centred on y=190) -->
+  <rect x="890" y="130" width="140" height="120" rx="8" ry="8" fill="#fff2cc" stroke="#d6b656" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="960" y="170" text-anchor="middle">ECC pipeline</text>
+  <text x="960" y="192" text-anchor="middle" font-size="11" fill="#555">EccPipeline_g</text>
+  <text x="960" y="210" text-anchor="middle" font-size="11" fill="#555">stages (optional)</text>
+  <line x1="850" y1="190" x2="885" y2="190" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Output arrows fanning around y=190 -->
+  <line x1="1030" y1="145" x2="1140" y2="145" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1150" y="149" text-anchor="start">RdData</text>
+
+  <line x1="1030" y1="175" x2="1140" y2="175" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1150" y="179" text-anchor="start">RdValid</text>
+
+  <line x1="1030" y1="205" x2="1140" y2="205" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1150" y="209" text-anchor="start">RdEccSec</text>
+
+  <line x1="1030" y1="235" x2="1140" y2="235" stroke="#000" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1150" y="239" text-anchor="start">RdEccDed</text>
+
+  <!-- Legend -->
+  <rect x="40" y="365" width="20" height="14" fill="#dae8fc" stroke="#6c8ebf"/>
+  <text x="68" y="377">combinational logic from olo_ft_pkg_ecc</text>
+  <rect x="340" y="365" width="20" height="14" fill="#f8cecc" stroke="#b85450"/>
+  <text x="368" y="377">wrapped olo_base entity</text>
+  <rect x="560" y="365" width="20" height="14" fill="#fff2cc" stroke="#d6b656" stroke-dasharray="6,4"/>
+  <text x="588" y="377">optional pipeline (EccPipeline_g)</text>
+</svg>
