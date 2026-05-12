@@ -677,3 +677,23 @@ def add_configs(olo_tb):
     for Round in ['Trunc_s', 'NonSymNeg_s']:
         for Sat in ['None_s', 'SatWarn_s']:
             named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat}, pre_config=cosim)
+
+    ### olo_fix_mix_c2r ###
+    tb = olo_tb.test_bench('olo_fix_mix_c2r_tb')
+    default_generics = {
+        'InFmt_g'      : '(1,8,8)',
+        'MixFmt_g'     : '(1,0,15)',
+        'OutFmt_g'     : '(1,9,8)',
+        'Round_g'      : 'NonSymPos_s',
+        'Saturate_g'   : 'Sat_s',
+        'MultRegs_g'   : 1,
+        'IqHandling_g' : 'Parallel'
+    }
+    cosim = olo_fix_mix_c2r.cosim.cosim
+
+    for IqHandling in ['Parallel', 'TDM']:
+        for MultRegs in [1, 3]:
+            named_config(tb, default_generics | {'MultRegs_g': MultRegs, 'IqHandling_g': IqHandling}, pre_config=cosim)
+        for Round in ['Trunc_s', 'NonSymNeg_s']:
+            for Sat in ['None_s', 'SatWarn_s']:
+                named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat, 'IqHandling_g': IqHandling}, pre_config=cosim)

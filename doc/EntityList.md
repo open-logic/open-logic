@@ -239,6 +239,7 @@ be used. For deciding which option to use, the following considerations shall be
 | [olo_fix_cplx_addsub](./fix/olo_fix_cplx_addsub.md)   | Add or Subtract two complex fixed point numbers.                         |
 | [olo_fix_cplx_mult](./fix/olo_fix_cplx_mult.md)       | Multiply two complex fixed point numbers. <br> Supports a mixer mode (complex-to-complex) |
 | [olo_fix_mix_r2c](./fix/olo_fix_mix_r2c.md)           | Real to complex mixer. Multiplies a real signal with a complex local oscillator (downconversion: Out\_Q = −SigReal × MixQ) |
+| [olo_fix_mix_c2r](./fix/olo_fix_mix_c2r.md)           | Complex to real mixer. Multiplies a complex signal with a complex local oscillator to produce a real output (downconversion: Out\_SigReal = SigI × MixI + SigQ × MixQ) |
 | [olo_fix_madd](./fix/olo_fix_madd.md)                 | Multiply-accumulate (MAC) operation on fixed point numbers. <br> Aimed to be used to build MACC chains (e.g. for FIR filters)|
 
 ### CORDIC
