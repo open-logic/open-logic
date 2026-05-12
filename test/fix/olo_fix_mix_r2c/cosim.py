@@ -90,9 +90,9 @@ def cosim(output_path : str = None,
 
 if __name__ == "__main__":
     generics = {
-        "InFmt_g"   : "(1, 8, 8)",
+        "InFmt_g"   : "(1, 1, 8)",
         "MixFmt_g"  : "(1, 0, 15)",
-        "OutFmt_g"  : "(1, 9, 8)",
+        "OutFmt_g"  : "(1, 0, 8)",
         "Round_g"   : "NonSymPos_s",
         "Saturate_g": "Sat_s"
     }

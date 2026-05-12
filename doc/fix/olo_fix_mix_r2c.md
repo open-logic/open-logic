@@ -31,7 +31,7 @@ parallel. No TDM handling is supported.
 The implementation uses two multipliers running in parallel — one for _Out\_I_ and one for
 _Out\_Q_ — giving a 2-multiplier architecture.
 
-**Latency** The latency of this entity is _MultRegs\_g_ + 3 clock cycles. Rounding and saturation
+**Latency** The latency of this entity is _MultRegs\_g_ + 4 clock cycles. Rounding and saturation
 registers are always enabled.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
@@ -95,11 +95,4 @@ identical results.
 Rounding and saturation are always registered (one clock cycle each), regardless of the
 _Round_g_ and _Saturate_g_ settings.
 
-### Latency
-
-The latency is always:
-
-> Latency = _MultRegs\_g_ + 3
-
-The +3 accounts for the registered negation stage (+1), the mandatory rounding register (+1),
-and the saturation register (+1).
+![Architecture](./entities/olo_fix_mix_r2c.drawio.png)

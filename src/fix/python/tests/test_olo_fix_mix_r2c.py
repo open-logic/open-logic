@@ -33,5 +33,15 @@ class TestOloFixMixR2c(unittest.TestCase):
             self.assertAlmostEqual(float(out_i[i]), self.sig[i] * self.mix_i[i], places=3)
             self.assertAlmostEqual(float(out_q[i]), -self.sig[i] * self.mix_q[i], places=3)
 
+    def test_split_array(self):
+        self.dut.reset()
+        out_i_1, out_q_1 = self.dut.next(self.sig[:2], self.mix_i[:2], self.mix_q[:2])
+        out_i_2, out_q_2 = self.dut.next(self.sig[2:], self.mix_i[2:], self.mix_q[2:])
+        out_i = np.concatenate([out_i_1, out_i_2])
+        out_q = np.concatenate([out_q_1, out_q_2])
+        for i in range(len(self.sig)):
+            self.assertAlmostEqual(float(out_i[i]), self.sig[i] * self.mix_i[i], places=3)
+            self.assertAlmostEqual(float(out_q[i]), -self.sig[i] * self.mix_q[i], places=3)
+
 if __name__ == '__main__':
     unittest.main()

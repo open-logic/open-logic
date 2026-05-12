@@ -41,7 +41,7 @@ class olo_fix_mix_r2c:
         :param mix_q: Mixer quadrature component
         :return: (out_i, out_q) tuple
         """
-        return self._cplx_mult.next(sig_real, sig_real * 0, mix_i, mix_q)
+        return self._cplx_mult.next(sig_real, np.zeros_like(sig_real), mix_i, mix_q)
 
     def process(self, sig_real, mix_i, mix_q):
         """
