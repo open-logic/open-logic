@@ -28,7 +28,8 @@ entity olo_ft_ecc_encode_tb is
     generic (
         runner_cfg : string;
         Width_g    : positive range 5 to 128 := 32;
-        Pipeline_g : natural  range 0 to 1   := 0
+        Pipeline_g : natural  range 0 to 1   := 0;
+        Stalling_g : boolean                 := false
     );
 end entity;
 
@@ -42,16 +43,22 @@ architecture sim of olo_ft_ecc_encode_tb is
 
     constant NoFlip_c : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
 
+    -- When Stalling_g=true, both VCs introduce random stalls so the codec's UseReady_g=true
+    -- shadow-register backpressure path is exercised. boolean'pos(true)=1, boolean'pos(false)=0.
+    constant StallProb_c : real    := real(boolean'pos(Stalling_g)) * 0.5;
+    constant StallMin_c  : natural := boolean'pos(Stalling_g) * 1;
+    constant StallMax_c  : natural := boolean'pos(Stalling_g) * 5;
+
     -----------------------------------------------------------------------------------------------
     -- Verification Components
     -----------------------------------------------------------------------------------------------
     constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master (
         data_length  => Width_g,
-        stall_config => new_stall_config(0.0, 0, 0)
+        stall_config => new_stall_config(StallProb_c, StallMin_c, StallMax_c)
     );
     constant AxisSlave_c  : axi_stream_slave_t  := new_axi_stream_slave (
         data_length  => CodewordWidth_c,
-        stall_config => new_stall_config(0.0, 0, 0)
+        stall_config => new_stall_config(StallProb_c, StallMin_c, StallMax_c)
     );
 
     -----------------------------------------------------------------------------------------------
@@ -161,6 +168,17 @@ begin
                 wait_until_idle(net, as_sync(AxisSlave_c));
 
                 ErrInj_Valid <= '0';
+
+            -- Back-to-back stress test. With Stalling_g=true, both VCs randomly stall their
+            -- handshakes so the codec's UseReady_g=true shadow-register backpressure path
+            -- (and any pl_stage register chain) is exercised. With Stalling_g=false the same
+            -- test verifies the no-stall fast path produces matching codewords.
+            elsif run("Encode-BackToBack") then
+
+                for i in 0 to 31 loop
+                    pushAndCheck(net, toUslv(i, Width_g), NoFlip_c,
+                        "back-to-back beat " & integer'image(i));
+                end loop;
 
             -- Latched injection: preload the pattern while no beat is being pushed, then
             -- push a beat and verify the latched pattern was applied.

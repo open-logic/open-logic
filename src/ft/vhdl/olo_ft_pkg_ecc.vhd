@@ -226,6 +226,9 @@ package body olo_ft_pkg_ecc is
         variable SynNonZero_v : std_logic := '0';
     begin
 
+        -- SynPar layout: bits 0..high-1 = syndrome, bit 'high = overall parity error.
+        -- OR-reduce only the syndrome bits; the overall-parity bit is intentionally excluded
+        -- because it is what distinguishes SEC (overall='1') from DED (overall='0' & syndrome /= 0).
         for i in 0 to SynPar'high - 1 loop
             SynNonZero_v := SynNonZero_v or SynPar(i);
         end loop;

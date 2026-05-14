@@ -74,7 +74,7 @@ architecture rtl of olo_ft_ram_sp is
 
 begin
 
-    -- Encode write data with the new AXI-S codec entity. The codec owns the injection latch.
+    -- Encode write data with the AXI-S codec entity. The codec owns the injection latch.
     -- We never backpressure (Out_Ready always '1') and we don't need shadow registers
     -- internally, so UseReady_g=false.
     i_enc : entity work.olo_ft_ecc_encode
