@@ -33,42 +33,35 @@ package olo_ft_pkg_ecc is
 
     -- Calculate number of Hamming parity bits needed (excluding overall parity)
     function eccParityBits (
-        DataWidth : positive
-    ) return positive;
+        DataWidth : positive) return positive;
 
     -- Calculate total codeword width (data + Hamming parity + overall parity)
     function eccCodewordWidth (
-        DataWidth : positive
-    ) return positive;
+        DataWidth : positive) return positive;
 
     -- Encode data into a SECDED codeword
     function eccEncode (
-        Data : std_logic_vector
-    ) return std_logic_vector;
+        Data : std_logic_vector) return std_logic_vector;
 
     -- Compute syndrome and overall parity from a codeword
     -- Result: bit ParityBits = overall parity error, bits ParityBits-1..0 = syndrome
     function eccSyndromeAndParity (
         Codeword  : std_logic_vector;
-        DataWidth : positive
-    ) return std_logic_vector;
+        DataWidth : positive) return std_logic_vector;
 
     -- Extract corrected data from a codeword using precomputed syndrome/parity
     function eccCorrectData (
         Codeword  : std_logic_vector;
         SynPar    : std_logic_vector;
-        DataWidth : positive
-    ) return std_logic_vector;
+        DataWidth : positive) return std_logic_vector;
 
     -- Return '1' if a single error was corrected (overall parity is odd)
     function eccSecError (
-        SynPar : std_logic_vector
-    ) return std_logic;
+        SynPar : std_logic_vector) return std_logic;
 
     -- Return '1' if a double error was detected (syndrome nonzero, overall parity even)
     function eccDedError (
-        SynPar : std_logic_vector
-    ) return std_logic;
+        SynPar : std_logic_vector) return std_logic;
 
 end package;
 
@@ -80,20 +73,20 @@ package body olo_ft_pkg_ecc is
     -- Calculate number of Hamming parity bits needed (excluding overall parity)
     -- Finds smallest m such that 2^m >= DataWidth + m + 1
     function eccParityBits (
-        DataWidth : positive
-    ) return positive is
+        DataWidth : positive) return positive is
         variable Bits_v : positive := 1;
     begin
+
         while 2**Bits_v < DataWidth + Bits_v + 1 loop
             Bits_v := Bits_v + 1;
         end loop;
+
         return Bits_v;
     end function;
 
     -- Calculate total codeword width
     function eccCodewordWidth (
-        DataWidth : positive
-    ) return positive is
+        DataWidth : positive) return positive is
     begin
         -- data bits + Hamming parity bits + 1 overall parity bit
         return DataWidth + eccParityBits(DataWidth) + 1;
@@ -101,15 +94,14 @@ package body olo_ft_pkg_ecc is
 
     -- Encode data into a SECDED codeword
     function eccEncode (
-        Data : std_logic_vector
-    ) return std_logic_vector is
-        constant DataWidth_c   : positive := Data'length;
-        constant ParityBits_c  : positive := eccParityBits(DataWidth_c);
-        constant HammingLen_c  : positive := DataWidth_c + ParityBits_c;
-        constant CodewordLen_c : positive := HammingLen_c + 1;
+        Data : std_logic_vector) return std_logic_vector is
+        constant DataWidth_c   : positive                                     := Data'length;
+        constant ParityBits_c  : positive                                     := eccParityBits(DataWidth_c);
+        constant HammingLen_c  : positive                                     := DataWidth_c + ParityBits_c;
+        constant CodewordLen_c : positive                                     := HammingLen_c + 1;
         variable Codeword_v    : std_logic_vector(CodewordLen_c - 1 downto 0) := (others => '0');
         variable DataNorm_v    : std_logic_vector(DataWidth_c - 1 downto 0);
-        variable DataIdx_v     : natural  := 0;
+        variable DataIdx_v     : natural                                      := 0;
         variable Parity_v      : std_logic;
     begin
         -- Normalize data to (width-1 downto 0)
@@ -117,6 +109,7 @@ package body olo_ft_pkg_ecc is
 
         -- Place data bits at non-power-of-2 Hamming positions (1-indexed)
         DataIdx_v := 0;
+
         for i in 1 to HammingLen_c loop
             if not isPower2(i) then
                 Codeword_v(i) := DataNorm_v(DataIdx_v);
@@ -127,19 +120,23 @@ package body olo_ft_pkg_ecc is
         -- Calculate parity bits at power-of-2 positions
         for p in 0 to ParityBits_c - 1 loop
             Parity_v := '0';
+
             for i in 1 to HammingLen_c loop
                 if (i / (2**p)) mod 2 = 1 then
                     Parity_v := Parity_v xor Codeword_v(i);
                 end if;
             end loop;
+
             Codeword_v(2**p) := Parity_v;
         end loop;
 
         -- Calculate overall parity (XOR of all Hamming bits)
         Parity_v := '0';
+
         for i in 1 to HammingLen_c loop
             Parity_v := Parity_v xor Codeword_v(i);
         end loop;
+
         Codeword_v(0) := Parity_v;
 
         return Codeword_v;
@@ -148,24 +145,25 @@ package body olo_ft_pkg_ecc is
     -- Compute syndrome and overall parity from a codeword
     function eccSyndromeAndParity (
         Codeword  : std_logic_vector;
-        DataWidth : positive
-    ) return std_logic_vector is
-        constant ParityBits_c : positive := eccParityBits(DataWidth);
-        constant HammingLen_c : positive := DataWidth + ParityBits_c;
+        DataWidth : positive) return std_logic_vector is
+        constant ParityBits_c : positive                                    := eccParityBits(DataWidth);
+        constant HammingLen_c : positive                                    := DataWidth + ParityBits_c;
         variable CwNorm_v     : std_logic_vector(HammingLen_c downto 0);
         variable Syndrome_v   : std_logic_vector(ParityBits_c - 1 downto 0) := (others => '0');
-        variable OverallPar_v : std_logic := '0';
+        variable OverallPar_v : std_logic                                   := '0';
         variable Result_v     : std_logic_vector(ParityBits_c downto 0);
     begin
         CwNorm_v := Codeword;
 
         -- Calculate syndrome bits
         for p in 0 to ParityBits_c - 1 loop
+
             for i in 1 to HammingLen_c loop
                 if (i / (2**p)) mod 2 = 1 then
                     Syndrome_v(p) := Syndrome_v(p) xor CwNorm_v(i);
                 end if;
             end loop;
+
         end loop;
 
         -- Calculate overall parity (XOR of all bits including position 0)
@@ -174,7 +172,7 @@ package body olo_ft_pkg_ecc is
         end loop;
 
         Result_v(ParityBits_c - 1 downto 0) := Syndrome_v;
-        Result_v(ParityBits_c)               := OverallPar_v;
+        Result_v(ParityBits_c)              := OverallPar_v;
         return Result_v;
     end function;
 
@@ -182,14 +180,13 @@ package body olo_ft_pkg_ecc is
     function eccCorrectData (
         Codeword  : std_logic_vector;
         SynPar    : std_logic_vector;
-        DataWidth : positive
-    ) return std_logic_vector is
+        DataWidth : positive) return std_logic_vector is
         constant ParityBits_c  : positive := eccParityBits(DataWidth);
         constant HammingLen_c  : positive := DataWidth + ParityBits_c;
         variable Syndrome_v    : natural;
         variable CwCorrected_v : std_logic_vector(HammingLen_c downto 0);
         variable Data_v        : std_logic_vector(DataWidth - 1 downto 0);
-        variable DataIdx_v     : natural := 0;
+        variable DataIdx_v     : natural  := 0;
     begin
         Syndrome_v := to_integer(unsigned(SynPar(ParityBits_c - 1 downto 0)));
 
@@ -203,6 +200,7 @@ package body olo_ft_pkg_ecc is
 
         -- Extract data bits from non-power-of-2 positions
         DataIdx_v := 0;
+
         for i in 1 to HammingLen_c loop
             if not isPower2(i) then
                 Data_v(DataIdx_v) := CwCorrected_v(i);
@@ -216,8 +214,7 @@ package body olo_ft_pkg_ecc is
     -- Return '1' if a single error was corrected
     -- Under SECDED assumption (at most 2 bit errors), odd overall parity = single error
     function eccSecError (
-        SynPar : std_logic_vector
-    ) return std_logic is
+        SynPar : std_logic_vector) return std_logic is
     begin
         return SynPar(SynPar'high);
     end function;
@@ -225,13 +222,14 @@ package body olo_ft_pkg_ecc is
     -- Return '1' if a double error was detected
     -- Syndrome nonzero with even overall parity = double error
     function eccDedError (
-        SynPar : std_logic_vector
-    ) return std_logic is
+        SynPar : std_logic_vector) return std_logic is
         variable SynNonZero_v : std_logic := '0';
     begin
+
         for i in 0 to SynPar'high - 1 loop
             SynNonZero_v := SynNonZero_v or SynPar(i);
         end loop;
+
         return SynNonZero_v and not SynPar(SynPar'high);
     end function;
 

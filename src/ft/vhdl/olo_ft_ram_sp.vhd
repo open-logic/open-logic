@@ -35,19 +35,19 @@ entity olo_ft_ram_sp is
     generic (
         Depth_g        : positive;
         Width_g        : positive;
-        RamRdLatency_g : positive            := 1;
-        RamStyle_g     : string              := "auto";
-        RamBehavior_g  : string              := "RBW";
+        RamRdLatency_g : positive             := 1;
+        RamStyle_g     : string               := "auto";
+        RamBehavior_g  : string               := "RBW";
         EccPipeline_g  : natural range 0 to 2 := 0
     );
     port (
         Clk            : in    std_logic;
-        Rst            : in    std_logic                                                  := '0';
+        Rst            : in    std_logic                                                := '0';
         Addr           : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        WrEna          : in    std_logic                                                  := '1';
+        WrEna          : in    std_logic                                                := '1';
         WrData         : in    std_logic_vector(Width_g - 1 downto 0);
-        ErrInj_BitFlip : in    std_logic_vector(eccCodewordWidth(Width_g) - 1 downto 0)   := (others => '0');
-        ErrInj_Valid   : in    std_logic                                                  := '0';
+        ErrInj_BitFlip : in    std_logic_vector(eccCodewordWidth(Width_g) - 1 downto 0) := (others => '0');
+        ErrInj_Valid   : in    std_logic                                                := '0';
         RdData         : out   std_logic_vector(Width_g - 1 downto 0);
         RdValid        : out   std_logic;
         RdEccSec       : out   std_logic;
@@ -122,9 +122,11 @@ begin
                 RdEnaPipe <= (others => '0');
             else
                 RdEnaPipe(1) <= not WrEna;
+
                 for i in 2 to RamRdLatency_g loop
                     RdEnaPipe(i) <= RdEnaPipe(i - 1);
                 end loop;
+
             end if;
         end if;
     end process;

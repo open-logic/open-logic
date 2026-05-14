@@ -105,6 +105,7 @@ See the corresponding sections in
 
 ### Constraints
 
-See [Open Logic Fault-Tolerance Principles - Constraints That Apply Across the Area](./olo_ft_principles.md#constraints-that-apply-across-the-area)
+See
+[Open Logic Fault-Tolerance Principles - Constraints That Apply Across the Area](./olo_ft_principles.md#constraints-that-apply-across-the-area)
 for the no-byte-enables and no-initialization constraints. No additional `olo_ft_ram_sp`-specific constraints
 apply.

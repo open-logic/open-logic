@@ -59,13 +59,13 @@ architecture sim of olo_ft_ecc_decode_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk            : std_logic                                       := '0';
-    signal Rst            : std_logic                                       := '1';
-    signal In_Valid       : std_logic                                       := '0';
+    signal Clk            : std_logic                                      := '0';
+    signal Rst            : std_logic                                      := '1';
+    signal In_Valid       : std_logic                                      := '0';
     signal In_Ready       : std_logic;
-    signal In_Codeword    : std_logic_vector(CodewordWidth_c - 1 downto 0)  := (others => '0');
-    signal ErrInj_BitFlip     : std_logic_vector(CodewordWidth_c - 1 downto 0)  := (others => '0');
-    signal ErrInj_Valid : std_logic                                       := '0';
+    signal In_Codeword    : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
+    signal ErrInj_BitFlip : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
+    signal ErrInj_Valid   : std_logic                                      := '0';
     signal Out_Valid      : std_logic;
     signal Out_Ready      : std_logic;
     signal Out_Data       : std_logic_vector(Width_g - 1 downto 0);
@@ -84,13 +84,13 @@ architecture sim of olo_ft_ecc_decode_tb is
     --              even though the data is "wrong" by SECDED definition).
     -----------------------------------------------------------------------------------------------
     procedure pushExpect (
-        signal   net          : inout network_t;
-        constant Data_v       : in    std_logic_vector;
-        constant ExtFlip_v    : in    std_logic_vector;
-        constant IntFlip_v    : in    std_logic_vector;
-        constant ExpSec       : in    std_logic;
-        constant ExpDed       : in    std_logic;
-        constant Message_c    : in    string) is
+        signal   net       : inout network_t;
+        constant Data_v    : in    std_logic_vector;
+        constant ExtFlip_v : in    std_logic_vector;
+        constant IntFlip_v : in    std_logic_vector;
+        constant ExpSec    : in    std_logic;
+        constant ExpDed    : in    std_logic;
+        constant Message_c : in    string) is
         variable Codeword_v    : std_logic_vector(CodewordWidth_c - 1 downto 0);
         variable EffCodeword_v : std_logic_vector(CodewordWidth_c - 1 downto 0);
         variable SynPar_v      : std_logic_vector(eccParityBits(Width_g) downto 0);
@@ -103,7 +103,7 @@ architecture sim of olo_ft_ecc_decode_tb is
 
         push_axi_stream(net, AxisMaster_c, Codeword_v);
         check_axi_stream(net, AxisSlave_c, ExpData_v, tuser => ExpSec & ExpDed,
-            msg => Message_c, blocking => false);
+            msg                                             => Message_c, blocking => false);
     end procedure;
 
 begin
@@ -121,11 +121,11 @@ begin
 
             wait until rising_edge(Clk);
             Rst            <= '1';
-            ErrInj_BitFlip     <= (others => '0');
-            ErrInj_Valid <= '0';
+            ErrInj_BitFlip <= (others => '0');
+            ErrInj_Valid   <= '0';
             wait for 200 ns;
             wait until rising_edge(Clk);
-            Rst <= '0';
+            Rst            <= '0';
             wait until rising_edge(Clk);
 
             if run("Decode-NoError") then
@@ -168,16 +168,16 @@ begin
                     wait_until_idle(net, as_sync(AxisSlave_c));
                 end loop;
 
-                ErrInj_Valid <= '0';
-                ErrInj_BitFlip     <= (others => '0');
+                ErrInj_Valid   <= '0';
+                ErrInj_BitFlip <= (others => '0');
 
             -- Latched injection: preload an injection pattern, idle a few cycles, then push a
             -- clean codeword and verify the latch is consumed exactly once.
             elsif run("Decode-LatchedInjection") then
-                ErrInj_BitFlip     <= setBits(2, CodewordWidth_c);
-                ErrInj_Valid <= '1';
+                ErrInj_BitFlip <= setBits(2, CodewordWidth_c);
+                ErrInj_Valid   <= '1';
                 wait until rising_edge(Clk);
-                ErrInj_Valid <= '0';
+                ErrInj_Valid   <= '0';
 
                 for i in 0 to 4 loop
                     wait until rising_edge(Clk);

@@ -48,18 +48,18 @@ architecture sim of olo_ft_ram_sp_tb is
     -- alongside the write so the encoder applies the flip immediately. Otherwise no injection is
     -- requested. The default 1-bit '0' means "no injection".
     procedure write (
-        address       : natural;
-        data          : natural;
-        signal Clk    : in  std_logic;
-        signal Addr   : out std_logic_vector;
-        signal WrData : out std_logic_vector;
-        signal WrEna  : out std_logic;
+        address         : natural;
+        data            : natural;
+        signal Clk      : in  std_logic;
+        signal Addr     : out std_logic_vector;
+        signal WrData   : out std_logic_vector;
+        signal WrEna    : out std_logic;
         signal InjFlip  : out std_logic_vector;
         signal InjValid : out std_logic;
-        flipBits      : std_logic_vector := (0 downto 0 => '0')) is
-
+        flipBits        : std_logic_vector := (0 downto 0 => '0')) is
         variable Inject_v : boolean := false;
     begin
+
         for i in flipBits'range loop
             if flipBits(i) = '1' then
                 Inject_v := true;

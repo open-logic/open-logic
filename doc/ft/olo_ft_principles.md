@@ -55,9 +55,9 @@ strobes.
   codeword. For [olo_ft_ecc_encode](./olo_ft_ecc_encode.md) (and the RAM/FIFO write side) the XOR happens
   after encoding. For [olo_ft_ecc_decode](./olo_ft_ecc_decode.md) the XOR happens before the syndrome
   calculation, so it simulates a corruption that occurred between the encoder and the decoder.
-- The _ErrInj\_Valid_ strobe latches the current _ErrInj\_BitFlip_ value into an internal register. The latched pattern is
-  applied to the next accepted beat (write side) or codeword (read side) and is cleared once that beat
-  completes the handshake.
+- The _ErrInj\_Valid_ strobe latches the current _ErrInj\_BitFlip_ value into an internal register.
+  The latched pattern is applied to the next accepted beat (write side) or codeword (read side) and
+  is cleared once that beat completes the handshake.
 
 This decouples error injection from data timing. Preload the pattern any cycle, and it is applied to
 the next data beat whenever that happens. If _Valid_ = '1' and the handshake completes in the same cycle,
@@ -86,8 +86,9 @@ The flags are time-aligned with the corresponding data word.
 
 ## Codec Entities
 
-The SECDED encode and decode logic is exposed as standalone entities: 
-[olo_ft_ecc_encode](./olo_ft_ecc_encode.md) and [olo_ft_ecc_decode](./olo_ft_ecc_decode.md) which make use of the package functions provided in [olo_ft_pkg_ecc](./olo_ft_pkg_ecc.md).
+The SECDED encode and decode logic is exposed as standalone entities:
+[olo_ft_ecc_encode](./olo_ft_ecc_encode.md) and [olo_ft_ecc_decode](./olo_ft_ecc_decode.md), which make use of
+the package functions provided in [olo_ft_pkg_ecc](./olo_ft_pkg_ecc.md).
 
 Both entities provide an AXI4-Stream handshake (_In\_Valid_ / _In\_Ready_, _Out\_Valid_ /
 _Out\_Ready_). Back-pressure is honoured by default (`UseReady_g => true`); set `UseReady_g => false` for

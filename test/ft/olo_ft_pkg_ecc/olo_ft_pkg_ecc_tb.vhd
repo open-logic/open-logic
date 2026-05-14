@@ -117,30 +117,35 @@ begin
             elsif run("SecAllBits-w8") then
                 -- Flip every codeword bit individually: SEC must trigger and data must be corrected.
                 Data8_v := X"5A";
+
                 for i in 0 to eccCodewordWidth(8) - 1 loop
                     checkEcc(Data8_v, setBits(i, eccCodewordWidth(8)), '1', '0', true);
                 end loop;
 
             elsif run("SecAllBits-w16") then
                 Data16_v := X"A55A";
+
                 for i in 0 to eccCodewordWidth(16) - 1 loop
                     checkEcc(Data16_v, setBits(i, eccCodewordWidth(16)), '1', '0', true);
                 end loop;
 
             elsif run("SecAllBits-w32") then
                 Data32_v := X"DEADBEEF";
+
                 for i in 0 to eccCodewordWidth(32) - 1 loop
                     checkEcc(Data32_v, setBits(i, eccCodewordWidth(32)), '1', '0', true);
                 end loop;
 
             elsif run("SecAllBits-w64") then
                 Data64_v := X"0123456789ABCDEF";
+
                 for i in 0 to eccCodewordWidth(64) - 1 loop
                     checkEcc(Data64_v, setBits(i, eccCodewordWidth(64)), '1', '0', true);
                 end loop;
 
             elsif run("SecAllBits-w128") then
                 Data128_v := X"0123456789ABCDEF_FEDCBA9876543210";
+
                 for i in 0 to eccCodewordWidth(128) - 1 loop
                     checkEcc(Data128_v, setBits(i, eccCodewordWidth(128)), '1', '0', true);
                 end loop;
@@ -149,10 +154,13 @@ begin
                 -- Exhaustive at small width: 13-bit codeword, C(13,2)=78 pairs.
                 -- Proves DED holds for every two-flip pattern at the package level.
                 Data8_v := X"5A";
+
                 for i in 0 to eccCodewordWidth(8) - 2 loop
+
                     for j in i + 1 to eccCodewordWidth(8) - 1 loop
                         checkEcc(Data8_v, setBits((i, j), eccCodewordWidth(8)), '0', '1', false);
                     end loop;
+
                 end loop;
 
             elsif run("DedSampledPairs-w64") then
