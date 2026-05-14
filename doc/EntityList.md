@@ -33,6 +33,7 @@ Note that components are split into categories.
     - [Miscellaneous](#miscellaneous-1)
   - [ft](#ft)
     - [Packages (olo\_ft\_pkg\_\<...\>)](#packages-olo_ft_pkg_)
+    - [ECC Codec (olo\_ft\_ecc\_\<...\>)](#ecc-codec-olo_ft_ecc_)
     - [RAM Implementations (olo\_ft\_ram\_\<...\>)](#ram-implementations-olo_ft_ram_)
 
 ## base
@@ -272,17 +273,17 @@ common constraints) are described once in
 
 | Package                                       | Description                                                  |
 | --------------------------------------------- | ------------------------------------------------------------ |
-| [olo_ft_pkg_ecc](./ft/olo_ft_pkg_ecc.md)      | SECDED Hamming code functions for ECC-protected memories. **For internal use within Open Logic only** |
+| [olo_ft_pkg_ecc](./ft/olo_ft_pkg_ecc.md)      | SECDED Hamming code functions for ECC-protected memories. |
 
 ### ECC Codec (olo_ft_ecc_\<...\>)
 
 | Entity                                          | Description                                                  |
 | ----------------------------------------------- | ------------------------------------------------------------ |
-| [olo_ft_ecc_encode](./ft/olo_ft_ecc_encode.md)  | SECDED encoder with optional pipeline and bit-flip injection (Verilog-callable) |
-| [olo_ft_ecc_decode](./ft/olo_ft_ecc_decode.md)  | SECDED decoder with optional pipeline (Verilog-callable)     |
+| [olo_ft_ecc_encode](./ft/olo_ft_ecc_encode.md)  | SECDED encoder with AXI4-Stream handshake, optional pipeline, and codeword-wide bit-flip injection |
+| [olo_ft_ecc_decode](./ft/olo_ft_ecc_decode.md)  | SECDED decoder with AXI4-Stream handshake and optional distributed pipeline |
 
 ### RAM Implementations (olo_ft_ram_\<...\>)
 
 | Entity                                   | Description                                                  |
 | ---------------------------------------- | ------------------------------------------------------------ |
-| [olo_ft_ram_sp](./ft/olo_ft_ram_sp.md)   | ECC-protected single port RAM (SECDED Hamming)               |
+| [olo_ft_ram_sp](./ft/olo_ft_ram_sp.md)   | ECC-protected single port RAM                                |

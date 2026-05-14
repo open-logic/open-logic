@@ -35,18 +35,19 @@ entity olo_ft_ram_sp is
     generic (
         Depth_g        : positive;
         Width_g        : positive;
-        RamRdLatency_g : positive := 1;
-        RamStyle_g     : string   := "auto";
-        RamBehavior_g  : string   := "RBW";
-        EccPipeline_g  : natural  := 0
+        RamRdLatency_g : positive            := 1;
+        RamStyle_g     : string              := "auto";
+        RamBehavior_g  : string              := "RBW";
+        EccPipeline_g  : natural range 0 to 2 := 0
     );
     port (
         Clk            : in    std_logic;
+        Rst            : in    std_logic                                                  := '0';
         Addr           : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        WrEna          : in    std_logic                               := '1';
+        WrEna          : in    std_logic                                                  := '1';
         WrData         : in    std_logic_vector(Width_g - 1 downto 0);
-        ErrInj_BitFlip : in    std_logic_vector(eccCodewordWidth(Width_g) - 1 downto 0) := (others => '0');
-        ErrInj_Valid   : in    std_logic                               := '0';
+        ErrInj_BitFlip : in    std_logic_vector(eccCodewordWidth(Width_g) - 1 downto 0)   := (others => '0');
+        ErrInj_Valid   : in    std_logic                                                  := '0';
         RdData         : out   std_logic_vector(Width_g - 1 downto 0);
         RdValid        : out   std_logic;
         RdEccSec       : out   std_logic;
@@ -59,50 +60,40 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_ft_ram_sp is
 
-    constant CodewordWidth_c    : positive := eccCodewordWidth(Width_g);
-    constant TotalReadLatency_c : positive := RamRdLatency_g + EccPipeline_g;
+    constant CodewordWidth_c : positive := eccCodewordWidth(Width_g);
 
     signal Wr_Codeword : std_logic_vector(CodewordWidth_c - 1 downto 0);
     signal Rd_Codeword : std_logic_vector(CodewordWidth_c - 1 downto 0);
 
-    -- Pending bit-flip latch: holds the next pattern to be applied to the next write.
-    signal ErrInj_Pending : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
-    -- Combinational select: newly-loaded pattern if ErrInj_Valid='1', else the pending one.
-    signal ErrInj_Active  : std_logic_vector(CodewordWidth_c - 1 downto 0);
-
-    signal RdValidPipe : std_logic_vector(1 to TotalReadLatency_c) := (others => '0');
+    -- Read-enable pipeline aligned with the wrapped RAM's read latency. The encode entity
+    -- accepts WrEna as its handshake; the decode entity's In_Valid then needs to track when a
+    -- fresh codeword (i.e. a read, not a write) is appearing at the RAM read port. We delay
+    -- (not WrEna) by exactly RamRdLatency_g cycles to align with that read result. The decode
+    -- entity contributes the remaining EccPipeline_g cycles via its own Out_Valid.
+    signal RdEnaPipe : std_logic_vector(1 to RamRdLatency_g) := (others => '0');
 
 begin
 
-    -- Active flip pattern this cycle: latched pattern under normal operation, or the freshly
-    -- presented pattern when ErrInj_Valid='1'. WrEna='1' clears the latch after the pattern is
-    -- applied; while WrEna='0' the latch persists so a preloaded pattern survives idle cycles.
-    ErrInj_Active <= ErrInj_BitFlip when ErrInj_Valid = '1' else ErrInj_Pending;
-
-    p_pending : process (Clk) is
-    begin
-        if rising_edge(Clk) then
-            if WrEna = '1' then
-                -- Pattern (if any) was applied to this write; clear so it isn't re-applied.
-                ErrInj_Pending <= (others => '0');
-            elsif ErrInj_Valid = '1' then
-                -- Preload for a future write.
-                ErrInj_Pending <= ErrInj_BitFlip;
-            end if;
-        end if;
-    end process;
-
-    -- Encode write data (combinational + injection)
+    -- Encode write data with the new AXI-S codec entity. The codec owns the injection latch.
+    -- We never backpressure (Out_Ready always '1') and we don't need shadow registers
+    -- internally, so UseReady_g=false.
     i_enc : entity work.olo_ft_ecc_encode
         generic map (
             Width_g    => Width_g,
-            Pipeline_g => 0
+            Pipeline_g => 0,
+            UseReady_g => false
         )
         port map (
-            Clk          => Clk,
-            In_Data      => WrData,
-            In_BitFlip   => ErrInj_Active,
-            Out_Codeword => Wr_Codeword
+            Clk            => Clk,
+            Rst            => Rst,
+            In_Valid       => WrEna,
+            In_Ready       => open,
+            In_Data        => WrData,
+            Out_Valid      => open,
+            Out_Ready      => '1',
+            Out_Codeword   => Wr_Codeword,
+            ErrInj_BitFlip => ErrInj_BitFlip,
+            ErrInj_Valid   => ErrInj_Valid
         );
 
     -- Internal RAM with codeword-wide word
@@ -122,31 +113,42 @@ begin
             RdData => Rd_Codeword
         );
 
-    -- Decode read data (with optional pipeline)
-    i_dec : entity work.olo_ft_ecc_decode
-        generic map (
-            Width_g    => Width_g,
-            Pipeline_g => EccPipeline_g
-        )
-        port map (
-            Clk         => Clk,
-            In_Codeword => Rd_Codeword,
-            Out_Data    => RdData,
-            Out_EccSec  => RdEccSec,
-            Out_EccDed  => RdEccDed
-        );
-
-    -- Read-valid pipeline: a read happens whenever WrEna='0'. Delay matches data path.
-    p_rd_valid : process (Clk) is
+    -- Delay (not WrEna) by RamRdLatency_g to drive decode.In_Valid in lockstep with the
+    -- codeword that just came out of the RAM.
+    p_rd_ena_pipe : process (Clk) is
     begin
         if rising_edge(Clk) then
-            RdValidPipe(1) <= not WrEna;
-            for i in 2 to TotalReadLatency_c loop
-                RdValidPipe(i) <= RdValidPipe(i - 1);
-            end loop;
+            if Rst = '1' then
+                RdEnaPipe <= (others => '0');
+            else
+                RdEnaPipe(1) <= not WrEna;
+                for i in 2 to RamRdLatency_g loop
+                    RdEnaPipe(i) <= RdEnaPipe(i - 1);
+                end loop;
+            end if;
         end if;
     end process;
 
-    RdValid <= RdValidPipe(TotalReadLatency_c);
+    -- Decode read data (with optional pipeline). Out_Valid is the user-facing RdValid.
+    i_dec : entity work.olo_ft_ecc_decode
+        generic map (
+            Width_g    => Width_g,
+            Pipeline_g => EccPipeline_g,
+            UseReady_g => false
+        )
+        port map (
+            Clk            => Clk,
+            Rst            => Rst,
+            In_Valid       => RdEnaPipe(RamRdLatency_g),
+            In_Ready       => open,
+            In_Codeword    => Rd_Codeword,
+            Out_Valid      => RdValid,
+            Out_Ready      => '1',
+            Out_Data       => RdData,
+            Out_EccSec     => RdEccSec,
+            Out_EccDed     => RdEccDed,
+            ErrInj_BitFlip => (others => '0'),
+            ErrInj_Valid   => '0'
+        );
 
 end architecture;

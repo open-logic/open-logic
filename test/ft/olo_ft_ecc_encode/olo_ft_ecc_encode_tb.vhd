@@ -12,6 +12,8 @@ library ieee;
 
 library vunit_lib;
     context vunit_lib.vunit_context;
+    context vunit_lib.com_context;
+    context vunit_lib.vc_context;
 
 library olo;
     use olo.olo_base_pkg_math.all;
@@ -26,93 +28,220 @@ entity olo_ft_ecc_encode_tb is
     generic (
         runner_cfg : string;
         Width_g    : positive range 5 to 128 := 32;
-        Pipeline_g : natural  range 0 to 2   := 0
+        Pipeline_g : natural  range 0 to 1   := 0
     );
 end entity;
 
 architecture sim of olo_ft_ecc_encode_tb is
 
+    -----------------------------------------------------------------------------------------------
+    -- Constants
+    -----------------------------------------------------------------------------------------------
     constant ClkPeriod_c     : time     := 10 ns;
     constant CodewordWidth_c : positive := eccCodewordWidth(Width_g);
 
-    signal Clk          : std_logic := '0';
-    signal In_Data      : std_logic_vector(Width_g - 1 downto 0)         := (others => '0');
-    signal In_BitFlip   : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
-    signal Out_Codeword : std_logic_vector(CodewordWidth_c - 1 downto 0);
-
     constant NoFlip_c : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
+
+    -----------------------------------------------------------------------------------------------
+    -- Verification Components
+    -----------------------------------------------------------------------------------------------
+    constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master (
+        data_length  => Width_g,
+        stall_config => new_stall_config(0.0, 0, 0)
+    );
+    constant AxisSlave_c  : axi_stream_slave_t  := new_axi_stream_slave (
+        data_length  => CodewordWidth_c,
+        stall_config => new_stall_config(0.0, 0, 0)
+    );
+
+    -----------------------------------------------------------------------------------------------
+    -- Interface Signals
+    -----------------------------------------------------------------------------------------------
+    signal Clk            : std_logic                                       := '0';
+    signal Rst            : std_logic                                       := '1';
+    signal In_Valid       : std_logic                                       := '0';
+    signal In_Ready       : std_logic;
+    signal In_Data        : std_logic_vector(Width_g - 1 downto 0)          := (others => '0');
+    signal ErrInj_BitFlip     : std_logic_vector(CodewordWidth_c - 1 downto 0)  := (others => '0');
+    signal ErrInj_Valid : std_logic                                       := '0';
+    signal Out_Valid      : std_logic;
+    signal Out_Ready      : std_logic;
+    signal Out_Codeword   : std_logic_vector(CodewordWidth_c - 1 downto 0);
+
+    -----------------------------------------------------------------------------------------------
+    -- Helpers
+    -----------------------------------------------------------------------------------------------
+    procedure pushAndCheck (
+        signal   net       : inout network_t;
+        constant Data_v    : in    std_logic_vector;
+        constant Flip_v    : in    std_logic_vector;
+        constant Message_c : in    string) is
+        variable Expected_v : std_logic_vector(CodewordWidth_c - 1 downto 0);
+    begin
+        Expected_v := eccEncode(Data_v) xor Flip_v;
+        push_axi_stream(net, AxisMaster_c, Data_v);
+        check_axi_stream(net, AxisSlave_c, Expected_v, msg => Message_c, blocking => false);
+    end procedure;
 
 begin
 
+    -----------------------------------------------------------------------------------------------
+    -- TB Control
+    -----------------------------------------------------------------------------------------------
+    test_runner_watchdog(runner, 1 ms);
+
+    p_control : process is
+    begin
+        test_runner_setup(runner, runner_cfg);
+
+        while test_suite loop
+
+            -- Reset
+            wait until rising_edge(Clk);
+            Rst            <= '1';
+            ErrInj_BitFlip     <= (others => '0');
+            ErrInj_Valid <= '0';
+            wait for 200 ns;
+            wait until rising_edge(Clk);
+            Rst <= '0';
+            wait until rising_edge(Clk);
+
+            -- No-flip baseline: clean encode path
+            if run("Encode-NoFlip") then
+                ErrInj_BitFlip     <= NoFlip_c;
+                ErrInj_Valid <= '0';
+                pushAndCheck(net, toUslv(0,         Width_g),           NoFlip_c, "data=0");
+                pushAndCheck(net, toUslv(16#5A#,    Width_g),           NoFlip_c, "data=5A");
+                pushAndCheck(net, onesVector(Width_g),                  NoFlip_c, "data=allOnes");
+
+            -- Single-bit injection at every codeword position via the direct-apply path
+            -- (ErrInj_Valid held high alongside the beat)
+            elsif run("Encode-SingleFlip-Direct") then
+                ErrInj_Valid <= '1';
+
+                for i in 0 to CodewordWidth_c - 1 loop
+                    ErrInj_BitFlip <= setBits(i, CodewordWidth_c);
+                    pushAndCheck(net, toUslv(16#A5#, Width_g),
+                        setBits(i, CodewordWidth_c),
+                        "direct flip at " & integer'image(i));
+                    wait_until_idle(net, as_sync(AxisMaster_c));
+                    wait_until_idle(net, as_sync(AxisSlave_c));
+                end loop;
+
+                ErrInj_Valid <= '0';
+
+            -- Double-bit injection sample set (direct-apply path)
+            elsif run("Encode-DoubleFlip-Direct") then
+                ErrInj_Valid <= '1';
+
+                ErrInj_BitFlip <= setBits((0, 1), CodewordWidth_c);
+                pushAndCheck(net, toUslv(16#5A#, Width_g), setBits((0, 1), CodewordWidth_c), "(0,1)");
+                wait_until_idle(net, as_sync(AxisMaster_c));
+                wait_until_idle(net, as_sync(AxisSlave_c));
+
+                ErrInj_BitFlip <= setBits((0, CodewordWidth_c - 1), CodewordWidth_c);
+                pushAndCheck(net, toUslv(16#5A#, Width_g), setBits((0, CodewordWidth_c - 1), CodewordWidth_c), "(0,N-1)");
+                wait_until_idle(net, as_sync(AxisMaster_c));
+                wait_until_idle(net, as_sync(AxisSlave_c));
+
+                ErrInj_BitFlip <= setBits((1, 2), CodewordWidth_c);
+                pushAndCheck(net, toUslv(16#5A#, Width_g), setBits((1, 2), CodewordWidth_c), "(1,2)");
+                wait_until_idle(net, as_sync(AxisMaster_c));
+                wait_until_idle(net, as_sync(AxisSlave_c));
+
+                ErrInj_BitFlip <= setBits((2, 5), CodewordWidth_c);
+                pushAndCheck(net, toUslv(16#5A#, Width_g), setBits((2, 5), CodewordWidth_c), "(2,5)");
+                wait_until_idle(net, as_sync(AxisMaster_c));
+                wait_until_idle(net, as_sync(AxisSlave_c));
+
+                ErrInj_BitFlip <= setBits((CodewordWidth_c / 2, CodewordWidth_c / 2 + 1), CodewordWidth_c);
+                pushAndCheck(net, toUslv(16#5A#, Width_g),
+                    setBits((CodewordWidth_c / 2, CodewordWidth_c / 2 + 1), CodewordWidth_c), "(mid,mid+1)");
+                wait_until_idle(net, as_sync(AxisMaster_c));
+                wait_until_idle(net, as_sync(AxisSlave_c));
+
+                ErrInj_Valid <= '0';
+
+            -- Latched injection: preload the pattern while no beat is being pushed, then
+            -- push a beat and verify the latched pattern was applied.
+            elsif run("Encode-LatchedInjection") then
+                ErrInj_BitFlip     <= setBits(3, CodewordWidth_c);
+                ErrInj_Valid <= '1';
+                wait until rising_edge(Clk);
+                ErrInj_Valid <= '0';
+
+                -- Idle a few cycles to prove the latch holds
+                for i in 0 to 4 loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                pushAndCheck(net, toUslv(16#3C#, Width_g), setBits(3, CodewordWidth_c),
+                    "latched flip applied to first beat");
+
+                -- Next beat must be clean
+                pushAndCheck(net, toUslv(16#3C#, Width_g), NoFlip_c,
+                    "latch cleared after first beat");
+
+            end if;
+
+            wait_until_idle(net, as_sync(AxisMaster_c));
+            wait_until_idle(net, as_sync(AxisSlave_c));
+            wait for 1 us;
+
+        end loop;
+
+        test_runner_cleanup(runner);
+    end process;
+
+    -----------------------------------------------------------------------------------------------
+    -- Clock
+    -----------------------------------------------------------------------------------------------
     Clk <= not Clk after 0.5 * ClkPeriod_c;
 
+    -----------------------------------------------------------------------------------------------
+    -- DUT
+    -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_ft_ecc_encode
         generic map (
             Width_g    => Width_g,
             Pipeline_g => Pipeline_g
         )
         port map (
-            Clk          => Clk,
-            In_Data      => In_Data,
-            In_BitFlip   => In_BitFlip,
-            Out_Codeword => Out_Codeword
+            Clk            => Clk,
+            Rst            => Rst,
+            In_Valid       => In_Valid,
+            In_Ready       => In_Ready,
+            In_Data        => In_Data,
+            Out_Valid      => Out_Valid,
+            Out_Ready      => Out_Ready,
+            Out_Codeword   => Out_Codeword,
+            ErrInj_BitFlip => ErrInj_BitFlip,
+            ErrInj_Valid   => ErrInj_Valid
         );
 
-    test_runner_watchdog(runner, 1 ms);
+    -----------------------------------------------------------------------------------------------
+    -- Verification Components
+    -----------------------------------------------------------------------------------------------
+    vc_stimuli : entity vunit_lib.axi_stream_master
+        generic map (
+            Master => AxisMaster_c
+        )
+        port map (
+            AClk   => Clk,
+            TValid => In_Valid,
+            TReady => In_Ready,
+            TData  => In_Data
+        );
 
-    p_control : process is
-        variable Expected_v : std_logic_vector(CodewordWidth_c - 1 downto 0);
-
-        procedure applyAndCheck (
-            constant Data_v    : std_logic_vector;
-            constant Flip_v    : std_logic_vector;
-            constant Message_c : string) is
-        begin
-            wait until rising_edge(Clk);
-            In_Data    <= Data_v;
-            In_BitFlip <= Flip_v;
-            Expected_v := eccEncode(Data_v) xor Flip_v;
-
-            wait until rising_edge(Clk);
-            for i in 1 to Pipeline_g loop
-                wait until rising_edge(Clk);
-            end loop;
-            wait for 1 ns;
-
-            check_equal(Out_Codeword, Expected_v, Message_c);
-        end procedure;
-
-    begin
-        test_runner_setup(runner, runner_cfg);
-
-        wait for 1 ns;
-
-        while test_suite loop
-
-            if run("Encode-NoFlip") then
-                applyAndCheck(toUslv(0,    Width_g),         NoFlip_c, "data=0");
-                applyAndCheck(toUslv(16#5A#, Width_g),       NoFlip_c, "data=5A");
-                applyAndCheck((Width_g - 1 downto 0 => '1'), NoFlip_c, "data=allOnes");
-
-            elsif run("Encode-WithSingleFlip") then
-                for i in 0 to CodewordWidth_c - 1 loop
-                    applyAndCheck(toUslv(16#A5#, Width_g), setBits(i, CodewordWidth_c),
-                        "single flip at " & integer'image(i));
-                end loop;
-
-            elsif run("Encode-WithDoubleFlip") then
-                applyAndCheck(toUslv(16#5A#, Width_g), setBits(0, 1, CodewordWidth_c),                                       "(0,1)");
-                applyAndCheck(toUslv(16#5A#, Width_g), setBits(0, CodewordWidth_c - 1, CodewordWidth_c),                     "(0,N-1)");
-                applyAndCheck(toUslv(16#5A#, Width_g), setBits(1, 2, CodewordWidth_c),                                       "(1,2)");
-                applyAndCheck(toUslv(16#5A#, Width_g), setBits(2, 5, CodewordWidth_c),                                       "(2,5)");
-                applyAndCheck(toUslv(16#5A#, Width_g), setBits(CodewordWidth_c / 2, CodewordWidth_c / 2 + 1, CodewordWidth_c), "(mid,mid+1)");
-
-            end if;
-
-        end loop;
-
-        wait for 1 ns;
-        test_runner_cleanup(runner);
-    end process;
+    vc_response : entity vunit_lib.axi_stream_slave
+        generic map (
+            Slave => AxisSlave_c
+        )
+        port map (
+            AClk   => Clk,
+            TValid => Out_Valid,
+            TReady => Out_Ready,
+            TData  => Out_Codeword
+        );
 
 end architecture;

@@ -366,11 +366,9 @@ begin
                 check_equal(setBits(0, 4), std_logic_vector'("0001"), "setBits(0, 4)");
                 check_equal(setBits(3, 4), std_logic_vector'("1000"), "setBits(3, 4)");
 
-                -- Two-index overload
-                check_equal(setBits(0, 1, 4), std_logic_vector'("0011"), "setBits(0, 1, 4)");
-                check_equal(setBits(1, 3, 4), std_logic_vector'("1010"), "setBits(1, 3, 4)");
-
                 -- IntegerArray_t overload
+                check_equal(setBits((0, 1), 4),                   std_logic_vector'("0011"),     "setBits((0,1), 4)");
+                check_equal(setBits((1, 3), 4),                   std_logic_vector'("1010"),     "setBits((1,3), 4)");
                 check_equal(setBits(IntegerArray_t'(0, 2, 5), 8), std_logic_vector'("00100101"), "setBits((0,2,5), 8)");
                 check_equal(setBits(IntegerArray_t'(0 to -1 => 0), 4), std_logic_vector'("0000"),  "setBits(empty, 4)");
             end if;

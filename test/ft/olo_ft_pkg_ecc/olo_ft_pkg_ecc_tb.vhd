@@ -151,26 +151,26 @@ begin
                 Data8_v := X"5A";
                 for i in 0 to eccCodewordWidth(8) - 2 loop
                     for j in i + 1 to eccCodewordWidth(8) - 1 loop
-                        checkEcc(Data8_v, setBits(i, j, eccCodewordWidth(8)), '0', '1', false);
+                        checkEcc(Data8_v, setBits((i, j), eccCodewordWidth(8)), '0', '1', false);
                     end loop;
                 end loop;
 
             elsif run("DedSampledPairs-w64") then
                 -- Representative DED pairs: parity+parity, parity+data, far-apart, adjacent.
                 Data64_v := X"0123456789ABCDEF";
-                checkEcc(Data64_v, setBits(0, 1, eccCodewordWidth(64)), '0', '1', false);
-                checkEcc(Data64_v, setBits(0, eccCodewordWidth(64) - 1, eccCodewordWidth(64)), '0', '1', false);
-                checkEcc(Data64_v, setBits(1, 2, eccCodewordWidth(64)), '0', '1', false);
-                checkEcc(Data64_v, setBits(2, 5, eccCodewordWidth(64)), '0', '1', false);
-                checkEcc(Data64_v, setBits(eccCodewordWidth(64) / 2, eccCodewordWidth(64) / 2 + 1, eccCodewordWidth(64)), '0', '1', false);
+                checkEcc(Data64_v, setBits((0, 1),                                              eccCodewordWidth(64)), '0', '1', false);
+                checkEcc(Data64_v, setBits((0, eccCodewordWidth(64) - 1),                       eccCodewordWidth(64)), '0', '1', false);
+                checkEcc(Data64_v, setBits((1, 2),                                              eccCodewordWidth(64)), '0', '1', false);
+                checkEcc(Data64_v, setBits((2, 5),                                              eccCodewordWidth(64)), '0', '1', false);
+                checkEcc(Data64_v, setBits((eccCodewordWidth(64) / 2, eccCodewordWidth(64) / 2 + 1), eccCodewordWidth(64)), '0', '1', false);
 
             elsif run("DedSampledPairs-w128") then
                 Data128_v := X"0123456789ABCDEF_FEDCBA9876543210";
-                checkEcc(Data128_v, setBits(0, 1, eccCodewordWidth(128)), '0', '1', false);
-                checkEcc(Data128_v, setBits(0, eccCodewordWidth(128) - 1, eccCodewordWidth(128)), '0', '1', false);
-                checkEcc(Data128_v, setBits(1, 2, eccCodewordWidth(128)), '0', '1', false);
-                checkEcc(Data128_v, setBits(2, 5, eccCodewordWidth(128)), '0', '1', false);
-                checkEcc(Data128_v, setBits(eccCodewordWidth(128) / 2, eccCodewordWidth(128) / 2 + 1, eccCodewordWidth(128)), '0', '1', false);
+                checkEcc(Data128_v, setBits((0, 1),                                                 eccCodewordWidth(128)), '0', '1', false);
+                checkEcc(Data128_v, setBits((0, eccCodewordWidth(128) - 1),                         eccCodewordWidth(128)), '0', '1', false);
+                checkEcc(Data128_v, setBits((1, 2),                                                 eccCodewordWidth(128)), '0', '1', false);
+                checkEcc(Data128_v, setBits((2, 5),                                                 eccCodewordWidth(128)), '0', '1', false);
+                checkEcc(Data128_v, setBits((eccCodewordWidth(128) / 2, eccCodewordWidth(128) / 2 + 1), eccCodewordWidth(128)), '0', '1', false);
 
             end if;
 

@@ -77,9 +77,10 @@ package olo_base_pkg_logic is
 
     -- Build a std_logic_vector of given width with bits set at the given indexes,
     -- all other bits cleared. Useful for constructing bit-flip patterns or masks.
+    --   setBits(5, 10)         -> 10-bit vector with bit 5 set
+    --   setBits((3, 5), 10)    -> 10-bit vector with bits 3 and 5 set
     function setBits (indexes : in IntegerArray_t; width : in positive) return std_logic_vector;
     function setBits (idx     : in natural;        width : in positive) return std_logic_vector;
-    function setBits (idxA    : in natural; idxB  : in natural; width : in positive) return std_logic_vector;
 
     -- LFSR / CRC / PRBS Polynomials
     -- 1 for the x^n positions used
@@ -359,14 +360,6 @@ package body olo_base_pkg_logic is
         variable Result_v : std_logic_vector(width - 1 downto 0) := (others => '0');
     begin
         Result_v(idx) := '1';
-        return Result_v;
-    end function;
-
-    function setBits (idxA : in natural; idxB : in natural; width : in positive) return std_logic_vector is
-        variable Result_v : std_logic_vector(width - 1 downto 0) := (others => '0');
-    begin
-        Result_v(idxA) := '1';
-        Result_v(idxB) := '1';
         return Result_v;
     end function;
 

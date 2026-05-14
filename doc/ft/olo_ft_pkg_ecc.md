@@ -6,6 +6,10 @@
 
 ## Status Information
 
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_ft_pkg_ecc.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_ft_pkg_ecc.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_ft_pkg_ecc.json?cacheSeconds=0)
+
 VHDL Source: [olo_ft_pkg_ecc](../../src/ft/vhdl/olo_ft_pkg_ecc.vhd)
 
 ## Description
