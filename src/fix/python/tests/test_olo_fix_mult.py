@@ -20,7 +20,7 @@ from en_cl_fix_pkg import *
 class TestOloFixMult(unittest.TestCase):
 
     def setUp(self):
-        self.dut = olo_fix_mult(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,3,2), result_fmt=FixFormat(1, 8, 2), round=FixRound.NonSymPos_s)
+        self.dut = olo_fix_mult(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 8, 2), round=FixRound.NonSymPos_s)
         self.a = [-5.5, 3.25, -1.0, 0.0, 4.5]
         self.b = [1.5, -2.25, 0.5, 0.0, -4.5]
         self.expected = [-8.25, -7.25, -0.5, 0.0, -20.25]
@@ -44,14 +44,6 @@ class TestOloFixMult(unittest.TestCase):
         result.extend(self.dut.next(self.a[:2], self.b[:2]))
         result.extend(self.dut.next(self.a[2:], self.b[2:]))
         self.assertListEqual(result, self.expected)
-
-    def test_quantization(self):
-        self.dut = olo_fix_mult(a_fmt=FixFormat(1, 2, 2), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 8, 8), round=FixRound.NonSymPos_s)
-        a = 0.283333
-        b = 0.283333
-        expected = 0.25 * 0.25
-        result = self.dut.process(a, b)
-        self.assertEqual(result, expected)
 
 
 if __name__ == '__main__':

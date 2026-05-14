@@ -76,14 +76,5 @@ class TestOloFixCplxMult(unittest.TestCase):
         with self.assertRaises(ValueError):
             olo_fix_cplx_mult(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 10, 10), mode="INVALID") 
 
-    def test_quantization(self):
-        self.dut_mult = olo_fix_cplx_mult(a_fmt=FixFormat(1, 2, 2), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 10, 10), mode="MULT")
-        a = 0.283333 + 0.283333j
-        b = 0.283333 + 0.283333j
-        expected_mult = (0.25 + 0.25j) * (0.25 + 0.25j)
-        resi, resq = self.dut_mult.process(np.real(a), np.imag(a), np.real(b), np.imag(b))
-        result_mult = resi + 1j*resq
-        self.assertEqual(result_mult, expected_mult)
-
 if __name__ == '__main__':
     unittest.main()

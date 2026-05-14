@@ -45,10 +45,6 @@ class olo_fix_saturate:
         :param a: Input a
         :return: Processed result
         """
-        # Quantize input
-        a = cl_fix_from_real(a, self._a_fmt)
-
-        # Calculate
         return cl_fix_saturate(a, self._a_fmt, self._result_fmt, self._saturate)
 
     def process(self, a):

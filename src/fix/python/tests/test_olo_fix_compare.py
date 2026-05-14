@@ -63,14 +63,6 @@ class TestOloCompare(unittest.TestCase):
         with self.assertRaises(AssertionError):
             comp = olo_fix_compare(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), comparison="??")
 
-    def test_quantization(self):
-        self.eq = olo_fix_compare(a_fmt=FixFormat(1, 2, 2), b_fmt=FixFormat(1,2,2), comparison="=")
-        a = 0.283333
-        b = 0.284333
-        expected = True
-        result = self.eq.process(a, b)
-        self.assertEqual(result, expected)
-
 
 if __name__ == '__main__':
     unittest.main()

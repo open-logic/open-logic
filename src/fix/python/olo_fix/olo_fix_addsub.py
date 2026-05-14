@@ -53,11 +53,6 @@ class olo_fix_addsub:
         :param add: True for addition, False for subtraction (single boolean or boolean array)
         :return: Result
         """
-        # Quantize input
-        a = cl_fix_from_real(a, self._a_fmt)
-        b = cl_fix_from_real(b, self._b_fmt)
-
-        # Calculate
         return cl_fix_addsub(a, self._a_fmt, 
                              b, self._b_fmt, 
                              add,

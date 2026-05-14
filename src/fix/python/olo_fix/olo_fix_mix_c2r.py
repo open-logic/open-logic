@@ -48,8 +48,6 @@ class olo_fix_mix_c2r:
         :param mix_q: Mixer quadrature component
         :return: real output sample(s)
         """
-        # No quantization required (happens in cplx_mult)
-
         out_i, _ = self._cplx_mult.next(sig_i, sig_q, mix_i, mix_q)
         return out_i
 

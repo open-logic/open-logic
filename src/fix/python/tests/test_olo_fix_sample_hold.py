@@ -143,13 +143,5 @@ class TestOloFixSampleHold(unittest.TestCase):
         result = dut.next(out_samples=1)
         self.assertEqual(result, cl_fix_from_real(-2.75, self.FMT))
 
-    def test_quantization(self):
-        """Input values are quantized according to the format"""
-        dut = olo_fix_sample_hold(fmt=FixFormat(1, 2, 2))  # 2 fractional bits
-        dut.next(input=0.283333)
-        result = dut.next(out_samples=1)
-        expected = cl_fix_from_real(0.25, FixFormat(1, 2, 2))
-        self.assertEqual(result, expected)
-
 if __name__ == '__main__':
     unittest.main()

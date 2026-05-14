@@ -48,13 +48,6 @@ class TestOloFixAbs(unittest.TestCase):
         result.extend(self.abs.next(a[2:]))
         self.assertListEqual(result, expected)
 
-    def test_quantization(self):
-        self.abs = olo_fix_abs(a_fmt=FixFormat(1, 2, 2), result_fmt=FixFormat(1, 8, 8))
-        a = 0.283333
-        expected = 0.25
-        result = self.abs.process(a)
-        self.assertEqual(result, expected)
-
 
 if __name__ == '__main__':
     unittest.main()

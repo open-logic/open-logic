@@ -99,10 +99,6 @@ class olo_fix_mov_avg:
         if np.isscalar(in_data):
             in_data = np.array([in_data])
 
-        # Quantize input
-        in_data = cl_fix_from_real(in_data, self._in_fmt)
-        print(in_data)
-
         # moving sum
         data = np.concatenate((self._state[1::], in_data))
         mov_sum = np.convolve(data, np.ones(self._taps), mode='valid')

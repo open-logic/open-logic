@@ -76,14 +76,5 @@ class TestOloFixCplxAdd(unittest.TestCase):
         with self.assertRaises(ValueError):
             olo_fix_cplx_addsub(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 8, 8), operation="INVALID")
 
-    def test_quantization(self):
-        self.dut_add = olo_fix_cplx_addsub(a_fmt=FixFormat(1, 2, 2), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 8, 8))
-        a = 0.283333 + 0.283333j
-        b = 0.283333 + 0.283333j
-        expected_add = 0.5 + 0.5j
-        resi, resq = self.dut_add.process(np.real(a), np.imag(a), np.real(b), np.imag(b))
-        result_add = resi + 1j*resq
-        self.assertEqual(result_add, expected_add)
-
 if __name__ == '__main__':
     unittest.main()

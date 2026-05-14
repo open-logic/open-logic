@@ -20,7 +20,7 @@ from en_cl_fix_pkg import *
 class TestOloFixAddsub(unittest.TestCase):
 
     def setUp(self):
-        self.addsub = olo_fix_addsub(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,3,2), result_fmt=FixFormat(1, 8, 8))
+        self.addsub = olo_fix_addsub(a_fmt=FixFormat(1, 8, 8), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 8, 8))
         self.a = [-5.5, 3.25, -1.0, 0.0, 4.5]
         self.b = [1.5, -2.25, 0.5, 0.0, -4.5]
         self.select = [True, False, True, False, True]
@@ -54,17 +54,6 @@ class TestOloFixAddsub(unittest.TestCase):
         result.extend(self.addsub.next(self.a[:2], self.b[:2], self.select[:2]))
         result.extend(self.addsub.next(self.a[2:], self.b[2:], self.select[2:]))
         self.assertListEqual(result, self.expected_select)
-
-    def test_quantization(self):
-        self.addsub = olo_fix_addsub(a_fmt=FixFormat(1, 2, 2), b_fmt=FixFormat(1,2,2), result_fmt=FixFormat(1, 8, 8))
-        a = 0.283333
-        b = 0.284333
-        expected_add = 0.5
-        expected_sub = 0.0
-        result_add = self.addsub.process(a, b, True)
-        result_sub = self.addsub.process(a, b, False)
-        self.assertEqual(result_add, expected_add)
-        self.assertEqual(result_sub, expected_sub)
 
 
 if __name__ == '__main__':

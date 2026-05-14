@@ -98,12 +98,5 @@ class TestOloFixMovAvg(unittest.TestCase):
         with self.assertRaises(ValueError):
             olo_fix_mov_avg(taps=3, in_fmt=FixFormat(1, 8, 8), out_fmt=FixFormat(1, 8, 8), gain_corr_coef_fmt=FixFormat(0, 0, 16))
 
-    def test_quantization(self):
-        self.dut = olo_fix_mov_avg(taps=4, in_fmt=FixFormat(1, 2, 2), out_fmt=FixFormat(1, 8, 8))
-        data = [0.33, 0.33, 0.33, 0.33, 0.33]
-        expected = 0.25
-        result = self.dut.process(data)
-        self.assertEqual(result[-1], expected)
-
 if __name__ == '__main__':
     unittest.main()

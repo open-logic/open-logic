@@ -160,10 +160,6 @@ class olo_fix_cordic_vect:
         :param inp_q: Imaginary-part of the input
         :return: Output as tuple (abs, angle)
         """
-        # Quantize input
-        inp_i = cl_fix_from_real(inp_i, self._in_fmt)
-        inp_q = cl_fix_from_real(inp_q, self._in_fmt)
-
         # Map to quadrant one
         # No rounding or saturation because int_xy_fmt is checked to have sufficient int and frac bits
         x = cl_fix_abs(cl_fix_from_real(inp_i, self._in_fmt), self._in_fmt, self._int_xy_fmt, FixRound.Trunc_s, FixSaturate.None_s)
