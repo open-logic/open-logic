@@ -43,5 +43,20 @@ class TestOloFixMixR2c(unittest.TestCase):
             self.assertAlmostEqual(float(out_i[i]), self.sig[i] * self.mix_i[i], places=3)
             self.assertAlmostEqual(float(out_q[i]), -self.sig[i] * self.mix_q[i], places=3)
 
+    def test_quantization(self):
+        self.dut = olo_fix_mix_r2c(
+            in_fmt=FixFormat(1, 2, 2),
+            mix_fmt=FixFormat(1, 2, 2),
+            out_fmt=FixFormat(1, 10, 10)
+        )
+        sig = 0.283333
+        mix_i = 0.283333
+        mix_q = 0.283333
+        expected_i = 0.25 * 0.25
+        expected_q = -0.25 * 0.25
+        out_i, out_q = self.dut.process(sig, mix_i, mix_q)
+        self.assertAlmostEqual(float(out_i), expected_i, places=3)
+        self.assertAlmostEqual(float(out_q), expected_q, places=3)
+
 if __name__ == '__main__':
     unittest.main()

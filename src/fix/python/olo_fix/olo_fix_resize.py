@@ -48,6 +48,10 @@ class olo_fix_resize:
         :param a: Input a
         :return: Processed result
         """
+        # Quantize input
+        a = cl_fix_from_real(a, self._a_fmt)
+
+        # Calculate
         return cl_fix_resize(a, self._a_fmt, self._result_fmt, self._round, self._saturate)
 
     def process(self, a):

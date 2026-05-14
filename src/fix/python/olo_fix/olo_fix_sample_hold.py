@@ -54,6 +54,9 @@ class olo_fix_sample_hold:
         """
         #  Apply new input
         if input != None:
+            # Quantize input
+            input = cl_fix_from_real(input, self._fmt)
+
             if isinstance(input, (float, int)) or (isinstance(input, np.ndarray) and input.ndim == 0):
                 self._hold_value = input
             else:

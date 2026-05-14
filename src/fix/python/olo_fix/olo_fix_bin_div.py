@@ -80,6 +80,12 @@ class olo_fix_bin_div:
         :param denom: Denominator value(s)
         :return: Result of the binary division
         """
+        # Quantize input
+        num = cl_fix_from_real(num, self.num_fmt)
+        denom = cl_fix_from_real(denom, self.denom_fmt)
+
+        # Calculate
+
         #Sign Handling
         num_sign = np.where(num < 0, 1, 0)
         denom_sign = np.where(denom < 0, 1, 0)
