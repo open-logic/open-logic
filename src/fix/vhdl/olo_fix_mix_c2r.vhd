@@ -241,9 +241,9 @@ begin
 
                 -- Reset
                 if Rst = '1' then
-                    IsQ           <= '0';
-                    Valid_I       <= (others => '0');
-                    Valid_Q       <= (others => '0');
+                    IsQ     <= '0';
+                    Valid_I <= (others => '0');
+                    Valid_Q <= (others => '0');
                 end if;
 
             end if;

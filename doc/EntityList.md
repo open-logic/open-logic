@@ -251,8 +251,6 @@ be used. For deciding which option to use, the following considerations shall be
 
 ### Mixers
 
-
-
 | Entity                                              | Description                                                  |
 | --------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_fix_cordic_vect](./fix/olo_fix_cordic_vect.md) | CORDIC vectoring mode - cartesian to polar conversion |
