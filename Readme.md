@@ -75,6 +75,8 @@ _Open Logic_ is split into the following areas. You might use all of them or onl
   - requires: _base_
 - [fix](./doc/EntityList.md#FIX)  - fixed point mathematics incl. bit-true models and co-simulation support
   - requires: _base_ and _en_cl_fix_ ( [./3rdParty/en_cl_fix](./3rdParty/en_cl_fix))
+- [ft](./doc/EntityList.md#ft)  - fault-tolerant components (ECC codecs, protected RAMs)
+  - requires: _base_
 
 It's suggested that you compile ALL files of the areas you need (plus their dependencies) into one VHDL library. You are
 free to choose any library name and you are also free to use the same single library for _Open Logic_ files and

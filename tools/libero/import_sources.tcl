@@ -58,7 +58,7 @@ namespace eval olo_import_sources {
 	}
 
     #Add all source files
-    foreach area {base axi intf fix} {
+    foreach area {base axi intf fix ft} {
         variable files [glob $oloRoot/src/$area/vhdl/*.vhd]
 	    foreach f $files {
 			variable pathRelative [relpath $f [pwd]]
