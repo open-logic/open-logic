@@ -64,12 +64,12 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | Name      | In/Out | Length            | Default     | Description                                                  |
 | :-------- | :----- | :---------------- | ----------- | :----------------------------------------------------------- |
 | In\_Valid | in     | 1                 | '1'         | AXI4-Stream handshaking signal for all inputs                |
-| In\_SigI  | in     | _width(InFmt\_g)_ | (all zeros) | Signal in-phase component -- Parallel mode only<br />Format: _InFmt\_g_ |
-| In\_SigQ  | in     | _width(InFmt\_g)_ | (all zeros) | Signal quadrature component -- Parallel mode only<br />Format: _InFmt\_g_ |
-| In\_MixI  | in     | _width(MixFmt\_g)_| (all zeros) | Oscillator in-phase component -- Parallel mode only<br />Format: _MixFmt\_g_ |
-| In\_MixQ  | in     | _width(MixFmt\_g)_| (all zeros) | Oscillator quadrature component -- Parallel mode only<br />Format: _MixFmt\_g_ |
-| In\_SigIQ | in     | _width(InFmt\_g)_ | (all zeros) | Signal I then Q (TDM) -- TDM mode only<br />Format: _InFmt\_g_ |
-| In\_MixIQ | in     | _width(MixFmt\_g)_| (all zeros) | Oscillator I then Q (TDM) -- TDM mode only<br />Format: _MixFmt\_g_ |
+| In\_SigI  | in     | _width(InFmt\_g)_ | (all zeros) | Signal in-phase component for _IqHandling_g="Parallel"_<br />Format: _InFmt\_g_ |
+| In\_SigQ  | in     | _width(InFmt\_g)_ | (all zeros) | Signal quadrature component for _IqHandling_g="Parallel"_<br />Format: _InFmt\_g_ |
+| In\_MixI  | in     | _width(MixFmt\_g)_| (all zeros) | Oscillator in-phase component for _IqHandling_g="Parallel"_<br />Format: _MixFmt\_g_ |
+| In\_MixQ  | in     | _width(MixFmt\_g)_| (all zeros) | Oscillator quadrature component for _IqHandling_g="Parallel"_<br />Format: _MixFmt\_g_ |
+| In\_SigIQ | in     | _width(InFmt\_g)_ | (all zeros) | Signal I then Q for _IqHandling_g="TDM"_<br />Format: _InFmt\_g_ |
+| In\_MixIQ | in     | _width(MixFmt\_g)_| (all zeros) | Oscillator I then Q for _IqHandling_g="TDM"_<br />Format: _MixFmt\_g_ |
 | In\_Last  | in     | 1                 | '0'         | TDM re-sync: marks the last Q sample; the next sample is treated as I |
 
 _In\_Valid_ is the single handshaking signal for all inputs. Ready is not supported; the entity
@@ -90,28 +90,30 @@ input sample rate.
 ### Parallel Architecture
 
 The parallel architecture uses two multiply-accumulate operations whose structure matches the
-I-path of [olo\_fix\_cplx\_mult](./olo_fix_cplx_mult.md) in MULT4/Parallel/MIX mode:
+I-path of [olo\_fix\_cplx\_mult](./olo_fix_cplx_mult.md) in MULT4/Parallel/MIX mode.
 
-1. First MADD: computes _In\_SigI_ x _In\_MixI_ at full precision.
-2. Second MADD (started one cycle later, using the first result as accumulator input):
-   adds _In\_SigQ_ x _In\_MixQ_ to produce the final real result.
+![parallel architecture](./entities/olo_fix_mix_c2r_parallel.drawio.png)
 
-**Latency** (Parallel): _MultRegs\_g_ + 3 clock cycles, plus one cycle each for rounding and
-saturation when those registers are enabled.
+**Latency** This architecture has a latency of _MultRegs_g_+ 3 + _resize_latency_ clock cycles.
+
+Where _resize_latency_ is calculated as follows:
+
+- +1 cycle if _Round_g_ is NOT "Trunc_s"
+- +1 cycle if _Saturate_g_ is NOT "None_s"/"Warn_s"
 
 ### TDM Architecture
 
 The TDM architecture time-shares a single multiplier between the I and Q products, following
 the same pipeline as [olo\_fix\_cplx\_mult](./olo_fix_cplx_mult.md) in TDM/MIX mode but
-producing only the real output:
+producing only the real output.
 
-1. I sample: multiplier computes _SigI_ x _MixI_; result is held.
-2. Q sample: multiplier computes _SigQ_ x _MixQ_; result is added to the held I product.
-3. Real output: _SigI_ x _MixI_ + _SigQ_ x _MixQ_ is forwarded to the resize stage.
+![TDM architecture](./entities/olo_fix_mix_c2r_tdm.drawio.png)
 
 The _In\_Last_ signal (sampled on the Q slot) resets the I/Q phase tracker so that the
 immediately following sample is treated as I. This mirrors the resync behaviour of
 _olo\_fix\_cplx\_mult_.
 
-**Latency** (TDM): _MultRegs\_g_ + 4 clock cycles from the I input sample, plus one cycle each
+**Latency** (TDM): _MultRegs\_g_ + 3 clock cycles from the I input sample, plus one cycle each
 for rounding and saturation when those registers are enabled.
+
+The latency is defined as Q-sample input to real output.

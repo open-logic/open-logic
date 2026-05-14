@@ -27,6 +27,14 @@ class olo_fix_mix_r2c:
                  out_fmt : FixFormat,
                  round : FixRound = FixRound.Trunc_s,
                  saturate : FixSaturate = FixSaturate.Warn_s):
+        """
+        Constructor.
+        :param in_fmt: Format of input signal (SigReal)
+        :param mix_fmt: Format of mixer signal (MixI, MixQ)
+        :param out_fmt: Format of output signal (Out_I, Out_Q)
+        :param round: Rounding mode for output (default: truncate)
+        :param saturate: Saturation mode for output (default: warn)
+        """
         self._in_fmt = in_fmt
         self._cplx_mult = olo_fix_cplx_mult(in_fmt, mix_fmt, out_fmt, round, saturate, mode="MIX")
 

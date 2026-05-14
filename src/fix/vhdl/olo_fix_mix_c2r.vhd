@@ -120,7 +120,7 @@ begin
             end if;
         end process;
 
-        -- SigI x MixI (first MADD, no accumulation)
+        -- I x I multiplication
         i_ii : entity work.olo_fix_madd
             generic map (
                 AFmt_g        => InFmt_g,
@@ -138,7 +138,7 @@ begin
                 Out_Data   => II_Out_N1
             );
 
-        -- SigI*MixI + SigQ*MixQ (second MADD with accumulation)
+        -- Q x Q multiplication (+ accumulation)
         i_qq : entity work.olo_fix_madd
             generic map (
                 AFmt_g        => InFmt_g,
@@ -197,8 +197,6 @@ begin
         signal MultI_Hold_N1 : std_logic_vector(cl_fix_width(MultFmt_c) - 1 downto 0);
         signal AddI_N1       : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
         signal MultI_Valid   : std_logic;
-        signal Full_Real_N2  : std_logic_vector(cl_fix_width(SumFmt_c) - 1 downto 0);
-        signal Full_Valid_N2 : std_logic;
 
         attribute use_dsp                    : string;
         attribute use_dsp of AddI_N1 : signal is "no";
@@ -241,19 +239,11 @@ begin
                     AddI_N1 <= cl_fix_add(MultI_Hold_N1, MultFmt_c, MultI_N0, MultFmt_c, SumFmt_c);
                 end if;
 
-                -- Output: emit real result once per I/Q pair
-                Full_Valid_N2 <= '0';
-                if Valid_Q(MultRegs_g + 1) = '1' then
-                    Full_Real_N2  <= AddI_N1;
-                    Full_Valid_N2 <= '1';
-                end if;
-
                 -- Reset
                 if Rst = '1' then
                     IsQ           <= '0';
                     Valid_I       <= (others => '0');
                     Valid_Q       <= (others => '0');
-                    Full_Valid_N2 <= '0';
                 end if;
 
             end if;
@@ -293,8 +283,8 @@ begin
             port map (
                 Clk        => Clk,
                 Rst        => Rst,
-                In_Valid   => Full_Valid_N2,
-                In_A       => Full_Real_N2,
+                In_Valid   => Valid_Q(MultRegs_g + 1),
+                In_A       => AddI_N1,
                 Out_Valid  => Out_Valid,
                 Out_Result => Out_SigReal
             );
