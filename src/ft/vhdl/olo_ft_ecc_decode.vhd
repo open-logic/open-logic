@@ -68,6 +68,8 @@ architecture rtl of olo_ft_ecc_decode is
     constant CodewordWidth_c : positive := eccCodewordWidth(Width_g);
     constant ParityBits_c    : positive := eccParityBits(Width_g);
     constant SynParWidth_c   : positive := ParityBits_c + 1; -- includes overall parity bit
+    constant PayloadWidth_c  : positive := Width_g + 2;      -- {Data, Sec, Ded}
+    constant Stage1Width_c   : positive := CodewordWidth_c + SynParWidth_c;
 
     signal ErrInj_Pending : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
     signal ErrInj_Active  : std_logic_vector(CodewordWidth_c - 1 downto 0);
@@ -98,7 +100,6 @@ begin
     -- Branch A: Pipeline_g in {0, 1}
     --   Full combinational decode, single optional register at the output.
     g_full_comb : if Pipeline_g <= 1 generate
-        constant PayloadWidth_c : positive := Width_g + 2; -- {Data, Sec, Ded}
         signal SynPar : std_logic_vector(SynParWidth_c - 1 downto 0);
         signal Pl_In  : std_logic_vector(PayloadWidth_c - 1 downto 0);
         signal Pl_Out : std_logic_vector(PayloadWidth_c - 1 downto 0);
@@ -134,8 +135,6 @@ begin
     --   Distributed pipeline: stage 1 registers syndrome+parity computation,
     --   stage 2 registers the corrected data and the SEC/DED flags.
     g_split : if Pipeline_g = 2 generate
-        constant Stage1Width_c : positive := CodewordWidth_c + SynParWidth_c;
-        constant Stage2Width_c : positive := Width_g + 2;
         signal SynPar0    : std_logic_vector(SynParWidth_c - 1 downto 0);
         signal Stage1_In  : std_logic_vector(Stage1Width_c - 1 downto 0);
         signal Stage1_Out : std_logic_vector(Stage1Width_c - 1 downto 0);
@@ -143,8 +142,8 @@ begin
         signal Stage1_Sp  : std_logic_vector(SynParWidth_c - 1 downto 0);
         signal Mid_Valid  : std_logic;
         signal Mid_Ready  : std_logic;
-        signal Stage2_In  : std_logic_vector(Stage2Width_c - 1 downto 0);
-        signal Stage2_Out : std_logic_vector(Stage2Width_c - 1 downto 0);
+        signal Stage2_In  : std_logic_vector(PayloadWidth_c - 1 downto 0);
+        signal Stage2_Out : std_logic_vector(PayloadWidth_c - 1 downto 0);
     begin
         -- Stage 1: combinational syndrome+parity, register {codeword, synpar}
         SynPar0   <= eccSyndromeAndParity(Injected, Width_g);
@@ -177,7 +176,7 @@ begin
 
         i_pl2 : entity work.olo_base_pl_stage
             generic map (
-                Width_g    => Stage2Width_c,
+                Width_g    => PayloadWidth_c,
                 Stages_g   => 1,
                 UseReady_g => UseReady_g
             )
@@ -192,7 +191,7 @@ begin
                 Out_Data  => Stage2_Out
             );
 
-        Out_Data   <= Stage2_Out(Stage2Width_c - 1 downto 2);
+        Out_Data   <= Stage2_Out(PayloadWidth_c - 1 downto 2);
         Out_EccSec <= Stage2_Out(1);
         Out_EccDed <= Stage2_Out(0);
     end generate;

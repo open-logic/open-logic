@@ -57,13 +57,13 @@ architecture sim of olo_ft_ecc_encode_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk            : std_logic                                       := '0';
-    signal Rst            : std_logic                                       := '1';
-    signal In_Valid       : std_logic                                       := '0';
+    signal Clk            : std_logic                                      := '0';
+    signal Rst            : std_logic                                      := '1';
+    signal In_Valid       : std_logic                                      := '0';
     signal In_Ready       : std_logic;
-    signal In_Data        : std_logic_vector(Width_g - 1 downto 0)          := (others => '0');
-    signal ErrInj_BitFlip     : std_logic_vector(CodewordWidth_c - 1 downto 0)  := (others => '0');
-    signal ErrInj_Valid : std_logic                                       := '0';
+    signal In_Data        : std_logic_vector(Width_g - 1 downto 0)         := (others => '0');
+    signal ErrInj_BitFlip : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
+    signal ErrInj_Valid   : std_logic                                      := '0';
     signal Out_Valid      : std_logic;
     signal Out_Ready      : std_logic;
     signal Out_Codeword   : std_logic_vector(CodewordWidth_c - 1 downto 0);
@@ -99,17 +99,17 @@ begin
             -- Reset
             wait until rising_edge(Clk);
             Rst            <= '1';
-            ErrInj_BitFlip     <= (others => '0');
-            ErrInj_Valid <= '0';
+            ErrInj_BitFlip <= (others => '0');
+            ErrInj_Valid   <= '0';
             wait for 200 ns;
             wait until rising_edge(Clk);
-            Rst <= '0';
+            Rst            <= '0';
             wait until rising_edge(Clk);
 
             -- No-flip baseline: clean encode path
             if run("Encode-NoFlip") then
-                ErrInj_BitFlip     <= NoFlip_c;
-                ErrInj_Valid <= '0';
+                ErrInj_BitFlip <= NoFlip_c;
+                ErrInj_Valid   <= '0';
                 pushAndCheck(net, toUslv(0,         Width_g),           NoFlip_c, "data=0");
                 pushAndCheck(net, toUslv(16#5A#,    Width_g),           NoFlip_c, "data=5A");
                 pushAndCheck(net, onesVector(Width_g),                  NoFlip_c, "data=allOnes");
@@ -165,10 +165,10 @@ begin
             -- Latched injection: preload the pattern while no beat is being pushed, then
             -- push a beat and verify the latched pattern was applied.
             elsif run("Encode-LatchedInjection") then
-                ErrInj_BitFlip     <= setBits(3, CodewordWidth_c);
-                ErrInj_Valid <= '1';
+                ErrInj_BitFlip <= setBits(3, CodewordWidth_c);
+                ErrInj_Valid   <= '1';
                 wait until rising_edge(Clk);
-                ErrInj_Valid <= '0';
+                ErrInj_Valid   <= '0';
 
                 -- Idle a few cycles to prove the latch holds
                 for i in 0 to 4 loop
