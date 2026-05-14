@@ -29,6 +29,11 @@ def add_configs(olo_tb):
         named_config(tb, {'Width_g': Width})
     for Pipeline in [0, 1]:
         named_config(tb, {'Pipeline_g': Pipeline})
+    # Backpressure coverage: exercise the codec's UseReady_g=true shadow-register path with
+    # randomized stalls on both ends. Sweeps Pipeline_g so both the pass-through (Pipeline_g=0)
+    # and the registered (Pipeline_g=1) configurations are stressed.
+    for Pipeline in [0, 1]:
+        named_config(tb, {'Stalling_g': True, 'Pipeline_g': Pipeline})
 
     ### olo_ft_ecc_decode ###
     tb = olo_tb.test_bench('olo_ft_ecc_decode_tb')
@@ -36,6 +41,12 @@ def add_configs(olo_tb):
         named_config(tb, {'Width_g': Width})
     for Pipeline in [0, 1, 2]:
         named_config(tb, {'Pipeline_g': Pipeline})
+    # Backpressure coverage: exercise the codec's UseReady_g=true shadow-register path with
+    # randomized stalls on both ends. Pipeline_g=2 in particular places back-to-back beats
+    # in the syndrome stage and the correction stage simultaneously, which is the most
+    # demanding configuration for the distributed pipeline.
+    for Pipeline in [0, 1, 2]:
+        named_config(tb, {'Stalling_g': True, 'Pipeline_g': Pipeline})
 
     ### olo_ft_ram_sp ###
     tb = olo_tb.test_bench('olo_ft_ram_sp_tb')

@@ -28,7 +28,8 @@ entity olo_ft_ecc_decode_tb is
     generic (
         runner_cfg : string;
         Width_g    : positive range 5 to 128 := 32;
-        Pipeline_g : natural  range 0 to 2   := 0
+        Pipeline_g : natural  range 0 to 2   := 0;
+        Stalling_g : boolean                 := false
     );
 end entity;
 
@@ -42,18 +43,24 @@ architecture sim of olo_ft_ecc_decode_tb is
 
     constant NoFlip_c : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
 
+    -- When Stalling_g=true, both VCs introduce random stalls so the codec's UseReady_g=true
+    -- shadow-register backpressure path is exercised. boolean'pos(true)=1, boolean'pos(false)=0.
+    constant StallProb_c : real    := real(boolean'pos(Stalling_g)) * 0.5;
+    constant StallMin_c  : natural := boolean'pos(Stalling_g) * 1;
+    constant StallMax_c  : natural := boolean'pos(Stalling_g) * 5;
+
     -----------------------------------------------------------------------------------------------
     -- Verification Components
     --   TUser carries {Sec, Ded} on the output stream.
     -----------------------------------------------------------------------------------------------
     constant AxisMaster_c : axi_stream_master_t := new_axi_stream_master (
         data_length  => CodewordWidth_c,
-        stall_config => new_stall_config(0.0, 0, 0)
+        stall_config => new_stall_config(StallProb_c, StallMin_c, StallMax_c)
     );
     constant AxisSlave_c  : axi_stream_slave_t  := new_axi_stream_slave (
         data_length  => Width_g,
         user_length  => 2,
-        stall_config => new_stall_config(0.0, 0, 0)
+        stall_config => new_stall_config(StallProb_c, StallMin_c, StallMax_c)
     );
 
     -----------------------------------------------------------------------------------------------
@@ -170,6 +177,38 @@ begin
 
                 ErrInj_Valid   <= '0';
                 ErrInj_BitFlip <= (others => '0');
+
+            -- Back-to-back stress test. Pushes a long burst of beats so multiple are in flight
+            -- simultaneously inside the codec. With Pipeline_g=2 the syndrome stage and the
+            -- correction stage hold different beats at the same time; with Stalling_g=true
+            -- the master/slave handshake stalls also exercise the UseReady_g=true shadow
+            -- register on every internal pl_stage. Mixes clean / SEC / DED beats so the
+            -- per-beat status flags must stay aligned with the corresponding data through
+            -- the entire pipeline.
+            elsif run("Decode-BackToBack") then
+
+                for i in 0 to 31 loop
+                    if i mod 4 = 0 then
+                        -- Clean
+                        pushExpect(net, toUslv(i, Width_g), NoFlip_c, NoFlip_c, '0', '0',
+                            "B2B clean beat " & integer'image(i));
+                    elsif i mod 4 = 1 then
+                        -- SEC: single-bit flip at varying position
+                        pushExpect(net, toUslv(i, Width_g),
+                            setBits(i mod CodewordWidth_c, CodewordWidth_c), NoFlip_c,
+                            '1', '0',
+                            "B2B sec beat " & integer'image(i));
+                    elsif i mod 4 = 2 then
+                        -- DED: two flips
+                        pushExpect(net, toUslv(i, Width_g), setBits((0, 1), CodewordWidth_c), NoFlip_c,
+                            '0', '1',
+                            "B2B ded beat " & integer'image(i));
+                    else
+                        -- Clean again
+                        pushExpect(net, toUslv(i, Width_g), NoFlip_c, NoFlip_c, '0', '0',
+                            "B2B clean2 beat " & integer'image(i));
+                    end if;
+                end loop;
 
             -- Latched injection: preload an injection pattern, idle a few cycles, then push a
             -- clean codeword and verify the latch is consumed exactly once.
