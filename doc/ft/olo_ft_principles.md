@@ -46,18 +46,25 @@ The "Parity Bits" column counts Hamming parity bits plus one overall-parity bit 
 
 ## Error Injection
 
-Every ECC-protected entity exposes a paired error-injection interface:
+Every ECC-protected entity exposes the same paired error-injection interface: _ErrInj\_BitFlip_ and
+_ErrInj\_Valid_. The latch lives inside the codec entity, so RAM/FIFO wrappers simply forward the
+strobes.
 
-- _ErrInj_BitFlip_ (or _A_ErrInj_BitFlip_ / _B_ErrInj_BitFlip_ / _In_ErrInj_BitFlip_ on the sister entities)
-  is the codeword-wide flip pattern. The port is
-  [eccCodewordWidth](./olo_ft_pkg_ecc.md#ecccodewordwidth)(_Width_g_) bits wide and is XORed into the encoded
-  codeword before storage, so any single-bit or double-bit error pattern can be exercised.
-- _ErrInj_Valid_ is a strobe. While '1', the current _ErrInj_BitFlip_ value is latched into an internal
-  register. The latched pattern is applied to the next write and cleared after that write completes.
+- The _ErrInj\_BitFlip_ port is the codeword-wide flip pattern. It is
+  [eccCodewordWidth](./olo_ft_pkg_ecc.md#ecccodewordwidth)(_Width_g_) bits wide and XORed into the
+  codeword. For [olo_ft_ecc_encode](./olo_ft_ecc_encode.md) (and the RAM/FIFO write side) the XOR happens
+  after encoding. For [olo_ft_ecc_decode](./olo_ft_ecc_decode.md) the XOR happens before the syndrome
+  calculation, so it simulates a corruption that occurred between the encoder and the decoder.
+- The _ErrInj\_Valid_ strobe latches the current _ErrInj\_BitFlip_ value into an internal register. The latched pattern is
+  applied to the next accepted beat (write side) or codeword (read side) and is cleared once that beat
+  completes the handshake.
 
-This decouples error injection from write timing. Preload the pattern any cycle, and it is applied to
-the next user write whenever that happens. If _ErrInj_Valid_ = '1' and the write enable is also '1' in the
-same cycle, the pattern is applied immediately without going through the latch.
+This decouples error injection from data timing. Preload the pattern any cycle, and it is applied to
+the next data beat whenever that happens. If _Valid_ = '1' and the handshake completes in the same cycle,
+the pattern is applied directly without going through the latch.
+
+The latch is cleared by _Rst_, so an injection request issued before reset cannot leak into post-reset
+operation.
 
 | Popcount of injection | Meaning              | Behavior                                                                                 |
 | :-------------------- | :------------------- | :--------------------------------------------------------------------------------------- |
@@ -77,25 +84,14 @@ port — for example _RdEccSec_ / _RdEccDed_ on a single-port RAM):
 
 The flags are time-aligned with the corresponding data word.
 
-## ECC Pipeline (`EccPipeline_g`)
+## Codec Entities
 
-Every ECC-protected entity exposes an `EccPipeline_g : natural := 0` generic that inserts register stages after
-the ECC decode combinational logic.
+The SECDED encode and decode logic is exposed as standalone entities: 
+[olo_ft_ecc_encode](./olo_ft_ecc_encode.md) and [olo_ft_ecc_decode](./olo_ft_ecc_decode.md) which make use of the package functions provided in [olo_ft_pkg_ecc](./olo_ft_pkg_ecc.md).
 
-- `0` (default): the decoded data and the SEC/DED flags are combinational on the read path.
-- `>= 1`: register stages are inserted between the decoder and the output. This breaks the combinational path
-  between the storage element and the corrected data output, helping close timing at high clock frequencies.
-
-Total read latency from address-presented to data-valid is therefore `RamRdLatency_g + EccPipeline_g` cycles for
-RAM-based entities. FIFO-based entities expose a corresponding read-side latency: see the per-entity doc.
-
-## Instantiation from Verilog and VHDL
-
-The SECDED encode and decode logic is also exposed as standalone entities -
-[olo_ft_ecc_encode](./olo_ft_ecc_encode.md) and [olo_ft_ecc_decode](./olo_ft_ecc_decode.md) - so that Verilog
-designs (which cannot call functions from a VHDL package) can use them directly. The package functions in
-[olo_ft_pkg_ecc](./olo_ft_pkg_ecc.md) remain the cleanest interface for VHDL designs but the entities are
-fully equivalent and shared by every ECC-protected entity in the area to avoid duplicating the codec body.
+Both entities provide an AXI4-Stream handshake (_In\_Valid_ / _In\_Ready_, _Out\_Valid_ /
+_Out\_Ready_). Back-pressure is honoured by default (`UseReady_g => true`); set `UseReady_g => false` for
+register-chain instantiations that never need back-pressure.
 
 Use cases beyond RAM/FIFO protection:
 

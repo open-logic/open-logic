@@ -1,9 +1,11 @@
-﻿src/base/vhdl/olo_base_pkg_attribute.vhd
+src/base/vhdl/olo_base_pkg_attribute.vhd
 src/intf/vhdl/olo_intf_sync.vhd
 src/base/vhdl/olo_base_pl_stage.vhd
 src/base/vhdl/olo_base_pkg_array.vhd
 src/base/vhdl/olo_base_pkg_math.vhd
 src/ft/vhdl/olo_ft_pkg_ecc.vhd
+src/ft/vhdl/olo_ft_ecc_encode.vhd
+src/ft/vhdl/olo_ft_ecc_decode.vhd
 src/base/vhdl/olo_base_tdm_mux.vhd
 src/base/vhdl/olo_base_strobe_gen.vhd
 src/base/vhdl/olo_base_strobe_div.vhd
