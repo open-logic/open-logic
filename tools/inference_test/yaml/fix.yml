@@ -272,6 +272,35 @@ entities:
         out_reduce:
           Out_I: 16
           Out_Q: 16
+  # olo_fix_mix_c2r
+  - entity_name: "olo_fix_mix_c2r"
+    configurations:
+      - name: "Parallel"
+        generics:
+          InFmt_g: '"(1,0,15)"'
+          MixFmt_g: '"(1,0,15)"'
+          OutFmt_g: '"(1,0,15)"'
+          MultRegs_g: 2
+          IqHandling_g: '"Parallel"'
+        in_reduce:
+          In_SigI: 16
+          In_SigQ: 16
+          In_MixI: 16
+          In_MixQ: 16
+        out_reduce:
+          Out_SigReal: 16
+      - name: "TDM"
+        generics:
+          InFmt_g: '"(1,0,15)"'
+          MixFmt_g: '"(1,0,15)"'
+          OutFmt_g: '"(1,0,15)"'
+          MultRegs_g: 2
+          IqHandling_g: '"TDM"'
+        in_reduce:
+          In_SigIQ: 16
+          In_MixIQ: 16
+        out_reduce:
+          Out_SigReal: 16
   # olo_fix_sample_hold
   - entity_name: "olo_fix_sample_hold"
     configurations:

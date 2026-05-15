@@ -12,13 +12,12 @@ from .olo_fix_cplx_mult import olo_fix_cplx_mult
 # ---------------------------------------------------------------------------------------------------
 # Class
 # ---------------------------------------------------------------------------------------------------
-class olo_fix_mix_r2c:
+class olo_fix_mix_c2r:
     """
-    Model of olo_fix_mix_r2c entity.
+    Model of olo_fix_mix_c2r entity.
 
-    Implements real-to-complex downconversion mixing:
-      Out_I = +SigReal x MixI
-      Out_Q = -SigReal x MixQ
+    Implements complex-to-real downconversion mixing (conjugate convention):
+      Out_SigReal = +SigI x MixI + SigQ x MixQ
     """
 
     def __init__(self,
@@ -29,35 +28,37 @@ class olo_fix_mix_r2c:
                  saturate : FixSaturate = FixSaturate.Warn_s):
         """
         Constructor.
-        :param in_fmt: Format of input signal (SigReal)
+        :param in_fmt: Format of input signal (SigI, SigQ)
         :param mix_fmt: Format of mixer signal (MixI, MixQ)
-        :param out_fmt: Format of output signal (Out_I, Out_Q)
+        :param out_fmt: Format of output signal (Out_SigReal)
         :param round: Rounding mode for output (default: truncate)
         :param saturate: Saturation mode for output (default: warn)
         """
-        self._in_fmt = in_fmt
         self._cplx_mult = olo_fix_cplx_mult(in_fmt, mix_fmt, out_fmt, round, saturate, mode="MIX")
 
     def reset(self):
         pass  # no state
 
-    def next(self, sig_real, mix_i, mix_q):
+    def next(self, sig_i, sig_q, mix_i, mix_q):
         """
         Process next N samples.
-        :param sig_real: Real input signal
+        :param sig_i: Signal I-part
+        :param sig_q: Signal Q-part
         :param mix_i: Mixer in-phase component
         :param mix_q: Mixer quadrature component
-        :return: (out_i, out_q) tuple
+        :return: real output sample(s)
         """
-        return self._cplx_mult.next(sig_real, np.zeros_like(sig_real), mix_i, mix_q)
+        out_i, _ = self._cplx_mult.next(sig_i, sig_q, mix_i, mix_q)
+        return out_i
 
-    def process(self, sig_real, mix_i, mix_q):
+    def process(self, sig_i, sig_q, mix_i, mix_q):
         """
         Process samples (without preserving previous state).
-        :param sig_real: Real input signal
+        :param sig_i: Signal I-part
+        :param sig_q: Signal Q-part
         :param mix_i: Mixer in-phase component
         :param mix_q: Mixer quadrature component
-        :return: (out_i, out_q) tuple
+        :return: real output sample(s)
         """
         self.reset()
-        return self.next(sig_real, mix_i, mix_q)
+        return self.next(sig_i, sig_q, mix_i, mix_q)
