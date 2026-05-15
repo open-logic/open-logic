@@ -53,6 +53,12 @@ class olo_fix_compare:
             a = np.array(a)
         if isinstance(b, list):
             b = np.array(b)
+
+        # Quantize input
+        a = cl_fix_from_real(a, self._a_fmt)
+        b = cl_fix_from_real(b, self._b_fmt)
+
+        # Calculate
         if self._comparison == ">":
             return a > b
         elif self._comparison == "<":

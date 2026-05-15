@@ -63,6 +63,8 @@ class olo_fix_cplx_mult:
         :param b_q: Input b (quadrature)
         :return: Result as tuple (i, q)
         """
+        # No quantization required (happens in mult/add/sub functions)
+
         res_II = cl_fix_mult(a_i, self._a_fmt, 
                                 b_i, self._b_fmt, 
                                 self._mult_fmt)

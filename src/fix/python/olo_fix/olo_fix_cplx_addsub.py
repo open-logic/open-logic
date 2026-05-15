@@ -60,6 +60,8 @@ class olo_fix_cplx_addsub:
         :param b_q: Input b (quadrature)
         :return: Result as tuple (i, q)
         """
+        # No quantization required (happens in add/sub functions)
+
         if self._operation == "add":
             res_i = cl_fix_add(a_i, self._a_fmt, 
                                b_i, self._b_fmt, 

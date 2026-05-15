@@ -156,6 +156,9 @@ class olo_fix_cordic_rot:
         :param inp_angle: Angle input
         :return: CORDIC output as Tuple (I, Q)
         """
+        # Quantize input
+        inp_abs = cl_fix_from_real(inp_abs, self._in_mag_fmt)
+        inp_angle = cl_fix_from_real(inp_angle, self._in_ang_fmt)
 
         #Initialization - always map to quadrant one
         if self._gain_comp_on:
