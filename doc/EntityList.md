@@ -276,7 +276,8 @@ be used. For deciding which option to use, the following considerations shall be
 
 ## ft
 
-This area contains fault-tolerant entities for use in radiation-sensitive environments (space, avionics, automotive, high-altitude). All entities use SECDED Hamming code (Single Error Correction, Double Error Detection) and follow a transparent wrapper pattern - ECC is invisible to the user, with data encoded on write and decoded/corrected on read.
+This area contains fault-tolerant entities for use in radiation-sensitive environments (e.g. space or avionics). 
+All RAM entities use SECDED (Single Error Correction, Double Error Detection).
 
 The cross-cutting concepts (codeword layout, ECC overhead, error injection semantics, status flags, ECC pipeline,
 common constraints) are described once in
