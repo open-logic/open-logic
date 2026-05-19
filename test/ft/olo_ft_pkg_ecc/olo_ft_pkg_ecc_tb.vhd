@@ -99,52 +99,52 @@ begin
 
             elsif run("Roundtrip-NoError") then
                 -- Encode then decode without error injection: SEC=0, DED=0, data preserved.
-                Data8_v   := X"00";
+                Data8_v   := x"00";
                 checkEcc(Data8_v, zerosVector(eccCodewordWidth(8)), '0', '0', true);
-                Data8_v   := X"FF";
+                Data8_v   := x"FF";
                 checkEcc(Data8_v, zerosVector(eccCodewordWidth(8)), '0', '0', true);
-                Data8_v   := X"5A";
+                Data8_v   := x"5A";
                 checkEcc(Data8_v, zerosVector(eccCodewordWidth(8)), '0', '0', true);
-                Data16_v  := X"DEAD";
+                Data16_v  := x"DEAD";
                 checkEcc(Data16_v, zerosVector(eccCodewordWidth(16)), '0', '0', true);
-                Data32_v  := X"DEADBEEF";
+                Data32_v  := x"DEADBEEF";
                 checkEcc(Data32_v, zerosVector(eccCodewordWidth(32)), '0', '0', true);
-                Data64_v  := X"0123456789ABCDEF";
+                Data64_v  := x"0123456789ABCDEF";
                 checkEcc(Data64_v, zerosVector(eccCodewordWidth(64)), '0', '0', true);
-                Data128_v := X"0123456789ABCDEF_FEDCBA9876543210";
+                Data128_v := x"0123456789ABCDEF_FEDCBA9876543210";
                 checkEcc(Data128_v, zerosVector(eccCodewordWidth(128)), '0', '0', true);
 
             elsif run("SecAllBits-w8") then
                 -- Flip every codeword bit individually: SEC must trigger and data must be corrected.
-                Data8_v := X"5A";
+                Data8_v := x"5A";
 
                 for i in 0 to eccCodewordWidth(8) - 1 loop
                     checkEcc(Data8_v, setBits(i, eccCodewordWidth(8)), '1', '0', true);
                 end loop;
 
             elsif run("SecAllBits-w16") then
-                Data16_v := X"A55A";
+                Data16_v := x"A55A";
 
                 for i in 0 to eccCodewordWidth(16) - 1 loop
                     checkEcc(Data16_v, setBits(i, eccCodewordWidth(16)), '1', '0', true);
                 end loop;
 
             elsif run("SecAllBits-w32") then
-                Data32_v := X"DEADBEEF";
+                Data32_v := x"DEADBEEF";
 
                 for i in 0 to eccCodewordWidth(32) - 1 loop
                     checkEcc(Data32_v, setBits(i, eccCodewordWidth(32)), '1', '0', true);
                 end loop;
 
             elsif run("SecAllBits-w64") then
-                Data64_v := X"0123456789ABCDEF";
+                Data64_v := x"0123456789ABCDEF";
 
                 for i in 0 to eccCodewordWidth(64) - 1 loop
                     checkEcc(Data64_v, setBits(i, eccCodewordWidth(64)), '1', '0', true);
                 end loop;
 
             elsif run("SecAllBits-w128") then
-                Data128_v := X"0123456789ABCDEF_FEDCBA9876543210";
+                Data128_v := x"0123456789ABCDEF_FEDCBA9876543210";
 
                 for i in 0 to eccCodewordWidth(128) - 1 loop
                     checkEcc(Data128_v, setBits(i, eccCodewordWidth(128)), '1', '0', true);
@@ -153,7 +153,7 @@ begin
             elsif run("DedAllPairs-w8") then
                 -- Exhaustive at small width: 13-bit codeword, C(13,2)=78 pairs.
                 -- Proves DED holds for every two-flip pattern at the package level.
-                Data8_v := X"5A";
+                Data8_v := x"5A";
 
                 for i in 0 to eccCodewordWidth(8) - 2 loop
 
@@ -165,7 +165,7 @@ begin
 
             elsif run("DedSampledPairs-w64") then
                 -- Representative DED pairs: parity+parity, parity+data, far-apart, adjacent.
-                Data64_v := X"0123456789ABCDEF";
+                Data64_v := x"0123456789ABCDEF";
                 checkEcc(Data64_v, setBits((0, 1),                                              eccCodewordWidth(64)), '0', '1', false);
                 checkEcc(Data64_v, setBits((0, eccCodewordWidth(64) - 1),                       eccCodewordWidth(64)), '0', '1', false);
                 checkEcc(Data64_v, setBits((1, 2),                                              eccCodewordWidth(64)), '0', '1', false);
@@ -173,7 +173,7 @@ begin
                 checkEcc(Data64_v, setBits((eccCodewordWidth(64) / 2, eccCodewordWidth(64) / 2 + 1), eccCodewordWidth(64)), '0', '1', false);
 
             elsif run("DedSampledPairs-w128") then
-                Data128_v := X"0123456789ABCDEF_FEDCBA9876543210";
+                Data128_v := x"0123456789ABCDEF_FEDCBA9876543210";
                 checkEcc(Data128_v, setBits((0, 1),                                                 eccCodewordWidth(128)), '0', '1', false);
                 checkEcc(Data128_v, setBits((0, eccCodewordWidth(128) - 1),                         eccCodewordWidth(128)), '0', '1', false);
                 checkEcc(Data128_v, setBits((1, 2),                                                 eccCodewordWidth(128)), '0', '1', false);
