@@ -67,9 +67,10 @@ end entity;
 architecture rtl of olo_fix_mix_c2r is
 
     -- Formats
-    constant InFmt_c  : FixFormat_t := cl_fix_format_from_string(InFmt_g);
-    constant MixFmt_c : FixFormat_t := cl_fix_format_from_string(MixFmt_g);
-    constant OutFmt_c : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
+    constant EntityName_c : string      := "olo_fix_mix_c2r";
+    constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
+    constant MixFmt_c     : FixFormat_t := cl_fix_format_from_string(MixFmt_g);
+    constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
 
     -- Multiply and chain formats (same structure as olo_fix_cplx_mult MULT4)
     constant MultFmt_c  : FixFormat_t := cl_fix_mult_fmt(InFmt_c, MixFmt_c);
@@ -85,7 +86,7 @@ begin
     -- Assertions
     -- synthesis translate_off
     assert compareNoCase(IqHandling_g, "Parallel") or compareNoCase(IqHandling_g, "TDM")
-        report "olo_fix_mix_c2r: Invalid IqHandling_g: " & IqHandling_g
+        report errorMessage(EntityName_c, "Invalid IqHandling_g: " & IqHandling_g)
         severity error;
     -- synthesis translate_on
 

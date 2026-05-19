@@ -114,7 +114,7 @@ package body olo_fix_pkg is
         else
             -- synthesis translate_off
             assert false
-                report "olo_fix - Invalid register mode '" & regMode & "' - must be YES, NO or AUTO"
+                report "olo_fix_pkg.fixImplementReg(): Invalid register mode '" & regMode & "' - must be YES, NO or AUTO"
                 severity failure;
             -- synthesis translate_on
             -- coverage on
@@ -184,10 +184,10 @@ package body olo_fix_pkg is
         -- assertions
         -- synthesis translate_off
         assert shift >= minShift
-            report "olo_fix_pkg.fixDynShift: Shift must be >= minShift"
+            report "olo_fix_pkg.fixDynShift(): Shift must be >= minShift"
             severity error;
         assert shift <= maxShift
-            report "olo_fix_pkg.fixDynShift: Shift must be <= maxShift"
+            report "olo_fix_pkg.fixDynShift(): Shift must be <= maxShift"
             severity error;
         -- synthesis translate_on
 

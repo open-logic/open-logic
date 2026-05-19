@@ -26,6 +26,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -59,6 +60,7 @@ end entity;
 architecture rtl of olo_base_decode_firstbit is
 
     -- *** Constants ***
+    constant EntityName_c     : string  := "olo_base_decode_firstbit";
     constant Stages_c         : natural := PlRegs_g+1;
     constant BinBits_c        : natural := log2ceil(InWidth_g);
     constant InWidthPow2_c    : natural := 2**BinBits_c;
@@ -94,7 +96,7 @@ begin
     -- Assertions
     -----------------------------------------------------------------------------------------------
     assert PlRegs_g < BinBits_c/2
-        report "olo_base_decode_firstbit - PlRegs_g must be smaller than ceil(log2(InWidth_g))/2"
+        report errorMessage(EntityName_c, "PlRegs_g must be smaller than ceil(log2(InWidth_g))/2")
         severity error;
 
     -----------------------------------------------------------------------------------------------

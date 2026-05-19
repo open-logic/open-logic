@@ -68,6 +68,9 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_rate_limit is
 
+    -- Constants
+    constant EntityName_c : string := "olo_base_rate_limit";
+
     -- Signals
     signal Input_Ready : std_logic;
     signal Input_Valid : std_logic;
@@ -77,12 +80,12 @@ begin
 
     -- *** Assertions ***
     assert MaxSamples_g <= Period_g
-        report "olo_base_rate_limit: MaxSamples_g (" & integer'image(MaxSamples_g) &
-               ") must be <= Period_g (" & integer'image(Period_g) & ")"
+        report errorMessage(EntityName_c, "MaxSamples_g (" & integer'image(MaxSamples_g) &
+               ") must be <= Period_g (" & integer'image(Period_g) & ")")
         severity failure;
 
     assert compareNoCase(Mode_g, "SMOOTH") or compareNoCase(Mode_g, "BLOCK")
-        report "olo_base_rate_limit: Mode_g must be either ""SMOOTH"" or ""BLOCK"", got """ & Mode_g & """"
+        report errorMessage(EntityName_c, "Mode_g must be either ""SMOOTH"" or ""BLOCK"", got """ & Mode_g & """")
         severity failure;
 
     -- *** Add Input Register if Required ***
@@ -170,7 +173,7 @@ begin
                 SmoothLimit_v    := to_integer(r.CfgSmoothLimit);
                 -- synthesis translate_off
                 assert MaxSamples_v <= PeriodMin1_v+1
-                    report "olo_base_rate_limit: Runtime configured requires Cfg_MaxSamples <= Cfg_Period"
+                    report errorMessage(EntityName_c, "Runtime configured requires Cfg_MaxSamples <= Cfg_Period")
                     severity failure;
                 -- synthesis translate_on
             else

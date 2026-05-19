@@ -29,6 +29,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
     use work.olo_axi_pkg_protocol.all;
 
 ---------------------------------------------------------------------------------------------------
@@ -124,6 +125,7 @@ end entity;
 architecture rtl of olo_axi_master_simple is
 
     -- *** Constants ***
+    constant EntityName_c     : string  := "olo_axi_master_simple";
     constant UnusedAddrBits_c : natural := log2(AxiDataWidth_g / 8);
 
     constant BeatsBits_c     : natural := log2ceil(AxiMaxBeats_g + 1);
@@ -238,13 +240,13 @@ begin
 
     -- *** Static Assertions ***
     assert AxiDataWidth_g mod 8 = 0
-        report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be a multiple of 8"
+        report errorMessage(EntityName_c, "AxiDataWidth_g must be a multiple of 8")
         severity failure;
     assert isPower2(AxiDataWidth_g/8)
-        report "###ERROR###: olo_axi_master_simple AxiDataWidth_g must be 2^X bytes"
+        report errorMessage(EntityName_c, "AxiDataWidth_g must be 2^X bytes")
         severity failure;
     assert UserTransactionSizeBits_g < AxiAddrWidth_g-log2(AxiDataWidth_g/8)
-        report "###ERROR###: olo_axi_master_simple UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-log2(AxiDataWidth_g/8), see documentation"
+        report errorMessage(EntityName_c, "UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-log2(AxiDataWidth_g/8), see documentation")
         severity failure;
 
     -- *** Runtime Assertions ***
@@ -255,13 +257,13 @@ begin
             -- Unexpected read response
             if ImplRead_g and RdRespLast = '1' then
                 assert RdRespFifoVld = '1'
-                    report "###ERROR###: olo_axi_master_simple: Unexpected Read Response (RdRespFifo Empty)"
+                    report errorMessage(EntityName_c, "Unexpected Read Response (RdRespFifo Empty)")
                     severity error;
             end if;
             -- Unexpected write response
             if ImplWrite_g and M_Axi_BValid = '1' then
                 assert WrRespFifoVld = '1'
-                    report "###ERROR###: olo_axi_master_simple: Unexpected Write Response (WrRespFifo Empty)"
+                    report errorMessage(EntityName_c, "Unexpected Write Response (WrRespFifo Empty)")
                     severity error;
             end if;
         end if;

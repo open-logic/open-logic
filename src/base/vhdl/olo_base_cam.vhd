@@ -84,6 +84,7 @@ end entity;
 architecture rtl of olo_base_cam is
 
     -- *** Constants ***
+    constant EntityName_c     : string   := "olo_base_cam";
     constant BlockAddrBits_c  : positive := log2ceil(RamBlockDepth_g);
     constant BlocksParallel_c : positive := integer(ceil(real(ContentWidth_g) / real(BlockAddrBits_c)));
     constant TotalAddrBits_c  : positive := BlocksParallel_c * BlockAddrBits_c;
@@ -132,7 +133,7 @@ begin
     -- Assertions
     -----------------------------------------------------------------------------------------------
     assert isPower2(RamBlockDepth_g)
-        report "olo_base_cam - RamBlockDepth_g must be a power of 2"
+        report errorMessage(EntityName_c, "RamBlockDepth_g must be a power of 2")
         severity error;
 
     -----------------------------------------------------------------------------------------------

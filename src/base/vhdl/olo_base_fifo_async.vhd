@@ -80,6 +80,7 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_fifo_async is
 
+    constant EntityName_c   : string   := "olo_base_fifo_async";
     constant AddrWidth_c    : positive := log2ceil(Depth_g)+1;
     constant RamAddrWidth_c : positive := log2ceil(Depth_g);
 
@@ -125,7 +126,7 @@ architecture rtl of olo_base_fifo_async is
 begin
 
     assert log2(Depth_g) = log2ceil(Depth_g)
-        report "###ERROR###: olo_base_fifo_async: only power of two Depth_g is allowed"
+        report errorMessage(EntityName_c, "only power of two Depth_g is allowed")
         severity error;
 
     p_comb : process (all) is

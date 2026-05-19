@@ -62,6 +62,9 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_latency_comp is
 
+    -- Constant
+    constant EntityName_c : string := "olo_base_latency_comp[" & AssertsName_g & "]";
+
     -- Entity wide signals
     signal In_Beat  : std_logic;
     signal Out_Beat : std_logic;
@@ -70,7 +73,7 @@ begin
 
     -- *** Assertions ***
     assert compareNoCase(Mode_g, "DYNAMIC") or compareNoCase(Mode_g, "FIXED_CYCLES")
-        report "###ERROR###: olo_base_latency_comp[" & AssertsName_g & "]: Unknown Mode_g - " & Mode_g
+        report errorMessage(EntityName_c, "Unknown Mode_g - " & Mode_g)
         severity error;
 
     -- *** Entity Wide Signals ***
@@ -115,7 +118,7 @@ begin
                     Err_Overrun <= '1';
                     if not AssertsDisable_g then
                         -- synthesis translate_off
-                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Overrun detected in DYNAMIC mode."
+                        report errorMessage(EntityName_c, "Overrun detected in DYNAMIC mode.")
                             severity warning;
                         -- synthesis translate_on
                     end if;
@@ -126,7 +129,7 @@ begin
                     Err_Underrun <= '1';
                     if not AssertsDisable_g then
                         -- synthesis translate_off
-                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Underrun detected in DYNAMIC mode."
+                        report errorMessage(EntityName_c, "Underrun detected in DYNAMIC mode.")
                             severity warning;
                         -- synthesis translate_on
                     end if;
@@ -188,7 +191,7 @@ begin
                     Err_Overrun <= '1';
                     if not AssertsDisable_g then
                         -- synthesis translate_off
-                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Overrun detected in FIXED_CYCLES mode."
+                        report errorMessage(EntityName_c, "Overrun detected in FIXED_CYCLES mode.")
                             severity warning;
                         -- synthesis translate_on
                     end if;
@@ -199,7 +202,7 @@ begin
                     Err_Underrun <= '1';
                     if not AssertsDisable_g then
                         -- synthesis translate_off
-                        report "###WARNING###: olo_base_latency_comp[" & AssertsName_g & "]: Underrun detected in FIXED_CYCLES mode."
+                        report errorMessage(EntityName_c, "Underrun detected in FIXED_CYCLES mode.")
                             severity warning;
                         -- synthesis translate_on
                     end if;

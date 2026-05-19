@@ -65,7 +65,8 @@ end entity;
 architecture rtl of olo_base_ram_tdp is
 
     -- constants
-    constant BeCount_c : integer := Width_g / 8;
+    constant EntityName_c : string  := "olo_base_ram_tdp";
+    constant BeCount_c    : integer := Width_g / 8;
 
     -- components
     component olo_private_ram_tdp_nobe is
@@ -98,7 +99,7 @@ begin
 
     -- Assertions
     assert (Width_g mod 8 = 0) or (not UseByteEnable_g)
-        report "olo_base_ram_tdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
+        report errorMessage(EntityName_c, "Width_g must be a multiple of 8, otherwise byte-enables must be disabled")
         severity error;
 
     -- No BE Implementation
@@ -218,6 +219,9 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_private_ram_tdp_nobe is
 
+    -- Constants
+    constant EntityName_c : string := "olo_base_ram_tdp_nobe";
+
     -- Memory Type
     type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
 
@@ -278,10 +282,10 @@ begin
 
     -- Assertions
     assert compareNoCase(InitFormat_g, "NONE") or compareNoCase(InitFormat_g, "HEX")
-        report "olo_base_ram_tdp: InitFormat_g must be NONE or HEX. Got: " & InitFormat_g
+        report errorMessage(EntityName_c, "InitFormat_g must be NONE or HEX. Got: " & InitFormat_g)
         severity error;
     assert compareNoCase(RamBehavior_g, "RBW") or compareNoCase(RamBehavior_g, "WBR")
-        report "olo_base_ram_tdp: RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g
+        report errorMessage(EntityName_c, "RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g)
         severity error;
 
     g_wbr : if compareNoCase(RamBehavior_g, "WBR") generate

@@ -62,11 +62,12 @@ end entity;
 architecture rtl of olo_fix_bin_div is
 
     -- Formats
-    constant NumFmt_c   : FixFormat_t   := cl_fix_format_from_string(NumFmt_g);
-    constant DenomFmt_c : FixFormat_t   := cl_fix_format_from_string(DenomFmt_g);
-    constant OutFmt_c   : FixFormat_t   := cl_fix_format_from_string(OutFmt_g);
-    constant Round_c    : FixRound_t    := cl_fix_round_from_string(Round_g);
-    constant Saturate_c : FixSaturate_t := cl_fix_saturate_from_string(Saturate_g);
+    constant NumFmt_c     : FixFormat_t   := cl_fix_format_from_string(NumFmt_g);
+    constant DenomFmt_c   : FixFormat_t   := cl_fix_format_from_string(DenomFmt_g);
+    constant OutFmt_c     : FixFormat_t   := cl_fix_format_from_string(OutFmt_g);
+    constant EntityName_c : string        := "olo_fix_bin_div";
+    constant Round_c      : FixRound_t    := cl_fix_round_from_string(Round_g);
+    constant Saturate_c   : FixSaturate_t := cl_fix_saturate_from_string(Saturate_g);
 
     -- constants
     constant FirstShift_c   : integer     := OutFmt_c.I;
@@ -83,7 +84,7 @@ begin
     -- Addertions
     -----------------------------------------------------------------------------------------------
     assert compareNoCase(Mode_g, "PIPELINED") or compareNoCase(Mode_g, "SERIAL")
-        report "###ERROR###: olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
+        report errorMessage(EntityName_c, "Mode_g must be PIPELINED or SERIAL")
         severity error;
 
     -----------------------------------------------------------------------------------------------
