@@ -80,10 +80,10 @@ architecture rtl of olo_fix_bin_div is
 begin
 
     -----------------------------------------------------------------------------------------------
-    -- Addertions
+    -- Assertions
     -----------------------------------------------------------------------------------------------
     assert compareNoCase(Mode_g, "PIPELINED") or compareNoCase(Mode_g, "SERIAL")
-        report "###ERROR###: olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
+        report "###ERROR###: olo_fix_bin_div: Mode_g must be PIPELINED or SERIAL"
         severity error;
 
     -----------------------------------------------------------------------------------------------

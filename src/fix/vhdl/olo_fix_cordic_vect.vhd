@@ -220,7 +220,7 @@ begin
         report "###ERROR###: olo_fix_cordic_vect: IntAngFmt_g must be (1,-1,x)"
         severity error;
     assert compareNoCase(Mode_g, "PIPELINED") or compareNoCase(Mode_g, "SERIAL")
-        report "###ERROR###: olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
+        report "###ERROR###: olo_fix_cordic_vect: Mode_g must be PIPELINED or SERIAL"
         severity error;
 
     -- *** Pipelined Implementation ***
