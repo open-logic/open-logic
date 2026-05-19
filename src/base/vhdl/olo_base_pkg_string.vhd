@@ -50,6 +50,12 @@ package olo_base_pkg_string is
         a : in string;
         c : in character) return natural;
 
+    -- Print error message
+    function errorMessage(
+        entityName : in string;
+        message    : in string
+    ) return string;
+
 end package;
 
 ---------------------------------------------------------------------------------------------------
@@ -210,6 +216,15 @@ package body olo_base_pkg_string is
         end loop;
 
         return Count_v;
+    end function;
+
+    -- *** errorMessage() ***
+    function errorMessage(
+        entityName : in string;
+        message    : in string
+    ) return string is
+    begin
+        return entityName & " - " & message;
     end function;
 
 end package body;
