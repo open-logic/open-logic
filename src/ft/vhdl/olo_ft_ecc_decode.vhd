@@ -29,6 +29,7 @@ library ieee;
     use ieee.numeric_std.all;
 
 library work;
+    use work.olo_base_pkg_math.all;
     use work.olo_ft_pkg_ecc.all;
 
 ---------------------------------------------------------------------------------------------------
@@ -71,10 +72,30 @@ architecture rtl of olo_ft_ecc_decode is
     constant PayloadWidth_c  : positive := Width_g + 2;      -- {Data, Sec, Ded}
     constant Stage1Width_c   : positive := CodewordWidth_c + SynParWidth_c;
 
+    -- Distribute Pipeline_g across the two pl_stage instances. Stages2 (the output register)
+    -- is preferred first because a single output register already breaks the codec-to-downstream
+    -- path; Stages1 (between syndrome and correction) is added only at Pipeline_g=2 to split
+    -- the SECDED logic into syndrome and correction halves for very tight timing.
+    --   Pipeline_g=0 -> (Stages1=0, Stages2=0)   pure combinational
+    --   Pipeline_g=1 -> (Stages1=0, Stages2=1)   single register at the output
+    --   Pipeline_g=2 -> (Stages1=1, Stages2=1)   register between syndrome and correction, plus output
+    constant Stages1_c : natural := choose(Pipeline_g >= 2, 1, 0);
+    constant Stages2_c : natural := choose(Pipeline_g >= 1, 1, 0);
+
     signal ErrInj_Pending : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
     signal ErrInj_Active  : std_logic_vector(CodewordWidth_c - 1 downto 0);
     signal Injected       : std_logic_vector(CodewordWidth_c - 1 downto 0);
     signal In_Ready_i     : std_logic;
+
+    signal SynPar     : std_logic_vector(SynParWidth_c - 1 downto 0);
+    signal Stage1_In  : std_logic_vector(Stage1Width_c - 1 downto 0);
+    signal Stage1_Out : std_logic_vector(Stage1Width_c - 1 downto 0);
+    signal Stage1_Cw  : std_logic_vector(CodewordWidth_c - 1 downto 0);
+    signal Stage1_Sp  : std_logic_vector(SynParWidth_c - 1 downto 0);
+    signal Mid_Valid  : std_logic;
+    signal Mid_Ready  : std_logic;
+    signal Stage2_In  : std_logic_vector(PayloadWidth_c - 1 downto 0);
+    signal Stage2_Out : std_logic_vector(PayloadWidth_c - 1 downto 0);
 
 begin
 
@@ -97,104 +118,55 @@ begin
     -- XOR injection into the codeword before decode (simulates in-transit corruption)
     Injected <= In_Codeword xor ErrInj_Active;
 
-    -- Branch A: Pipeline_g in {0, 1}
-    --   Full combinational decode, single optional register at the output.
-    g_full_comb : if Pipeline_g <= 1 generate
-        signal SynPar : std_logic_vector(SynParWidth_c - 1 downto 0);
-        signal Pl_In  : std_logic_vector(PayloadWidth_c - 1 downto 0);
-        signal Pl_Out : std_logic_vector(PayloadWidth_c - 1 downto 0);
-    begin
-        SynPar <= eccSyndromeAndParity(Injected, Width_g);
-        Pl_In  <= eccCorrectData(Injected, SynPar, Width_g) &
-                  eccSecError(SynPar) &
-                  eccDedError(SynPar);
+    -- Stage 1: combinational syndrome+parity, optionally register {codeword, synpar}.
+    SynPar    <= eccSyndromeAndParity(Injected, Width_g);
+    Stage1_In <= Injected & SynPar;
 
-        i_pl : entity work.olo_base_pl_stage
-            generic map (
-                Width_g    => PayloadWidth_c,
-                Stages_g   => Pipeline_g,
-                UseReady_g => UseReady_g
-            )
-            port map (
-                Clk       => Clk,
-                Rst       => Rst,
-                In_Valid  => In_Valid,
-                In_Ready  => In_Ready_i,
-                In_Data   => Pl_In,
-                Out_Valid => Out_Valid,
-                Out_Ready => Out_Ready,
-                Out_Data  => Pl_Out
-            );
+    i_pl1 : entity work.olo_base_pl_stage
+        generic map (
+            Width_g    => Stage1Width_c,
+            Stages_g   => Stages1_c,
+            UseReady_g => UseReady_g
+        )
+        port map (
+            Clk       => Clk,
+            Rst       => Rst,
+            In_Valid  => In_Valid,
+            In_Ready  => In_Ready_i,
+            In_Data   => Stage1_In,
+            Out_Valid => Mid_Valid,
+            Out_Ready => Mid_Ready,
+            Out_Data  => Stage1_Out
+        );
 
-        Out_Data   <= Pl_Out(PayloadWidth_c - 1 downto 2);
-        Out_EccSec <= Pl_Out(1);
-        Out_EccDed <= Pl_Out(0);
-    end generate;
+    Stage1_Cw <= Stage1_Out(Stage1Width_c - 1 downto SynParWidth_c);
+    Stage1_Sp <= Stage1_Out(SynParWidth_c - 1 downto 0);
 
-    -- Branch B: Pipeline_g = 2
-    --   Distributed pipeline: stage 1 registers syndrome+parity computation,
-    --   stage 2 registers the corrected data and the SEC/DED flags.
-    g_split : if Pipeline_g = 2 generate
-        signal SynPar0    : std_logic_vector(SynParWidth_c - 1 downto 0);
-        signal Stage1_In  : std_logic_vector(Stage1Width_c - 1 downto 0);
-        signal Stage1_Out : std_logic_vector(Stage1Width_c - 1 downto 0);
-        signal Stage1_Cw  : std_logic_vector(CodewordWidth_c - 1 downto 0);
-        signal Stage1_Sp  : std_logic_vector(SynParWidth_c - 1 downto 0);
-        signal Mid_Valid  : std_logic;
-        signal Mid_Ready  : std_logic;
-        signal Stage2_In  : std_logic_vector(PayloadWidth_c - 1 downto 0);
-        signal Stage2_Out : std_logic_vector(PayloadWidth_c - 1 downto 0);
-    begin
-        -- Stage 1: combinational syndrome+parity, register {codeword, synpar}
-        SynPar0   <= eccSyndromeAndParity(Injected, Width_g);
-        Stage1_In <= Injected & SynPar0;
+    -- Stage 2: combinational correction + SEC/DED, optionally register the output.
+    Stage2_In <= eccCorrectData(Stage1_Cw, Stage1_Sp, Width_g) &
+                 eccSecError(Stage1_Sp) &
+                 eccDedError(Stage1_Sp);
 
-        i_pl1 : entity work.olo_base_pl_stage
-            generic map (
-                Width_g    => Stage1Width_c,
-                Stages_g   => 1,
-                UseReady_g => UseReady_g
-            )
-            port map (
-                Clk       => Clk,
-                Rst       => Rst,
-                In_Valid  => In_Valid,
-                In_Ready  => In_Ready_i,
-                In_Data   => Stage1_In,
-                Out_Valid => Mid_Valid,
-                Out_Ready => Mid_Ready,
-                Out_Data  => Stage1_Out
-            );
+    i_pl2 : entity work.olo_base_pl_stage
+        generic map (
+            Width_g    => PayloadWidth_c,
+            Stages_g   => Stages2_c,
+            UseReady_g => UseReady_g
+        )
+        port map (
+            Clk       => Clk,
+            Rst       => Rst,
+            In_Valid  => Mid_Valid,
+            In_Ready  => Mid_Ready,
+            In_Data   => Stage2_In,
+            Out_Valid => Out_Valid,
+            Out_Ready => Out_Ready,
+            Out_Data  => Stage2_Out
+        );
 
-        Stage1_Cw <= Stage1_Out(Stage1Width_c - 1 downto SynParWidth_c);
-        Stage1_Sp <= Stage1_Out(SynParWidth_c - 1 downto 0);
-
-        -- Stage 2: combinational correction + SEC/DED, register output
-        Stage2_In <= eccCorrectData(Stage1_Cw, Stage1_Sp, Width_g) &
-                     eccSecError(Stage1_Sp) &
-                     eccDedError(Stage1_Sp);
-
-        i_pl2 : entity work.olo_base_pl_stage
-            generic map (
-                Width_g    => PayloadWidth_c,
-                Stages_g   => 1,
-                UseReady_g => UseReady_g
-            )
-            port map (
-                Clk       => Clk,
-                Rst       => Rst,
-                In_Valid  => Mid_Valid,
-                In_Ready  => Mid_Ready,
-                In_Data   => Stage2_In,
-                Out_Valid => Out_Valid,
-                Out_Ready => Out_Ready,
-                Out_Data  => Stage2_Out
-            );
-
-        Out_Data   <= Stage2_Out(PayloadWidth_c - 1 downto 2);
-        Out_EccSec <= Stage2_Out(1);
-        Out_EccDed <= Stage2_Out(0);
-    end generate;
+    Out_Data   <= Stage2_Out(PayloadWidth_c - 1 downto 2);
+    Out_EccSec <= Stage2_Out(1);
+    Out_EccDed <= Stage2_Out(0);
 
     In_Ready <= In_Ready_i;
 
