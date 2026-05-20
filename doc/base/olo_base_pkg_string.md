@@ -67,11 +67,11 @@ function countOccurence (
 ### Error Message
 
 Format a standardized error message string from an entity name and a message. The result has the format
-`"<entityName> - <message>"`.
+`"<name> - <message>"`.
 
 ```vhdl
 function errorMessage(
-    entityName : in string;
-    message    : in string
+    name    : in string;
+    message : in string
 ) return string;
 ```

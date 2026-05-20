@@ -499,6 +499,7 @@ package body olo_base_pkg_math is
     begin
         -- synthesis translate_off
         assert input = '0' or input = '1'
+            -- errorMessage() cannot be used to avoid cyclic dependency between olo_base_pkg_math and olo_base_pkg_string
             report "olo_base_pkg_math.fromStdl(): Illegal argument"
             severity error;
         -- synthesis translate_on
