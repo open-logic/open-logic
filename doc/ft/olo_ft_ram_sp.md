@@ -35,7 +35,7 @@ apply across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft
 | RamRdLatency_g | positive | 1       | Read latency of the wrapped RAM, _excluding_ ECC pipeline stages. Higher values can help close timing on the RAM read path. |
 | RamStyle_g     | string   | "auto"  | Controls the RAM implementation resource. Passed through to [olo_base_ram_sp](../base/olo_base_ram_sp.md). |
 | RamBehavior_g  | string   | "RBW"   | Controls the RAM behavior. <br>"RBW": Read-before-write<br>"WBR": Write-before-read |
-| EccPipeline_g  | natural  | 0       | Number of pipeline stages after ECC decode (range _0..2_). <br>0 = combinational output (default). <br>1+ = adds register stages to break the critical path. Total read latency becomes _RamRdLatency_g_ + _EccPipeline_g_. |
+| EccPipeline_g  | natural  | 0       | Number of pipeline register stages within the ECC decoder (range _0..2_). <br>0 = combinational decode (default). <br>1 = single register at the decoder output - breaks the path from the RAM read port to the user's logic. <br>2 = distributed pipeline: register between syndrome compute and correction, plus a register at the output - use this when both halves of the SECDED logic need their own clock cycle to close timing. <br>See [ECC Pipeline](#ecc-pipeline) for details. Total read latency is _RamRdLatency_g_ + _EccPipeline_g_ cycles. |
 
 ## Interfaces
 
@@ -46,15 +46,16 @@ apply across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft
 | Clk  | in     | 1      | -       | Clock                                                        |
 | Rst  | in     | 1      | '0'     | Reset (high-active, synchronous to _Clk_). Clears the internal error-injection latch and the read-valid pipeline. The stored RAM contents are unaffected (block RAMs cannot be reset). |
 
-### User Port
+### FT RAM Port
 
 | Name     | In/Out | Length                | Default | Description                                                  |
 | :------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | Addr     | in     | _ceil(log2(Depth_g))_ | -       | Address                                                      |
 | WrEna    | in     | 1                     | '1'     | Write enable                                                 |
 | WrData   | in     | _Width_g_             | -       | Write data                                                   |
+| RdEna    | in     | 1                     | '1'     | Read enable. _RdValid_ pulses '1' exactly _RamRdLatency_g_+_EccPipeline_g_ cycles after each _RdEna_ = '1' cycle. Leave at the default '1' for continuous reads. |
 | RdData   | out    | _Width_g_             | N/A     | Read data (corrected if a single-bit error was detected)     |
-| RdValid  | out    | 1                     | N/A     | Read-data valid. Pulses '1' on cycles when _RdData_ / _RdEccSec_ / _RdEccDed_ are valid for a user-issued read (i.e. _WrEna_ was '0' _RamRdLatency_g_+_EccPipeline_g_ cycles earlier). |
+| RdValid  | out    | 1                     | N/A     | Read-data valid. Pulses '1' when _RdData_ / _RdEccSec_ / _RdEccDed_ correspond to a read (= _RdEna_ delayed by _RamRdLatency_g_+_EccPipeline_g_ cycles). |
 | RdEccSec | out    | 1                     | N/A     | Single error corrected flag. '1' when a single-bit error was detected and corrected. |
 | RdEccDed | out    | 1                     | N/A     | Double error detected flag. '1' when an uncorrectable double-bit error was detected. Read data is unreliable in this case. |
 

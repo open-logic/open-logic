@@ -41,17 +41,21 @@ entity olo_ft_ram_sp is
         EccPipeline_g  : natural range 0 to 2 := 0
     );
     port (
+        -- Clock and Reset
         Clk            : in    std_logic;
         Rst            : in    std_logic                                                := '0';
+        -- FT RAM Port
         Addr           : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         WrEna          : in    std_logic                                                := '1';
         WrData         : in    std_logic_vector(Width_g - 1 downto 0);
-        ErrInj_BitFlip : in    std_logic_vector(eccCodewordWidth(Width_g) - 1 downto 0) := (others => '0');
-        ErrInj_Valid   : in    std_logic                                                := '0';
+        RdEna          : in    std_logic                                                := '1';
         RdData         : out   std_logic_vector(Width_g - 1 downto 0);
         RdValid        : out   std_logic;
         RdEccSec       : out   std_logic;
-        RdEccDed       : out   std_logic
+        RdEccDed       : out   std_logic;
+        -- Error Injection
+        ErrInj_BitFlip : in    std_logic_vector(eccCodewordWidth(Width_g) - 1 downto 0) := (others => '0');
+        ErrInj_Valid   : in    std_logic                                                := '0'
     );
 end entity;
 
@@ -64,19 +68,11 @@ architecture rtl of olo_ft_ram_sp is
 
     signal Wr_Codeword : std_logic_vector(CodewordWidth_c - 1 downto 0);
     signal Rd_Codeword : std_logic_vector(CodewordWidth_c - 1 downto 0);
-
-    -- Read-enable pipeline aligned with the wrapped RAM's read latency. The encode entity
-    -- accepts WrEna as its handshake; the decode entity's In_Valid then needs to track when a
-    -- fresh codeword (i.e. a read, not a write) is appearing at the RAM read port. We delay
-    -- (not WrEna) by exactly RamRdLatency_g cycles to align with that read result. The decode
-    -- entity contributes the remaining EccPipeline_g cycles via its own Out_Valid.
-    signal RdEnaPipe : std_logic_vector(1 to RamRdLatency_g) := (others => '0');
+    signal Rd_Valid    : std_logic;
 
 begin
 
-    -- Encode write data with the AXI-S codec entity. The codec owns the injection latch.
-    -- We never backpressure (Out_Ready always '1') and we don't need shadow registers
-    -- internally, so UseReady_g=false.
+    -- Encode write data
     i_enc : entity work.olo_ft_ecc_encode
         generic map (
             Width_g    => Width_g,
@@ -96,7 +92,7 @@ begin
             ErrInj_Valid   => ErrInj_Valid
         );
 
-    -- Internal RAM with codeword-wide word
+    -- Internal RAM with codeword-wide word.
     i_ram : entity work.olo_base_ram_sp
         generic map (
             Depth_g       => Depth_g,
@@ -106,32 +102,16 @@ begin
             RamBehavior_g => RamBehavior_g
         )
         port map (
-            Clk    => Clk,
-            Addr   => Addr,
-            WrEna  => WrEna,
-            WrData => Wr_Codeword,
-            RdData => Rd_Codeword
+            Clk     => Clk,
+            Addr    => Addr,
+            WrEna   => WrEna,
+            WrData  => Wr_Codeword,
+            RdEna   => RdEna,
+            RdData  => Rd_Codeword,
+            RdValid => Rd_Valid
         );
 
-    -- Delay (not WrEna) by RamRdLatency_g to drive decode.In_Valid in lockstep with the
-    -- codeword that just came out of the RAM.
-    p_rd_ena_pipe : process (Clk) is
-    begin
-        if rising_edge(Clk) then
-            if Rst = '1' then
-                RdEnaPipe <= (others => '0');
-            else
-                RdEnaPipe(1) <= not WrEna;
-
-                for i in 2 to RamRdLatency_g loop
-                    RdEnaPipe(i) <= RdEnaPipe(i - 1);
-                end loop;
-
-            end if;
-        end if;
-    end process;
-
-    -- Decode read data (with optional pipeline). Out_Valid is the user-facing RdValid.
+    -- Decode read data (with optional pipeline)
     i_dec : entity work.olo_ft_ecc_decode
         generic map (
             Width_g    => Width_g,
@@ -141,7 +121,7 @@ begin
         port map (
             Clk            => Clk,
             Rst            => Rst,
-            In_Valid       => RdEnaPipe(RamRdLatency_g),
+            In_Valid       => Rd_Valid,
             In_Ready       => open,
             In_Codeword    => Rd_Codeword,
             Out_Valid      => RdValid,

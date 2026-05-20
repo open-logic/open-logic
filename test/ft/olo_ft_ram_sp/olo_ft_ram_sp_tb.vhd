@@ -139,6 +139,7 @@ architecture sim of olo_ft_ram_sp_tb is
     signal Addr           : std_logic_vector(7 downto 0)                   := (others => '0');
     signal WrEna          : std_logic                                      := '0';
     signal WrData         : std_logic_vector(Width_g - 1 downto 0);
+    signal RdEna          : std_logic                                      := '1';
     signal ErrInj_BitFlip : std_logic_vector(CodewordWidth_c - 1 downto 0) := (others => '0');
     signal ErrInj_Valid   : std_logic                                      := '0';
     signal RdData         : std_logic_vector(Width_g - 1 downto 0);
@@ -165,6 +166,7 @@ begin
             Addr           => Addr,
             WrEna          => WrEna,
             WrData         => WrData,
+            RdEna          => RdEna,
             ErrInj_BitFlip => ErrInj_BitFlip,
             ErrInj_Valid   => ErrInj_Valid,
             RdData         => RdData,
@@ -300,6 +302,63 @@ begin
                 write(72, 16#A5#, Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
                 checkEcc(72, 0, '0', '1', Clk, Addr, RdData, RdValid, RdEccSec, RdEccDed,
                          "Latest preload wins (DED pair after re-preload)", CheckData => false);
+
+            -- RdEna held low must suppress RdValid across the full latency window
+            elsif run("RdEnaSuppression") then
+                write(90, 16#7E#, Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
+
+                wait until rising_edge(Clk);
+                RdEna <= '0';
+                Addr  <= toUslv(90, Addr'length);
+
+                -- Drain any in-flight RdValid pulses from the previous test
+                for i in 1 to RamRdLatency_g + EccPipeline_g + 2 loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                -- With RdEna held low, RdValid must stay low for as long as we observe
+                for i in 1 to 8 loop
+                    check_equal(RdValid, '0',
+                        "RdEna=0 -> RdValid stays low at idle cycle " & integer'image(i));
+                    wait until rising_edge(Clk);
+                end loop;
+
+                RdEna <= '1';
+
+            -- Single-cycle RdEna pulse produces a single, correctly-aligned RdValid pulse
+            elsif run("RdEnaPulse") then
+                write(91, 16#A5#, Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
+
+                wait until rising_edge(Clk);
+                RdEna <= '0';
+                Addr  <= toUslv(91, Addr'length);
+
+                -- Drain pipeline so we start from a known RdValid='0' state
+                for i in 1 to RamRdLatency_g + EccPipeline_g + 2 loop
+                    wait until rising_edge(Clk);
+                end loop;
+                check_equal(RdValid, '0', "Pre-pulse RdValid='0'");
+
+                -- One-cycle RdEna pulse
+                RdEna <= '1';
+                wait until rising_edge(Clk);
+                RdEna <= '0';
+
+                -- Walk to the edge just past the pulse-arrival
+                for i in 1 to RamRdLatency_g + EccPipeline_g loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                check_equal(RdValid,  '1',
+                    "RdValid pulses RamRdLatency_g+EccPipeline_g cycles after RdEna");
+                check_equal(RdData,   toUslv(16#A5#, RdData'length), "RdData matches written value");
+                check_equal(RdEccSec, '0',                           "Clean read -> EccSec='0'");
+                check_equal(RdEccDed, '0',                           "Clean read -> EccDed='0'");
+
+                wait until rising_edge(Clk);
+                check_equal(RdValid, '0', "RdValid pulse is one cycle wide");
+
+                RdEna <= '1';
 
             end if;
 
