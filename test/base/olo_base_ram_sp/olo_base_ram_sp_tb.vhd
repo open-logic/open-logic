@@ -47,12 +47,12 @@ architecture sim of olo_base_ram_sp_tb is
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
     procedure write (
-        address        : natural;
-        data           : natural;
-        signal Clk     : in std_logic;
-        signal Addr    : out std_logic_vector;
-        signal WrData  : out std_logic_vector;
-        signal WrEna   : out std_logic) is
+        address       : natural;
+        data          : natural;
+        signal Clk    : in std_logic;
+        signal Addr   : out std_logic_vector;
+        signal WrData : out std_logic_vector;
+        signal WrEna  : out std_logic) is
     begin
         wait until rising_edge(Clk);
         Addr   <= toUslv(address, Addr'length);
@@ -98,14 +98,14 @@ architecture sim of olo_base_ram_sp_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk    : std_logic                                 := '0';
-    signal Rst    : std_logic                                 := '0';
-    signal Addr   : std_logic_vector(7 downto 0)              := (others => '0');
-    signal Be     : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '0');
-    signal WrEna  : std_logic                                 := '0';
-    signal RdEna  : std_logic                                 := '0';
-    signal WrData : std_logic_vector(Width_g-1 downto 0);
-    signal RdData : std_logic_vector(Width_g-1 downto 0);
+    signal Clk     : std_logic                                 := '0';
+    signal Rst     : std_logic                                 := '0';
+    signal Addr    : std_logic_vector(7 downto 0)              := (others => '0');
+    signal Be      : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '0');
+    signal WrEna   : std_logic                                 := '0';
+    signal RdEna   : std_logic                                 := '0';
+    signal WrData  : std_logic_vector(Width_g-1 downto 0);
+    signal RdData  : std_logic_vector(Width_g-1 downto 0);
     signal RdValid : std_logic;
 
 begin
@@ -166,7 +166,7 @@ begin
                     check(0, 1, Clk, Addr, RdData, RdEna, RdValid, "Init-Values: 0=0x01");
                     check(1, 5, Clk, Addr, RdData, RdEna, RdValid, "Init-Values: 1=0x05");
                     check(2, 16#17#, Clk, Addr, RdData, RdEna, RdValid, "Init-Values: 2=0x17");
-                    check(0, 1, Clk, Addr, RdData, RdEna, RdValid, "Read without RdEna", '0'); 
+                    check(0, 1, Clk, Addr, RdData, RdEna, RdValid, "Read without RdEna", '0');
                 end if;
             end if;
 
@@ -207,7 +207,7 @@ begin
             -- Read while write
             if run("ReadDuringwrite") then
                 -- Initialize
-                Be    <= (others => '1');
+                Be     <= (others => '1');
                 write(1, 5, Clk, Addr, WrData, WrEna);
                 write(2, 6, Clk, Addr, WrData, WrEna);
                 write(3, 7, Clk, Addr, WrData, WrEna);
