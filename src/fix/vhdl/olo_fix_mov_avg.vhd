@@ -68,6 +68,7 @@ end entity;
 architecture rtl of olo_fix_mov_avg is
 
     -- Constants
+    constant EntityName_c      : string      := "olo_fix_mov_avg";
     constant AddBits_c         : integer     := log2ceil(Taps_g);
     constant OutFmt_c          : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
     constant InFmt_c           : FixFormat_t := cl_fix_format_from_string(InFmt_g);
@@ -100,10 +101,10 @@ begin
     -- *** Assertions ***
     -- synthesis translate_off
     assert compareNoCase(GainCorrType_g, "EXACT") or compareNoCase(GainCorrType_g, "SHIFT") or compareNoCase(GainCorrType_g, "NONE")
-        report "olo_fix_mov_avg -Invalid value for GainCorrType_g"
+        report errorMessage(EntityName_c, "Invalid value for GainCorrType_g")
         severity error;
     assert GainCorrCoefFmt_c.S = 0 and GainCorrCoefFmt_c.I = 1
-        report "olo_fix_mov_avg - GainCorrCoefFmt_g must be a (0,1,x) format"
+        report errorMessage(EntityName_c, "GainCorrCoefFmt_g must be a (0,1,x) format")
         severity error;
     -- synthesis translate_on
 

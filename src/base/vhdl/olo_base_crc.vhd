@@ -66,6 +66,7 @@ end entity;
 architecture rtl of olo_base_crc is
 
     -- Constants
+    constant EntityName_c          : string                                  := "olo_base_crc";
     constant CrcWidth_c            : natural                                 := Polynomial_g'length;
     constant BeMode_c              : boolean                                 := choose(DataWidth_g mod 8 = 0, true, false);
     constant ZeroPoly_c            : std_logic_vector(CrcWidth_c-1 downto 0) := (others => '0');
@@ -84,19 +85,19 @@ architecture rtl of olo_base_crc is
 begin
 
     assert compareNoCase(BitOrder_g, "MSB_FIRST") or compareNoCase(BitOrder_g, "LSB_FIRST")
-        report "###ERROR###: olo_base_crc - Illegal value for BitOrder_g"
+        report errorMessage(EntityName_c, "Illegal value for BitOrder_g")
         severity error;
     assert compareNoCase(ByteOrder_g, "NONE") or compareNoCase(ByteOrder_g, "LSB_FIRST") or compareNoCase(ByteOrder_g, "MSB_FIRST")
-        report "###ERROR###: olo_base_crc - Illegal value for ByteOrder_g"
+        report errorMessage(EntityName_c, "Illegal value for ByteOrder_g")
         severity error;
     assert compareNoCase(ByteOrder_g, "NONE") or DataWidth_g mod 8 = 0
-        report "###ERROR###: olo_base_crc - For DataWidth_g not being a multiple of 8, only ByteOrder_g=NONE is allowed"
+        report errorMessage(EntityName_c, "For DataWidth_g not being a multiple of 8, only ByteOrder_g=NONE is allowed")
         severity error;
     assert InitialValue_c'length = CrcWidth_c
-        report "###ERROR###: olo_base_crc - InitialValue_g must have the same length as Polynomial_g"
+        report errorMessage(EntityName_c, "InitialValue_g must have the same length as Polynomial_g")
         severity error;
     assert XorOutput_c'length = CrcWidth_c
-        report "###ERROR###: olo_base_crc - XorOutput_g must have the same length as Polynomial_g"
+        report errorMessage(EntityName_c, "XorOutput_g must have the same length as Polynomial_g")
         severity error;
 
     p_lfsr : process (Clk) is
@@ -113,7 +114,8 @@ begin
                 BePlus_v := std_logic_vector(unsigned(In_Be) + 1);
                 -- synthesis translate_off
                 assert (In_Be and BePlus_v) = zerosVector(In_Be'length)
-                    report "olo_base_crc: In_Be must have LSB asserted and all asserted bits must be contiguous. Trailing-Only Byte-Enable convention violated."
+                    report errorMessage(EntityName_c, "In_Be must have LSB asserted and all asserted bits must be contiguous. " &
+                           "Trailing-Only Byte-Enable convention violated.")
                     severity error;
                 -- synthesis translate_on
 
@@ -157,14 +159,14 @@ begin
                 if (BeMode_c and In_Last = '0') then
                     -- synthesis translate_off
                     assert In_Be = onesVector(In_Be'length)
-                        report "olo_base_crc: In_Be is de-asserted while In_Last='0'. Trailing-Only Byte-Enable convention violated."
+                        report errorMessage(EntityName_c, "In_Be is de-asserted while In_Last='0'. Trailing-Only Byte-Enable convention violated.")
                         severity warning;
                     -- synthesis translate_on
 
                 elsif (not(BeMode_c)) then
                     -- synthesis translate_off
                     assert In_Be = onesVector(In_Be'length)
-                        report "olo_base_crc: In_Be is ignored when DataWidth_g is not a multiple of 8."
+                        report errorMessage(EntityName_c, "In_Be is ignored when DataWidth_g is not a multiple of 8.")
                         severity warning;
                     -- synthesis translate_on
                 end if;

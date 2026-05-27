@@ -67,6 +67,9 @@ end entity;
 
 architecture rtl of olo_fix_madd is
 
+    -- *** Constants ***
+    constant EntityName_c : string := "olo_fix_madd";
+
     -- *** Fomrats ***
     constant AFmt_c        : FixFormat_t := cl_fix_format_from_string(AFmt_g);
     constant BFmt_c        : FixFormat_t := cl_fix_format_from_string(BFmt_g);
@@ -91,10 +94,10 @@ begin
     -- *** Assertions ***
     -- synthesis translate_off
     assert compareNoCase(Operation_g, "Add") or compareNoCase(Operation_g, "Sub")
-        report "olo_fix_madd - Invalid Operation_g. Allowed values are 'Add' and 'Sub'."
+        report errorMessage(EntityName_c, "Invalid Operation_g. Allowed values are 'Add' and 'Sub'.")
         severity error;
     assert compareNoCase(PreAddOp_g, "Add") or compareNoCase(PreAddOp_g, "Sub")
-        report "olo_fix_madd - Invalid PreAddOp_g. Allowed values are 'Add' and 'Sub'."
+        report errorMessage(EntityName_c, "Invalid PreAddOp_g. Allowed values are 'Add' and 'Sub'.")
         severity error;
     -- synthesis translate_on
 

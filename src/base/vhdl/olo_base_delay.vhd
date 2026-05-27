@@ -57,20 +57,21 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_base_delay is
 
-    signal MemOut      : std_logic_vector(Width_g - 1 downto 0);
-    constant MemTaps_c : natural := work.olo_base_pkg_math.max(Delay_g - 1, 0);
+    constant EntityName_c : string  := "olo_base_delay";
+    signal MemOut         : std_logic_vector(Width_g - 1 downto 0);
+    constant MemTaps_c    : natural := work.olo_base_pkg_math.max(Delay_g - 1, 0);
 
 begin
 
     -- *** Assertions ***
     assert compareNoCase(Resource_g, "AUTO") or compareNoCase(Resource_g, "SRL") or compareNoCase(Resource_g, "BRAM")
-        report "###ERROR###: olo_base_delay: Unknown Resource_g - " & Resource_g
+        report errorMessage(EntityName_c, "Unknown Resource_g - " & Resource_g)
         severity error;
     assert not compareNoCase(Resource_g, "BRAM") or Delay_g >= 3
-        report "###ERROR###: olo_base_delay: Delay_g >= 3 required for Resource_g=BRAM"
+        report errorMessage(EntityName_c, "Delay_g >= 3 required for Resource_g=BRAM")
         severity error;
     assert BramThreshold_g > 3
-        report "###ERROR###: olo_base_delay: BramThreshold_g must be > 3"
+        report errorMessage(EntityName_c, "BramThreshold_g must be > 3")
         severity error;
 
     -- *** SRL ***

@@ -25,6 +25,7 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -51,6 +52,7 @@ end entity;
 architecture rtl of olo_intf_clk_meas is
 
     -- Constants
+    constant EntityName_c             : string  := "olo_intf_clk_meas";
     constant MaxClkTestFrequencyInt_c : integer := integer(MaxClkTestFrequency_g);
     constant ResultWidth_c            : integer := log2ceil(integer(MaxClkTestFrequencyInt_c)+1);
 
@@ -71,10 +73,10 @@ begin
 
     -- *** Assertions ***
     assert ClkFrequency_g >= 100.0
-        report "olo_intfclk_meas: ClkFrequency_g must >= 100 Hz"
+        report errorMessage(EntityName_c, "ClkFrequency_g must >= 100 Hz")
         severity failure;
     assert MaxClkTestFrequency_g >= 100.0
-        report "olo_intfclk_meas: MaxClkTestFrequency_g must be >= 100 Hz"
+        report errorMessage(EntityName_c, "MaxClkTestFrequency_g must be >= 100 Hz")
         severity failure;
 
     -----------------------------------------------------------------------------------------------

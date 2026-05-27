@@ -27,6 +27,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -57,8 +58,9 @@ end entity;
 architecture rtl of olo_base_wconv_n2xn is
 
     -- *** Constants ***
-    constant RatioReal_c : real    := real(OutWidth_g) / real(InWidth_g);
-    constant RatioInt_c  : integer := integer(RatioReal_c);
+    constant EntityName_c : string  := "olo_base_wconv_n2xn";
+    constant RatioReal_c  : real    := real(OutWidth_g) / real(InWidth_g);
+    constant RatioInt_c   : integer := integer(RatioReal_c);
 
     -- *** Two Process Method ***
     type TwoProcess_r is record
@@ -77,10 +79,10 @@ architecture rtl of olo_base_wconv_n2xn is
 begin
 
     assert floor(RatioReal_c) = ceil(RatioReal_c)
-        report "olo_base_wconv_n2xn: Ratio OutWidth_g/InWidth_g must be an integer number"
+        report errorMessage(EntityName_c, "Ratio OutWidth_g/InWidth_g must be an integer number")
         severity error;
     assert OutWidth_g >= InWidth_g
-        report "olo_base_wconv_n2xn: OutWidth_g must be bigger or equal than InWidth_g"
+        report errorMessage(EntityName_c, "OutWidth_g must be bigger or equal than InWidth_g")
         severity error;
 
     -- Implement conversion logic only if required

@@ -79,6 +79,7 @@ end entity;
 architecture rtl of olo_fix_cic_dec_tdm is
 
     -- Formats
+    constant EntityName_c      : string      := "olo_fix_cic_dec_tdm";
     constant InFmt_c           : FixFormat_t := cl_fix_format_from_string(InFmt_g);
     constant OutFmt_c          : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
     constant GainCorrCoefFmt_c : FixFormat_t := fixFmtFromStringTolerant(GainCorrCoefFmt_g);
@@ -140,10 +141,10 @@ begin
     -- Assertions
     -----------------------------------------------------------------------------------------------
     assert (compareNoCase(GainCorrCoefFmt_g, "NONE") or GainCorrCoefFmt_c.I = 1)
-        report "olo_fix_cic_dec_tdm: Gain correction coefficient format must have 1 integer bit (or be NONE)"
+        report errorMessage(EntityName_c, "Gain correction coefficient format must have 1 integer bit (or be NONE)")
         severity failure;
     assert (compareNoCase(GainCorrCoefFmt_g, "NONE") or GainCorrCoefFmt_c.S = 0)
-        report "olo_fix_cic_dec_tdm: Gain correction coefficient format must be unsigned (or be NONE)"
+        report errorMessage(EntityName_c, "Gain correction coefficient format must be unsigned (or be NONE)")
         severity failure;
 
     -----------------------------------------------------------------------------------------------
@@ -305,8 +306,8 @@ begin
                 if In_Last = '1' then
                     -- Only report if In_Last is asserted when NOT expected
                     assert ChCnt_v = Channels_g - 1
-                        report "olo_fix_cic_dec_tdm: In_Last asserted at channel index " & integer'image(ChCnt_v) &
-                               " but expected at " & integer'image(Channels_g - 1)
+                        report errorMessage(EntityName_c, "In_Last asserted at channel index " & integer'image(ChCnt_v) &
+                               " but expected at " & integer'image(Channels_g - 1))
                         severity error;
                 end if;
 

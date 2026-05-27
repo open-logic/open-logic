@@ -129,6 +129,9 @@ architecture rtl of olo_intf_uart is
 
     signal r, r_next : TwoProcess_r;
 
+    -- *** Constants ***
+    constant EntityName_c : string := "olo_intf_uart";
+
     -- *** Instantiation Signals ***
     signal TxStrobe  : std_logic;
     signal RxStrobe  : std_logic;
@@ -140,19 +143,19 @@ begin
     -- Assertions
     -----------------------------------------------------------------------------------------------
     assert BaudRate_g > 0.0
-        report "olo_intf_uart - BaudRate_g must be greater than 0"
+        report errorMessage(EntityName_c, "BaudRate_g must be greater than 0")
         severity error;
 
     assert compareNoCase(StopBits_g, "1") or compareNoCase(StopBits_g, "1.5") or compareNoCase(StopBits_g, "2")
-        report "olo_intf_uart - StopBits_g must be 1, 1.5 or 2"
+        report errorMessage(EntityName_c, "StopBits_g must be 1, 1.5 or 2")
         severity error;
 
     assert compareNoCase(Parity_g, "none") or compareNoCase(Parity_g, "even") or compareNoCase(Parity_g, "odd")
-        report "olo_intf_uart - Parity_g must be none, even or odd"
+        report errorMessage(EntityName_c, "Parity_g must be none, even or odd")
         severity error;
 
     assert BaudRate_g <= ClkFreq_g / 10.0
-        report "olo_intf_uart - BaudRate_g must be <= ClkFreq_g / 10.0"
+        report errorMessage(EntityName_c, "BaudRate_g must be <= ClkFreq_g / 10.0")
         severity error;
 
     -----------------------------------------------------------------------------------------------

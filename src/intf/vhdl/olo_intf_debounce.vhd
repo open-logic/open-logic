@@ -57,6 +57,7 @@ architecture struct of olo_intf_debounce is
 
     -- Time Constants
     -- Idea is to have a counter in the range 15-31 for each bit
+    constant EntityName_c          : string  := "olo_intf_debounce";
     constant TargetTickFrequency_c : real    := 1.0/(DebounceTime_g/31.0);
     constant TickCycles_c          : real    := ceil(ClkFrequency_g/TargetTickFrequency_c);
     constant ActualTickFrequency_c : real    := ClkFrequency_g/TickCycles_c;
@@ -87,12 +88,12 @@ architecture struct of olo_intf_debounce is
 begin
 
     assert compareNoCase(Mode_g, "GLITCH_FILTER") or compareNoCase(Mode_g, "LOW_LATENCY")
-        report "olo_intf_debounce: Illegal Mode_g - " & Mode_g
+        report errorMessage(EntityName_c, "Illegal Mode_g - " & Mode_g)
         severity failure;
 
     assert DebounceTicks_c >= 10
-        report "olo_intf_debounce: DebounceTime too short (must be >= 10 clock cycles) - " &
-               "DebounceTime_g=" & real'image(DebounceTime_g) & " ClkFrequency_g=" & real'image(ClkFrequency_g)
+        report errorMessage(EntityName_c, "DebounceTime too short (must be >= 10 clock cycles) - " &
+               "DebounceTime_g=" & real'image(DebounceTime_g) & " ClkFrequency_g=" & real'image(ClkFrequency_g))
         severity failure;
 
     -- *** Combinatorial Process ***

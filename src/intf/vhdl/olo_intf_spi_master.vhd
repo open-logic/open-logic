@@ -27,6 +27,7 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
     use work.olo_base_pkg_attribute.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -73,6 +74,7 @@ architecture rtl of olo_intf_spi_master is
     type State_t is (Idle_s, SftComp_s, ClkInact_s, ClkAct_s, CsHigh_s);
 
     -- *** Constants ***
+    constant EntityName_c     : string  := "olo_intf_spi_master";
     constant ClkDiv_c         : natural := integer(round(ClkFreq_g/SclkFreq_g));
     constant ClkDivThres_c    : natural := ClkDiv_c / 2 - 1;
     constant CsHighCycles_c   : natural := integer(ceil(ClkFreq_g*CsHighTime_g));
@@ -150,7 +152,7 @@ begin
     -- Assertions
     -----------------------------------------------------------------------------------------------
     assert abs(SclkFreqResult_c/SclkFreq_g - 1.0) < 0.1
-        report "###ERROR###: olo_intf_spi_master - SclkFreq_g is not within 10% of the actual Sclk frequency"
+        report errorMessage(EntityName_c, "SclkFreq_g is not within 10% of the actual Sclk frequency")
         severity error;
 
     -----------------------------------------------------------------------------------------------

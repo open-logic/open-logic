@@ -67,6 +67,9 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_fix_cordic_vect is
 
+    -- Constants
+    constant EntityName_c : string := "olo_fix_cordic_vect";
+
     -- Formats
     constant InFmt_c           : FixFormat_t   := cl_fix_format_from_string(InFmt_g);
     constant OutMagFmt_c       : FixFormat_t   := cl_fix_format_from_string(OutMagFmt_g);
@@ -202,25 +205,25 @@ begin
 
     -- *** Assertions ***
     assert InFmt_c.S = 1
-        report "###ERROR###: olo_fix_cordic_vect: InFmt_g must be signed"
+        report errorMessage(EntityName_c, "InFmt_g must be signed")
         severity error;
     assert OutMagFmt_c.S = 0
-        report "###ERROR###: olo_fix_cordic_vect: OutMagFmt_g must be unsigned"
+        report errorMessage(EntityName_c, "OutMagFmt_g must be unsigned")
         severity error;
     assert OutAngFmt_c.S + OutAngFmt_c.I = 0
-        report "###ERROR###: olo_fix_cordic_vect: OutAngFmt_g must be (0, 0, x)"
+        report errorMessage(EntityName_c, "OutAngFmt_g must be (0, 0, x)")
         severity error;
     assert IntXyFmt_c.S = 1
-        report "###ERROR###: olo_fix_cordic_vect: IntXyFmt_g must be signed"
+        report errorMessage(EntityName_c, "IntXyFmt_g must be signed")
         severity error;
     assert IntAngFmt_c.S = 1
-        report "###ERROR###: olo_fix_cordic_vect: IntAngFmt_g must be signed"
+        report errorMessage(EntityName_c, "IntAngFmt_g must be signed")
         severity error;
     assert IntAngFmt_c.I = -1
-        report "###ERROR###: olo_fix_cordic_vect: IntAngFmt_g must be (1,-1,x)"
+        report errorMessage(EntityName_c, "IntAngFmt_g must be (1,-1,x)")
         severity error;
     assert compareNoCase(Mode_g, "PIPELINED") or compareNoCase(Mode_g, "SERIAL")
-        report "###ERROR###: olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
+        report errorMessage(EntityName_c, "Mode_g must be PIPELINED or SERIAL")
         severity error;
 
     -- *** Pipelined Implementation ***

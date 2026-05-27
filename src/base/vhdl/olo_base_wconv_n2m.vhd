@@ -27,6 +27,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -59,6 +60,7 @@ end entity;
 architecture rtl of olo_base_wconv_n2m is
 
     -- *** Constants ***
+    constant EntityName_c   : string   := "olo_base_wconv_n2m";
     constant MaxChunkSize_c : positive := greatestCommonFactor(InWidth_g, OutWidth_g);
     constant ChunkSize_c    : positive := choose(UseBe_g, 8, MaxChunkSize_c);
     constant SrWidth_c      : positive := choose(OutWidth_g > InWidth_g, 2*OutWidth_g, OutWidth_g+InWidth_g);
@@ -79,7 +81,7 @@ begin
 
     -- assertions
     assert (UseBe_g = false) or ((InWidth_g mod 8 = 0) and (OutWidth_g mod 8 = 0))
-        report "olo_base_wconv_n2m: Byte Enables are only supported for byte-aligned InWidht_g and OutWidth_g"
+        report errorMessage(EntityName_c, "Byte Enables are only supported for byte-aligned InWidht_g and OutWidth_g")
         severity failure;
 
     -- Implement conversion logic only if required
@@ -148,7 +150,7 @@ begin
                     if UseBe_g = true then
                         -- Check correct BE usage
                         assert (In_Last = '1') or (In_Be = onesVector(In_Be'length))
-                            report "olo_base_wconv_n2m: Incomplete byte enables are only supported for last beat"
+                            report errorMessage(EntityName_c, "Incomplete byte enables are only supported for last beat")
                             severity failure;
                         -- Assert last chunk on correct byte (default)
                         v.LastChunk(v.ChunkCnt + InChunks_c-1) := In_Last;

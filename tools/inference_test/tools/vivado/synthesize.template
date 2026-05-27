@@ -12,5 +12,6 @@ add_files {{src_file}}
 
 #Build
 set_property top {{top_entity}} [current_fileset]
+set_property STEPS.SYNTH_DESIGN.ARGS.ASSERT true [get_runs synth_1]
 launch_runs synth_1 -to_step synth_design -jobs 3
 wait_on_run -timeout 15 synth_1

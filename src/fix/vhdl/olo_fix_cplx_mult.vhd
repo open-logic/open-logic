@@ -72,6 +72,9 @@ end entity;
 
 architecture rtl of olo_fix_cplx_mult is
 
+    -- Constants
+    constant EntityName_c : string := "olo_fix_cplx_mult";
+
     -- Formats
     constant AFmt_c      : FixFormat_t := cl_fix_format_from_string(AFmt_g);
     constant BFmt_c      : FixFormat_t := cl_fix_format_from_string(BFmt_g);
@@ -98,13 +101,13 @@ begin
     -- Assertions
     -- synthesis translate_off
     assert compareNoCase(Mode_g, "MULT") or compareNoCase(Mode_g, "MIX")
-        report "olo_fix_cplx_mult: Invalid Mode_g: " & Mode_g
+        report errorMessage(EntityName_c, "Invalid Mode_g: " & Mode_g)
         severity error;
     assert compareNoCase(IqHandling_g, "Parallel") or compareNoCase(IqHandling_g, "TDM")
-        report "olo_fix_cplx_mult: Invalid IqHandling_g: " & IqHandling_g
+        report errorMessage(EntityName_c, "Invalid IqHandling_g: " & IqHandling_g)
         severity error;
     assert compareNoCase(Implementation_g, "MULT4") or compareNoCase(Implementation_g, "MULT3")
-        report "olo_fix_cplx_mult: Invalid Implementation_g: " & Implementation_g
+        report errorMessage(EntityName_c, "Invalid Implementation_g: " & Implementation_g)
         severity error;
     -- synthesis translate_on
 

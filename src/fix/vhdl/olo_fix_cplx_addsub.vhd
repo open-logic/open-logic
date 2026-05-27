@@ -72,6 +72,8 @@ end entity;
 
 architecture rtl of olo_fix_cplx_addsub is
 
+    constant EntityName_c : string := "olo_fix_cplx_addsub";
+
     -- Calculate Latency
     constant Latency_c : natural := OpRegs_g +
                                     choose(compareNoCase(RoundReg_g, "YES"), 1, 0) +
@@ -84,10 +86,10 @@ begin
     -- Assertions
     -- synthesis translate_off
     assert compareNoCase(Operation_g, "Add") or compareNoCase(Operation_g, "Sub")
-        report "olo_fix_cplx_addsubsub: Invalid Operation_g: " & Operation_g
+        report errorMessage(EntityName_c, "Invalid Operation_g: " & Operation_g)
         severity error;
     assert compareNoCase(IqHandling_g, "Parallel") or compareNoCase(IqHandling_g, "TDM")
-        report "olo_fix_cplx_addsubsub: Invalid IqHandling_g: " & IqHandling_g
+        report errorMessage(EntityName_c, "Invalid IqHandling_g: " & IqHandling_g)
         severity error;
     -- synthesis translate_on
 

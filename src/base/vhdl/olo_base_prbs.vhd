@@ -27,6 +27,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_logic.all;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -59,6 +60,7 @@ end entity;
 architecture rtl of olo_base_prbs is
 
     -- Constants
+    constant EntityName_c : string  := "olo_base_prbs";
     constant LfsrLenght_c : natural := max(BitsPerSymbol_g, Polynomial_g'length);
 
     -- Signals
@@ -102,16 +104,16 @@ architecture rtl of olo_base_prbs is
 begin
 
     assert Polynomial_g'length >= 2
-        report "###ERROR###: olo_base_prbs - Polynomial_g width must be at least 2"
+        report errorMessage(EntityName_c, "Polynomial_g width must be at least 2")
         severity error;
     assert Seed_g'length = Polynomial_g'length
-        report "###ERROR###: olo_base_prbs - Seed_g width must match Polynomial_g width"
+        report errorMessage(EntityName_c, "Seed_g width must match Polynomial_g width")
         severity error;
     assert fromUslv(Seed_g) /= 0
-        report "###ERROR###: olo_base_prbs - Seed_g MUST NOT be zero"
+        report errorMessage(EntityName_c, "Seed_g MUST NOT be zero")
         severity error;
     assert BitsPerSymbol_g >= 1
-        report "###ERROR###: olo_base_prbs - BitsPerSymbol_g width must be larger or equal to 1"
+        report errorMessage(EntityName_c, "BitsPerSymbol_g width must be larger or equal to 1")
         severity error;
 
     Out_Valid     <= '1';

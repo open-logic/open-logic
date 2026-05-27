@@ -126,6 +126,11 @@ begin
                 check_equal(countOccurence("Hello", 'f'), 0, "countOccurence 3");
             end if;
 
+            if run("errorMessage") then
+                check_equal(errorMessage("olo_base_fifo_sync", "Width must be > 0"), "olo_base_fifo_sync - Width must be > 0", "errorMessage 1");
+                check_equal(errorMessage("myEntity", "some error"), "myEntity - some error", "errorMessage 2");
+            end if;
+
         end loop;
 
         wait for 1 ns;
