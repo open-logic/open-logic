@@ -36,11 +36,14 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 | Name   | In/Out | Length                | Default | Description                                                  |
 | :----- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | Clk    | in     | 1                     | -       | Clock                                                        |
+| Rst    | in     | 1                     | '0'     | Synchronous reset <br> Optional, only resets internal state of _RdValid_<br>Does **NOT** reset the content of memory cells!     |
 | Addr   | in     | _ceil(log2(Depth_g))_ | -       | Address                                                      |
 | Be     | in     | _Width_g/8_           | All '1' | Byte-enables<br>Ignored if _UseByteEnable_g_ = false         |
 | WrEna  | in     | 1                     | '1'     | Write enable. The memory cell at _Addr_ is written only if _WrEna_='1'. |
 | WrData | in     | _Width_g_             | -       | Write data                                                   |
+| RdEna  | in     | 1                     | '1'     | Read enable - Optional signal <br> see [RdEna and RdValid](#rdena-and-rdvalid) |
 | RdData | out    | _Width_g_             | N/A     | Read data                                                    |
+| RdValid | out   | 1                     | N/A     | Read valid. <br>Asserted _RdLatency_g_ cycles after _RdEna_ was asserted. |
 
 ## Detailed Description
 
@@ -61,3 +64,12 @@ byte-enables enabled are affected.
 For applications where vendor/tool independence is important, this is to be regarded as a required trade-off. For
 applications that target only one specific technology, it is suggested to use vendor macros if RAM with byte enables if
 required.
+
+## RdEna and RdValid
+
+The RAM is read and _RdData_ is updated accordingly every clock cycle, independently of the _RdEna_ signal.
+
+The _RdEna_ signal only controls the _RdValid_ signal. This means that if _RdEna_ is asserted, _RdValid_ is asserted
+after _RdLatency_g_ cycles, indicating that the data on _RdData_ is valid and can be used. This is very useful in
+pipelined design, especially with configurable _RdLatency_g_ values because it allows to design logic around
+independently of the RAM read latency.

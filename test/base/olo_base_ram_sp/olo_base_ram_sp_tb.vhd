@@ -47,12 +47,12 @@ architecture sim of olo_base_ram_sp_tb is
     -- TB Defnitions
     -----------------------------------------------------------------------------------------------
     procedure write (
-        address       : natural;
-        data          : natural;
-        signal Clk    : in std_logic;
-        signal Addr   : out std_logic_vector;
-        signal WrData : out std_logic_vector;
-        signal WrEna  : out std_logic) is
+        address        : natural;
+        data           : natural;
+        signal Clk     : in std_logic;
+        signal Addr    : out std_logic_vector;
+        signal WrData  : out std_logic_vector;
+        signal WrEna   : out std_logic) is
     begin
         wait until rising_edge(Clk);
         Addr   <= toUslv(address, Addr'length);
@@ -65,34 +65,48 @@ architecture sim of olo_base_ram_sp_tb is
     end procedure;
 
     procedure check (
-        address       : natural;
-        data          : natural;
-        signal Clk    : in std_logic;
-        signal Addr   : out std_logic_vector;
-        signal RdData : in std_logic_vector;
-        message       : string) is
+        address        : natural;
+        data           : natural;
+        signal Clk     : in std_logic;
+        signal Addr    : out std_logic_vector;
+        signal RdData  : in std_logic_vector;
+        signal RdEna   : out std_logic;
+        signal RdValid : in std_logic;
+        message        : string;
+        rd_ena         : std_logic := '1') is
     begin
+        RdEna <= '0';
         wait until rising_edge(Clk);
-        Addr <= toUslv(address, Addr'length);
+        Addr  <= toUslv(address, Addr'length);
+        RdEna <= rd_ena;
+        check_equal(RdValid, '0', message & " - RdValid high unexpected - A");
         wait until rising_edge(Clk); -- Address sampled
+        RdEna <= '0';
+        check_equal(RdValid, '0', message & " - RdValid high unexpected - B");
 
         -- Wait for read data to arrive
         for i in 1 to RdLatency_g loop
-            wait until rising_edge(Clk);
+            wait until falling_edge(Clk);
         end loop;
 
         check_equal(RdData, toUslv(data, RdData'length), message);
+        check_equal(RdValid, rd_ena, message & " - RdValid not as expected");
+
+        wait until rising_edge(Clk);
     end procedure;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
     signal Clk    : std_logic                                 := '0';
+    signal Rst    : std_logic                                 := '0';
     signal Addr   : std_logic_vector(7 downto 0)              := (others => '0');
     signal Be     : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '0');
     signal WrEna  : std_logic                                 := '0';
+    signal RdEna  : std_logic                                 := '0';
     signal WrData : std_logic_vector(Width_g-1 downto 0);
     signal RdData : std_logic_vector(Width_g-1 downto 0);
+    signal RdValid : std_logic;
 
 begin
 
@@ -111,11 +125,14 @@ begin
         )
         port map (
             Clk        => Clk,
+            Rst        => Rst,
             Addr       => Addr,
             Be         => Be(BeWidth_c-1 downto 0), -- Extract only used bits of minimally sized vector to avoid GHDL issues
             WrEna      => WrEna,
+            RdEna      => RdEna,
             WrData     => WrData,
-            RdData     => RdData
+            RdData     => RdData,
+            RdValid    => RdValid
         );
 
     -----------------------------------------------------------------------------------------------
@@ -137,14 +154,19 @@ begin
 
             -- Wait for some time
             wait for 1 us;
+            Rst <= '1';
+            wait until rising_edge(Clk);
+            Rst <= '0';
             wait until rising_edge(Clk);
 
             -- test initialization values
             if run("Init-Values") then
                 if InitFormat_g = "HEX" then
-                    check(0, 1, Clk, Addr, RdData, "Init-Values: 0=0x01");
-                    check(1, 5, Clk, Addr, RdData, "Init-Values: 1=0x05");
-                    check(2, 16#17#, Clk, Addr, RdData, "Init-Values: 2=0x17");
+                    check_equal(RdValid, '0', "Init-Values: RdValid high unexpected");
+                    check(0, 1, Clk, Addr, RdData, RdEna, RdValid, "Init-Values: 0=0x01");
+                    check(1, 5, Clk, Addr, RdData, RdEna, RdValid, "Init-Values: 1=0x05");
+                    check(2, 16#17#, Clk, Addr, RdData, RdEna, RdValid, "Init-Values: 2=0x17");
+                    check(0, 1, Clk, Addr, RdData, RdEna, RdValid, "Read without RdEna", '0'); 
                 end if;
             end if;
 
@@ -156,10 +178,11 @@ begin
                 write(1, 5, Clk, Addr, WrData, WrEna);
                 write(2, 6, Clk, Addr, WrData, WrEna);
                 write(3, 7, Clk, Addr, WrData, WrEna);
-                check(1, 5, Clk, Addr, RdData, "3vrb: 1=5");
-                check(2, 6, Clk, Addr, RdData, "3vrb: 2=6");
-                check(3, 7, Clk, Addr, RdData, "3vrb: 3=7");
-                check(1, 5, Clk, Addr, RdData, "3vrb: re-read 1=5");
+                check(1, 5, Clk, Addr, RdData, RdEna, RdValid, "3vrb: 1=5");
+                check(2, 6, Clk, Addr, RdData, RdEna, RdValid, "3vrb: 2=6");
+                check(3, 7, Clk, Addr, RdData, RdEna, RdValid, "3vrb: 3=7");
+                check(1, 5, Clk, Addr, RdData, RdEna, RdValid, "3vrb: re-read 1=5");
+                check(2, 6, Clk, Addr, RdData, RdEna, RdValid, "read withour RdEna", '0');
                 Be <= (others => '0');
             end if;
 
@@ -172,24 +195,25 @@ begin
                     Be    <= (others => '0');
                     Be(0) <= '1';
                     write(1, 16#ABCD#, Clk, Addr, WrData, WrEna);
-                    check(1, 16#00CD#, Clk, Addr, RdData, "BE[0]");
+                    check(1, 16#00CD#, Clk, Addr, RdData, RdEna, RdValid, "BE[0]");
                     -- Byte 1 test
                     Be    <= (others => '0');
                     Be(1) <= '1';
                     write(1, 16#1234#, Clk, Addr, WrData, WrEna);
-                    check(1, 16#12CD#, Clk, Addr, RdData, "BE[1]");
+                    check(1, 16#12CD#, Clk, Addr, RdData, RdEna, RdValid, "BE[1]");
                 end if;
             end if;
 
             -- Read while write
             if run("ReadDuringwrite") then
                 -- Initialize
-                Be     <= (others => '1');
+                Be    <= (others => '1');
                 write(1, 5, Clk, Addr, WrData, WrEna);
                 write(2, 6, Clk, Addr, WrData, WrEna);
                 write(3, 7, Clk, Addr, WrData, WrEna);
                 wait until rising_edge(Clk);
                 WrEna  <= '1';
+                RdEna  <= '1';
                 Addr   <= toUslv(1, Addr'length);
                 WrData <= toUslv(1, WrData'length);
                 wait until rising_edge(Clk);
@@ -197,6 +221,7 @@ begin
                 WrData <= toUslv(2, WrData'length);
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
+                    check_equal(RdValid, '1', "rw: RdValid not high");
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 5, "rw: 1=5");
                     else
@@ -207,12 +232,14 @@ begin
                 WrData <= toUslv(3, WrData'length);
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
+                    check_equal(RdValid, '1', "rw: RdValid not high");
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 6, "rw: 2=6");
                     else
                         check_equal(RdData, 2, "rw: 2=2 wbr");
                     end if;
                 elsif RdLatency_g = 2 then
+                    check_equal(RdValid, '1', "rw: RdValid not high");
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 5, "rw: 1=5");
                     else
@@ -221,14 +248,17 @@ begin
                 end if;
                 Addr   <= toUslv(4, Addr'length);
                 WrData <= toUslv(4, WrData'length);
+                RdEna  <= '0';
                 wait until rising_edge(Clk);
                 if RdLatency_g = 1 then
+                    check_equal(RdValid, '1', "rw: RdValid not high");
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 7, "rw: 3=7");
                     else
                         check_equal(RdData, 3, "rw: 3=3 wbr");
                     end if;
                 elsif RdLatency_g = 2 then
+                    check_equal(RdValid, '1', "rw: RdValid not high");
                     if RamBehavior_g = "RBW" then
                         check_equal(RdData, 6, "rw: 2=6");
                     else
@@ -239,9 +269,9 @@ begin
                 WrData <= toUslv(5, WrData'length);
                 wait until rising_edge(Clk);
                 WrEna  <= '0';
-                check(1, 1, Clk, Addr, RdData, "rw: 1=1");
-                check(2, 2, Clk, Addr, RdData, "rw: 2=2");
-                check(3, 3, Clk, Addr, RdData, "rw: 3=3");
+                check(1, 1, Clk, Addr, RdData, RdEna, RdValid, "rw: 1=1");
+                check(2, 2, Clk, Addr, RdData, RdEna, RdValid, "rw: 2=2");
+                check(3, 3, Clk, Addr, RdData, RdEna, RdValid, "rw: 3=3");
             end if;
         end loop;
 

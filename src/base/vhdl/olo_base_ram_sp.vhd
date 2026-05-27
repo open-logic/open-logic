@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024-2025 by Oliver Bruendler
+-- Copyright (c) 2024-2026 by Oliver Bruendler
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -44,11 +44,14 @@ entity olo_base_ram_sp is
     );
     port (
         Clk             : in    std_logic;
+        Rst             : in    std_logic                                  := '0';
         Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
         Be              : in    std_logic_vector(Width_g / 8 - 1 downto 0) := (others => '1');
         WrEna           : in    std_logic                                  := '1';
         WrData          : in    std_logic_vector(Width_g - 1 downto 0);
-        RdData          : out   std_logic_vector(Width_g - 1 downto 0)
+        RdEna           : in    std_logic                                  := '1';
+        RdData          : out   std_logic_vector(Width_g - 1 downto 0);
+        RdValid         : out   std_logic
     );
 end entity;
 
@@ -76,10 +79,13 @@ architecture rtl of olo_base_ram_sp is
         );
         port (
             Clk             : in    std_logic;
+            Rst             : in    std_logic := '0';
             Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
             WrEna           : in    std_logic := '1';
+            RdEna           : in    std_logic := '1';
             WrData          : in    std_logic_vector(Width_g - 1 downto 0);
-            RdData          : out   std_logic_vector(Width_g - 1 downto 0)
+            RdData          : out   std_logic_vector(Width_g - 1 downto 0);
+            RdValid         : out   std_logic
         );
     end component;
 
@@ -106,16 +112,21 @@ begin
             )
             port map (
                 Clk             => Clk,
+                Rst             => Rst,
                 Addr            => Addr,
                 WrEna           => WrEna,
                 WrData          => WrData,
-                RdData          => RdData
+                RdEna           => RdEna,
+                RdData          => RdData,
+                RdValid         => RdValid
             );
 
     end generate;
 
     -- BE Implementation
     g_be : if UseByteEnable_g generate
+        signal RdValid_Vec : std_logic_vector(0 to BeCount_c-1);
+    begin
 
         g_byte : for byte in 0 to BeCount_c-1 generate
             signal WrEna_Byte : std_logic;
@@ -136,13 +147,19 @@ begin
                 )
                 port map (
                     Clk             => Clk,
+                    Rst             => Rst,
                     Addr            => Addr,
                     WrEna           => WrEna_Byte,
                     WrData          => WrData(byte*8+7 downto byte*8),
-                    RdData          => RdData(byte*8+7 downto byte*8)
+                    RdEna           => RdEna,
+                    RdData          => RdData(byte*8+7 downto byte*8),
+                    RdValid         => RdValid_Vec(byte)
                 );
 
         end generate;
+
+        -- Read Valid output (every RAM is the same)
+        RdValid <= RdValid_Vec(0);
 
     end generate;
 
@@ -177,10 +194,13 @@ entity olo_private_ram_sp_nobe is
     );
     port (
         Clk             : in    std_logic;
+        Rst             : in    std_logic := '0';
         Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
         WrEna           : in    std_logic := '1';
         WrData          : in    std_logic_vector(Width_g - 1 downto 0);
-        RdData          : out   std_logic_vector(Width_g - 1 downto 0)
+        RdEna           : in    std_logic := '1';
+        RdData          : out   std_logic_vector(Width_g - 1 downto 0);
+        RdValid         : out   std_logic
     );
 end entity;
 
@@ -237,10 +257,12 @@ architecture rtl of olo_private_ram_sp_nobe is
     shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := getInitContent;
 
     -- Read registers
-    signal RdPipe : Data_t(1 to RdLatency_g);
+    signal RdPipe      : Data_t(1 to RdLatency_g);
+    signal RdValidPipe : std_logic_vector(1 to RdLatency_g);
 
     -- Synthesis attributes - Suppress shift register extraction
-    attribute shreg_extract of RdPipe : signal is ShregExtract_SuppressExtraction_c;
+    attribute shreg_extract of RdPipe      : signal is ShregExtract_SuppressExtraction_c;
+    attribute shreg_extract of RdValidPipe : signal is ShregExtract_SuppressExtraction_c;
 
     -- Synthesis attributes - RAM style
     attribute ram_style of Mem_v    : variable is RamStyle_g;
@@ -273,11 +295,21 @@ begin
 
             -- Read-data pipeline registers
             RdPipe(2 to RdLatency_g) <= RdPipe(1 to RdLatency_g-1);
+
+            -- RdValid pipeline registers
+            RdValidPipe(1)                <= RdEna;
+            RdValidPipe(2 to RdLatency_g) <= RdValidPipe(1 to RdLatency_g-1);
+
+            -- Reset
+            if Rst = '1' then
+                RdValidPipe <= (others => '0');
+            end if;
         end if;
     end process;
 
     -- Output
-    RdData <= RdPipe(RdLatency_g);
+    RdData  <= RdPipe(RdLatency_g);
+    RdValid <= RdValidPipe(RdLatency_g);
 
 end architecture;
 
