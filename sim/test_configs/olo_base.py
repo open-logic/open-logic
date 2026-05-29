@@ -49,39 +49,17 @@ def add_configs(olo_tb):
         for R in [2, 3, 19]:
             named_config(tb, {'ClockRatio_g': R})
 
-    ### olo_base_ram_... dualport ###
-    ram_tbs = ['olo_base_ram_sp_tb', 'olo_base_ram_tdp_tb']
+    ### olo_base_ram_... ###
+    ram_tbs = ['olo_base_ram_sp_tb', 'olo_base_ram_tdp_tb', 'olo_base_ram_sdp_tb']
     for tb_name in ram_tbs:
         tb = olo_tb.test_bench(tb_name)
         for RamBehav in ['RBW', 'WBR']:
             named_config(tb, {'RamBehavior_g': RamBehav})
+            if tb_name == "olo_base_ram_sdp_tb":
+                for Async in [True, False]:
+                    named_config(tb, {'RamBehavior_g': RamBehav, "IsAsync_g": Async})
         for ReadLatency in [1, 2]:
             named_config(tb, {"RdLatency_g": ReadLatency})
-        for Width in [5, 32]:
-            named_config(tb, {'Width_g': Width})
-        for Be in [True, False]:
-            named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
-        # Check no-init
-        named_config(tb, {'InitFormat_g': 'NONE'})
-        # Check non byte-width
-        named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': 7})
-        # Check init, byte-enables play a role internally
-        for Be in [True, False]:
-            for Width in [8, 16]: 
-                named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': Width, 'UseByteEnable_g' : Be})
-
-
-    ### olo_base_ram_... singleport ###
-    ram_tbs = ['olo_base_ram_sdp_tb']
-    for tb_name in ram_tbs:
-        tb = olo_tb.test_bench(tb_name)
-        for RamBehav in ['RBW', 'WBR']:
-            for Async in [True, False]:
-                named_config(tb, {'RamBehavior_g': RamBehav, "IsAsync_g": Async})
-
-        for ReadLatency in [1,2]:
-            named_config(tb, {"RdLatency_g": ReadLatency})
-
         for Width in [5, 32]:
             named_config(tb, {'Width_g': Width})
         for Be in [True, False]:
