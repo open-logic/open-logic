@@ -302,6 +302,7 @@ begin
             if run("ResetState") then
                 A_RdEna <= '1';
                 B_RdEna <= '1';
+
                 -- Wait for pipeline to fill on both ports (RdEna='1' by default)
                 for i in 1 to RdLatency_g loop
                     wait until rising_edge(A_Clk);
@@ -325,7 +326,7 @@ begin
                 wait until falling_edge(B_Clk);
                 check_equal(B_RdValid, '0', "ResetState: B_RdValid should be deasserted after reset");
                 B_Rst <= '0';
-    
+
             -- test initialization values
             elsif run("Init-Values") then
                 if InitFormat_g = "HEX" then
@@ -373,9 +374,11 @@ begin
                 check_equal(A_RdValid, '1', "RdValid-A: should be asserted");
                 A_RdEna <= '0';
                 wait until rising_edge(A_Clk);
+
                 for i in 1 to RdLatency_g loop
                     wait until rising_edge(A_Clk);
                 end loop;
+
                 check_equal(A_RdValid, '0', "RdValid-A: should be deasserted");
                 A_RdEna <= '1';
 
@@ -386,9 +389,11 @@ begin
                 check_equal(B_RdValid, '1', "RdValid-B: should be asserted");
                 B_RdEna <= '0';
                 wait until rising_edge(B_Clk);
+
                 for i in 1 to RdLatency_g loop
                     wait until rising_edge(B_Clk);
                 end loop;
+
                 check_equal(B_RdValid, '0', "RdValid-B: should be deasserted");
                 B_RdEna <= '1';
 

@@ -171,6 +171,7 @@ begin
 
             -- Check reset state
             if run("ResetState") then
+
                 -- Wait for pipeline to fill (Rd_Ena='1' by default)
                 for i in 1 to RdLatency_g loop
                     if IsAsync_g then
@@ -179,7 +180,9 @@ begin
                         wait until rising_edge(Clk);
                     end if;
                 end loop;
+
                 check_equal(Rd_Valid, '1', "ResetState: Rd_Valid not high before reset");
+
                 -- Apply reset with Rd_Ena='0' so pipeline does not refill
                 if IsAsync_g then
                     Rd_Rst <= '1';
@@ -191,7 +194,7 @@ begin
                     wait until falling_edge(Clk);
                 end if;
                 check_equal(Rd_Valid, '0', "ResetState: Rd_Valid not low after reset");
-                Rst <= '0';
+                Rst    <= '0';
                 Rd_Rst <= '0';
             end if;
 

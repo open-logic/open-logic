@@ -188,8 +188,8 @@ begin
     p_rdvalid_a : process (A_Clk) is
     begin
         if rising_edge(A_Clk) then
-            A_RdValidPipe(1)                 <= A_RdEna;
-            A_RdValidPipe(2 to RdLatency_g)  <= A_RdValidPipe(1 to RdLatency_g-1);
+            A_RdValidPipe(1)                <= A_RdEna;
+            A_RdValidPipe(2 to RdLatency_g) <= A_RdValidPipe(1 to RdLatency_g-1);
 
             -- Reset
             if A_Rst = '1' then
@@ -202,8 +202,8 @@ begin
     p_rdvalid_b : process (B_Clk) is
     begin
         if rising_edge(B_Clk) then
-            B_RdValidPipe(1)                 <= B_RdEna;
-            B_RdValidPipe(2 to RdLatency_g)  <= B_RdValidPipe(1 to RdLatency_g-1);
+            B_RdValidPipe(1)                <= B_RdEna;
+            B_RdValidPipe(2 to RdLatency_g) <= B_RdValidPipe(1 to RdLatency_g-1);
 
             -- Reset
             if B_Rst = '1' then
