@@ -219,13 +219,17 @@ architecture sim of olo_base_ram_tdp_tb is
     signal A_WrEna  : std_logic                                 := '0';
     signal A_Be     : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
     signal A_WrData : std_logic_vector(Width_g - 1 downto 0);
-    signal A_RdData : std_logic_vector(Width_g - 1 downto 0);
-    signal B_Clk    : std_logic                                 := '0';
-    signal B_Addr   : std_logic_vector(7 downto 0);
-    signal B_WrEna  : std_logic                                 := '0';
-    signal B_Be     : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
-    signal B_WrData : std_logic_vector(Width_g - 1 downto 0);
-    signal B_RdData : std_logic_vector(Width_g - 1 downto 0);
+    signal A_RdEna   : std_logic                                 := '1';
+    signal A_RdData  : std_logic_vector(Width_g - 1 downto 0);
+    signal A_RdValid : std_logic;
+    signal B_Clk     : std_logic                                 := '0';
+    signal B_Addr    : std_logic_vector(7 downto 0);
+    signal B_WrEna   : std_logic                                 := '0';
+    signal B_Be      : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
+    signal B_WrData  : std_logic_vector(Width_g - 1 downto 0);
+    signal B_RdEna   : std_logic                                 := '1';
+    signal B_RdData  : std_logic_vector(Width_g - 1 downto 0);
+    signal B_RdValid : std_logic;
 
 begin
 
@@ -248,13 +252,17 @@ begin
             A_WrEna     => A_WrEna,
             A_Be        => A_Be(BeWidth_c-1 downto 0),
             A_WrData    => A_WrData,
+            A_RdEna     => A_RdEna,
             A_RdData    => A_RdData,
+            A_RdValid   => A_RdValid,
             B_Clk       => B_Clk,
             B_Addr      => B_Addr,
             B_WrEna     => B_WrEna,
             B_Be        => B_Be(BeWidth_c-1 downto 0),
             B_WrData    => B_WrData,
-            B_RdData    => B_RdData
+            B_RdEna     => B_RdEna,
+            B_RdData    => B_RdData,
+            B_RdValid   => B_RdValid
         );
 
     -----------------------------------------------------------------------------------------------
@@ -317,6 +325,32 @@ begin
             -- Read while write
             elsif run("readDuringWrite-B") then
                 readDuringWrite(B_Clk, B_Addr, B_WrData, B_WrEna, B_Be, B_RdData);
+
+            -- Check RdValid behavior - Port A
+            elsif run("RdValid-A") then
+                write(5, 123, A_Clk, A_Addr, A_WrData, A_WrEna);
+                check(5, 123, A_Clk, A_Addr, A_RdData, "RdValid-A: data");
+                check_equal(A_RdValid, '1', "RdValid-A: should be asserted");
+                A_RdEna <= '0';
+                wait until rising_edge(A_Clk);
+                for i in 1 to RdLatency_g loop
+                    wait until rising_edge(A_Clk);
+                end loop;
+                check_equal(A_RdValid, '0', "RdValid-A: should be deasserted");
+                A_RdEna <= '1';
+
+            -- Check RdValid behavior - Port B
+            elsif run("RdValid-B") then
+                write(5, 123, B_Clk, B_Addr, B_WrData, B_WrEna);
+                check(5, 123, B_Clk, B_Addr, B_RdData, "RdValid-B: data");
+                check_equal(B_RdValid, '1', "RdValid-B: should be asserted");
+                B_RdEna <= '0';
+                wait until rising_edge(B_Clk);
+                for i in 1 to RdLatency_g loop
+                    wait until rising_edge(B_Clk);
+                end loop;
+                check_equal(B_RdValid, '0', "RdValid-B: should be deasserted");
+                B_RdEna <= '1';
 
             end if;
 

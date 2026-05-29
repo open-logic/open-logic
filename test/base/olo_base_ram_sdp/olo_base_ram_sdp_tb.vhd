@@ -90,15 +90,16 @@ architecture sim of olo_base_ram_sdp_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk     : std_logic                                 := '0';
-    signal Wr_Addr : std_logic_vector(7 downto 0)              := (others => '0');
-    signal Wr_Ena  : std_logic                                 := '0';
-    signal Wr_Be   : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
-    signal Wr_Data : std_logic_vector(Width_g - 1 downto 0)    := (others => '0');
-    signal Rd_Clk  : std_logic                                 := '0';
-    signal Rd_Addr : std_logic_vector(7 downto 0)              := (others => '0');
-    signal Rd_Ena  : std_logic                                 := '1';
-    signal Rd_Data : std_logic_vector(Width_g - 1 downto 0)    := (others => '0');
+    signal Clk      : std_logic                                 := '0';
+    signal Wr_Addr  : std_logic_vector(7 downto 0)              := (others => '0');
+    signal Wr_Ena   : std_logic                                 := '0';
+    signal Wr_Be    : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
+    signal Wr_Data  : std_logic_vector(Width_g - 1 downto 0)    := (others => '0');
+    signal Rd_Clk   : std_logic                                 := '0';
+    signal Rd_Addr  : std_logic_vector(7 downto 0)              := (others => '0');
+    signal Rd_Ena   : std_logic                                 := '1';
+    signal Rd_Data  : std_logic_vector(Width_g - 1 downto 0)    := (others => '0');
+    signal Rd_Valid : std_logic                                 := '0';
 
 begin
 
@@ -125,7 +126,8 @@ begin
             Rd_Clk      => Rd_Clk,
             Rd_Addr     => Rd_Addr,
             Rd_Ena      => Rd_Ena,
-            Rd_Data     => Rd_Data
+            Rd_Data     => Rd_Data,
+            Rd_Valid    => Rd_Valid
         );
 
     -----------------------------------------------------------------------------------------------
@@ -196,16 +198,51 @@ begin
                 write(0, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena); -- Addr0 must be used because check always returns to zero
                 write(1, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                 if IsAsync_g then
-                    check(0, 5, Rd_Clk, Rd_Addr, Rd_Data, "No update with Rd_Ena = '1'");
+                    check(0, 5, Rd_Clk, Rd_Addr, Rd_Data, "NoRdEna: 0=5");
+                    check_equal(Rd_Valid, '1', "NoRdEna: Rd_Valid='1' with Rd_Ena='1'");
                     Rd_Ena <= '0';
-                    check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "Unexpected Update with Rd_Ena = '0'");
+                    check(1, 6, Rd_Clk, Rd_Addr, Rd_Data, "NoRdEna: 1=6 (data always updates)");
+                    check_equal(Rd_Valid, '0', "NoRdEna: Rd_Valid='0' with Rd_Ena='0'");
                 else
-                    check(0, 5, Clk, Rd_Addr, Rd_Data, "No update with Rd_Ena = '1'");
+                    check(0, 5, Clk, Rd_Addr, Rd_Data, "NoRdEna: 0=5");
+                    check_equal(Rd_Valid, '1', "NoRdEna: Rd_Valid='1' with Rd_Ena='1'");
                     Rd_Ena <= '0';
-                    check(1, 5, Clk, Rd_Addr, Rd_Data, "Unexpected Update with Rd_Ena = '0'");
+                    check(1, 6, Clk, Rd_Addr, Rd_Data, "NoRdEna: 1=6 (data always updates)");
+                    check_equal(Rd_Valid, '0', "NoRdEna: Rd_Valid='0' with Rd_Ena='0'");
                 end if;
             end if;
             Rd_Ena <= '1';
+
+            -- Check RdValid behavior
+            if run("RdValid") then
+                Wr_Be <= (others => '1');
+                write(5, 123, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                if IsAsync_g then
+                    check(5, 123, Rd_Clk, Rd_Addr, Rd_Data, "RdValid: data");
+                    check_equal(Rd_Valid, '1', "RdValid: should be asserted");
+                    Rd_Ena <= '0';
+                    wait until rising_edge(Rd_Clk);
+
+                    for i in 1 to RdLatency_g loop
+                        wait until rising_edge(Rd_Clk);
+                    end loop;
+
+                    check_equal(Rd_Valid, '0', "RdValid: should be deasserted");
+                    Rd_Ena <= '1';
+                else
+                    check(5, 123, Clk, Rd_Addr, Rd_Data, "RdValid: data");
+                    check_equal(Rd_Valid, '1', "RdValid: should be asserted");
+                    Rd_Ena <= '0';
+                    wait until rising_edge(Clk);
+
+                    for i in 1 to RdLatency_g loop
+                        wait until rising_edge(Clk);
+                    end loop;
+
+                    check_equal(Rd_Valid, '0', "RdValid: should be deasserted");
+                    Rd_Ena <= '1';
+                end if;
+            end if;
 
             -- check byte enables
             if run("ByteEnable") then
