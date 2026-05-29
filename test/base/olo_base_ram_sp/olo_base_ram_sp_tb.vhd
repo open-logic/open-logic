@@ -182,7 +182,7 @@ begin
                 check(2, 6, Clk, Addr, RdData, RdEna, RdValid, "3vrb: 2=6");
                 check(3, 7, Clk, Addr, RdData, RdEna, RdValid, "3vrb: 3=7");
                 check(1, 5, Clk, Addr, RdData, RdEna, RdValid, "3vrb: re-read 1=5");
-                check(2, 6, Clk, Addr, RdData, RdEna, RdValid, "read withour RdEna", '0');
+                check(2, 6, Clk, Addr, RdData, RdEna, RdValid, "read without RdEna", '0');
                 Be <= (others => '0');
             end if;
 
