@@ -351,9 +351,11 @@ package body olo_base_pkg_logic is
     function setBits (indexes : in IntegerArray_t; width : in positive) return std_logic_vector is
         variable Result_v : std_logic_vector(width - 1 downto 0) := (others => '0');
     begin
+
         for i in indexes'range loop
             Result_v(indexes(i)) := '1';
         end loop;
+
         return Result_v;
     end function;
 

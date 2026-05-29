@@ -337,6 +337,7 @@ begin
                 for i in 1 to RamRdLatency_g + EccPipeline_g + 2 loop
                     wait until rising_edge(Clk);
                 end loop;
+
                 check_equal(RdValid, '0', "Pre-pulse RdValid='0'");
 
                 -- One-cycle RdEna pulse
