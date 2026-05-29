@@ -91,7 +91,7 @@ required.
 For TDP RAM inference, not all tools do support read enable signals. Therefore in _olo_base_ram_tdp, in contrast
 to other RAM components, does read the RAM in every clock cycles, independently of the _A_RdEna_ / _B_RdEna_ signals.
 
-The _A_RdEna_ / _B_RdEna_ signals are only used to control the _A_RdValid_ / _B_RdValid_ signals. 
+The _A_RdEna_ / _B_RdEna_ signals are only used to control the _A_RdValid_ / _B_RdValid_ signals.
 
 The _A_RdEna_ / _B_RdEna_ signals only control the _A_RdValid_ / _B_RdValid_ signals. This means that if _A_RdEna_ is
 asserted, _A_RdValid_ is asserted after _RdLatency_g_ cycles, indicating that the data on _A_RdData_ is valid and can
