@@ -64,6 +64,12 @@ architecture rtl of olo_base_ram_sp is
     constant EntityName_c : string  := "olo_base_ram_sp";
     constant BeCount_c    : integer := Width_g / 8;
 
+    -- Read Valid pipeline
+    signal RdValidPipe : std_logic_vector(1 to RdLatency_g);
+
+    -- Synthesis attributes - Suppress shift register extraction
+    attribute shreg_extract of RdValidPipe : signal is ShregExtract_SuppressExtraction_c;
+
     -- components
     component olo_private_ram_sp_nobe is
         generic (
@@ -79,13 +85,10 @@ architecture rtl of olo_base_ram_sp is
         );
         port (
             Clk             : in    std_logic;
-            Rst             : in    std_logic := '0';
             Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
             WrEna           : in    std_logic := '1';
-            RdEna           : in    std_logic := '1';
             WrData          : in    std_logic_vector(Width_g - 1 downto 0);
-            RdData          : out   std_logic_vector(Width_g - 1 downto 0);
-            RdValid         : out   std_logic
+            RdData          : out   std_logic_vector(Width_g - 1 downto 0)
         );
     end component;
 
@@ -112,21 +115,16 @@ begin
             )
             port map (
                 Clk             => Clk,
-                Rst             => Rst,
                 Addr            => Addr,
                 WrEna           => WrEna,
                 WrData          => WrData,
-                RdEna           => RdEna,
-                RdData          => RdData,
-                RdValid         => RdValid
+                RdData          => RdData
             );
 
     end generate;
 
     -- BE Implementation
     g_be : if UseByteEnable_g generate
-        signal RdValid_Vec : std_logic_vector(0 to BeCount_c-1);
-    begin
 
         g_byte : for byte in 0 to BeCount_c-1 generate
             signal WrEna_Byte : std_logic;
@@ -147,21 +145,31 @@ begin
                 )
                 port map (
                     Clk             => Clk,
-                    Rst             => Rst,
                     Addr            => Addr,
                     WrEna           => WrEna_Byte,
                     WrData          => WrData(byte*8+7 downto byte*8),
-                    RdEna           => RdEna,
-                    RdData          => RdData(byte*8+7 downto byte*8),
-                    RdValid         => RdValid_Vec(byte)
+                    RdData          => RdData(byte*8+7 downto byte*8)
                 );
 
         end generate;
 
-        -- Read Valid output (every RAM is the same)
-        RdValid <= RdValid_Vec(0);
-
     end generate;
+
+    -- RdValid pipeline
+    p_rdvalid : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            RdValidPipe(1)                <= RdEna;
+            RdValidPipe(2 to RdLatency_g) <= RdValidPipe(1 to RdLatency_g-1);
+
+            -- Reset
+            if Rst = '1' then
+                RdValidPipe <= (others => '0');
+            end if;
+        end if;
+    end process;
+
+    RdValid <= RdValidPipe(RdLatency_g);
 
 end architecture;
 
@@ -194,13 +202,10 @@ entity olo_private_ram_sp_nobe is
     );
     port (
         Clk             : in    std_logic;
-        Rst             : in    std_logic := '0';
         Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
         WrEna           : in    std_logic := '1';
         WrData          : in    std_logic_vector(Width_g - 1 downto 0);
-        RdEna           : in    std_logic := '1';
-        RdData          : out   std_logic_vector(Width_g - 1 downto 0);
-        RdValid         : out   std_logic
+        RdData          : out   std_logic_vector(Width_g - 1 downto 0)
     );
 end entity;
 
@@ -256,13 +261,11 @@ architecture rtl of olo_private_ram_sp_nobe is
     -- Memory array
     shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := getInitContent;
 
-    -- Read registers
-    signal RdPipe      : Data_t(1 to RdLatency_g);
-    signal RdValidPipe : std_logic_vector(1 to RdLatency_g);
+    -- Read data pipeline
+    signal RdPipe : Data_t(1 to RdLatency_g);
 
     -- Synthesis attributes - Suppress shift register extraction
-    attribute shreg_extract of RdPipe      : signal is ShregExtract_SuppressExtraction_c;
-    attribute shreg_extract of RdValidPipe : signal is ShregExtract_SuppressExtraction_c;
+    attribute shreg_extract of RdPipe : signal is ShregExtract_SuppressExtraction_c;
 
     -- Synthesis attributes - RAM style
     attribute ram_style of Mem_v    : variable is RamStyle_g;
@@ -271,7 +274,7 @@ architecture rtl of olo_private_ram_sp_nobe is
 
 begin
 
-    -- Assertionsa
+    -- Assertions
     assert compareNoCase(InitFormat_g, "NONE") or compareNoCase(InitFormat_g, "HEX")
         report errorMessage(EntityName_c, "InitFormat_g must be NONE or HEX. Got: " & InitFormat_g)
         severity error;
@@ -295,21 +298,10 @@ begin
 
             -- Read-data pipeline registers
             RdPipe(2 to RdLatency_g) <= RdPipe(1 to RdLatency_g-1);
-
-            -- RdValid pipeline registers
-            RdValidPipe(1)                <= RdEna;
-            RdValidPipe(2 to RdLatency_g) <= RdValidPipe(1 to RdLatency_g-1);
-
-            -- Reset
-            if Rst = '1' then
-                RdValidPipe <= (others => '0');
-            end if;
         end if;
     end process;
 
     -- Output
-    RdData  <= RdPipe(RdLatency_g);
-    RdValid <= RdValidPipe(RdLatency_g);
+    RdData <= RdPipe(RdLatency_g);
 
 end architecture;
-
