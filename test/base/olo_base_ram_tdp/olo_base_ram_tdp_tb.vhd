@@ -400,7 +400,7 @@ begin
                 check(5, 23, B_Clk, B_RdEna, B_Addr, B_RdData, "RdValid-B: data");
                 check_equal(B_RdValid, '1', "RdValid-B: should be asserted");
 
-                A_RdEna <= '0';
+                B_RdEna <= '0';
                 wait until rising_edge(B_Clk);
 
                 for i in 1 to RdLatency_g loop

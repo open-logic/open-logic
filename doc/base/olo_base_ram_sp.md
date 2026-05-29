@@ -67,7 +67,7 @@ required.
 
 ## RdEna and RdValid
 
-TThe RAM is read and _RdData_ is updated only when _RdEna_ signal is asserted.
+The RAM is read and _RdData_ is updated only when _RdEna_ signal is asserted.
 
 Besides controlling RAM read operations, the _RdEna_ signal controls the _RdValid_ signal. This means that if _RdEna_
 is asserted, _RdValid_ is asserted after _RdLatency_g_ cycles, indicating that the data on _RdData_ is valid and can be
