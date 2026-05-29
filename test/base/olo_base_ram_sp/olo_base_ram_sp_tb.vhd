@@ -72,13 +72,12 @@ architecture sim of olo_base_ram_sp_tb is
         signal RdData  : in std_logic_vector;
         signal RdEna   : out std_logic;
         signal RdValid : in std_logic;
-        message        : string;
-        rd_ena         : std_logic := '1') is
+        message        : string) is
     begin
         RdEna <= '0';
         wait until rising_edge(Clk);
         Addr  <= toUslv(address, Addr'length);
-        RdEna <= rd_ena;
+        RdEna <= '1';
         check_equal(RdValid, '0', message & " - RdValid high unexpected - A");
         wait until rising_edge(Clk); -- Address sampled
         RdEna <= '0';
@@ -86,11 +85,12 @@ architecture sim of olo_base_ram_sp_tb is
 
         -- Wait for read data to arrive
         for i in 1 to RdLatency_g loop
+            check_equal(RdValid, '0', message & " - RdValid high unexpected - B");
             wait until falling_edge(Clk);
         end loop;
 
         check_equal(RdData, toUslv(data, RdData'length), message);
-        check_equal(RdValid, rd_ena, message & " - RdValid not as expected");
+        check_equal(RdValid, '1', message & " - RdValid not as expected");
 
         wait until rising_edge(Clk);
     end procedure;
@@ -166,7 +166,6 @@ begin
                     check(0, 1, Clk, Addr, RdData, RdEna, RdValid, "Init-Values: 0=0x01");
                     check(1, 5, Clk, Addr, RdData, RdEna, RdValid, "Init-Values: 1=0x05");
                     check(2, 16#17#, Clk, Addr, RdData, RdEna, RdValid, "Init-Values: 2=0x17");
-                    check(0, 1, Clk, Addr, RdData, RdEna, RdValid, "Read without RdEna", '0');
                 end if;
             end if;
 
@@ -182,7 +181,12 @@ begin
                 check(2, 6, Clk, Addr, RdData, RdEna, RdValid, "3vrb: 2=6");
                 check(3, 7, Clk, Addr, RdData, RdEna, RdValid, "3vrb: 3=7");
                 check(1, 5, Clk, Addr, RdData, RdEna, RdValid, "3vrb: re-read 1=5");
-                check(2, 6, Clk, Addr, RdData, RdEna, RdValid, "read without RdEna", '0');
+                -- check if output is held stable when RdEna is deasserted
+                RdEna <= '0';
+                Addr <= toUslv(3, Addr'length);
+                wait for 10*ClkPeriod_c;
+                check_equal(RdData, toUslv(5, RdData'length));
+                -- cleanup
                 Be <= (others => '0');
             end if;
 

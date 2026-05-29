@@ -242,16 +242,16 @@ begin
                 write(1, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
                 if IsAsync_g then
                     check(0, 5, Rd_Clk, Rd_Addr, Rd_Data, "NoRdEna: 0=5");
-                    check_equal(Rd_Valid, '1', "NoRdEna: Rd_Valid='1' with Rd_Ena='1'");
                     Rd_Ena <= '0';
-                    check(1, 6, Rd_Clk, Rd_Addr, Rd_Data, "NoRdEna: 1=6 (data always updates)");
-                    check_equal(Rd_Valid, '0', "NoRdEna: Rd_Valid='0' with Rd_Ena='0'");
+                    Rd_Addr <= toUslv(1, Rd_Addr'length);
+                    wait for 10*RdClkPeriod_c;
+                    check_equal(Rd_Data, toUslv(5, Rd_Data'length), "NoRdEna: Rd_Data updated unexpectedly");
                 else
                     check(0, 5, Clk, Rd_Addr, Rd_Data, "NoRdEna: 0=5");
-                    check_equal(Rd_Valid, '1', "NoRdEna: Rd_Valid='1' with Rd_Ena='1'");
                     Rd_Ena <= '0';
-                    check(1, 6, Clk, Rd_Addr, Rd_Data, "NoRdEna: 1=6 (data always updates)");
-                    check_equal(Rd_Valid, '0', "NoRdEna: Rd_Valid='0' with Rd_Ena='0'");
+                    Rd_Addr <= toUslv(1, Rd_Addr'length);
+                    wait for 10*ClkPeriod_c;
+                    check_equal(Rd_Data, toUslv(5, Rd_Data'length), "NoRdEna: Rd_Data updated unexpectedly");
                 end if;
             end if;
             Rd_Ena <= '1';

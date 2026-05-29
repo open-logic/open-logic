@@ -51,7 +51,7 @@ verify correct mappping by a quick test-synthesis with the target toolchain.
 | Rd_Clk  | in     | 1                     | '0'     | Read-clock - Only used if _IsAsync_g_=true, otherwise _Clk_ is used for the read-port. |
 | Rd_Rst  | in     | 1                     | '0'     | Read-reset synchronous to _Rd_Clk_ - Only used if _IsAsync_g_=true<br>Optional, only resets internal state of _Rd_Valid_<br>Does **NOT** reset the content of memory cells! |
 | Rd_Addr | in     | _ceil(log2(Depth_g))_ | -       | Read address                                                 |
-| Rd_Ena  | in     | 1                     | '1'     | Read enable. When asserted, _Rd_Valid_ is asserted after _RdLatency_g_ cycles. |
+| Rd_Ena  | in     | 1                     | '1'     | Read enable. When asserted, _Rd_Data_ is updated and _Rd_Valid_ is asserted after _RdLatency_g_ cycles.<br>Synchronous to _Clk_ if _IsAsync_g_=false, otherwise synchronous to _Rd_Clk_ |
 | Rd_Data | out    | _Width_g_             | N/A     | Read data                                                    |
 | Rd_Valid | out   | 1                     | N/A     | Read valid. Asserted _RdLatency_g_ cycles after _Rd_Ena_ was asserted. <br>Synchronous to _Clk_ if _IsAsync_g_=false, otherwise synchronous to _Rd_Clk_ |
 
@@ -77,14 +77,11 @@ required.
 
 ## Rd_Ena and Rd_Valid
 
-The RAM is read and _Rd_Data_ is updated accordingly every clock cycle, independently of the _Rd_Ena_ signal.
+The RAM is read and _Rd_Data_ is updated only when _Rd_Ena_ signal is asserted.
 
 The _Rd_Ena_ signal only controls the _Rd_Valid_ signal. This means that if _Rd_Ena_ is asserted, _Rd_Valid_ is
 asserted after _RdLatency_g_ cycles, indicating that the data on _Rd_Data_ is valid and can be used. This is very
 useful in pipelined design, especially with configurable _RdLatency_g_ values because it allows to design logic around
 independently of the RAM read latency.
-
-The fact that _Rd_Ena_ and _Rd_Valid_ are used for delay compensation reasons only but independent of the actual RAM
-read process is depicted by below timing diagram:
 
 ![RdValidTiming](./ram/RdValid_SDP.png)

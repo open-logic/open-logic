@@ -100,11 +100,13 @@ architecture rtl of olo_base_ram_tdp is
             A_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
             A_WrEna   : in    std_logic                                  := '0';
             A_WrData  : in    std_logic_vector(Width_g - 1 downto 0)     := (others => '0');
+            A_RdEna   : in    std_logic                                  := '1';
             A_RdData  : out   std_logic_vector(Width_g - 1 downto 0);
             B_Clk     : in    std_logic;
             B_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
             B_WrEna   : in    std_logic                                  := '0';
             B_WrData  : in    std_logic_vector(Width_g - 1 downto 0)     := (others => '0');
+            B_RdEna   : in    std_logic                                  := '1';
             B_RdData  : out   std_logic_vector(Width_g - 1 downto 0)
         );
     end component;
@@ -135,11 +137,13 @@ begin
                 A_Addr    => A_Addr,
                 A_WrEna   => A_WrEna,
                 A_WrData  => A_WrData,
+                A_RdEna   => A_RdEna,
                 A_RdData  => A_RdData,
                 B_Clk     => B_Clk,
                 B_Addr    => B_Addr,
                 B_WrEna   => B_WrEna,
                 B_WrData  => B_WrData,
+                B_RdEna   => B_RdEna,
                 B_RdData  => B_RdData
             );
 
@@ -172,11 +176,13 @@ begin
                     A_Addr    => A_Addr,
                     A_WrEna   => A_WrEna_Byte,
                     A_WrData  => A_WrData(8*(byte+1)-1 downto 8*byte),
+                    A_RdEna   => A_RdEna,
                     A_RdData  => A_RdData(8*(byte+1)-1 downto 8*byte),
                     B_Clk     => B_Clk,
                     B_Addr    => B_Addr,
                     B_WrEna   => B_WrEna_Byte,
                     B_WrData  => B_WrData(8*(byte+1)-1 downto 8*byte),
+                    B_RdEna   => B_RdEna,
                     B_RdData  => B_RdData(8*(byte+1)-1 downto 8*byte)
                 );
 
@@ -250,11 +256,13 @@ entity olo_private_ram_tdp_nobe is
         A_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         A_WrEna   : in    std_logic                              := '0';
         A_WrData  : in    std_logic_vector(Width_g - 1 downto 0) := (others => '0');
+        A_RdEna   : in    std_logic                              := '1';
         A_RdData  : out   std_logic_vector(Width_g - 1 downto 0);
         B_Clk     : in    std_logic;
         B_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         B_WrEna   : in    std_logic                              := '0';
         B_WrData  : in    std_logic_vector(Width_g - 1 downto 0) := (others => '0');
+        B_RdEna   : in    std_logic                              := '1';
         B_RdData  : out   std_logic_vector(Width_g - 1 downto 0)
     );
 end entity;
@@ -344,7 +352,9 @@ begin
                 if A_WrEna = '1' then
                     Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
                 end if;
-                RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
+                if A_RdEna = '1' then
+                    RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
+                end if;
 
                 -- Read-data pipeline registers
                 RdPipeA(2 to RdLatency_g) <= RdPipeA(1 to RdLatency_g-1);
@@ -359,7 +369,9 @@ begin
                 if B_WrEna = '1' then
                     Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
                 end if;
-                RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
+                if B_RdEna = '1' then
+                    RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
+                end if;
 
                 -- Read-data pipeline registers
                 RdPipeB(2 to RdLatency_g) <= RdPipeB(1 to RdLatency_g-1);
@@ -375,7 +387,9 @@ begin
         begin
             if rising_edge(A_Clk) then
                 -- RAM
-                RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
+                if A_RdEna = '1' then
+                    RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
+                end if;
                 if A_WrEna = '1' then
                     Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
                 end if;
@@ -390,7 +404,9 @@ begin
         begin
             if rising_edge(B_Clk) then
                 -- RAM
-                RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
+                if B_RdEna = '1' then
+                    RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
+                end if;
                 if B_WrEna = '1' then
                     Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
                 end if;

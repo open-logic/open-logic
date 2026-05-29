@@ -94,6 +94,7 @@ architecture rtl of olo_base_ram_sdp is
             Wr_Ena      : in    std_logic                                  := '1';
             Wr_Data     : in    std_logic_vector(Width_g - 1 downto 0);
             Rd_Clk      : in    std_logic                                  := '0';
+            Rd_Ena      : in    std_logic                                  := '1';
             Rd_Addr     : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
             Rd_Data     : out   std_logic_vector(Width_g - 1 downto 0)
         );
@@ -127,6 +128,7 @@ begin
                 Wr_Ena      => Wr_Ena,
                 Wr_Data     => Wr_Data,
                 Rd_Clk      => Rd_Clk,
+                Rd_Ena      => Rd_Ena,
                 Rd_Addr     => Rd_Addr,
                 Rd_Data     => Rd_Data
             );
@@ -161,6 +163,7 @@ begin
                     Wr_Data     => Wr_Data(byte*8+7 downto byte*8),
                     Rd_Clk      => Rd_Clk,
                     Rd_Addr     => Rd_Addr,
+                    Rd_Ena      => Rd_Ena,
                     Rd_Data     => Rd_Data(byte*8+7 downto byte*8)
                 );
 
@@ -242,6 +245,7 @@ entity olo_private_ram_sdp_nobe is
         Wr_Ena      : in    std_logic := '1';
         Wr_Data     : in    std_logic_vector(Width_g - 1 downto 0);
         Rd_Clk      : in    std_logic := '0';
+        Rd_Ena      : in    std_logic := '1';
         Rd_Addr     : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         Rd_Data     : out   std_logic_vector(Width_g - 1 downto 0)
     );
@@ -327,13 +331,17 @@ begin
         begin
             if rising_edge(Clk) then
                 if compareNoCase(RamBehavior_g, "RBW") then
-                    RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
+                    if Rd_Ena = '1' then
+                        RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
+                    end if;
                 end if;
                 if Wr_Ena = '1' then
                     Mem_v(to_integer(unsigned(Wr_Addr))) := Wr_Data;
                 end if;
                 if not compareNoCase(RamBehavior_g, "RBW") then
-                    RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
+                    if Rd_Ena = '1' then
+                        RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
+                    end if;
                 end if;
 
                 -- Read-data pipeline registers
@@ -360,7 +368,9 @@ begin
         p_read : process (Rd_Clk) is
         begin
             if rising_edge(Rd_Clk) then
-                RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
+                if Rd_Ena = '1' then
+                    RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
+                end if;
 
                 -- Read-data pipeline registers
                 RdPipe(2 to RdLatency_g) <= RdPipe(1 to RdLatency_g-1);

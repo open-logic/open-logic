@@ -41,7 +41,7 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 | Be     | in     | _Width_g/8_           | All '1' | Byte-enables<br>Ignored if _UseByteEnable_g_ = false         |
 | WrEna  | in     | 1                     | '1'     | Write enable. The memory cell at _Addr_ is written only if _WrEna_='1'. |
 | WrData | in     | _Width_g_             | -       | Write data                                                   |
-| RdEna  | in     | 1                     | '1'     | Read enable - Optional signal <br> see [RdEna and RdValid](#rdena-and-rdvalid) |
+| RdEna  | in     | 1                     | '1'     | Read enable. When asserted, _RdData_ is updated and _RdValid_ is asserted after _RdLatency_g_ cycles.|
 | RdData | out    | _Width_g_             | N/A     | Read data                                                    |
 | RdValid | out   | 1                     | N/A     | Read valid. <br>Asserted _RdLatency_g_ cycles after _RdEna_ was asserted. |
 
@@ -67,14 +67,11 @@ required.
 
 ## RdEna and RdValid
 
-The RAM is read and _RdData_ is updated accordingly every clock cycle, independently of the _RdEna_ signal.
+TThe RAM is read and _RdData_ is updated only when _RdEna_ signal is asserted.
 
 The _RdEna_ signal only controls the _RdValid_ signal. This means that if _RdEna_ is asserted, _RdValid_ is asserted
 after _RdLatency_g_ cycles, indicating that the data on _RdData_ is valid and can be used. This is very useful in
 pipelined design, especially with configurable _RdLatency_g_ values because it allows to design logic around
 independently of the RAM read latency.
-
-The fact that _RdEna_ and _RdValid_ are used for delay compensation reasons only but independent of the actual RAM
-read process is depicted by below timing diagram:
 
 ![RdValidTiming](./ram/RdValid_SP.png)

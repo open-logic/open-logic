@@ -69,14 +69,17 @@ architecture sim of olo_base_ram_tdp_tb is
         address       : natural;
         data          : natural;
         signal Clk    : in std_logic;
+        signal RdEna  : out std_logic;
         signal Addr   : out std_logic_vector;
         signal RdData : in std_logic_vector;
         message       : string) is
     begin
         wait until rising_edge(Clk);
-        Addr <= toUslv(address, Addr'length);
+        RdEna <= '1';
+        Addr  <= toUslv(address, Addr'length);
         wait until rising_edge(Clk); -- Address sampled
-        Addr <= toUslv(0, Addr'length);
+        RdEna <= '0';
+        Addr  <= toUslv(0, Addr'length);
 
         -- Wait for read data to arrive
         for i in 1 to RdLatency_g loop
@@ -93,7 +96,8 @@ architecture sim of olo_base_ram_tdp_tb is
         signal Wr_Ena  : out std_logic;
         signal Wr_Be   : out std_logic_vector;
         signal Rd_Clk  : in std_logic;
-        signal Rd_Addr : out std_logic_vector;
+        signal Rd_Ena  : out std_logic;
+        signal Rd_Addr : out std_logic_vector;        
         signal Rd_Data : in std_logic_vector) is
     begin
         if UseByteEnable_g then
@@ -102,10 +106,10 @@ architecture sim of olo_base_ram_tdp_tb is
         write(1, 5, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
         write(2, 6, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
         write(3, 7, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
-        check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 1=5");
-        check(2, 6, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 2=6");
-        check(3, 7, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: 3=7");
-        check(1, 5, Rd_Clk, Rd_Addr, Rd_Data, "3vrb: re-read 1=5");
+        check(1, 5, Rd_Clk, Rd_Ena, Rd_Addr, Rd_Data, "3vrb: 1=5");
+        check(2, 6, Rd_Clk, Rd_Ena, Rd_Addr, Rd_Data, "3vrb: 2=6");
+        check(3, 7, Rd_Clk, Rd_Ena, Rd_Addr, Rd_Data, "3vrb: 3=7");
+        check(1, 5, Rd_Clk, Rd_Ena, Rd_Addr, Rd_Data, "3vrb: re-read 1=5");
         Wr_Be <= toSslv(0, Wr_Be'length);
     end procedure;
 
@@ -115,8 +119,10 @@ architecture sim of olo_base_ram_tdp_tb is
         signal Wr_Data   : out std_logic_vector;
         signal Wr_Ena    : out std_logic;
         signal Wr_Be     : out std_logic_vector;
+        signal Wr_RdEna  : out std_logic;
         signal Wr_RdData : in std_logic_vector;
         signal Rd_Clk    : in std_logic;
+        signal Rd_Ena    : out std_logic;
         signal Rd_Addr   : out std_logic_vector;
         signal Rd_Data   : in std_logic_vector) is
     begin
@@ -128,15 +134,15 @@ architecture sim of olo_base_ram_tdp_tb is
             Wr_Be    <= toSslv(0, Wr_Be'length);
             Wr_Be(0) <= '1';
             write(1, 16#ABCD#, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
-            check(1, 16#00CD#, Wr_Clk, Wr_Addr, Wr_RdData, "BE[0]-A");
-            check(1, 16#00CD#, Rd_Clk, Rd_Addr, Rd_Data, "BE[0]-B");
+            check(1, 16#00CD#, Wr_Clk, Wr_RdEna, Wr_Addr, Wr_RdData, "BE[0]-A");
+            check(1, 16#00CD#, Rd_Clk, Rd_Ena,Rd_Addr, Rd_Data, "BE[0]-B");
 
             -- Byte 1 test
             Wr_Be    <= toSslv(0, Wr_Be'length);
             Wr_Be(1) <= '1';
             write(1, 16#1234#, Wr_Clk, Wr_Addr, Wr_Data, Wr_Ena);
-            check(1, 16#12CD#, Wr_Clk, Wr_Addr, Wr_RdData, "BE[0]-A");
-            check(1, 16#12CD#, Rd_Clk, Rd_Addr, Rd_Data, "BE[0]-B");
+            check(1, 16#12CD#, Wr_Clk, Wr_RdEna, Wr_Addr, Wr_RdData, "BE[0]-A");
+            check(1, 16#12CD#, Rd_Clk, Rd_Ena, Rd_Addr, Rd_Data, "BE[0]-B");
 
         end if;
     end procedure;
@@ -147,6 +153,7 @@ architecture sim of olo_base_ram_tdp_tb is
         signal WrData : out std_logic_vector;
         signal WrEna  : out std_logic;
         signal Be     : out std_logic_vector;
+        signal RdEna  : out std_logic;
         signal RdData : in std_logic_vector) is
     begin
 
@@ -157,6 +164,7 @@ architecture sim of olo_base_ram_tdp_tb is
         write(3, 7, Clk, Addr, WrData, WrEna);
         wait until rising_edge(Clk);
         WrEna  <= '1';
+        RdEna  <= '1';
         Addr   <= toUslv(1, Addr'length);
         WrData <= toUslv(1, WrData'length);
         wait until rising_edge(Clk);
@@ -206,9 +214,10 @@ architecture sim of olo_base_ram_tdp_tb is
         WrData <= toUslv(5, WrData'length);
         wait until rising_edge(Clk);
         WrEna  <= '0';
-        check(1, 1, Clk, Addr, RdData, "rw: 1=1");
-        check(2, 2, Clk, Addr, RdData, "rw: 2=2");
-        check(3, 3, Clk, Addr, RdData, "rw: 3=3");
+        RdEna  <= '0';
+        check(1, 1, Clk, RdEna, Addr, RdData, "rw: 1=1");
+        check(2, 2, Clk, RdEna, Addr, RdData, "rw: 2=2");
+        check(3, 3, Clk, RdEna,Addr, RdData, "rw: 3=3");
     end procedure;
 
     -----------------------------------------------------------------------------------------------
@@ -330,49 +339,55 @@ begin
             -- test initialization values
             elsif run("Init-Values") then
                 if InitFormat_g = "HEX" then
-                    check(0, 1, A_Clk, A_Addr, A_RdData, "Init-Values: 0=0x01");
-                    check(1, 5, A_Clk, A_Addr, A_RdData, "Init-Values: 1=0x05");
-                    check(2, 16#17#, A_Clk, A_Addr, A_RdData, "Init-Values: 2=0x17");
+                    check(0, 1, A_Clk, A_RdEna, A_Addr, A_RdData, "Init-Values: 0=0x01");
+                    check(1, 5, A_Clk, A_RdEna, A_Addr, A_RdData, "Init-Values: 1=0x05");
+                    check(2, 16#17#, A_Clk, A_RdEna, A_Addr, A_RdData, "Init-Values: 2=0x17");
                 end if;
 
             -- write A, Read A
-            elsif run("BasicA-A") then
-                basicCheck(A_Clk, A_Addr, A_WrData, A_WrEna, A_Be, A_Clk, A_Addr, A_RdData);
+                elsif run("BasicA-A") then
+                    basicCheck(A_Clk, A_Addr, A_WrData, A_WrEna, A_Be, A_Clk, A_RdEna, A_Addr, A_RdData);
 
             -- write B, Read B
             elsif run("BasicB-B") then
-                basicCheck(B_Clk, B_Addr, B_WrData, B_WrEna, B_Be, B_Clk, B_Addr, B_RdData);
+                basicCheck(B_Clk, B_Addr, B_WrData, B_WrEna, B_Be, B_Clk, B_RdEna, B_Addr, B_RdData);
 
             -- write A, Read B
             elsif run("BasicA-B") then
-                basicCheck(A_Clk, A_Addr, A_WrData, A_WrEna, A_Be, B_Clk, B_Addr, B_RdData);
+                basicCheck(A_Clk, A_Addr, A_WrData, A_WrEna, A_Be, B_Clk, B_RdEna, B_Addr, B_RdData);
 
             -- write B, Read B
             elsif run("BasicB-A") then
-                basicCheck(B_Clk, B_Addr, B_WrData, B_WrEna, A_Be, B_Clk, B_Addr, B_RdData);
+                basicCheck(B_Clk, B_Addr, B_WrData, B_WrEna, A_Be, B_Clk, B_RdEna, B_Addr, B_RdData);
 
             -- check byte enables
             elsif run("ByteEnable-A") then
-                byteEnableCheck(A_Clk, A_Addr, A_WrData, A_WrEna, A_Be, A_RdData, B_Clk, B_Addr, B_RdData);
+                byteEnableCheck(A_Clk, A_Addr, A_WrData, A_WrEna, A_Be, A_RdEna, A_RdData, B_Clk, B_RdEna, B_Addr, B_RdData);
 
             -- check byte enables
             elsif run("ByteEnable-B") then
-                byteEnableCheck(B_Clk, B_Addr, B_WrData, B_WrEna, B_Be, B_RdData, A_Clk, A_Addr, A_RdData);
+                byteEnableCheck(B_Clk, B_Addr, B_WrData, B_WrEna, B_Be, B_RdEna, B_RdData, A_Clk, A_RdEna, A_Addr, A_RdData);
 
             -- Read while write
             elsif run("readDuringWrite-A") then
-                readDuringWrite(A_Clk, A_Addr, A_WrData, A_WrEna, A_Be, A_RdData);
+                readDuringWrite(A_Clk, A_Addr, A_WrData, A_WrEna, A_Be, A_RdEna,A_RdData);
 
             -- Read while write
             elsif run("readDuringWrite-B") then
-                readDuringWrite(B_Clk, B_Addr, B_WrData, B_WrEna, B_Be, B_RdData);
+                readDuringWrite(B_Clk, B_Addr, B_WrData, B_WrEna, B_Be, B_RdEna,B_RdData);
 
             -- Check RdValid behavior - Port A
             elsif run("RdValid-A") then
-                write(5, 123, A_Clk, A_Addr, A_WrData, A_WrEna);
-                check(5, 123, A_Clk, A_Addr, A_RdData, "RdValid-A: data");
+                write(5, 23, A_Clk, A_Addr, A_WrData, A_WrEna);
+                wait for 1 us;
+                wait until rising_edge(A_Clk);
+                check(5, 23, A_Clk, A_RdEna, A_Addr, A_RdData, "RdValid-A: data");
                 check_equal(A_RdValid, '1', "RdValid-A: should be asserted");
+
+                -- Output should not be updated if RdEna is deasserted
                 A_RdEna <= '0';
+                A_Addr <= toUslv(0, A_Addr'length);
+
                 wait until rising_edge(A_Clk);
 
                 for i in 1 to RdLatency_g loop
@@ -380,14 +395,19 @@ begin
                 end loop;
 
                 check_equal(A_RdValid, '0', "RdValid-A: should be deasserted");
+                check_equal(A_RdData, 23, "RdValid-A: RdData should not update when RdEna='0'");
                 A_RdEna <= '1';
 
             -- Check RdValid behavior - Port B
             elsif run("RdValid-B") then
-                write(5, 123, B_Clk, B_Addr, B_WrData, B_WrEna);
-                check(5, 123, B_Clk, B_Addr, B_RdData, "RdValid-B: data");
+                write(5, 23, B_Clk, B_Addr, B_WrData, B_WrEna);
+                check(5, 23, B_Clk, B_RdEna, B_Addr, B_RdData, "RdValid-B: data");
                 check_equal(B_RdValid, '1', "RdValid-B: should be asserted");
+
+                -- Output should not be updated if RdEna is deasserted
                 B_RdEna <= '0';
+                B_Addr <= toUslv(0, B_Addr'length);
+                
                 wait until rising_edge(B_Clk);
 
                 for i in 1 to RdLatency_g loop
@@ -395,6 +415,7 @@ begin
                 end loop;
 
                 check_equal(B_RdValid, '0', "RdValid-B: should be deasserted");
+                check_equal(B_RdData, 23, "RdValid-B: RdData should not update when RdEna='0'");
                 B_RdEna <= '1';
 
             end if;

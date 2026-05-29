@@ -88,6 +88,7 @@ architecture rtl of olo_base_ram_sp is
             Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
             WrEna           : in    std_logic := '1';
             WrData          : in    std_logic_vector(Width_g - 1 downto 0);
+            RdEna           : in    std_logic := '1';
             RdData          : out   std_logic_vector(Width_g - 1 downto 0)
         );
     end component;
@@ -118,6 +119,7 @@ begin
                 Addr            => Addr,
                 WrEna           => WrEna,
                 WrData          => WrData,
+                RdEna           => RdEna,
                 RdData          => RdData
             );
 
@@ -148,6 +150,7 @@ begin
                     Addr            => Addr,
                     WrEna           => WrEna_Byte,
                     WrData          => WrData(byte*8+7 downto byte*8),
+                    RdEna           => RdEna,
                     RdData          => RdData(byte*8+7 downto byte*8)
                 );
 
@@ -205,6 +208,7 @@ entity olo_private_ram_sp_nobe is
         Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
         WrEna           : in    std_logic := '1';
         WrData          : in    std_logic_vector(Width_g - 1 downto 0);
+        RdEna           : in    std_logic := '1';
         RdData          : out   std_logic_vector(Width_g - 1 downto 0)
     );
 end entity;
@@ -287,13 +291,17 @@ begin
     begin
         if rising_edge(Clk) then
             if compareNoCase(RamBehavior_g, "RBW") then
-                RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
+                if RdEna = '1' then
+                    RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
+                end if;
             end if;
             if WrEna = '1' then
                 Mem_v(to_integer(unsigned(Addr))) := WrData;
             end if;
             if not compareNoCase(RamBehavior_g, "RBW") then
-                RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
+                if RdEna = '1' then
+                    RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
+                end if;
             end if;
 
             -- Read-data pipeline registers
