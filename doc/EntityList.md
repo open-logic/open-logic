@@ -276,7 +276,7 @@ be used. For deciding which option to use, the following considerations shall be
 
 ## ft
 
-This area contains fault-tolerant entities for use in radiation-sensitive environments (e.g. space or avionics). 
+This area contains fault-tolerant entities for use in radiation-sensitive environments (e.g. space or avionics).
 All RAM entities use SECDED (Single Error Correction, Double Error Detection).
 
 The cross-cutting concepts (codeword layout, ECC overhead, error injection semantics, status flags, ECC pipeline,
