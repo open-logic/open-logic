@@ -88,7 +88,10 @@ required.
 
 ## RdEna and RdValid
 
-The RAM is read and _A_RdData_ / _B_RdData_ are updated only when the _A_RdEna_ / _B_RdEna_ signals are asserted.
+For TDP RAM inference, not all tools do support read enable signals. Therefore in _olo_base_ram_tdp, in contrast
+to other RAM components, does read the RAM in every clock cycles, independently of the _A_RdEna_ / _B_RdEna_ signals.
+
+The _A_RdEna_ / _B_RdEna_ signals are only used to control the _A_RdValid_ / _B_RdValid_ signals. 
 
 The _A_RdEna_ / _B_RdEna_ signals only control the _A_RdValid_ / _B_RdValid_ signals. This means that if _A_RdEna_ is
 asserted, _A_RdValid_ is asserted after _RdLatency_g_ cycles, indicating that the data on _A_RdData_ is valid and can
@@ -96,3 +99,5 @@ be used. This is very useful in pipelined design, especially with configurable _
 to design logic around independently of the RAM read latency.
 
 ![RdValidTiming](./ram/RdValid_TDP.png)
+
+Note that the read data is updated even if A_RdEna_ is de-asserted.

@@ -69,9 +69,9 @@ required.
 
 TThe RAM is read and _RdData_ is updated only when _RdEna_ signal is asserted.
 
-The _RdEna_ signal only controls the _RdValid_ signal. This means that if _RdEna_ is asserted, _RdValid_ is asserted
-after _RdLatency_g_ cycles, indicating that the data on _RdData_ is valid and can be used. This is very useful in
-pipelined design, especially with configurable _RdLatency_g_ values because it allows to design logic around
-independently of the RAM read latency.
+Besides controlling RAM read operations, the _RdEna_ signal controls the _RdValid_ signal. This means that if _RdEna_
+is asserted, _RdValid_ is asserted after _RdLatency_g_ cycles, indicating that the data on _RdData_ is valid and can be
+used. This is very useful in pipelined design, especially with configurable _RdLatency_g_ values because it allows to
+design logic around independently of the RAM read latency.
 
 ![RdValidTiming](./ram/RdValid_SP.png)

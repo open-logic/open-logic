@@ -352,9 +352,7 @@ begin
                 if A_WrEna = '1' then
                     Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
                 end if;
-                if A_RdEna = '1' then
-                    RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
-                end if;
+                RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
 
                 -- Read-data pipeline registers
                 RdPipeA(2 to RdLatency_g) <= RdPipeA(1 to RdLatency_g-1);
@@ -369,9 +367,7 @@ begin
                 if B_WrEna = '1' then
                     Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
                 end if;
-                if B_RdEna = '1' then
-                    RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
-                end if;
+                RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
 
                 -- Read-data pipeline registers
                 RdPipeB(2 to RdLatency_g) <= RdPipeB(1 to RdLatency_g-1);
@@ -387,9 +383,7 @@ begin
         begin
             if rising_edge(A_Clk) then
                 -- RAM
-                if A_RdEna = '1' then
-                    RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
-                end if;
+                RdPipeA(1) <= Mem_v(to_integer(unsigned(A_Addr)));
                 if A_WrEna = '1' then
                     Mem_v(to_integer(unsigned(A_Addr))) := A_WrData;
                 end if;
@@ -404,9 +398,7 @@ begin
         begin
             if rising_edge(B_Clk) then
                 -- RAM
-                if B_RdEna = '1' then
-                    RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
-                end if;
+                RdPipeB(1) <= Mem_v(to_integer(unsigned(B_Addr)));
                 if B_WrEna = '1' then
                     Mem_v(to_integer(unsigned(B_Addr))) := B_WrData;
                 end if;
