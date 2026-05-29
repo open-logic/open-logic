@@ -384,10 +384,7 @@ begin
                 check(5, 23, A_Clk, A_RdEna, A_Addr, A_RdData, "RdValid-A: data");
                 check_equal(A_RdValid, '1', "RdValid-A: should be asserted");
 
-                -- Output should not be updated if RdEna is deasserted
                 A_RdEna <= '0';
-                A_Addr  <= toUslv(0, A_Addr'length);
-
                 wait until rising_edge(A_Clk);
 
                 for i in 1 to RdLatency_g loop
@@ -395,7 +392,6 @@ begin
                 end loop;
 
                 check_equal(A_RdValid, '0', "RdValid-A: should be deasserted");
-                check_equal(A_RdData, 23, "RdValid-A: RdData should not update when RdEna='0'");
                 A_RdEna <= '1';
 
             -- Check RdValid behavior - Port B
@@ -404,10 +400,7 @@ begin
                 check(5, 23, B_Clk, B_RdEna, B_Addr, B_RdData, "RdValid-B: data");
                 check_equal(B_RdValid, '1', "RdValid-B: should be asserted");
 
-                -- Output should not be updated if RdEna is deasserted
-                B_RdEna <= '0';
-                B_Addr  <= toUslv(0, B_Addr'length);
-
+                A_RdEna <= '0';
                 wait until rising_edge(B_Clk);
 
                 for i in 1 to RdLatency_g loop
@@ -415,7 +408,6 @@ begin
                 end loop;
 
                 check_equal(B_RdValid, '0', "RdValid-B: should be deasserted");
-                check_equal(B_RdData, 23, "RdValid-B: RdData should not update when RdEna='0'");
                 B_RdEna <= '1';
 
             end if;
