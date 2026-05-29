@@ -75,7 +75,7 @@ For applications where vendor/tool independence is important, this is to be rega
 applications that target only one specific technology, it is suggested to use vendor macros if RAM with byte enables if
 required.
 
-## RdEna and RdValid
+## Rd_Ena and Rd_Valid
 
 The RAM is read and _Rd_Data_ is updated accordingly every clock cycle, independently of the _Rd_Ena_ signal.
 
@@ -83,3 +83,8 @@ The _Rd_Ena_ signal only controls the _Rd_Valid_ signal. This means that if _Rd_
 asserted after _RdLatency_g_ cycles, indicating that the data on _Rd_Data_ is valid and can be used. This is very
 useful in pipelined design, especially with configurable _RdLatency_g_ values because it allows to design logic around
 independently of the RAM read latency.
+
+The fact that _Rd_Ena_ and _Rd_Valid_ are used for delay compensation reasons only but independent of the actual RAM
+read process is depicted by below timing diagram:
+
+![RdValidTiming](./ram/RdValid_SDP.png)

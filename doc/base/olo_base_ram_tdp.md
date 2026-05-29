@@ -95,3 +95,8 @@ The _A_RdEna_ / _B_RdEna_ signals only control the _A_RdValid_ / _B_RdValid_ sig
 asserted, _A_RdValid_ is asserted after _RdLatency_g_ cycles, indicating that the data on _A_RdData_ is valid and can
 be used. This is very useful in pipelined design, especially with configurable _RdLatency_g_ values because it allows
 to design logic around independently of the RAM read latency.
+
+The fact that _A_RdEna_ / _B_RdEna_ and _A_RdValid_ / _B_RdValid_ are used for delay compensation reasons only but
+independent of the actual RAM read process is depicted by below timing diagram:
+
+![RdValidTiming](./ram/RdValid_TDP.png)
