@@ -48,7 +48,7 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 | A_Be     | in     | _Width_g/8_           | All '1' | Port A byte-enables<br>Ignored if _UseByteEnable_g_ = false  |
 | A_WrEna  | in     | 1                     | '0'     | Port A write enable. The memory cell at _A_Addr_ is written only if _A_WrEna_='1'. |
 | A_WrData | in     | _Width_g_             | 0       | Port A write data                                            |
-| A_RdEna  | in     | 1                     | '1'     | Port A read enable. When asserted, _A_RdData_ is updated and _A_RdValid_ is asserted after _RdLatency_g_ cycles. |
+| A_RdEna  | in     | 1                     | '1'     | Port A read indicator. <br> _A_RdValid_ is asserted _RdLatency_g_ cycles after _A_RdEna_ was asserted. <br> **Important:** The RAM is always read, independently of the value of _A_RdEna_. |
 | A_RdData | out    | _Width_g_             | N/A     | Port A read data                                             |
 | A_RdValid | out   | 1                     | N/A     | Port A read valid. Asserted _RdLatency_g_ cycles after _A_RdEna_ was asserted. |
 
@@ -62,7 +62,7 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 | B_Be     | in     | _Width_g*/8_           | All '1' | Port B byte-enables<br>Ignored if _UseByteEnable_g_ = false  |
 | B_WrEna  | in     | 1                     | '0'     | Port B write enable. The memory cell at _B_Addr_ is written only if _B_WrEna_='1'. |
 | B_WrData | in     | _Width_g_             | 0       | Port B write data                                            |
-| B_RdEna  | in     | 1                     | '1'     | Port B read enable. When asserted, _B_RdData_ is updated and _B_RdValid_ is asserted after _RdLatency_g_ cycles. |
+| B_RdEna  | in     | 1                     | '1'     | Port B read indicator. <br> _B_RdValid_ is asserted _RdLatency_g_ cycles after _B_RdEna_ was asserted. <br> **Important:** The RAM is always read, independently of the value of _B_RdEna_. |
 | B_RdData | out    | _Width_g_             | N/A     | Port B read data                                             |
 | B_RdValid | out   | 1                     | N/A     | Port B read valid. Asserted _RdLatency_g_ cycles after _B_RdEna_ was asserted. |
 
@@ -89,15 +89,14 @@ required.
 ## RdEna and RdValid
 
 For TDP RAM inference, not all tools do support read enable signals. Therefore in _olo_base_ram_tdp, in contrast
-to other RAM components, does read the RAM in every clock cycles, independently of the _A_RdEna_ / _B_RdEna_ signals.
+to other RAM components, does read the RAM in _every clock cycle_, independently of the _A_RdEna_ / _B_RdEna_ signals.
 
 The _A_RdEna_ / _B_RdEna_ signals are only used to control the _A_RdValid_ / _B_RdValid_ signals.
 
-The _A_RdEna_ / _B_RdEna_ signals only control the _A_RdValid_ / _B_RdValid_ signals. This means that if _A_RdEna_ is
-asserted, _A_RdValid_ is asserted after _RdLatency_g_ cycles, indicating that the data on _A_RdData_ is valid and can
-be used. This is very useful in pipelined design, especially with configurable _RdLatency_g_ values because it allows
-to design logic around independently of the RAM read latency.
+This means that if _A_RdEna_ is asserted, _A_RdValid_ is asserted after _RdLatency_g_ cycles, indicating that the data
+on _A_RdData_ is valid and can be used. This is very useful in pipelined design, especially with configurable
+_RdLatency_g_ values because it allows to design logic around independently of the RAM read latency.
 
 ![RdValidTiming](./ram/RdValid_TDP.png)
 
-Note that the read data is updated even if A_RdEna_ is de-asserted.
+The figure nicely depicts that _A_RdData_ is updated even if _A_RdEna_ is de-asserted.
