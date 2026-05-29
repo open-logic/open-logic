@@ -214,15 +214,17 @@ architecture sim of olo_base_ram_tdp_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal A_Clk    : std_logic                                 := '0';
-    signal A_Addr   : std_logic_vector(7 downto 0);
-    signal A_WrEna  : std_logic                                 := '0';
-    signal A_Be     : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
-    signal A_WrData : std_logic_vector(Width_g - 1 downto 0);
+    signal A_Clk     : std_logic                                 := '0';
+    signal A_Rst     : std_logic                                 := '0';
+    signal A_Addr    : std_logic_vector(7 downto 0);
+    signal A_WrEna   : std_logic                                 := '0';
+    signal A_Be      : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
+    signal A_WrData  : std_logic_vector(Width_g - 1 downto 0);
     signal A_RdEna   : std_logic                                 := '1';
     signal A_RdData  : std_logic_vector(Width_g - 1 downto 0);
     signal A_RdValid : std_logic;
     signal B_Clk     : std_logic                                 := '0';
+    signal B_Rst     : std_logic                                 := '0';
     signal B_Addr    : std_logic_vector(7 downto 0);
     signal B_WrEna   : std_logic                                 := '0';
     signal B_Be      : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
@@ -248,6 +250,7 @@ begin
         )
         port map (
             A_Clk       => A_Clk,
+            A_Rst       => A_Rst,
             A_Addr      => A_Addr,
             A_WrEna     => A_WrEna,
             A_Be        => A_Be(BeWidth_c-1 downto 0),
@@ -256,6 +259,7 @@ begin
             A_RdData    => A_RdData,
             A_RdValid   => A_RdValid,
             B_Clk       => B_Clk,
+            B_Rst       => B_Rst,
             B_Addr      => B_Addr,
             B_WrEna     => B_WrEna,
             B_Be        => B_Be(BeWidth_c-1 downto 0),
@@ -283,11 +287,47 @@ begin
 
         while test_suite loop
 
-            -- Wait for some time
+            -- Reset at start of every test case
             wait for 1 us;
+            A_Rst <= '1';
+            B_Rst <= '1';
+            wait until rising_edge(A_Clk);
+            wait until rising_edge(B_Clk);
+            A_Rst <= '0';
+            B_Rst <= '0';
+            wait until rising_edge(A_Clk);
+            wait until rising_edge(B_Clk);
 
+            -- Check reset state
+            if run("ResetState") then
+                A_RdEna <= '1';
+                B_RdEna <= '1';
+                -- Wait for pipeline to fill on both ports (RdEna='1' by default)
+                for i in 1 to RdLatency_g loop
+                    wait until rising_edge(A_Clk);
+                    wait until rising_edge(B_Clk);
+                end loop;
+
+                -- Check A Reset
+                check_equal(A_RdValid, '1', "ResetState: A_RdValid should be asserted before reset");
+                wait until rising_edge(A_Clk);
+                A_Rst <= '1';
+                wait until rising_edge(A_Clk);
+                wait until falling_edge(A_Clk);
+                check_equal(A_RdValid, '0', "ResetState: A_RdValid should be deasserted after reset");
+                A_Rst <= '0';
+
+                -- Check B Reset
+                check_equal(B_RdValid, '1', "ResetState: B_RdValid should be asserted before reset");
+                wait until rising_edge(B_Clk);
+                B_Rst <= '1';
+                wait until rising_edge(B_Clk);
+                wait until falling_edge(B_Clk);
+                check_equal(B_RdValid, '0', "ResetState: B_RdValid should be deasserted after reset");
+                B_Rst <= '0';
+    
             -- test initialization values
-            if run("Init-Values") then
+            elsif run("Init-Values") then
                 if InitFormat_g = "HEX" then
                     check(0, 1, A_Clk, A_Addr, A_RdData, "Init-Values: 0=0x01");
                     check(1, 5, A_Clk, A_Addr, A_RdData, "Init-Values: 1=0x05");

@@ -91,11 +91,13 @@ architecture sim of olo_base_ram_sdp_tb is
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
     signal Clk      : std_logic                                 := '0';
+    signal Rst      : std_logic                                 := '0';
     signal Wr_Addr  : std_logic_vector(7 downto 0)              := (others => '0');
     signal Wr_Ena   : std_logic                                 := '0';
     signal Wr_Be    : std_logic_vector(BeSigWidth_c-1 downto 0) := (others => '1');
     signal Wr_Data  : std_logic_vector(Width_g - 1 downto 0)    := (others => '0');
     signal Rd_Clk   : std_logic                                 := '0';
+    signal Rd_Rst   : std_logic                                 := '0';
     signal Rd_Addr  : std_logic_vector(7 downto 0)              := (others => '0');
     signal Rd_Ena   : std_logic                                 := '1';
     signal Rd_Data  : std_logic_vector(Width_g - 1 downto 0)    := (others => '0');
@@ -119,11 +121,13 @@ begin
         )
         port map (
             Clk         => Clk,
+            Rst         => Rst,
             Wr_Addr     => Wr_Addr,
             Wr_Ena      => Wr_Ena,
             Wr_Be       => Wr_Be(BeWidth_c-1 downto 0),
             Wr_Data     => Wr_Data,
             Rd_Clk      => Rd_Clk,
+            Rd_Rst      => Rd_Rst,
             Rd_Addr     => Rd_Addr,
             Rd_Ena      => Rd_Ena,
             Rd_Data     => Rd_Data,
@@ -151,9 +155,45 @@ begin
 
         while test_suite loop
 
-            -- Wait for some time
+            -- Reset at start of every test case
             wait for 1 us;
-            wait until rising_edge(Clk);
+            if IsAsync_g then
+                Rd_Rst <= '1';
+                wait until rising_edge(Rd_Clk);
+                Rd_Rst <= '0';
+                wait until rising_edge(Rd_Clk);
+            else
+                Rst <= '1';
+                wait until rising_edge(Clk);
+                Rst <= '0';
+                wait until rising_edge(Clk);
+            end if;
+
+            -- Check reset state
+            if run("ResetState") then
+                -- Wait for pipeline to fill (Rd_Ena='1' by default)
+                for i in 1 to RdLatency_g loop
+                    if IsAsync_g then
+                        wait until rising_edge(Rd_Clk);
+                    else
+                        wait until rising_edge(Clk);
+                    end if;
+                end loop;
+                check_equal(Rd_Valid, '1', "ResetState: Rd_Valid not high before reset");
+                -- Apply reset with Rd_Ena='0' so pipeline does not refill
+                if IsAsync_g then
+                    Rd_Rst <= '1';
+                    wait until rising_edge(Rd_Clk);
+                    wait until falling_edge(Rd_Clk);
+                else
+                    Rst <= '1';
+                    wait until rising_edge(Clk);
+                    wait until falling_edge(Clk);
+                end if;
+                check_equal(Rd_Valid, '0', "ResetState: Rd_Valid not low after reset");
+                Rst <= '0';
+                Rd_Rst <= '0';
+            end if;
 
             -- test initialization values
             if run("Init-Values") then
