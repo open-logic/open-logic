@@ -183,7 +183,7 @@ begin
                 check(1, 5, Clk, Addr, RdData, RdEna, RdValid, "3vrb: re-read 1=5");
                 -- check if output is held stable when RdEna is deasserted
                 RdEna <= '0';
-                Addr <= toUslv(3, Addr'length);
+                Addr  <= toUslv(3, Addr'length);
                 wait for 10*ClkPeriod_c;
                 check_equal(RdData, toUslv(5, RdData'length));
                 -- cleanup
