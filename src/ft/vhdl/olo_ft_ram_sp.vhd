@@ -103,6 +103,7 @@ begin
         )
         port map (
             Clk     => Clk,
+            Rst     => Rst,
             Addr    => Addr,
             WrEna   => WrEna,
             WrData  => Wr_Codeword,
