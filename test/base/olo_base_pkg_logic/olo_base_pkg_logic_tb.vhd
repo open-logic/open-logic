@@ -17,6 +17,7 @@ library vunit_lib;
 library olo;
     use olo.olo_base_pkg_logic.all;
     use olo.olo_base_pkg_math.all;
+    use olo.olo_base_pkg_array.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -359,6 +360,17 @@ begin
                 check_equal(getSetBitIndex(Stdlv9to_v, fromMsb => false), Stdlv9to_v'low, "getSetBitIndex(" & to_string(Stdlv9to_v) & ", fromMsb => false)");
                 check_equal(getLeadingSetBitIndex(Stdlv9to_v), Stdlv9to_v'high, "getLeadingSetBitIndex(" & to_string(Stdlv9to_v) & ")");
                 check_equal(getTrailingSetBitIndex(Stdlv9to_v), Stdlv9to_v'low, "getTrailingSetBitIndex(" & to_string(Stdlv9to_v) & ")");
+
+            elsif run("setBits") then
+                -- Single-index overload
+                check_equal(setBits(0, 4), std_logic_vector'("0001"), "setBits(0, 4)");
+                check_equal(setBits(3, 4), std_logic_vector'("1000"), "setBits(3, 4)");
+
+                -- IntegerArray_t overload
+                check_equal(setBits((0, 1), 4),                   std_logic_vector'("0011"),     "setBits((0,1), 4)");
+                check_equal(setBits((1, 3), 4),                   std_logic_vector'("1010"),     "setBits((1,3), 4)");
+                check_equal(setBits(IntegerArray_t'(0, 2, 5), 8), std_logic_vector'("00100101"), "setBits((0,2,5), 8)");
+                check_equal(setBits(IntegerArray_t'(0 to -1 => 0), 4), std_logic_vector'("0000"),  "setBits(empty, 4)");
             end if;
 
         end loop;
