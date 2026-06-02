@@ -50,6 +50,11 @@ package olo_base_pkg_string is
         a : in string;
         c : in character) return natural;
 
+    -- Print error message
+    function errorMessage (
+        name    : in string;
+        message : in string) return string;
+
 end package;
 
 ---------------------------------------------------------------------------------------------------
@@ -145,7 +150,7 @@ package body olo_base_pkg_string is
         if hasPrefix then
             -- synthesis translate_off
             assert Trimmed_c(Trimmed_c'left to Trimmed_c'left+1) = "0x"
-                report "Invalid prefix in hex2StdLogicVector() - expected prefix is 0x - string: " & a
+                report errorMessage("olo_base_pkg_string.hex2StdLogicVector()", "Invalid prefix - expected prefix is 0x - string: " & a)
                 severity error;
             -- synthesis translate_on
             -- coverage
@@ -175,7 +180,7 @@ package body olo_base_pkg_string is
                 when 'f' => Nibble_v := x"F";
                 -- coverage off
                 when others =>
-                    report "Invalid character in hex2StdLogicVector() - only 0-9, a-f, A-F are allowed - string: " & a
+                    report errorMessage("olo_base_pkg_string.hex2StdLogicVector()", "Invalid character - only 0-9, a-f, A-F are allowed - string: " & a)
                         severity error;
                     return Result_v;
                 -- coverage on
@@ -210,6 +215,14 @@ package body olo_base_pkg_string is
         end loop;
 
         return Count_v;
+    end function;
+
+    -- *** errorMessage() ***
+    function errorMessage (
+        name    : in string;
+        message : in string) return string is
+    begin
+        return name & " - " & message;
     end function;
 
 end package body;

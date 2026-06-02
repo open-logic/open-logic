@@ -31,6 +31,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -125,8 +126,9 @@ end entity;
 architecture rtl of olo_axi_master_full is
 
     -- *** Constants ***
-    constant AxiBytes_c  : natural := AxiDataWidth_g / 8;
-    constant DataBytes_c : natural := UserDataWidth_g / 8;
+    constant EntityName_c : string  := "olo_axi_master_full";
+    constant AxiBytes_c   : natural := AxiDataWidth_g / 8;
+    constant DataBytes_c  : natural := UserDataWidth_g / 8;
 
     -- *** Type ***
     type WriteCmdFsm_t is (Idle_s, Apply_s);
@@ -232,16 +234,16 @@ begin
 
     -- *** Assertions ***
     assert isPower2(AxiDataWidth_g/8)
-        report "olo_axi_master_full - AxiDataWidth_g must be a power of two of bytes"
+        report errorMessage(EntityName_c, "AxiDataWidth_g must be a power of two of bytes")
         severity failure;
     assert UserDataWidth_g mod 8 = 0
-        report "olo_axi_master_full UserDataWidth_g must be a multiple of 8"
+        report errorMessage(EntityName_c, "UserDataWidth_g must be a multiple of 8")
         severity failure;
     assert AxiDataWidth_g mod UserDataWidth_g = 0
-        report "olo_axi_master_full AxiDataWidth_g must be a multiple of UserDataWidth_g"
+        report errorMessage(EntityName_c, "AxiDataWidth_g must be a multiple of UserDataWidth_g")
         severity failure;
     assert UserTransactionSizeBits_g <= AxiAddrWidth_g
-        report "olo_axi_master_full UserTransactionSizeBits_g must be smaller or equal to AxiAddrWidth_g"
+        report errorMessage(EntityName_c, "UserTransactionSizeBits_g must be smaller or equal to AxiAddrWidth_g")
         severity failure;
 
     -- *** Combinatorial Process ***

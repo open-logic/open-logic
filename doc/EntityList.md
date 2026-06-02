@@ -29,6 +29,7 @@ Note that components are split into categories.
     - [Basic Operations](#basic-operations)
     - [Simple Mathematics](#simple-mathematics)
     - [CORDIC](#cordic)
+    - [Mixers](#mixers)
     - [CIC Filters](#cic-filters)
     - [Miscellaneous](#miscellaneous-1)
 
@@ -242,6 +243,14 @@ be used. For deciding which option to use, the following considerations shall be
 
 ### CORDIC
 
+| Entity                                                | Description                                                  |
+| ----------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_fix_cplx_mult](./fix/olo_fix_cplx_mult.md)       | Can be used as complex-to-complex mixer in MIX mode |
+| [olo_fix_mix_r2c](./fix/olo_fix_mix_r2c.md)           | Real to complex mixer. Mixes a real signal with a complex local oscillator |
+| [olo_fix_mix_c2r](./fix/olo_fix_mix_c2r.md)           | Complex to real mixer. Mixes a complex signal with a complex local oscillator to produce a real output |
+
+### Mixers
+
 | Entity                                              | Description                                                  |
 | --------------------------------------------------- | ------------------------------------------------------------ |
 | [olo_fix_cordic_vect](./fix/olo_fix_cordic_vect.md) | CORDIC vectoring mode - cartesian to polar conversion |
@@ -259,3 +268,4 @@ be used. For deciding which option to use, the following considerations shall be
 | Entity                                              | Description                                                                                              |
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | [olo_fix_sample_hold](./fix/olo_fix_sample_hold.md) | Sample and hold a fixed point number - output holds the last sampled value until a new sample is taken.  |
+| [olo_fix_mov_avg](./fix/olo_fix_mov_avg.md)         | Moving average filter                                                                                    |

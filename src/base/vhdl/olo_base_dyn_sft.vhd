@@ -56,6 +56,7 @@ end entity;
 architecture rtl of olo_base_dyn_sft is
 
     -- Constants
+    constant EntityName_c             : string  := "olo_base_dyn_sft";
     constant Stages_c                 : integer := integer(ceil(real(In_Shift'length) / real(SelBitsPerStage_g)));
     constant SelBitsPerStageLimited_c : integer := work.olo_base_pkg_math.min(SelBitsPerStage_g, In_Shift'length);
 
@@ -76,10 +77,10 @@ begin
 
     -- *** Assertions ***
     assert compareNoCase(Direction_g, "LEFT") or compareNoCase(Direction_g, "RIGHT")
-        report "###ERROR###: olo_base_dyn_sft - Direction_g must be LEFT or RIGHT"
+        report errorMessage(EntityName_c, "Direction_g must be LEFT or RIGHT")
         severity error;
     assert MaxShift_g <= Width_g
-        report "###ERROR###: olo_base_dyn_sft - MaxShift_g must be smaller or equal to Width_g"
+        report errorMessage(EntityName_c, "MaxShift_g must be smaller or equal to Width_g")
         severity error;
 
     -- *** Cobinatorial Process ***
@@ -119,7 +120,7 @@ begin
             -- Excluded from coverage because this line can't be reached in valid configurations
             -- coverage off
             else
-                report "###ERROR###: olo_base_dyn_sft - Direction_g must be LEFT or RIGHT, is '" & Direction_g & "'" severity error;
+                report errorMessage(EntityName_c, "Direction_g must be LEFT or RIGHT, is '" & Direction_g & "'") severity error;
             -- coverage on
             end if;
             v.Shift(stg + 1) := shiftRight(r.Shift(stg), SelBitsPerStageLimited_c, '0');

@@ -35,6 +35,7 @@ INSTANCE_ID=$(aws ec2 run-instances \
   --key-name olo-build-aws \
   --query 'Instances[0].InstanceId' \
   --network-interfaces "DeviceIndex=0,NetworkInterfaceId=$ENI_QUESTA" \
+  --iam-instance-profile Name=olo-build-s3-iam \
   --output text)
 
 echo "Created instance: $INSTANCE_ID"

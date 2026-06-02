@@ -36,11 +36,12 @@ class TestOloFixCordicRot(unittest.TestCase):
         
         input = [0.5+0.0j, 0.123+0.25j, 0.7+0.76j, 0.2+0.9j, 0.9+0.01j]
 
-        self.in_abs = np.abs(input)
-        self.in_ang = np.angle(input)/(2.0*np.pi) 
+        self.in_abs = cl_fix_from_real(np.abs(input), self.config['in_mag_fmt'])
+        self.in_ang = cl_fix_from_real(np.angle(input)/(2.0*np.pi), self.config['in_ang_fmt']) 
         self.in_ang = np.where(self.in_ang < 0, self.in_ang + 1.0, self.in_ang)
-        self.expected_i = np.real(input)
-        self.expected_q = np.imag(input)
+        expected = self.in_abs * np.exp(1j*2.0*np.pi*self.in_ang)
+        self.expected_i = np.real(expected)
+        self.expected_q = np.imag(expected)
 
     # Test different process modes
     def test_scalar(self):
@@ -158,7 +159,6 @@ class TestOloFixCordicRot(unittest.TestCase):
         self.config['gain_corr_coef_fmt'] = "BadString"
         with self.assertRaises(ValueError):
             self.dut = olo_fix_cordic_rot(**self.config)  
-
 
 
 if __name__ == '__main__':

@@ -124,18 +124,19 @@ It implements the following mathematics:
 
 > A = (a + bi)<br>
 > B = (c + di)<br>
-> k1 = a x c<br>
-> k2 = b x d<br>
-> k3 = (a + b) x (c + d)<br>
-> Re = k1 - k2<br>
-> Im = k3 - k1 - k2<br>
+> k1 = c x (a + b)<br>
+> k2 = a x (d - c)<br>
+> k3 = b x (c + d)<br>
+> Re = k1 - k3<br>
+> Im = k1 + k2<br>
 
 The figure below shows the architecture.
 
 ![3 Multiplier Architecture](./entities/olo_fix_cplx_mult_3par.drawio.png)
 
 **Important**: Some synthesis tools require an increased _MultRegs_g_ to really implement it with 3 multipliers. If you
-see 4 multipliers being implemented, try increasing _MultRegs_g_.
+see 4 multipliers being implemented, try increasing _MultRegs_g_. The architecture depicted nicely
+fits into 3 multiply-add elements (indicated by colors in the figure).
 
 **Latency** This architecture has a latency of _MultRegs_g_+ 5 + _resize_latency_ clock cycles.
 

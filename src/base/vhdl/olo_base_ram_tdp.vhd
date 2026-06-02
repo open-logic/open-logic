@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024-2025 by Oliver Bruendler
+-- Copyright (c) 2024-2026 by Oliver Bruendler
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -45,17 +45,23 @@ entity olo_base_ram_tdp is
     );                                                      -- "RBW" = read-before-write, "WBR" = write-before-read
     port (
         A_Clk     : in    std_logic;
+        A_Rst     : in    std_logic                                  := '0';
         A_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         A_Be      : in    std_logic_vector(Width_g / 8 - 1 downto 0) := (others => '1');
         A_WrEna   : in    std_logic                                  := '0';
         A_WrData  : in    std_logic_vector(Width_g - 1 downto 0)     := (others => '0');
+        A_RdEna   : in    std_logic                                  := '1';
         A_RdData  : out   std_logic_vector(Width_g - 1 downto 0);
+        A_RdValid : out   std_logic;
         B_Clk     : in    std_logic;
+        B_Rst     : in    std_logic                                  := '0';
         B_Addr    : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         B_Be      : in    std_logic_vector(Width_g / 8 - 1 downto 0) := (others => '1');
         B_WrEna   : in    std_logic                                  := '0';
         B_WrData  : in    std_logic_vector(Width_g - 1 downto 0)     := (others => '0');
-        B_RdData  : out   std_logic_vector(Width_g - 1 downto 0)
+        B_RdEna   : in    std_logic                                  := '1';
+        B_RdData  : out   std_logic_vector(Width_g - 1 downto 0);
+        B_RdValid : out   std_logic
     );
 end entity;
 
@@ -65,7 +71,16 @@ end entity;
 architecture rtl of olo_base_ram_tdp is
 
     -- constants
-    constant BeCount_c : integer := Width_g / 8;
+    constant EntityName_c : string  := "olo_base_ram_tdp";
+    constant BeCount_c    : integer := Width_g / 8;
+
+    -- Read Valid pipelines
+    signal A_RdValidPipe : std_logic_vector(1 to RdLatency_g);
+    signal B_RdValidPipe : std_logic_vector(1 to RdLatency_g);
+
+    -- Synthesis attributes - Suppress shift register extraction
+    attribute shreg_extract of A_RdValidPipe : signal is ShregExtract_SuppressExtraction_c;
+    attribute shreg_extract of B_RdValidPipe : signal is ShregExtract_SuppressExtraction_c;
 
     -- components
     component olo_private_ram_tdp_nobe is
@@ -98,7 +113,7 @@ begin
 
     -- Assertions
     assert (Width_g mod 8 = 0) or (not UseByteEnable_g)
-        report "olo_base_ram_tdp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
+        report errorMessage(EntityName_c, "Width_g must be a multiple of 8, otherwise byte-enables must be disabled")
         severity error;
 
     -- No BE Implementation
@@ -169,6 +184,37 @@ begin
 
     end generate;
 
+    -- RdValid pipeline - Port A
+    p_rdvalid_a : process (A_Clk) is
+    begin
+        if rising_edge(A_Clk) then
+            A_RdValidPipe(1)                <= A_RdEna;
+            A_RdValidPipe(2 to RdLatency_g) <= A_RdValidPipe(1 to RdLatency_g-1);
+
+            -- Reset
+            if A_Rst = '1' then
+                A_RdValidPipe <= (others => '0');
+            end if;
+        end if;
+    end process;
+
+    -- RdValid pipeline - Port B
+    p_rdvalid_b : process (B_Clk) is
+    begin
+        if rising_edge(B_Clk) then
+            B_RdValidPipe(1)                <= B_RdEna;
+            B_RdValidPipe(2 to RdLatency_g) <= B_RdValidPipe(1 to RdLatency_g-1);
+
+            -- Reset
+            if B_Rst = '1' then
+                B_RdValidPipe <= (others => '0');
+            end if;
+        end if;
+    end process;
+
+    A_RdValid <= A_RdValidPipe(RdLatency_g);
+    B_RdValid <= B_RdValidPipe(RdLatency_g);
+
 end architecture;
 
 ---------------------------------------------------------------------------------------------------
@@ -218,6 +264,9 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_private_ram_tdp_nobe is
 
+    -- Constants
+    constant EntityName_c : string := "olo_base_ram_tdp_nobe";
+
     -- Memory Type
     type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
 
@@ -262,8 +311,9 @@ architecture rtl of olo_private_ram_tdp_nobe is
     -- Memory array
     shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := getInitContent;
 
-    -- Read registers
-    signal RdPipeA, RdPipeB : Data_t(1 to RdLatency_g);
+    -- Read data pipelines
+    signal RdPipeA : Data_t(1 to RdLatency_g);
+    signal RdPipeB : Data_t(1 to RdLatency_g);
 
     -- Synthesis attributes - Suppress shift register extraction
     attribute shreg_extract of RdPipeA : signal is ShregExtract_SuppressExtraction_c;
@@ -278,10 +328,10 @@ begin
 
     -- Assertions
     assert compareNoCase(InitFormat_g, "NONE") or compareNoCase(InitFormat_g, "HEX")
-        report "olo_base_ram_tdp: InitFormat_g must be NONE or HEX. Got: " & InitFormat_g
+        report errorMessage(EntityName_c, "InitFormat_g must be NONE or HEX. Got: " & InitFormat_g)
         severity error;
     assert compareNoCase(RamBehavior_g, "RBW") or compareNoCase(RamBehavior_g, "WBR")
-        report "olo_base_ram_tdp: RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g
+        report errorMessage(EntityName_c, "RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g)
         severity error;
 
     g_wbr : if compareNoCase(RamBehavior_g, "WBR") generate
@@ -352,9 +402,8 @@ begin
 
     end generate;
 
-    -- Read Data Output
+    -- Output
     A_RdData <= RdPipeA(RdLatency_g);
     B_RdData <= RdPipeB(RdLatency_g);
 
 end architecture;
-

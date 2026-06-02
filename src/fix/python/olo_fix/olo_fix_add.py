@@ -52,6 +52,11 @@ class olo_fix_add:
         :param b: Input b
         :return: Result
         """
+        # Quantize input
+        a = cl_fix_from_real(a, self._a_fmt)
+        b = cl_fix_from_real(b, self._b_fmt)
+
+        # Calculate
         return cl_fix_add(a, self._a_fmt, 
                           b, self._b_fmt, 
                           self._result_fmt, self._round, self._saturate)

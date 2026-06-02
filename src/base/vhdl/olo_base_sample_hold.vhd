@@ -26,6 +26,7 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -55,8 +56,9 @@ end entity;
 architecture rtl of olo_base_sample_hold is
 
     -- Reset value as std_logic_vector
-    constant RstVal_c   : std_logic_vector(Width_g - 1 downto 0) := ResetValue_g;
-    constant RstValid_c : std_logic                              := choose(ResetValid_g, '1', '0');
+    constant EntityName_c : string                                 := "olo_base_sample_hold";
+    constant RstVal_c     : std_logic_vector(Width_g - 1 downto 0) := ResetValue_g;
+    constant RstValid_c   : std_logic                              := choose(ResetValid_g, '1', '0');
 
     -- Registers
     signal Data  : std_logic_vector(Width_g - 1 downto 0);
@@ -67,7 +69,7 @@ begin
     -- Assertions
     -- synthesis translate_off
     assert ResetValue_g'length = Width_g
-        report "Rolo_base_sample_hold - ResetValue_g must have the same length as Width_g"
+        report errorMessage(EntityName_c, "ResetValue_g must have the same length as Width_g")
         severity failure;
     -- synthesis translate_on
 

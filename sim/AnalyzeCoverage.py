@@ -85,6 +85,12 @@ for enforce_entity in enforc_entities:
 #*** Generate Output ***
 print("Entity:                        Statements Branches")
 for entity in entities:
+    # SKip TBs
+    if entity.name.endswith("_tb"):
+        continue
+    # Skip non OLO entities
+    if not entity.name.startswith("olo_"):
+        continue
     # Print coverage
     print(f"{entity.name:25}: {entity.statements:9}% {entity.branches:9}%")
     # Crate badge

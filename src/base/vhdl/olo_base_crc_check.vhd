@@ -68,6 +68,9 @@ end entity;
 
 architecture rtl of olo_base_crc_check is
 
+    -- *** Constants ***
+    constant EntityName_c : string := "olo_base_crc_check";
+
     -- *** Types ***
     type Fsm_t is (First_s, Others_s);
 
@@ -90,10 +93,10 @@ begin
 
     -- *** Assertions ***
     assert CrcPolynomial_g'length <= DataWidth_g
-        report "###ERROR###: olo_base_crc_check - Polynomial_g must be smaller or equal width than DataWidth_g"
+        report errorMessage(EntityName_c, "Polynomial_g must be smaller or equal width than DataWidth_g")
         severity error;
     assert compareNoCase(Mode_g, "drop") or compareNoCase(Mode_g, "flag")
-        report "###ERROR###: olo_base_crc_check - Mode_g must be FLAG or DROP"
+        report errorMessage(EntityName_c, "Mode_g must be FLAG or DROP")
         severity error;
 
     -- *** Combinatorial Process ***

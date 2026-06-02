@@ -22,6 +22,9 @@ library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
 
+library work;
+    use work.olo_base_pkg_string.all;
+
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
@@ -60,6 +63,7 @@ end entity;
 architecture rtl of olo_base_flowctrl_handler is
 
     -- Constants
+    constant EntityName_c : string   := "olo_base_flowctrl_handler";
     constant FifoDepth_c  : positive := 2*(SamplesToAbsorb_g+2);
     -- FIFO Signals
     signal Fifo_InReady   : std_logic;
@@ -101,7 +105,7 @@ begin
     begin
         if rising_edge(Clk) then
             assert (Fifo_InReady = '1' or FromProc_Valid /= '1')
-                report "olo_base_flowctrl_handler: FIFO is full upon FromProc_Valid = '1'"
+                report errorMessage(EntityName_c, "FIFO is full upon FromProc_Valid = '1'")
                 severity error;
         end if;
     end process;

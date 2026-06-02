@@ -55,6 +55,7 @@ Note that in this case, _InC_Data_ is not used and can be left unconnected.
 | :------------- | :------ | ---------- | :----------------------------------------------------------- |
 | PreAdd_g       | boolean | false      | Presence of pre-adder stage                                  |
 | Operation_g    | string  | "Add"      | Operation to perform in the adder chain<br />"Add": Out = MaccIn + Mult<br />"Sub": Out = MaccIn - Mult |
+| PreAddOp_g    | string  | "Add"      | Operation to perform in the pre-adder stage (only used for _PreAdd_g=true_)<br />"Add": PreAddOut = InA + InC<br />"Sub": PreAddOut = InA - InC |
 | AFmt_g         | string  | -          | Input A format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | BFmt_g         | string  | -          | Input B format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | CFmt_g         | string  | "(0,0,0)"  | Input C format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)")<br>Ignored for _PreAdd_g=false_ |

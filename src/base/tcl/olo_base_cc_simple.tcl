@@ -10,9 +10,7 @@
 set launch_clk [get_clocks -of_objects [get_cell DataLatchIn*]]
 set latch_clk [get_clocks -of_objects [get_cell Out_Data_Sig*]]
 
-set period [expr min([get_property PERIOD $launch_clk], [get_property PERIOD $latch_clk])]
-
+set period [get_property -min PERIOD [concat $launch_clk $latch_clk]]
 
 set_max_delay -from $launch_clk -to [get_cell Out_Data_Sig*] -datapath_only $period
 set_bus_skew -from [get_cell DataLatchIn*] -to [get_cell Out_Data_Sig*] $period
-

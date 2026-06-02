@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- Copyright (c) 2024-2025 by Oliver Bruendler
+-- Copyright (c) 2024-2026 by Oliver Bruendler
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -44,11 +44,14 @@ entity olo_base_ram_sp is
     );
     port (
         Clk             : in    std_logic;
+        Rst             : in    std_logic                                  := '0';
         Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
         Be              : in    std_logic_vector(Width_g / 8 - 1 downto 0) := (others => '1');
         WrEna           : in    std_logic                                  := '1';
         WrData          : in    std_logic_vector(Width_g - 1 downto 0);
-        RdData          : out   std_logic_vector(Width_g - 1 downto 0)
+        RdEna           : in    std_logic                                  := '1';
+        RdData          : out   std_logic_vector(Width_g - 1 downto 0);
+        RdValid         : out   std_logic
     );
 end entity;
 
@@ -58,7 +61,14 @@ end entity;
 architecture rtl of olo_base_ram_sp is
 
     -- Constants
-    constant BeCount_c : integer := Width_g / 8;
+    constant EntityName_c : string  := "olo_base_ram_sp";
+    constant BeCount_c    : integer := Width_g / 8;
+
+    -- Read Valid pipeline
+    signal RdValidPipe : std_logic_vector(1 to RdLatency_g);
+
+    -- Synthesis attributes - Suppress shift register extraction
+    attribute shreg_extract of RdValidPipe : signal is ShregExtract_SuppressExtraction_c;
 
     -- components
     component olo_private_ram_sp_nobe is
@@ -78,6 +88,7 @@ architecture rtl of olo_base_ram_sp is
             Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
             WrEna           : in    std_logic := '1';
             WrData          : in    std_logic_vector(Width_g - 1 downto 0);
+            RdEna           : in    std_logic := '1';
             RdData          : out   std_logic_vector(Width_g - 1 downto 0)
         );
     end component;
@@ -86,7 +97,7 @@ begin
 
     -- Assertions
     assert (Width_g mod 8 = 0) or (not UseByteEnable_g)
-        report "olo_base_ram_sp: Width_g must be a multiple of 8, otherwise byte-enables must be disabled"
+        report errorMessage(EntityName_c, "Width_g must be a multiple of 8, otherwise byte-enables must be disabled")
         severity error;
 
     -- No BE Implementation
@@ -108,6 +119,7 @@ begin
                 Addr            => Addr,
                 WrEna           => WrEna,
                 WrData          => WrData,
+                RdEna           => RdEna,
                 RdData          => RdData
             );
 
@@ -138,12 +150,29 @@ begin
                     Addr            => Addr,
                     WrEna           => WrEna_Byte,
                     WrData          => WrData(byte*8+7 downto byte*8),
+                    RdEna           => RdEna,
                     RdData          => RdData(byte*8+7 downto byte*8)
                 );
 
         end generate;
 
     end generate;
+
+    -- RdValid pipeline
+    p_rdvalid : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            RdValidPipe(1)                <= RdEna;
+            RdValidPipe(2 to RdLatency_g) <= RdValidPipe(1 to RdLatency_g-1);
+
+            -- Reset
+            if Rst = '1' then
+                RdValidPipe <= (others => '0');
+            end if;
+        end if;
+    end process;
+
+    RdValid <= RdValidPipe(RdLatency_g);
 
 end architecture;
 
@@ -179,6 +208,7 @@ entity olo_private_ram_sp_nobe is
         Addr            : in    std_logic_vector(log2ceil(Depth_g)-1 downto 0);
         WrEna           : in    std_logic := '1';
         WrData          : in    std_logic_vector(Width_g - 1 downto 0);
+        RdEna           : in    std_logic := '1';
         RdData          : out   std_logic_vector(Width_g - 1 downto 0)
     );
 end entity;
@@ -187,6 +217,9 @@ end entity;
 -- Architecture
 ---------------------------------------------------------------------------------------------------
 architecture rtl of olo_private_ram_sp_nobe is
+
+    -- Constants
+    constant EntityName_c : string := "olo_base_ram_sp_nobe";
 
     -- Memory  Type
     type Data_t is array (natural range<>) of std_logic_vector(Width_g - 1 downto 0);
@@ -232,7 +265,7 @@ architecture rtl of olo_private_ram_sp_nobe is
     -- Memory array
     shared variable Mem_v : Data_t(Depth_g - 1 downto 0) := getInitContent;
 
-    -- Read registers
+    -- Read data pipeline
     signal RdPipe : Data_t(1 to RdLatency_g);
 
     -- Synthesis attributes - Suppress shift register extraction
@@ -245,12 +278,12 @@ architecture rtl of olo_private_ram_sp_nobe is
 
 begin
 
-    -- Assertionsa
+    -- Assertions
     assert compareNoCase(InitFormat_g, "NONE") or compareNoCase(InitFormat_g, "HEX")
-        report "olo_base_ram_sp: InitFormat_g must be NONE or HEX. Got: " & InitFormat_g
+        report errorMessage(EntityName_c, "InitFormat_g must be NONE or HEX. Got: " & InitFormat_g)
         severity error;
     assert compareNoCase(RamBehavior_g, "RBW") or compareNoCase(RamBehavior_g, "WBR")
-        report "olo_base_ram_sp: RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g
+        report errorMessage(EntityName_c, "RamBehavior_g must Be RBW or WBR. Got: " & RamBehavior_g)
         severity error;
 
     -- RAM process
@@ -258,13 +291,17 @@ begin
     begin
         if rising_edge(Clk) then
             if compareNoCase(RamBehavior_g, "RBW") then
-                RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
+                if RdEna = '1' then
+                    RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
+                end if;
             end if;
             if WrEna = '1' then
                 Mem_v(to_integer(unsigned(Addr))) := WrData;
             end if;
             if not compareNoCase(RamBehavior_g, "RBW") then
-                RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
+                if RdEna = '1' then
+                    RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
+                end if;
             end if;
 
             -- Read-data pipeline registers
@@ -276,4 +313,3 @@ begin
     RdData <= RdPipe(RdLatency_g);
 
 end architecture;
-

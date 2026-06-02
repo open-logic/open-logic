@@ -63,3 +63,15 @@ function countOccurence (
     a : in string;
     c : in character) return natural;
 ```
+
+### Error Message
+
+Format a standardized error message string from an entity name and a message. The result has the format
+`"<name> - <message>"`.
+
+```vhdl
+function errorMessage(
+    name    : in string;
+    message : in string
+) return string;
+```

@@ -27,6 +27,7 @@ library work;
     use work.olo_axi_pkg_protocol.all;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -103,16 +104,17 @@ architecture rtl of olo_axi_lite_slave is
 
     signal r, r_next : TwoProcess_r;
 
+    constant EntityName_c : string  := "olo_axi_lite_slave";
     constant UnusedBits_c : natural := log2(AxiDataWidth_g/8);
 
 begin
 
     -- *** Assertions ***
     assert AxiDataWidth_g mod 8 = 0
-        report "###ERROR###: olo_axi_lite_slave AxiDataWidth_g must be a multiple of 8"
+        report errorMessage(EntityName_c, "AxiDataWidth_g must be a multiple of 8")
         severity failure;
     assert isPower2(AxiDataWidth_g/8)
-        report "###ERROR###: olo_axi_lite_slave AxiDataWidth_g must be 2^X bytes"
+        report errorMessage(EntityName_c, "AxiDataWidth_g must be 2^X bytes")
         severity failure;
 
     -- *** Combinatorial Process ***

@@ -78,6 +78,7 @@ end entity;
 architecture rtl of olo_base_fifo_packet is
 
     -- Constants
+    constant EntityName_c       : string  := "olo_base_fifo_packet";
     constant SmallRamStyle_c    : string  := choose(compareNoCase(SmallRamStyle_g, "same"), RamStyle_g, SmallRamStyle_g);
     constant SmallRamBehavior_c : string  := choose(compareNoCase(SmallRamBehavior_g, "same"), RamBehavior_g, SmallRamBehavior_g);
     constant MaxPktSize_c       : natural := choose(MaxPacketSize_g = -1, Depth_g, work.olo_base_pkg_math.min(MaxPacketSize_g, Depth_g));
@@ -134,23 +135,23 @@ begin
     -- Assertions
     -----------------------------------------------------------------------------------------------
     assert log2(Depth_g) = log2ceil(Depth_g)
-        report "olo_base_fifo_packet: only power of two Depth_g is allowed"
+        report errorMessage(EntityName_c, "only power of two Depth_g is allowed")
         severity error;
 
     assert compareNoCase(FeatureSet_g, "full") or compareNoCase(FeatureSet_g, "drop_only") or compareNoCase(FeatureSet_g, "drop_skip_only")
-        report "olo_base_fifo_packet: FeatureSet_g must be FULL, DROP_SKIP_ONLY or DROP_ONLY"
+        report errorMessage(EntityName_c, "FeatureSet_g must be FULL, DROP_SKIP_ONLY or DROP_ONLY")
         severity error;
 
     assert compareNoCase(Optimization_g, "throughput") or compareNoCase(Optimization_g, "speed")
-        report "olo_base_fifo_packet: Optimization_g must be THROUGHPUT or SPEED"
+        report errorMessage(EntityName_c, "Optimization_g must be THROUGHPUT or SPEED")
         severity error;
 
     assert MaxPacketSize_g = -1 or (MaxPacketSize_g >= 1 and MaxPacketSize_g <= Depth_g)
-        report "olo_base_fifo_packet: MaxPacketSize_g must be -1 (auto) or in range 1 to Depth_g"
+        report errorMessage(EntityName_c, "MaxPacketSize_g must be -1 (auto) or in range 1 to Depth_g")
         severity error;
 
     assert not compareNoCase(Optimization_g, "THROUGHPUT") or not compareNoCase(FeatureSet_g, "full")
-        report "olo_base_fifo_packet: Optimization_g = THROUGHPUT and FeatureSet_g = full are not compatible"
+        report errorMessage(EntityName_c, "Optimization_g = THROUGHPUT and FeatureSet_g = full are not compatible")
         severity error;
 
     -- MaxPackets_g is only relevant for FULL/DROP_SKIP_ONLY feature set with THROUGHPUT optimization

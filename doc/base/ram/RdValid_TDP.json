@@ -1,0 +1,9 @@
+{signal: [
+  {name: 'A_Clk',        wave: 'P.......', period:1},  
+  {name: 'A_RdAddr',     wave: 'x34.5x..'},
+  {name: 'A_RdEna',      wave: '010.10..'},
+  {name: 'A_RdData[RdLatency_g=1]',     wave: 'x.34.5x.'},
+  {name: 'A_RdValid[RdLatency_g=1]',    wave: '0.10.10.'},
+  {name: 'A_RdData[RdLatency_g=2]',     wave: 'x..34.5x'},
+  {name: 'A_RdValid[RdLatency_g=2]',    wave: '0..10.10'},
+]}

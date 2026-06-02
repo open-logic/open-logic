@@ -34,6 +34,7 @@ entity olo_fix_madd_tb is
     generic (
         PreAdd_g      : boolean := false;
         Operation_g   : string  := "Add";
+        PreAddOp_g    : string  := "Add";
         MultRegs_g    : natural := 1;
         InBIsCoef_g   : boolean := false;
         runner_cfg    : string
@@ -105,7 +106,11 @@ begin
                     C_v    := 3.0 + real(i*10);
                     Macc_v := 4.0;
                     if PreAdd_g then
-                        AC_v := A_v + C_v;
+                        if PreAddOp_g = "Add" then
+                            AC_v := A_v + C_v;
+                        else
+                            AC_v := A_v - C_v;
+                        end if;
                     else
                         AC_v := A_v;
                     end if;
@@ -167,7 +172,11 @@ begin
                 C_v    := 3.0;
                 Macc_v := 4.0;
                 if PreAdd_g then
-                    AC_v := A_v + C_v;
+                    if PreAddOp_g = "Add" then
+                        AC_v := A_v + C_v;
+                    else
+                        AC_v := A_v - C_v;
+                    end if;
                 else
                     AC_v := A_v;
                 end if;
@@ -183,7 +192,11 @@ begin
                 C2_v    := 13.0;
                 Macc2_v := 14.0;
                 if PreAdd_g then
-                    AC2_v := A2_v + C2_v;
+                    if PreAddOp_g = "Add" then
+                        AC2_v := A2_v + C2_v;
+                    else
+                        AC2_v := A2_v - C2_v;
+                    end if;
                 else
                     AC2_v := A2_v;
                 end if;
@@ -253,7 +266,11 @@ begin
                     C_v    := 3.0;
                     Macc_v := 4.0;
                     if PreAdd_g then
-                        AC_v := A_v + C_v;
+                        if PreAddOp_g = "Add" then
+                            AC_v := A_v + C_v;
+                        else
+                            AC_v := A_v - C_v;
+                        end if;
                     else
                         AC_v := A_v;
                     end if;
@@ -328,6 +345,7 @@ begin
         generic map (
             PreAdd_g      => PreAdd_g,
             Operation_g   => Operation_g,
+            PreAddOp_g    => PreAddOp_g,
             InBIsCoef_g   => InBIsCoef_g,
             AFmt_g        => to_string(AFmt_c),
             BFmt_g        => to_string(BFmt_c),
