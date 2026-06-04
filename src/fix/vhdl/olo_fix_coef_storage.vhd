@@ -195,8 +195,7 @@ begin
         -- Code optimized to be mapped efficiently by all vendors
         g_wbr : if compareNoCase(RamBehavior_g, "WBR") generate
 
-            -- Port Cfg
-            p_port_cfg : process (Clk) is
+            p_ram : process (Clk) is
             begin
                 if rising_edge(Clk) then
                     -- RAM
@@ -216,8 +215,7 @@ begin
 
         g_rbw : if compareNoCase(RamBehavior_g, "RBW") generate
 
-            -- Port Cfg
-            p_port_cfg : process (Clk) is
+            p_ram : process (Clk) is
             begin
                 if rising_edge(Clk) then
                     -- RAM
