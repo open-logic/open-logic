@@ -39,10 +39,10 @@ architecture sim of olo_fix_coef_storage_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant Fmt_c     : FixFormat_t := (1,4,4);
+    constant Fmt_c     : FixFormat_t := (1, 4, 4);
     constant Depth_c   : positive    := 4;
     -- Init_g has 2 entries: addr 0 = 1.0, addr 1 = 0.5; addr 2-3 are uninitialized (= 0.0)
-    constant InitStr_c : string      := "1.0, 0.5";
+    constant InitStr_c : string := "1.0, 0.5";
 
     -- Address assignments:
     --   0, 1 : initialized values - NEVER written by TB so InitValues always sees clean data
@@ -59,16 +59,16 @@ architecture sim of olo_fix_coef_storage_tb is
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
     -----------------------------------------------------------------------------------------------
-    signal Clk          : std_logic := '0';
-    signal Rst          : std_logic := '0';
+    signal Clk          : std_logic                                          := '0';
+    signal Rst          : std_logic                                          := '0';
     signal Cfg_Addr     : std_logic_vector(log2Ceil(Depth_c) - 1 downto 0)   := (others => 'X');
-    signal Cfg_WrEna    : std_logic                                           := '0';
+    signal Cfg_WrEna    : std_logic                                          := '0';
     signal Cfg_WrData   : std_logic_vector(cl_fix_width(Fmt_c) - 1 downto 0) := (others => 'X');
-    signal Cfg_RdEna    : std_logic                                           := '0';
+    signal Cfg_RdEna    : std_logic                                          := '0';
     signal Cfg_RdData   : std_logic_vector(cl_fix_width(Fmt_c) - 1 downto 0);
     signal Cfg_RdValid  : std_logic;
     signal Coef_Addr    : std_logic_vector(log2Ceil(Depth_c) - 1 downto 0)   := (others => 'X');
-    signal Coef_RdEna   : std_logic                                           := '0';
+    signal Coef_RdEna   : std_logic                                          := '0';
     signal Coef_RdData  : std_logic_vector(cl_fix_width(Fmt_c) - 1 downto 0);
     signal Coef_RdValid : std_logic;
 
@@ -78,12 +78,12 @@ architecture sim of olo_fix_coef_storage_tb is
 
     -- Single-cycle write to the Cfg port.
     procedure cfgWrite (
-        address        : natural;
-        value          : real;
-        signal Clk     : in  std_logic;
-        signal Addr    : out std_logic_vector(log2Ceil(Depth_c) - 1 downto 0);
-        signal WrData  : out std_logic_vector(cl_fix_width(Fmt_c) - 1 downto 0);
-        signal WrEna   : out std_logic) is
+        address       : natural;
+        value         : real;
+        signal Clk    : in  std_logic;
+        signal Addr   : out std_logic_vector(log2Ceil(Depth_c) - 1 downto 0);
+        signal WrData : out std_logic_vector(cl_fix_width(Fmt_c) - 1 downto 0);
+        signal WrEna  : out std_logic) is
     begin
         wait until rising_edge(Clk);
         wait for 100 ps;
@@ -93,36 +93,38 @@ architecture sim of olo_fix_coef_storage_tb is
         wait until rising_edge(Clk);
         wait for 100 ps;
         WrEna  <= '0';
-        Addr <= (others => 'X');
+        Addr   <= (others => 'X');
         WrData <= (others => 'X');
     end procedure;
 
     -- Single read from either the Cfg or the Coef port.
     procedure portRead (
-        address           : natural;
-        expected          : real;
-        msg               : string;
-        signal Clk        : in  std_logic;
-        signal Addr       : out std_logic_vector(log2Ceil(Depth_c) - 1 downto 0);
-        signal RdEna      : out std_logic;
-        signal RdData     : in  std_logic_vector(cl_fix_width(Fmt_c) - 1 downto 0);
-        signal RdValid    : in  std_logic;
-        expectedRdValid   : std_logic := '1') is
+        address         : natural;
+        expected        : real;
+        msg             : string;
+        signal Clk      : in  std_logic;
+        signal Addr     : out std_logic_vector(log2Ceil(Depth_c) - 1 downto 0);
+        signal RdEna    : out std_logic;
+        signal RdData   : in  std_logic_vector(cl_fix_width(Fmt_c) - 1 downto 0);
+        signal RdValid  : in  std_logic;
+        expectedRdValid : std_logic := '1') is
     begin
         wait until rising_edge(Clk);
         wait for 100 ps;
-        Addr   <= toUslv(address, Addr'length);
-        RdEna  <= '1';
+        Addr  <= toUslv(address, Addr'length);
+        RdEna <= '1';
         check_equal(RdValid, '0', msg & " - RdValid prematurely high");
         wait until rising_edge(Clk);
         wait for 100 ps;
-        RdEna  <= '0';
+        RdEna <= '0';
         Addr  <= (others => 'X');
         if expectedRdValid = '1' then
+
             for i in 1 to RdLatency_g - 1 loop
                 wait until falling_edge(Clk);
                 check_equal(RdValid, '0', msg & " - RdValid too early at step " & integer'image(i));
             end loop;
+
             wait until falling_edge(Clk); -- data valid here
             check_equal(RdData, cl_fix_from_real(expected, Fmt_c), msg & " - data");
             check_equal(RdValid, '1', msg & " - RdValid not high");
@@ -130,11 +132,13 @@ architecture sim of olo_fix_coef_storage_tb is
             wait for 100 ps;
             check_equal(RdValid, '0', msg & " - RdValid not deasserted");
         else
+
             for i in 1 to RdLatency_g + 1 loop
                 wait until falling_edge(Clk);
                 check_equal(RdData, cl_fix_from_real(expected, Fmt_c), msg & " - data not zero cycle " & integer'image(i));
                 check_equal(RdValid, '0', msg & " - RdValid not zero cycle " & integer'image(i));
             end loop;
+
         end if;
     end procedure;
 
@@ -222,9 +226,11 @@ begin
                     Cfg_Addr   <= (others => 'X');
                     Coef_Addr  <= (others => 'X');
                     Cfg_WrData <= (others => 'X');
+
                     for i in 1 to RdLatency_g - 1 loop
                         wait until falling_edge(Clk);
                     end loop;
+
                     wait until falling_edge(Clk);
                     check_equal(Coef_RdValid, '1', "RamBehavior: Coef_RdValid");
                     if RamBehavior_g = "RBW" then
