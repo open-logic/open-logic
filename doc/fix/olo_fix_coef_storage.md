@@ -47,7 +47,7 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | RamReadback_g  | boolean | false   | True: Readback through _Cfg_RdData_ / _Cfg_RdValid_ is possible (RAM only)<br />False: Readback is not possible|
 | RamBehavior_g  | string  | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 | RdLatency_g    | positive | 1      | Read latency in clock cycles for both read ports (minimum 1)                                        |
-| RamStyle_g     | string  | "auto"  | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes _ram_style_ and _ramstyle_ which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). <br> Does apply to _StorageType_g=ROM_ as well and can be used to control ROM implementation. |
+| MemStyle_g     | string  | "auto"  | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes _ram_style_ and _ramstyle_ which vendors offer to control RAM implementation.<br>For details refer to the description or _RamStyle_g_ in [olo_base_ram_sdp](./olo_base_ram_sdp.md). <br> Does apply to _StorageType_g=ROM_ as well and can be used to control ROM implementation. |
 
 **Note:** _RamReadback_g=True_ implements a true-dual-port RAM. Consider technology restrictions and set _RamBehavior_g_
 as needed for true dual port RAMs in your target technology.

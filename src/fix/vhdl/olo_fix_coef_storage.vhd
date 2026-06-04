@@ -45,7 +45,7 @@ entity olo_fix_coef_storage is
         RamReadback_g : boolean  := false;
         RamBehavior_g : string   := "RBW";
         RdLatency_g   : positive := 1;
-        RamStyle_g    : string   := "auto"
+        MemStyle_g    : string   := "auto"
     );
     port (
         -- Control Ports
@@ -112,12 +112,14 @@ begin
 
     -- *** ROM Implementation ***
     g_rom : if compareNoCase(StorageType_g, "ROM") generate
-        constant Rom_c : DataArray_t(0 to Depth_g - 1) := initData;
+        -- Implemented as shared variable becaus attributes do not apply properly to constants
+        shared variable Rom_v : DataArray_t(0 to Depth_g - 1) := initData;
 
         -- Synthesis attributes - control ROM style
-        attribute ram_style of Rom_c    : constant is RamStyle_g;
-        attribute ramstyle of Rom_c     : constant is RamStyle_g;
-        attribute syn_ramstyle of Rom_c : constant is RamStyle_g;
+        attribute rom_style of Rom_v    : variable is MemStyle_g;
+        attribute romstyle of Rom_v     : variable is MemStyle_g;
+        attribute syn_romstyle of Rom_v : variable is MemStyle_g;
+
     begin
 
         p_rom : process (Clk) is
@@ -128,7 +130,7 @@ begin
 
                 -- Read ROM
                 if Coef_RdEna = '1' then
-                    CoefPipe(1) <= Rom_c(fromUslv(Coef_Addr));
+                    CoefPipe(1) <= Rom_v(fromUslv(Coef_Addr));
                 end if;
 
                 -- Read-data pipeline registers
@@ -155,9 +157,9 @@ begin
         shared variable Ram_v : DataArray_t(0 to Depth_g - 1) := initData;
 
         -- Synthesis attributes - control RAM style
-        attribute ram_style of Ram_v    : variable is RamStyle_g;
-        attribute ramstyle of Ram_v     : variable is RamStyle_g;
-        attribute syn_ramstyle of Ram_v : variable is RamStyle_g;
+        attribute ram_style of Ram_v    : variable is MemStyle_g;
+        attribute ramstyle of Ram_v     : variable is MemStyle_g;
+        attribute syn_ramstyle of Ram_v : variable is MemStyle_g;
 
         -- Signals
         signal RdPipe      : DataArray_t(1 to RdLatency_g);
