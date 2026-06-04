@@ -111,7 +111,19 @@ class TestOloFixBinDiv(unittest.TestCase):
     def test_dif_of_zero(self):
         # Execute
         res = self.dut.process(0.0, 2.5)  # zero numerator
-        self.assertEqual(res, 0.0)       
+        self.assertEqual(res, 0.0)
+
+    def test_quantization(self):
+        # Create DUT
+        self.config['num_fmt'] = FixFormat(1, 2, 2)
+        self.config['denom_fmt'] = FixFormat(1, 2, 2)
+        self.config['out_fmt'] = FixFormat(1, 8, 8)
+        self.dut = olo_fix_bin_div(**self.config)
+
+        # Execute
+        res = self.dut.process(0.61, 0.17)
+        expected = 2.0
+        self.assertEqual(res, expected)
 
 if __name__ == '__main__':
     unittest.main()

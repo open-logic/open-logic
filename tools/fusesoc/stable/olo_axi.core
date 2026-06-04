@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : "open-logic:open-logic:axi:4.4.1"
+name : "open-logic:open-logic:axi:4.5.0"
 description : "stable release (downloaded from GitHub); AXI related modules see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#axi"
 
 filesets:
@@ -14,7 +14,7 @@ filesets:
     file_type : "vhdlSource-2008"
     logical_name : "olo"
     depend :
-      - "^open-logic:open-logic:base:4.4.1"
+      - "^open-logic:open-logic:base:4.5.0"
 
 
 targets:
@@ -25,5 +25,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 4.4.1
+  version : 4.5.0
   

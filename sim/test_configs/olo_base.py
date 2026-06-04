@@ -49,39 +49,17 @@ def add_configs(olo_tb):
         for R in [2, 3, 19]:
             named_config(tb, {'ClockRatio_g': R})
 
-    ### olo_base_ram_... dualport ###
-    ram_tbs = ['olo_base_ram_sp_tb', 'olo_base_ram_tdp_tb']
+    ### olo_base_ram_... ###
+    ram_tbs = ['olo_base_ram_sp_tb', 'olo_base_ram_tdp_tb', 'olo_base_ram_sdp_tb']
     for tb_name in ram_tbs:
         tb = olo_tb.test_bench(tb_name)
         for RamBehav in ['RBW', 'WBR']:
             named_config(tb, {'RamBehavior_g': RamBehav})
+            if tb_name == "olo_base_ram_sdp_tb":
+                for Async in [True, False]:
+                    named_config(tb, {'RamBehavior_g': RamBehav, "IsAsync_g": Async})
         for ReadLatency in [1, 2]:
             named_config(tb, {"RdLatency_g": ReadLatency})
-        for Width in [5, 32]:
-            named_config(tb, {'Width_g': Width})
-        for Be in [True, False]:
-            named_config(tb, {'Width_g': 32, 'UseByteEnable_g' : Be})
-        # Check no-init
-        named_config(tb, {'InitFormat_g': 'NONE'})
-        # Check non byte-width
-        named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': 7})
-        # Check init, byte-enables play a role internally
-        for Be in [True, False]:
-            for Width in [8, 16]: 
-                named_config(tb, {'InitFormat_g': 'HEX', 'Width_g': Width, 'UseByteEnable_g' : Be})
-
-
-    ### olo_base_ram_... singleport ###
-    ram_tbs = ['olo_base_ram_sdp_tb']
-    for tb_name in ram_tbs:
-        tb = olo_tb.test_bench(tb_name)
-        for RamBehav in ['RBW', 'WBR']:
-            for Async in [True, False]:
-                named_config(tb, {'RamBehavior_g': RamBehav, "IsAsync_g": Async})
-
-        for ReadLatency in [1,2]:
-            named_config(tb, {"RdLatency_g": ReadLatency})
-
         for Width in [5, 32]:
             named_config(tb, {'Width_g': Width})
         for Be in [True, False]:
@@ -266,10 +244,21 @@ def add_configs(olo_tb):
     tb = olo_tb.test_bench(fifo_packet_tb)
     tb_hs = olo_tb.test_bench(fifo_packet_tb_hs)
     #Choose settings for short runtime
-    for FeatureSet in ["FULL", "DROP_ONLY"]:
-        named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': True, 'FeatureSet_g' : FeatureSet})
-        named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': False, 'FeatureSet_g' : FeatureSet}) #Some checks require non-random stall
-        named_config(tb_hs, {'FeatureSet_g' : FeatureSet})
+    for FeatureSet in ["FULL", "DROP_ONLY", "DROP_SKIP_ONLY"]:
+        for Optimization in ["THROUGHPUT", "SPEED"]:
+            # Combination FULL/THROUGHPUT is not allowed
+            if FeatureSet == "FULL" and Optimization == "THROUGHPUT":
+                continue    
+            named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': True, 'FeatureSet_g' : FeatureSet, 'Optimization_g' : Optimization})
+            named_config(tb, {'RandomPackets_g': 10, 'RandomStall_g': False, 'FeatureSet_g' : FeatureSet, 'Optimization_g' : Optimization, 'UsePacketSize_g': True}) #Some checks require non-random stall
+            named_config(tb_hs, {'FeatureSet_g' : FeatureSet, 'Optimization_g' : Optimization})
+
+    fifo_packet_tb_perf = 'olo_base_fifo_packet_perf_tb'
+    tb_perf = olo_tb.test_bench(fifo_packet_tb_perf)
+    for FeatureSet in ["DROP_ONLY", "DROP_SKIP_ONLY"]: #FULL is not supporting back to back packets
+        for MaxPackets in [2, 8]:
+            named_config(tb_perf, {'MaxPackets_g': MaxPackets, 'Depth_g': 32, 'MaxPacketSize_g': 16, 'FeatureSet_g': FeatureSet}) # maximum throughput only when MaxPacketSize_g = Depth_g / 2
+            named_config(tb_perf, {'MaxPackets_g': MaxPackets, 'Depth_g': 32, 'MaxPacketSize_g': -1, 'FeatureSet_g': FeatureSet})
 
     ### olo_base_cam ###
     cam_tb = 'olo_base_cam_tb'

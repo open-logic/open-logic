@@ -25,6 +25,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_logic.all;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -62,6 +63,9 @@ end entity;
 
 architecture rtl of olo_base_crc_append is
 
+    -- *** Constants ***
+    constant EntityName_c : string := "olo_base_crc_append";
+
     -- *** Types ***
     type State_t is (Data_s, Crc_s);
 
@@ -86,7 +90,7 @@ begin
 
     -- *** Assertions ***
     assert CrcPolynomial_g'length <= DataWidth_g
-        report "###ERROR###: olo_base_crc_append - Polynomial_g must be smaller or equal width than DataWidth_g"
+        report errorMessage(EntityName_c, "Polynomial_g must be smaller or equal width than DataWidth_g")
         severity error;
 
     -- *** Combinatorial Process ***

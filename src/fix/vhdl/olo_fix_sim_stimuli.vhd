@@ -29,6 +29,7 @@ library ieee;
 library work;
     use work.en_cl_fix_pkg.all;
     use work.olo_fix_pkg.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -54,7 +55,8 @@ end entity;
 architecture sim of olo_fix_sim_stimuli is
 
     -- constants
-    constant Fmt_c : FixFormat_t := cl_fix_format_from_string(Fmt_g);
+    constant Fmt_c        : FixFormat_t := cl_fix_format_from_string(Fmt_g);
+    constant EntityName_c : string      := "olo_fix_sim_stimuli";
 
 begin
 
@@ -92,8 +94,8 @@ begin
         readline(DataFile, Line_v);
         Fmt_v := cl_fix_format_from_string(Line_v.all);
         assert Fmt_v = Fmt_c
-            report " olo_fix_sim_stimuli - Format mismatch: expected " & to_string(Fmt_c) &
-                   ", got " & to_string(Fmt_v) & " in file " & FilePath_g
+            report errorMessage(EntityName_c, "Format mismatch: expected " & to_string(Fmt_c) &
+                   ", got " & to_string(Fmt_v) & " in file " & FilePath_g)
             severity error;
 
         -- Iterate through lines in file
@@ -102,7 +104,7 @@ begin
             readline(DataFile, Line_v);
             hread(Line_v, DataSlv_v, Good_v);
             assert Good_v
-                report " olo_fix_sim_stimuli - Failed to read from file" & FilePath_g
+                report errorMessage(EntityName_c, "Failed to read data from file - file: " & FilePath_g)
                 severity error;
 
             -- Apply Data

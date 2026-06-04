@@ -27,6 +27,7 @@ library ieee;
 library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
+    use work.olo_base_pkg_string.all;
 
 package olo_intf_i2c_master_pkg is
 
@@ -50,6 +51,7 @@ library work;
     use work.olo_base_pkg_math.all;
     use work.olo_base_pkg_logic.all;
     use work.olo_base_pkg_attribute.all;
+    use work.olo_base_pkg_string.all;
     use work.olo_intf_i2c_master_pkg.all;
 
 ---------------------------------------------------------------------------------------------------
@@ -105,6 +107,7 @@ end entity;
 architecture rtl of olo_intf_i2c_master is
 
     -- *** Constants ***
+    constant EntityName_c         : string  := "olo_intf_i2c_master";
     constant BusyTimoutLimit_c    : integer := integer(ClkFrequency_g * BusBusyTimeout_g) - 1;
     constant QuarterPeriodLimit_c : integer := integer(ceil(ClkFrequency_g / I2cFrequency_g / 4.0)) - 1;
     constant CmdTimeoutLimit_c    : integer := integer(ClkFrequency_g * CmdTimeout_g) - 1;
@@ -243,7 +246,7 @@ begin
                     -- Everyting else than START commands is ignored and an error is printed in this case
                     -- synthesis translate_off
                     assert (Cmd_Command = I2cCmd_Start_c) or DisableAsserts_g
-                        report "###ERROR###: olo_intf_i2c_master: In idle state, only I2cCmd_Start_c commands are allowed!"
+                        report errorMessage(EntityName_c, "In idle state, only I2cCmd_Start_c commands are allowed!")
                         severity error;
                     -- synthesis translate_on
                     v.CmdTypeLatch := Cmd_Command;
@@ -339,7 +342,7 @@ begin
                     -- synthesis translate_off
                     assert (Cmd_Command = I2cCmd_Stop_c) or (Cmd_Command = I2cCmd_RepStart_c) or
                            (Cmd_Command = I2cCmd_Send_c) or (Cmd_Command = I2cCmd_Receive_c) or DisableAsserts_g
-                        report "###ERROR###: olo_intf_i2c_master: In WaitCmd_s state, I2cCmd_Start_c commands are not allowed!"
+                        report errorMessage(EntityName_c, "In WaitCmd_s state, I2cCmd_Start_c commands are not allowed!")
                         severity error;
                     -- synthesis translate_on
                     if (Cmd_Command = I2cCmd_Stop_c) or (Cmd_Command = I2cCmd_RepStart_c) or

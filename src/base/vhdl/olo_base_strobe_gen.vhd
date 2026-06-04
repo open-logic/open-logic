@@ -26,6 +26,7 @@ library ieee;
 
 library work;
     use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_string.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -51,6 +52,7 @@ end entity;
 architecture rtl of olo_base_strobe_gen is
 
     -- Counter Period
+    constant EntityName_c             : string  := "olo_base_strobe_gen";
     constant PeriodCountsFractional_c : integer := integer(work.olo_base_pkg_math.min(round(FreqClkHz_g / FreqStrobeHz_g * 100.0), real(integer'high)));
     constant PeriodCountsInteger_c    : integer := integer(round(FreqClkHz_g / FreqStrobeHz_g));
     constant PeriodCounts_c           : integer := choose(FractionalMode_g, PeriodCountsFractional_c, PeriodCountsInteger_c);
@@ -67,12 +69,12 @@ begin
 
     -- Fractional mode is only lsupported for a factor < 1'000'000 between FreqClkHz_g and FreqStrobeHz_g
     assert not (FractionalMode_g and (FreqClkHz_g / FreqStrobeHz_g >= 1.0e6))
-        report "olo_base_strobe_gen - Fractional mode is only supported for FreqClkHz_g < 1'000'000 x FreqStrobeHz_g"
+        report errorMessage(EntityName_c, "Fractional mode is only supported for FreqClkHz_g < 1'000'000 x FreqStrobeHz_g")
         severity failure;
 
     -- Ratio between FreqClkHz_g and FreqStrobeHz_g must be <= 2'147'483'000
     assert (FreqClkHz_g / FreqStrobeHz_g <= 214748000.0)
-        report "olo_base_strobe_gen - FreqClkHz_g / FreqStrobeHz_g must be <= 2'147'483'000"
+        report errorMessage(EntityName_c, "FreqClkHz_g / FreqStrobeHz_g must be <= 2'147'483'000")
         severity failure;
 
     p_strobe : process (Clk) is

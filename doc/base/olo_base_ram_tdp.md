@@ -10,7 +10,7 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_ram_tdp.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_ram_tdp.json?cacheSeconds=0)
 
-VHDL Source: [olo_base_ram_sdp](../../src/base/vhdl/olo_base_ram_sdp.vhd)
+VHDL Source: [olo_base_ram_tdp](../../src/base/vhdl/olo_base_ram_tdp.vhd)
 
 ## Description
 
@@ -43,22 +43,28 @@ The RAM is implemented in pure VHDL but in a way that allows tools to implement 
 | Name     | In/Out | Length                | Default | Description                                                  |
 | :------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | A_Clk    | in     | 1                     | -       | Port A clock                                                 |
+| A_Rst    | in     | 1                     | '0'     | Port A synchronous reset<br>Optional, only resets internal state of _A_RdValid_<br>Does **NOT** reset the content of memory cells! |
 | A_Addr   | in     | _ceil(log2(Depth_g))_ | -       | Port A address                                               |
 | A_Be     | in     | _Width_g/8_           | All '1' | Port A byte-enables<br>Ignored if _UseByteEnable_g_ = false  |
 | A_WrEna  | in     | 1                     | '0'     | Port A write enable. The memory cell at _A_Addr_ is written only if _A_WrEna_='1'. |
 | A_WrData | in     | _Width_g_             | 0       | Port A write data                                            |
+| A_RdEna  | in     | 1                     | '1'     | Port A read indicator. <br> _A_RdValid_ is asserted _RdLatency_g_ cycles after _A_RdEna_ was asserted. <br> **Important:** The RAM is always read, independently of the value of _A_RdEna_. |
 | A_RdData | out    | _Width_g_             | N/A     | Port A read data                                             |
+| A_RdValid | out   | 1                     | N/A     | Port A read valid. Asserted _RdLatency_g_ cycles after _A_RdEna_ was asserted. |
 
 ### Port B
 
 | Name     | In/Out | Length                | Default | Description                                                  |
 | :------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | B_Clk    | in     | 1                     | -       | Port B clock                                                 |
+| B_Rst    | in     | 1                     | '0'     | Port B synchronous reset<br>Optional, only resets internal state of _B_RdValid_<br>Does **NOT** reset the content of memory cells! |
 | B_Addr   | in     | _ceil(log2(Depth_g))_ | -       | Port B address                                               |
 | B_Be     | in     | _Width_g*/8_           | All '1' | Port B byte-enables<br>Ignored if _UseByteEnable_g_ = false  |
 | B_WrEna  | in     | 1                     | '0'     | Port B write enable. The memory cell at _B_Addr_ is written only if _B_WrEna_='1'. |
 | B_WrData | in     | _Width_g_             | 0       | Port B write data                                            |
+| B_RdEna  | in     | 1                     | '1'     | Port B read indicator. <br> _B_RdValid_ is asserted _RdLatency_g_ cycles after _B_RdEna_ was asserted. <br> **Important:** The RAM is always read, independently of the value of _B_RdEna_. |
 | B_RdData | out    | _Width_g_             | N/A     | Port B read data                                             |
+| B_RdValid | out   | 1                     | N/A     | Port B read valid. Asserted _RdLatency_g_ cycles after _B_RdEna_ was asserted. |
 
 ## Detailed Description
 
@@ -79,3 +85,18 @@ byte-enables enabled are affected.
 For applications where vendor/tool independence is important, this is to be regarded as a required trade-off. For
 applications that target only one specific technology, it is suggested to use vendor macros if RAM with byte enables if
 required.
+
+## RdEna and RdValid
+
+For TDP RAM inference, not all tools do support read enable signals. Therefore _olo_base_ram_tdp_, in contrast
+to other RAM components, does read the RAM in _every clock cycle_, independently of the _A_RdEna_ / _B_RdEna_ signals.
+
+The _A_RdEna_ / _B_RdEna_ signals are only used to control the _A_RdValid_ / _B_RdValid_ signals.
+
+This means that if _A_RdEna_ is asserted, _A_RdValid_ is asserted after _RdLatency_g_ cycles, indicating that the data
+on _A_RdData_ is valid and can be used. This is very useful in pipelined design, especially with configurable
+_RdLatency_g_ values because it allows to design logic around independently of the RAM read latency.
+
+![RdValidTiming](./ram/RdValid_TDP.png)
+
+The figure nicely depicts that _A_RdData_ is updated even if _A_RdEna_ is de-asserted.

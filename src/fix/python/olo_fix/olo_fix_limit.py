@@ -68,6 +68,8 @@ class olo_fix_limit:
         :param lim_hi: Upper limit (optional). If not provided, the fixed limit is used.
         :return: Result
         """
+        # Quantity check for limits
+
         # check if either parameter or fixed limit is set
         if lim_lo is None:
             if self._lim_lo_fixed is None:

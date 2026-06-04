@@ -1,0 +1,8 @@
+{
+  signal: [
+    {name: 'Clk',           wave: 'p.............'},
+    {name: 'Data_Valid',    wave: '01.010101.....'},
+    {name: 'Data_IQ',       wave: 'x34x3x4x343434', data: ['I-0', 'Q-0', 'I-1', 'Q-1', 'I-2', 'Q-2', 'I-3', 'Q-3', 'I-4', 'Q-4']},
+    {name: 'Data_Last',     wave: 'x0.x0x1x0..10.'},
+  ]
+}

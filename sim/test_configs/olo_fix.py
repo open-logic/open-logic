@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------------
-# Copyright (c) 2025 by Oliver Bründler
+# Copyright (c) 2025-2026 by Oliver Bründler
 # All rights reserved.
 # Authors: Oliver Bruendler
 # ---------------------------------------------------------------------------------------------------
@@ -509,10 +509,191 @@ def add_configs(olo_tb):
     # Shorter formasts
     named_config(tb, default_generics  | {'InFmt_g': '(0,0,8)', 'OutFmt_g': '(0,0,8)'},
                     pre_config=cosim,
-                    short_name=f'ShortFormats')   
+                    short_name=f'ShortFormats')    
+
+    ### olo_fix_cplx_addsub  ###
+    tb = olo_tb.test_bench('olo_fix_cplx_addsub_tb')  
+
+    #Test formats and round/sat modes
+    default_generics = {
+        'AFmt_g': '(1,8,4)',
+        'BFmt_g': '(1,5,7)',
+        'ResultFmt_g': '(0,6,3)',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'OpRegs_g': 1,
+        'RoundReg_g': "YES",
+        'SatReg_g': "YES",
+        'IqHandling_g': 'Parallel',
+        'Operation_g': 'Sub'
+    }
+    cosim = olo_fix_cplx_addsub.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    for Operation in ['Add', 'Sub']:
+        for IqHandling in ['Parallel', 'TDM']:
+            # Different rounding
+            for Round in ['NonSymPos_s', 'Trunc_s']:
+                for Sat in ['Sat_s', 'None_s']:
+                    named_config(tb, default_generics  | {'Round_g': Round, 'Saturate_g': Sat, 
+                                                          'IqHandling_g': IqHandling, 'Operation_g': Operation},
+                                    pre_config=cosim)
+
+            # Different register settings
+            for OpRegs in [0, 4]:
+                named_config(tb, default_generics | {'OpRegs_g': OpRegs, 'IqHandling_g': IqHandling, 'Operation_g': Operation}, 
+                             pre_config=cosim)
+            for RoundReg in ['NO', 'AUTO']:
+                named_config(tb, default_generics | {'RoundReg_g': RoundReg, 'IqHandling_g': IqHandling, 'Operation_g': Operation}, 
+                             pre_config=cosim)
+            for SatReg in ['NO', 'AUTO']:
+                named_config(tb, default_generics | {'SatReg_g': SatReg, 'IqHandling_g': IqHandling, 'Operation_g': Operation}, 
+                             pre_config=cosim)
+                
+    ### olo_fix_madd  ###
+    tb = olo_tb.test_bench('olo_fix_madd_tb')  
+
+    #Test formats and round/sat modes
+    default_generics = {
+        'PreAdd_g': False,
+        'Operation_g': "Add",
+        'MultRegs_g': 1,
+        'InBIsCoef_g': False
+    }
+
+    named_config(tb, default_generics, short_name='default')
+
+    for Operation in ['Add', 'Sub']:
+        for PreAdd in [False, True]:
+            for MultRegs in [1, 3]:
+                for InBIsCoef in [False, True]:
+                    if PreAdd:
+                        for PreAddOp in ['Add', 'Sub']:
+                            named_config(tb, {'PreAdd_g': PreAdd, 'PreAddOp_g': PreAddOp, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef})
+                    else:
+                        named_config(tb, {'PreAdd_g': PreAdd, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef})
+
+    ### olo_fix_cplx_mult  ###
+    tb = olo_tb.test_bench('olo_fix_cplx_mult_tb')  
+
+    #Test formats and round/sat modes
+    default_generics = {
+        'Mode_g': "MULT",
+        'Implementation_g' : "MULT3",
+        'IqHandling_g': 'TDM',
+        'AFmt_g': '(1,8,8)',
+        'BFmt_g': '(1,8,8)',
+        'ResultFmt_g': '(1,9,8)',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'MultRegs_g': 1
+    }
+    cosim = olo_fix_cplx_mult.cosim.cosim
+
+    # named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    for Mode in ['MULT', 'MIX']:
+        for IqHandling in ['Parallel', 'TDM']:
+            for Implementation in ['MULT4', 'MULT3']:
+                if IqHandling == 'TDM' and Implementation == 'MULT4':
+                    # Parallel Iq does not have different mult implementations
+                    continue
+                overrides = {'Mode_g': Mode, 'IqHandling_g': IqHandling, 'Implementation_g': Implementation}
+
+                # Differnet Mult Regs
+                for MultRegs in [1, 3]:
+                    overrides['MultRegs_g'] = MultRegs
+                    named_config(tb, default_generics | overrides, pre_config=cosim)
+
+                # Different rounding / saturaion
+                for Round in ['NonSymNeg_s', 'Trunc_s']:
+                    for Sat in ['SatWarn_s', 'None_s']:
+                        overrides['Round_g'] = Round
+                        overrides['Saturate_g'] = Sat
+                        named_config(tb, default_generics | overrides, pre_config=cosim)
 
     ### olo_fix_sample_hold ###
     tb = olo_tb.test_bench('olo_fix_sample_hold_tb')
 
     for ResetValid in ['True', 'False']:
             named_config(tb, {'ResetValid_g': ResetValid}) 
+
+    ### olo_fix_mov_avg ###
+    tb = olo_tb.test_bench('olo_fix_mov_avg_tb')
+    #Test formats and round/sat modes
+    default_generics = {
+        'InFmt_g': '(1,4,8)',
+        'OutFmt_g': '(1,4,8)',
+        'Taps_g' : 3,
+        'GainCorrCoefFmt_g': '(0,1,16)',
+        'GainCorrDataFmt_g': 'AUTO',
+        'GainCorrType_g': 'EXACT',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'RoundReg_g': "YES",
+        'SatReg_g': "YES"
+    }
+    cosim = olo_fix_mov_avg.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    # Different taps
+    for Taps in [1, 5]:
+        named_config(tb, default_generics | {'Taps_g': Taps}, pre_config=cosim)
+    # Different gain correction formats
+    named_config(tb, default_generics | {'GainCorrCoefFmt_g': '(0,1,4)'}, pre_config=cosim)
+    # Different gain correctio ndata Formats (incl. overflow)
+    named_config(tb, default_generics | {'GainCorrDataFmt_g': '(1,0,8)'}, pre_config=cosim)
+    # Different gain correction types
+    for GainCorrType in ['EXACT', 'SHIFT', 'NONE']:
+        # Rounding mode
+        for Round in ['NonSymPos_s', 'Trunc_s']:
+            for Sat in ['Sat_s', 'None_s']:
+                named_config(tb, default_generics  | {'Round_g': Round, 'Saturate_g': Sat, 'GainCorrType_g': GainCorrType},
+                             pre_config=cosim)
+        # No regs
+        SatReg = 'AUTO'
+        RoundReg = 'NO'
+        named_config(tb, default_generics  | {'Round_g': Round, 'Saturate_g': Sat, 'GainCorrType_g': GainCorrType, 'RoundReg_g': RoundReg, 'SatReg_g': SatReg},
+                        pre_config=cosim)
+    # Test gain correction through shift for power2 taps
+    named_config(tb, default_generics | {'Taps_g': 4, 'GainCorrType_g': 'EXACT'}, pre_config=cosim)
+
+    ### olo_fix_mix_r2c ###
+    tb = olo_tb.test_bench('olo_fix_mix_r2c_tb')
+    default_generics = {
+        'InFmt_g'   : '(1,8,8)',
+        'MixFmt_g'  : '(1,0,15)',
+        'OutFmt_g'  : '(1,9,8)',
+        'Round_g'   : 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'MultRegs_g': 1
+    }
+    cosim = olo_fix_mix_r2c.cosim.cosim
+    
+    for MultRegs in [1, 3]:
+        named_config(tb, default_generics | {'MultRegs_g': MultRegs}, pre_config=cosim)
+    for Round in ['Trunc_s', 'NonSymNeg_s']:
+        for Sat in ['None_s', 'SatWarn_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat}, pre_config=cosim)
+
+    ### olo_fix_mix_c2r ###
+    tb = olo_tb.test_bench('olo_fix_mix_c2r_tb')
+    default_generics = {
+        'InFmt_g'      : '(1,8,8)',
+        'MixFmt_g'     : '(1,0,15)',
+        'OutFmt_g'     : '(1,9,8)',
+        'Round_g'      : 'NonSymPos_s',
+        'Saturate_g'   : 'Sat_s',
+        'MultRegs_g'   : 1,
+        'IqHandling_g' : 'Parallel'
+    }
+    cosim = olo_fix_mix_c2r.cosim.cosim
+
+    for IqHandling in ['Parallel', 'TDM']:
+        for MultRegs in [1, 3]:
+            named_config(tb, default_generics | {'MultRegs_g': MultRegs, 'IqHandling_g': IqHandling}, pre_config=cosim)
+        for Round in ['Trunc_s', 'NonSymNeg_s']:
+            for Sat in ['None_s', 'SatWarn_s']:
+                named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat, 'IqHandling_g': IqHandling}, pre_config=cosim)

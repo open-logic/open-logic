@@ -292,7 +292,8 @@ package body olo_base_pkg_logic is
         -- Check input width
         -- synthesis translate_off
         assert inp'length mod 8 = 0
-            report "invertByteOrder(): Number of bits must be a multiple of 8"
+            -- errorMessage() cannot be used to avoid cyclic dependency between olo_base_pkg_logic and olo_base_pkg_string
+            report "olo_base_pkg_logic.invertByteOrder(): Number of bits must be a multiple of 8"
             severity error;
         -- synthesis translate_on
 

@@ -44,6 +44,13 @@ class TestOloFixNeg(unittest.TestCase):
         result.extend(self.dut.next(self.a[2:]))
         self.assertListEqual(result, self.expected)
 
+    def test_quantization(self):
+        self.dut = olo_fix_neg(a_fmt=FixFormat(1, 2, 2), result_fmt=FixFormat(1, 8, 8))
+        a = 0.283333
+        expected = -0.25
+        result = self.dut.process(a)
+        self.assertEqual(result, expected)
+
 
 if __name__ == '__main__':
     unittest.main()

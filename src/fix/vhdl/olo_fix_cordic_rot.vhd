@@ -68,11 +68,12 @@ end entity;
 architecture rtl of olo_fix_cordic_rot is
 
     -- Formats
+    constant EntityName_c      : string        := "olo_fix_cordic_rot";
     constant InMagFmt_c        : FixFormat_t   := cl_fix_format_from_string(InMagFmt_g);
     constant InAngFmt_c        : FixFormat_t   := cl_fix_format_from_string(InAngFmt_g);
     constant OutFmt_c          : FixFormat_t   := cl_fix_format_from_string(OutFmt_g);
     constant IntXyFmt_c        : FixFormat_t   := choose(compareNoCase(IntXyFmt_g, "AUTO"),
-                                                         (1, InMagFmt_c.I + 1, InMagFmt_c.F + 3),
+                                                         (1, InMagFmt_c.I + 1, OutFmt_c.F + 3),
                                                          fixFmtFromStringTolerant(IntXyFmt_g));
     constant IntAngFmt_c       : FixFormat_t   := choose(compareNoCase(IntAngFmt_g, "AUTO"),
                                                          (1, -2, InAngFmt_c.F + 3),
@@ -199,25 +200,25 @@ begin
 
     -- *** Assertions ***
     assert InMagFmt_c.S = 0
-        report "###ERROR###: olo_fix_cordic_rot: InMagFmt_g must be unsigned"
+        report errorMessage(EntityName_c, "InMagFmt_g must be unsigned")
         severity error;
     assert InAngFmt_c.S = 0
-        report "###ERROR###: olo_fix_cordic_rot: InAngFmt_g must be (0,0,x))"
+        report errorMessage(EntityName_c, "InAngFmt_g must be (0,0,x))")
         severity error;
     assert InAngFmt_c.I = 0
-        report "###ERROR###: olo_fix_cordic_rot: InAngFmt_g must be (0,0,x))"
+        report errorMessage(EntityName_c, "InAngFmt_g must be (0,0,x))")
         severity error;
     assert IntXyFmt_c.S = 1
-        report "###ERROR###: olo_fix_cordic_rot: IntXyFmt_g must be signed"
+        report errorMessage(EntityName_c, "IntXyFmt_g must be signed")
         severity error;
     assert IntAngFmt_c.S = 1
-        report "###ERROR###: olo_fix_cordic_rot: IntAngFmt_g must be sig(1,-2,x)ned"
+        report errorMessage(EntityName_c, "IntAngFmt_g must be sig(1,-2,x)ned")
         severity error;
     assert IntAngFmt_c.I = -2
-        report "###ERROR###: olo_fix_cordic_rot: IntAngFmt_g must be (1,-2,x)"
+        report errorMessage(EntityName_c, "IntAngFmt_g must be (1,-2,x)")
         severity error;
     assert compareNoCase(Mode_g, "PIPELINED") or compareNoCase(Mode_g, "SERIAL")
-        report "###ERROR###: olo_fix_cordic_rot: Mode_g must be PIPELINED or SERIAL"
+        report errorMessage(EntityName_c, "Mode_g must be PIPELINED or SERIAL")
         severity error;
 
     -- *** Pipelined Implementation ***

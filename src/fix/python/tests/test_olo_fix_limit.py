@@ -87,6 +87,5 @@ class TestOloFixLimit(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.dut.process(self.data, lim_hi=self.lim_hi)
 
-
 if __name__ == '__main__':
     unittest.main()
