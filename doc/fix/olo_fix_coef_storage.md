@@ -45,7 +45,7 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | Init_g         | string  | "0.0"   | Comma-separated initial real values (e.g. "1.0, 0.5")<br />Missing entries default to 0.0 |
 | StorageType_g  | string  | "ROM"   | "ROM": read-only storage initialized from _Init_g_<br />"RAM": read-write storage, updateable via the Cfg port |
 | RamReadback_g  | boolean | false   | True: Readback through _Cfg_RdData_ / _Cfg_RdValid_ is possible (RAM only)<br />False: Readback is not possible|
-| RamBehavior_g  | string  | "WBR"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
+| RamBehavior_g  | string  | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 | RdLatency_g    | positive | 1      | Read latency in clock cycles for both read ports (minimum 1)                                        |
 | RamStyle_g     | string  | "auto"  | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes _ram_style_ and _ramstyle_ which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). <br> Does apply to _StorageType_g=ROM_ as well and can be used to control ROM implementation. |
 

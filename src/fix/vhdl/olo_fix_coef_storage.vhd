@@ -43,7 +43,7 @@ entity olo_fix_coef_storage is
         Init_g        : string   := "0.0";
         StorageType_g : string   := "ROM";
         RamReadback_g : boolean  := false;
-        RamBehavior_g : string   := "WBR";
+        RamBehavior_g : string   := "RBW";
         RdLatency_g   : positive := 1;
         RamStyle_g    : string   := "auto"
     );
