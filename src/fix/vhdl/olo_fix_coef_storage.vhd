@@ -43,7 +43,7 @@ entity olo_fix_coef_storage is
         Init_g        : string   := "0.0";
         StorageType_g : string   := "ROM";
         RamReadback_g : boolean  := false;
-        RamBehavior_g : string   := "RBW";
+        RamBehavior_g : string   := "WBR";
         RdLatency_g   : positive := 1;
         RamStyle_g    : string   := "auto"
     );
@@ -167,45 +167,73 @@ begin
 
     begin
 
-        p_ram : process (Clk) is
+        -- Valid signal pipelines
+        p_valid : process (Clk) is
         begin
             if rising_edge(Clk) then
-                -- RAM Access
-                if compareNoCase(RamBehavior_g, "RBW") then
-                    if Cfg_RdEna = '1' and RamReadback_g then
-                        RdPipe(1) <= Ram_v(fromUslv(Cfg_Addr));
-                    end if;
-                    CoefPipe(1) <= Ram_v(fromUslv(Coef_Addr));
-                end if;
-                if Cfg_WrEna = '1' then
-                    Ram_v(fromUslv(Cfg_Addr)) := Cfg_WrData;
-                end if;
-                if not compareNoCase(RamBehavior_g, "RBW") then
-                    if Cfg_RdEna = '1' and RamReadback_g then
-                        RdPipe(1) <= Ram_v(fromUslv(Cfg_Addr));
-                    end if;
-                    CoefPipe(1) <= Ram_v(fromUslv(Coef_Addr));
-                end if;
-
-                -- Read Enable
+                -- Default Values
+                CoefValidPipe(1) <= Coef_RdEna;
                 if RamReadback_g then
                     RdValidPipe(1) <= Cfg_RdEna;
+                else
+                    RdValidPipe(1) <= '0';
                 end if;
-                CoefValidPipe(1) <= Coef_RdEna;
 
-                -- Read-data pipeline registers
-                RdPipe(2 to RdLatency_g)        <= RdPipe(1 to RdLatency_g-1);
-                RdValidPipe(2 to RdLatency_g)   <= RdValidPipe(1 to RdLatency_g-1);
-                CoefPipe(2 to RdLatency_g)      <= CoefPipe(1 to RdLatency_g-1);
+                -- Pipeline registers
                 CoefValidPipe(2 to RdLatency_g) <= CoefValidPipe(1 to RdLatency_g-1);
+                RdValidPipe(2 to RdLatency_g)   <= RdValidPipe(1 to RdLatency_g-1);
 
                 -- Reset
                 if Rst = '1' then
-                    RdValidPipe   <= (others => '0');
                     CoefValidPipe <= (others => '0');
+                    RdValidPipe   <= (others => '0');
                 end if;
             end if;
         end process;
+
+        -- RAM implementation
+        -- Code optimized to be mapped efficiently by all vendors
+        g_wbr : if compareNoCase(RamBehavior_g, "WBR") generate
+
+            -- Port Cfg
+            p_port_cfg : process (Clk) is
+            begin
+                if rising_edge(Clk) then
+                    -- RAM
+                    if Cfg_WrEna = '1' then
+                        Ram_v(fromUslv(Cfg_Addr)) := Cfg_WrData;
+                    end if;
+                    RdPipe(1)   <= Ram_v(fromUslv(Cfg_Addr));
+                    CoefPipe(1) <= Ram_v(fromUslv(Coef_Addr));
+
+                    -- Read-data pipeline registers
+                    RdPipe(2 to RdLatency_g)   <= RdPipe(1 to RdLatency_g-1);
+                    CoefPipe(2 to RdLatency_g) <= CoefPipe(1 to RdLatency_g-1);
+                end if;
+            end process;
+
+        end generate;
+
+        g_rbw : if compareNoCase(RamBehavior_g, "RBW") generate
+
+            -- Port Cfg
+            p_port_cfg : process (Clk) is
+            begin
+                if rising_edge(Clk) then
+                    -- RAM
+                    RdPipe(1)   <= Ram_v(fromUslv(Cfg_Addr));
+                    CoefPipe(1) <= Ram_v(fromUslv(Coef_Addr));
+                    if Cfg_WrEna = '1' then
+                        Ram_v(fromUslv(Cfg_Addr)) := Cfg_WrData;
+                    end if;
+
+                    -- Read-data pipeline registers
+                    RdPipe(2 to RdLatency_g)   <= RdPipe(1 to RdLatency_g-1);
+                    CoefPipe(2 to RdLatency_g) <= CoefPipe(1 to RdLatency_g-1);
+                end if;
+            end process;
+
+        end generate;
 
         -- Assign outputs
         Cfg_RdData   <= RdPipe(RdLatency_g) when RamReadback_g else (others => '0');
