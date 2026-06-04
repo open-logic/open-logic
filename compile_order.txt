@@ -17,6 +17,7 @@ src/base/vhdl/olo_base_ram_tdp.vhd
 src/base/vhdl/olo_base_ram_sp.vhd
 src/ft/vhdl/olo_ft_ram_sp.vhd
 src/base/vhdl/olo_base_ram_sdp.vhd
+src/ft/vhdl/olo_ft_ram_sdp.vhd
 src/base/vhdl/olo_base_pkg_logic.vhd
 src/intf/vhdl/olo_intf_uart.vhd
 src/intf/vhdl/olo_intf_spi_slave.vhd
