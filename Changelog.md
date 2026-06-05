@@ -143,7 +143,7 @@
   - Python 3.10 -> Python 3.13
   - GHDL 3.0.0 -> GHDL 4.1.0
   - NVC 1.13.3  -> NVC 1.19.0
-  - VUnit 4.7.0 -> VUnit 5.0.0.dev7
+  - VUnit 4.7.0 -> VUnit 5.0.0.dev10
 
 - Make all string generics case-insensitive
   - Contributed by: [obruendl](https://github.com/obruendl)
