@@ -52,3 +52,18 @@ entities:
         generics: { Width_g: 32, EccPipeline_g: 1, RamRdLatency_g: 2 }
         in_reduce: { Wr_Data: 32, ErrInj_BitFlip: 39 }
         out_reduce: { Rd_Data: 32 }
+
+  # ============================================================
+  # olo_ft_ram_tdp
+  # ============================================================
+  - entity_name: "olo_ft_ram_tdp"
+    fixed_generics:
+      Depth_g: 256
+      RamBehavior_g: '"WBR"'
+    configurations:
+      - name: "w32-ecc1-lat2"
+        generics: { Width_g: 32, EccPipeline_g: 1, RamRdLatency_g: 2 }
+        in_reduce: { A_WrData: 32, B_WrData: 32, A_ErrInj_BitFlip: 39, B_ErrInj_BitFlip: 39 }
+        out_reduce: { A_RdData: 32, B_RdData: 32 }
+    tool_omit:
+      cologne: "TDP not supported on Cologne Chip FPGAs"
