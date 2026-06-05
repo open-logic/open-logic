@@ -41,7 +41,7 @@ namespace eval olo_import_sources {
 	variable oloRoot [file normalize $fileLoc/../..]
 
 	#Add all source files
-	foreach area {base axi intf fix} {
+	foreach area {base axi intf fix ft} {
 		add_files $oloRoot/src/$area/vhdl
 		set_property LIBRARY olo [get_files -all *olo_$area\_*]
 		set_property FILE_TYPE {VHDL 2008} [get_files -all *olo_$area\_*]
