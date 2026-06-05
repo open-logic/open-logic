@@ -697,3 +697,16 @@ def add_configs(olo_tb):
         for Round in ['Trunc_s', 'NonSymNeg_s']:
             for Sat in ['None_s', 'SatWarn_s']:
                 named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat, 'IqHandling_g': IqHandling}, pre_config=cosim)
+
+    ### olo_fix_coef_storage ###
+    tb = olo_tb.test_bench('olo_fix_coef_storage_tb')
+
+    for StorageType in ['ROM', 'RAM']:
+        for Latency in [1, 2]:
+            if StorageType == 'RAM':
+                for RamReadback in ['True', 'False']:
+                    for RamBehavior in ['RBW', 'WBR']:
+                         named_config(tb, {'StorageType_g': StorageType, 'RamReadback_g': RamReadback, 'RamBehavior_g': RamBehavior, 'RdLatency_g': Latency})
+            else: # ROM
+                named_config(tb, {'StorageType_g': StorageType, 'RdLatency_g': Latency})
+

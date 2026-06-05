@@ -267,5 +267,6 @@ be used. For deciding which option to use, the following considerations shall be
 
 | Entity                                              | Description                                                                                              |
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| [olo_fix_sample_hold](./fix/olo_fix_sample_hold.md) | Sample and hold a fixed point number - output holds the last sampled value until a new sample is taken.  |
-| [olo_fix_mov_avg](./fix/olo_fix_mov_avg.md)         | Moving average filter                                                                                    |
+| [olo_fix_coef_storage](./fix/olo_fix_coef_storage.md) | Fixed-point coefficient storage - ROM or RAM with Coef read port and optional Cfg write/readback port. |
+| [olo_fix_sample_hold](./fix/olo_fix_sample_hold.md)   | Sample and hold a fixed point number - output holds the last sampled value until a new sample is taken.  |
+| [olo_fix_mov_avg](./fix/olo_fix_mov_avg.md)           | Moving average filter                                                                                    |

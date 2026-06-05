@@ -97,16 +97,18 @@ package olo_base_pkg_attribute is
     attribute keep : string;
     constant Keep_SuppressChanges_c : string := "yes";
 
-    -- *** RAM Style ***
+    -- *** RAM/ROM Style ***
     -- Those attributes do not come with values. They are controlled by strings entered by the user directly.
 
     -- Tools:
     -- - Vivado (AMD)
     attribute ram_style : string;
+    attribute rom_style : string;
 
     -- Tools:
     -- - Quartus (Altera)
     attribute ramstyle : string;
+    attribute romstyle : string;
     constant RamStyle_Mlab_c : string := "MLAB"; -- Also used to forse shift-registers in distributed RAMs
 
     -- Tools:
@@ -114,6 +116,7 @@ package olo_base_pkg_attribute is
     -- - Synplify (Lattice/Mircochip)
     -- - GowinEDA (Gowin)
     attribute syn_ramstyle : string;
+    attribute syn_romstyle : string;
 
 end package;
 
