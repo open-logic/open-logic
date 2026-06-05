@@ -301,6 +301,34 @@ entities:
           In_MixIQ: 16
         out_reduce:
           Out_SigReal: 16
+  # olo_fix_coef_storage
+  - entity_name: "olo_fix_coef_storage"
+    tool_generics:
+      quartus:
+        RamBehavior_g: '"WBR"'
+      gowin:
+        RamBehavior_g: '"WBR"'
+    configurations:
+      - name: "ROM"
+        generics:
+          Depth_g: 256
+          Fmt_g: '"(1, 7, 8)"'
+          Init_g: '"123.256, 0.2358, 23.2589, 14.879, -123.58, 50.2e-1"'
+          StorageType_g: '"ROM"'
+      - name: "RAM-no-read"
+        generics:
+          Depth_g: 256
+          Fmt_g: '"(1, 7, 8)"'
+          Init_g: '"123.256, 0.2358, 23.2589, 14.879, -123.58, 50.2e-1"'
+          StorageType_g: '"RAM"'
+          RamReadback_g: false
+      - name: "RAM-read"
+        generics:
+          Depth_g: 256
+          Fmt_g: '"(1, 7, 8)"'
+          Init_g: '"123.256, 0.2358, 23.2589, 14.879, -123.58, 50.2e-1"'
+          StorageType_g: '"RAM"'
+          RamReadback_g: true
   # olo_fix_sample_hold
   - entity_name: "olo_fix_sample_hold"
     configurations:
