@@ -70,3 +70,14 @@ def add_configs(olo_tb):
         named_config(tb, {'Width_g': Width})
     for EccPipeline in [0, 1, 2]:
         named_config(tb, {'EccPipeline_g': EccPipeline})
+
+    ### olo_ft_ram_tdp ###
+    tb = olo_tb.test_bench('olo_ft_ram_tdp_tb')
+    for RamBehav in ['RBW', 'WBR']:
+        named_config(tb, {'RamBehavior_g': RamBehav})
+    for ReadLatency in [1, 2]:
+        named_config(tb, {'RamRdLatency_g': ReadLatency})
+    for Width in Widths:
+        named_config(tb, {'Width_g': Width})
+    for EccPipeline in [0, 1, 2]:
+        named_config(tb, {'EccPipeline_g': EccPipeline})
