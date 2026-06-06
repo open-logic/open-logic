@@ -59,6 +59,17 @@ def add_configs(olo_tb):
     for EccPipeline in [0, 1, 2]:
         named_config(tb, {'EccPipeline_g': EccPipeline})
 
+    ### olo_ft_ram_sp_scrub ###
+    tb = olo_tb.test_bench('olo_ft_ram_sp_scrub_tb')
+    for RamBehav in ['RBW', 'WBR']:
+        named_config(tb, {'RamBehavior_g': RamBehav})
+    for RamRdLatency in [1, 2]:
+        for EccPipeline in [0, 1, 2]:
+            named_config(tb, {'RamRdLatency_g': RamRdLatency,
+                              'EccPipeline_g': EccPipeline})
+    for Width in Widths:
+        named_config(tb, {'Width_g': Width})
+
     ### olo_ft_ram_sdp ###
     tb = olo_tb.test_bench('olo_ft_ram_sdp_tb')
     for RamBehav in ['RBW', 'WBR']:
@@ -70,6 +81,17 @@ def add_configs(olo_tb):
         named_config(tb, {'Width_g': Width})
     for EccPipeline in [0, 1, 2]:
         named_config(tb, {'EccPipeline_g': EccPipeline})
+
+    ### olo_ft_ram_sdp_scrub ###
+    tb = olo_tb.test_bench('olo_ft_ram_sdp_scrub_tb')
+    for RamBehav in ['RBW', 'WBR']:
+        named_config(tb, {'RamBehavior_g': RamBehav})
+    for RamRdLatency in [1, 2]:
+        for EccPipeline in [0, 1, 2]:
+            named_config(tb, {'RamRdLatency_g': RamRdLatency,
+                              'EccPipeline_g': EccPipeline})
+    for Width in Widths:
+        named_config(tb, {'Width_g': Width})
 
     ### olo_ft_ram_tdp ###
     tb = olo_tb.test_bench('olo_ft_ram_tdp_tb')

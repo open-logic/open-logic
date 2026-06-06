@@ -42,9 +42,33 @@ entities:
         out_reduce: { RdData: 64 }
 
   # ============================================================
+  # olo_ft_ram_sp_scrub
+  # ============================================================
+  - entity_name: "olo_ft_ram_sp_scrub"
+    fixed_generics:
+      Depth_g: 256
+    configurations:
+      - name: "w64-ecc2-lat1"
+        generics: { Width_g: 64, EccPipeline_g: 2, RamRdLatency_g: 1 }
+        in_reduce: { WrData: 64, ErrInj_BitFlip: 72 }
+        out_reduce: { RdData: 64 }
+
+  # ============================================================
   # olo_ft_ram_sdp
   # ============================================================
   - entity_name: "olo_ft_ram_sdp"
+    fixed_generics:
+      Depth_g: 256
+    configurations:
+      - name: "w32-ecc1-lat2"
+        generics: { Width_g: 32, EccPipeline_g: 1, RamRdLatency_g: 2 }
+        in_reduce: { Wr_Data: 32, ErrInj_BitFlip: 39 }
+        out_reduce: { Rd_Data: 32 }
+
+  # ============================================================
+  # olo_ft_ram_sdp_scrub
+  # ============================================================
+  - entity_name: "olo_ft_ram_sdp_scrub"
     fixed_generics:
       Depth_g: 256
     configurations:
