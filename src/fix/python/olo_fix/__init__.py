@@ -28,4 +28,5 @@ from .olo_fix_mix_r2c import *
 from .olo_fix_mix_c2r import *
 from .olo_fix_sample_hold import *
 from .olo_fix_mov_avg import *
+from .olo_fix_fir_dec import *
 

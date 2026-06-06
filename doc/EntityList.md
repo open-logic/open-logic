@@ -262,6 +262,7 @@ be used. For deciding which option to use, the following considerations shall be
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | [olo_fix_cic_dec_tdm](./fix/olo_fix_cic_dec_tdm.md)         | CIC decimator (TDM input, TDM output), single- or multi-channel, ratio fixed or runtime configurable               |
 | [olo_fix_cic_dec_par_tdm](./fix/olo_fix_cic_dec_par_tdm.md) | CIC decimator (parallel input, TDM output), single- or multi-channel, ratio fixed or runtime configurable          |
+| [olo_fix_fir_dec_ser_tdm](./fix/olo_fix_fir_dec_ser_tdm.md) | Decimating FIR filter (TDM channels, serial tap computation), multi-channel, runtime-configurable ratio and tap count |
 
 ### Miscellaneous
 
