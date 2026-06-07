@@ -6,6 +6,7 @@ files:
 exclude_entities:
   - "olo_private_*"
   - "olo_base_*"
+  - "olo_ft_ram_scrubber"  # private scrubber core, compiled as a dependency of the _scrub wrappers
 
 entities:
 
