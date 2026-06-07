@@ -502,6 +502,181 @@ begin
                          Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed,
                          "Boundary: SEC at addr Depth_c - 1 corrected");
 
+            -- Reset asserted while the scrubber has reads in flight must squash the scrub
+            -- read-valid pipeline and the masked user RdValid, leave no stale pulse after
+            -- release, and preserve RAM contents. Exercises the scrubber's reset of ValidPipe /
+            -- Fsm / ScrubAddr / WaitCnt -- new state the wrapped RAM does not have.
+            elsif run("ResetInFlight") then
+                -- Plant a known clean value (a clean cell is never rewritten by the scrubber).
+                write(50, 16#3C#, Clk, Addr, WrData, WrEna);
+
+                -- Let the scrubber run (user idle) so reads are continuously in flight.
+                for i in 1 to 4 * (RamRdLatency_g + EccPipeline_g + 1) loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                -- Assert reset while the scrubber is active: ValidPipe is fed every cycle, so a
+                -- missing reset would let Scrub_Rd_Valid pulse. Reset must hold it (and the masked
+                -- user RdValid) low.
+                wait until rising_edge(Clk);
+                Rst <= '1';
+
+                -- Let the read-valid pipeline flush after asserting reset.
+                for i in 1 to RamRdLatency_g + EccPipeline_g + 1 loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                -- Reset must now hold the scrub read-valid (and the masked user RdValid) low,
+                -- even though the scrubber is still enabled and would otherwise keep issuing reads.
+                for i in 1 to 3 loop
+                    wait until rising_edge(Clk);
+                    check_equal(Scrub_Rd_Valid, '0', "ResetInFlight: Scrub_Rd_Valid squashed under Rst");
+                    check_equal(RdValid,        '0', "ResetInFlight: user RdValid squashed under Rst");
+                end loop;
+
+                -- Pause the scrubber before release so no NEW scrub reads start; no stale valid
+                -- from a pre-reset read may emerge after release.
+                Scrub_Enable <= '0';
+                wait until rising_edge(Clk);
+                Rst          <= '0';
+
+                for i in 1 to RamRdLatency_g + EccPipeline_g + 2 loop
+                    wait until rising_edge(Clk);
+                    check_equal(Scrub_Rd_Valid, '0', "ResetInFlight: no stale Scrub_Rd_Valid after release");
+                    check_equal(RdValid,        '0', "ResetInFlight: no stale user RdValid after release");
+                end loop;
+
+                -- Contents survived the reset; a fresh user read decodes correctly.
+                Scrub_Enable <= '1';
+                checkEcc(50, 16#3C#, '0', '0', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed,
+                         "ResetInFlight: contents survive + fresh read decodes");
+
+                -- The scrubber resumes after reset.
+                PassCnt_v := 0;
+
+                while PassCnt_v < 1 loop
+                    wait until rising_edge(Clk);
+                    if Scrub_PassDone = '1' then
+                        PassCnt_v := PassCnt_v + 1;
+                    end if;
+                end loop;
+
+                check_true(true, "ResetInFlight: scrubber resumes (PassDone pulses)");
+
+            -- A user access during the scrubber's read-decode window must abort the writeback and
+            -- NOT advance ScrubAddr, so the same address is retried. Plant a SEC at addr 0 (the
+            -- pass start), drive intermittent user reads on a different address (addr 0 never
+            -- written): the scrubber reads addr 0 every idle cycle but is inhibited before it can
+            -- write back, so addr 0 stays SEC throughout; it is repaired only once the user idles.
+            elsif run("WritebackAbortsOnContention") then
+                -- Plant a SEC at addr 0.
+                writeWithFlip(0, 16#A5#, singleBit(0),
+                              Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
+
+                -- Reset so the scrubber's address counter restarts at addr 0 (the SEC). Reset
+                -- does not clear the RAM, so the planted SEC persists.
+                wait until rising_edge(Clk);
+                Rst <= '1';
+                wait until rising_edge(Clk);
+                wait until rising_edge(Clk);
+                Rst <= '0';
+
+                -- Bridge: keep the user continuously busy so the scrubber (now parked on addr 0)
+                -- cannot complete a repair before the alternating pattern starts.
+                for i in 1 to RamRdLatency_g + EccPipeline_g + 2 loop
+                    wait until rising_edge(Clk);
+                    Addr  <= toUslv(100, Addr'length);
+                    RdEna <= '1';
+                end loop;
+
+                RdValidCnt_v := 0;
+
+                for i in 1 to 400 loop
+                    wait until rising_edge(Clk);
+                    if (i mod 2) = 0 then
+                        Addr  <= toUslv(100, Addr'length);
+                        RdEna <= '1';
+                    else
+                        Addr  <= (others => '0');
+                        RdEna <= '0';
+                    end if;
+                    -- Each scrub read of addr 0 returns its SEC flag on the codec-return cycle,
+                    -- even though the FSM aborts; counting these proves the abort path runs.
+                    if Scrub_Rd_Valid = '1' and Scrub_Rd_EccSec = '1' then
+                        RdValidCnt_v := RdValidCnt_v + 1;
+                    end if;
+                end loop;
+
+                wait until rising_edge(Clk);
+                RdEna <= '0';
+                Addr  <= (others => '0');
+
+                check_true(RdValidCnt_v >= 10,
+                           "WritebackAbortsOnContention: scrubber repeatedly read the SEC at addr 0 during contention");
+
+                -- Freeze the scrubber; every writeback must have been aborted: addr 0 still SEC.
+                -- A buggy engine that wrote back under inhibit, or advanced ScrubAddr past addr 0
+                -- on abort, would read clean here.
+                Scrub_Enable <= '0';
+                wait until rising_edge(Clk);
+                checkEcc(0, 0, '1', '0', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed,
+                         "WritebackAbortsOnContention: SEC at addr 0 NOT repaired during contention",
+                         CheckData => false);
+
+                -- Re-enable and idle: the same-address retry now completes and repairs addr 0.
+                Scrub_Enable <= '1';
+                PassCnt_v    := 0;
+
+                while PassCnt_v < 2 loop
+                    wait until rising_edge(Clk);
+                    if Scrub_PassDone = '1' then
+                        PassCnt_v := PassCnt_v + 1;
+                    end if;
+                end loop;
+
+                checkEcc(0, 16#A5#, '0', '0', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed,
+                         "WritebackAbortsOnContention: addr 0 repaired after contention (same-addr retry)");
+
+            -- Scrub_Enable='0' must PRESERVE ScrubAddr (resume from the same address), not reset
+            -- it to 0. Advance the scrubber to near the end of a pass, suspend, resume, and time
+            -- the next PassDone: only a preserved address makes it arrive quickly.
+            elsif run("ScrubEnablePreservesAddr") then
+                -- Align to a pass boundary so ScrubAddr is 0.
+
+                loop
+                    wait until rising_edge(Clk);
+                    exit when Scrub_PassDone = '1';
+                end loop;
+
+                -- Advance to near the end of the pass (one scrub op per
+                -- RamRdLatency_g+EccPipeline_g+1 cycles; user idle, so no aborts).
+                for i in 1 to (Depth_c - 8) * (RamRdLatency_g + EccPipeline_g + 1) loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                -- Suspend then resume; a correct engine keeps ScrubAddr near the end.
+                Scrub_Enable <= '0';
+
+                for i in 1 to 50 loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                Scrub_Enable <= '1';
+
+                -- Time the next PassDone. Preserved => only ~8 addresses remain (short).
+                -- Reset-to-0 => a near-full pass (long). Assert it is short.
+                RdValidCnt_v := 0;
+
+                loop
+                    wait until rising_edge(Clk);
+                    RdValidCnt_v := RdValidCnt_v + 1;
+                    exit when Scrub_PassDone = '1';
+                    exit when RdValidCnt_v >= Depth_c * (RamRdLatency_g + EccPipeline_g + 1);
+                end loop;
+
+                check_true(RdValidCnt_v < (Depth_c / 2) * (RamRdLatency_g + EccPipeline_g + 1),
+                           "ScrubEnablePreservesAddr: PassDone arrived quickly after resume (ScrubAddr preserved)");
+
             end if;
 
         end loop;
