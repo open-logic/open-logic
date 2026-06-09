@@ -67,11 +67,11 @@ across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_princ
 | Name      | In/Out | Length                | Default | Description                                                  |
 | :-------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | Rd_Addr   | in     | _ceil(log2(Depth_g))_ | -       | Read address                                                 |
-| Rd_Ena    | in     | 1                     | '1'     | Read enable. _Rd_Valid_ pulses '1' exactly _RamRdLatency_g_+_EccPipeline_g_ cycles after each cycle on which _Rd_Ena_ = '1'. Leave at the default '1' for continuous reads. |
+| Rd_Ena    | in     | 1                     | '1'     | Read enable. _Rd_Valid_ pulses '1' exactly _RamRdLatency_g_+_EccPipeline_g_ cycles after each cycle on which _Rd_Ena_ = '1'. Note: holding _Rd_Ena_ = '1' permanently leaves no idle cycles and starves the scrubber entirely (see [Opportunistic Scrubbing](#opportunistic-scrubbing)); deassert it on cycles without an actual read. |
 | Rd_Data   | out    | _Width_g_             | N/A     | Read data (corrected if a single-bit error was detected)     |
 | Rd_Valid  | out    | 1                     | N/A     | Read-data valid. Pulses '1' only for reads the user issued; cycles consumed by the scrubber's own reads are masked out (see [Architecture](#architecture)). |
-| Rd_EccSec | out    | 1                     | N/A     | Single error corrected flag for the current user read.       |
-| Rd_EccDed | out    | 1                     | N/A     | Double error detected flag for the current user read. Read data is unreliable in this case. |
+| Rd_EccSec | out    | 1                     | N/A     | Single error corrected flag. Unmasked pass-through of the decoder's SEC flag: qualify it with _Rd_Valid_ = '1'. It also asserts on the return cycle of a scrubber-issued read (_Rd_Valid_ = '0', _Scrub_Rd_Valid_ = '1'); scrubber events are reported on _Scrub_Rd_EccSec_. |
+| Rd_EccDed | out    | 1                     | N/A     | Double error detected flag. Unmasked pass-through of the decoder's DED flag: qualify it with _Rd_Valid_ = '1' (it also asserts on scrubber read returns). Read data is unreliable when the flag is set. |
 
 ### Error Injection (optional)
 
@@ -84,8 +84,10 @@ latched-strobe semantics.
 > the very next encoder write, which in the scrub variant may be a scrubber writeback rather than the user's intended
 > next write. Either drive `ErrInj_Valid = '1'` together with `Wr_Ena = '1'` in the same cycle (immediate injection,
 > bypasses the latch), or pause the scrubber with `Scrub_Enable = '0'` while the latch is preloaded - see
-> [Pausing the Scrubber](#pausing-the-scrubber). Even in the worst case, a scrubber-corrupted cell is SEC-correctable
-> and is repaired by the next scrubber pass over that address.
+> [Pausing the Scrubber](#pausing-the-scrubber). For a single-bit (popcount-1) pattern the worst case is benign: a
+> scrubber-corrupted cell is SEC-correctable and is repaired on the next pass. For popcount >= 2 patterns there is no
+> such safety net: a scrubber writeback that consumes the latch leaves an uncorrectable (DED) word at the scrubbed
+> address, which the SEC-only scrubber never rewrites. Always pause the scrubber before preloading multi-bit patterns.
 
 | Name           | In/Out | Length                                                              | Default | Description                                                  |
 | :------------- | :----- | :------------------------------------------------------------------ | ------- | :----------------------------------------------------------- |
@@ -105,7 +107,7 @@ The status outputs report the scrubber's _own_ reads and are valid only on the c
 | Name            | In/Out | Length | Default | Description                                                  |
 | :-------------- | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Scrub_Rd_Valid  | out    | 1      | N/A     | Pulses '1' on the cycle a scrubber-issued read returns from the decoder (one pulse per scrubber read, regardless of whether an error was detected). Qualifies _Scrub_Rd_EccSec_ / _Scrub_Rd_EccDed_; also used by the scrubber core to mask the user-facing _Rd_Valid_. |
-| Scrub_Rd_EccSec | out    | 1      | N/A     | SEC flag of the scrubber's own read. The scrubber writes this address back when it is '1' (and _Scrub_Rd_EccDed_ = '0'). |
+| Scrub_Rd_EccSec | out    | 1      | N/A     | SEC flag of the scrubber's own read. The scrubber writes this address back when it is '1' (and _Scrub_Rd_EccDed_ = '0'), unless a user access on the same cycle aborts the operation; the address is then retried (see [Opportunistic Scrubbing](#opportunistic-scrubbing)). |
 | Scrub_Rd_EccDed | out    | 1      | N/A     | DED flag of the scrubber's own read. The scrubber **does not** write the cell back in this case (the corrected value is unreliable). |
 | Scrub_PassDone  | out    | 1      | N/A     | Pulses '1' for one cycle when the scrubber's address counter rolls over from _Depth_g_-1 back to 0, marking a completed pass over the memory. |
 
@@ -123,7 +125,8 @@ mux logic of its own. It taps the RAM's decoded read output (`Ram_Rd_Data` / `Ra
 its FSM and writeback payload. The user always wins; the scrubber drives the RAM only when **both** user ports are idle
 (`Wr_Ena = Rd_Ena = 0`). `ErrInj_*` go directly to the wrapped RAM's encoder, bypassing the scrubber.
 
-The decoder's `Rd_Data` / `Rd_EccSec` / `Rd_EccDed` are forwarded straight to the user. The RAM's read-valid is fed
+The decoder's `Rd_Data` / `Rd_EccSec` / `Rd_EccDed` are forwarded straight to the user; the two ECC flags are not
+masked, so they also reflect scrubber-issued reads (qualify them with `Rd_Valid`). The RAM's read-valid is fed
 into the scrubber, which masks the cycles consumed by its own reads and returns the user-facing valid
 (`User_Rd_Valid = Ram_Rd_Valid AND NOT Scrub_Rd_Valid`); the wrapper forwards that directly to `Rd_Valid`. The mask
 lives in the scrubber core because its read-valid is already aligned to the decoder-return cycle by the internal
@@ -181,4 +184,6 @@ See the corresponding sections in [Open Logic Fault-Tolerance Principles](./olo_
 See
 [Open Logic Fault-Tolerance Principles - Constraints That Apply Across the Area](./olo_ft_principles.md#constraints-that-apply-across-the-area)
 for the no-byte-enables and no-initialization constraints. In addition, the scrubbing wrapper is **synchronous-only**:
-the scrubber observes the user ports on a single clock, so there is no async read clock (no `IsAsync_g`).
+the scrubber observes the user ports on a single clock, so there is no async read clock (no `IsAsync_g`). There is
+deliberately no scrub variant of the true-dual-port RAM; see
+[olo_ft_private_scrubber](./olo_ft_private_scrubber.md#constraints) for the rationale.

@@ -23,6 +23,9 @@ flags indicate whether a single-bit error was corrected or a double-bit error wa
 
 This is useful in **radiation-hardened** designs where single-event upsets (SEUs) can flip bits in memory cells.
 
+For an opportunistic background memory scrubber, use [olo_ft_ram_sp_scrub](./olo_ft_ram_sp_scrub.md), a separate
+entity that wraps this one plus the scrubber FSM.
+
 For background on the SECDED scheme, the codeword layout, error injection semantics and the constraints that
 apply across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_principles.md).
 

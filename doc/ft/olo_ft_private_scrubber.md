@@ -162,3 +162,6 @@ upsets.
 
 The scrubber requires single-clock operation: it observes the wrapped RAM's read on the same clock that drives the
 user port, so the scrubbing RAM wrappers are synchronous-only (no async read clock).
+
+There is deliberately no `olo_ft_ram_tdp_scrub`: on a true-dual-port RAM both ports can be user-busy in any cycle
+(and may run on independent clocks), so there is no port the scrubber could own opportunistically.
