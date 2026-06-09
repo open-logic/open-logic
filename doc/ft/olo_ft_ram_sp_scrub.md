@@ -36,7 +36,7 @@ across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_princ
 
 | Name           | Type     | Default | Description                                                  |
 | :------------- | :------- | ------- | :----------------------------------------------------------- |
-| Depth_g        | positive | -       | Number of addresses the RAM has                              |
+| Depth_g        | positive | -       | Number of addresses the RAM has. Must be at least 2.         |
 | Width_g        | positive | -       | Number of data bits stored per address (word-width). The internal RAM is wider to accommodate ECC parity bits. |
 | RamRdLatency_g | positive | 1       | Read latency of the wrapped RAM, _excluding_ ECC pipeline stages. Higher values can help close timing on the RAM read path. |
 | RamStyle_g     | string   | "auto"  | Controls the RAM implementation resource. Passed through to [olo_base_ram_sp](../base/olo_base_ram_sp.md). |
@@ -50,7 +50,7 @@ across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_princ
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Clk  | in     | 1      | -       | Clock                                                        |
-| Rst  | in     | 1      | '0'     | Reset (high-active, synchronous to _Clk_). Resets the scrubber FSM and the read-valid pipeline. The stored RAM contents are unaffected (block RAMs cannot be reset). |
+| Rst  | in     | 1      | -       | Reset (high-active, synchronous to _Clk_). Resets the scrubber FSM and the read-valid pipeline; apply a reset pulse after startup, since the scrubber's address counter does not self-initialize in simulation. The stored RAM contents are unaffected (block RAMs cannot be reset). |
 
 ### FT RAM Port
 

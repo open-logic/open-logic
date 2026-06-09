@@ -36,7 +36,7 @@ For background on the SECDED scheme and the meaning of the ECC flags, see
 
 | Name               | Type     | Default | Description                                                  |
 | :----------------- | :------- | ------- | :----------------------------------------------------------- |
-| Depth_g            | positive | -       | Number of addresses to scrub. Matches the wrapped RAM depth. |
+| Depth_g            | positive | -       | Number of addresses to scrub. Matches the wrapped RAM depth. Must be at least 2. |
 | Width_g            | positive | -       | Data word-width (decoded data, _not_ the codeword width).    |
 | TotalReadLatency_g | positive | -       | End-to-end read latency of the wrapped ECC RAM, i.e. _RamRdLatency_g_ + _EccPipeline_g_. The FSM waits this many cycles between issuing a read and sampling the decoded ECC flags, and the read-valid shift register is this long. |
 

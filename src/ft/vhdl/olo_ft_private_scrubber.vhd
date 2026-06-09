@@ -69,7 +69,7 @@ library work;
 ---------------------------------------------------------------------------------------------------
 entity olo_ft_private_scrubber is
     generic (
-        Depth_g            : positive;
+        Depth_g            : positive range 2 to positive'high;
         Width_g            : positive;
         TotalReadLatency_g : positive
     );

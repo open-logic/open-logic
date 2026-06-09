@@ -45,7 +45,7 @@ library work;
 ---------------------------------------------------------------------------------------------------
 entity olo_ft_ram_sdp_scrub is
     generic (
-        Depth_g        : positive;
+        Depth_g        : positive range 2 to positive'high;
         Width_g        : positive;
         RamRdLatency_g : positive             := 1;
         RamStyle_g     : string               := "auto";
@@ -55,7 +55,7 @@ entity olo_ft_ram_sdp_scrub is
     port (
         -- Clock and Reset
         Clk             : in    std_logic;
-        Rst             : in    std_logic                                                := '0';
+        Rst             : in    std_logic;
         -- Write Port
         Wr_Addr         : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         Wr_Ena          : in    std_logic                                                := '1';
