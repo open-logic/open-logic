@@ -49,7 +49,7 @@
 -- them with Scrub_Rd_Valid.
 --
 -- Documentation:
--- https://github.com/open-logic/open-logic/blob/main/doc/ft/olo_ft_ram_scrubber.md
+-- https://github.com/open-logic/open-logic/blob/main/doc/ft/olo_ft_private_scrubber.md
 --
 -- Note: The link points to the documentation of the latest release. If you
 --       use an older version, the documentation might not match the code.
@@ -67,7 +67,7 @@ library work;
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
-entity olo_ft_ram_scrubber is
+entity olo_ft_private_scrubber is
     generic (
         Depth_g            : positive;
         Width_g            : positive;
@@ -112,7 +112,7 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 -- Architecture
 ---------------------------------------------------------------------------------------------------
-architecture rtl of olo_ft_ram_scrubber is
+architecture rtl of olo_ft_private_scrubber is
 
     constant AddrWidth_c : positive := log2ceil(Depth_g);
 

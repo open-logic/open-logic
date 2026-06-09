@@ -7,11 +7,11 @@
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- ECC-protected simple dual-port RAM with an opportunistic memory scrubber.
--- Wraps `olo_ft_ram_sdp` and `olo_ft_ram_scrubber`. The user-facing interface
+-- Wraps `olo_ft_ram_sdp` and `olo_ft_private_scrubber`. The user-facing interface
 -- mirrors `olo_ft_ram_sdp` (write port + read port) plus the scrubber control
 -- and status ports.
 --
--- The scrubber owns the user/scrubber arbitration (see olo_ft_ram_scrubber).
+-- The scrubber owns the user/scrubber arbitration (see olo_ft_private_scrubber).
 -- This wrapper maps the scrubber's write and read RAM channels 1:1 onto the
 -- write and read ports of olo_ft_ram_sdp, so it carries no mux logic of its own.
 -- It is fundamentally synchronous -- there is no `IsAsync_g` generic and no
@@ -107,7 +107,7 @@ begin
 
     -- Opportunistic scrubber + user/scrubber arbitration. The user write/read ports feed the
     -- scrubber's user channels; its muxed RAM channels map straight onto the RAM ports below.
-    i_scrubber : entity work.olo_ft_ram_scrubber
+    i_scrubber : entity work.olo_ft_private_scrubber
         generic map (
             Depth_g            => Depth_g,
             Width_g            => Width_g,

@@ -3,7 +3,7 @@ src/intf/vhdl/olo_intf_sync.vhd
 src/base/vhdl/olo_base_pl_stage.vhd
 src/base/vhdl/olo_base_pkg_array.vhd
 src/base/vhdl/olo_base_pkg_math.vhd
-src/ft/vhdl/olo_ft_ram_scrubber.vhd
+src/ft/vhdl/olo_ft_private_scrubber.vhd
 src/ft/vhdl/olo_ft_pkg_ecc.vhd
 src/ft/vhdl/olo_ft_ecc_encode.vhd
 src/ft/vhdl/olo_ft_ecc_decode.vhd

@@ -18,7 +18,7 @@ This component implements an **ECC-protected single-port RAM with an opportunist
 existing entities:
 
 - [olo_ft_ram_sp](./olo_ft_ram_sp.md) - the SECDED-protected single-port RAM (encoder + RAM + decoder).
-- [olo_ft_ram_scrubber](./olo_ft_ram_scrubber.md) - the private opportunistic scrubber FSM.
+- [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) - the private opportunistic scrubber FSM.
 
 The user-facing interface is identical to [olo_ft_ram_sp](./olo_ft_ram_sp.md) plus a scrubber-enable input and four
 scrubber-status outputs. ECC encoding/decoding is transparent; the scrubber additionally walks the address space
@@ -107,7 +107,7 @@ The status outputs report the scrubber's _own_ reads and are valid only on the c
 
 ![olo_ft_ram_sp_scrub architecture](./ram/olo_ft_ram_sp_scrub_arch.drawio.png)
 
-The wrapper places the [olo_ft_ram_scrubber](./olo_ft_ram_scrubber.md) in front of the wrapped
+The wrapper places the [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) in front of the wrapped
 [olo_ft_ram_sp](./olo_ft_ram_sp.md). The scrubber owns the user/scrubber arbitration: the single user port
 (`Addr` / `WrEna` / `WrData` / `RdEna`) is tied to both of the scrubber's user channels, and the scrubber returns
 muxed write and read RAM channels (`Ram_Wr_*` / `Ram_Rd_*`). It taps the RAM's decoded read output
@@ -122,7 +122,7 @@ The decoder's `RdData` / `RdEccSec` / `RdEccDed` are forwarded straight to the u
 the scrubber, which masks the cycles consumed by its own reads and returns the user-facing valid
 (`User_Rd_Valid = Ram_RdValid AND NOT Scrub_Rd_Valid`); the wrapper forwards that directly to `RdValid`. The mask
 lives in the scrubber core because its read-valid is already aligned to the decoder-return cycle by the internal
-length-(`RamRdLatency_g` + `EccPipeline_g`) pipeline (see [olo_ft_ram_scrubber](./olo_ft_ram_scrubber.md)).
+length-(`RamRdLatency_g` + `EccPipeline_g`) pipeline (see [olo_ft_private_scrubber](./olo_ft_private_scrubber.md)).
 
 ### Opportunistic Scrubbing
 
@@ -136,7 +136,7 @@ length-(`RamRdLatency_g` + `EccPipeline_g`) pipeline (see [olo_ft_ram_scrubber](
 - **SEC-only writeback.** Only correctable single-bit errors are rewritten. Clean cells are left untouched; a DED read
   is reported on `Scrub_Rd_EccDed` but never written back.
 
-See [olo_ft_ram_scrubber](./olo_ft_ram_scrubber.md) for the scrubber FSM (states, abort behavior and read-valid
+See [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) for the scrubber FSM (states, abort behavior and read-valid
 alignment).
 
 ### Pausing the Scrubber

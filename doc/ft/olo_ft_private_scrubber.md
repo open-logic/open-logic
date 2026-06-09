@@ -1,12 +1,12 @@
 <img src="../Logo.png" alt="Logo" width="400">
 
-# olo_ft_ram_scrubber
+# olo_ft_private_scrubber
 
 [Back to **Entity List**](../EntityList.md)
 
 ## Status Information
 
-VHDL Source: [olo_ft_ram_scrubber](../../src/ft/vhdl/olo_ft_ram_scrubber.vhd)
+VHDL Source: [olo_ft_private_scrubber](../../src/ft/vhdl/olo_ft_private_scrubber.vhd)
 
 **Internal building block.** This entity is the private opportunistic-scrubber core instantiated by the scrubbing RAM
 wrappers [olo_ft_ram_sp_scrub](./olo_ft_ram_sp_scrub.md) and [olo_ft_ram_sdp_scrub](./olo_ft_ram_sdp_scrub.md). It is

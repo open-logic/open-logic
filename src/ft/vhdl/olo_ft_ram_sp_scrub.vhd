@@ -7,11 +7,11 @@
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- ECC-protected single-port RAM with an opportunistic memory scrubber. Wraps
--- `olo_ft_ram_sp` and `olo_ft_ram_scrubber`. The user-facing interface is
+-- `olo_ft_ram_sp` and `olo_ft_private_scrubber`. The user-facing interface is
 -- identical to `olo_ft_ram_sp` plus a scrubber-enable input and four
 -- scrubber-status outputs.
 --
--- The scrubber owns the user/scrubber arbitration (see olo_ft_ram_scrubber).
+-- The scrubber owns the user/scrubber arbitration (see olo_ft_private_scrubber).
 -- This wrapper ties the single shared user port to both scrubber user channels
 -- and collapses the scrubber's muxed write/read RAM channels back onto the one
 -- physical port of olo_ft_ram_sp. Because the underlying RAM is single-port, the
@@ -107,7 +107,7 @@ begin
 
     -- Opportunistic scrubber + user/scrubber arbitration. The single user port feeds both user
     -- channels; the scrubber returns muxed write and read RAM channels.
-    i_scrubber : entity work.olo_ft_ram_scrubber
+    i_scrubber : entity work.olo_ft_private_scrubber
         generic map (
             Depth_g            => Depth_g,
             Width_g            => Width_g,
