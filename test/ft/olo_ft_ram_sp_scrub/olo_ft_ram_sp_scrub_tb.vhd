@@ -338,9 +338,10 @@ begin
                          "ScrubFixesSec addr20 cleaned");
 
             -- DED reads are reported but the writeback is suppressed (corrected data is unreliable).
-            -- The scrubber must observe the DED word on its own reads (Scrub_Rd_Valid +
-            -- Scrub_Rd_EccDed pulse together at least once per pass) and, after idle scrub time,
-            -- the DED flag must still be set on a user read.
+            -- The scrubber must observe the DED word on its own reads exactly once per pass
+            -- (Scrub_Rd_Valid + Scrub_Rd_EccDed pulse together; the word is never repaired, so
+            -- both passes of the window see it) and, after idle scrub time, the DED flag must
+            -- still be set on a user read.
             elsif run("ScrubDoesNotWriteOnDed") then
                 writeWithFlip(70, 16#EE#, doubleBit(0, 1),
                               Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
@@ -358,8 +359,8 @@ begin
                     end if;
                 end loop;
 
-                check_true(RdValidCnt_v >= 1,
-                           "ScrubDoesNotWriteOnDed: scrubber observed the DED word (Scrub_Rd_EccDed pulsed)");
+                check_equal(RdValidCnt_v, 2,
+                            "ScrubDoesNotWriteOnDed: DED word observed exactly once per pass (never repaired)");
 
                 checkEcc(70, 0, '0', '1', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed,
                          "ScrubDoesNotWriteOnDed addr70 still Ded", CheckData => false);

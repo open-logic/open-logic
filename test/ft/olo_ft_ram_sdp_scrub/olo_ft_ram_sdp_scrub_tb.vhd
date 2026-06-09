@@ -289,8 +289,9 @@ begin
                 checkEcc(20, 16#CD#, '0', '0', Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
                          "ScrubFixesSec addr20 cleaned");
 
-            -- The scrubber must observe the DED word on its own reads (Scrub_Rd_Valid +
-            -- Scrub_Rd_EccDed pulse together at least once per pass) and never write it back.
+            -- The scrubber must observe the DED word on its own reads exactly once per pass
+            -- (Scrub_Rd_Valid + Scrub_Rd_EccDed pulse together; the word is never repaired, so
+            -- both passes of the window see it) and never write it back.
             elsif run("ScrubDoesNotWriteOnDed") then
                 writeWithFlip(70, 16#EE#, doubleBit(0, 1),
                               Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
@@ -308,8 +309,8 @@ begin
                     end if;
                 end loop;
 
-                check_true(RdValidCnt_v >= 1,
-                           "ScrubDoesNotWriteOnDed: scrubber observed the DED word (Scrub_Rd_EccDed pulsed)");
+                check_equal(RdValidCnt_v, 2,
+                            "ScrubDoesNotWriteOnDed: DED word observed exactly once per pass (never repaired)");
 
                 checkEcc(70, 0, '0', '1', Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
                          "ScrubDoesNotWriteOnDed addr70 still Ded", CheckData => false);
@@ -375,7 +376,8 @@ begin
                 Rd_Addr <= (others => '0');
                 Wr_Data <= (others => '0');
 
-                -- Drain the in-flight user reads, then verify the pre-storm value is intact.
+                -- Let the storm's in-flight reads return (checkEcc aligns to its own read, so
+                -- this only keeps the window clean), then verify the pre-storm value is intact.
                 for i in 1 to RamRdLatency_g + EccPipeline_g + 2 loop
                     wait until rising_edge(Clk);
                 end loop;
