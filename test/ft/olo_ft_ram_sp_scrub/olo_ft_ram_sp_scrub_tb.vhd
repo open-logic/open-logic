@@ -121,11 +121,10 @@ architecture sim of olo_ft_ram_sp_scrub_tb is
         WrData   <= toUslv(0, WrData'length);
     end procedure;
 
-    -- Issue a read on the shared port. With a scrubber present, RdValid may not pulse on the
-    -- TotalReadLatency_c+1 cycle if the scrubber owned the read cycle (User_PortBusy gating
-    -- prevents this for the cycle we drive RdEna='1', but the data still arrives after the
-    -- pipeline). To stay deterministic, the procedure simply waits for the expected latency
-    -- and checks RdValid is high.
+    -- Issue a read on the shared port. The cycle where the TB drives RdEna='1' raises the
+    -- scrubber's internal inhibit, so the scrubber never owns that cycle and RdValid pulses
+    -- deterministically RamRdLatency_g + EccPipeline_g cycles after the enable. The procedure
+    -- waits exactly that latency and checks RdValid is high.
     procedure checkEcc (
         address        : natural;
         data           : natural;
@@ -225,9 +224,11 @@ begin
     test_runner_watchdog(runner, 5 ms);
 
     p_control : process is
-        variable PassCnt_v    : natural;
-        variable RdValidCnt_v : natural;
-        variable MaskFail_v   : boolean;
+        variable PassCnt_v      : natural;
+        variable RdValidCnt_v   : natural;
+        variable MaskFail_v     : boolean;
+        variable IssuedCnt_v    : natural;
+        variable UserValidCnt_v : natural;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -254,6 +255,42 @@ begin
                 checkEcc(3, 7, '0', '0', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed, "Basic 3=7");
                 checkEcc(1, 5, '0', '0', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed, "Basic re-read 1=5");
 
+            -- Simultaneous write + read on the shared port: the wrapper's port-collapse mux
+            -- claims the combined op behaves like plain olo_ft_ram_sp (one Addr, RamBehavior_g
+            -- decides the read data). Pre-write a known value, then write a new value with
+            -- WrEna = RdEna = '1' in one cycle. RBW returns the old word, WBR the new one; both
+            -- decode clean. A subsequent plain read returns the new value.
+            elsif run("WriteReadSameCycle") then
+                write(60, 16#0F#, Clk, Addr, WrData, WrEna);
+
+                wait until rising_edge(Clk);
+                Addr   <= toUslv(60, Addr'length);
+                WrData <= toUslv(16#F0#, WrData'length);
+                WrEna  <= '1';
+                RdEna  <= '1';
+                wait until rising_edge(Clk);
+                WrEna  <= '0';
+                RdEna  <= '0';
+                Addr   <= toUslv(0, Addr'length);
+                WrData <= toUslv(0, WrData'length);
+
+                for i in 1 to RamRdLatency_g + EccPipeline_g loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                check_equal(RdValid,  '1', "WriteReadSameCycle: RdValid pulses for the combined op");
+                check_equal(RdEccSec, '0', "WriteReadSameCycle EccSec");
+                check_equal(RdEccDed, '0', "WriteReadSameCycle EccDed");
+
+                if RamBehavior_g = "RBW" then
+                    check_equal(RdData, toUslv(16#0F#, RdData'length), "WriteReadSameCycle: RBW returns the old word");
+                else
+                    check_equal(RdData, toUslv(16#F0#, RdData'length), "WriteReadSameCycle: WBR returns the new word");
+                end if;
+
+                checkEcc(60, 16#F0#, '0', '0', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed,
+                         "WriteReadSameCycle: new value persisted");
+
             -- With user idle, the scrubber walks the address space and pulses Scrub_PassDone on
             -- rollover from Depth_g - 1 to 0. Confirm at least three pulses within the watchdog
             -- window so we know the scrubber is making progress under the SP arbitration rules.
@@ -270,21 +307,30 @@ begin
                 check_true(true, "Scrub_PassDone pulsed >= 3 times");
 
             -- Plant SEC errors at two distinct addresses; idle the user; wait for two full scrubber
-            -- passes; verify the cells now read clean.
+            -- passes; verify the cells now read clean. Each planted SEC must be observed by the
+            -- scrubber exactly once (Scrub_Rd_Valid + Scrub_Rd_EccSec pulse together): the first
+            -- visit repairs the cell, so later passes read it clean.
             elsif run("ScrubFixesSec") then
                 writeWithFlip(10, 16#AB#, singleBit(0),
                               Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
                 writeWithFlip(20, 16#CD#, singleBit(2),
                               Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
 
-                PassCnt_v := 0;
+                PassCnt_v    := 0;
+                RdValidCnt_v := 0;
 
                 while PassCnt_v < 2 loop
                     wait until rising_edge(Clk);
+                    if Scrub_Rd_Valid = '1' and Scrub_Rd_EccSec = '1' then
+                        RdValidCnt_v := RdValidCnt_v + 1;
+                    end if;
                     if Scrub_PassDone = '1' then
                         PassCnt_v := PassCnt_v + 1;
                     end if;
                 end loop;
+
+                check_equal(RdValidCnt_v, 2,
+                            "ScrubFixesSec: each planted SEC observed by the scrubber exactly once");
 
                 checkEcc(10, 16#AB#, '0', '0', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed,
                          "ScrubFixesSec addr10 cleaned");
@@ -292,19 +338,28 @@ begin
                          "ScrubFixesSec addr20 cleaned");
 
             -- DED reads are reported but the writeback is suppressed (corrected data is unreliable).
-            -- After idle scrub time, the DED flag must still be set.
+            -- The scrubber must observe the DED word on its own reads (Scrub_Rd_Valid +
+            -- Scrub_Rd_EccDed pulse together at least once per pass) and, after idle scrub time,
+            -- the DED flag must still be set on a user read.
             elsif run("ScrubDoesNotWriteOnDed") then
                 writeWithFlip(70, 16#EE#, doubleBit(0, 1),
                               Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
 
-                PassCnt_v := 0;
+                PassCnt_v    := 0;
+                RdValidCnt_v := 0;
 
                 while PassCnt_v < 2 loop
                     wait until rising_edge(Clk);
+                    if Scrub_Rd_Valid = '1' and Scrub_Rd_EccDed = '1' then
+                        RdValidCnt_v := RdValidCnt_v + 1;
+                    end if;
                     if Scrub_PassDone = '1' then
                         PassCnt_v := PassCnt_v + 1;
                     end if;
                 end loop;
+
+                check_true(RdValidCnt_v >= 1,
+                           "ScrubDoesNotWriteOnDed: scrubber observed the DED word (Scrub_Rd_EccDed pulsed)");
 
                 checkEcc(70, 0, '0', '1', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed,
                          "ScrubDoesNotWriteOnDed addr70 still Ded", CheckData => false);
@@ -338,10 +393,10 @@ begin
                          "UserWriteWinsDuringContention: user write wins");
 
             -- SP arbitration: while the user holds the port busy with continuous activity, the
-            -- scrubber must never issue a request that lands on the RAM. We do not have a direct
-            -- "scrubber-owned cycle" probe, but Scrub_Active = '1' must not coincide with a user
-            -- read or write that gets corrupted. The functional contract is captured here as: a
-            -- user value written under continuous user activity reads back intact.
+            -- scrubber must never issue a request that lands on the RAM. Scrub_Rd_Valid pulses
+            -- once per issued scrub read, so once the returns of any pre-saturation reads have
+            -- drained, it staying '0' proves the scrubber is fully starved. Additionally, a user
+            -- value written under continuous user activity must read back intact.
             elsif run("UserBusyNoCorruption") then
                 writeWithFlip(100, 16#5A#, (CodewordWidth_c - 1 downto 0 => '0'),
                               Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
@@ -361,6 +416,12 @@ begin
                         Addr  <= toUslv(151, Addr'length);
                         WrEna <= '0';
                         RdEna <= '1';
+                    end if;
+                    -- Pre-saturation scrub reads return within the read latency; afterwards no
+                    -- scrub read may be issued at all.
+                    if i > RamRdLatency_g + EccPipeline_g + 1 then
+                        check_equal(Scrub_Rd_Valid, '0',
+                                    "UserBusyNoCorruption: scrubber fully starved while the user saturates the port");
                     end if;
                 end loop;
 
@@ -478,9 +539,9 @@ begin
                            "User-facing RdValid stays '0' while user is idle (scrubber masking works)");
 
             -- Address-wrap boundary: SEC at addr 0 (first address of every pass) and at
-            -- addr Depth_c - 1 (last address, where Incr_s wraps and PassDone fires on the
-            -- same event). Catches any off-by-one in the wrap arithmetic or in the
-            -- first-address path of a fresh pass.
+            -- addr Depth_c - 1 (last address, where the address counter wraps in Decide_s and
+            -- PassDone fires on the same event). Catches any off-by-one in the wrap arithmetic
+            -- or in the first-address path of a fresh pass.
             elsif run("ScrubBoundaryAddresses") then
                 writeWithFlip(0, 16#11#, singleBit(0),
                               Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
@@ -582,9 +643,22 @@ begin
                 Rst <= '0';
 
                 -- Bridge: keep the user continuously busy so the scrubber (now parked on addr 0)
-                -- cannot complete a repair before the alternating pattern starts.
+                -- cannot complete a repair before the alternating pattern starts. From here on,
+                -- count issued user reads (RdEna sampled at every edge) and returned RdValid
+                -- pulses: at the end both counts must match exactly, proving no user valid is
+                -- swallowed and no scrubber valid leaks even with scrub issues and aborts
+                -- interleaving the user returns.
+                IssuedCnt_v    := 0;
+                UserValidCnt_v := 0;
+
                 for i in 1 to RamRdLatency_g + EccPipeline_g + 2 loop
                     wait until rising_edge(Clk);
+                    if RdEna = '1' then
+                        IssuedCnt_v := IssuedCnt_v + 1;
+                    end if;
+                    if RdValid = '1' then
+                        UserValidCnt_v := UserValidCnt_v + 1;
+                    end if;
                     Addr  <= toUslv(100, Addr'length);
                     RdEna <= '1';
                 end loop;
@@ -593,6 +667,12 @@ begin
 
                 for i in 1 to 400 loop
                     wait until rising_edge(Clk);
+                    if RdEna = '1' then
+                        IssuedCnt_v := IssuedCnt_v + 1;
+                    end if;
+                    if RdValid = '1' then
+                        UserValidCnt_v := UserValidCnt_v + 1;
+                    end if;
                     if (i mod 2) = 0 then
                         Addr  <= toUslv(100, Addr'length);
                         RdEna <= '1';
@@ -608,8 +688,29 @@ begin
                 end loop;
 
                 wait until rising_edge(Clk);
+                if RdEna = '1' then
+                    IssuedCnt_v := IssuedCnt_v + 1;
+                end if;
+                if RdValid = '1' then
+                    UserValidCnt_v := UserValidCnt_v + 1;
+                end if;
                 RdEna <= '0';
                 Addr  <= (others => '0');
+
+                -- Freeze the scrubber BEFORE the user-idle drain window; otherwise it would use
+                -- the idle cycles to complete the repair that this test asserts was aborted.
+                Scrub_Enable <= '0';
+
+                -- Drain: every issued read has returned after the full read latency.
+                for i in 1 to RamRdLatency_g + EccPipeline_g + 2 loop
+                    wait until rising_edge(Clk);
+                    if RdValid = '1' then
+                        UserValidCnt_v := UserValidCnt_v + 1;
+                    end if;
+                end loop;
+
+                check_equal(UserValidCnt_v, IssuedCnt_v,
+                            "WritebackAbortsOnContention: RdValid pulse count = issued user reads exactly");
 
                 check_true(RdValidCnt_v >= 10,
                            "WritebackAbortsOnContention: scrubber repeatedly read the SEC at addr 0 during contention");
@@ -636,6 +737,49 @@ begin
 
                 checkEcc(0, 16#A5#, '0', '0', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed,
                          "WritebackAbortsOnContention: addr 0 repaired after contention (same-addr retry)");
+
+            -- The scrubber RMW race: the user writes the address whose stale (corrected) data the
+            -- scrubber holds in flight between its read and its writeback. The write must abort
+            -- the writeback; otherwise the scrubber would overwrite the fresh user data with the
+            -- stale corrected word. Sweep the write over every offset of the read-to-writeback
+            -- window: plant a SEC at addr 0 under reset (so the scrubber restarts at addr 0 with
+            -- the SEC guaranteed in place), fire a single-cycle clean user write k cycles after
+            -- release, idle, then verify the user's value survived. The sweep discriminates at
+            -- TotalReadLatency >= 2; at a total latency of 1 the user write wins the RAM port
+            -- mux in the same cycle even without the inhibit.
+            elsif run("UserWriteToInFlightScrubAddr") then
+
+                for k in 0 to RamRdLatency_g + EccPipeline_g + 2 loop
+                    -- Park the scrubber and plant the SEC while Rst is asserted (reset affects
+                    -- neither the RAM contents nor the write path), then restart at addr 0.
+                    wait until rising_edge(Clk);
+                    Rst <= '1';
+                    writeWithFlip(0, 16#A5#, singleBit(0),
+                                  Clk, Addr, WrData, WrEna, ErrInj_BitFlip, ErrInj_Valid);
+                    wait until rising_edge(Clk);
+                    Rst <= '0';
+
+                    -- Phase offset: the scrubber's read of addr 0 goes in flight right after
+                    -- release; place the user write k cycles into the window.
+                    for i in 1 to k loop
+                        wait until rising_edge(Clk);
+                    end loop;
+
+                    -- Single-cycle clean user write of a different value to the in-flight address.
+                    write(0, 16#77#, Clk, Addr, WrData, WrEna);
+
+                    -- Let the scrubber retry/complete addr 0, then freeze it and check: the user
+                    -- value must survive with clean ECC. A stale writeback would restore 16#A5#.
+                    for i in 1 to 6 * (RamRdLatency_g + EccPipeline_g + 1) loop
+                        wait until rising_edge(Clk);
+                    end loop;
+
+                    Scrub_Enable <= '0';
+                    wait until rising_edge(Clk);
+                    checkEcc(0, 16#77#, '0', '0', Clk, Addr, RdEna, RdData, RdValid, RdEccSec, RdEccDed,
+                             "UserWriteToInFlightScrubAddr: fresh user data survives (k=" & integer'image(k) & ")");
+                    Scrub_Enable <= '1';
+                end loop;
 
             -- Scrub_Enable='0' must PRESERVE ScrubAddr (resume from the same address), not reset
             -- it to 0. Advance the scrubber to near the end of a pass, suspend, resume, and time
