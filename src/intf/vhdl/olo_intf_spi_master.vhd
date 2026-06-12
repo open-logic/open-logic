@@ -54,6 +54,7 @@ entity olo_intf_spi_master is
         Cmd_Slave       : in    std_logic_vector(log2ceil(SlaveCnt_g) - 1 downto 0)      := (others => '0');
         Cmd_Data        : in    std_logic_vector(MaxTransWidth_g - 1 downto 0)           := (others => '0');
         Cmd_TransWidth  : in    std_logic_vector(log2ceil(MaxTransWidth_g+1)-1 downto 0) := toUslv(MaxTransWidth_g, log2ceil(MaxTransWidth_g+1));
+        Cmd_CsHold      : in    std_logic                                                := '0';
         -- Response Interface
         Resp_Valid      : out   std_logic;
         Resp_Data       : out   std_logic_vector(MaxTransWidth_g - 1 downto 0);
@@ -96,6 +97,7 @@ architecture rtl of olo_intf_spi_master is
         Done       : std_logic;
         MosiNext   : std_logic;
         TransWidth : integer range 0 to MaxTransWidth_g;
+        CsHold     : std_logic;
     end record;
 
     signal r, r_next : TwoProcess_r;
@@ -174,11 +176,15 @@ begin
             when Idle_s =>
                 -- Start of Transfer
                 if Cmd_Valid = '1' then
-                    v.shiftReg                                  := Cmd_Data;
+                    v.shiftReg   := Cmd_Data;
+                    v.State      := SftComp_s;
+                    v.Busy       := '1';
+                    v.TransWidth := fromUslv(Cmd_TransWidth);
+                    v.CsHold     := Cmd_CsHold;
+                    -- Assert only the selectec CS, put others to '1' for the case of CS hold in previous transfer
+                    -- and now selecting a different slave
+                    v.Spi_Cs_n                                  := (others => '1');
                     v.Spi_Cs_n(to_integer(unsigned(Cmd_Slave))) := '0';
-                    v.State                                     := SftComp_s;
-                    v.Busy                                      := '1';
-                    v.TransWidth                                := fromUslv(Cmd_TransWidth);
                 end if;
                 v.CsHighCnt := 0;
                 v.ClkDivCnt := 0;
@@ -236,7 +242,11 @@ begin
                 end if;
 
             when CsHigh_s =>
-                v.Spi_Cs_n := (others => '1');
+                -- Only de-assert CS if not Cmd_CsHold, otherwise keep CS asserted for next transfer
+                if r.CsHold = '0' then
+                    v.Spi_Cs_n := (others => '1');
+                end if;
+                -- Return to idle handling
                 if r.CsHighCnt = CsHighCycles_c - 1 then
                     v.State  := Idle_s;
                     v.Busy   := '0';
