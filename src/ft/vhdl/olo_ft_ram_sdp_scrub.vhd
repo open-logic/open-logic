@@ -58,11 +58,11 @@ entity olo_ft_ram_sdp_scrub is
         Rst             : in    std_logic;
         -- Write Port
         Wr_Addr         : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        Wr_Ena          : in    std_logic                                                := '1';
+        Wr_Ena          : in    std_logic;
         Wr_Data         : in    std_logic_vector(Width_g - 1 downto 0);
         -- Read Port
         Rd_Addr         : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        Rd_Ena          : in    std_logic                                                := '1';
+        Rd_Ena          : in    std_logic;
         Rd_Data         : out   std_logic_vector(Width_g - 1 downto 0);
         Rd_Valid        : out   std_logic;
         Rd_EccSec       : out   std_logic;

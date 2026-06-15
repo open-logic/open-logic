@@ -55,9 +55,9 @@ entity olo_ft_ram_sp_scrub is
         Rst             : in    std_logic;
         -- FT RAM Port
         Addr            : in    std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
-        WrEna           : in    std_logic                                                := '1';
+        WrEna           : in    std_logic;
         WrData          : in    std_logic_vector(Width_g - 1 downto 0);
-        RdEna           : in    std_logic                                                := '1';
+        RdEna           : in    std_logic;
         RdData          : out   std_logic_vector(Width_g - 1 downto 0);
         RdValid         : out   std_logic;
         RdEccSec        : out   std_logic;

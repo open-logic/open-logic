@@ -57,9 +57,9 @@ across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_princ
 | Name     | In/Out | Length                | Default | Description                                                  |
 | :------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | Addr     | in     | _ceil(log2(Depth_g))_ | -       | Address                                                      |
-| WrEna    | in     | 1                     | '1'     | Write enable                                                 |
+| WrEna    | in     | 1                     | -       | Write enable                                                 |
 | WrData   | in     | _Width_g_             | -       | Write data                                                   |
-| RdEna    | in     | 1                     | '1'     | Read enable. _RdValid_ pulses '1' exactly _RamRdLatency_g_+_EccPipeline_g_ cycles after each cycle on which _RdEna_ = '1'. Note: holding _RdEna_ = '1' permanently leaves no idle cycles and starves the scrubber entirely (see [Opportunistic Scrubbing](#opportunistic-scrubbing)); deassert it on cycles without an actual read. |
+| RdEna    | in     | 1                     | -       | Read enable. _RdValid_ pulses '1' exactly _RamRdLatency_g_+_EccPipeline_g_ cycles after each cycle on which _RdEna_ = '1'. Note: holding _RdEna_ = '1' permanently leaves no idle cycles and starves the scrubber entirely (see [Opportunistic Scrubbing](#opportunistic-scrubbing)); deassert it on cycles without an actual read. |
 | RdData   | out    | _Width_g_             | N/A     | Read data (corrected if a single-bit error was detected)     |
 | RdValid  | out    | 1                     | N/A     | Read-data valid. Pulses '1' only for reads the user issued; cycles consumed by the scrubber's own reads are masked out (see [Architecture](#architecture)). |
 | RdEccSec | out    | 1                     | N/A     | Single error corrected flag. Unmasked pass-through of the decoder's SEC flag: qualify it with _RdValid_ = '1'. It can also assert on the return cycle of a scrubber-issued read (_RdValid_ = '0', _Scrub_Rd_Valid_ = '1'); scrubber events are reported on _Scrub_Rd_EccSec_. |

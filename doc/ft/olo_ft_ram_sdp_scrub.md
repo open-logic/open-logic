@@ -59,7 +59,7 @@ across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_princ
 | Name    | In/Out | Length                | Default | Description     |
 | :------ | :----- | :-------------------- | ------- | :-------------- |
 | Wr_Addr | in     | _ceil(log2(Depth_g))_ | -       | Write address   |
-| Wr_Ena  | in     | 1                     | '1'     | Write enable    |
+| Wr_Ena  | in     | 1                     | -       | Write enable    |
 | Wr_Data | in     | _Width_g_             | -       | Write data      |
 
 ### Read Port
@@ -67,7 +67,7 @@ across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_princ
 | Name      | In/Out | Length                | Default | Description                                                  |
 | :-------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | Rd_Addr   | in     | _ceil(log2(Depth_g))_ | -       | Read address                                                 |
-| Rd_Ena    | in     | 1                     | '1'     | Read enable. _Rd_Valid_ pulses '1' exactly _RamRdLatency_g_+_EccPipeline_g_ cycles after each cycle on which _Rd_Ena_ = '1'. Note: holding _Rd_Ena_ = '1' permanently leaves no idle cycles and starves the scrubber entirely (see [Opportunistic Scrubbing](#opportunistic-scrubbing)); deassert it on cycles without an actual read. |
+| Rd_Ena    | in     | 1                     | -       | Read enable. _Rd_Valid_ pulses '1' exactly _RamRdLatency_g_+_EccPipeline_g_ cycles after each cycle on which _Rd_Ena_ = '1'. Note: holding _Rd_Ena_ = '1' permanently leaves no idle cycles and starves the scrubber entirely (see [Opportunistic Scrubbing](#opportunistic-scrubbing)); deassert it on cycles without an actual read. |
 | Rd_Data   | out    | _Width_g_             | N/A     | Read data (corrected if a single-bit error was detected)     |
 | Rd_Valid  | out    | 1                     | N/A     | Read-data valid. Pulses '1' only for reads the user issued; cycles consumed by the scrubber's own reads are masked out (see [Architecture](#architecture)). |
 | Rd_EccSec | out    | 1                     | N/A     | Single error corrected flag. Unmasked pass-through of the decoder's SEC flag: qualify it with _Rd_Valid_ = '1'. It can also assert on the return cycle of a scrubber-issued read (_Rd_Valid_ = '0', _Scrub_Rd_Valid_ = '1'); scrubber events are reported on _Scrub_Rd_EccSec_. |
