@@ -727,8 +727,8 @@ begin
                 end loop;
 
                 -- Advance to near the end of the pass (one scrub op per
-                -- RamRdLatency_g+EccPipeline_g+1 cycles; user idle, so no aborts).
-                for i in 1 to (Depth_c - 8) * (RamRdLatency_g + EccPipeline_g + 1) loop
+                -- RamRdLatency_g+EccPipeline_g+2 cycles; user idle, so no aborts).
+                for i in 1 to (Depth_c - 8) * (RamRdLatency_g + EccPipeline_g + 2) loop
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -749,10 +749,10 @@ begin
                     wait until rising_edge(Clk);
                     RdValidCnt_v := RdValidCnt_v + 1;
                     exit when Scrub_PassDone = '1';
-                    exit when RdValidCnt_v >= Depth_c * (RamRdLatency_g + EccPipeline_g + 1);
+                    exit when RdValidCnt_v >= Depth_c * (RamRdLatency_g + EccPipeline_g + 2);
                 end loop;
 
-                check_true(RdValidCnt_v < (Depth_c / 2) * (RamRdLatency_g + EccPipeline_g + 1),
+                check_true(RdValidCnt_v < (Depth_c / 2) * (RamRdLatency_g + EccPipeline_g + 2),
                            "ScrubEnablePreservesAddr: PassDone arrived quickly after resume (ScrubAddr preserved)");
 
             end if;

@@ -22,23 +22,24 @@
 -- channels to its shared port and collapses the two RAM channels back onto it;
 -- a dual-port wrapper maps the channels 1:1 onto the RAM's write and read ports.
 --
--- Operating principle: read each address in turn; L cycles later observe the
--- decoded ECC flags in Decide_s, fire the writeback in the same cycle when a
--- single-bit error was corrected, and advance ScrubAddr. The scrubber never
--- stalls the user: it issues bus requests only while the combined Scrub_Inhibit
--- (user-busy OR external Scrub_Enable deasserted) is low. An inhibit during the
--- read-decode window aborts the in-flight operation back to Idle_s without
--- advancing the address counter, so the scrubber retries the same address on the
--- next idle slot. User data is always authoritative.
+-- Operating principle: read each address in turn; the decoder response is registered every cycle,
+-- and L+1 cycles after the read issue Decide_s acts on the *registered* flags/data -- firing the
+-- writeback from the WbData register when a single-bit error was corrected, and advancing ScrubAddr.
+-- Registering the response splits the RAM-read -> decode -> re-encode -> RAM-write path across two
+-- cycles instead of one long combinational loop. The scrubber never stalls the user: it issues bus
+-- requests only while the combined Scrub_Inhibit (user-busy OR external Scrub_Enable deasserted) is
+-- low. An inhibit anywhere in the read-decide window aborts the in-flight operation back to Idle_s
+-- without advancing the address counter, so the scrubber retries the same address on the next idle
+-- slot. User data is always authoritative.
 --
 -- Sequence per address (T = read-issue cycle, L = TotalReadLatency_g):
---   T        : assert the scrubber's read request (only when Scrub_Inhibit='0')
---   T .. T+L : if Scrub_Inhibit='1' on any cycle, abort to Idle_s; ValidPipe keeps
---              shifting so Scrub_Rd_Valid still pulses on the codec return cycle
---   T+L      : in Decide_s, observe Ram_Rd_Data and ECC flags; if EccSec='1' and
---              EccDed='0' assert the writeback (Ram_Wr_Data = Ram_Rd_Data through
---              the wrapper's encoder input); advance ScrubAddr; pulse
---              Scrub_PassDone on rollover; go to Idle_s.
+--   T          : assert the scrubber's read request (only when Scrub_Inhibit='0')
+--   T .. T+L+1 : if Scrub_Inhibit='1' on any cycle, abort to Idle_s; ValidPipe keeps shifting so
+--                Scrub_Rd_Valid still pulses on the codec return cycle (T+L)
+--   T+L        : decoder response valid; captured into EccSecReg / EccDedReg / WbData
+--   T+L+1      : in Decide_s, act on the registered flags; if EccSec='1' and EccDed='0' assert the
+--                writeback (Ram_Wr_Data = WbData through the wrapper's encoder); advance ScrubAddr;
+--                pulse Scrub_PassDone on rollover; go to Idle_s.
 --
 -- Scrub_Rd_Valid is driven from a length-L shift register tracking every scrub
 -- read-issue, so it still pulses on the codec return cycle when the FSM aborted in
@@ -124,6 +125,12 @@ architecture rtl of olo_ft_private_scrubber is
         WaitCnt   : unsigned(log2ceil(TotalReadLatency_g + 1) - 1 downto 0);
         ValidPipe : std_logic_vector(TotalReadLatency_g - 1 downto 0);
         PassDone  : std_logic;
+        -- Registered decoder response. Breaks the RAM-read -> decode -> re-encode -> RAM-write
+        -- combinational loop: Decide_s consumes these registers instead of the live decoder output,
+        -- so decode and re-encode land in separate clock cycles.
+        EccSecReg : std_logic;
+        EccDedReg : std_logic;
+        WbData    : std_logic_vector(Width_g - 1 downto 0);
     end record;
 
     signal r, r_next : TwoProcess_r;
@@ -146,10 +153,11 @@ begin
     -- Request muxes: the user request passes through whenever it is active, otherwise the
     -- scrubber's request fills the idle cycle. Scrub_RdReq / Scrub_WrReq are guaranteed '0'
     -- while Scrub_Inhibit = '1', so the user is never overridden. On a scrubber writeback the
-    -- payload is the decoded read data, which the wrapper's encoder re-encodes into the RAM.
+    -- payload is the *registered* decoded read data (WbData), which the wrapper's encoder
+    -- re-encodes into the RAM.
     Ram_Wr_Addr <= User_Wr_Addr when User_Wr_Ena = '1' else Scrub_Addr;
     Ram_Wr_Ena  <= User_Wr_Ena  or  Scrub_WrReq;
-    Ram_Wr_Data <= User_Wr_Data when User_Wr_Ena = '1' else Ram_Rd_Data;
+    Ram_Wr_Data <= User_Wr_Data when User_Wr_Ena = '1' else r.WbData;
     Ram_Rd_Addr <= User_Rd_Addr when User_Rd_Ena = '1' else Scrub_Addr;
     Ram_Rd_Ena  <= User_Rd_Ena  or  Scrub_RdReq;
 
@@ -166,27 +174,28 @@ begin
         IssueWrite_v := '0';
         v.PassDone   := '0';
 
+        -- Register the decoder response every cycle; Decide_s consumes the time-aligned copy.
+        v.EccSecReg := Ram_Rd_EccSec;
+        v.EccDedReg := Ram_Rd_EccDed;
+        v.WbData    := Ram_Rd_Data;
+
         case r.Fsm is
 
             when Idle_s =>
                 if Scrub_Inhibit = '0' then
                     IssueRead_v := '1';
-                    -- WaitCnt starts at 1: the Idle->ReadWait transition already
-                    -- consumed cycle T->T+1, so ReadWait only needs to span L-1 more
-                    -- cycles.
+                    -- WaitCnt counts ReadWait cycles starting at 1. ReadWait now spans through the
+                    -- codec-return cycle (WaitCnt = L), so Decide_s runs one cycle later and
+                    -- consumes the *registered* decoder outputs (EccSecReg/EccDedReg/WbData), which
+                    -- are valid the cycle after the live decoder output.
                     v.WaitCnt := to_unsigned(1, v.WaitCnt'length);
-                    if TotalReadLatency_g = 1 then
-                        -- L=1: data is back on T+1, skip ReadWait entirely.
-                        v.Fsm := Decide_s;
-                    else
-                        v.Fsm := ReadWait_s;
-                    end if;
+                    v.Fsm     := ReadWait_s;
                 end if;
 
             when ReadWait_s =>
                 if Scrub_Inhibit = '1' then
                     v.Fsm := Idle_s;
-                elsif r.WaitCnt = TotalReadLatency_g - 1 then
+                elsif r.WaitCnt = TotalReadLatency_g then
                     v.Fsm := Decide_s;
                 else
                     v.WaitCnt := r.WaitCnt + 1;
@@ -196,8 +205,9 @@ begin
                 if Scrub_Inhibit = '1' then
                     v.Fsm := Idle_s;
                 else
-                    -- Write back SEC only; DED is unreliable and not corrected.
-                    if Ram_Rd_EccDed = '0' and Ram_Rd_EccSec = '1' then
+                    -- Write back SEC only; DED is unreliable and not corrected. Uses the registered
+                    -- decoder flags so the decision is not in the decode->writeback critical path.
+                    if r.EccDedReg = '0' and r.EccSecReg = '1' then
                         IssueWrite_v := '1';
                     end if;
                     if r.ScrubAddr = Depth_g - 1 then
