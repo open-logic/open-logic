@@ -24,6 +24,9 @@ flags indicate whether a single-bit error was corrected or a double-bit error wa
 The simple dual-port topology has one dedicated write port and one dedicated read port. The two ports may share a clock
 or run on independent clocks (set _IsAsync_g_ = true to give the read port its own _Rd_Clk_).
 
+For an opportunistic background memory scrubber, use [olo_ft_ram_sdp_scrub](./olo_ft_ram_sdp_scrub.md), a separate
+entity that wraps this one plus the scrubber FSM. The scrub variant is sync-only (no _IsAsync_g_).
+
 For background on the SECDED scheme, the codeword layout, error injection semantics and the constraints that
 apply across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_principles.md).
 

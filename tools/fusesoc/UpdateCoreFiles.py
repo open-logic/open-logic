@@ -27,13 +27,15 @@ DESCRIPTIONS = {
     "base" : "Basic Circuitry (e.g. FIFOs, CDCs, ...)",
     "axi" : "AXI related modules",
     "intf" : "Interfaces (e.g. I2C, synchronizer, SPI, ...)",
-    "fix" : "Fixed point mathematics"
+    "fix" : "Fixed point mathematics",
+    "ft" : "Fault tolerant circuitry (e.g. SECDED protected RAMs, scrubbers, ...)"
 }
 DEPENDENCIES = {
     "base" : [],
     "axi" : ["base"],
     "intf" : ["base"],
-    "fix" : ["base"]
+    "fix" : ["base"],
+    "ft" : ["base"]
 }
 
 #Jinja setup

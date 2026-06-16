@@ -59,6 +59,27 @@ def add_configs(olo_tb):
     for EccPipeline in [0, 1, 2]:
         named_config(tb, {'EccPipeline_g': EccPipeline})
 
+    ### olo_ft_ram_sp_scrub ###
+    tb = olo_tb.test_bench('olo_ft_ram_sp_scrub_tb')
+    for RamBehav in ['RBW', 'WBR']:
+        named_config(tb, {'RamBehavior_g': RamBehav})
+    for RamRdLatency in [1, 2]:
+        for EccPipeline in [0, 1, 2]:
+            named_config(tb, {'RamRdLatency_g': RamRdLatency,
+                              'EccPipeline_g': EccPipeline})
+    for Width in Widths:
+        named_config(tb, {'Width_g': Width})
+
+    ### olo_ft_ram_sp_scrub_pacer ###
+    # Dedicated pacer test bench: the pacer is exercised in isolation because it changes the
+    # scrubber's activity pattern (idle gaps between paced passes) and would break the free-running
+    # functional cases. The pacer-on values (ScrubClkHz_g/ScrubPeriod_g, both real) come from the
+    # TB defaults -- GHDL cannot override real generics on the command line -- and are sized so a
+    # period spans a few hundred cycles. Sweep the read latency to confirm pacing is independent of it.
+    tb = olo_tb.test_bench('olo_ft_ram_sp_scrub_pacer_tb')
+    for RamRdLatency in [1, 2]:
+        named_config(tb, {'RamRdLatency_g': RamRdLatency})
+
     ### olo_ft_ram_sdp ###
     tb = olo_tb.test_bench('olo_ft_ram_sdp_tb')
     for RamBehav in ['RBW', 'WBR']:
@@ -70,6 +91,24 @@ def add_configs(olo_tb):
         named_config(tb, {'Width_g': Width})
     for EccPipeline in [0, 1, 2]:
         named_config(tb, {'EccPipeline_g': EccPipeline})
+
+    ### olo_ft_ram_sdp_scrub ###
+    tb = olo_tb.test_bench('olo_ft_ram_sdp_scrub_tb')
+    for RamBehav in ['RBW', 'WBR']:
+        named_config(tb, {'RamBehavior_g': RamBehav})
+    for RamRdLatency in [1, 2]:
+        for EccPipeline in [0, 1, 2]:
+            named_config(tb, {'RamRdLatency_g': RamRdLatency,
+                              'EccPipeline_g': EccPipeline})
+    for Width in Widths:
+        named_config(tb, {'Width_g': Width})
+
+    ### olo_ft_ram_sdp_scrub_pacer ###
+    # Dedicated pacer test bench (see olo_ft_ram_sp_scrub_pacer note). Saturates both user ports to
+    # starve the scrubber for the overrun case.
+    tb = olo_tb.test_bench('olo_ft_ram_sdp_scrub_pacer_tb')
+    for RamRdLatency in [1, 2]:
+        named_config(tb, {'RamRdLatency_g': RamRdLatency})
 
     ### olo_ft_ram_tdp ###
     tb = olo_tb.test_bench('olo_ft_ram_tdp_tb')

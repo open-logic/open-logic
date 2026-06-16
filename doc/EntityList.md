@@ -301,5 +301,7 @@ common constraints) are described once in
 | Entity                                   | Description                                                  |
 | ---------------------------------------- | ------------------------------------------------------------ |
 | [olo_ft_ram_sp](./ft/olo_ft_ram_sp.md)   | ECC-protected single port RAM                                |
+| [olo_ft_ram_sp_scrub](./ft/olo_ft_ram_sp_scrub.md)   | ECC-protected single-port RAM with an opportunistic background memory scrubber |
 | [olo_ft_ram_sdp](./ft/olo_ft_ram_sdp.md) | ECC-protected simple dual port RAM                           |
+| [olo_ft_ram_sdp_scrub](./ft/olo_ft_ram_sdp_scrub.md) | ECC-protected simple dual-port RAM with an opportunistic background memory scrubber |
 | [olo_ft_ram_tdp](./ft/olo_ft_ram_tdp.md) | ECC-protected true dual-port RAM                             |
