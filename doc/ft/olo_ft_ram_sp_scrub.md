@@ -113,6 +113,8 @@ is needed.
 
 ### Architecture
 
+![olo_ft_ram_sp_scrub architecture](./ram/olo_ft_ram_sp_scrub_arch.drawio.png)
+
 The wrapper places the [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) in front of the wrapped
 [olo_ft_ram_sp](./olo_ft_ram_sp.md). The scrubber owns the user/scrubber arbitration: the single user port
 (`Addr` / `WrEna` / `WrData` / `RdEna`) feeds both of the scrubber's user channels. Because the underlying RAM is

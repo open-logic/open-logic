@@ -121,6 +121,8 @@ is needed.
 
 ### Architecture
 
+![olo_ft_ram_sdp_scrub architecture](./ram/olo_ft_ram_sdp_scrub_arch.drawio.png)
+
 The wrapper places the [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) in front of the wrapped
 [olo_ft_ram_sdp](./olo_ft_ram_sdp.md). The scrubber owns the user/scrubber arbitration: the user write port (`Wr_*`)
 and read port (`Rd_*`) feed the scrubber's user write and read channels, and the scrubber returns muxed write and read
