@@ -72,11 +72,10 @@ entity olo_ft_ram_sdp_scrub is
         ErrInj_Valid    : in    std_logic                                                := '0';
         -- Scrubber Control
         Scrub_Enable    : in    std_logic                                                := '1';
-        -- Scrubber Status. Scrub_Rd_EccSec / Scrub_Rd_EccDed are valid only when
-        -- Scrub_Rd_Valid='1' (cycle the scrubber's own read returns from the codec).
-        Scrub_Rd_Valid  : out   std_logic;
-        Scrub_Rd_EccSec : out   std_logic;
-        Scrub_Rd_EccDed : out   std_logic;
+        -- Scrubber Status. Scrub_EccSec / Scrub_EccDed are one-cycle pulses asserted when a
+        -- scrubber read observed a SEC / DED (qualified internally; directly countable).
+        Scrub_EccSec    : out   std_logic;
+        Scrub_EccDed    : out   std_logic;
         Scrub_PassDone  : out   std_logic
     );
 end entity;
@@ -132,9 +131,8 @@ begin
             Ram_Rd_EccDed   => Ram_Rd_EccDed,
             Ram_Rd_Valid    => Ram_Rd_Valid,
             User_Rd_Valid   => Rd_Valid,
-            Scrub_Rd_Valid  => Scrub_Rd_Valid,
-            Scrub_Rd_EccSec => Scrub_Rd_EccSec,
-            Scrub_Rd_EccDed => Scrub_Rd_EccDed,
+            Scrub_EccSec    => Scrub_EccSec,
+            Scrub_EccDed    => Scrub_EccDed,
             Scrub_PassDone  => Scrub_PassDone
         );
 
@@ -168,8 +166,8 @@ begin
             ErrInj_Valid   => ErrInj_Valid
         );
 
-    -- Forward decoder outputs. The masked user Rd_Valid and Scrub_Rd_Valid are driven by the
-    -- scrubber (User_Rd_Valid / Scrub_Rd_Valid in the port map above).
+    -- Forward decoder outputs. The masked user Rd_Valid is driven by the scrubber
+    -- (User_Rd_Valid in the port map above).
     Rd_Data   <= Ram_Rd_Data;
     Rd_EccSec <= Ram_Rd_EccSec;
     Rd_EccDed <= Ram_Rd_EccDed;

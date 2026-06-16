@@ -8,8 +8,7 @@
 ---------------------------------------------------------------------------------------------------
 -- ECC-protected single-port RAM with an opportunistic memory scrubber. Wraps
 -- `olo_ft_ram_sp` and `olo_ft_private_scrubber`. The user-facing interface is
--- identical to `olo_ft_ram_sp` plus a scrubber-enable input and four
--- scrubber-status outputs.
+-- identical to `olo_ft_ram_sp` plus scrubber control and status ports.
 --
 -- The scrubber owns the user/scrubber arbitration (see olo_ft_private_scrubber).
 -- This wrapper ties the single shared user port to both scrubber user channels
@@ -69,11 +68,10 @@ entity olo_ft_ram_sp_scrub is
         -- is preserved so scrubbing resumes from the same address on '1'. Use this to pin the
         -- scrubber down during ECC error-injection tests.
         Scrub_Enable    : in    std_logic                                                := '1';
-        -- Scrubber Status. Scrub_Rd_EccSec / Scrub_Rd_EccDed are valid only when
-        -- Scrub_Rd_Valid='1' (cycle the scrubber's own read returns from the codec).
-        Scrub_Rd_Valid  : out   std_logic;
-        Scrub_Rd_EccSec : out   std_logic;
-        Scrub_Rd_EccDed : out   std_logic;
+        -- Scrubber Status. Scrub_EccSec / Scrub_EccDed are one-cycle pulses asserted when a
+        -- scrubber read observed a SEC / DED (qualified internally; directly countable).
+        Scrub_EccSec    : out   std_logic;
+        Scrub_EccDed    : out   std_logic;
         Scrub_PassDone  : out   std_logic
     );
 end entity;
@@ -132,9 +130,8 @@ begin
             Ram_Rd_EccDed   => Ram_RdEccDed,
             Ram_Rd_Valid    => Ram_RdValid,
             User_Rd_Valid   => RdValid,
-            Scrub_Rd_Valid  => Scrub_Rd_Valid,
-            Scrub_Rd_EccSec => Scrub_Rd_EccSec,
-            Scrub_Rd_EccDed => Scrub_Rd_EccDed,
+            Scrub_EccSec    => Scrub_EccSec,
+            Scrub_EccDed    => Scrub_EccDed,
             Scrub_PassDone  => Scrub_PassDone
         );
 
@@ -169,8 +166,8 @@ begin
             ErrInj_Valid   => ErrInj_Valid
         );
 
-    -- Forward decoder outputs. The masked user RdValid and Scrub_Rd_Valid are driven by the
-    -- scrubber (User_Rd_Valid / Scrub_Rd_Valid in the port map above).
+    -- Forward decoder outputs. The masked user RdValid is driven by the scrubber
+    -- (User_Rd_Valid in the port map above).
     RdData   <= Ram_RdData;
     RdEccSec <= Ram_RdEccSec;
     RdEccDed <= Ram_RdEccDed;

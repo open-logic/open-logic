@@ -41,13 +41,11 @@
 --                writeback (Ram_Wr_Data = WbData through the wrapper's encoder); advance ScrubAddr;
 --                pulse Scrub_PassDone on rollover; go to Idle_s.
 --
--- Scrub_Rd_Valid is driven from a length-L shift register tracking every scrub
--- read-issue, so it still pulses on the codec return cycle when the FSM aborted in
--- the meantime. The core also owns the user-facing read-valid mask:
---   User_Rd_Valid = Ram_Rd_Valid and not Scrub_Rd_Valid
--- so the scrubber's own reads never surface as user reads. Scrub_Rd_EccSec /
--- Scrub_Rd_EccDed are pass-throughs of the codec output; the consumer must qualify
--- them with Scrub_Rd_Valid.
+-- An internal length-L shift register (ValidPipe) tracks every scrub read-issue and pulses on the
+-- codec return cycle. It masks the scrubber's own reads out of the user-facing read valid
+-- (User_Rd_Valid = Ram_Rd_Valid and not <pulse>) and gates the status outputs Scrub_EccSec /
+-- Scrub_EccDed so they are clean, directly countable one-cycle pulses (no consumer-side
+-- qualification). It still pulses on the codec return even if the FSM aborted in the meantime.
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/ft/olo_ft_private_scrubber.md
@@ -102,10 +100,10 @@ entity olo_ft_private_scrubber is
         Ram_Rd_Valid    : in    std_logic;
         -- User-facing read valid: Ram_Rd_Valid with scrubber-owned read cycles masked out
         User_Rd_Valid   : out   std_logic;
-        -- Scrub Status
-        Scrub_Rd_Valid  : out   std_logic;
-        Scrub_Rd_EccSec : out   std_logic;
-        Scrub_Rd_EccDed : out   std_logic;
+        -- Scrub Status (validated internally: Scrub_EccSec/Scrub_EccDed pulse for one cycle on a
+        -- scrubber read return that observed SEC/DED -- directly countable, no qualification needed)
+        Scrub_EccSec    : out   std_logic;
+        Scrub_EccDed    : out   std_logic;
         Scrub_PassDone  : out   std_logic
     );
 end entity;
@@ -233,14 +231,16 @@ begin
             v.ValidPipe(i) := r.ValidPipe(i - 1);
         end loop;
 
-        Scrub_RdReq     <= IssueRead_v;
-        Scrub_WrReq     <= IssueWrite_v;
-        Scrub_Addr      <= std_logic_vector(r.ScrubAddr);
-        Scrub_Rd_Valid  <= r.ValidPipe(TotalReadLatency_g - 1);
-        User_Rd_Valid   <= Ram_Rd_Valid and not r.ValidPipe(TotalReadLatency_g - 1);
-        Scrub_Rd_EccSec <= Ram_Rd_EccSec;
-        Scrub_Rd_EccDed <= Ram_Rd_EccDed;
-        Scrub_PassDone  <= r.PassDone;
+        Scrub_RdReq <= IssueRead_v;
+        Scrub_WrReq <= IssueWrite_v;
+        Scrub_Addr  <= std_logic_vector(r.ScrubAddr);
+        -- Mask the scrubber's own read cycles out of the user-facing read valid.
+        User_Rd_Valid <= Ram_Rd_Valid and not r.ValidPipe(TotalReadLatency_g - 1);
+        -- Status: gate the codec flags with the scrub read-return pulse so they are clean,
+        -- directly countable pulses (the consumer no longer needs a separate qualifier).
+        Scrub_EccSec   <= Ram_Rd_EccSec and r.ValidPipe(TotalReadLatency_g - 1);
+        Scrub_EccDed   <= Ram_Rd_EccDed and r.ValidPipe(TotalReadLatency_g - 1);
+        Scrub_PassDone <= r.PassDone;
 
         r_next <= v;
 
