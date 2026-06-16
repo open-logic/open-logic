@@ -128,7 +128,7 @@ architecture rtl of olo_ft_private_scrubber is
     type TwoProcess_r is record
         Fsm       : ScrubFsm_t;
         ScrubAddr : unsigned(AddrWidth_c - 1 downto 0);
-        WaitCnt   : unsigned(log2ceil(TotalReadLatency_g + 1) - 1 downto 0);
+        WaitCnt   : natural range 0 to TotalReadLatency_g;
         ValidPipe : std_logic_vector(TotalReadLatency_g - 1 downto 0);
         PassDone  : std_logic;
         -- Registered decoder response. Breaks the RAM-read -> decode -> re-encode -> RAM-write
@@ -279,7 +279,7 @@ begin
                     -- codec-return cycle (WaitCnt = L), so Decide_s runs one cycle later and
                     -- consumes the *registered* decoder outputs (EccSecReg/EccDedReg/WbData), which
                     -- are valid the cycle after the live decoder output.
-                    v.WaitCnt := to_unsigned(1, v.WaitCnt'length);
+                    v.WaitCnt := 1;
                     v.Fsm     := ReadWait_s;
                 end if;
 
@@ -348,9 +348,10 @@ begin
             if Rst = '1' then
                 r.Fsm       <= Idle_s;
                 r.ScrubAddr <= (others => '0');
-                r.WaitCnt   <= (others => '0');
                 r.PassDone  <= '0';
-                -- Reset so Scrub_Rd_Valid does not pulse on a random startup pattern.
+                -- WaitCnt is intentionally not reset: it is loaded in Idle_s before ReadWait_s ever
+                -- reads it, so it needs no reset value (and keeps reset fanout minimal). ValidPipe is
+                -- reset so Scrub_Rd_Valid does not pulse on a random startup pattern.
                 r.ValidPipe <= (others => '0');
             end if;
         end if;
