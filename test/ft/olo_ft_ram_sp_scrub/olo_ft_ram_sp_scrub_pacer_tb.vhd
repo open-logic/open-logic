@@ -159,8 +159,8 @@ begin
     -----------------------------------------------------------------------------------------------
     -- This TB assumes the pacer is on and that one idle pass fits inside a period; a bad config
     -- would otherwise hang or pass vacuously.
-    assert ScrubClkHz_g > 0.0
-        report "olo_ft_ram_sp_scrub_pacer_tb requires the pacer enabled (ScrubClkHz_g > 0.0)"
+    assert ScrubPeriod_g > 0.0
+        report "olo_ft_ram_sp_scrub_pacer_tb requires the pacer enabled (ScrubPeriod_g > 0.0)"
         severity failure;
     assert PeriodCycles_c > PassCycles_c
         report "olo_ft_ram_sp_scrub_pacer_tb requires ScrubPeriod_g long enough for one pass to fit"

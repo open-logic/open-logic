@@ -29,7 +29,7 @@ shared port and collapses the two RAM channels back onto it; a dual-port wrapper
 write and read ports.
 
 By default the scrubber is **free-running**: it advances as fast as user-idle cycles allow. An optional internal
-**pacer** (enabled when _ScrubClkHz_g_ > 0.0) instead limits it to one full pass every _ScrubPeriod_g_ seconds and
+**pacer** (enabled when _ScrubPeriod_g_ > 0.0) instead limits it to one full pass every _ScrubPeriod_g_ seconds and
 raises _Scrub_Overrun_ if a pass cannot finish within its period -- see [Scrub Pacing](#scrub-pacing-optional).
 
 For background on the SECDED scheme and the meaning of the ECC flags, see
@@ -43,8 +43,8 @@ For background on the SECDED scheme and the meaning of the ECC flags, see
 | Width_g            | positive | -       | Data word-width (decoded data, _not_ the codeword width).    |
 | TotalReadLatency_g | positive | -       | End-to-end read latency of the wrapped ECC RAM, i.e. _RamRdLatency_g_ + _EccPipeline_g_. The FSM waits this many cycles between issuing a read and acting on the decoded ECC flags, and the read-valid shift register is this long. |
 | SinglePortRam_g    | boolean  | false   | When `true`, the scrubber also drives the collapsed single-port address _Ram_Addr_ for [olo_ft_ram_sp_scrub](./olo_ft_ram_sp_scrub.md). Leave `false` (default) for the dual-port wrapper, which maps _Ram_Wr_Addr_ / _Ram_Rd_Addr_ 1:1 onto the RAM and ignores _Ram_Addr_. |
-| ScrubClkHz_g       | real     | 0.0     | Clock frequency in Hz, used **only** to size the optional pacer. `0.0` (default) disables the pacer and leaves the scrubber free-running. Any value > 0.0 enables the pacer and must be >= 1000.0. |
-| ScrubPeriod_g      | real     | 0.0     | Pacer period in seconds: one full scrub pass is started every _ScrubPeriod_g_ seconds (1 ms granularity). Used only when the pacer is enabled (_ScrubClkHz_g_ > 0.0), where it must be > 0.0. |
+| ScrubClkHz_g       | real     | 100000000.0 | Frequency of _Clk_ in Hz, used **only** to size the optional pacer. Set it to the actual clock frequency; must be >= 1000.0 when the pacer is enabled (_ScrubPeriod_g_ > 0.0), and is ignored when free-running. |
+| ScrubPeriod_g      | real     | 0.0     | Pacer period in seconds: one full scrub pass is started every _ScrubPeriod_g_ seconds (1 ms granularity). `0.0` (default) disables the pacer and leaves the scrubber free-running; any value > 0.0 enables it. |
 
 ## Interfaces
 
@@ -189,8 +189,8 @@ a double-bit error. A scrub pass therefore repairs all single-bit upsets and fla
 
 ### Scrub Pacing (optional)
 
-By default (`ScrubClkHz_g = 0.0`) the scrubber is free-running: `ScrubActive` is tied '1' and the strobe primitives
-below are optimized away. Setting `ScrubClkHz_g > 0.0` enables a pacer that limits scrubbing to one pass every
+By default (`ScrubPeriod_g = 0.0`) the scrubber is free-running: `ScrubActive` is tied '1' and the strobe primitives
+below are optimized away. Setting `ScrubPeriod_g > 0.0` enables a pacer that limits scrubbing to one pass every
 `ScrubPeriod_g` seconds:
 
 - A [olo_base_strobe_gen](../base/olo_base_strobe_gen.md) produces a 1 kHz base tick from `ScrubClkHz_g`, which a
@@ -203,8 +203,8 @@ below are optimized away. Setting `ScrubClkHz_g > 0.0` enables a pacer that limi
   warning fires. This is a watchdog for a `ScrubPeriod_g` set too short for the memory depth and the available idle
   bandwidth.
 
-When the pacer is enabled, `ScrubClkHz_g` must be >= 1000.0 and `ScrubPeriod_g` must be > 0.0; both are checked at
-elaboration.
+When the pacer is enabled (`ScrubPeriod_g > 0.0`), `ScrubClkHz_g` must be set to the actual `Clk` frequency and be
+>= 1000.0; this is checked at elaboration.
 
 ### Constraints
 

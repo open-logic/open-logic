@@ -39,7 +39,7 @@ entity olo_ft_ram_sp_scrub is
         RamStyle_g     : string               := "auto";
         RamBehavior_g  : string               := "RBW";
         EccPipeline_g  : natural range 0 to 2 := 0;
-        ScrubClkHz_g   : real                 := 0.0;
+        ScrubClkHz_g   : real                 := 100000000.0;
         ScrubPeriod_g  : real                 := 0.0
     );
     port (

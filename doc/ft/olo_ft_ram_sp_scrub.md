@@ -42,8 +42,8 @@ across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_princ
 | RamStyle_g     | string   | "auto"  | Controls the RAM implementation resource. Passed through to [olo_base_ram_sp](../base/olo_base_ram_sp.md). |
 | RamBehavior_g  | string   | "RBW"   | Controls the RAM behavior. <br>"RBW": Read-before-write<br>"WBR": Write-before-read |
 | EccPipeline_g  | natural  | 0       | Number of pipeline register stages within the ECC decoder (range _0..2_). Total read latency is _RamRdLatency_g_ + _EccPipeline_g_ cycles. See [olo_ft_ram_sp](./olo_ft_ram_sp.md#ecc-pipeline) for details. |
-| ScrubClkHz_g   | real     | 0.0     | Clock frequency in Hz, used **only** to size the optional scrub pacer. `0.0` (default) keeps the scrubber free-running; any value > 0.0 enables the pacer and must be >= 1000.0. See [olo_ft_private_scrubber - Scrub Pacing](./olo_ft_private_scrubber.md#scrub-pacing-optional). |
-| ScrubPeriod_g  | real     | 0.0     | Pacer period in seconds: one scrub pass is started every _ScrubPeriod_g_ seconds (1 ms granularity). Used only when the pacer is enabled (_ScrubClkHz_g_ > 0.0), where it must be > 0.0. |
+| ScrubClkHz_g   | real     | 100000000.0 | Frequency of _Clk_ in Hz, used **only** to size the optional scrub pacer. Set it to the actual clock frequency; must be >= 1000.0 when the pacer is enabled (_ScrubPeriod_g_ > 0.0), ignored when free-running. See [olo_ft_private_scrubber - Scrub Pacing](./olo_ft_private_scrubber.md#scrub-pacing-optional). |
+| ScrubPeriod_g  | real     | 0.0     | Pacer period in seconds: one scrub pass is started every _ScrubPeriod_g_ seconds (1 ms granularity). `0.0` (default) keeps the scrubber free-running; any value > 0.0 enables the pacer. |
 
 ## Interfaces
 

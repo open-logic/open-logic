@@ -36,13 +36,11 @@ entity olo_ft_private_scrubber is
         Depth_g            : positive range 2 to positive'high;
         Width_g            : positive;
         TotalReadLatency_g : positive;
-        -- Single-port address collapse: when true the scrubber also drives Ram_Addr (the write/read
-        -- addresses muxed onto one physical port) for olo_ft_ram_sp_scrub; dual-port wrappers leave
-        -- it false and map Ram_Wr_Addr / Ram_Rd_Addr 1:1.
+        -- Single-port address collapse: drive Ram_Addr for olo_ft_ram_sp_scrub; false for dual-port.
         SinglePortRam_g    : boolean := false;
-        -- Optional internal pacer: run one scrub pass every ScrubPeriod_g seconds. Disabled
-        -- (free-running) when ScrubClkHz_g = 0.0 (the default).
-        ScrubClkHz_g       : real    := 0.0;
+        -- Optional internal pacer: one scrub pass every ScrubPeriod_g seconds. Free-running when
+        -- ScrubPeriod_g = 0.0 (the default). ScrubClkHz_g must be the actual Clk frequency.
+        ScrubClkHz_g       : real    := 100000000.0;
         ScrubPeriod_g      : real    := 0.0
     );
     port (
@@ -116,9 +114,9 @@ architecture rtl of olo_ft_private_scrubber is
     signal Scrub_WrReq : std_logic;
     signal Scrub_Addr  : std_logic_vector(AddrWidth_c - 1 downto 0);
 
-    -- Optional pacer (ScrubClkHz_g > 0.0): one pass per ScrubPeriod_g seconds. ScrubActive is the
+    -- Optional pacer (ScrubPeriod_g > 0.0): one pass per ScrubPeriod_g seconds. ScrubActive is the
     -- paced enable, tied '1' when free-running.
-    constant Paced_c    : boolean  := ScrubClkHz_g > 0.0;
+    constant Paced_c    : boolean  := ScrubPeriod_g > 0.0;
     constant BaseHz_c   : real     := 1000.0;
     constant DivRatio_c : positive := integer(round(maximum(1.0, ScrubPeriod_g * BaseHz_c)));
 
@@ -152,11 +150,8 @@ begin
 
     -- *** Optional pacer + overrun watchdog ***
     -- Config sanity (static, checked at elaboration).
-    assert (not Paced_c) or (ScrubPeriod_g > 0.0)
-        report "olo_ft_private_scrubber: ScrubPeriod_g must be > 0.0 when the pacer is enabled (ScrubClkHz_g > 0.0)"
-        severity failure;
     assert (not Paced_c) or (ScrubClkHz_g >= BaseHz_c)
-        report "olo_ft_private_scrubber: ScrubClkHz_g must be >= 1000.0 when the pacer is enabled"
+        report "olo_ft_private_scrubber: ScrubClkHz_g must be >= 1000.0 when the pacer is enabled (ScrubPeriod_g > 0.0)"
         severity failure;
 
     g_paced : if Paced_c generate
