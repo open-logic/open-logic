@@ -39,3 +39,6 @@ fusesoc.conf
 
 #Python Virtual environment
 .venv/
+
+# GenAI files
+.cc-history/
