@@ -23,7 +23,6 @@ library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
     use std.textio.all;
-    use ieee.std_logic_textio.all;
     use ieee.math_real.all;
 
 library work;
@@ -66,10 +65,7 @@ begin
         file DataFile : text;
 
         -- Variables
-        variable Line_v        : line;
-        variable Fmt_v         : FixFormat_t;
         variable DataSlv_v     : std_logic_vector(cl_fix_width(Fmt_c)-1 downto 0);
-        variable Good_v        : boolean;
         variable StallRandom_v : real;
         variable StallCycles_v : positive;
         variable Seed1_v       : positive := 1;
@@ -87,25 +83,14 @@ begin
         -- Waiit for reset release
         wait until rising_edge(Clk) and Rst = '0';
 
-        -- Open file and check format
+        -- Open file and check format (first line)
         file_open(DataFile, FilePath_g, read_mode);
-
-        -- Check format (first line)
-        readline(DataFile, Line_v);
-        Fmt_v := cl_fix_format_from_string(Line_v.all);
-        assert Fmt_v = Fmt_c
-            report errorMessage(EntityName_c, "Format mismatch: expected " & to_string(Fmt_c) &
-                   ", got " & to_string(Fmt_v) & " in file " & FilePath_g)
-            severity error;
+        fixFileCheckHeader(DataFile, Fmt_c);
 
         -- Iterate through lines in file
         while not endfile(DataFile) loop
             -- Read line
-            readline(DataFile, Line_v);
-            hread(Line_v, DataSlv_v, Good_v);
-            assert Good_v
-                report errorMessage(EntityName_c, "Failed to read data from file - file: " & FilePath_g)
-                severity error;
+            DataSlv_v := fixFileReadSample(DataFile, Fmt_c);
 
             -- Apply Data
             Data <= DataSlv_v;

@@ -13,7 +13,7 @@
 -- (one tap per clock cycle) using a single multiplier.
 --
 -- Documentation:
--- https://github.com/open-logic/open-logic/blob/main/doc/fix/olo_fix_fir_dec_ser_tdm.md
+-- https://github.com/open-logic/open-logic/blob/main/doc/fix/olo_fix_fir_dec_ser_chtdm.md
 --
 -- Note: The link points to the documentation of the latest release. If you
 --       use an older version, the documentation might not match the code.
@@ -36,18 +36,20 @@ library work;
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
-entity olo_fix_fir_dec_ser_tdm is
+entity olo_fix_fir_dec_ser_chtdm is
     generic (
         -- Formats
         InFmt_g           : string;
         OutFmt_g          : string;
         CoefFmt_g         : string;
         -- Filter parameters
-        Channels_g        : positive := 2;
+        Channels_g        : positive;
         MaxRatio_g        : positive;
         MaxTaps_g         : positive;
+        RuntimeCfg_g      : boolean  := false;
         -- Arithmetic
-        Round_g           : string   := FixRound_NonSymPos_c;
+        GuardBits_g       : natural  := 1;
+        Round_g           : string   := FixRound_Trunc_c;
         Saturate_g        : string   := FixSaturate_Warn_c;
         MultRegs_g        : positive := 1;
         -- Coefficient storage
@@ -68,12 +70,12 @@ entity olo_fix_fir_dec_ser_tdm is
         Cfg_Ratio        : in    std_logic_vector(log2Ceil(MaxRatio_g) - 1 downto 0)             := toUslv(MaxRatio_g - 1, log2Ceil(MaxRatio_g));
         Cfg_Taps         : in    std_logic_vector(log2Ceil(MaxTaps_g) - 1 downto 0)              := toUslv(MaxTaps_g - 1, log2Ceil(MaxTaps_g));
         -- Coefficient Config Port
-        Coef_Cfg_Addr    : in    std_logic_vector(log2Ceil(MaxTaps_g) - 1 downto 0)              := (others => '0');
-        Coef_Cfg_WrEna   : in    std_logic                                                       := '0';
-        Coef_Cfg_WrData  : in    std_logic_vector(fixFmtWidthFromString(CoefFmt_g) - 1 downto 0) := (others => '0');
-        Coef_Cfg_RdEna   : in    std_logic                                                       := '0';
-        Coef_Cfg_RdData  : out   std_logic_vector(fixFmtWidthFromString(CoefFmt_g) - 1 downto 0);
-        Coef_Cfg_RdValid : out   std_logic;
+        Coef_Addr        : in    std_logic_vector(log2Ceil(MaxTaps_g) - 1 downto 0)              := (others => '0');
+        Coef_WrEna       : in    std_logic                                                       := '0';
+        Coef_WrData      : in    std_logic_vector(fixFmtWidthFromString(CoefFmt_g) - 1 downto 0) := (others => '0');
+        Coef_RdEna       : in    std_logic                                                       := '0';
+        Coef_RdData      : out   std_logic_vector(fixFmtWidthFromString(CoefFmt_g) - 1 downto 0);
+        Coef_RdValid     : out   std_logic;
         -- Input
         In_Valid         : in    std_logic;
         In_Data          : in    std_logic_vector(fixFmtWidthFromString(InFmt_g) - 1 downto 0);
@@ -88,17 +90,17 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 -- Architecture
 ---------------------------------------------------------------------------------------------------
-architecture rtl of olo_fix_fir_dec_ser_tdm is
+architecture rtl of olo_fix_fir_dec_ser_chtdm is
 
     -- *** Entity Name ***
-    constant EntityName_c : string := "olo_fix_fir_dec_ser_tdm";
+    constant EntityName_c : string := "olo_fix_fir_dec_ser_chtdm";
 
     -- *** Formats ***
     constant InFmt_c   : FixFormat_t := cl_fix_format_from_string(InFmt_g);
     constant OutFmt_c  : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
     constant CoefFmt_c : FixFormat_t := cl_fix_format_from_string(CoefFmt_g);
     constant MultFmt_c : FixFormat_t := cl_fix_mult_fmt(InFmt_c, CoefFmt_c);
-    constant AccuFmt_c : FixFormat_t := (1, OutFmt_c.I + 1, InFmt_c.F + CoefFmt_c.F);
+    constant AccuFmt_c : FixFormat_t := (1, OutFmt_c.I + GuardBits_g, MultFmt_c.F);
 
     -- *** Pipeline Stage Constant ***
     constant AccuStage_c : natural := 4 + MultRegs_g;
@@ -169,7 +171,15 @@ architecture rtl of olo_fix_fir_dec_ser_tdm is
     signal ResizeData    : OutData_t;
     signal ResizeValid   : std_logic;
 
+    -- *** Runtime Config Signals ***
+    signal Cfg_Taps_I  : std_logic_vector(Cfg_Taps'range);
+    signal Cfg_Ratio_I : std_logic_vector(Cfg_Ratio'range);
+
 begin
+
+    -- Runtime configurability
+    Cfg_Taps_I  <= Cfg_Taps when RuntimeCfg_g else toUslv(MaxTaps_g - 1, Cfg_Taps_I'length);
+    Cfg_Ratio_I <= Cfg_Ratio when RuntimeCfg_g else toUslv(MaxRatio_g - 1, Cfg_Ratio_I'length);
 
     -----------------------------------------------------------------------------------------------
     -- Assertions
@@ -228,7 +238,7 @@ begin
         v.TapCnt   := std_logic_vector(unsigned(r.TapCnt) - 1);
 
         -- Last tap of a channel
-        if unsigned(r.TapCnt) = 1 or unsigned(Cfg_Taps) = 0 then
+        if unsigned(r.TapCnt) = 1 or unsigned(Cfg_Taps_I) = 0 then
             v.Last(1) := '1';
         end if;
 
@@ -239,7 +249,7 @@ begin
             else
                 v.First(1)   := '1';
                 v.CalcChnl_1 := std_logic_vector(unsigned(r.CalcChnl_1) + 1);
-                v.TapCnt     := Cfg_Taps;
+                v.TapCnt     := Cfg_Taps_I;
             end if;
         end if;
 
@@ -248,19 +258,14 @@ begin
             if unsigned(r.ChannelNr(0)) = Channels_g - 1 then
                 if unsigned(r.DecCnt) = 0 then
                     v.Tap0Addr   := r.TapWrAddr;
-                    v.TapCnt     := Cfg_Taps;
+                    v.TapCnt     := Cfg_Taps_I;
                     v.CalcOn(1)  := '1';
                     v.First(1)   := '1';
                     v.CalcChnl_1 := (others => '0');
-                    v.DecCnt     := Cfg_Ratio;
-                    -- The idle TapCnt countdown may have set Last(1) spuriously. Recompute it
-                    -- for the freshly loaded TapCnt: only a 1-tap filter (Cfg_Taps = 0) has its
-                    -- first tap also be the last tap.
-                    if unsigned(Cfg_Taps) = 0 then
-                        v.Last(1) := '1';
-                    else
-                        v.Last(1) := '0';
-                    end if;
+                    v.DecCnt     := Cfg_Ratio_I;
+                    -- The idle TapCnt countdown may have set Last(1) spuriously because it is freerunning. We clear
+                    -- it in case it would be on by incident.
+                    v.Last(1) := '0';
                 else
                     v.DecCnt := std_logic_vector(unsigned(r.DecCnt) - 1);
                 end if;
@@ -278,7 +283,7 @@ begin
 
         -- *** Stage 4: Multiplier Input MUX with ReplaceZero ***
         -- Replace unwritten RAM locations with zeros for bit-trueness at startup
-        if r.ReplaceZero = '0' or unsigned(r.TapRdAddr_3) <= unsigned(Cfg_Ratio) then
+        if r.ReplaceZero = '0' or unsigned(r.TapRdAddr_3) <= unsigned(Cfg_Ratio_I) then
             v.MultInTap := DataRamDout_3;
         else
             v.MultInTap := (others => '0');
@@ -289,7 +294,7 @@ begin
         if r.FirstTapLoop = '0' then
             v.ReplaceZero := '0';
         elsif r.CalcOn(3) = '1' then
-            if r.First(3) = '1' and unsigned(r.TapRdAddr_3) <= unsigned(Cfg_Ratio) then
+            if r.First(3) = '1' and unsigned(r.TapRdAddr_3) <= unsigned(Cfg_Ratio_I) then
                 v.ReplaceZero := '0';
                 if unsigned(r.CalcChnl_3) = Channels_g - 1 then
                     v.FirstTapLoop := '0';
@@ -363,7 +368,7 @@ begin
                 r.ReplaceZero   <= '1';
                 r.FirstTapLoop  <= '1';
                 r.OutChCnt      <= 0;
-                r.TapCnt        <= Cfg_Taps;
+                r.TapCnt        <= Cfg_Taps_I;
             end if;
         end if;
     end process;
@@ -379,6 +384,13 @@ begin
             if Rst = '1' then
                 ChCnt_v := 0;
             elsif In_Valid = '1' then
+
+                -- Check Tap Count > 1
+                assert unsigned(Cfg_Taps) >= 1 or RuntimeCfg_g = false
+                    report errorMessage(EntityName_c, "Cfg_Taps must be >= 0 (1 tap filter is not supported)")
+                    severity error;
+
+                -- Check TDM Timing
                 if In_Last = '1' then
                     assert ChCnt_v = Channels_g - 1
                         report errorMessage(EntityName_c, "In_Last asserted at channel index " &
@@ -456,23 +468,23 @@ begin
         port map (
             Clk          => Clk,
             Rst          => Rst,
-            Cfg_Addr     => Coef_Cfg_Addr,
-            Cfg_WrEna    => Coef_Cfg_WrEna,
-            Cfg_WrData   => Coef_Cfg_WrData,
-            Cfg_RdEna    => Coef_Cfg_RdEna,
-            Cfg_RdData   => Coef_Cfg_RdData,
-            Cfg_RdValid  => Coef_Cfg_RdValid,
+            Cfg_Addr     => Coef_Addr,
+            Cfg_WrEna    => Coef_WrEna,
+            Cfg_WrData   => Coef_WrData,
+            Cfg_RdEna    => Coef_RdEna,
+            Cfg_RdData   => Coef_RdData,
+            Cfg_RdValid  => Coef_RdValid,
             Coef_Addr    => r.CoefRdAddr_2,
             Coef_RdEna   => '1',
             Coef_RdData  => CoefRamDout_3,
             Coef_RdValid => open
         );
 
-    -- *** Data RAM (True Dual Port: write on A, read on B) ***
+    -- *** Data RAM (Simple Dual Port: one write port, one read port) ***
     DataRamWrAddr <= r.ChannelNr(1) & r.TapWrAddr;
     DataRamRdAddr <= r.CalcChnl_2 & r.TapRdAddr_2;
 
-    i_data_ram : entity work.olo_base_ram_tdp
+    i_data_ram : entity work.olo_base_ram_sdp
         generic map (
             Depth_g       => DataMemDepth_c * Channels_g,
             Width_g       => fixFmtWidthFromString(InFmt_g),
@@ -481,20 +493,14 @@ begin
             RamBehavior_g => DataRamBehavior_g
         )
         port map (
-            A_Clk    => Clk,
-            A_Rst    => Rst,
-            A_Addr   => DataRamWrAddr,
-            A_WrEna  => r.Vld(1),
-            A_WrData => r.InSig(1),
-            A_RdEna  => '0',
-            A_RdData => open,
-            B_Clk    => Clk,
-            B_Rst    => Rst,
-            B_Addr   => DataRamRdAddr,
-            B_WrEna  => '0',
-            B_WrData => (others => '0'),
-            B_RdEna  => '1',
-            B_RdData => DataRamDout_3
+            Clk     => Clk,
+            Rst     => Rst,
+            Wr_Addr => DataRamWrAddr,
+            Wr_Ena  => r.Vld(1),
+            Wr_Data => r.InSig(1),
+            Rd_Addr => DataRamRdAddr,
+            Rd_Ena  => '1',
+            Rd_Data => DataRamDout_3
         );
 
 end architecture;

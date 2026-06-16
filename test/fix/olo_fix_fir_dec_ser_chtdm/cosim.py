@@ -13,57 +13,42 @@ import numpy as np
 from scipy import signal as sps
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../src/fix/python")))
-from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_fir_dec
+from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_fir_dec, olo_fix_plots
 from en_cl_fix_pkg import *
-
-
-# ---------------------------------------------------------------------------------------------------
-# Coefficient Generation
-# ---------------------------------------------------------------------------------------------------
-def _gen_coefs(n_taps, ratio, coef_fmt):
-    """Generate a low-pass FIR using scipy and quantize to coef_fmt."""
-    cutoff = 1.0 / ratio  # normalized cutoff (Nyquist = 1.0)
-    coefs_f = sps.firwin(n_taps, cutoff)
-    return cl_fix_from_real(coefs_f, coef_fmt)
-
-
-def coefs_init_string(n_taps, ratio, coef_fmt):
-    """Return a comma-separated string of quantized coefficients (for VHDL CoefInit_g)."""
-    coefs = _gen_coefs(n_taps, ratio, coef_fmt)
-    return ",".join(f"{float(c):.20e}" for c in coefs)
-
 
 # ---------------------------------------------------------------------------------------------------
 # Cosim Function
 # ---------------------------------------------------------------------------------------------------
 def cosim(output_path: str = None,
           generics:    dict = None,
-          cosim_mode:  bool = True):
+          cosim_mode:  bool = True,
+          test_mode: str = "normal"):
 
     # *** Parse Generics ***
     InFmt_g   = olo_fix_utils.fix_format_from_string(generics["InFmt_g"])
     OutFmt_g  = olo_fix_utils.fix_format_from_string(generics["OutFmt_g"])
     CoefFmt_g = olo_fix_utils.fix_format_from_string(generics["CoefFmt_g"])
-    Channels_g      = int(generics.get("Channels_g", 2))
-    MaxRatio_g      = int(generics["MaxRatio_g"])
-    MaxTaps_g       = int(generics["MaxTaps_g"])
+    Channels_g      = int(generics.get("Channels_g"))
+    Ratio_g         = int(generics["Ratio_g"])
+    Taps_g          = int(generics["Taps_g"])
+    GuardBits_g     = int(generics.get("GuardBits_g", 0))
     Round_g         = FixRound[generics.get("Round_g", "NonSymPos_s")]
     Saturate_g      = FixSaturate[generics.get("Saturate_g", "Warn_s")]
 
-    # Active ratio and taps from config (use max by default)
-    ratio = MaxRatio_g
-    taps  = MaxTaps_g
-
     # *** Signal Lengths ***
     if cosim_mode:
-        N_DIRAC  = MaxTaps_g * 4
-        N_PHASE2 = 200
+        N_DIRAC  = Taps_g + 1
+        N_PHASE2 = 50
     else:
-        N_DIRAC  = MaxTaps_g * 16
+        N_DIRAC  = Taps_g * 16
         N_PHASE2 = 2000
 
     # *** Coefficients ***
-    coefs = _gen_coefs(MaxTaps_g, MaxRatio_g, CoefFmt_g)
+    cutoff = 1.0 / Ratio_g  # normalized cutoff (Nyquist = 1.0)
+    coefs_f = sps.firwin(Taps_g, cutoff-1e-6)
+    coefs =  cl_fix_from_real(coefs_f, CoefFmt_g)
+    if test_mode == "overflow":
+        coefs = cl_fix_from_real(np.ones(Taps_g) * 0.5, CoefFmt_g)
 
     # *** Build per-channel input signals ***
     in_ch  = []
@@ -89,7 +74,7 @@ def cosim(output_path: str = None,
             phase2 = step
         elif ch == 2:
             t = np.linspace(0, N_PHASE2 / 10e3, N_PHASE2)
-            phase2 = sps.chirp(t, f0=0, f1=5e3, t1=t[-1], method='linear') * scale
+            phase2 = sps.chirp(t, f0=0, f1=5e3-1e-6, t1=t[-1], method='linear') * scale
         else:
             rng = np.random.default_rng(ch + 100)
             phase2 = rng.uniform(-scale * (ch + 1) / Channels_g,
@@ -101,14 +86,26 @@ def cosim(output_path: str = None,
         in_ch.append(sig)
 
         # --- Apply bit-true model ---
-        dut = olo_fix_fir_dec(InFmt_g, OutFmt_g, CoefFmt_g, coefs,
-                              round=Round_g, saturate=Saturate_g)
-        out = dut.process(sig, ratio=ratio, taps=taps)
+        dut = olo_fix_fir_dec(InFmt_g, OutFmt_g, CoefFmt_g, Ratio_g, coefs,
+                              guard_bits=GuardBits_g, round=Round_g, saturate=Saturate_g)
+        out = dut.process(sig)
         out_ch.append(out)
+
+    # Plot if not in cosim mode
+    if not cosim_mode:
+        print("Coefficients:",coefs)
+        for inp, out in zip(in_ch, out_ch):
+            olo_fix_plots.plot_subplots({
+                "Input"  : {"in"  : inp},
+                "Output" : {"out" : out}
+            })
 
     # *** Write Files ***
     if cosim_mode:
         writer = olo_fix_cosim(output_path)
+
+        # Coefficient file (read by the testbench to initialize the DUT)
+        writer.write_cosim_file(coefs, CoefFmt_g, "Coef.fix")
 
         # Per-channel files
         for ch in range(Channels_g):
@@ -126,13 +123,14 @@ def cosim(output_path: str = None,
 
 if __name__ == "__main__":
     generics = {
-        "InFmt_g":   "(1, 0, 15)",
-        "OutFmt_g":  "(1, 0, 15)",
-        "CoefFmt_g": "(1, 0, 17)",
-        "Channels_g":  "2",
-        "MaxRatio_g":  "8",
-        "MaxTaps_g":   "16",
-        "Round_g":    "NonSymPos_s",
-        "Saturate_g": "Sat_s",
+        "InFmt_g": "(1, 0, 15)",
+        "OutFmt_g": "(1, 0, 15)",
+        "CoefFmt_g": "(1, 1, 17)",
+        "GuardBits_g": "2",
+        "Channels_g": "2",
+        "Ratio_g": "4",
+        "Taps_g": "16",
+        "Round_g": "NonSymPos_s",
+        "Saturate_g": "None_s",
     }
-    cosim(generics=generics, cosim_mode=False)
+    cosim(generics=generics, cosim_mode=False, test_mode="overflow")

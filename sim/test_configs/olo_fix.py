@@ -10,6 +10,7 @@
 from .utils import named_config
 import sys
 import os
+from functools import partial
 
 # Import for fix cosimulations
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../test'))
@@ -226,7 +227,9 @@ def add_configs(olo_tb):
             named_config(tb, {'AFmt_g': Format, 'Value_g': Value})
 
     ### olo_fix_pkg ###
-    # Does not need configuration
+    tb = olo_tb.test_bench('olo_fix_pkg_tb')
+    cosim = olo_fix_pkg.cosim.cosim
+    tb.add_config(name="default", pre_config=partial(cosim, generics={}))
 
     ### olo_fix_limit ###
     tb = olo_tb.test_bench('olo_fix_limit_tb')
@@ -698,52 +701,6 @@ def add_configs(olo_tb):
             for Sat in ['None_s', 'SatWarn_s']:
                 named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat, 'IqHandling_g': IqHandling}, pre_config=cosim)
 
-    ### olo_fix_fir_dec_ser_tdm ###
-    tb = olo_tb.test_bench('olo_fix_fir_dec_ser_tdm_tb')
-    cosim_fir = olo_fix_fir_dec_ser_tdm.cosim.cosim
-
-    def fir_default(max_ratio=8, max_taps=16, channels=2, in_fmt='(1,0,15)', out_fmt='(1,0,15)',
-                    coef_fmt='(1,0,17)', storage='ROM', readback='False',
-                    round_g='NonSymPos_s', sat_g='Sat_s'):
-        from en_cl_fix_pkg import FixFormat
-        from olo_fix import olo_fix_utils
-        coef_fmt_obj = olo_fix_utils.fix_format_from_string(coef_fmt)
-        coef_init = olo_fix_fir_dec_ser_tdm.cosim.coefs_init_string(max_taps, max_ratio, coef_fmt_obj)
-        return {
-            'InFmt_g'          : in_fmt,
-            'OutFmt_g'         : out_fmt,
-            'CoefFmt_g'        : coef_fmt,
-            'CoefInit_g'       : coef_init,
-            'CoefStorageType_g': storage,
-            'CoefRamReadback_g': readback,
-            'Channels_g'       : str(channels),
-            'MaxRatio_g'       : str(max_ratio),
-            'MaxTaps_g'        : str(max_taps),
-            'Round_g'          : round_g,
-            'Saturate_g'       : sat_g,
-        }
-
-    for channels in [2, 4]:
-        named_config(tb, fir_default(channels=channels),
-                     pre_config=cosim_fir,
-                     short_name=f'CH{channels}-Default')
-        named_config(tb, fir_default(channels=channels, max_ratio=4),
-                     pre_config=cosim_fir,
-                     short_name=f'CH{channels}-Ratio4')
-        named_config(tb, fir_default(channels=channels, max_taps=32),
-                     pre_config=cosim_fir,
-                     short_name=f'CH{channels}-Taps32')
-
-    # ROM vs RAM
-    named_config(tb, fir_default(storage='RAM'),
-                 pre_config=cosim_fir, short_name='RamCoef')
-    named_config(tb, fir_default(storage='RAM', readback='True'),
-                 pre_config=cosim_fir, short_name='RamCoef-Readback')
-
-    # Overflow (narrow output to trigger saturation)
-    named_config(tb, fir_default(out_fmt='(1,-2,15)', round_g='Trunc_s', sat_g='None_s'),
-                 pre_config=cosim_fir, short_name='Overflow')
-
     ### olo_fix_coef_storage ###
     tb = olo_tb.test_bench('olo_fix_coef_storage_tb')
 
@@ -755,4 +712,43 @@ def add_configs(olo_tb):
                          named_config(tb, {'StorageType_g': StorageType, 'RamReadback_g': RamReadback, 'RamBehavior_g': RamBehavior, 'RdLatency_g': Latency})
             else: # ROM
                 named_config(tb, {'StorageType_g': StorageType, 'RdLatency_g': Latency})
+
+    ### olo_fix_fir_dec_ser_chtdm ###
+    tb = olo_tb.test_bench('olo_fix_fir_dec_ser_chtdm_tb')
+    default_generics = {
+        'InFmt_g'          : '(1,0,15)',
+        'OutFmt_g'         : '(1,-1,17)',
+        'CoefFmt_g'        : '(1,0,17)',
+        'CoefStorageType_g': 'ROM',
+        'CoefRamReadback_g': False,
+        'Channels_g'       : 2,
+        'Ratio_g'          : 4,
+        'Taps_g'           : 16,
+        'MultRegs_g'       : 1,
+        'RuntimeCfg_g'     : True,
+        'Round_g'          : 'NonSymPos_s',
+        'Saturate_g'       : 'Sat_s',
+        'WriteCoefs_g'     : 'False'
+    }
+    cosim = olo_fix_fir_dec_ser_chtdm.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    #Different single-settings
+    named_config(tb, default_generics | {'Channels_g': 4, 'Ratio_g': 3, 'Taps_g': 5, 'MultRegs_g': 2, 'RuntimeCfg_g': False}, pre_config=cosim, short_name='ch4-r3-taps5-regs2')
+    named_config(tb, default_generics | {'Ratio_g': 2}, pre_config=cosim, short_name='ratio1')
+
+    # Different coef-storage
+    named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': True, 'CoefRamReadback_g': True}, pre_config=cosim, short_name='RAM-write')
+    named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': False, 'CoefRamReadback_g': False}, pre_config=cosim, short_name='RAM-no-write')
+
+    # Round/Sat
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat}, pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+    # Overflow
+    cosim_overflow = partial(cosim, test_mode='overflow')
+    named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
+
 

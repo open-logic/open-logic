@@ -9,8 +9,7 @@
 # ---------------------------------------------------------------------------------------------------
 from en_cl_fix_pkg import *
 import numpy as np
-from typing import Union
-
+from scipy.signal import lfilter
 
 # ---------------------------------------------------------------------------------------------------
 # Class
@@ -29,8 +28,10 @@ class olo_fix_fir_dec:
                  in_fmt      : FixFormat,
                  out_fmt     : FixFormat,
                  coef_fmt    : FixFormat,
+                 ratio       : int,
                  coefs       : np.ndarray,
-                 round       : FixRound    = FixRound.NonSymPos_s,
+                 guard_bits  : int         = 1,
+                 round       : FixRound    = FixRound.Trunc_s,
                  saturate    : FixSaturate = FixSaturate.Warn_s):
         """
         Create a decimating FIR filter model.
@@ -38,15 +39,23 @@ class olo_fix_fir_dec:
         :param in_fmt:   Input fixed-point format
         :param out_fmt:  Output fixed-point format
         :param coef_fmt: Coefficient fixed-point format
+        :param ratio:    Decimation ratio (one output per 'ratio' inputs)
         :param coefs:    Filter coefficients (real-valued, will be quantized to coef_fmt)
         :param round:    Rounding mode at the output
         :param saturate: Saturation mode at the output
         """
+        # Check parameters
+        assert ratio > 0, "Ratio must be positive"
+        assert guard_bits >= 0, "Guard bits must be non-negative"
+
+        # Store parameters
         self._in_fmt   = in_fmt
         self._out_fmt  = out_fmt
         self._coef_fmt = coef_fmt
+        self._ratio    = ratio
         self._round    = round
         self._saturate = saturate
+        self._guard_bits = guard_bits
 
         # Quantize coefficients
         self._coefs = cl_fix_from_real(np.array(coefs, dtype=float), coef_fmt)
@@ -54,72 +63,47 @@ class olo_fix_fir_dec:
 
         # Derived formats (match VHDL AccuFmt_c)
         self._mult_fmt = cl_fix_mult_fmt(in_fmt, coef_fmt)
-        self._accu_fmt = FixFormat(1, out_fmt.I + 1, in_fmt.F + coef_fmt.F)
+        self._accu_fmt = FixFormat(1, self._out_fmt.I + guard_bits, self._mult_fmt.F)
 
-        self.clear_state()
+        self.reset()
 
     # ---------------------------------------------------------------------------------------------------
     # Public Methods
     # ---------------------------------------------------------------------------------------------------
-    def clear_state(self):
+    def reset(self):
         """Reset the delay line to zeros (matches VHDL startup behavior)."""
-        self._delay_line = np.zeros(self._n_taps)
+        self._delay_line = np.zeros(self._n_taps-1)
         self._dec_phase  = 0
 
-    def process(self, inp : np.ndarray, ratio : int, taps : int = None) -> np.ndarray:
+    def process(self, inp : np.ndarray) -> np.ndarray:
         """
         Process data after resetting state.
 
-        :param inp:   Input samples
-        :param ratio: Decimation ratio (one output per 'ratio' inputs)
-        :param taps:  Active tap count (defaults to full coefficient length)
         :return:      Output samples
         """
-        self.clear_state()
-        return self.next(inp, ratio, taps)
+        self.reset()
+        return self.next(inp)
 
-    def next(self, inp : np.ndarray, ratio : int, taps : int = None) -> np.ndarray:
+    def next(self, inp : np.ndarray) -> np.ndarray:
         """
         Process data continuing from current state.
 
         :param inp:   Input samples
-        :param ratio: Decimation ratio (one output per 'ratio' inputs)
-        :param taps:  Active tap count (defaults to full coefficient length)
         :return:      Output samples
         """
-        if taps is None:
-            taps = self._n_taps
-        if taps > self._n_taps:
-            raise ValueError(f"olo_fix_fir_dec: taps ({taps}) must be <= len(coefs) ({self._n_taps})")
-
         # Quantize input
         sig = cl_fix_from_real(np.array(inp, dtype=float), self._in_fmt)
 
-        outputs = []
-        for sample in sig:
-            # Shift delay line: new sample goes at index 0
-            self._delay_line = np.roll(self._delay_line, 1)
-            self._delay_line[0] = sample
+        # Filter
+        filtered, self._delay_line = lfilter(self._coefs, [1.0], sig, zi=self._delay_line)
 
-            if self._dec_phase == 0:
-                # Compute FIR output: accumulate tap products at full precision
-                accu = np.zeros(1)
-                for i in range(taps):
-                    prod = cl_fix_mult(
-                        self._delay_line[i], self._in_fmt,
-                        self._coefs[i],      self._coef_fmt,
-                        self._mult_fmt,      FixRound.Trunc_s, FixSaturate.None_s
-                    )
-                    accu = cl_fix_add(
-                        prod,  self._mult_fmt,
-                        accu,  self._accu_fmt,
-                        self._accu_fmt, FixRound.Trunc_s, FixSaturate.None_s
-                    )
-                result = cl_fix_resize(accu, self._accu_fmt, self._out_fmt,
-                                       self._round, self._saturate)
-                outputs.append(result[0])
-                self._dec_phase = ratio - 1
-            else:
-                self._dec_phase -= 1
+        # Decimate
+        first_sample = (self._ratio - self._dec_phase) % self._ratio
+        decimated = filtered[first_sample::self._ratio]
+        self._dec_phase = (self._dec_phase + len(sig)) % self._ratio
 
-        return np.array(outputs)
+        # Resize output
+        guard = cl_fix_resize(decimated, self._accu_fmt, self._accu_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        result = cl_fix_resize(guard, self._accu_fmt, self._out_fmt, self._round, self._saturate)
+
+        return result

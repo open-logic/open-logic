@@ -31,6 +31,7 @@ Note that components are split into categories.
     - [CORDIC](#cordic)
     - [Mixers](#mixers)
     - [CIC Filters](#cic-filters)
+    - [FIR Filters](#fir-filters)
     - [Miscellaneous](#miscellaneous-1)
 
 ## base
@@ -262,7 +263,18 @@ be used. For deciding which option to use, the following considerations shall be
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | [olo_fix_cic_dec_tdm](./fix/olo_fix_cic_dec_tdm.md)         | CIC decimator (TDM input, TDM output), single- or multi-channel, ratio fixed or runtime configurable               |
 | [olo_fix_cic_dec_par_tdm](./fix/olo_fix_cic_dec_par_tdm.md) | CIC decimator (parallel input, TDM output), single- or multi-channel, ratio fixed or runtime configurable          |
-| [olo_fix_fir_dec_ser_tdm](./fix/olo_fix_fir_dec_ser_tdm.md) | Decimating FIR filter (TDM channels, serial tap computation), multi-channel, runtime-configurable ratio and tap count |
+
+### FIR Filters
+
+Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_
+
+- dec/int: decimating or interpolating FIR filter
+- ser/par/semi: Tap processing (serial, parallel or semi-parallel)
+- tdm/par: TDM or parallel channel handling on input and output
+
+| Entity                                                      | Description                                                                                                        |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [olo_fix_fir_dec_ser_chtdm](./fix/olo_fix_fir_dec_ser_chtdm.md) | Decimating FIR filter (TDM channels, serial tap computation), multi-channel only (not usable for single-channel) <br> Runtime-configurable or fixed ratio, tap count and coefficients - Can be used non-decimating (Ratio = 1)  |
 
 ### Miscellaneous
 
