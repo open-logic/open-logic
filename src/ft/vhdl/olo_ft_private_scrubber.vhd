@@ -6,46 +6,22 @@
 ---------------------------------------------------------------------------------------------------
 -- Description
 ---------------------------------------------------------------------------------------------------
--- Private opportunistic memory-scrubber core. Instantiated by ECC-protected RAM
--- wrappers (`olo_ft_ram_sp_scrub`, `olo_ft_ram_sdp_scrub`); not intended for
--- end-user instantiation.
+-- Private opportunistic memory-scrubber core. Instantiated by the ECC-protected RAM wrappers
+-- (`olo_ft_ram_sp_scrub`, `olo_ft_ram_sdp_scrub`); not intended for end-user instantiation.
 --
--- This core owns BOTH the scrub FSM and the user/scrubber arbitration. It is
--- reusable across the single- and dual-port wrappers by presenting a generic
--- write-channel + read-channel interface:
---   * the user side (`User_Wr_*` / `User_Rd_*`) carries the wrapper's user
---     requests,
---   * the RAM side (`Ram_Wr_*` / `Ram_Rd_*`) carries the muxed requests to the
---     wrapped RAM.
--- The user always wins: the scrubber drives a channel only on cycles where the
--- user is not using *either* channel. A single-port wrapper ties both user
--- channels to its shared port and collapses the two RAM channels back onto it;
--- a dual-port wrapper maps the channels 1:1 onto the RAM's write and read ports.
+-- It owns both the scrub FSM and the user/scrubber arbitration. A generic write- and read-channel
+-- interface keeps it reusable across the single- and dual-port wrappers: the user side
+-- (`User_Wr_*` / `User_Rd_*`) carries the wrapper's user requests and the RAM side
+-- (`Ram_Wr_*` / `Ram_Rd_*`) carries the muxed requests to the wrapped RAM. The user always wins --
+-- the scrubber drives a channel only on cycles where the user is idle on both channels -- so user
+-- accesses are never stalled and user data is always authoritative.
 --
--- Operating principle: read each address in turn; the decoder response is registered every cycle,
--- and L+1 cycles after the read issue Decide_s acts on the *registered* flags/data -- firing the
--- writeback from the WbData register when a single-bit error was corrected, and advancing ScrubAddr.
--- Registering the response splits the RAM-read -> decode -> re-encode -> RAM-write path across two
--- cycles instead of one long combinational loop. The scrubber never stalls the user: it issues bus
--- requests only while the combined Scrub_Inhibit (user-busy OR external Scrub_Enable deasserted) is
--- low. An inhibit anywhere in the read-decide window aborts the in-flight operation back to Idle_s
--- without advancing the address counter, so the scrubber retries the same address on the next idle
--- slot. User data is always authoritative.
+-- An optional internal pacer (enabled by ScrubClkHz_g > 0.0) limits scrubbing to one pass every
+-- ScrubPeriod_g seconds and asserts Scrub_Overrun if a pass cannot finish in time; by default
+-- (ScrubClkHz_g = 0.0) the scrubber is free-running.
 --
--- Sequence per address (T = read-issue cycle, L = TotalReadLatency_g):
---   T          : assert the scrubber's read request (only when Scrub_Inhibit='0')
---   T .. T+L+1 : if Scrub_Inhibit='1' on any cycle, abort to Idle_s; ValidPipe keeps shifting so
---                Scrub_Rd_Valid still pulses on the codec return cycle (T+L)
---   T+L        : decoder response valid; captured into EccSecReg / EccDedReg / WbData
---   T+L+1      : in Decide_s, act on the registered flags; if EccSec='1' and EccDed='0' assert the
---                writeback (Ram_Wr_Data = WbData through the wrapper's encoder); advance ScrubAddr;
---                pulse Scrub_PassDone on rollover; go to Idle_s.
---
--- An internal length-L shift register (ValidPipe) tracks every scrub read-issue and pulses on the
--- codec return cycle. It masks the scrubber's own reads out of the user-facing read valid
--- (User_Rd_Valid = Ram_Rd_Valid and not <pulse>) and gates the status outputs Scrub_EccSec /
--- Scrub_EccDed so they are clean, directly countable one-cycle pulses (no consumer-side
--- qualification). It still pulses on the codec return even if the FSM aborted in the meantime.
+-- See the documentation for the cycle-level read/decide/writeback sequence, the abort behaviour and
+-- the read-valid masking.
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/ft/olo_ft_private_scrubber.md

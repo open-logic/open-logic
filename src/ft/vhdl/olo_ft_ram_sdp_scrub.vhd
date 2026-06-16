@@ -6,22 +6,13 @@
 ---------------------------------------------------------------------------------------------------
 -- Description
 ---------------------------------------------------------------------------------------------------
--- ECC-protected simple dual-port RAM with an opportunistic memory scrubber.
--- Wraps `olo_ft_ram_sdp` and `olo_ft_private_scrubber`. The user-facing interface
--- mirrors `olo_ft_ram_sdp` (write port + read port) plus the scrubber control
--- and status ports.
---
--- The scrubber owns the user/scrubber arbitration (see olo_ft_private_scrubber).
--- This wrapper maps the scrubber's write and read RAM channels 1:1 onto the
--- write and read ports of olo_ft_ram_sdp, so it carries no mux logic of its own.
--- It is fundamentally synchronous -- there is no `IsAsync_g` generic and no
--- `Rd_Clk` / `Rd_Rst` port; the scrubber observes user accesses on a single
--- clock to pick idle cycles. The scrubber acts only when neither user port is
--- active; user accesses are never stalled.
---
--- If the user writes to the address currently being scrubbed at any point
--- between the scrubber's read and writeback, the writeback is aborted and
--- user data is authoritative.
+-- ECC-protected simple dual-port RAM with an opportunistic memory scrubber. Wraps `olo_ft_ram_sdp`
+-- and `olo_ft_private_scrubber`; the user-facing interface mirrors `olo_ft_ram_sdp` (write port +
+-- read port) plus the scrubber control and status ports. The scrubber's write/read RAM channels map
+-- 1:1 onto the RAM's ports, so the wrapper carries no mux logic of its own. It is synchronous-only
+-- (no `IsAsync_g`, no `Rd_Clk` / `Rd_Rst`): the scrubber needs a single clock to spot idle cycles.
+-- The scrubber acts only when both user ports are idle, so user accesses are never stalled and user
+-- data is always authoritative (a user write to an in-flight scrub address aborts the writeback).
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/ft/olo_ft_ram_sdp_scrub.md

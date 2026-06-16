@@ -6,18 +6,12 @@
 ---------------------------------------------------------------------------------------------------
 -- Description
 ---------------------------------------------------------------------------------------------------
--- ECC-protected single-port RAM with an opportunistic memory scrubber. Wraps
--- `olo_ft_ram_sp` and `olo_ft_private_scrubber`. The user-facing interface is
--- identical to `olo_ft_ram_sp` plus scrubber control and status ports.
---
--- The scrubber owns the user/scrubber arbitration (see olo_ft_private_scrubber).
--- This wrapper ties the single shared user port to both scrubber user channels
--- and collapses the scrubber's muxed write/read RAM channels back onto the one
--- physical port of olo_ft_ram_sp. Because the underlying RAM is single-port, the
--- scrubber acts only on cycles where the user is doing neither a read nor a
--- write; user accesses are never stalled. If the user writes to the address
--- currently being scrubbed at any point between the scrubber's read and
--- writeback, the writeback is aborted and user data is authoritative.
+-- ECC-protected single-port RAM with an opportunistic memory scrubber. Wraps `olo_ft_ram_sp` and
+-- `olo_ft_private_scrubber`; the user-facing interface is that of `olo_ft_ram_sp` plus the scrubber
+-- control and status ports. This wrapper ties the shared user port to both scrubber user channels
+-- and collapses the scrubber's muxed write/read RAM channels back onto the single physical port.
+-- The scrubber acts only on fully idle user cycles, so user accesses are never stalled and user data
+-- is always authoritative (a user write to an in-flight scrub address aborts the writeback).
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/ft/olo_ft_ram_sp_scrub.md
