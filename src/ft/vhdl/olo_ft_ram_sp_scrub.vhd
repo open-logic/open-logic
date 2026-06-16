@@ -46,7 +46,10 @@ entity olo_ft_ram_sp_scrub is
         RamRdLatency_g : positive             := 1;
         RamStyle_g     : string               := "auto";
         RamBehavior_g  : string               := "RBW";
-        EccPipeline_g  : natural range 0 to 2 := 0
+        EccPipeline_g  : natural range 0 to 2 := 0;
+        -- Optional internal scrub pacer (see olo_ft_private_scrubber). ScrubClkHz_g = 0.0 disables.
+        ScrubClkHz_g   : real                 := 0.0;
+        ScrubPeriod_g  : real                 := 0.0
     );
     port (
         -- Clock and Reset
@@ -72,7 +75,8 @@ entity olo_ft_ram_sp_scrub is
         -- scrubber read observed a SEC / DED (qualified internally; directly countable).
         Scrub_EccSec    : out   std_logic;
         Scrub_EccDed    : out   std_logic;
-        Scrub_PassDone  : out   std_logic
+        Scrub_PassDone  : out   std_logic;
+        Scrub_Overrun   : out   std_logic
     );
 end entity;
 
@@ -109,7 +113,9 @@ begin
         generic map (
             Depth_g            => Depth_g,
             Width_g            => Width_g,
-            TotalReadLatency_g => RamRdLatency_g + EccPipeline_g
+            TotalReadLatency_g => RamRdLatency_g + EccPipeline_g,
+            ScrubClkHz_g       => ScrubClkHz_g,
+            ScrubPeriod_g      => ScrubPeriod_g
         )
         port map (
             Clk             => Clk,
@@ -132,7 +138,8 @@ begin
             User_Rd_Valid   => RdValid,
             Scrub_EccSec    => Scrub_EccSec,
             Scrub_EccDed    => Scrub_EccDed,
-            Scrub_PassDone  => Scrub_PassDone
+            Scrub_PassDone  => Scrub_PassDone,
+            Scrub_Overrun   => Scrub_Overrun
         );
 
     -- Collapse the write/read RAM channels onto the single physical port. They are mutually

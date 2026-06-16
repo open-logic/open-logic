@@ -59,6 +59,7 @@
 library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
+    use ieee.math_real.all;
 
 library work;
     use work.olo_base_pkg_math.all;
@@ -70,7 +71,11 @@ entity olo_ft_private_scrubber is
     generic (
         Depth_g            : positive range 2 to positive'high;
         Width_g            : positive;
-        TotalReadLatency_g : positive
+        TotalReadLatency_g : positive;
+        -- Optional internal pacer: run one scrub pass every ScrubPeriod_g seconds. Disabled
+        -- (free-running) when ScrubClkHz_g = 0.0 (the default).
+        ScrubClkHz_g       : real := 0.0;
+        ScrubPeriod_g      : real := 0.0
     );
     port (
         -- Clock and Reset
@@ -104,7 +109,10 @@ entity olo_ft_private_scrubber is
         -- scrubber read return that observed SEC/DED -- directly countable, no qualification needed)
         Scrub_EccSec    : out   std_logic;
         Scrub_EccDed    : out   std_logic;
-        Scrub_PassDone  : out   std_logic
+        Scrub_PassDone  : out   std_logic;
+        -- Pacer overrun: pulses (and a sim warning fires) when a new scrub period starts before the
+        -- previous pass finished. Tied '0' when the pacer is disabled.
+        Scrub_Overrun   : out   std_logic
     );
 end entity;
 
@@ -143,10 +151,22 @@ architecture rtl of olo_ft_private_scrubber is
     signal Scrub_WrReq : std_logic;
     signal Scrub_Addr  : std_logic_vector(AddrWidth_c - 1 downto 0);
 
+    -- Optional pacer (enabled when ScrubClkHz_g > 0.0): a 1 kHz base tick from olo_base_strobe_gen,
+    -- divided by olo_base_strobe_div, produces one "start a pass" strobe every ScrubPeriod_g
+    -- seconds (1 ms granularity). ScrubActive is the effective paced enable; it is tied '1' (always
+    -- free-running) when the pacer is disabled.
+    constant Paced_c    : boolean  := ScrubClkHz_g > 0.0;
+    constant BaseHz_c   : real     := 1000.0;
+    constant DivRatio_c : positive := integer(round(maximum(1.0, ScrubPeriod_g * BaseHz_c)));
+
+    signal ScrubActive : std_logic;
+    signal Overrun_i   : std_logic;
+
 begin
 
-    -- User wins on either channel; the external Scrub_Enable can also pause the scrubber.
-    Scrub_Inhibit <= User_Wr_Ena or User_Rd_Ena or not Scrub_Enable;
+    -- User wins on either channel; the external Scrub_Enable pauses the scrubber, and the optional
+    -- pacer (ScrubActive) gates it to one pass per period. ScrubActive is tied '1' when not paced.
+    Scrub_Inhibit <= User_Wr_Ena or User_Rd_Ena or not ScrubActive or not Scrub_Enable;
 
     -- Request muxes: the user request passes through whenever it is active, otherwise the
     -- scrubber's request fills the idle cycle. Scrub_RdReq / Scrub_WrReq are guaranteed '0'
@@ -158,6 +178,79 @@ begin
     Ram_Wr_Data <= User_Wr_Data when User_Wr_Ena = '1' else r.WbData;
     Ram_Rd_Addr <= User_Rd_Addr when User_Rd_Ena = '1' else Scrub_Addr;
     Ram_Rd_Ena  <= User_Rd_Ena  or  Scrub_RdReq;
+
+    -- *** Optional pacer + overrun watchdog ***
+    -- Config sanity (static, checked at elaboration).
+    assert (not Paced_c) or (ScrubPeriod_g > 0.0)
+        report "olo_ft_private_scrubber: ScrubPeriod_g must be > 0.0 when the pacer is enabled (ScrubClkHz_g > 0.0)"
+        severity failure;
+    assert (not Paced_c) or (ScrubClkHz_g >= BaseHz_c)
+        report "olo_ft_private_scrubber: ScrubClkHz_g must be >= 1000.0 when the pacer is enabled"
+        severity failure;
+
+    g_paced : if Paced_c generate
+        signal BaseTick    : std_logic;
+        signal PeriodPulse : std_logic;
+    begin
+
+        -- 1 kHz base tick, divided down to one "start a pass" strobe every ScrubPeriod_g seconds.
+        i_strobe : entity work.olo_base_strobe_gen
+            generic map (
+                FreqClkHz_g    => ScrubClkHz_g,
+                FreqStrobeHz_g => BaseHz_c
+            )
+            port map (
+                Clk       => Clk,
+                Rst       => Rst,
+                Out_Valid => BaseTick
+            );
+
+        i_div : entity work.olo_base_strobe_div
+            generic map (
+                MaxRatio_g => DivRatio_c
+            )
+            port map (
+                Clk       => Clk,
+                Rst       => Rst,
+                In_Valid  => BaseTick,
+                Out_Valid => PeriodPulse
+            );
+
+        -- ScrubActive arms on a period strobe (only while externally enabled) and disarms when a
+        -- full pass completes -> exactly one pass per period. Scrub_Overrun pulses (and warns in
+        -- simulation) if a strobe arrives while the previous pass is still in progress.
+        p_pace : process (Clk) is
+        begin
+            if rising_edge(Clk) then
+                Overrun_i <= '0';
+                if r.PassDone = '1' then
+                    ScrubActive <= '0';
+                end if;
+                if PeriodPulse = '1' then
+                    if ScrubActive = '1' and r.PassDone = '0' then
+                        Overrun_i <= '1';
+                        report "olo_ft_private_scrubber: scrub pass did not complete within ScrubPeriod_g (overrun)"
+                            severity warning;
+                    end if;
+                    if Scrub_Enable = '1' then
+                        ScrubActive <= '1';
+                    end if;
+                end if;
+                if Rst = '1' then
+                    ScrubActive <= '0';
+                    Overrun_i   <= '0';
+                end if;
+            end if;
+        end process;
+
+    end generate;
+
+    g_free : if not Paced_c generate
+        ScrubActive <= '1';
+        Overrun_i   <= '0';
+    end generate;
+
+    Scrub_Overrun <= Overrun_i;
 
     -- *** Combinatorial Process ***
     p_comb : process (all) is
