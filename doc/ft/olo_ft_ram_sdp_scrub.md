@@ -14,11 +14,7 @@ VHDL Source: [olo_ft_ram_sdp_scrub](../../src/ft/vhdl/olo_ft_ram_sdp_scrub.vhd)
 
 ## Description
 
-This component implements an **ECC-protected simple dual-port RAM with an opportunistic memory scrubber**. It composes
-two existing entities:
-
-- [olo_ft_ram_sdp](./olo_ft_ram_sdp.md) - the SECDED-protected simple dual-port RAM (encoder + RAM + decoder).
-- [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) - the private opportunistic scrubber FSM.
+This component implements an **ECC-protected simple dual-port RAM with an opportunistic memory scrubber**.
 
 The user-facing interface mirrors [olo_ft_ram_sdp](./olo_ft_ram_sdp.md) (write port + read port + error injection)
 plus a scrubber-enable input and four scrubber-status outputs. ECC encoding/decoding is transparent; the scrubber
@@ -86,13 +82,11 @@ These ports drive the internal [olo_ft_ecc_encode](./olo_ft_ecc_encode.md) insta
 [Open Logic Fault-Tolerance Principles - Error Injection](./olo_ft_principles.md#error-injection) for the shared
 latched-strobe semantics.
 
-> **Note on scrubber interaction.** `ErrInj_*` is design-for-test only, and the encoder's injection latch is consumed
-> by the next encoder write -- which in the scrub variant may be a scrubber writeback rather than the user's intended
-> write. Drive `ErrInj_Valid` with `Wr_Ena` in the same cycle (immediate injection, bypasses the latch), or pause the
-> scrubber with `Scrub_Enable = '0'` while preloading the latch (see [Pausing the Scrubber](#pausing-the-scrubber)).
-> A single-bit pattern is self-healing (the cell is SEC-correctable and repaired next pass); a popcount-2 pattern
-> consumed by a scrubber writeback leaves an uncorrectable (DED) word, so always pause the scrubber before preloading
-> multi-bit patterns (popcount >= 3 is undefined; see [Error Injection](./olo_ft_principles.md#error-injection)).
+> **Note on scrubber interaction.** The encoder's injection latch is consumed by the next encoder write, which in the
+> scrub variant may be a scrubber writeback rather than your intended write. Drive `ErrInj_Valid` together with `Wr_Ena`
+> (immediate injection, bypasses the latch), or pause the scrubber with `Scrub_Enable = '0'` while preloading (see
+> [Pausing the Scrubber](#pausing-the-scrubber)). See [Error Injection](./olo_ft_principles.md#error-injection) for the
+> flip-pattern semantics.
 
 | Name           | In/Out | Length                                                              | Default | Description                                                  |
 | :------------- | :----- | :------------------------------------------------------------------ | ------- | :----------------------------------------------------------- |
@@ -123,6 +117,9 @@ is needed.
 
 ![olo_ft_ram_sdp_scrub architecture](./ram/olo_ft_ram_sdp_scrub_arch.drawio.png)
 
+This wrapper composes [olo_ft_ram_sdp](./olo_ft_ram_sdp.md) (the SECDED-protected simple dual-port RAM: encoder + RAM +
+decoder) and [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) (the opportunistic scrubber FSM).
+
 The wrapper places the [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) in front of the wrapped
 [olo_ft_ram_sdp](./olo_ft_ram_sdp.md). The scrubber owns the user/scrubber arbitration: the user write port (`Wr_*`)
 and read port (`Rd_*`) feed the scrubber's user write and read channels, and the scrubber returns muxed write and read
@@ -136,20 +133,12 @@ read/decide/writeback sequence, the read-valid masking and the optional pacer al
 
 ### Opportunistic Scrubbing
 
-- **Idle-only.** Although the underlying RAM has independent write and read ports (so the _user_ can read and write
-  in the same cycle), the scrubber acts only on cycles where **neither** user port is active (`Wr_Ena = '0'` and
-  `Rd_Ena = '0'`). A continuously active user starves the scrubber but never causes data corruption.
-- **Free-running by default, optionally paced.** With the pacer off (`ScrubClkHz_g = 0.0`) the scrubber advances as
-  fast as user-idle cycles allow. With the pacer on it runs one pass every `ScrubPeriod_g` seconds; see
-  [olo_ft_private_scrubber - Scrub Pacing](./olo_ft_private_scrubber.md#scrub-pacing-optional).
-- **User always wins.** Any user access (or `Scrub_Enable = '0'`) raises `Scrub_Inhibit`, which aborts an in-flight
-  scrub operation back to `Idle_s` without advancing the address counter and without writing back. The address is
-  retried on the next idle slot, so user data is always authoritative.
-- **SEC-only writeback.** Only correctable single-bit errors are rewritten. Clean cells are left untouched; a DED read
-  is reported on `Scrub_EccDed` but never written back.
+Although the underlying RAM has independent write and read ports (so the _user_ can read and write in the same cycle),
+the scrubber acts only on cycles where **neither** user port is active (`Wr_Ena = '0'` and `Rd_Ena = '0'`). A
+continuously active user starves the scrubber but never causes data corruption.
 
-See [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) for the scrubber FSM (states, abort behavior and read-valid
-alignment).
+See [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) for everything the scrubber owns: the FSM (states, abort
+behavior, read-valid masking), the user-always-wins arbitration, the SEC-only writeback policy, and the optional pacer.
 
 ### Pausing the Scrubber
 
