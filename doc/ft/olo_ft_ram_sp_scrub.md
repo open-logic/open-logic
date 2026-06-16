@@ -115,10 +115,10 @@ is needed.
 
 The wrapper places the [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) in front of the wrapped
 [olo_ft_ram_sp](./olo_ft_ram_sp.md). The scrubber owns the user/scrubber arbitration: the single user port
-(`Addr` / `WrEna` / `WrData` / `RdEna`) feeds both of the scrubber's user channels, and the scrubber returns muxed
-write and read RAM channels. Because the underlying RAM is single-port, the wrapper collapses those two channels back
-onto the one physical port with a single address mux (`Ram_Addr = Ram_Wr_Addr when Ram_Wr_Ena else Ram_Rd_Addr`); the
-enables and write data pass straight through. `ErrInj_*` go directly to the wrapped RAM's encoder, bypassing the
+(`Addr` / `WrEna` / `WrData` / `RdEna`) feeds both of the scrubber's user channels. Because the underlying RAM is
+single-port, the scrubber is instantiated with `SinglePortRam_g => true`, so it collapses the muxed write/read
+addresses onto the one physical port itself and drives the wrapper's RAM address from its `Ram_Addr` output; this
+wrapper therefore carries no address mux of its own. `ErrInj_*` go directly to the wrapped RAM's encoder, bypassing the
 scrubber.
 
 The decoder's `RdData` / `RdEccSec` / `RdEccDed` are forwarded straight to the user, while the user-facing `RdValid` is

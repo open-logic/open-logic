@@ -81,13 +81,11 @@ architecture rtl of olo_ft_ram_sp_scrub is
 
     constant AddrWidth_c : positive := log2ceil(Depth_g);
 
-    -- Muxed RAM request channels driven by the scrubber. For a single-port RAM the write and
-    -- read channels are collapsed back onto one physical port below (they are mutually
-    -- exclusive in time, so a single Ram_Addr suffices).
-    signal Ram_Wr_Addr : std_logic_vector(AddrWidth_c - 1 downto 0);
+    -- RAM request signals driven by the scrubber. The scrubber itself collapses the write/read
+    -- addresses onto the single physical port (Ram_Addr) when SinglePortRam_g => true, so this
+    -- wrapper carries no address mux and leaves the separate Ram_Wr_Addr / Ram_Rd_Addr outputs open.
     signal Ram_Wr_Ena  : std_logic;
     signal Ram_Wr_Data : std_logic_vector(Width_g - 1 downto 0);
-    signal Ram_Rd_Addr : std_logic_vector(AddrWidth_c - 1 downto 0);
     signal Ram_Rd_Ena  : std_logic;
     signal Ram_Addr    : std_logic_vector(AddrWidth_c - 1 downto 0);
 
@@ -108,6 +106,7 @@ begin
             Depth_g            => Depth_g,
             Width_g            => Width_g,
             TotalReadLatency_g => RamRdLatency_g + EccPipeline_g,
+            SinglePortRam_g    => true,
             ScrubClkHz_g       => ScrubClkHz_g,
             ScrubPeriod_g      => ScrubPeriod_g
         )
@@ -120,11 +119,12 @@ begin
             User_Wr_Data    => WrData,
             User_Rd_Addr    => Addr,
             User_Rd_Ena     => RdEna,
-            Ram_Wr_Addr     => Ram_Wr_Addr,
+            Ram_Wr_Addr     => open,
             Ram_Wr_Ena      => Ram_Wr_Ena,
             Ram_Wr_Data     => Ram_Wr_Data,
-            Ram_Rd_Addr     => Ram_Rd_Addr,
+            Ram_Rd_Addr     => open,
             Ram_Rd_Ena      => Ram_Rd_Ena,
+            Ram_Addr        => Ram_Addr,
             Ram_Rd_Data     => Ram_RdData,
             Ram_Rd_EccSec   => Ram_RdEccSec,
             Ram_Rd_EccDed   => Ram_RdEccDed,
@@ -136,13 +136,8 @@ begin
             Scrub_Overrun   => Scrub_Overrun
         );
 
-    -- Collapse the write/read RAM channels onto the single physical port. They are mutually
-    -- exclusive (the scrubber never reads and writes in the same cycle, and a user
-    -- simultaneous read+write targets the same Addr), so the write address wins when a write
-    -- is active and the read address is used otherwise.
-    Ram_Addr <= Ram_Wr_Addr when Ram_Wr_Ena = '1' else Ram_Rd_Addr;
-
-    -- Inner ECC-protected RAM (encoder + olo_base_ram_sp + decoder).
+    -- Inner ECC-protected RAM (encoder + olo_base_ram_sp + decoder). Its single physical address
+    -- comes from the scrubber's collapsed Ram_Addr output (SinglePortRam_g => true above).
     i_ram_sp : entity work.olo_ft_ram_sp
         generic map (
             Depth_g        => Depth_g,

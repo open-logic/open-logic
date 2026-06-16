@@ -48,10 +48,14 @@ entity olo_ft_private_scrubber is
         Depth_g            : positive range 2 to positive'high;
         Width_g            : positive;
         TotalReadLatency_g : positive;
+        -- Single-port address collapse: when true the scrubber also drives Ram_Addr (the write/read
+        -- addresses muxed onto one physical port) for olo_ft_ram_sp_scrub; dual-port wrappers leave
+        -- it false and map Ram_Wr_Addr / Ram_Rd_Addr 1:1.
+        SinglePortRam_g    : boolean := false;
         -- Optional internal pacer: run one scrub pass every ScrubPeriod_g seconds. Disabled
         -- (free-running) when ScrubClkHz_g = 0.0 (the default).
-        ScrubClkHz_g       : real := 0.0;
-        ScrubPeriod_g      : real := 0.0
+        ScrubClkHz_g       : real    := 0.0;
+        ScrubPeriod_g      : real    := 0.0
     );
     port (
         -- Clock and Reset
@@ -73,6 +77,9 @@ entity olo_ft_private_scrubber is
         -- RAM Read Channel (muxed user/scrubber requests)
         Ram_Rd_Addr     : out   std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         Ram_Rd_Ena      : out   std_logic;
+        -- Collapsed single-port RAM address (driven only when SinglePortRam_g = true, tied '0'
+        -- otherwise): the write address when a write is active, else the read address.
+        Ram_Addr        : out   std_logic_vector(log2ceil(Depth_g) - 1 downto 0);
         -- Decoded RAM Read (response, for the scrub FSM and writeback payload)
         Ram_Rd_Data     : in    std_logic_vector(Width_g - 1 downto 0);
         Ram_Rd_EccSec   : in    std_logic;
@@ -154,6 +161,21 @@ begin
     Ram_Wr_Data <= User_Wr_Data when User_Wr_Ena = '1' else r.WbData;
     Ram_Rd_Addr <= User_Rd_Addr when User_Rd_Ena = '1' else Scrub_Addr;
     Ram_Rd_Ena  <= User_Rd_Ena  or  Scrub_RdReq;
+
+    -- Single-port address collapse (moved here from olo_ft_ram_sp_scrub). With SinglePortRam_g the
+    -- wrapper drives the RAM's one physical port from Ram_Addr: the write address when a write is
+    -- active, otherwise the read address. The user always wins arbitration, so when a user enable is
+    -- high the scrubber is inhibited and Scrub_Addr is not selected; on an idle cycle the scrubber's
+    -- own read and writeback both target Scrub_Addr. Tied '0' for dual-port wrappers.
+    g_sp_addr : if SinglePortRam_g generate
+        Ram_Addr <= User_Wr_Addr when User_Wr_Ena = '1' else
+                    User_Rd_Addr when User_Rd_Ena = '1' else
+                    Scrub_Addr;
+    end generate;
+
+    g_dp_addr : if not SinglePortRam_g generate
+        Ram_Addr <= (others => '0');
+    end generate;
 
     -- *** Optional pacer + overrun watchdog ***
     -- Config sanity (static, checked at elaboration).

@@ -123,6 +123,9 @@ begin
             Ram_Wr_Data     => Ram_Wr_Data,
             Ram_Rd_Addr     => Ram_Rd_Addr,
             Ram_Rd_Ena      => Ram_Rd_Ena,
+            -- SinglePortRam_g defaults false: the dual-port RAM uses the 1:1 channels above and the
+            -- collapsed single-port Ram_Addr output is unused.
+            Ram_Addr        => open,
             Ram_Rd_Data     => Ram_Rd_Data,
             Ram_Rd_EccSec   => Ram_Rd_EccSec,
             Ram_Rd_EccDed   => Ram_Rd_EccDed,

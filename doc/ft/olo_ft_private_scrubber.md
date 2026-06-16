@@ -42,6 +42,7 @@ For background on the SECDED scheme and the meaning of the ECC flags, see
 | Depth_g            | positive | -       | Number of addresses to scrub. Matches the wrapped RAM depth. Must be at least 2. |
 | Width_g            | positive | -       | Data word-width (decoded data, _not_ the codeword width).    |
 | TotalReadLatency_g | positive | -       | End-to-end read latency of the wrapped ECC RAM, i.e. _RamRdLatency_g_ + _EccPipeline_g_. The FSM waits this many cycles between issuing a read and acting on the decoded ECC flags, and the read-valid shift register is this long. |
+| SinglePortRam_g    | boolean  | false   | When `true`, the scrubber also drives the collapsed single-port address _Ram_Addr_ for [olo_ft_ram_sp_scrub](./olo_ft_ram_sp_scrub.md). Leave `false` (default) for the dual-port wrapper, which maps _Ram_Wr_Addr_ / _Ram_Rd_Addr_ 1:1 onto the RAM and ignores _Ram_Addr_. |
 | ScrubClkHz_g       | real     | 0.0     | Clock frequency in Hz, used **only** to size the optional pacer. `0.0` (default) disables the pacer and leaves the scrubber free-running. Any value > 0.0 enables the pacer and must be >= 1000.0. |
 | ScrubPeriod_g      | real     | 0.0     | Pacer period in seconds: one full scrub pass is started every _ScrubPeriod_g_ seconds (1 ms granularity). Used only when the pacer is enabled (_ScrubClkHz_g_ > 0.0), where it must be > 0.0. |
 
@@ -90,6 +91,12 @@ For background on the SECDED scheme and the meaning of the ECC flags, see
 | Ram_Rd_Addr | out    | _ceil(log2(Depth_g))_ | N/A     | Muxed read address (user when _User_Rd_Ena_ = '1', else the scrub address). |
 | Ram_Rd_Ena  | out    | 1                     | N/A     | Muxed read enable (`User_Rd_Ena OR` scrubber read). |
 
+### Collapsed Single-Port Address
+
+| Name     | In/Out | Length                | Default | Description                                                  |
+| :------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
+| Ram_Addr | out    | _ceil(log2(Depth_g))_ | N/A     | Single physical RAM address used by single-port wrappers: the write address when a write is active, else the read address. Driven only when _SinglePortRam_g_ = true (tied to 0 otherwise). |
+
 ### Decoded RAM Read (response)
 
 | Name          | In/Out | Length    | Default | Description                                                  |
@@ -130,11 +137,16 @@ Ram_Wr_Ena  = User_Wr_Ena   OR  <scrub writeback>
 Ram_Wr_Data = User_Wr_Data  when User_Wr_Ena='1'  else <registered decoded read data>
 Ram_Rd_Addr = User_Rd_Addr  when User_Rd_Ena='1'  else ScrubAddr
 Ram_Rd_Ena  = User_Rd_Ena   OR  <scrub read>
+
+-- single-port collapse, only when SinglePortRam_g = true
+Ram_Addr    = User_Wr_Addr  when User_Wr_Ena='1'  else  User_Rd_Addr when User_Rd_Ena='1'  else ScrubAddr
 ```
 
 `Scrub_Inhibit` gates the FSM: the scrubber asserts its own read/writeback only while `Scrub_Inhibit` is '0', so the
 user is never overridden. `ScrubActive` is the pacer's per-period enable; it is tied '1' (always active) when the pacer
-is disabled (see [Scrub Pacing](#scrub-pacing-optional)).
+is disabled (see [Scrub Pacing](#scrub-pacing-optional)). For a single-port wrapper (`SinglePortRam_g = true`) the
+scrubber additionally collapses the write/read addresses onto one physical port via `Ram_Addr` (the write address wins
+when a write is active); because the user always wins, `ScrubAddr` is selected only on cycles the user is idle.
 
 ### Scrubber FSM
 
