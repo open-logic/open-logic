@@ -25,6 +25,10 @@ plus a scrubber-enable input and four scrubber-status outputs. ECC encoding/deco
 additionally walks the address space autonomously and writes corrected codewords back when a single-bit error is
 detected, refreshing the memory before a second upset can accumulate into an uncorrectable double-bit error.
 
+By default the scrubber is free-running. An optional internal pacer can instead limit it to one pass every
+_ScrubPeriod_g_ seconds and flag _Scrub_Overrun_ if a pass overruns its period; see
+[olo_ft_private_scrubber - Scrub Pacing](./olo_ft_private_scrubber.md#scrub-pacing-optional).
+
 This entity is **synchronous-only**: there is no `IsAsync_g` generic and no `Rd_Clk` / `Rd_Rst` port. The scrubber
 observes both user ports on a single clock to pick idle cycles. If you need independent read/write clocks, use plain
 [olo_ft_ram_sdp](./olo_ft_ram_sdp.md) without scrubbing.
@@ -44,6 +48,8 @@ across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_princ
 | RamStyle_g     | string   | "auto"  | Controls the RAM implementation resource. Passed through to [olo_base_ram_sdp](../base/olo_base_ram_sdp.md). |
 | RamBehavior_g  | string   | "RBW"   | Controls the RAM behavior. <br>"RBW": Read-before-write<br>"WBR": Write-before-read |
 | EccPipeline_g  | natural  | 0       | Number of pipeline register stages within the ECC decoder (range _0..2_). Total read latency is _RamRdLatency_g_ + _EccPipeline_g_ cycles. See [olo_ft_ram_sdp](./olo_ft_ram_sdp.md#ecc-pipeline) for details. |
+| ScrubClkHz_g   | real     | 0.0     | Clock frequency in Hz, used **only** to size the optional scrub pacer. `0.0` (default) keeps the scrubber free-running; any value > 0.0 enables the pacer and must be >= 1000.0. See [olo_ft_private_scrubber - Scrub Pacing](./olo_ft_private_scrubber.md#scrub-pacing-optional). |
+| ScrubPeriod_g  | real     | 0.0     | Pacer period in seconds: one scrub pass is started every _ScrubPeriod_g_ seconds (1 ms granularity). Used only when the pacer is enabled (_ScrubClkHz_g_ > 0.0), where it must be > 0.0. |
 
 ## Interfaces
 
@@ -70,8 +76,8 @@ across the _ft_ area, see [Open Logic Fault-Tolerance Principles](./olo_ft_princ
 | Rd_Ena    | in     | 1                     | -       | Read enable. _Rd_Valid_ pulses '1' exactly _RamRdLatency_g_+_EccPipeline_g_ cycles after each cycle on which _Rd_Ena_ = '1'. Note: holding _Rd_Ena_ = '1' permanently leaves no idle cycles and starves the scrubber entirely (see [Opportunistic Scrubbing](#opportunistic-scrubbing)); deassert it on cycles without an actual read. |
 | Rd_Data   | out    | _Width_g_             | N/A     | Read data (corrected if a single-bit error was detected)     |
 | Rd_Valid  | out    | 1                     | N/A     | Read-data valid. Pulses '1' only for reads the user issued; cycles consumed by the scrubber's own reads are masked out (see [Architecture](#architecture)). |
-| Rd_EccSec | out    | 1                     | N/A     | Single error corrected flag. Unmasked pass-through of the decoder's SEC flag: qualify it with _Rd_Valid_ = '1'. It can also assert on the return cycle of a scrubber-issued read (_Rd_Valid_ = '0', _Scrub_Rd_Valid_ = '1'); scrubber events are reported on _Scrub_Rd_EccSec_. |
-| Rd_EccDed | out    | 1                     | N/A     | Double error detected flag. Unmasked pass-through of the decoder's DED flag: qualify it with _Rd_Valid_ = '1' (it can also assert on scrubber read returns). Read data is unreliable when the flag is set. |
+| Rd_EccSec | out    | 1                     | N/A     | Single error corrected flag. Unmasked pass-through of the decoder's SEC flag: qualify it with _Rd_Valid_ = '1'. On a scrubber-owned read return the flag still appears here but _Rd_Valid_ is masked to '0'; scrubber events are reported separately on _Scrub_EccSec_. |
+| Rd_EccDed | out    | 1                     | N/A     | Double error detected flag. Unmasked pass-through of the decoder's DED flag: qualify it with _Rd_Valid_ = '1' (it can also assert on scrubber read returns, where _Rd_Valid_ = '0'). Read data is unreliable when the flag is set. |
 
 ### Error Injection (optional)
 
@@ -80,16 +86,13 @@ These ports drive the internal [olo_ft_ecc_encode](./olo_ft_ecc_encode.md) insta
 [Open Logic Fault-Tolerance Principles - Error Injection](./olo_ft_principles.md#error-injection) for the shared
 latched-strobe semantics.
 
-> **Note on scrubber interaction.** `ErrInj_*` is design-for-test only. The encoder's injection latch is consumed by
-> the very next encoder write, which in the scrub variant may be a scrubber writeback rather than the user's intended
-> next write. Either drive `ErrInj_Valid = '1'` together with `Wr_Ena = '1'` in the same cycle (immediate injection,
-> bypasses the latch), or pause the scrubber with `Scrub_Enable = '0'` while the latch is preloaded - see
-> [Pausing the Scrubber](#pausing-the-scrubber). For a single-bit (popcount-1) pattern the worst case is benign: a
-> scrubber-corrupted cell is SEC-correctable and is repaired on the next pass. For a popcount-2 pattern there is no
-> such safety net: a scrubber writeback that consumes the latch leaves an uncorrectable (DED) word at the scrubbed
-> address, which the SEC-only scrubber never rewrites. For popcount >= 3 even the classification is undefined (see
-> [Error Injection](./olo_ft_principles.md#error-injection)). Always pause the scrubber before preloading multi-bit
-> patterns.
+> **Note on scrubber interaction.** `ErrInj_*` is design-for-test only, and the encoder's injection latch is consumed
+> by the next encoder write -- which in the scrub variant may be a scrubber writeback rather than the user's intended
+> write. Drive `ErrInj_Valid` with `Wr_Ena` in the same cycle (immediate injection, bypasses the latch), or pause the
+> scrubber with `Scrub_Enable = '0'` while preloading the latch (see [Pausing the Scrubber](#pausing-the-scrubber)).
+> A single-bit pattern is self-healing (the cell is SEC-correctable and repaired next pass); a popcount-2 pattern
+> consumed by a scrubber writeback leaves an uncorrectable (DED) word, so always pause the scrubber before preloading
+> multi-bit patterns (popcount >= 3 is undefined; see [Error Injection](./olo_ft_principles.md#error-injection)).
 
 | Name           | In/Out | Length                                                              | Default | Description                                                  |
 | :------------- | :----- | :------------------------------------------------------------------ | ------- | :----------------------------------------------------------- |
@@ -104,47 +107,44 @@ latched-strobe semantics.
 
 ### Scrubber Status
 
-The status outputs report the scrubber's _own_ reads and are valid only on the cycle _Scrub_Rd_Valid_ = '1'.
+These outputs report the scrubber's _own_ activity as clean, directly countable one-cycle pulses; no external qualifier
+is needed.
 
-| Name            | In/Out | Length | Default | Description                                                  |
-| :-------------- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Scrub_Rd_Valid  | out    | 1      | N/A     | Pulses '1' on the cycle a scrubber-issued read returns from the decoder (one pulse per scrubber read, regardless of whether an error was detected). Qualifies _Scrub_Rd_EccSec_ / _Scrub_Rd_EccDed_; also used by the scrubber core to mask the user-facing _Rd_Valid_. |
-| Scrub_Rd_EccSec | out    | 1      | N/A     | SEC flag of the scrubber's own read. The scrubber writes this address back when it is '1' (and _Scrub_Rd_EccDed_ = '0'), unless a user access (or _Scrub_Enable_ = '0') on the same cycle aborts the operation; the address is then retried (see [Opportunistic Scrubbing](#opportunistic-scrubbing)). |
-| Scrub_Rd_EccDed | out    | 1      | N/A     | DED flag of the scrubber's own read. The scrubber **does not** write the cell back in this case (the corrected value is unreliable). |
-| Scrub_PassDone  | out    | 1      | N/A     | Pulses '1' for one cycle when the scrubber's address counter rolls over from _Depth_g_-1 back to 0, marking a completed pass over the memory. |
+| Name           | In/Out | Length | Default | Description                                                  |
+| :------------- | :----- | :----- | ------- | :----------------------------------------------------------- |
+| Scrub_EccSec   | out    | 1      | N/A     | Pulses '1' for one cycle when a scrubber-issued read observed a single-bit error (SEC); gated internally so user reads never appear here. The scrubber writes that address back, unless a user access (or _Scrub_Enable_ = '0') aborts the operation, in which case the address is retried (see [Opportunistic Scrubbing](#opportunistic-scrubbing)). |
+| Scrub_EccDed   | out    | 1      | N/A     | Pulses '1' for one cycle when a scrubber-issued read observed a double-bit error (DED). The scrubber **does not** write the cell back (the corrected value is unreliable). |
+| Scrub_PassDone | out    | 1      | N/A     | Pulses '1' for one cycle when the scrubber's address counter rolls over from _Depth_g_-1 back to 0, marking a completed pass over the memory. |
+| Scrub_Overrun  | out    | 1      | N/A     | Pacer watchdog. Pulses '1' (and a simulation warning fires) when a new scrub period begins before the previous pass completed. Tied '0' when the pacer is disabled (_ScrubClkHz_g_ = 0.0). See [olo_ft_private_scrubber - Scrub Pacing](./olo_ft_private_scrubber.md#scrub-pacing-optional). |
 
 ## Detailed Description
 
 ### Architecture
 
-![olo_ft_ram_sdp_scrub architecture](./ram/olo_ft_ram_sdp_scrub_arch.drawio.png)
-
 The wrapper places the [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) in front of the wrapped
 [olo_ft_ram_sdp](./olo_ft_ram_sdp.md). The scrubber owns the user/scrubber arbitration: the user write port (`Wr_*`)
 and read port (`Rd_*`) feed the scrubber's user write and read channels, and the scrubber returns muxed write and read
-RAM channels (`Ram_Wr_*` / `Ram_Rd_*`) that map **1:1** onto the RAM's write and read ports, so the wrapper carries no
-mux logic of its own. It taps the RAM's decoded read output (`Ram_Rd_Data` / `Ram_Rd_EccSec` / `Ram_Rd_EccDed`) for
-its FSM and writeback payload. The user always wins; the scrubber drives the RAM only when **both** user ports are idle
-(`Wr_Ena = Rd_Ena = 0`). `ErrInj_*` go directly to the wrapped RAM's encoder, bypassing the scrubber.
+RAM channels that map **1:1** onto the RAM's write and read ports, so the wrapper carries no mux logic of its own.
+`ErrInj_*` go directly to the wrapped RAM's encoder, bypassing the scrubber.
 
-The decoder's `Rd_Data` / `Rd_EccSec` / `Rd_EccDed` are forwarded straight to the user; the two ECC flags are not
-masked, so they also reflect scrubber-issued reads (qualify them with `Rd_Valid`). The RAM's read-valid is fed
-into the scrubber, which masks the cycles consumed by its own reads and returns the user-facing valid
-(`User_Rd_Valid = Ram_Rd_Valid AND NOT Scrub_Rd_Valid`); the wrapper forwards that directly to `Rd_Valid`. The mask
-lives in the scrubber core because its read-valid is already aligned to the decoder-return cycle by the internal
-length-(`RamRdLatency_g` + `EccPipeline_g`) pipeline (see [olo_ft_private_scrubber](./olo_ft_private_scrubber.md)).
+The decoder's `Rd_Data` / `Rd_EccSec` / `Rd_EccDed` are forwarded straight to the user, while the user-facing `Rd_Valid`
+is the scrubber's masked read valid (scrubber-owned read cycles removed). The arbitration, the registered
+read/decide/writeback sequence, the read-valid masking and the optional pacer all live in the scrubber core -- see
+[olo_ft_private_scrubber](./olo_ft_private_scrubber.md) for the details.
 
 ### Opportunistic Scrubbing
 
 - **Idle-only.** Although the underlying RAM has independent write and read ports (so the _user_ can read and write
   in the same cycle), the scrubber acts only on cycles where **neither** user port is active (`Wr_Ena = '0'` and
   `Rd_Ena = '0'`). A continuously active user starves the scrubber but never causes data corruption.
-- **Free-running.** There is no rate-limit generic; the scrubber advances as fast as user-idle cycles allow.
+- **Free-running by default, optionally paced.** With the pacer off (`ScrubClkHz_g = 0.0`) the scrubber advances as
+  fast as user-idle cycles allow. With the pacer on it runs one pass every `ScrubPeriod_g` seconds; see
+  [olo_ft_private_scrubber - Scrub Pacing](./olo_ft_private_scrubber.md#scrub-pacing-optional).
 - **User always wins.** Any user access (or `Scrub_Enable = '0'`) raises `Scrub_Inhibit`, which aborts an in-flight
   scrub operation back to `Idle_s` without advancing the address counter and without writing back. The address is
   retried on the next idle slot, so user data is always authoritative.
 - **SEC-only writeback.** Only correctable single-bit errors are rewritten. Clean cells are left untouched; a DED read
-  is reported on `Scrub_Rd_EccDed` but never written back.
+  is reported on `Scrub_EccDed` but never written back.
 
 See [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) for the scrubber FSM (states, abort behavior and read-valid
 alignment).
