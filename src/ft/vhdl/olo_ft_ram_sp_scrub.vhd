@@ -41,7 +41,6 @@ entity olo_ft_ram_sp_scrub is
         RamStyle_g     : string               := "auto";
         RamBehavior_g  : string               := "RBW";
         EccPipeline_g  : natural range 0 to 2 := 0;
-        -- Optional internal scrub pacer (see olo_ft_private_scrubber). ScrubClkHz_g = 0.0 disables.
         ScrubClkHz_g   : real                 := 0.0;
         ScrubPeriod_g  : real                 := 0.0
     );
@@ -61,12 +60,9 @@ entity olo_ft_ram_sp_scrub is
         -- Error Injection
         ErrInj_BitFlip  : in    std_logic_vector(eccCodewordWidth(Width_g) - 1 downto 0) := (others => '0');
         ErrInj_Valid    : in    std_logic                                                := '0';
-        -- Scrubber Control. '0' suspends the scrubber FSM combinationally; the address counter
-        -- is preserved so scrubbing resumes from the same address on '1'. Use this to pin the
-        -- scrubber down during ECC error-injection tests.
+        -- Scrubber Control
         Scrub_Enable    : in    std_logic                                                := '1';
-        -- Scrubber Status. Scrub_EccSec / Scrub_EccDed are one-cycle pulses asserted when a
-        -- scrubber read observed a SEC / DED (qualified internally; directly countable).
+        -- Scrubber Status
         Scrub_EccSec    : out   std_logic;
         Scrub_EccDed    : out   std_logic;
         Scrub_PassDone  : out   std_logic;

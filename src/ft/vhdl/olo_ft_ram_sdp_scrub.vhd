@@ -42,7 +42,6 @@ entity olo_ft_ram_sdp_scrub is
         RamStyle_g     : string               := "auto";
         RamBehavior_g  : string               := "RBW";
         EccPipeline_g  : natural range 0 to 2 := 0;
-        -- Optional internal scrub pacer (see olo_ft_private_scrubber). ScrubClkHz_g = 0.0 disables.
         ScrubClkHz_g   : real                 := 0.0;
         ScrubPeriod_g  : real                 := 0.0
     );
@@ -66,8 +65,7 @@ entity olo_ft_ram_sdp_scrub is
         ErrInj_Valid    : in    std_logic                                                := '0';
         -- Scrubber Control
         Scrub_Enable    : in    std_logic                                                := '1';
-        -- Scrubber Status. Scrub_EccSec / Scrub_EccDed are one-cycle pulses asserted when a
-        -- scrubber read observed a SEC / DED (qualified internally; directly countable).
+        -- Scrubber Status
         Scrub_EccSec    : out   std_logic;
         Scrub_EccDed    : out   std_logic;
         Scrub_PassDone  : out   std_logic;
