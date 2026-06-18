@@ -68,6 +68,7 @@ architecture sim of olo_intf_spi_master_tb is
     signal Cmd_Slave      : std_logic_vector(log2ceil(SlaveCnt_c) - 1 downto 0)      := (others => '0');
     signal Cmd_Data       : std_logic_vector(MaxTransWidth_c - 1 downto 0)           := (others => '0');
     signal Cmd_TransWidth : std_logic_vector(log2ceil(MaxTransWidth_c+1)-1 downto 0) := (others => '0');
+    signal Cmd_CsHold     : std_logic                                                := '0';
     signal Resp_Valid     : std_logic;
     signal Resp_Data      : std_logic_vector(MaxTransWidth_c - 1 downto 0);
     signal Spi_Sclk       : std_logic;
@@ -102,7 +103,9 @@ architecture sim of olo_intf_spi_master_tb is
         signal Cmd_Slave      : out std_logic_vector;
         signal Cmd_Valid      : out std_logic;
         signal Cmd_Data       : out std_logic_vector;
-        signal Cmd_TransWidth : out std_logic_vector) is
+        signal Cmd_TransWidth : out std_logic_vector;
+        signal Cmd_CsHold     : out std_logic;
+        CsHold                : in std_logic := '0') is
     begin
         wait until rising_edge(Clk);
         check_equal(Cmd_Ready, '1', "Cmd_Ready not asserted");
@@ -110,6 +113,7 @@ architecture sim of olo_intf_spi_master_tb is
         Cmd_Valid                      <= '1';
         Cmd_Data(TxData'high downto 0) <= TxData;
         Cmd_TransWidth                 <= toUslv(TxData'length, Cmd_TransWidth'length);
+        Cmd_CsHold                     <= CsHold;
 
         wait until rising_edge(Clk);
         Cmd_Valid <= '0';
@@ -166,7 +170,7 @@ begin
                 spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => Tx32_v, data_miso => Rx32_v);
 
                 -- Send command
-                sendCommand(0, Tx32_v, Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                sendCommand(0, Tx32_v, Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold);
                 checkResponse(Rx32_v);
             end if;
 
@@ -177,7 +181,7 @@ begin
                 spi_slave_push_transaction (net, Slave0_c, 16, data_mosi => Tx16_v, data_miso => Rx16_v);
 
                 -- Send command
-                sendCommand(0, Tx16_v, Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                sendCommand(0, Tx16_v, Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold);
                 checkResponse(Rx16_v);
             end if;
 
@@ -188,12 +192,55 @@ begin
                 spi_slave_push_transaction (net, Slave1_c, MaxTransWidth_c, data_mosi => x"33333333", data_miso => x"44444444");
 
                 -- Cmd_Slave 1 Transfer
-                sendCommand(1, x"33333333", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                sendCommand(1, x"33333333", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold);
                 checkResponse(x"44444444");
 
                 -- Cmd_Slave 0 Transfer
-                sendCommand(0, x"11111111", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                sendCommand(0, x"11111111", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold);
                 checkResponse(x"22222222");
+            end if;
+
+            -- *** Two continuous transfers with CS going high in between (normal case) ***
+            if run("ContinuousTransfersWithCsHigh") then
+                -- Cmd_Slave Expectation
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => x"AAAAAAAA", data_miso => x"BBBBBBBB");
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => x"CCCCCCCC", data_miso => x"DDDDDDDD");
+
+                -- Slave Transfers
+                sendCommand(0, x"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold);
+                checkResponse(x"BBBBBBBB");
+                sendCommand(0, x"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold);
+                checkResponse(x"DDDDDDDD");
+            end if;
+
+            -- *** Two continuous transfers with CS staying low in between ***
+            if run("ContinuousTransfersWithCsLow") then
+                -- Cmd_Slave Expectation
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => x"AAAAAAAA", data_miso => x"BBBBBBBB", wait_for_csn_high => false);
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => x"CCCCCCCC", data_miso => x"DDDDDDDD");
+
+                -- Slave Transfer 0
+                sendCommand(0, x"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold, '1');
+                checkResponse(x"BBBBBBBB");
+                -- Check if CSn is held low
+                check_equal(Spi_Cs_n(0), '0', "CSn not held low");
+                -- Slave Transfer 1
+                sendCommand(0, x"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold);
+                checkResponse(x"DDDDDDDD");
+            end if;
+
+            -- *** Slave Switch with CsHold ***
+            if run("SlaveSwitchWithCsHold") then
+                -- Cmd_Slave Expectation (Slave 0 Csn goes high due to slave s switch)
+                spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => x"AAAAAAAA", data_miso => x"BBBBBBBB");
+                spi_slave_push_transaction (net, Slave1_c, MaxTransWidth_c, data_mosi => x"CCCCCCCC", data_miso => x"DDDDDDDD");
+
+                -- Slave Transfer 0
+                sendCommand(0, x"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold, '1');
+                checkResponse(x"BBBBBBBB");
+                -- Slave Transfer 1
+                sendCommand(1, x"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold);
+                checkResponse(x"DDDDDDDD");
             end if;
 
             -- *** Edge Cases ***
@@ -203,7 +250,7 @@ begin
                 spi_slave_push_transaction (net, Slave0_c, MaxTransWidth_c, data_mosi => x"CCCCCCCC", data_miso => x"DDDDDDDD");
 
                 -- Send command 1 (and start during busy)
-                sendCommand(0, x"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                sendCommand(0, x"AAAAAAAA", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold);
                 check_equal(Cmd_Ready, '0', "Cmd_Ready not de-asserted");
                 wait until rising_edge(Clk);
                 Cmd_Valid <= '1';
@@ -212,7 +259,7 @@ begin
                 checkResponse(x"BBBBBBBB");
 
                 -- Send Command 2
-                sendCommand(0, x"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth);
+                sendCommand(0, x"CCCCCCCC", Cmd_Slave, Cmd_Valid, Cmd_Data, Cmd_TransWidth, Cmd_CsHold);
                 checkResponse(x"DDDDDDDD");
             end if;
 
@@ -256,6 +303,7 @@ begin
             Cmd_Slave       => Cmd_Slave,
             Cmd_Ready       => Cmd_Ready,
             Cmd_TransWidth  => Cmd_TransWidth,
+            Cmd_CsHold      => Cmd_CsHold,
             Cmd_Data        => Cmd_Data,
             -- Response interface
             Resp_Valid      => Resp_Valid,

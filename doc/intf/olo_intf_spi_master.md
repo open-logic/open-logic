@@ -69,6 +69,7 @@ Below figure summarizes how they behave timing-wise.
 | Cmd_Slave      | in     | _ceil(log2(SlaveCnt_g))_        | 0                 | Index of the slave to communicate with.<br />0 ("0000") -> Spi_Cs_n[0] is operated<br />3 ("0011") -> Spi_Cs_n[3] is operated<br />The port can be left unconnected if only one slave is used. |
 | Cmd_Data       | in     | _MaxTransWidth_g_               | 0                 | Data to send.<br />For _TransWidth_ < _MaxTransWidth_g_ the data is right aligned (MSBs are unused). |
 | Cmd_TransWidth | in     | _ceil(log2(MaxTransWidth_g+1))_ | _MaxTransWidth_g_ | Number of bits to transfer in this transaction.<br />The port can be left unconnected if all transactions are _MaxTransWidth_g_ bits wide. |
+| Cmd_CsHold     | in     | 1                               | '0'               | If '1', _Cs_n_ is held active after the transaction. see [CS Handling](#cs-handling) |
 
 ### Response Interface
 
@@ -86,7 +87,7 @@ Below figure summarizes how they behave timing-wise.
 | Spi_Miso | in     | 1            | '0'     | SPI data from slaves to master. <br />Can be left unconnected if the master only does write data. |
 | Spi_Cs_n | out    | _SlaveCnt_g_ | N/A     | SPI chip select (one signal per slave)                       |
 
-## Architecture
+## Details
 
 ### Clock Frequency Calculation
 
@@ -102,3 +103,15 @@ _N_ is an integer and chosen automatically according to _ClkFreq_g_ and _SclkFre
 frequency is affected by rounding. The _olo_intf_spi_master_ does assert an error if the SCLK frequency is off by more
 than 10% compared to _SclkFreq_g_ requested. To avoid this issue for _SclkFreq_g_ values that are high, chose
 _SclkFreq_g_ to be implementable according to the formula below.
+
+### CS Handling
+
+By default (_Cmd_CsHold_ = '0'), _Cs_n_ is deasserted (goes high) between two transactions. In some cases this
+is not wanted. For example for memory devices receiving multiple write data words in a row.
+
+By using _Cmd_CsHold_ = '1', _Cs_n_ is held active (low) after the transaction. If the next transaction goes to the
+same slave, _Cs_n_ is kept active (low) between the two transactions.
+
+In case _Cmd_CsHold_ = '1' and the next transaction goes to a different slave, _Cs_n_ is deasserted (goes high)
+when the next transaction is injected through the _Cmd_ interface and hence the _olo_intf_spi_master_ can detect
+the change of slave.
