@@ -30,6 +30,12 @@ _info
 *.qtl
 _vmake
 
+#NVC files
+*.ncdb
+**/nvc_coverage
+nvc_coverage.txt
+_NVC_LIB
+
 #Backup files
 *.bak
 

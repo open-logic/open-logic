@@ -12,13 +12,13 @@ runs:
     #Python Setup (Cached)
     - name: Setup python
       uses: actions/setup-python@v5
-      with: 
+      with:
         python-version: '3.13'
         cache: 'pip'
     - name: Install Python Requiremetns
       shell: bash
       run: |
-        pip install "setuptools<70" setuptools_scm wheel
+        pip install "setuptools>=77" setuptools_scm wheel
         pip install --no-build-isolation -r ./.github/workflows/requirements.txt
     #Setup APT Get packages (Uncached - complex and little benefit in time)
     - name: Install APT packages
@@ -45,19 +45,19 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/nvc
-        key: ${{ runner.os }}-nvc-r1.19.0
+        key: ${{ runner.os }}-nvc-r1.21.0
     - name: Build NVC if not cached
       if: steps.cache-nvc.outputs.cache-hit != 'true'
       shell: bash
       run: |
         git clone https://github.com/nickg/nvc.git ~/nvc
         cd ~/nvc
-        git checkout r1.19.0
+        git checkout r1.21.0
         ./autogen.sh
         mkdir build && cd build
         ../configure
         make
-    - name: Install NVC   
+    - name: Install NVC
       shell: bash
       run: |
         cd ~/nvc/build
