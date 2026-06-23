@@ -34,11 +34,12 @@ library work;
 -- Entity
 ---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_fix_fir_dec_ser_par_tb is
+entity olo_fix_fir_dec_ser_chpar_tb is
     generic (
         InFmt_g           : string   := "(1,0,15)";
         OutFmt_g          : string   := "(1,0,15)";
         CoefFmt_g         : string   := "(1,0,17)";
+        GuardBits_g       : natural  := 1;
         CoefStorageType_g : string   := "ROM";
         CoefRamReadback_g : boolean  := false;
         Channels_g        : positive := 2;
@@ -54,7 +55,7 @@ entity olo_fix_fir_dec_ser_par_tb is
     );
 end entity;
 
-architecture sim of olo_fix_fir_dec_ser_par_tb is
+architecture sim of olo_fix_fir_dec_ser_chpar_tb is
 
     -----------------------------------------------------------------------------------------------
     -- TB Definitions
@@ -170,9 +171,6 @@ begin
                                           stall_probability => 1.0,
                                           stall_min_cycles  => RateLimitStall_c,
                                           stall_max_cycles  => RateLimitStall_c);
-                end loop;
-
-                for ch in 0 to Channels_g - 1 loop
                     fix_checker_check_file(net, Checker_c(ch), outFile(ch));
                 end loop;
 
@@ -187,9 +185,6 @@ begin
                                           stall_probability => 1.0,
                                           stall_min_cycles  => RateLimitStall_c + 3,
                                           stall_max_cycles  => RateLimitStall_c + 3);
-                end loop;
-
-                for ch in 0 to Channels_g - 1 loop
                     fix_checker_check_file(net, Checker_c(ch), outFile(ch));
                 end loop;
 
@@ -222,9 +217,6 @@ begin
             -- *** Wait for completion ***
             for ch in 0 to Channels_g - 1 loop
                 wait_until_idle(net, as_sync(Stimuli_c(ch)));
-            end loop;
-
-            for ch in 0 to Channels_g - 1 loop
                 wait_until_idle(net, as_sync(Checker_c(ch)));
             end loop;
 
@@ -243,11 +235,12 @@ begin
     -----------------------------------------------------------------------------------------------
     -- DUT
     -----------------------------------------------------------------------------------------------
-    i_dut : entity olo.olo_fix_fir_dec_ser_par
+    i_dut : entity olo.olo_fix_fir_dec_ser_chpar
         generic map (
             InFmt_g           => InFmt_g,
             OutFmt_g          => OutFmt_g,
             CoefFmt_g         => CoefFmt_g,
+            GuardBits_g       => GuardBits_g,
             CoefInit_g        => CoefInitTb_c,
             CoefStorageType_g => CoefStorageType_g,
             CoefRamReadback_g => CoefRamReadback_g,
@@ -284,13 +277,15 @@ begin
 
         vc_stimuli : entity work.olo_test_fix_stimuli_vc
             generic map (
-                Instance => Stimuli_c(i),
-                Fmt      => cl_fix_format_from_string(InFmt_g)
+                Instance         => Stimuli_c(i),
+                Fmt              => cl_fix_format_from_string(InFmt_g),
+                Is_Timing_Master => (i = 0)
             )
             port map (
                 Clk   => Clk,
                 Rst   => Rst,
                 Valid => In_Valid,
+                Ready => In_Valid,
                 Data  => In_Data(InWidth_c*(i+1) - 1 downto InWidth_c*i)
             );
 

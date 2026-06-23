@@ -39,6 +39,7 @@ entity olo_fix_fir_dec_ser_chtdm_tb is
         InFmt_g           : string   := "(1,0,15)";
         OutFmt_g          : string   := "(1,0,15)";
         CoefFmt_g         : string   := "(1,0,17)";
+        GuardBits_g       : natural  := 1;
         CoefStorageType_g : string   := "ROM";
         CoefRamReadback_g : boolean  := false;
         Channels_g        : positive := 2;
@@ -225,6 +226,7 @@ begin
             InFmt_g           => InFmt_g,
             OutFmt_g          => OutFmt_g,
             CoefFmt_g         => CoefFmt_g,
+            GuardBits_g       => GuardBits_g,
             CoefInit_g        => CoefInitTb_c,
             CoefStorageType_g => CoefStorageType_g,
             CoefRamReadback_g => CoefRamReadback_g,
