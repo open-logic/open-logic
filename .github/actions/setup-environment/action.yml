@@ -11,7 +11,7 @@ runs:
   steps:
     #Python Setup (Cached)
     - name: Setup python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with: 
         python-version: '3.13'
         cache: 'pip'
@@ -42,7 +42,7 @@ runs:
       run: mkdir -p ~/nvc
     - name: cache-nvc
       id: cache-nvc
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/nvc
         key: ${{ runner.os }}-nvc-r1.19.0

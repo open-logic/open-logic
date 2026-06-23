@@ -21,7 +21,7 @@ jobs:
 
       #General Setup
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       #Run markdownlint
       - name: Run markdownlint
         uses: DavidAnson/markdownlint-cli2-action@v17
