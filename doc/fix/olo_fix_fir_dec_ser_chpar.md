@@ -1,16 +1,16 @@
 <img src="../Logo.png" alt="Logo" width="400">
 
-# olo_fix_fir_dec_ser_par
+# olo_fix_fir_dec_ser_chpar
 
 [Back to **Entity List**](../EntityList.md)
 
 ## Status Information
 
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_fix_fir_dec_ser_par.json?cacheSeconds=0)
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_fir_dec_ser_par.json?cacheSeconds=0)
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_fir_dec_ser_par.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_fix_fir_dec_ser_chpar.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_fir_dec_ser_chpar.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_fir_dec_ser_chpar.json?cacheSeconds=0)
 
-VHDL Source: [olo_fix_fir_dec_ser_par.vhd](../../src/fix/vhdl/olo_fix_fir_dec_ser_par.vhd)<br />
+VHDL Source: [olo_fix_fir_dec_ser_chpar.vhd](../../src/fix/vhdl/olo_fix_fir_dec_ser_chpar.vhd)<br />
 Bit-true Model: [olo_fix_fir_dec.py](../../src/fix/python/olo_fix/olo_fix_fir_dec.py)
 
 ## Description
@@ -29,31 +29,10 @@ Note that the filter can also be used non-decimating (ratio=1) and for a single 
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
 
-The bit-true model and cosimulation are shared with [olo_fix_fir_dec_ser_tdm](./olo_fix_fir_dec_ser_tdm.md);
-the two entities differ only in how the channels are presented (parallel vs. time-division-multiplexed).
+The bit-true model and cosimulation are shared with [olo_fix_fir_dec_ser_chtdm](./olo_fix_fir_dec_ser_chtdm.md).
+The two entities differ only in how the channels are presented (parallel vs. time-division-multiplexed).
 
-### Coefficient Handling
-
-Coefficients can be fixed (ROM) or runtime configurable (RAM) with optional readback. Coefficient
-updates (in RAM mode) must only occur when the filter is in reset (_Rst = '1'_).
-
-### Accumulator Guard Bits
-
-The accumulator carries _GuardBits_g_ integer guard bits above _OutFmt_g_
-(_AccuFmt.I = OutFmt.I + GuardBits_g_). These bits allow the sum of products to grow beyond the output
-range during the accumulation without overflowing. With the default of one guard bit, intermediate
-results of up to twice the _OutFmt_g_ maximum are supported. The user is responsible for choosing
-_GuardBits_g_, the coefficients and the formats such that the accumulator does not overflow; otherwise
-the number of guard bits or the output format must be increased.
-
-### Runtime Configuration
-
-The _Cfg_Ratio_ and _Cfg_Taps_ ports are only evaluated when _RuntimeCfg_g = true_. In that case they
-must only be changed while _Rst = '1'_; changing them during operation produces undefined behavior. When
-_RuntimeCfg_g = false_ (default) the ports are ignored and the filter uses fixed _MaxRatio_g_ /
-_MaxTaps_g_ values.
-
-A single-tap filter (_Cfg_Taps = 0_) is **not supported**. The minimum tap count is 2.
+Coefficients can be fixed (ROM) or runtime configurable (RAM) with optional readback.
 
 ### Input Bandwidth Limitation
 
@@ -63,11 +42,13 @@ _Ratio_ input sample sets.
 
 ```text
 f_in <= (f_clk x Ratio) / Taps
+Taps <= (f_clk x Ratio) / f_in
 ```
 
 where _f_in_ is the rate of complete input sample sets (one set = one sample per channel, all presented
-in the same clock cycle). If the input arrives faster than this limit, the computation will fall behind
-and results will be incorrect.
+in the same clock cycle). If the input arrives faster than this limit, the filter will stop working correctly.
+
+The second row calculates the number of taps that can be processed with given raio, input rate and clock frequency.
 
 Use [olo_base_rate_limit](../base/olo_base_rate_limit.md) externally to enforce the rate limit.
 
@@ -163,7 +144,7 @@ _MaxRatio_g_ / _MaxTaps_g_ to the desired values and leaving _Cfg_Ratio_ / _Cfg_
 (they then default to those maxima). All coefficient configuration ports are omitted as well.
 
 ```vhdl
-i_fir : entity olo.olo_fix_fir_dec_ser_par
+i_fir : entity olo.olo_fix_fir_dec_ser_chpar
     generic map (
         -- Formats
         InFmt_g    => "(1,0,15)",
@@ -188,17 +169,21 @@ i_fir : entity olo.olo_fix_fir_dec_ser_par
 
 ### Architecture
 
+Below figure illustrates the architecture of the filter:
+
+![Filter Architecture](./fir/olo_fix_fir_dec_ser_chpar.drawio.png)
+
 All channel data is stored in a single simple dual-port RAM ([olo_base_ram_sdp](../base/olo_base_ram_sdp.md)).
 Because the channels are processed in parallel, all channel samples of a given time step are stored in
-one wide RAM word (width = _width(InFmt_g) x Channels_g_); the address selects the tap (delay line)
-position. The write port stores new input sample sets; the read port reads historical samples during
-computation.
+one wide RAM word (width = _width(InFmt_g) x Channels_g_).
 
-Coefficients are stored in a dedicated [olo_fix_coef_storage](../olo_fix_coef_storage.md) instance (ROM or RAM
-depending on _CoefStorageType_g_) and are shared by all channels. There is one multiplier
-([olo_fix_mult](./olo_fix_mult.md)) and one output resize ([olo_fix_resize](./olo_fix_resize.md)) per
-channel. All multipliers use the same coefficient and the same tap address; they only differ in their
-data input.
+Coefficients are stored in a dedicated [olo_fix_coef_storage](./olo_fix_coef_storage.md) instance (ROM or RAM
+depending on _CoefStorageType_g_) and are shared by all channels. As a result the coefficieent memory size
+is independent of the number of channels.
+
+There is one multiplier ([olo_fix_mult](./olo_fix_mult.md)) and one output resize
+([olo_fix_resize](./olo_fix_resize.md)) per channel (yellow). All multipliers use the same coefficient and the
+same tap address, they only differ in their data input from the data RAM.
 
 Because the data is written into the RAM as it arrives and is read out only when processed, the input may be bursty
 or have a constant rate. Both work fine.
@@ -218,3 +203,21 @@ The accumulator operates at full multiply precision:
 
 Choosing _OutFmt.I_ or _GuardBits_g_ too small risks accumulator overflow. Ensure
 _max\_sum\_of\_products <= 2^(OutFmt.I + GuardBits_g) - 1 LSB_.
+
+### Accumulator Guard Bits
+
+The accumulator carries _GuardBits_g_ integer guard bits above _OutFmt_g_
+(_AccuFmt.I = OutFmt.I + GuardBits_g_). These bits allow the sum of products to grow beyond the output
+range during the accumulation without overflowing. With the default of one guard bit, intermediate
+results of up to twice the _OutFmt_g_ maximum are supported. The user is responsible for choosing
+_GuardBits_g_, the coefficients and the formats such that the accumulator does not overflow; otherwise
+the number of guard bits or the output format must be increased.
+
+### Runtime Configuration
+
+The _Cfg_Ratio_ and _Cfg_Taps_ ports are only evaluated when _RuntimeCfg_g = true_. In that case they
+must only be changed while _Rst = '1'_; changing them during operation produces undefined behavior. When
+_RuntimeCfg_g = false_ (default) the ports are ignored and the filter uses fixed _MaxRatio_g_ /
+_MaxTaps_g_ values.
+
+A single-tap filter (_Cfg_Taps = 0_) is **not supported**. The minimum tap count is 2.

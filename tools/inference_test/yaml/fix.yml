@@ -189,8 +189,8 @@ entities:
         out_reduce:
           Coef_Cfg_RdData: 18
           Out_Data: 16
-  # olo_fix_fir_dec_ser_par
-  - entity_name: "olo_fix_fir_dec_ser_par"
+  # olo_fix_fir_dec_ser_chpar
+  - entity_name: "olo_fix_fir_dec_ser_chpar"
     configurations:
       - name: "default"
         generics:

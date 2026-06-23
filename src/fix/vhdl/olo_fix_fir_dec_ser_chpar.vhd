@@ -14,7 +14,7 @@
 -- (one tap per clock cycle) using one multiplier per channel.
 --
 -- Documentation:
--- https://github.com/open-logic/open-logic/blob/main/doc/fix/olo_fix_fir_dec_ser_par.md
+-- https://github.com/open-logic/open-logic/blob/main/doc/fix/olo_fix_fir_dec_ser_chpar.md
 --
 -- Note: The link points to the documentation of the latest release. If you
 --       use an older version, the documentation might not match the code.
@@ -37,7 +37,7 @@ library work;
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
-entity olo_fix_fir_dec_ser_par is
+entity olo_fix_fir_dec_ser_chpar is
     generic (
         -- Formats
         InFmt_g           : string;
@@ -89,10 +89,10 @@ end entity;
 ---------------------------------------------------------------------------------------------------
 -- Architecture
 ---------------------------------------------------------------------------------------------------
-architecture rtl of olo_fix_fir_dec_ser_par is
+architecture rtl of olo_fix_fir_dec_ser_chpar is
 
     -- *** Entity Name ***
-    constant EntityName_c : string := "olo_fix_fir_dec_ser_par";
+    constant EntityName_c : string := "olo_fix_fir_dec_ser_chpar";
 
     -- *** Formats ***
     constant InFmt_c   : FixFormat_t := cl_fix_format_from_string(InFmt_g);
@@ -181,9 +181,6 @@ begin
     -- Assertions
     -----------------------------------------------------------------------------------------------
     -- synthesis translate_off
-    assert MaxRatio_g >= 2
-        report errorMessage(EntityName_c, "MaxRatio_g must be >= 2.")
-        severity error;
     assert MaxTaps_g >= 2
         report errorMessage(EntityName_c, "MaxTaps_g must be >= 2.")
         severity error;
