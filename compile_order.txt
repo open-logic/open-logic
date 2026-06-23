@@ -80,6 +80,7 @@ src/fix/vhdl/olo_fix_cordic_rot.vhd
 src/fix/vhdl/olo_fix_compare.vhd
 src/fix/vhdl/olo_fix_coef_storage.vhd
 src/fix/vhdl/olo_fix_fir_dec_ser_chtdm.vhd
+src/fix/vhdl/olo_fix_fir_dec_ser_chpar.vhd
 src/fix/vhdl/olo_fix_cic_dec_tdm.vhd
 src/fix/vhdl/olo_fix_cic_dec_par_tdm.vhd
 src/fix/vhdl/olo_fix_bin_div.vhd

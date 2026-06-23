@@ -751,4 +751,45 @@ def add_configs(olo_tb):
     cosim_overflow = partial(cosim, test_mode='overflow')
     named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
 
+    ### olo_fix_fir_dec_ser_par ###
+    tb = olo_tb.test_bench('olo_fix_fir_dec_ser_par_tb')
+    default_generics = {
+        'InFmt_g'          : '(1,0,15)',
+        'OutFmt_g'         : '(1,-1,17)',
+        'CoefFmt_g'        : '(1,0,17)',
+        'CoefStorageType_g': 'ROM',
+        'CoefRamReadback_g': False,
+        'Channels_g'       : 2,
+        'Ratio_g'          : 4,
+        'Taps_g'           : 16,
+        'MultRegs_g'       : 1,
+        'RuntimeCfg_g'     : True,
+        'Round_g'          : 'NonSymPos_s',
+        'Saturate_g'       : 'Sat_s',
+        'WriteCoefs_g'     : 'False'
+    }
+    # The bit-true model and cosimulation are shared with olo_fix_fir_dec_ser_tdm (same filter math,
+    # per-channel stimulus/reference files are reused). Hence the cosim is called from there.
+    cosim = olo_fix_fir_dec_ser_tdm.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    #Different single-settings
+    named_config(tb, default_generics | {'Channels_g': 1, 'Ratio_g': 3, 'Taps_g': 5, 'MultRegs_g': 2, 'RuntimeCfg_g': False}, pre_config=cosim, short_name='ch1-r3-taps5-regs2')
+    named_config(tb, default_generics | {'Channels_g': 4}, pre_config=cosim, short_name='ch4')
+    named_config(tb, default_generics | {'Ratio_g': 2}, pre_config=cosim, short_name='ratio1')
+
+    # Different coef-storage
+    named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': True, 'CoefRamReadback_g': True}, pre_config=cosim, short_name='RAM-write')
+    named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': False, 'CoefRamReadback_g': False}, pre_config=cosim, short_name='RAM-no-write')
+
+    # Round/Sat
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat}, pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+    # Overflow
+    cosim_overflow = partial(cosim, test_mode='overflow')
+    named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
+
 
