@@ -772,7 +772,7 @@ def add_configs(olo_tb):
     }
     # The bit-true model and cosimulation are shared with olo_fix_fir_dec_ser_tdm (same filter math,
     # per-channel stimulus/reference files are reused). Hence the cosim is called from there.
-    cosim = olo_fix_fir_dec_ser_tdm.cosim.cosim
+    cosim = olo_fix_fir_dec_ser_chtdm.cosim.cosim
 
     named_config(tb, default_generics, pre_config=cosim, short_name='default')
 
