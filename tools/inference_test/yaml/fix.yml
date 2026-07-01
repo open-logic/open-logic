@@ -189,6 +189,24 @@ entities:
         out_reduce:
           Coef_Cfg_RdData: 18
           Out_Data: 16
+  # olo_fix_fir_dec_ser_chpar
+  - entity_name: "olo_fix_fir_dec_ser_chpar"
+    configurations:
+      - name: "default"
+        generics:
+          Channels_g: '2'
+          MaxRatio_g: '8'
+          MaxTaps_g: '16'
+          InFmt_g: '"(1, 0, 15)"'
+          OutFmt_g: '"(1, 0, 15)"'
+          CoefFmt_g: '"(1, 0, 17)"'
+          CoefInit_g: '"0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625"'
+        in_reduce:
+          Coef_WrData: 18
+          In_Data: 32
+        out_reduce:
+          Coef_RdData: 18
+          Out_Data: 32
   # olo_fix_cplx_addsub
   - entity_name: "olo_fix_cplx_addsub"
     configurations:

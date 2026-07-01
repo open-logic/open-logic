@@ -34,7 +34,7 @@ library work;
 -- Entity
 ---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_fix_fir_dec_ser_chtdm_tb is
+entity olo_fix_fir_dec_ser_chpar_tb is
     generic (
         InFmt_g           : string   := "(1,0,15)";
         OutFmt_g          : string   := "(1,0,15)";
@@ -55,7 +55,7 @@ entity olo_fix_fir_dec_ser_chtdm_tb is
     );
 end entity;
 
-architecture sim of olo_fix_fir_dec_ser_chtdm_tb is
+architecture sim of olo_fix_fir_dec_ser_chpar_tb is
 
     -----------------------------------------------------------------------------------------------
     -- TB Definitions
@@ -75,9 +75,13 @@ architecture sim of olo_fix_fir_dec_ser_chtdm_tb is
     -- Fixed Generics
     constant CoefRamBehavior_c : string := "RBW";
 
-    -- Configuratino Generics
+    -- Configuration Generics
     constant MaxRatio_c : positive := choose(RuntimeCfg_g, Ratio_g+5, Ratio_g);
     constant MaxTaps_c  : positive := choose(RuntimeCfg_g, Taps_g*3, Taps_g);
+
+    -- Port Widths
+    constant InWidth_c  : natural := fixFmtWidthFromString(InFmt_g);
+    constant OutWidth_c : natural := fixFmtWidthFromString(OutFmt_g);
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
@@ -93,20 +97,26 @@ architecture sim of olo_fix_fir_dec_ser_chtdm_tb is
     signal Coef_RdData  : std_logic_vector(fixFmtWidthFromString(CoefFmt_g) - 1 downto 0);
     signal Coef_RdValid : std_logic;
     signal In_Valid     : std_logic                                                       := '0';
-    signal In_Data      : std_logic_vector(fixFmtWidthFromString(InFmt_g) - 1 downto 0)   := (others => '0');
-    signal In_Last      : std_logic                                                       := '0';
+    signal In_Data      : std_logic_vector(InWidth_c * Channels_g - 1 downto 0)           := (others => '0');
     signal Out_Valid    : std_logic;
-    signal Out_Data     : std_logic_vector(fixFmtWidthFromString(OutFmt_g) - 1 downto 0);
-    signal Out_Last     : std_logic;
+    signal Out_Data     : std_logic_vector(OutWidth_c * Channels_g - 1 downto 0);
 
     -----------------------------------------------------------------------------------------------
     -- Verification Components
     -----------------------------------------------------------------------------------------------
-    constant Stimuli_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant Checker_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant Stimuli_c : olo_test_fix_stimuli_array_t(0 to Channels_g-1) := new_olo_test_fix_stimuli_array(Channels_g);
+    constant Checker_c : olo_test_fix_checker_array_t(0 to Channels_g-1) := new_olo_test_fix_checker_array(Channels_g);
 
-    constant InFile_c  : string := output_path(runner_cfg) & "In_Interleaved.fix";
-    constant OutFile_c : string := output_path(runner_cfg) & "Out_Interleaved.fix";
+    -- *** File Names ***
+    impure function inFile (channel : natural) return string is
+    begin
+        return output_path(runner_cfg) & "In_Ch" & to_string(channel) & ".fix";
+    end function;
+
+    impure function outFile (channel : natural) return string is
+    begin
+        return output_path(runner_cfg) & "Out_Ch" & to_string(channel) & ".fix";
+    end function;
 
 begin
 
@@ -153,30 +163,31 @@ begin
                 wait until rising_edge(Clk);
             end if;
 
-            -- *** Rate-limited test: one TDM frame every Taps_g clocks ***
+            -- *** Rate-limited test: full multiplier utilization ***
             if run("RateLimited") then
-                fix_stimuli_play_file(net, Stimuli_c, InFile_c,
-                                      stall_probability => 1.0,
-                                      stall_min_cycles  => RateLimitStall_c,
-                                      stall_max_cycles  => RateLimitStall_c,
-                                      Mode              => stimuli_mode_tdm,
-                                      Tdm_Slots         => Channels_g);
-                fix_checker_check_file(net, Checker_c, OutFile_c,
-                                       Mode      => checker_mode_tdm,
-                                       Tdm_Slots => Channels_g);
+
+                for ch in 0 to Channels_g - 1 loop
+                    fix_stimuli_play_file(net, Stimuli_c(ch), inFile(ch),
+                                          stall_probability => 1.0,
+                                          stall_min_cycles  => RateLimitStall_c,
+                                          stall_max_cycles  => RateLimitStall_c);
+                    fix_checker_check_file(net, Checker_c(ch), outFile(ch));
+                end loop;
+
             end if;
 
-            -- *** Throttled test: more stalls on top of rate limit ***
+            -- *** Throttled test: more (deterministic) stalls on top of the rate limit ***
+            -- Stalls must be deterministic so all parallel channels stay synchronized on In_Valid.
             if run("Throttled") then
-                fix_stimuli_play_file(net, Stimuli_c, InFile_c,
-                                      stall_probability => 1.0,
-                                      stall_min_cycles  => RateLimitStall_c,
-                                      stall_max_cycles  => RateLimitStall_c + 5,
-                                      Mode              => stimuli_mode_tdm,
-                                      Tdm_Slots         => Channels_g);
-                fix_checker_check_file(net, Checker_c, OutFile_c,
-                                       Mode      => checker_mode_tdm,
-                                       Tdm_Slots => Channels_g);
+
+                for ch in 0 to Channels_g - 1 loop
+                    fix_stimuli_play_file(net, Stimuli_c(ch), inFile(ch),
+                                          stall_probability => 1.0,
+                                          stall_min_cycles  => RateLimitStall_c + 3,
+                                          stall_max_cycles  => RateLimitStall_c + 3);
+                    fix_checker_check_file(net, Checker_c(ch), outFile(ch));
+                end loop;
+
             end if;
 
             -- *** Coefficient readback test ***
@@ -204,8 +215,11 @@ begin
             end if;
 
             -- *** Wait for completion ***
-            wait_until_idle(net, as_sync(Stimuli_c));
-            wait_until_idle(net, as_sync(Checker_c));
+            for ch in 0 to Channels_g - 1 loop
+                wait_until_idle(net, as_sync(Stimuli_c(ch)));
+                wait_until_idle(net, as_sync(Checker_c(ch)));
+            end loop;
+
             wait for 1 us;
 
         end loop;
@@ -221,7 +235,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- DUT
     -----------------------------------------------------------------------------------------------
-    i_dut : entity olo.olo_fix_fir_dec_ser_chtdm
+    i_dut : entity olo.olo_fix_fir_dec_ser_chpar
         generic map (
             InFmt_g           => InFmt_g,
             OutFmt_g          => OutFmt_g,
@@ -240,50 +254,52 @@ begin
             Saturate_g        => Saturate_g
         )
         port map (
-            Clk              => Clk,
-            Rst              => Rst,
-            Cfg_Ratio        => Cfg_Ratio,
-            Cfg_Taps         => Cfg_Taps,
-            Coef_Addr        => Coef_Addr,
-            Coef_WrEna       => Coef_WrEna,
-            Coef_WrData      => Coef_WrData,
-            Coef_RdEna       => Coef_RdEna,
-            Coef_RdData      => Coef_RdData,
-            Coef_RdValid     => Coef_RdValid,
-            In_Valid         => In_Valid,
-            In_Data          => In_Data,
-            In_Last          => In_Last,
-            Out_Valid        => Out_Valid,
-            Out_Data         => Out_Data,
-            Out_Last         => Out_Last
+            Clk          => Clk,
+            Rst          => Rst,
+            Cfg_Ratio    => Cfg_Ratio,
+            Cfg_Taps     => Cfg_Taps,
+            Coef_Addr    => Coef_Addr,
+            Coef_WrEna   => Coef_WrEna,
+            Coef_WrData  => Coef_WrData,
+            Coef_RdEna   => Coef_RdEna,
+            Coef_RdData  => Coef_RdData,
+            Coef_RdValid => Coef_RdValid,
+            In_Valid     => In_Valid,
+            In_Data      => In_Data,
+            Out_Valid    => Out_Valid,
+            Out_Data     => Out_Data
         );
 
     -----------------------------------------------------------------------------------------------
     -- Verification Components
     -----------------------------------------------------------------------------------------------
-    vc_stimuli : entity work.olo_test_fix_stimuli_vc
-        generic map (
-            Instance => Stimuli_c,
-            Fmt      => cl_fix_format_from_string(InFmt_g)
-        )
-        port map (
-            Clk   => Clk,
-            Rst   => Rst,
-            Valid => In_Valid,
-            Last  => In_Last,
-            Data  => In_Data
-        );
+    g_channels : for i in 0 to Channels_g - 1 generate
 
-    vc_checker : entity work.olo_test_fix_checker_vc
-        generic map (
-            Instance => Checker_c,
-            Fmt      => cl_fix_format_from_string(OutFmt_g)
-        )
-        port map (
-            Clk   => Clk,
-            Valid => Out_Valid,
-            Last  => Out_Last,
-            Data  => Out_Data
-        );
+        vc_stimuli : entity work.olo_test_fix_stimuli_vc
+            generic map (
+                Instance         => Stimuli_c(i),
+                Fmt              => cl_fix_format_from_string(InFmt_g),
+                Is_Timing_Master => (i = 0)
+            )
+            port map (
+                Clk   => Clk,
+                Rst   => Rst,
+                Valid => In_Valid,
+                Ready => In_Valid,
+                Data  => In_Data(InWidth_c*(i+1) - 1 downto InWidth_c*i)
+            );
+
+        vc_checker : entity work.olo_test_fix_checker_vc
+            generic map (
+                Instance => Checker_c(i),
+                Fmt      => cl_fix_format_from_string(OutFmt_g)
+            )
+            port map (
+                Clk   => Clk,
+                Valid => Out_Valid,
+                Data  => Out_Data(OutWidth_c*(i+1) - 1 downto OutWidth_c*i)
+            );
+
+    end generate;
 
 end architecture;

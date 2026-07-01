@@ -31,7 +31,7 @@ def cosim(output_path: str = None,
     Channels_g      = int(generics.get("Channels_g"))
     Ratio_g         = int(generics["Ratio_g"])
     Taps_g          = int(generics["Taps_g"])
-    GuardBits_g     = int(generics.get("GuardBits_g", 0))
+    GuardBits_g     = int(generics.get("GuardBits_g", 1))
     Round_g         = FixRound[generics.get("Round_g", "NonSymPos_s")]
     Saturate_g      = FixSaturate[generics.get("Saturate_g", "Warn_s")]
 

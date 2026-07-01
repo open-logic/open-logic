@@ -1,50 +1,54 @@
 <img src="../Logo.png" alt="Logo" width="400">
 
-# olo_fix_fir_dec_ser_chtdm
+# olo_fix_fir_dec_ser_chpar
 
 [Back to **Entity List**](../EntityList.md)
 
 ## Status Information
 
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_fix_fir_dec_ser_chtdm.json?cacheSeconds=0)
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_fir_dec_ser_chtdm.json?cacheSeconds=0)
-![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_fir_dec_ser_chtdm.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/coverage/olo_fix_fir_dec_ser_chpar.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_fir_dec_ser_chpar.json?cacheSeconds=0)
+![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_fir_dec_ser_chpar.json?cacheSeconds=0)
 
-VHDL Source: [olo_fix_fir_dec_ser_chtdm.vhd](../../src/fix/vhdl/olo_fix_fir_dec_ser_chtdm.vhd)<br />
+VHDL Source: [olo_fix_fir_dec_ser_chpar.vhd](../../src/fix/vhdl/olo_fix_fir_dec_ser_chpar.vhd)<br />
 Bit-true Model: [olo_fix_fir_dec.py](../../src/fix/python/olo_fix/olo_fix_fir_dec.py)
 
 ## Description
 
-This entity implements a decimating FIR filter for multiple TDM (time-division-multiplexed) channels.
-All channels share the same coefficient set and are processed one after the other. A single shared
-multiplier computes filter taps serially. One tap after the other, then one tap after the other for the next channel,
-and so on.
+This entity implements a decimating FIR filter for one or more parallel channels. All channel
+samples are presented at the same time, concatenated into one wide input vector (channel 0 in the
+least significant bits). All channels share the same coefficient set. The filter taps are computed
+serially (one tap per clock cycle), using one dedicated multiplier per channel.
 
-Example: A 4 channel, 16 taps FIR filter requires 64 clock cylces to produce one output sample set (one sample for each
-channel).
+Example: A 4 channel, 16 taps FIR filter requires 16 clock cycles to produce one output sample set
+(one sample for each channel). All four channels are computed in parallel during these 16 cycles.
 
-Note that the filter can also be used non-decimation (ratio=1).
+Note that the filter can also be used non-decimating (ratio=1) and for a single channel
+(_Channels_g = 1_).
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
+
+The bit-true model and cosimulation are shared with [olo_fix_fir_dec_ser_chtdm](./olo_fix_fir_dec_ser_chtdm.md).
+The two entities differ only in how the channels are presented (parallel vs. time-division-multiplexed).
 
 Coefficients can be fixed (ROM) or runtime configurable (RAM) with optional readback.
 
 ### Input Bandwidth Limitation
 
-**This entity does not generate backpressure.** The serial MAC requires _Taps x Channels_ clock cycles
-to compute one output sample set (for all channels). This calculation is repeated ever _Ratio_ iput sample sets.
+**This entity does not generate backpressure.** The serial MAC requires _Taps_ clock cycles to compute
+one output sample set (all channels are computed in parallel). This calculation is repeated every
+_Ratio_ input sample sets.
 
 ```text
-f_in <= (f_clk x Ratio) / (Taps x Channels_g)
-Taps <= (f_clk x Ratio) / (f_in x Channels_g)
+f_in <= (f_clk x Ratio) / Taps
+Taps <= (f_clk x Ratio) / f_in
 ```
 
-where _f_in_ is the rate of complete TDM frames (one frame = _Channels_g_ samples). If the input
-arrives faster than this limit, the filter will stop working correctly.
+where _f_in_ is the rate of complete input sample sets (one set = one sample per channel, all presented
+in the same clock cycle). If the input arrives faster than this limit, the filter will stop working correctly.
 
-he second row calculates the number of taps that can be processed with given channels, ratio, input rate and clock
-frequency.
+The second row calculates the number of taps that can be processed with given raio, input rate and clock frequency.
 
 Use [olo_base_rate_limit](../base/olo_base_rate_limit.md) externally to enforce the rate limit.
 
@@ -62,16 +66,16 @@ latency is not fixed and is therefore not documented in detail.
 | InFmt_g           | string   | -               | Input format<br>String representation of an _en\_cl\_fix FixFormat\_t_ |
 | OutFmt_g          | string   | -               | Output format<br>String representation of an _en\_cl\_fix FixFormat\_t_ |
 | CoefFmt_g         | string   | -               | Coefficient format<br>String representation of an _en\_cl\_fix FixFormat\_t_ |
-| Channels_g        | positive | -               | Number of TDM channels (must be >= 2)                         |
+| Channels_g        | positive | -               | Number of parallel channels (1 or more)                      |
 | MaxRatio_g        | positive | -               | Maximum decimation ratio |
 | MaxTaps_g         | positive | -               | Maximum number of filter taps (must be >= 2)                  |
 | RuntimeCfg_g      | boolean  | false           | _true_ - the active ratio and tap count are taken from the _Cfg_Ratio_ / _Cfg_Taps_ ports.<br> _false_ - they are fixed to _MaxRatio_g_ / _MaxTaps_g_ and the _Cfg\_..._ ports are ignored. |
 | GuardBits_g       | natural  | 1               | Number of integer guard bits in the accumulator above _OutFmt_g_ |
 | Round_g           | string   | "Trunc\_s"      | Rounding mode<br>String representation of an _en\_cl\_fix FixRound\_t_ |
 | Saturate_g        | string   | "Warn\_s"       | Saturation mode<br>String representation of an _en\_cl\_fix FixSaturate\_t_ |
-| MultRegs_g        | positive | 1               | Number of pipeline registers in the multiplier                |
+| MultRegs_g        | positive | 1               | Number of pipeline registers in the multipliers               |
 
-### Coefficient and Data Storate
+### Coefficient and Data Storage
 
 | Name              | Type     | Default         | Description                                                   |
 | :---------------- | :------- | :-------------- | :------------------------------------------------------------ |
@@ -118,23 +122,17 @@ coefficient updates are not needed.
 
 ### Input Data
 
-| Name     | In/Out | Length           | Default | Description                                                                        |
-| :------- | :----- | :--------------- | :------ | :--------------------------------------------------------------------------------- |
-| In_Valid | in     | 1                | -       | Input valid                                                                        |
-| In_Data  | in     | _width(InFmt_g)_ | -       | Input data (TDM: channels interleaved, ch0 first)                                 |
-| In_Last  | in     | 1                | '0'     | TDM frame boundary (optional)<br>see [TDM Conventions](../Conventions.md#tdm-time-division-multiplexing) |
-
-The _In_Last_ signal is optional and has no functional effect. In simulation it is only used to check
-that it is asserted at the correct TDM position (last channel); an error is reported if _In_Last_ is
-asserted on a sample of any other channel. See [Last Handling](#last-handling).
+| Name     | In/Out | Length                        | Default | Description                                                          |
+| :------- | :----- | :---------------------------- | :------ | :------------------------------------------------------------------- |
+| In_Valid | in     | 1                             | -       | Input valid (all channels valid together)                           |
+| In_Data  | in     | _width(InFmt_g) x Channels_g_ | -       | Input data (channels concatenated, channel 0 in the least significant bits) |
 
 ### Output Data
 
-| Name      | In/Out | Length            | Default | Description                                                                        |
-| :-------- | :----- | :---------------- | :------ | :--------------------------------------------------------------------------------- |
-| Out_Valid | out    | 1                 | N/A     | Output valid                                                                       |
-| Out_Data  | out    | _width(OutFmt_g)_ | N/A     | Output data (TDM: channels interleaved, ch0 first)                                |
-| Out_Last  | out    | 1                 | N/A     | TDM frame boundary, asserted on the last channel<br>see [TDM Conventions](../Conventions.md#tdm-time-division-multiplexing) |
+| Name      | In/Out | Length                         | Default | Description                                                          |
+| :-------- | :----- | :----------------------------- | :------ | :------------------------------------------------------------------- |
+| Out_Valid | out    | 1                              | N/A     | Output valid (all channels valid together)                          |
+| Out_Data  | out    | _width(OutFmt_g) x Channels_g_ | N/A     | Output data (channels concatenated, channel 0 in the least significant bits) |
 
 ## Details
 
@@ -143,11 +141,10 @@ asserted on a sample of any other channel. See [Last Handling](#last-handling).
 The example below shows the simplest possible instantiation: fixed coefficients stored in ROM, a
 fixed tap count and a fixed decimation ratio. The ratio and tap count are fixed by setting
 _MaxRatio_g_ / _MaxTaps_g_ to the desired values and leaving _Cfg_Ratio_ / _Cfg_Taps_ unconnected
-(they then default to those maxima). All coefficient configuration ports and _In_Last_ are omitted
-as well.
+(they then default to those maxima). All coefficient configuration ports are omitted as well.
 
 ```vhdl
-i_fir : entity olo.olo_fix_fir_dec_ser_chtdm
+i_fir : entity olo.olo_fix_fir_dec_ser_chpar
     generic map (
         -- Formats
         InFmt_g    => "(1,0,15)",
@@ -172,19 +169,24 @@ i_fir : entity olo.olo_fix_fir_dec_ser_chtdm
 
 ### Architecture
 
-All channel data is stored in a single simple dual-port RAM ([olo_base_ram_sdp](../base/olo_base_ram_sdp.md)). The
-higher address bits select the channel region; the lower bits address the tap (delay line) within that channel. The
-write port stores new input samples; the read port reads historical samples during computation.
+Below figure illustrates the architecture of the filter:
 
-Coefficients are stored in a dedicated [olo_fix_coef_storage](../olo_fix_coef_storage.md) instance (ROM or RAM
-depending on _CoefStorageType_g_).
+![Filter Architecture](./fir/olo_fix_fir_dec_ser_chpar.drawio.png)
 
-Below figure depics the conceptual architecture.
+All channel data is stored in a single simple dual-port RAM ([olo_base_ram_sdp](../base/olo_base_ram_sdp.md)).
+Because the channels are processed in parallel, all channel samples of a given time step are stored in
+one wide RAM word (width = _width(InFmt_g) x Channels_g_).
 
-![Architecture](./fir/olo_fix_fir_dec_ser_chtdm.drawio.png)
+Coefficients are stored in a dedicated [olo_fix_coef_storage](./olo_fix_coef_storage.md) instance (ROM or RAM
+depending on _CoefStorageType_g_) and are shared by all channels. As a result the coefficieent memory size
+is independent of the number of channels.
+
+There is one multiplier ([olo_fix_mult](./olo_fix_mult.md)) and one output resize
+([olo_fix_resize](./olo_fix_resize.md)) per channel (yellow). All multipliers use the same coefficient and the
+same tap address, they only differ in their data input from the data RAM.
 
 Because the data is written into the RAM as it arrives and is read out only when processed, the input may be bursty
-or have an constant rate. Both work fine.
+or have a constant rate. Both work fine.
 
 ### Startup Behavior
 
@@ -210,15 +212,6 @@ range during the accumulation without overflowing. With the default of one guard
 results of up to twice the _OutFmt_g_ maximum are supported. The user is responsible for choosing
 _GuardBits_g_, the coefficients and the formats such that the accumulator does not overflow; otherwise
 the number of guard bits or the output format must be increased.
-
-### Last Handling
-
-On the input, _In_Last_ is not required for operation. It is only used in simulation to detect
-incorrect TDM framing: an error is reported if _In_Last_ is asserted on a sample that does not belong
-to the last channel (_Channels_g-1_). It has no functional effect on the computation.
-
-On the output, _Out_Last_ is generated by the entity itself and is always asserted together with
-_Out_Valid_ on the last channel (_Channels_g-1_) of every output sample set.
 
 ### Runtime Configuration
 
