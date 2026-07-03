@@ -89,7 +89,7 @@ latched-strobe semantics.
 
 | Name         | In/Out | Length | Default | Description                                                  |
 | :----------- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Scrub_Enable | in     | 1      | '1'     | External enable. '1' = the scrubber runs in idle cycles. '0' suspends it on the same cycle: the FSM is held in `Idle_s`, the scrubber's read and writeback requests are gated low combinationally, and the address counter is **preserved** so coverage resumes from the same address when this is reasserted. Use it to pin the scrubber down during ECC error-injection tests. |
+| Scrub_Enable | in     | 1      | '1'     | External enable. '1' = the scrubber runs in idle cycles. '0' suspends it on the same cycle: no new operation is issued, an operation in flight is aborted, the pacer's overrun watchdog is disarmed, and the address counter is **preserved** so coverage resumes from the same address when this is reasserted. Use it to pin the scrubber down during ECC error-injection tests. |
 
 ### Scrubber Status
 
@@ -98,10 +98,10 @@ is needed.
 
 | Name           | In/Out | Length | Default | Description                                                  |
 | :------------- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Scrub_EccSec   | out    | 1      | N/A     | Pulses '1' for one cycle when a scrubber-issued read observed a single-bit error (SEC); gated internally so user reads never appear here. The scrubber writes that address back, unless a user access (or _Scrub_Enable_ = '0') aborts the operation, in which case the address is retried (see [Opportunistic Scrubbing](#opportunistic-scrubbing)). |
+| Scrub_EccSec   | out    | 1      | N/A     | Pulses '1' for one cycle when a scrubber-issued read observed a single-bit error (SEC); gated internally so user reads never appear here. The scrubber writes that address back in the next idle port cycle, unless a user write to that address (or _Scrub_Enable_ = '0') aborts the operation, in which case the address is retried (see [Opportunistic Scrubbing](#opportunistic-scrubbing)). |
 | Scrub_EccDed   | out    | 1      | N/A     | Pulses '1' for one cycle when a scrubber-issued read observed a double-bit error (DED). The scrubber **does not** write the cell back (the corrected value is unreliable). |
 | Scrub_PassDone | out    | 1      | N/A     | Pulses '1' for one cycle when the scrubber's address counter rolls over from _Depth_g_-1 back to 0, marking a completed pass over the memory. |
-| Scrub_Overrun  | out    | 1      | N/A     | Pacer watchdog. Pulses '1' (and a simulation warning fires) when a new scrub period begins before the previous pass completed. Tied '0' when the pacer is disabled (_ScrubClkHz_g_ = 0.0). See [olo_ft_private_scrubber - Scrub Pacing](./olo_ft_private_scrubber.md#scrub-pacing-optional). |
+| Scrub_Overrun  | out    | 1      | N/A     | Pacer watchdog. Pulses '1' (and a simulation warning fires) when a new scrub period begins before the previous pass completed. Disarmed while _Scrub_Enable_ = '0' and tied '0' when the pacer is disabled (_ScrubPeriod_g_ = 0.0). See [olo_ft_private_scrubber - Scrub Pacing](./olo_ft_private_scrubber.md#scrub-pacing-optional). |
 
 ## Detailed Description
 
@@ -128,17 +128,20 @@ read/decide/writeback sequence, the read-valid masking and the optional pacer al
 ### Opportunistic Scrubbing
 
 Because the underlying RAM is single-port, the scrubber issues a read **or** a writeback only on cycles where the user
-is doing neither (`WrEna = '0'` and `RdEna = '0'`). A continuously active user starves the scrubber but never causes
-data corruption.
+is doing neither (`WrEna = '0'` and `RdEna = '0'`); user accesses on other cycles do not disturb a scrub read already
+in flight, and only a user write to the address currently being scrubbed aborts the operation (user data is
+authoritative). The scrubber keeps making progress under partial traffic (any duty cycle that leaves idle port cycles);
+a user active on literally every cycle starves it, but starvation never causes data corruption.
 
 See [olo_ft_private_scrubber](./olo_ft_private_scrubber.md) for everything the scrubber owns: the FSM (states, abort
 behavior, read-valid masking), the user-always-wins arbitration, the SEC-only writeback policy, and the optional pacer.
 
 ### Pausing the Scrubber
 
-`Scrub_Enable = '0'` holds the scrubber FSM in `Idle_s` and gates its read/writeback requests low combinationally
-on the same cycle. The internal address counter is preserved, so the next `Scrub_Enable = '1'` resumes scrubbing from
-the same address. This is the deterministic way to keep the scrubber from interacting with an injection-test sequence:
+`Scrub_Enable = '0'` suspends the scrubber on the same cycle: no new operation is issued, an operation in flight is
+aborted without writing back, and the pacer's overrun watchdog is disarmed. The internal address counter is preserved,
+so the next `Scrub_Enable = '1'` resumes scrubbing from the same address. This is the deterministic way to keep the
+scrubber from interacting with an injection-test sequence:
 
 ```vhdl
 Scrub_Enable <= '0';

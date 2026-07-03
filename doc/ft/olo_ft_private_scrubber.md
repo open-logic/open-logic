@@ -18,8 +18,11 @@ against an already-ECC-protected RAM.
 
 The scrubber walks the RAM address space autonomously and rewrites a word whenever the wrapped RAM reports a
 correctable single-bit error (SEC) on it, refreshing the stored codeword before a second upset can turn a correctable
-error into an uncorrectable one. It is **opportunistic**: it issues bus requests only on cycles where the user is not
-accessing the RAM, so the wrapper can give every user access priority and the scrubber never stalls the user port.
+error into an uncorrectable one. It is **opportunistic**: scrub reads fill idle read-port cycles, writebacks wait for
+a free write slot, and only a user write to the address currently being scrubbed aborts the operation in flight. The
+user always wins the port muxes, so the scrubber never stalls a user access; conversely, the scrubber keeps making
+progress under partial user traffic (for example a read every second cycle) and is only fully starved while the user
+occupies the required port on literally every cycle.
 
 This core owns **both** the scrub FSM **and** the user/scrubber arbitration. To stay reusable across the single- and
 dual-port wrappers it presents a generic **write-channel + read-channel** interface: the user side
@@ -59,14 +62,14 @@ For background on the SECDED scheme and the meaning of the ECC flags, see
 
 | Name         | In/Out | Length | Default | Description                                                  |
 | :----------- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Scrub_Enable | in     | 1      | '1'     | External enable. '0' holds the scrubber in `Idle_s` and gates its requests, without disturbing the user channels. Combined internally with user-busy (and, when the pacer is on, with the per-period enable) into the abort condition. |
+| Scrub_Enable | in     | 1      | '1'     | External enable. '0' **suspends** scrubbing: no new operation is issued, an operation in flight is aborted (without advancing, so the address is preserved and retried on resume), and the pacer's overrun watchdog is disarmed. The user channels are not disturbed. See [Suspension](#suspension-scrub_enable). |
 
 ### User Write Channel (request)
 
 | Name         | In/Out | Length                | Default | Description                                                  |
 | :----------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | User_Wr_Addr | in     | _ceil(log2(Depth_g))_ | -       | User write address.                                         |
-| User_Wr_Ena  | in     | 1                     | -       | User write enable. While '1' the user owns the write channel and the scrubber does not act. |
+| User_Wr_Ena  | in     | 1                     | -       | User write enable. While '1' the user owns the write channel; a pending scrub writeback waits for a free write slot. A write to the address currently being scrubbed additionally aborts the scrub operation in flight. |
 | User_Wr_Data | in     | _Width_g_             | -       | User write data.                                           |
 
 ### User Read Channel (request)
@@ -74,7 +77,7 @@ For background on the SECDED scheme and the meaning of the ECC flags, see
 | Name         | In/Out | Length                | Default | Description                                                  |
 | :----------- | :----- | :-------------------- | ------- | :----------------------------------------------------------- |
 | User_Rd_Addr | in     | _ceil(log2(Depth_g))_ | -       | User read address.                                         |
-| User_Rd_Ena  | in     | 1                     | -       | User read enable. While '1' the user owns the read channel and the scrubber does not act. |
+| User_Rd_Ena  | in     | 1                     | -       | User read enable. While '1' the user owns the read channel and no scrub read is issued; a scrub read already in flight is not disturbed. |
 
 ### RAM Write Channel (muxed)
 
@@ -118,10 +121,10 @@ All status outputs are clean, directly countable one-cycle pulses; no external q
 
 | Name           | In/Out | Length | Default | Description                                                  |
 | :------------- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Scrub_EccSec   | out    | 1      | N/A     | Pulses '1' for one cycle when a scrubber-issued read observed a single-bit error (SEC); gated internally so user reads never appear here. The scrubber writes that address back, unless a user access (or _Scrub_Enable_ = '0') aborts the operation, in which case the address is retried. |
+| Scrub_EccSec   | out    | 1      | N/A     | Pulses '1' for one cycle when a scrubber-issued read observed a single-bit error (SEC); gated internally so user reads never appear here. The scrubber writes that address back in the next free write slot, unless a user write to that address (or _Scrub_Enable_ = '0') aborts the operation, in which case the address is retried. |
 | Scrub_EccDed   | out    | 1      | N/A     | Pulses '1' for one cycle when a scrubber-issued read observed a double-bit error (DED). The scrubber **does not** write the cell back (the corrected value is unreliable). |
 | Scrub_PassDone | out    | 1      | N/A     | Pulses '1' for one cycle when the address counter rolls over from _Depth_g_-1 back to 0, marking a completed pass over the whole memory. |
-| Scrub_Overrun  | out    | 1      | N/A     | Pacer watchdog. Pulses '1' (and a simulation warning fires) when a new scrub period begins before the previous pass completed. Tied '0' when the pacer is disabled (_ScrubClkHz_g_ = 0.0). |
+| Scrub_Overrun  | out    | 1      | N/A     | Pacer watchdog. Pulses '1' (and a simulation warning fires) when a new scrub period begins before the previous pass completed. Disarmed while _Scrub_Enable_ = '0' (suspension is not an overrun) and tied '0' when the pacer is disabled (_ScrubPeriod_g_ = 0.0). |
 
 ## Detailed Description
 
@@ -130,7 +133,8 @@ All status outputs are clean, directly countable one-cycle pulses; no external q
 The request muxes are combinational and give the user priority on each channel independently:
 
 ```text
-Scrub_Inhibit = User_Wr_Ena OR User_Rd_Ena OR NOT Scrub_Enable OR NOT ScrubActive
+Scrub_Collision = User_Wr_Ena AND (User_Wr_Addr = ScrubAddr)
+SinglePortUsed  = (User_Wr_Ena OR User_Rd_Ena) AND SinglePortRam_g
 
 Ram_Wr_Addr = User_Wr_Addr  when User_Wr_Ena='1'  else ScrubAddr
 Ram_Wr_Ena  = User_Wr_Ena   OR  <scrub writeback>
@@ -142,33 +146,53 @@ Ram_Rd_Ena  = User_Rd_Ena   OR  <scrub read>
 Ram_Addr    = User_Wr_Addr  when User_Wr_Ena='1'  else  User_Rd_Addr when User_Rd_Ena='1'  else ScrubAddr
 ```
 
-`Scrub_Inhibit` gates the FSM: the scrubber asserts its own read/writeback only while `Scrub_Inhibit` is '0', so the
-user is never overridden. `ScrubActive` is the pacer's per-period enable; it is tied '1' (always active) when the pacer
-is disabled (see [Scrub Pacing](#scrub-pacing-optional)). For a single-port wrapper (`SinglePortRam_g = true`) the
-scrubber additionally collapses the write/read addresses onto one physical port via `Ram_Addr` (the write address wins
-when a write is active); because the user always wins, `ScrubAddr` is selected only on cycles the user is idle.
+Only `Scrub_Collision`, a user **write to the address currently being scrubbed**, conflicts with a scrub operation
+(read-during-write hazard at issue, stale-writeback hazard in flight) and aborts it. All other user traffic merely
+occupies ports: a busy read port defers the next scrub read, a busy write port defers a pending writeback, and neither
+disturbs the read already in flight. For a single-port wrapper (`SinglePortRam_g = true`) any user access occupies the
+one physical port (`SinglePortUsed`), and the scrubber additionally collapses the write/read addresses onto `Ram_Addr`
+(the write address wins when a write is active); because the user always wins, `ScrubAddr` is selected only on cycles
+the user is idle.
 
 ### Scrubber FSM
 
 The FSM walks one address per scrub operation through three states: `Idle_s` issues the read, `ReadWait_s` waits out
-the read latency, and `Decide_s` acts on the (registered) decoded result and advances the address. Let
-`L = TotalReadLatency_g` and let `T` be the cycle the read is issued:
+the read latency, and `Decide_s` acts on the (registered) decoded result and advances the address.
 
-- **`Idle_s`** -- while `Scrub_Inhibit = '0'`, issue a scrub read at the current `ScrubAddr`, load `WaitCnt = 1` and go
-  to `ReadWait_s`. While `Scrub_Inhibit = '1'`, stay in `Idle_s`.
+![olo_ft_private_scrubber FSM](./ram/olo_ft_private_scrubber_fsm.drawio.png)
+
+Let `L = TotalReadLatency_g` and let `T` be the cycle the read is issued:
+
+- **`Idle_s`** -- issue a scrub read at the current `ScrubAddr` as soon as the read port is free (`User_Rd_Ena = '0'`
+  and, single-port, no user access at all), the pass is armed (`Scrub_Enable = '1'` and, paced, `ScrubActive = '1'`)
+  and the user is not writing the scrub address in this very cycle. Load `WaitCnt = 1` and go to `ReadWait_s`.
 - **`ReadWait_s`** -- count `WaitCnt` up until the decoded response is due (`WaitCnt = L`, i.e. cycle `T+L`), then go to
-  `Decide_s`.
-- **`Decide_s`** (cycle `T+L+1`) -- act on the **registered** decoder flags captured at `T+L`. If the read was
-  SEC-correctable (`EccSec = '1'` and `EccDed = '0'`) assert the writeback so the corrected word (also registered) is
-  written back this cycle. Advance `ScrubAddr` (pulsing `Scrub_PassDone` on rollover) and return to `Idle_s`.
+  `Decide_s`. User reads and user writes to other addresses do not disturb the read in flight; only a colliding user
+  write (or `Scrub_Enable = '0'`) aborts.
+- **`Decide_s`** (from cycle `T+L+1`) -- act on the **registered** decoder flags captured at `T+L`. A clean or DED word
+  needs no writeback: advance `ScrubAddr` immediately (pulsing `Scrub_PassDone` on rollover) and return to `Idle_s`.
+  A SEC word is written back in the first cycle the write port is free; while the user occupies the write port the FSM
+  **waits here** with the registered corrected word, still guarded by the collision abort.
 
-The decoder response is **registered every cycle**, and `Decide_s` consumes the registered copy rather than the live
-decoder output. This splits the RAM-read -> decode -> re-encode -> RAM-write path across two clock cycles instead of one
-long combinational loop, which lets the scrubbing wrapper meet timing on par with the non-scrubbing ECC RAM.
+The decoder response (flags and corrected data) is registered **on the scrub read-return cycle** (`T+L`, qualified by
+the internal read-return pulse), and `Decide_s` consumes the registered copy rather than the live decoder output. This
+splits the RAM-read -> decode -> re-encode -> RAM-write path across two clock cycles instead of one long combinational
+loop, which lets the scrubbing wrapper meet timing on par with the non-scrubbing ECC RAM. Qualifying the capture also
+keeps the held writeback payload stable while `Decide_s` waits for a write slot: user read responses flowing through
+the shared decode path meanwhile cannot corrupt it.
 
-**Abort.** If `Scrub_Inhibit` goes high during `ReadWait_s` or `Decide_s`, the FSM drops back to `Idle_s` immediately
-**without advancing `ScrubAddr` and without writing back**, so the same address is retried on the next idle slot. User
-data is therefore always authoritative.
+A clean scrub operation and a SEC writeback look like this (`L = 2`):
+
+![Clean scrub read](./ram/olo_ft_private_scrubber_clean_read.png)
+
+![SEC writeback](./ram/olo_ft_private_scrubber_sec_writeback.png)
+
+**Abort.** If the user writes the address currently being scrubbed (or `Scrub_Enable` goes '0') during `ReadWait_s` or
+`Decide_s`, the FSM drops back to `Idle_s` immediately **without advancing `ScrubAddr` and without writing back**, so
+the same address is retried on the next opportunity. User data is therefore always authoritative. The read already in
+flight still returns and is masked from the user; its gated status pulse may still fire (see below).
+
+![Abort and retry](./ram/olo_ft_private_scrubber_abort_retry.png)
 
 ### Read-Valid Masking and Status Gating
 
@@ -187,6 +211,26 @@ Only **SEC** errors are written back. A clean read leaves the cell untouched (no
 **DED** read is reported via `Scrub_EccDed` but **not** rewritten, because the decoder's data output is unreliable for
 a double-bit error. A scrub pass therefore repairs all single-bit upsets and flags (but cannot fix) double-bit upsets.
 
+Because clean and DED words advance without needing the write port, sustained user **write** traffic does not stop the
+scrub scan; it only defers the writeback of an encountered SEC word until the first free write slot. Sustained user
+**read** traffic on every cycle prevents new scrub reads and is the only way (besides `Scrub_Enable`) to stop the
+scan entirely.
+
+### Suspension (Scrub_Enable)
+
+Driving `Scrub_Enable = '0'` suspends the scrubber: no new operation is issued, an operation in flight is aborted
+(address preserved, no writeback), and the pacer's overrun watchdog is disarmed so suspension is never reported as an
+overrun. On re-enable the scrubber resumes from the preserved address (a paced scrubber resumes with the next period
+strobe).
+
+Suspension exists for system-level use cases, not for normal operation (the scrubber never interferes with the user):
+
+- **In-system EDAC self-test:** plant a known error through the wrapper's error-injection port (`ErrInj_BitFlip`) and
+  read it back to verify the SEC/DED reporting chain. With the scrubber suspended the planted error deterministically
+  survives until the check; a free-running scrubber could repair it first.
+- **External pacing or mission phasing:** systems that schedule scrubbing from software or around critical real-time
+  windows can gate it externally instead of (or in addition to) the built-in pacer.
+
 ### Scrub Pacing (optional)
 
 By default (`ScrubPeriod_g = 0.0`) the scrubber is free-running: `ScrubActive` is tied '1' and the strobe primitives
@@ -195,16 +239,21 @@ below are optimized away. Setting `ScrubPeriod_g > 0.0` enables a pacer that lim
 
 - A [olo_base_strobe_gen](../base/olo_base_strobe_gen.md) produces a 1 kHz base tick from `ScrubClkHz_g`, which a
   [olo_base_strobe_div](../base/olo_base_strobe_div.md) divides by `round(ScrubPeriod_g * 1000)` to yield one period
-  strobe every `ScrubPeriod_g` seconds (hence the 1 ms granularity). The cascade reaches long real-time periods
-  (minutes to hours) that a single strobe generator could not.
+  strobe every `ScrubPeriod_g` seconds (hence the 1 ms granularity). The cascade is required because a single
+  [olo_base_strobe_gen](../base/olo_base_strobe_gen.md) limits the clock-to-strobe ratio to 214'748'000, which at
+  100 MHz caps the period at about 2.1 s; realistic scrub periods for MTBF budgeting are minutes to hours, and the
+  cascade reaches up to 2^31 - 1 ms.
 - Each period strobe arms `ScrubActive` (only while `Scrub_Enable = '1'`); `ScrubActive` clears when the pass
   completes, so exactly one pass runs per period and the scrubber sits idle for the rest of it.
 - If a period strobe arrives while the previous pass is still in progress, `Scrub_Overrun` pulses and a simulation
   warning fires. This is a watchdog for a `ScrubPeriod_g` set too short for the memory depth and the available idle
-  bandwidth.
+  bandwidth. Suspension via `Scrub_Enable` disarms the watchdog: a strobe arriving while suspended neither starts a
+  pass nor reports an overrun.
+
+![Paced operation](./ram/olo_ft_private_scrubber_paced_pass.png)
 
 When the pacer is enabled (`ScrubPeriod_g > 0.0`), `ScrubClkHz_g` must be set to the actual `Clk` frequency and be
->= 1000.0; this is checked at elaboration.
+>= 1000.0, and `ScrubPeriod_g` must be >= 0.001 s; both are checked at elaboration.
 
 ### Constraints
 
