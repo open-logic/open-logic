@@ -3,7 +3,6 @@ src/intf/vhdl/olo_intf_sync.vhd
 src/base/vhdl/olo_base_pl_stage.vhd
 src/base/vhdl/olo_base_pkg_array.vhd
 src/base/vhdl/olo_base_pkg_math.vhd
-src/ft/vhdl/olo_ft_private_scrubber.vhd
 src/ft/vhdl/olo_ft_pkg_ecc.vhd
 src/ft/vhdl/olo_ft_ecc_encode.vhd
 src/ft/vhdl/olo_ft_ecc_decode.vhd
@@ -13,6 +12,7 @@ src/base/vhdl/olo_base_reset_gen.vhd
 src/base/vhdl/olo_base_pkg_string.vhd
 src/base/vhdl/olo_base_strobe_gen.vhd
 src/intf/vhdl/olo_intf_debounce.vhd
+src/ft/vhdl/olo_ft_private_scrubber.vhd
 src/base/vhdl/olo_base_sample_hold.vhd
 src/base/vhdl/olo_base_ram_tdp.vhd
 src/ft/vhdl/olo_ft_ram_tdp.vhd
