@@ -8,9 +8,9 @@
 ---------------------------------------------------------------------------------------------------
 -- ECC-protected simple dual-port RAM with an opportunistic memory scrubber. Wraps olo_ft_ram_sdp
 -- and olo_ft_private_scrubber. Synchronous-only (no IsAsync_g / Rd_Clk / Rd_Rst): the scrubber needs
--- a single clock to spot idle cycles. The scrubber acts only when both user ports are idle, so user
--- accesses are never stalled and user data is always authoritative (any user access aborts an
--- in-flight scrub operation).
+-- a single clock to spot idle cycles. Scrub reads fill idle read-port cycles and writebacks wait
+-- for a free write slot, so user accesses are never stalled; user data is always authoritative
+-- (a user write to the address currently being scrubbed aborts the scrub operation in flight).
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/ft/olo_ft_ram_sdp_scrub.md

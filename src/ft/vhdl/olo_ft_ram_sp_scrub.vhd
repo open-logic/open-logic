@@ -7,9 +7,9 @@
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- ECC-protected single-port RAM with an opportunistic memory scrubber. Wraps olo_ft_ram_sp and
--- olo_ft_private_scrubber. The scrubber acts only on fully idle user cycles, so user accesses are
--- never stalled and user data is always authoritative (any user access aborts an in-flight scrub
--- operation).
+-- olo_ft_private_scrubber. Scrub operations use fully idle user cycles of the single shared port,
+-- so user accesses are never stalled; user data is always authoritative (a user write to the
+-- address currently being scrubbed aborts the scrub operation in flight).
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/ft/olo_ft_ram_sp_scrub.md
