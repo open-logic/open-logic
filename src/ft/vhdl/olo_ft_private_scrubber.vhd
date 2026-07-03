@@ -353,7 +353,7 @@ begin
                 r.Overrun     <= '0';
                 -- WaitCnt is intentionally not reset (loaded in Idle_s before ReadWait_s reads it).
                 -- ValidPipe is reset so no spurious read-return pulse occurs at startup.
-                r.ValidPipe   <= (others => '0');
+                r.ValidPipe <= (others => '0');
             end if;
         end if;
     end process;
