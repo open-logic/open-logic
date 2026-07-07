@@ -161,7 +161,9 @@ begin
                 -- Different simulators convert real to string differently. The options encountered are covered here.
                 if fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "7.5e-1, -1.0" and
                    fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "0.75, -1.0" and
-                   fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "0.75, -1" then
+                   fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "0.75, -1" and
+                   fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "7.5E-1, -1.0" and
+                   fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "7.500000e-01, -1.000000e+00" then
                     failure("fixFileReadString wrong: " & fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c));
                 end if;
             else
