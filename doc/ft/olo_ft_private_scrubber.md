@@ -46,7 +46,7 @@ For background on the SECDED scheme and the meaning of the ECC flags, see
 | Width_g            | positive | -       | Data word-width (decoded data, _not_ the codeword width).    |
 | TotalReadLatency_g | positive | -       | End-to-end read latency of the wrapped ECC RAM, i.e. _RamRdLatency_g_ + _EccPipeline_g_. The FSM waits this many cycles between issuing a read and acting on the decoded ECC flags, and the read-valid shift register is this long. |
 | SinglePortRam_g    | boolean  | false   | When `true`, the scrubber also drives the collapsed single-port address _Ram_Addr_ for [olo_ft_ram_sp_scrub](./olo_ft_ram_sp_scrub.md). Leave `false` (default) for the dual-port wrapper, which maps _Ram_Wr_Addr_ / _Ram_Rd_Addr_ 1:1 onto the RAM and ignores _Ram_Addr_. |
-| ScrubClkHz_g       | real     | 100000000.0 | Frequency of _Clk_ in Hz, used **only** to size the optional pacer. Set it to the actual clock frequency; must be >= 1000.0 when the pacer is enabled (_ScrubPeriod_g_ > 0.0), and is ignored when free-running. |
+| ScrubClkHz_g       | real     | -       | Frequency of _Clk_ in Hz, used **only** to size the optional pacer. Set it to the actual clock frequency; must be >= 1000.0 when the pacer is enabled (_ScrubPeriod_g_ > 0.0), and is ignored when free-running. |
 | ScrubPeriod_g      | real     | 0.0     | Pacer period in seconds: one full scrub pass is started every _ScrubPeriod_g_ seconds (1 ms granularity). `0.0` (default) disables the pacer and leaves the scrubber free-running; any value > 0.0 enables it. |
 
 ## Interfaces

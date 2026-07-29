@@ -99,7 +99,8 @@ begin
             Width_g        => Width_g,
             RamBehavior_g  => RamBehavior_g,
             RamRdLatency_g => RamRdLatency_g,
-            EccPipeline_g  => EccPipeline_g
+            EccPipeline_g  => EccPipeline_g,
+            ScrubClkHz_g   => 100.0e6
         )
         port map (
             Clk             => Clk,

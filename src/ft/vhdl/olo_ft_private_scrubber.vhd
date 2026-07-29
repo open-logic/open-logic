@@ -42,7 +42,7 @@ entity olo_ft_private_scrubber is
         SinglePortRam_g    : boolean := false;
         -- Optional internal pacer: one scrub pass every ScrubPeriod_g seconds. Free-running when
         -- ScrubPeriod_g = 0.0 (the default). ScrubClkHz_g must be the actual Clk frequency.
-        ScrubClkHz_g       : real    := 100000000.0;
+        ScrubClkHz_g       : real;
         ScrubPeriod_g      : real    := 0.0
     );
     port (
