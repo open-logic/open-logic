@@ -290,7 +290,7 @@ begin
             if run("FreeRunPassCadence") then
                 OverrunSeen_v := false;
 
-                ft_wait_passes(1, Clk, Scrub_PassDone);
+                ftWaitPasses(1, Clk, Scrub_PassDone);
 
                 Gap1_v := 0;
 
@@ -316,15 +316,15 @@ begin
                 -- Park the scrubber at address 0 so the observation window is deterministic.
                 Rst          <= '1';
                 Scrub_Enable <= '0';
-                ft_write(3, 16#A5#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
-                ft_write(Depth_g - 1, 16#3C#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                ftWrite(3, 16#A5#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                ftWrite(Depth_g - 1, 16#3C#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
                 plant(3, ErrSec_c, Clk, PlantAddr, PlantState, PlantStrobe);
                 plant(Depth_g - 1, ErrSec_c, Clk, PlantAddr, PlantState, PlantStrobe);
                 wait until rising_edge(Clk);
                 Rst          <= '0';
                 Scrub_Enable <= '1';
 
-                ft_count_over_passes(2, Clk, Scrub_PassDone, Scrub_EccSec, EventCnt_v);
+                ftCountOverPasses(2, Clk, Scrub_PassDone, Scrub_EccSec, EventCnt_v);
 
                 check_equal(EventCnt_v, 2, "ScrubRepairsSec: each planted SEC observed exactly once");
                 check_equal(ErrState(3), ErrNone_c, "ScrubRepairsSec: addr 3 repaired");
@@ -336,13 +336,13 @@ begin
             elsif run("ScrubDoesNotWriteDed") then
                 Rst          <= '1';
                 Scrub_Enable <= '0';
-                ft_write(4, 16#77#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                ftWrite(4, 16#77#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
                 plant(4, ErrDed_c, Clk, PlantAddr, PlantState, PlantStrobe);
                 wait until rising_edge(Clk);
                 Rst          <= '0';
                 Scrub_Enable <= '1';
 
-                ft_count_over_passes(2, Clk, Scrub_PassDone, Scrub_EccDed, EventCnt_v);
+                ftCountOverPasses(2, Clk, Scrub_PassDone, Scrub_EccDed, EventCnt_v);
 
                 check_equal(EventCnt_v, 2, "ScrubDoesNotWriteDed: DED observed once per pass");
                 check_equal(ErrState(4), ErrDed_c, "ScrubDoesNotWriteDed: DED word never written back");
@@ -455,7 +455,7 @@ begin
             elsif run("WriteTrafficBlocksWriteback") then
                 Rst          <= '1';
                 Scrub_Enable <= '0';
-                ft_write(0, 16#A5#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                ftWrite(0, 16#A5#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
                 plant(0, ErrSec_c, Clk, PlantAddr, PlantState, PlantStrobe);
                 wait until rising_edge(Clk);
                 Rst          <= '0';
@@ -509,7 +509,7 @@ begin
                     -- Park at address 0 with the SEC in place.
                     wait until rising_edge(Clk);
                     Rst <= '1';
-                    ft_write(0, 16#A5#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                    ftWrite(0, 16#A5#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
                     plant(0, ErrSec_c, Clk, PlantAddr, PlantState, PlantStrobe);
                     wait until rising_edge(Clk);
                     Rst <= '0';
@@ -519,7 +519,7 @@ begin
                         wait until rising_edge(Clk);
                     end loop;
 
-                    ft_write(0, 16#77#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                    ftWrite(0, 16#77#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
 
                     for i in 1 to 3 * OpCycles_c loop
                         wait until rising_edge(Clk);
@@ -536,7 +536,7 @@ begin
             elsif run("AbortPreservesAddr") then
                 Rst          <= '1';
                 Scrub_Enable <= '0';
-                ft_write(0, 16#A5#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                ftWrite(0, 16#A5#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
                 plant(0, ErrSec_c, Clk, PlantAddr, PlantState, PlantStrobe);
                 wait until rising_edge(Clk);
                 Rst          <= '0';
@@ -581,8 +581,8 @@ begin
             elsif run("WritebackDataStableDuringWait") then
                 Rst          <= '1';
                 Scrub_Enable <= '0';
-                ft_write(0, 16#A5#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
-                ft_write(8, 16#EE#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                ftWrite(0, 16#A5#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                ftWrite(8, 16#EE#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
                 plant(0, ErrSec_c, Clk, PlantAddr, PlantState, PlantStrobe);
                 wait until rising_edge(Clk);
                 Rst          <= '0';
@@ -625,7 +625,7 @@ begin
             elsif run("EnableSuspendsScrubbing") then
                 Rst          <= '1';
                 Scrub_Enable <= '0';
-                ft_write(5, 16#B4#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                ftWrite(5, 16#B4#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
                 plant(5, ErrSec_c, Clk, PlantAddr, PlantState, PlantStrobe);
                 wait until rising_edge(Clk);
                 Rst          <= '0';
@@ -640,7 +640,7 @@ begin
 
                 Scrub_Enable <= '1';
 
-                ft_wait_passes(1, Clk, Scrub_PassDone);
+                ftWaitPasses(1, Clk, Scrub_PassDone);
 
                 check_equal(ErrState(5), ErrNone_c, "EnableSuspendsScrubbing: SEC repaired after re-enable");
                 check_equal(Mem(5), toUslv(16#B4#, Width_g), "EnableSuspendsScrubbing: payload intact");
@@ -677,7 +677,7 @@ begin
                 end loop;
 
                 -- After the last reset the scrubber recovers and repairs the planted SEC.
-                ft_wait_passes(1, Clk, Scrub_PassDone);
+                ftWaitPasses(1, Clk, Scrub_PassDone);
 
                 check_equal(ErrState(0), ErrNone_c, "ResetMidPassSweep: scrubbing recovers after reset");
 
@@ -686,7 +686,7 @@ begin
             elsif run("PacedOnePassPerPeriod") then
                 OverrunSeen_v := false;
 
-                ft_wait_passes(1, Clk, Scrub_PassDone);
+                ftWaitPasses(1, Clk, Scrub_PassDone);
 
                 Gap1_v := 0;
 
@@ -755,7 +755,7 @@ begin
             -- Suspending via Scrub_Enable in the middle of a paced pass must NOT flag an overrun:
             -- suspension also disarms the period watchdog. Scrubbing resumes after re-enabling.
             elsif run("PacedEnableDropNoOverrun") then
-                ft_wait_passes(1, Clk, Scrub_PassDone);
+                ftWaitPasses(1, Clk, Scrub_PassDone);
 
                 -- Wait for the next pass to start (first scrub read; user idle) and get mid-pass.
                 loop
@@ -805,10 +805,10 @@ begin
 
             -- Pacer: a paced scrubber still repairs, just on the paced schedule.
             elsif run("PacedRepairsSec") then
-                ft_write(3, 16#5C#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
+                ftWrite(3, 16#5C#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
                 plant(3, ErrSec_c, Clk, PlantAddr, PlantState, PlantStrobe);
 
-                ft_wait_passes(2, Clk, Scrub_PassDone);
+                ftWaitPasses(2, Clk, Scrub_PassDone);
 
                 check_equal(ErrState(3), ErrNone_c, "PacedRepairsSec: SEC repaired by the paced scrubber");
                 check_equal(Mem(3), toUslv(16#5C#, Width_g), "PacedRepairsSec: payload intact");

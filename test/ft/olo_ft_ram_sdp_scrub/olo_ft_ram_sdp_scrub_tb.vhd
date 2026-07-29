@@ -152,62 +152,62 @@ begin
             wait until rising_edge(Clk);
 
             if run("Basic") then
-                ft_write(1, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena);
-                ft_write(2, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
-                ft_write(3, 7, Clk, Wr_Addr, Wr_Data, Wr_Ena);
-                ft_check_ecc(1, 5, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
+                ftWrite(1, 5, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                ftWrite(2, 6, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                ftWrite(3, 7, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                ftCheckEcc(1, 5, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
                              "Basic 1=5");
-                ft_check_ecc(2, 6, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
+                ftCheckEcc(2, 6, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
                              "Basic 2=6");
-                ft_check_ecc(3, 7, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
+                ftCheckEcc(3, 7, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
                              "Basic 3=7");
-                ft_check_ecc(1, 5, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
+                ftCheckEcc(1, 5, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
                              "Basic re-read 1=5");
 
             -- Free-running scrubbing makes progress and never flags an overrun (the pacer is off).
             elsif run("ScrubPassDone") then
-                ft_count_over_passes(3, Clk, Scrub_PassDone, Scrub_Overrun, RdValidCnt_v);
+                ftCountOverPasses(3, Clk, Scrub_PassDone, Scrub_Overrun, RdValidCnt_v);
                 check_equal(RdValidCnt_v, 0, "ScrubPassDone: no overrun when free-running");
 
             -- Each planted SEC must be observed by the scrubber exactly once (Scrub_EccSec pulses
             -- once): the first visit repairs the cell, so later passes
             -- read it clean.
             elsif run("ScrubFixesSec") then
-                ft_write_flip(10, 16#AB#, singleBit(0),
+                ftWriteFlip(10, 16#AB#, singleBit(0),
                               Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
-                ft_write_flip(20, 16#CD#, singleBit(2),
+                ftWriteFlip(20, 16#CD#, singleBit(2),
                               Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
 
-                ft_count_over_passes(2, Clk, Scrub_PassDone, Scrub_EccSec, RdValidCnt_v);
+                ftCountOverPasses(2, Clk, Scrub_PassDone, Scrub_EccSec, RdValidCnt_v);
 
                 check_equal(RdValidCnt_v, 2,
                             "ScrubFixesSec: each planted SEC observed by the scrubber exactly once");
 
-                ft_check_ecc(10, 16#AB#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(10, 16#AB#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "ScrubFixesSec addr10 cleaned");
-                ft_check_ecc(20, 16#CD#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(20, 16#CD#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "ScrubFixesSec addr20 cleaned");
 
             -- The scrubber must observe the DED word on its own reads exactly once per pass
             -- (Scrub_EccDed pulses; the word is never repaired, so
             -- both passes of the window see it) and never write it back.
             elsif run("ScrubDoesNotWriteOnDed") then
-                ft_write_flip(70, 16#EE#, doubleBit(0, 1),
+                ftWriteFlip(70, 16#EE#, doubleBit(0, 1),
                               Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
 
-                ft_count_over_passes(2, Clk, Scrub_PassDone, Scrub_EccDed, RdValidCnt_v);
+                ftCountOverPasses(2, Clk, Scrub_PassDone, Scrub_EccDed, RdValidCnt_v);
 
                 check_equal(RdValidCnt_v, 2,
                             "ScrubDoesNotWriteOnDed: DED word observed exactly once per pass (never repaired)");
 
-                ft_check_ecc(70, 0, '0', '1', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
-                             "ScrubDoesNotWriteOnDed addr70 still Ded", check_data => false);
+                ftCheckEcc(70, 0, '0', '1', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
+                             "ScrubDoesNotWriteOnDed addr70 still Ded", checkData => false);
 
             -- Continuous user reads block the scrubber's read slot, so the scrubber cannot repair:
             -- a SEC planted at addr 128 must still be reported after hammering reads at addr 129
             -- for a long window. Once the user idles, the scrubber repairs it.
             elsif run("UserTrafficStarvesScrubRepair") then
-                ft_write_flip(128, 16#AA#, singleBit(0),
+                ftWriteFlip(128, 16#AA#, singleBit(0),
                               Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
 
                 for i in 1 to 400 loop
@@ -222,13 +222,13 @@ begin
 
                 -- The SEC is still reported: the scrubber never got a read slot to repair it.
                 -- (The resumed scrubber needs far longer than this check to reach addr 128.)
-                ft_check_ecc(128, 16#AA#, '1', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(128, 16#AA#, '1', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "UserTrafficStarvesScrubRepair: SEC persists under read hammering");
 
                 -- With the user idle again the scrubber repairs the cell.
-                ft_wait_passes(2, Clk, Scrub_PassDone);
+                ftWaitPasses(2, Clk, Scrub_PassDone);
 
-                ft_check_ecc(128, 16#AA#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(128, 16#AA#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "UserTrafficStarvesScrubRepair: repaired after the user idles");
 
             -- SDP arbitration: drive BOTH user ports every cycle (write to 150, read from 151) so
@@ -237,7 +237,7 @@ begin
             -- (a scrubber writeback would have repaired it). This also exercises simultaneous
             -- dual-port user traffic, which only the SDP topology supports.
             elsif run("UserBusyNoCorruption") then
-                ft_write_flip(100, 16#5A#, singleBit(0),
+                ftWriteFlip(100, 16#5A#, singleBit(0),
                               Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
 
                 for i in 1 to 200 loop
@@ -260,20 +260,20 @@ begin
                 Rd_Addr <= (others => '0');
                 Wr_Data <= (others => '0');
 
-                -- Let the storm's in-flight reads return (ft_check_ecc aligns to its own read, so
+                -- Let the storm's in-flight reads return (ftCheckEcc aligns to its own read, so
                 -- this only keeps the window clean), then verify the planted SEC survived: the
                 -- starved scrubber must not have written anything.
                 for i in 1 to Latency_c + 2 loop
                     wait until rising_edge(Clk);
                 end loop;
 
-                ft_check_ecc(100, 16#5A#, '1', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(100, 16#5A#, '1', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "UserBusyNoCorruption: planted SEC persists (scrubber fully starved)");
 
                 -- Once both ports idle, the scrubber repairs the cell.
-                ft_wait_passes(2, Clk, Scrub_PassDone);
+                ftWaitPasses(2, Clk, Scrub_PassDone);
 
-                ft_check_ecc(100, 16#5A#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(100, 16#5A#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "UserBusyNoCorruption: repaired after the storm");
 
             -- Suspend/resume via Scrub_Enable, proven on the data: disable, plant a flip, wait
@@ -284,7 +284,7 @@ begin
                 wait until rising_edge(Clk);
                 wait until rising_edge(Clk);
 
-                ft_write_flip(40, 16#99#, singleBit(1),
+                ftWriteFlip(40, 16#99#, singleBit(1),
                               Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
 
                 for i in 1 to 2 * PassCycles_c loop
@@ -293,14 +293,14 @@ begin
                                 "ScrubEnableSuspends: no pass while Scrub_Enable='0'");
                 end loop;
 
-                ft_check_ecc(40, 16#99#, '1', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(40, 16#99#, '1', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "ScrubEnableSuspends: flip persists while suspended");
 
                 Scrub_Enable <= '1';
 
-                ft_wait_passes(2, Clk, Scrub_PassDone);
+                ftWaitPasses(2, Clk, Scrub_PassDone);
 
-                ft_check_ecc(40, 16#99#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(40, 16#99#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "ScrubEnableSuspends: flip repaired after re-enable");
 
             elsif run("LatchedInjectionUnderPause") then
@@ -308,15 +308,15 @@ begin
                 wait until rising_edge(Clk);
                 wait until rising_edge(Clk);
 
-                ft_preload_flip(singleBit(0), Clk, ErrInj_BitFlip, ErrInj_Valid);
+                ftPreloadFlip(singleBit(0), Clk, ErrInj_BitFlip, ErrInj_Valid);
 
                 for i in 1 to 8 loop
                     wait until rising_edge(Clk);
                 end loop;
 
-                ft_write(110, 16#A5#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                ftWrite(110, 16#A5#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
 
-                ft_check_ecc(110, 16#A5#, '1', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(110, 16#A5#, '1', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "Latched injection landed on user write under Scrub_Enable='0'");
 
                 Scrub_Enable <= '1';
@@ -343,8 +343,8 @@ begin
             elsif run("ScrubReadMaskedFromUser") then
                 -- Align to a pass boundary, then count any user-facing Rd_Valid pulses over two full
                 -- passes; the scrubber's own reads are masked, so the count must be zero.
-                ft_wait_passes(1, Clk, Scrub_PassDone);
-                ft_count_over_passes(2, Clk, Scrub_PassDone, Rd_Valid, RdValidCnt_v);
+                ftWaitPasses(1, Clk, Scrub_PassDone);
+                ftCountOverPasses(2, Clk, Scrub_PassDone, Rd_Valid, RdValidCnt_v);
 
                 check_equal(RdValidCnt_v, 0,
                             "User-facing Rd_Valid stays '0' while user is idle (scrubber reads masked)");
@@ -352,16 +352,16 @@ begin
             -- Address-wrap boundary: SEC at addr 0 (first) and at addr Depth_c - 1 (last,
             -- where the address counter wraps in Decide_s and PassDone fires).
             elsif run("ScrubBoundaryAddresses") then
-                ft_write_flip(0, 16#11#, singleBit(0),
+                ftWriteFlip(0, 16#11#, singleBit(0),
                               Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
-                ft_write_flip(Depth_c - 1, 16#22#, singleBit(1),
+                ftWriteFlip(Depth_c - 1, 16#22#, singleBit(1),
                               Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
-                ft_wait_passes(2, Clk, Scrub_PassDone);
+                ftWaitPasses(2, Clk, Scrub_PassDone);
 
-                ft_check_ecc(0, 16#11#, '0', '0', Latency_c,
+                ftCheckEcc(0, 16#11#, '0', '0', Latency_c,
                              Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
                              "Boundary: SEC at addr 0 corrected");
-                ft_check_ecc(Depth_c - 1, 16#22#, '0', '0', Latency_c,
+                ftCheckEcc(Depth_c - 1, 16#22#, '0', '0', Latency_c,
                              Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec, Rd_EccDed,
                              "Boundary: SEC at addr Depth_c - 1 corrected");
 
@@ -372,7 +372,7 @@ begin
             -- instead of one hard-coded phase that silently goes stale when the FSM changes.
             elsif run("ResetInFlight") then
                 -- Plant a known clean value (a clean cell is never rewritten by the scrubber).
-                ft_write(50, 16#3C#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                ftWrite(50, 16#3C#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
 
                 for k in 1 to 2 * (Latency_c + 2) loop
 
@@ -421,11 +421,11 @@ begin
                 end loop;
 
                 -- Contents survived all resets; a fresh user read decodes correctly.
-                ft_check_ecc(50, 16#3C#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(50, 16#3C#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "ResetInFlight: contents survive + fresh read decodes");
 
                 -- The scrubber resumes after reset.
-                ft_wait_passes(1, Clk, Scrub_PassDone);
+                ftWaitPasses(1, Clk, Scrub_PassDone);
 
                 check_true(true, "ResetInFlight: scrubber resumes (PassDone pulses)");
 
@@ -436,7 +436,7 @@ begin
             -- reads and user returns interleaving in the shared decode path.
             elsif run("ScrubProceedsUnderPartialTraffic") then
                 -- Plant a SEC at addr 0.
-                ft_write_flip(0, 16#A5#, singleBit(0),
+                ftWriteFlip(0, 16#A5#, singleBit(0),
                               Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
 
                 -- Reset so the scrubber's address counter restarts at addr 0 (the SEC). Reset
@@ -520,7 +520,7 @@ begin
                             "ScrubProceedsUnderPartialTraffic: SEC observed exactly once (repaired on first visit)");
 
                 -- The repair happened DURING the traffic: addr 0 reads clean immediately.
-                ft_check_ecc(0, 16#A5#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                ftCheckEcc(0, 16#A5#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                              Rd_EccDed, "ScrubProceedsUnderPartialTraffic: SEC repaired under partial traffic");
 
             -- The scrubber RMW race: the user writes the address whose stale (corrected) data the
@@ -539,7 +539,7 @@ begin
                     -- neither the RAM contents nor the write path), then restart at addr 0.
                     wait until rising_edge(Clk);
                     Rst <= '1';
-                    ft_write_flip(0, 16#A5#, singleBit(0),
+                    ftWriteFlip(0, 16#A5#, singleBit(0),
                                   Clk, Wr_Addr, Wr_Data, Wr_Ena, ErrInj_BitFlip, ErrInj_Valid);
                     wait until rising_edge(Clk);
                     Rst <= '0';
@@ -551,7 +551,7 @@ begin
                     end loop;
 
                     -- Single-cycle clean user write of a different value to the in-flight address.
-                    ft_write(0, 16#77#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
+                    ftWrite(0, 16#77#, Clk, Wr_Addr, Wr_Data, Wr_Ena);
 
                     -- Let the scrubber retry/complete addr 0, then freeze it and check: the user
                     -- value must survive with clean ECC. A stale writeback would restore 16#A5#.
@@ -561,7 +561,7 @@ begin
 
                     Scrub_Enable <= '0';
                     wait until rising_edge(Clk);
-                    ft_check_ecc(0, 16#77#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
+                    ftCheckEcc(0, 16#77#, '0', '0', Latency_c, Clk, Rd_Addr, Rd_Ena, Rd_Data, Rd_Valid, Rd_EccSec,
                                  Rd_EccDed,
                                  "UserWriteToInFlightScrubAddr: fresh user data survives (k=" & integer'image(k) & ")");
                     Scrub_Enable <= '1';
