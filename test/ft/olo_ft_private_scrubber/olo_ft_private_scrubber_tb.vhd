@@ -23,26 +23,23 @@ library work;
 ---------------------------------------------------------------------------------------------------
 -- Entity
 ---------------------------------------------------------------------------------------------------
--- Unit test bench for the private scrubber engine, driving its user/RAM channels directly against
--- a behavioral RAM model (payload memory plus a per-address error state and a read pipeline of
--- TotalReadLatency_g cycles). Direct control of every port and of the planted error state makes
--- the FSM branches (aborts, waits, pacer arming) far easier to hit than through the full RAM
--- wrappers; the wrappers' own test benches verify the integration.
+-- Unit test bench for the private scrubber engine (free-running configuration), driving its
+-- user/RAM channels directly against a behavioral RAM model (payload memory plus a per-address
+-- error state and a read pipeline of TotalReadLatency_g cycles). Direct control of every port and
+-- of the planted error state makes the FSM branches (aborts, waits) far easier to hit than through
+-- the full RAM wrappers; the wrappers' own test benches verify the integration.
 --
--- This test bench deliberately does NOT use run_all_in_same_sim: the test cases carry per-test
--- VUnit configurations (free-running cases sweep TotalReadLatency_g x SinglePortRam_g; paced cases
--- enable the pacer through the integer ScrubPeriodMs_g generic, converted to the real ScrubPeriod_g
--- at the DUT generic map because GHDL cannot override real generics on the command line).
+-- The pacer-enabled test cases live in olo_ft_private_scrubber_paced_tb: the pacer is selected by
+-- a generic, and one configuration carries one generic set for all cases of a test bench, so the
+-- two activity patterns cannot share a single test bench.
+-- vunit: run_all_in_same_sim
 entity olo_ft_private_scrubber_tb is
     generic (
         runner_cfg         : string;
         Width_g            : positive range 2 to 32 := 8;
         Depth_g            : positive               := 16;
         TotalReadLatency_g : positive range 1 to 3  := 1;
-        SinglePortRam_g    : boolean                := false;
-        -- Pacer configuration as integers: ScrubPeriodMs_g = 0 keeps the pacer off (free-running).
-        ScrubClkHz_g       : natural                := 100000000;
-        ScrubPeriodMs_g    : natural                := 0
+        SinglePortRam_g    : boolean                := false
     );
 end entity;
 
@@ -58,10 +55,6 @@ architecture sim of olo_ft_private_scrubber_tb is
     -- when the user is idle; a full pass is Depth_g back-to-back operations.
     constant OpCycles_c   : positive := TotalReadLatency_g + 2;
     constant PassCycles_c : positive := Depth_g * OpCycles_c;
-
-    -- Pacer timing in clock cycles (see olo_ft_private_scrubber: 1 kHz base tick divided down).
-    constant Paced_c        : boolean := ScrubPeriodMs_g > 0;
-    constant PeriodCycles_c : natural := (ScrubClkHz_g / 1000) * ScrubPeriodMs_g;
 
     -- Behavioral error state per address.
     constant ErrNone_c : natural := 0;
@@ -115,6 +108,10 @@ architecture sim of olo_ft_private_scrubber_tb is
     signal PlantState  : natural   := 0;
     signal PlantStrobe : std_logic := '0';
 
+    -- Model-clear request: wipes memory, error state and the in-flight response pipeline. Used in
+    -- the per-case preamble so the cases stay order-independent under run_all_in_same_sim.
+    signal ClearStrobe : std_logic := '0';
+
     -----------------------------------------------------------------------------------------------
     -- TB Definitions
     -----------------------------------------------------------------------------------------------
@@ -146,8 +143,8 @@ begin
             Width_g            => Width_g,
             TotalReadLatency_g => TotalReadLatency_g,
             SinglePortRam_g    => SinglePortRam_g,
-            ScrubClkHz_g       => real(ScrubClkHz_g),
-            ScrubPeriod_g      => real(ScrubPeriodMs_g) / 1000.0
+            ScrubClkHz_g       => 100.0e6,
+            ScrubPeriod_g      => 0.0
         )
         port map (
             Clk            => Clk,
@@ -253,6 +250,23 @@ begin
             if PlantStrobe = '1' then
                 ErrState(PlantAddr) <= PlantState;
             end if;
+
+            -- Apply a clear request last (wins over any concurrent write or plant): wipe memory,
+            -- error state and the in-flight response pipeline.
+            if ClearStrobe = '1' then
+                Mem      <= (others => (others => '0'));
+                ErrState <= (others => ErrNone_c);
+
+                DataPipe_v  := (others => (others => '0'));
+                SecPipe_v   := (others => '0');
+                DedPipe_v   := (others => '0');
+                ValidPipe_v := (others => '0');
+
+                Ram_Rd_Data   <= (others => '0');
+                Ram_Rd_EccSec <= '0';
+                Ram_Rd_EccDed <= '0';
+                Ram_Rd_Valid  <= '0';
+            end if;
         end if;
     end process;
 
@@ -264,22 +278,28 @@ begin
     p_control : process is
         variable PassCnt_v     : natural;
         variable Gap1_v        : natural;
-        variable Gap2_v        : natural;
         variable IssuedCnt_v   : natural;
         variable ReturnCnt_v   : natural;
         variable EventCnt_v    : natural;
         variable OverrunSeen_v : boolean;
-        variable PassSeen_v    : boolean;
     begin
         test_runner_setup(runner, runner_cfg);
 
         while test_suite loop
 
-            -- Reset pulse; the behavioral model state deliberately survives (like a real RAM).
+            -- Per-case preamble: reset the DUT and wipe the behavioral model so every case starts
+            -- from a pristine, order-independent state (all cases share one simulation).
             wait until rising_edge(Clk);
             Scrub_Enable <= '1';
+            User_Wr_Ena  <= '0';
+            User_Rd_Ena  <= '0';
+            User_Wr_Addr <= (others => '0');
+            User_Rd_Addr <= (others => '0');
+            User_Wr_Data <= (others => '0');
             Rst          <= '1';
+            ClearStrobe  <= '1';
             wait until rising_edge(Clk);
+            ClearStrobe  <= '0';
             wait until rising_edge(Clk);
             Rst          <= '0';
             wait until rising_edge(Clk);
@@ -680,138 +700,6 @@ begin
                 ftWaitPasses(1, Clk, Scrub_PassDone);
 
                 check_equal(ErrState(0), ErrNone_c, "ResetMidPassSweep: scrubbing recovers after reset");
-
-            -- Pacer: with the user idle, exactly one pass per period; the completion-to-completion
-            -- gap equals the period and no overrun is flagged.
-            elsif run("PacedOnePassPerPeriod") then
-                OverrunSeen_v := false;
-
-                ftWaitPasses(1, Clk, Scrub_PassDone);
-
-                Gap1_v := 0;
-
-                loop
-                    wait until rising_edge(Clk);
-                    Gap1_v := Gap1_v + 1;
-                    if Scrub_Overrun = '1' then
-                        OverrunSeen_v := true;
-                    end if;
-                    exit when Scrub_PassDone = '1';
-                end loop;
-
-                Gap2_v := 0;
-
-                loop
-                    wait until rising_edge(Clk);
-                    Gap2_v := Gap2_v + 1;
-                    if Scrub_Overrun = '1' then
-                        OverrunSeen_v := true;
-                    end if;
-                    exit when Scrub_PassDone = '1';
-                end loop;
-
-                check_true(abs(integer(Gap1_v) - integer(PeriodCycles_c)) <= 2,
-                           "PacedOnePassPerPeriod: first gap is one period");
-                check_true(abs(integer(Gap2_v) - integer(PeriodCycles_c)) <= 2,
-                           "PacedOnePassPerPeriod: second gap is one period");
-                check_false(OverrunSeen_v, "PacedOnePassPerPeriod: no overrun while passes fit the period");
-
-            -- Pacer: total read-port saturation prevents the armed pass from finishing, so the
-            -- next period strobes flag an overrun; once the port is idle again the overruns stop.
-            elsif run("PacedOverrunWhenStarved") then
-                EventCnt_v := 0;
-
-                for i in 1 to 3 * PeriodCycles_c loop
-                    wait until rising_edge(Clk);
-                    if Scrub_Overrun = '1' then
-                        EventCnt_v := EventCnt_v + 1;
-                    end if;
-                    User_Rd_Addr <= toUslv(1, AddrWidth_c);
-                    User_Rd_Ena  <= '1';
-                end loop;
-
-                wait until rising_edge(Clk);
-                User_Rd_Ena <= '0';
-
-                check_true(EventCnt_v >= 1, "PacedOverrunWhenStarved: overrun flagged while starved");
-
-                -- Recovery: skip one period (the pending pass completes), then a full period must
-                -- pass without any further overrun.
-                for i in 1 to PeriodCycles_c loop
-                    wait until rising_edge(Clk);
-                end loop;
-
-                EventCnt_v := 0;
-
-                for i in 1 to PeriodCycles_c loop
-                    wait until rising_edge(Clk);
-                    if Scrub_Overrun = '1' then
-                        EventCnt_v := EventCnt_v + 1;
-                    end if;
-                end loop;
-
-                check_equal(EventCnt_v, 0, "PacedOverrunWhenStarved: no overrun after the port is idle again");
-
-            -- Suspending via Scrub_Enable in the middle of a paced pass must NOT flag an overrun:
-            -- suspension also disarms the period watchdog. Scrubbing resumes after re-enabling.
-            elsif run("PacedEnableDropNoOverrun") then
-                ftWaitPasses(1, Clk, Scrub_PassDone);
-
-                -- Wait for the next pass to start (first scrub read; user idle) and get mid-pass.
-                loop
-                    wait until rising_edge(Clk);
-                    exit when Ram_Rd_Ena = '1';
-                end loop;
-
-                for i in 1 to 3 * OpCycles_c loop
-                    wait until rising_edge(Clk);
-                end loop;
-
-                Scrub_Enable <= '0';
-
-                OverrunSeen_v := false;
-                PassSeen_v    := false;
-
-                for i in 1 to 3 * PeriodCycles_c loop
-                    wait until rising_edge(Clk);
-                    if Scrub_Overrun = '1' then
-                        OverrunSeen_v := true;
-                    end if;
-                    if Scrub_PassDone = '1' then
-                        PassSeen_v := true;
-                    end if;
-                end loop;
-
-                check_false(OverrunSeen_v, "PacedEnableDropNoOverrun: no overrun while suspended mid-pass");
-                check_false(PassSeen_v, "PacedEnableDropNoOverrun: no pass completes while suspended");
-
-                Scrub_Enable <= '1';
-
-                -- Scrubbing resumes with the next period strobe and completes without an overrun.
-                Gap1_v        := 0;
-                OverrunSeen_v := false;
-
-                loop
-                    wait until rising_edge(Clk);
-                    Gap1_v := Gap1_v + 1;
-                    if Scrub_Overrun = '1' then
-                        OverrunSeen_v := true;
-                    end if;
-                    exit when Scrub_PassDone = '1' or Gap1_v >= 3 * PeriodCycles_c;
-                end loop;
-
-                check_true(Gap1_v < 3 * PeriodCycles_c, "PacedEnableDropNoOverrun: scrubbing resumes after re-enable");
-                check_false(OverrunSeen_v, "PacedEnableDropNoOverrun: no overrun on resume");
-
-            -- Pacer: a paced scrubber still repairs, just on the paced schedule.
-            elsif run("PacedRepairsSec") then
-                ftWrite(3, 16#5C#, Clk, User_Wr_Addr, User_Wr_Data, User_Wr_Ena);
-                plant(3, ErrSec_c, Clk, PlantAddr, PlantState, PlantStrobe);
-
-                ftWaitPasses(2, Clk, Scrub_PassDone);
-
-                check_equal(ErrState(3), ErrNone_c, "PacedRepairsSec: SEC repaired by the paced scrubber");
-                check_equal(Mem(3), toUslv(16#5C#, Width_g), "PacedRepairsSec: payload intact");
 
             end if;
 
