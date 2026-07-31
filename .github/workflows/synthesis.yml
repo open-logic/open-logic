@@ -77,6 +77,11 @@ jobs:
           source $LOCAL_TOOLS
           cd ./tools/inference_test
           python3 -u ./InferenceTest.py --yml=./yaml/fix.yml --no-tables --check-coverage
+      - name: ft
+        run: |
+          source $LOCAL_TOOLS
+          cd ./tools/inference_test
+          python3 -u ./InferenceTest.py --yml=./yaml/ft.yml --no-tables --check-coverage
       # Upload Synthesis results    - name: Upload sim results
       - name: Upload Synthesis results
         uses: actions/upload-artifact@v4

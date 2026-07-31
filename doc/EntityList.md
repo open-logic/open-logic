@@ -36,6 +36,7 @@ Note that components are split into categories.
     - [Packages (olo\_ft\_pkg\_\<...\>)](#packages-olo_ft_pkg_)
     - [ECC Codec (olo\_ft\_ecc\_\<...\>)](#ecc-codec-olo_ft_ecc_)
     - [RAM Implementations (olo\_ft\_ram\_\<...\>)](#ram-implementations-olo_ft_ram_)
+    - [Private Entities](#private-entities)
 
 ## base
 
@@ -301,5 +302,16 @@ common constraints) are described once in
 | Entity                                   | Description                                                  |
 | ---------------------------------------- | ------------------------------------------------------------ |
 | [olo_ft_ram_sp](./ft/olo_ft_ram_sp.md)   | ECC-protected single port RAM                                |
+| [olo_ft_ram_sp_scrub](./ft/olo_ft_ram_sp_scrub.md)   | ECC-protected single-port RAM with an opportunistic background memory scrubber |
 | [olo_ft_ram_sdp](./ft/olo_ft_ram_sdp.md) | ECC-protected simple dual port RAM                           |
+| [olo_ft_ram_sdp_scrub](./ft/olo_ft_ram_sdp_scrub.md) | ECC-protected simple dual-port RAM with an opportunistic background memory scrubber |
 | [olo_ft_ram_tdp](./ft/olo_ft_ram_tdp.md) | ECC-protected true dual-port RAM                             |
+
+### Private Entities
+
+Internal building blocks instantiated by other ft entities. They are documented for reference but not
+intended for direct end-user instantiation.
+
+| Entity                                                           | Description                                                  |
+| ---------------------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_ft_private_scrubber](./ft/olo_ft_private_scrubber.md)       | Opportunistic memory-scrub engine (FSM and user/scrub arbitration) shared by the two scrub RAM wrappers |
