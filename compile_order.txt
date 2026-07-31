@@ -12,13 +12,16 @@ src/base/vhdl/olo_base_reset_gen.vhd
 src/base/vhdl/olo_base_pkg_string.vhd
 src/base/vhdl/olo_base_strobe_gen.vhd
 src/intf/vhdl/olo_intf_debounce.vhd
+src/ft/vhdl/olo_ft_private_scrubber.vhd
 src/base/vhdl/olo_base_sample_hold.vhd
 src/base/vhdl/olo_base_ram_tdp.vhd
 src/ft/vhdl/olo_ft_ram_tdp.vhd
 src/base/vhdl/olo_base_ram_sp.vhd
 src/ft/vhdl/olo_ft_ram_sp.vhd
+src/ft/vhdl/olo_ft_ram_sp_scrub.vhd
 src/base/vhdl/olo_base_ram_sdp.vhd
 src/ft/vhdl/olo_ft_ram_sdp.vhd
+src/ft/vhdl/olo_ft_ram_sdp_scrub.vhd
 src/base/vhdl/olo_base_pkg_logic.vhd
 src/intf/vhdl/olo_intf_uart.vhd
 src/intf/vhdl/olo_intf_spi_slave.vhd
