@@ -36,6 +36,7 @@ Note that components are split into categories.
     - [Packages (olo\_ft\_pkg\_\<...\>)](#packages-olo_ft_pkg_)
     - [ECC Codec (olo\_ft\_ecc\_\<...\>)](#ecc-codec-olo_ft_ecc_)
     - [RAM Implementations (olo\_ft\_ram\_\<...\>)](#ram-implementations-olo_ft_ram_)
+    - [FIFO Implementations (olo\_ft\_fifo\_\<...\>)](#fifo-implementations-olo_ft_fifo_)
     - [Private Entities](#private-entities)
 
 ## base
@@ -306,6 +307,13 @@ common constraints) are described once in
 | [olo_ft_ram_sdp](./ft/olo_ft_ram_sdp.md) | ECC-protected simple dual port RAM                           |
 | [olo_ft_ram_sdp_scrub](./ft/olo_ft_ram_sdp_scrub.md) | ECC-protected simple dual-port RAM with an opportunistic background memory scrubber |
 | [olo_ft_ram_tdp](./ft/olo_ft_ram_tdp.md) | ECC-protected true dual-port RAM                             |
+
+### FIFO Implementations (olo_ft_fifo_\<...\>)
+
+| Entity                                               | Description                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_ft_fifo_sync](./ft/olo_ft_fifo_sync.md)         | ECC-protected synchronous FIFO (single clock)               |
+| [olo_ft_fifo_packet](./ft/olo_ft_fifo_packet.md)     | ECC-protected packet FIFO (store and forward) with the ability to drop packets on the write side and skip or repeat packets on the read side |
 
 ### Private Entities
 

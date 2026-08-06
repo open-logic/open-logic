@@ -97,3 +97,25 @@ entities:
         out_reduce: { A_RdData: 32, B_RdData: 32 }
     tool_omit:
       cologne: "TDP not supported on Cologne Chip FPGAs"
+
+  # ============================================================
+  # olo_ft_fifo_sync
+  # ============================================================
+  - entity_name: "olo_ft_fifo_sync"
+    fixed_generics:
+      Depth_g: 256
+    configurations:
+      - name: "w32-ecc1"
+        generics: { Width_g: 32, EccPipeline_g: 1 }
+
+  # ============================================================
+  # olo_ft_fifo_packet
+  # ============================================================
+  - entity_name: "olo_ft_fifo_packet"
+    fixed_generics:
+      Depth_g: 256
+    configurations:
+      # Default SmallRamStyle_g="registers": synthesizes the FF-based packet-boundary FIFO
+      # (the fault-tolerant configuration, coverable by vendor TMR)
+      - name: "w32-ecc1"
+        generics: { Width_g: 32, EccPipeline_g: 1 }
