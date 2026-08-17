@@ -164,8 +164,10 @@ olo_tb.set_sim_option('ghdl.sim_flags', ['--ieee-asserts=disable'])
 olo_tb.set_sim_option('nvc.global_flags', ['--ieee-warnings=off'])
 vu.set_sim_option("disable_ieee_warnings", True)
 # Disable optimization - it's faster for Open Logic to run without
-vu.set_sim_option("modelsim.vopt_flags", ["+acc"])
-olo_tb.set_sim_option("modelsim.three_step_flow", True)
+vu.set_sim_option("modelsim.vopt_flags", ["-O0"])
+# Would be better than above option but does not work on AWS. Enable later if it works on AWS.
+#vu.set_sim_option("modelsim.vopt_flags", ["+acc"])
+#olo_tb.set_sim_option("modelsim.three_step_flow", True)
 
 if args.coverage:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])

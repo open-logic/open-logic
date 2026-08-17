@@ -2,6 +2,91 @@
 
 # Changelog
 
+## 4.6.0
+
+04-Jul-2026
+
+### Added Features
+
+- Added _olo_fix_mix_r2c_
+  - Real to complex mixer (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_mix_c2r_
+  - Complex to real mixer (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_coef_storage_
+  - Fixed-point coefficient memory (RAM or ROM)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_fir_dec_ser_chtdm_
+  - FIR decimator with TDM channel handling and serial tap computation (fixed-point)
+  - Works with one multiplier, shared between all taps and channels
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_fir_dec_par_chtdm_
+  - FIR decimator with parallel channel handling and serial tap computation (fixed-point)
+  - Works with one multiplier per channel
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_mov_avg_
+  - Moving average filter (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added RdEna/RdValid ports to all RAMs
+  - This allows for more efficient handling of RAMs with multiple cycles of read latency
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- In _olo_intf_spi_master_ allow multiple transactions without _CSn_ going high in between
+  - Contributed by: [obruendl](https://github.com/obruendl)
+  - Reported by: [ffeldbauer](https://github.com/ffeldbauer)
+
+### Backward Compatible Changes
+
+- Speedup questa/modelsim simulation by disabling novopt
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Use native VUnit argument parser instead of custom code
+  - Contributed by: [tasgomes](https://github.com/tasgomes)
+
+- Optimize resource usage for _olo_fix_cplx_mult_
+  - Reported by: [postoroniy](https://github.com/postoroniy)
+
+- Improved license handling for AWS runner
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Quantize input to all _olo_fix_ bit-true models
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Unify assertion messages in VHDL
+  - Print related entity in all cases
+  - Contributed by: [obruendl](https://github.com/obruendl)
+  - Reported by: [lukileu](https://github.com/lukileu)
+
+- Update GitHub actions to use Node24
+  - Required due to infrastructure changes on GitHub
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- None
+
+### Reporters
+
+- [postoroniy](https://github.com/postoroniy)
+- [lukileu](https://github.com/lukileu)
+- [ffeldbauer](https://github.com/ffeldbauer)
+  
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+- [tasgomes](https://github.com/tasgomes)
+
 ## 4.5.0
 
 25-Apr-2026
