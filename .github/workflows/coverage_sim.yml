@@ -38,6 +38,7 @@ jobs:
 
   simulation:
     runs-on: [self-hosted, aws]
+    timeout-minutes: 720
     needs: start-instance
     steps:
       # Checkout the repository
