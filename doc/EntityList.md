@@ -276,6 +276,7 @@ Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | [olo_fix_fir_dec_ser_chtdm](./fix/olo_fix_fir_dec_ser_chtdm.md) | Decimating FIR filter (TDM channels, serial tap computation), multi-channel only (not usable for single-channel) <br> Runtime-configurable or fixed ratio, tap count and coefficients - Can be used non-decimating (Ratio = 1)  |
 | [olo_fix_fir_dec_ser_chpar](./fix/olo_fix_fir_dec_ser_chpar.md) | Decimating FIR filter (parallel channels, serial tap computation), single- or multi-channel (one multiplier per channel) <br> Runtime-configurable or fixed ratio, tap count and coefficients - Can be used non-decimating (Ratio = 1) |
+| [olo_fix_fir_dec_semi_chtdm](./fix/olo_fix_fir_dec_semi_chtdm.md) | Decimating FIR filter (TDM channels, semi-parallel tap computation with a configurable number of chained multipliers), multi-channel only (not usable for single-channel) <br> Fixed ratio and tap count, fixed or runtime-configurable coefficients - Can be used non-decimating (Ratio = 1) |
 
 ### Miscellaneous
 

@@ -207,6 +207,25 @@ entities:
         out_reduce:
           Coef_RdData: 18
           Out_Data: 32
+  # olo_fix_fir_dec_semi_chtdm
+  - entity_name: "olo_fix_fir_dec_semi_chtdm"
+    configurations:
+      - name: "default"
+        generics:
+          Channels_g: '2'
+          Ratio_g: '8'
+          Taps_g: '16'
+          Multipliers_g: '4'
+          InFmt_g: '"(1, 0, 15)"'
+          OutFmt_g: '"(1, 0, 15)"'
+          CoefFmt_g: '"(1, 0, 17)"'
+          CoefInit_g: '"0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625,0.0625"'
+        in_reduce:
+          Coef_WrData: 18
+          In_Data: 16
+        out_reduce:
+          Coef_RdData: 18
+          Out_Data: 16
   # olo_fix_cplx_addsub
   - entity_name: "olo_fix_cplx_addsub"
     configurations:
