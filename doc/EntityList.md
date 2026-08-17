@@ -28,8 +28,8 @@ Note that components are split into categories.
     - [Design Utilities](#design-utilities)
     - [Basic Operations](#basic-operations)
     - [Simple Mathematics](#simple-mathematics)
-    - [CORDIC](#cordic)
     - [Mixers](#mixers)
+    - [CORDIC](#cordic)
     - [CIC Filters](#cic-filters)
     - [FIR Filters](#fir-filters)
     - [Miscellaneous](#miscellaneous-1)
@@ -242,7 +242,7 @@ be used. For deciding which option to use, the following considerations shall be
 | [olo_fix_cplx_mult](./fix/olo_fix_cplx_mult.md)       | Multiply two complex fixed point numbers. <br> Supports a mixer mode (complex-to-complex) |
 | [olo_fix_madd](./fix/olo_fix_madd.md)                 | Multiply-accumulate (MAC) operation on fixed point numbers. <br> Aimed to be used to build MACC chains (e.g. for FIR filters)|
 
-### CORDIC
+### Mixers
 
 | Entity                                                | Description                                                  |
 | ----------------------------------------------------- | ------------------------------------------------------------ |
@@ -250,7 +250,7 @@ be used. For deciding which option to use, the following considerations shall be
 | [olo_fix_mix_r2c](./fix/olo_fix_mix_r2c.md)           | Real to complex mixer. Mixes a real signal with a complex local oscillator |
 | [olo_fix_mix_c2r](./fix/olo_fix_mix_c2r.md)           | Complex to real mixer. Mixes a complex signal with a complex local oscillator to produce a real output |
 
-### Mixers
+### CORDIC
 
 | Entity                                              | Description                                                  |
 | --------------------------------------------------- | ------------------------------------------------------------ |
