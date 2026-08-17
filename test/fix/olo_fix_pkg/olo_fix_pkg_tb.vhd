@@ -21,6 +21,7 @@ library olo;
     use olo.en_cl_fix_pkg.all;
     use olo.olo_fix_pkg.all;
     use olo.olo_base_pkg_array.all;
+    use olo.olo_base_pkg_math.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity
@@ -159,13 +160,11 @@ begin
 
             elsif run("fixFileReadString") then
                 -- Different simulators convert real to string differently. The options encountered are covered here.
-                if fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "7.5e-1, -1.0" and
-                   fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "0.75, -1.0" and
-                   fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "0.75, -1" and
-                   fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "7.5E-1, -1.0" and
-                   fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c) /= "7.500000e-01, -1.000000e+00" then
+                if fromString(fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c)) /= (7.5000e-1, -1.0000) then
                     failure("fixFileReadString wrong: " & fixFileReadString(DataDir_c & "data_1_0_15.fix", Fmt1015_c));
                 end if;
+                -- Empty file
+                check_equal(fixFileReadString(DataDir_c & "empty.fix", Fmt015_c), "", "fixFileReadString empty file wrong");
             else
                 report "Test not found";
 
