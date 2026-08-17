@@ -42,6 +42,7 @@ jobs:
   # Build Local Cores (always)
   fusesoc-local:
     runs-on: [self-hosted, aws]
+    timeout-minutes: 720
     needs: start-instance
     steps:
       # Checkout the repository
@@ -81,6 +82,7 @@ jobs:
     # ..hence not on PR and psh because the release is created after the merge only
   fusesoc-stable:
     runs-on: [self-hosted, aws]
+    timeout-minutes: 720
     needs: start-instance
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     steps:
