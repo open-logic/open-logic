@@ -25,6 +25,7 @@ def cosim(output_path: str = None,
     writer = olo_fix_cosim(output_path)
     writer.write_cosim_file(np.array([0.75, -1.0]), FixFormat(1, 0, 15), "data_1_0_15.fix")
     writer.write_cosim_file(np.array([0.5, 1.5]), FixFormat(0, 1, 5), "data_0_1_5.fix")
+    writer.write_cosim_file(np.array([]), FixFormat(0, 1, 5), "empty.fix")
 
     return True
 
