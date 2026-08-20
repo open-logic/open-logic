@@ -119,7 +119,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- TB Control
     -----------------------------------------------------------------------------------------------
-    test_runner_watchdog(runner, 50 ms);
+    test_runner_watchdog(runner, 10 ms);
 
     p_control : process is
         file CoefFile_v : text;

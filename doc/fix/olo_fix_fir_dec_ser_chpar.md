@@ -40,10 +40,13 @@ Coefficients can be fixed (ROM) or runtime configurable (RAM) with optional read
 one output sample set (all channels are computed in parallel). This calculation is repeated every
 _Ratio_ input sample sets.
 
-```text
-f_in <= (f_clk x Ratio) / Taps
-Taps <= (f_clk x Ratio) / f_in
-```
+$$
+f_{in} \leq \frac{f_{clk} \cdot Ratio}{Taps}
+$$
+
+$$
+Taps \leq \frac{f_{clk} \cdot Ratio}{f_{in}}
+$$
 
 where _f_in_ is the rate of complete input sample sets (one set = one sample per channel, all presented
 in the same clock cycle). If the input arrives faster than this limit, the filter will stop working correctly.
