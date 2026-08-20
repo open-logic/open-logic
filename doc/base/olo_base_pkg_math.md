@@ -167,6 +167,18 @@ given below:
   - "1.234, -1.234e3, +5.67E-12"
   - Values separated by comma (,) and NO brackets
 
+### toString()
+
+This function converts a real array into a comma-separated string. It is the inverse of _fromString()_
+and produces a string that _fromString()_ can parse back into an equivalent real array.
+
+```vhdl
+function toString(input : RealArray_t) return string;
+```
+
+The elements are separated by a comma (,) without brackets, matching the format expected by
+_fromString()_ (e.g. "1.234, -1.234e3, +5.67E-12") and by Open Logic generics. An empty array returns an empty string.
+
 ### minArray() / maxArray()
 
 Return the minumum / maximum value out of an array.

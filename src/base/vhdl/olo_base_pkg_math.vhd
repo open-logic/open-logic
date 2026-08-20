@@ -141,6 +141,9 @@ package olo_base_pkg_math is
     -- convert string  to real array
     function fromString (input : string) return RealArray_t;
 
+    -- convert real array to a comma-separated string (inverse of fromString)
+    function toString (input : RealArray_t) return string;
+
     -- get max/min from array type interger /real
     function maxArray (a : in IntegerArray_t) return integer;
 
@@ -613,6 +616,19 @@ package body olo_base_pkg_math is
         end if;
 
         return Array_v;
+    end function;
+
+    -- *** convert real array to a comma-separated string ***
+    function toString (input : RealArray_t) return string is
+    begin
+        -- Recursively concatenate the elements separated by commas
+        if input'length = 0 then
+            return "";
+        elsif input'length = 1 then
+            return real'image(input(input'low));
+        else
+            return real'image(input(input'low)) & "," & toString(input(input'low + 1 to input'high));
+        end if;
     end function;
 
     -- *** get the maximum out of an array of integer ***

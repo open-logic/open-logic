@@ -45,7 +45,7 @@ begin
         variable RealArrA_v, RealArrB_v, RealArrC_v : RealArray_t(0 to 1);
         variable IntArr_v                           : IntegerArray_t(0 to 3);
         variable BoolArr_v                          : BoolArray_t(0 to 3);
-        variable RealArr4_v                         : RealArray_t(0 to 3);
+        variable RealArr4_v, RealArr4B_v            : RealArray_t(0 to 3);
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -236,6 +236,29 @@ begin
                 RealArrA_v := fromString("0.1,");
                 check_equal(RealArrA_v(1), 0.0,       "fromString(RealArray_t) - 2a", 0.001e-6); -- empty last array element is interpreted as zero
                 check_equal(RealArrA_v(0), 0.1,       "fromString(RealArray_t) - 2b", 0.001e-6);
+
+            elsif run("toString-RealArray_t") then
+                -- Empty array
+                check_equal("", toString(RealArrA_v(0 to -1)), "toString - empty array");
+                -- Single element
+                RealArrB_v(0 to 0) := fromString(toString(RealArrA_v(0 to 0)));
+                check_equal(RealArrB_v(0), RealArrA_v(0), "toString - single element", 0.001e-6);
+                -- Round-trip must reproduce the input (toString is the inverse of fromString)
+                RealArrA_v := (0.1,
+                               -0.3e-2);
+                RealArrB_v := fromString(toString(RealArrA_v));
+                check_equal(RealArrB_v(0), RealArrA_v(0), "toString round-trip 2 - 0", 0.001e-6);
+                check_equal(RealArrB_v(1), RealArrA_v(1), "toString round-trip 2 - 1", 0.001e-6);
+                -- Larger array including zero, negative and large-magnitude values
+                RealArr4_v  := (1.25,
+                                -2.5,
+                                0.0,
+                                123.4);
+                RealArr4B_v := fromString(toString(RealArr4_v));
+
+                for k in RealArr4_v'range loop
+                    check_equal(RealArr4B_v(k), RealArr4_v(k), "toString round-trip 4 - " & integer'image(k), 0.001e-6);
+                end loop;
 
             elsif run("maxArray-int") then
                 IntArr_v := (1,

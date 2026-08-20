@@ -824,9 +824,13 @@ def add_configs(olo_tb):
     named_config(tb, default_generics | {'Multipliers_g': 1}, pre_config=cosim, short_name='mul1')
     named_config(tb, default_generics | {'Multipliers_g': 16, 'Taps_g': 16}, pre_config=cosim, short_name='fully-parallel')
     named_config(tb, default_generics | {'Multipliers_g': 3, 'Taps_g': 17}, pre_config=cosim, short_name='taps17-mul3')
+    named_config(tb, default_generics | {'Channels_g' : 1}, pre_config=cosim, short_name='ch1')
+    named_config(tb, default_generics | {'Ratio_g': 1}, pre_config=cosim, short_name='ratio1')
 
     # Full input rate support
     named_config(tb, default_generics | {'FullInpRateSupport_g': True, 'Ratio_g': 8, 'Multipliers_g': 2}, pre_config=cosim, short_name='fullrate')
+    named_config(tb, default_generics | {'FullInpRateSupport_g': True, 'Ratio_g': 8, 'Multipliers_g': 2, 'Channels_g': 1}, pre_config=cosim, short_name='fullrate-1ch')
+
 
     # Different coef-storage
     named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': True, 'CoefRamReadback_g': True}, pre_config=cosim, short_name='RAM-write')

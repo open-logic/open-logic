@@ -8,7 +8,7 @@
 ---------------------------------------------------------------------------------------------------
 -- Description
 ---------------------------------------------------------------------------------------------------
--- This entity implements a decimating FIR filter. It supports multiple channels (time-division-
+-- This entity implements a decimating FIR filter. It supports one or more channels (time-division-
 -- multiplexed). All channels share the same coefficient set. The filter taps are computed
 -- semi-parallel: Multipliers_g multiply-add operations are chained together in a classic MACC
 -- chain and Taps_g/Multipliers_g cycles are used to compute one output sample.
@@ -48,10 +48,10 @@ entity olo_fix_fir_dec_semi_chtdm is
         OutFmt_g             : string;
         CoefFmt_g            : string;
         -- Filter parameters
-        Channels_g           : positive;
-        Ratio_g              : positive;
+        Channels_g           : positive := 1;
+        Ratio_g              : positive := 1;
         Taps_g               : positive;
-        Multipliers_g        : positive := 1;
+        Multipliers_g        : positive;
         FullInpRateSupport_g : boolean  := false;
         -- Arithmetic
         GuardBits_g          : natural  := 1;
@@ -121,14 +121,32 @@ architecture rtl of olo_fix_fir_dec_semi_chtdm is
     constant CyclesPerCalc_c : natural := TapsPerStage_c;
     constant CoefIdxBits_c   : natural := log2Ceil(TapsPerStage_c);
 
-    -- *** Coefficient Memory Sizing (full copy per multiplier) ***
-    constant CoefMemDepth_c : natural := 2 ** log2Ceil(Multipliers_g * TapsPerStage_c);
+    -- *** Coefficient Memory Sizing (one block per multiplier holds only that lane's taps) ***
+    constant CoefMemDepth_c : natural := max(2, 2 ** CoefIdxBits_c);
     constant CoefAddrBits_c : natural := log2Ceil(CoefMemDepth_c);
+
+    -- *** Functions ***
+    -- Extract the coefficient slice belonging to one MACC lane (stage) as an init string.
+    function getStageInit (fullInit : string; stage : natural) return string is
+        constant Coefs_c : RealArray_t                          := fromString(fullInit);
+        variable Slice_v : RealArray_t(0 to TapsPerStage_c - 1) := (others => 0.0);
+    begin
+
+        for k in 0 to TapsPerStage_c - 1 loop
+            if stage * TapsPerStage_c + k <= Coefs_c'high then
+                Slice_v(k) := Coefs_c(stage * TapsPerStage_c + k);
+            end if;
+        end loop;
+
+        return toString(Slice_v);
+    end function;
 
     -- *** Data Memory Sizing (chained delay line, one RAM per multiplier) ***
     constant RamPerChPerStage_c : natural := 2 ** log2Ceil(TapsPerStage_c + Ratio_g + 1);
     constant TapSelBits_c       : natural := log2Ceil(RamPerChPerStage_c);
-    constant ChSelBits_c        : natural := log2Ceil(Channels_g);
+    -- At least 1 bit: a zero-width channel index would make numeric_std comparisons against
+    -- "Channels_g - 1" return FALSE (null-array rule), which breaks the control flow for Channels_g=1.
+    constant ChSelBits_c        : natural := max(1, log2Ceil(Channels_g));
     constant RamAddrBits_c      : natural := TapSelBits_c + ChSelBits_c;
 
     -- *** Pipeline Stage Constants ***
@@ -207,9 +225,6 @@ begin
     -- Assertions
     -----------------------------------------------------------------------------------------------
     -- synthesis translate_off
-    assert Channels_g >= 2
-        report errorMessage(EntityName_c, "Channels_g must be >= 2. For single-channel use a non-TDM variant.")
-        severity error;
     assert Ratio_g >= 1
         report errorMessage(EntityName_c, "Ratio_g must be >= 1.")
         severity error;
@@ -241,7 +256,7 @@ begin
         v.Vld(0) := In_Valid;
         v.Data_0 := In_Data;
         if r.Vld(0) = '1' then
-            if r.ChCnt(0) = Channels_g - 1 then
+            if r.ChCnt(0) = Channels_g - 1 or Channels_g = 1 then
                 v.ChCnt(0) := (others => '0');
                 if r.DecCnt_0 = 0 then
                     v.DecCnt_0 := Ratio_g - 1;
@@ -257,7 +272,7 @@ begin
         -- *** Stage 1: Start Calculation, Data-RAM Write/Read Address for the Chain ***
         v.Data_1        := r.Data_0;
         v.CalcStartLoop := '0';
-        if r.Vld(0) = '1' and r.DecCnt_0 = 0 and r.ChCnt(0) = Channels_g - 1 then
+        if r.Vld(0) = '1' and r.DecCnt_0 = 0 and (r.ChCnt(0) = Channels_g - 1 or Channels_g = 1) then
             v.CalcStartLoop := '1';
         end if;
         -- On write cycles the newest sample is written (and its old value read for the chain).
@@ -294,7 +309,7 @@ begin
         if (r.CalcLast(2) = '1') and (r.CalcRunning(2) = '1') then
             v.CalcLast(2) := '0';
             -- ... start next channel if the current one was not the last one
-            if r.CalcChannel_2 /= Channels_g - 1 then
+            if (r.CalcChannel_2 /= Channels_g - 1) and (Channels_g /= 1) then
                 v.CalcChannel_2 := r.CalcChannel_2 + 1;
                 v.TapRdAddr_2   := r.CalcFirstTap_2;
                 StartLoop_v     := true;
@@ -368,12 +383,26 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Output Assignment
     -----------------------------------------------------------------------------------------------
-    Out_Valid    <= r.Out_Valid;
-    Out_Data     <= r.Out_Data;
-    Out_Last     <= r.Out_Last;
-    Flush_Done   <= r.FlushDone;
-    Coef_RdData  <= CfgRdData(0);
-    Coef_RdValid <= CfgRdValid(0);
+    Out_Valid  <= r.Out_Valid;
+    Out_Data   <= r.Out_Data;
+    Out_Last   <= r.Out_Last;
+    Flush_Done <= r.FlushDone;
+
+    -- Coefficient readback: mux the response from the lane owning the addressed tap. Only that lane
+    -- asserts its Cfg_RdValid, so a valid-masked OR selects the correct data.
+    p_coef_rdbk : process (all) is
+    begin
+        Coef_RdData  <= (others => 'X');
+        Coef_RdValid <= '0';
+
+        for m in 0 to Multipliers_g - 1 loop
+            if CfgRdValid(m) = '1' then
+                Coef_RdData  <= CfgRdData(m);
+                Coef_RdValid <= '1';
+            end if;
+        end loop;
+
+    end process;
 
     -----------------------------------------------------------------------------------------------
     -- Sequential Process
@@ -418,6 +447,14 @@ begin
                            ((r.CalcChannel_2 = Channels_g - 1) and (r.CalcLast(2) = '1'))
                         report errorMessage(EntityName_c,
                                "Insufficient processing power - increase Multipliers_g or Ratio_g.")
+                        severity error;
+                end if;
+
+                -- Without full input rate support, In_Valid must not be high on two consecutive cycles
+                if not FullInpRateSupport_g then
+                    assert not (In_Valid = '1' and r.Vld(0) = '1')
+                        report errorMessage(EntityName_c,
+                               "In_Valid asserted on two consecutive cycles requires FullInpRateSupport_g = true.")
                         severity error;
                 end if;
 
@@ -478,6 +515,8 @@ begin
         signal CoefData   : CoefData_t;
         signal CoefRdAddr : std_logic_vector(CoefAddrBits_c - 1 downto 0);
         signal CfgAddr    : std_logic_vector(CoefAddrBits_c - 1 downto 0);
+        signal CfgSel     : std_logic;
+        signal CfgWrEna   : std_logic;
         signal CfgRdEna   : std_logic;
     begin
 
@@ -551,18 +590,23 @@ begin
         end generate;
 
         -------------------------------------------------------------------------------------------
-        -- Coefficient Storage (full copy per lane, addressed at the global tap index)
+        -- Coefficient Storage (this lane holds only its own block of taps)
         -------------------------------------------------------------------------------------------
-        CoefRdAddr <= std_logic_vector(to_unsigned(i * TapsPerStage_c, CoefAddrBits_c) +
-                                       resize(unsigned(r.CoefRdAddr(i + 3)), CoefAddrBits_c));
-        CfgAddr    <= std_logic_vector(resize(unsigned(Coef_Addr), CoefAddrBits_c));
-        CfgRdEna   <= Coef_RdEna when i = 0 else '0';
+        -- Read address = local within-lane tap index (0 .. TapsPerStage-1)
+        CoefRdAddr <= std_logic_vector(resize(unsigned(r.CoefRdAddr(i + 3)), CoefAddrBits_c));
+        -- Config accesses are routed to the lane owning the addressed global tap index
+        CfgSel   <= '1' when (unsigned(Coef_Addr) >= i * TapsPerStage_c) and
+                             (unsigned(Coef_Addr) < (i + 1) * TapsPerStage_c) else
+                    '0';
+        CfgAddr  <= std_logic_vector(resize(unsigned(Coef_Addr) - i * TapsPerStage_c, CoefAddrBits_c));
+        CfgWrEna <= Coef_WrEna and CfgSel;
+        CfgRdEna <= Coef_RdEna and CfgSel;
 
         i_coef : entity work.olo_fix_coef_storage
             generic map (
                 Depth_g       => CoefMemDepth_c,
                 Fmt_g         => CoefFmt_g,
-                Init_g        => CoefInit_g,
+                Init_g        => getStageInit(CoefInit_g, i),
                 StorageType_g => CoefStorageType_g,
                 RamReadback_g => CoefRamReadback_g,
                 RamBehavior_g => CoefRamBehavior_g,
@@ -573,7 +617,7 @@ begin
                 Clk          => Clk,
                 Rst          => Rst,
                 Cfg_Addr     => CfgAddr,
-                Cfg_WrEna    => Coef_WrEna,
+                Cfg_WrEna    => CfgWrEna,
                 Cfg_WrData   => Coef_WrData,
                 Cfg_RdEna    => CfgRdEna,
                 Cfg_RdData   => CfgRdData(i),

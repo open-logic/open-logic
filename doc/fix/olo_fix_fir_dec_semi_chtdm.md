@@ -15,11 +15,13 @@ Bit-true Model: [olo_fix_fir_dec.py](../../src/fix/python/olo_fix/olo_fix_fir_de
 
 ## Description
 
-This entity implements a decimating FIR filter for multiple TDM (time-division-multiplexed) channels.
+This entity implements a decimating FIR filter for one or more TDM (time-division-multiplexed) channels.
 All channels share the same coefficient set and are processed one after the other. The filter taps are
 computed _semi-parallel_: _Multipliers_g_ multiply-add operations are chained together in the classic
 MACC (multiply-accumulate) chain and _ceil(Taps_g / Multipliers_g)_ clock cycles are used to compute one
 output sample for one channel.
+
+A single channel (_Channels_g = 1_) is supported as well; the input is then a plain sample stream.
 
 The number of multipliers therefore trades resources against throughput:
 
@@ -43,13 +45,15 @@ Coefficients can be fixed (ROM) or runtime configurable (RAM) with optional read
 _ceil(Taps_g / Multipliers_g) x Channels_g_ clock cycles to compute one output sample set (for all
 channels). This calculation is repeated every _Ratio_g_ input sample sets.
 
-```text
-f_in <= (f_clk x Ratio_g x Multipliers_g) / (Taps_g x Channels_g)
-```
+$$
+f_{in} \leq \frac{f_{clk} \cdot Ratio\_g \cdot Multipliers\_g}{Taps_g \cdot Channels_g}
+$$
 
 where _f_in_ is the rate of complete TDM frames (one frame = _Channels_g_ samples). If the input
 arrives faster than this limit, the filter stops working correctly. In simulation an error is reported
 if the processing power is insufficient.
+
+If data is arriving faster than the filter can process, an error message is reported in simulation.
 
 Use [olo_base_rate_limit](../base/olo_base_rate_limit.md) externally to enforce the rate limit.
 
@@ -70,15 +74,20 @@ latency is not fixed and is therefore not documented in detail.
 | InFmt_g              | string   | -          | Input format<br>String representation of an _en\_cl\_fix FixFormat\_t_ |
 | OutFmt_g             | string   | -          | Output format<br>String representation of an _en\_cl\_fix FixFormat\_t_ |
 | CoefFmt_g            | string   | -          | Coefficient format<br>String representation of an _en\_cl\_fix FixFormat\_t_ |
-| Channels_g           | positive | -          | Number of TDM channels (must be >= 2)                         |
-| Ratio_g              | positive | -          | Decimation ratio (one output per _Ratio_g_ input sample sets) |
+| Channels_g           | positive | 1          | Number of TDM channels (>= 1; single- or multi-channel)       |
+| Ratio_g              | positive | 1          | Decimation ratio (one output per _Ratio_g_ input sample sets) |
 | Taps_g               | positive | -          | Number of filter taps (must be >= 2)                          |
-| Multipliers_g        | positive | 1          | Number of multipliers (MACC-chain lanes) computed in parallel |
+| Multipliers_g        | positive | -          | Number of multipliers (MACC-chain lanes) computed in parallel |
 | FullInpRateSupport_g | boolean  | false      | _true_ - input samples may be applied on every clock cycle (uses an additional delay line).<br>_false_ - at least one idle cycle is required between input samples. |
 | GuardBits_g          | natural  | 1          | Number of integer guard bits in the accumulator above _OutFmt_g_ |
 | Round_g              | string   | "Trunc\_s" | Rounding mode<br>String representation of an _en\_cl\_fix FixRound\_t_ |
 | Saturate_g           | string   | "Warn\_s"  | Saturation mode<br>String representation of an _en\_cl\_fix FixSaturate\_t_ |
 | MultRegs_g           | positive | 1          | Number of pipeline registers in each multiplier               |
+
+By nature a semi-parallel FIR filter makes sense only for input data-rates below one sample per clock cycle (otherwise
+a fully parallel FIR is more efficient). However, the generic _FullInpRateSupport_g=True_ can be important for bursty
+inputdata streams. But often it is more resource efficient to use _FullInpRateSupport_g=False_ and throttle the input
+data rate by using a [olo_base_rate_limit](../base/olo_base_rate_limit.md) entity in front of the filter.
 
 ### Coefficient and Data Storage
 
@@ -179,25 +188,37 @@ i_fir : entity olo.olo_fix_fir_dec_semi_chtdm
 
 ### Architecture
 
-The datapath consists of _Multipliers_g_ parallel MACC lanes built from [olo_fix_madd](./olo_fix_madd.md).
-The lanes are chained (each lane adds its product to the running sum coming from the previous lane) so the
+The datapath consists of _Multipliers_g_ parallel MACC stages built from [olo_fix_madd](./olo_fix_madd.md).
+The stages are chained (each stage adds its product to the running sum coming from the previous stage) so the
 synthesizer can map them onto a DSP cascade. In every calculation cycle the chain produces the sum of
 _Multipliers_g_ tap products; these partial sums are accumulated over _ceil(Taps_g / Multipliers_g)_ cycles
 to form one output sample.
 
-Each lane owns:
+This architecture is depicted by below example of a 2-stage architecture (_Multipiers_g = 2_):
+
+![architecture](./fir/olo_fix_fir_dec_semi_chtdm_full.drawio.png)
+
+Each stage owns:
 
 - A data delay-line RAM ([olo_base_ram_tdp](../base/olo_base_ram_tdp.md)). The RAMs are chained so that each
   stage sees the input delayed by a further block of taps.
-- A coefficient storage ([olo_fix_coef_storage](./olo_fix_coef_storage.md)), holding a full copy of the
-  coefficient set (ROM or RAM depending on _CoefStorageType_g_). Coefficient writes are broadcast to all
-  copies; readback is taken from the first copy.
+- A coefficient storage ([olo_fix_coef_storage](./olo_fix_coef_storage.md)) holding **only that lane's block**
+  of _ceil(Taps_g / Multipliers_g)_ coefficients (ROM or RAM depending on _CoefStorageType_g_). The
+  coefficient memory is therefore split across the stages rather than replicated, so the total coefficient
+  memory does not grow with _Multipliers_g_. Coefficient writes and readbacks addressed through the
+  _Coef\_..._ ports are routed to (and muxed back from) the stage that owns the addressed tap.
+
+Below figure depicts a single stage of the MACC chain.
+
+![stage](./fir/olo_fix_fir_dec_semi_chtdm_stage.drawio.png)
 
 The result of the accumulation is rounded and saturated to _OutFmt_g_ using
 [olo_fix_resize](./olo_fix_resize.md).
 
 The memory styles of the coefficient storage and the data RAM can be selected independently through
-_CoefMemStyle_g_ and _DataMemStyle_g_.
+_CoefMemStyle_g_ and _DataMemStyle_g_. To minimize coefficient memory, choose a coefficient storage type
+that fits the use case: ROM for fixed coefficients, or RAM without readback (_CoefRamReadback_g = false_)
+when runtime updates are needed but readback is not.
 
 ### Full Input Rate Support
 
@@ -205,9 +226,15 @@ When _FullInpRateSupport_g = false_ (default), the chained data memory needs one
 input samples, hence _In_Valid_ must not be asserted on two consecutive clock cycles.
 
 When _FullInpRateSupport_g = true_, an additional delay line ([olo_base_delay](../base/olo_base_delay.md))
-per lane provides the chained delay, so _In_Valid_ may be asserted on every clock cycle. Note that this
+per stage provides the chained delay, so _In_Valid_ may be asserted on every clock cycle. Note that this
 only relaxes the back-to-back input restriction; the overall processing power limit (see
-[Input Bandwidth Limitation](#input-bandwidth-limitation)) still applies.
+[Input Bandwidth Limitation](#input-bandwidth-limitation)) still applies - and the price for the architecture is
+additional memory for the extra delay lines. Whenever possible it is to be preferred to avoid _In_Valid_ being asserted
+on consecutive clock cycles and to use _FullInpRateSupport_g = false_.
+
+The stage architecture with _FullInpRateSupport_g = true_ is depicted below:
+
+![full-input-rate-support](./fir/olo_fix_fir_dec_semi_chtdm_fullrate.drawio.png)
 
 ### Startup and Flushing
 
