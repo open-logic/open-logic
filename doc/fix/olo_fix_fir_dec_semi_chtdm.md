@@ -236,6 +236,13 @@ The stage architecture with _FullInpRateSupport_g = true_ is depicted below:
 
 ![full-input-rate-support](./fir/olo_fix_fir_dec_semi_chtdm_fullrate.drawio.png)
 
+The additional delay line for data forwarding is required because data is written into the RAM with samples from
+different channels in TDM order while the processing is done channel after channel. As a result the data cannot be
+forwarded from one stage to the other exactly in the order it arrives from the input and therefore the address
+for writing intputs and forwarding to the next stage cannot be shared if _In_Valid_ is asserted on consecutive clock
+cycles. If _In_Valid_ is not asserted on consecutive clock cycles, the data forwarding can be done directly from the RAM
+because write input and read for forwarding can be done in separate clock cycles.
+
 ### Startup and Flushing
 
 The delay lines are stored in RAM and are **not** cleared by reset. After power-up the RAMs are zero
