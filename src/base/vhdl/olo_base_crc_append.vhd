@@ -92,6 +92,7 @@ architecture rtl of olo_base_crc_append is
     signal Crc_Ready : std_logic;
     signal Crc_Crc   : std_logic_vector(CrcPolynomial_g'length-1 downto 0);
 
+    signal PlIn_Ready  : std_logic;
     signal PlIn_Valid  : std_logic;
     signal PlIn_Last   : std_logic;
     signal PlIn_Be     : std_logic_vector(BeWidth_c-1 downto 0);
@@ -110,6 +111,10 @@ architecture rtl of olo_base_crc_append is
     signal PlOut_Be     : std_logic_vector(BeWidth_c-1 downto 0);
     signal PlOut_Data   : std_logic_vector(DataWidth_g-1 downto 0);
     signal PlOut_Concat : std_logic_vector(ConcatWidth_c-1 downto 0);
+
+    -- Internal connection signals
+    signal Conn_PlIn_Ready : std_logic;
+    signal Conn_Crc_Ready  : std_logic;
 
 begin
 
@@ -140,6 +145,8 @@ begin
 
         Crc_Ready <= '0';
 
+        PlIn_Ready <= '0';
+
         case r.State is
             --------------------------------------------------------------------
             when Data_s =>
@@ -151,6 +158,8 @@ begin
                 v.CrcByteCnt := 0;
 
                 if (PlIn_Valid = '1' and Fsm_Ready = '1') then
+
+                    PlIn_Ready <= '1';
 
                     -- Possible cases:
                     --  1) Not the last data-beat
@@ -310,6 +319,9 @@ begin
     ----------------------------------------------------------------------------
     -- CRC
     ----------------------------------------------------------------------------
+
+    In_Ready <= Conn_PlIn_Ready and Conn_Crc_Ready;
+
     i_crc : entity work.olo_base_crc
         generic map (
             DataWidth_g     => DataWidth_g,
@@ -324,8 +336,8 @@ begin
             Clk       => Clk,
             Rst       => Rst,
 
-            In_Ready  => In_Ready,
-            In_Valid  => In_Valid,
+            In_Ready  => Conn_Crc_Ready,
+            In_Valid  => In_Valid and In_Ready,
             In_Last   => In_Last,
             In_Be     => In_Be,
             In_Data   => In_Data,
@@ -347,22 +359,24 @@ begin
     i_pl_in : entity work.olo_base_pl_stage
         generic map (
             Width_g     => ConcatWidth_c,
-            UseReady_g  => false,
+            UseReady_g  => true,
             Stages_g    => 1
         )
         port map (
             Clk       => Clk,
             Rst       => Rst,
 
-            In_Valid  => (In_Valid and In_Ready),
+            In_Ready  => Conn_PlIn_Ready,
+            In_Valid  => In_Valid and Conn_Crc_Ready,
             In_Data   => In_Concat,
 
+            Out_Ready => PlIn_Ready,
             Out_Valid => PlIn_Valid,
             Out_Data  => PlIn_Concat
         );
 
     -- Output Assembly
-    PlIn_Last <= PlIn_Concat(ConcatWidth_c - 1);
+    PlIn_Last <= PlIn_Concat(ConcatWidth_c-1);
     PlIn_Be   <= PlIn_Concat(ConcatWidth_c-2 downto DataWidth_g);
     PlIn_Data <= PlIn_Concat(DataWidth_g-1 downto 0);
 
