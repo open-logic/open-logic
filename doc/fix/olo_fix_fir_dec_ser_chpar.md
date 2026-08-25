@@ -40,13 +40,9 @@ Coefficients can be fixed (ROM) or runtime configurable (RAM) with optional read
 one output sample set (all channels are computed in parallel). This calculation is repeated every
 _Ratio_ input sample sets.
 
-$$
-f_{in} \leq \frac{f_{clk} \cdot Ratio}{Taps}
-$$
+![Formula Fin](./fir/formula_fin_dec_ser_chpar.png)
 
-$$
-Taps \leq \frac{f_{clk} \cdot Ratio}{f_{in}}
-$$
+![Formula Taps](./fir/formula_taps_dec_ser_chpar.png)
 
 where _f_in_ is the rate of complete input sample sets (one set = one sample per channel, all presented
 in the same clock cycle). If the input arrives faster than this limit, the filter will stop working correctly.

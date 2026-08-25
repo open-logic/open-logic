@@ -35,13 +35,9 @@ Coefficients can be fixed (ROM) or runtime configurable (RAM) with optional read
 **This entity does not generate backpressure.** The serial MAC requires _Taps x Channels_ clock cycles
 to compute one output sample set (for all channels). This calculation is repeated ever _Ratio_ iput sample sets.
 
-$$
-f_{in} \leq \frac{f_{clk} \cdot Ratio}{Taps \cdot Channels_g}
-$$
+![Formula Fin](./fir/formula_fin_dec_ser_chtdm.png)
 
-$$
-Taps \leq \frac{f_{clk} \cdot Ratio}{f_{in} \cdot Channels_g}
-$$
+![Formula Taps](./fir/formula_taps_dec_ser_chtdm.png)
 
 where _f_in_ is the rate of complete TDM frames (one frame = _Channels_g_ samples). If the input
 arrives faster than this limit, the filter will stop working correctly.

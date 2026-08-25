@@ -45,9 +45,7 @@ Coefficients can be fixed (ROM) or runtime configurable (RAM) with optional read
 _ceil(Taps_g / Multipliers_g) x Channels_g_ clock cycles to compute one output sample set (for all
 channels). This calculation is repeated every _Ratio_g_ input sample sets.
 
-$$
-f_{in} \leq \frac{f_{clk} \cdot Ratio\_g \cdot Multipliers\_g}{Taps_g \cdot Channels_g}
-$$
+![Formula Fin](./fir/formula_fin_dec_semi_chtdm.png)
 
 where _f_in_ is the rate of complete TDM frames (one frame = _Channels_g_ samples). If the input
 arrives faster than this limit, the filter stops working correctly. In simulation an error is reported
