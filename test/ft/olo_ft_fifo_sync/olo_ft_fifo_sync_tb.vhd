@@ -35,8 +35,7 @@ entity olo_ft_fifo_sync_tb is
         AlmFullOn_g     : boolean                 := true;
         AlmEmptyOn_g    : boolean                 := true;
         RamBehavior_g   : string                  := "RBW";
-        ReadyRstState_g : integer range 0 to 1    := 1;
-        EccPipeline_g   : natural range 0 to 2    := 0
+        ReadyRstState_g : integer range 0 to 1    := 1
     );
 end entity;
 
@@ -45,12 +44,10 @@ architecture sim of olo_ft_fifo_sync_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant ClkPeriod_c     : time    := 10 ns;
-    constant Depth_c         : natural := Depth_g;
-    constant AlmFullLevel_c  : natural := Depth_c - 4;
-    constant AlmEmptyLevel_c : natural := 4;
-    -- Beats the ECC decoder can buffer (two per pipeline stage)
-    constant DecCapacity_c   : natural  := 2 * EccPipeline_g;
+    constant ClkPeriod_c     : time     := 10 ns;
+    constant Depth_c         : natural  := Depth_g;
+    constant AlmFullLevel_c  : natural  := Depth_c - 4;
+    constant AlmEmptyLevel_c : natural  := 4;
     constant CodewordWidth_c : positive := eccCodewordWidth(Width_g);
 
     -----------------------------------------------------------------------------------------------
@@ -86,7 +83,7 @@ architecture sim of olo_ft_fifo_sync_tb is
     signal Out_Ready         : std_logic;
     signal Slave_Ready       : std_logic;
     signal Out_ReadyForce    : std_logic                                      := '0';
-    signal Out_Level         : std_logic_vector(log2ceil(Depth_c + DecCapacity_c + 1) - 1 downto 0);
+    signal Out_Level         : std_logic_vector(log2ceil(Depth_c + 1) - 1 downto 0);
     signal Out_EccSec        : std_logic;
     signal Out_EccDed        : std_logic;
     signal Out_TUser         : std_logic_vector(1 downto 0);
@@ -164,8 +161,7 @@ begin
 
             ---------------------------------------------------------------------------------------
             elsif run("Mixed") then
-                -- Clean / SEC / clean: adjacent beats keep their flags independent through the
-                -- FIFO + pipeline.
+                -- Clean / SEC / clean: adjacent beats keep their flags independent through the FIFO.
                 Flip_v := (others => '0');
                 ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid, toUslv(16#01#, Width_g), Flip_v);
                 ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid, toUslv(16#02#, Width_g), setBits(0, CodewordWidth_c));
@@ -269,8 +265,8 @@ begin
 
                 wait_until_idle(net, as_sync(AxisMaster_c));
 
-                -- Let the beats settle into the FIFO and the decode pipeline
-                for i in 0 to 4 + EccPipeline_g loop
+                -- Let the beats settle into the FIFO
+                for i in 0 to 4 loop
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -283,8 +279,8 @@ begin
                 wait until rising_edge(Clk);
                 Rst <= '0';
 
-                -- Flush longer than the deepest pipeline: no stale valid may re-appear
-                for i in 0 to 4 + EccPipeline_g loop
+                -- Flush a few cycles: no stale valid may re-appear
+                for i in 0 to 4 loop
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -316,24 +312,23 @@ begin
 
                 wait_until_idle(net, as_sync(AxisMaster_c));
 
-                for i in 0 to 4 + EccPipeline_g loop
+                for i in 0 to 4 loop
                     wait until rising_edge(Clk);
                 end loop;
 
                 check_equal(Empty, '0', "Empty must be low at mid fill");
                 checkAlmEmpty('0', "at mid fill");
                 checkAlmFull('0', "at mid fill");
-                check_equal(Out_Level, toUslv(16, Out_Level'length),
-                    "Out_Level must include the beats buffered in the decoder");
+                check_equal(Out_Level, toUslv(16, Out_Level'length), "Out_Level at mid fill");
 
                 -- Top up until the internal FIFO is full
-                for i in 16 to Depth_c + DecCapacity_c - 1 loop
+                for i in 16 to Depth_c - 1 loop
                     push_axi_stream(net, AxisMaster_c, toUslv(i, Width_g));
                 end loop;
 
                 wait_until_idle(net, as_sync(AxisMaster_c));
 
-                for i in 0 to 4 + EccPipeline_g loop
+                for i in 0 to 4 loop
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -341,18 +336,18 @@ begin
                 checkAlmFull('1', "once the internal FIFO is full");
                 check_equal(In_Level, toUslv(Depth_c, In_Level'length),
                     "In_Level must report the internal FIFO content");
-                check_equal(Out_Level, toUslv(Depth_c + DecCapacity_c, Out_Level'length),
-                    "Out_Level must report the entity content");
+                check_equal(Out_Level, toUslv(Depth_c, Out_Level'length),
+                    "Out_Level must report the FIFO content");
 
                 -- Drain everything
-                for i in 0 to Depth_c + DecCapacity_c - 1 loop
+                for i in 0 to Depth_c - 1 loop
                     check_axi_stream(net, AxisSlave_c, toUslv(i, Width_g), tuser => "00",
                         msg                                                      => "StatusAndLevels drain " & integer'image(i), blocking => false);
                 end loop;
 
                 wait_until_idle(net, as_sync(AxisSlave_c));
 
-                for i in 0 to 4 + EccPipeline_g loop
+                for i in 0 to 4 loop
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -390,13 +385,13 @@ begin
             elsif run("WriteFullFifo") then
 
                 -- Writing to a full FIFO must be blocked by In_Ready and must not corrupt content
-                for i in 0 to Depth_c + DecCapacity_c - 1 loop
+                for i in 0 to Depth_c - 1 loop
                     push_axi_stream(net, AxisMaster_c, toUslv(i, Width_g));
                 end loop;
 
                 wait_until_idle(net, as_sync(AxisMaster_c));
 
-                for i in 0 to 4 + EccPipeline_g loop
+                for i in 0 to 4 loop
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -410,7 +405,7 @@ begin
                 end loop;
 
                 -- Everything written before is still delivered in order and unchanged
-                for i in 0 to Depth_c + DecCapacity_c - 1 loop
+                for i in 0 to Depth_c - 1 loop
                     check_axi_stream(net, AxisSlave_c, toUslv(i, Width_g), tuser => "00",
                         msg                                                      => "WriteFullFifo drain " & integer'image(i), blocking => false);
                 end loop;
@@ -425,7 +420,7 @@ begin
 
                 wait_until_idle(net, as_sync(AxisMaster_c));
 
-                for i in 0 to 4 + EccPipeline_g loop
+                for i in 0 to 4 loop
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -437,7 +432,7 @@ begin
                     msg                                                      => "Threshold drain", blocking => false);
                 wait_until_idle(net, as_sync(AxisSlave_c));
 
-                for i in 0 to 4 + EccPipeline_g loop
+                for i in 0 to 4 loop
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -508,8 +503,7 @@ begin
             AlmEmptyOn_g    => AlmEmptyOn_g,
             AlmEmptyLevel_g => AlmEmptyLevel_c,
             RamBehavior_g   => RamBehavior_g,
-            ReadyRstState_g => toStdl(ReadyRstState_g),
-            EccPipeline_g   => EccPipeline_g
+            ReadyRstState_g => toStdl(ReadyRstState_g)
         )
         port map (
             Clk               => Clk,

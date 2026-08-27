@@ -29,10 +29,9 @@ library olo;
 -- vunit: run_all_in_same_sim
 entity olo_ft_fifo_packet_tb is
     generic (
-        runner_cfg    : string;
-        Width_g       : positive range 5 to 128 := 32;
-        FeatureSet_g  : string                  := "FULL";
-        EccPipeline_g : natural range 0 to 2    := 0
+        runner_cfg   : string;
+        Width_g      : positive range 5 to 128 := 32;
+        FeatureSet_g : string                  := "FULL"
     );
 end entity;
 
@@ -79,7 +78,8 @@ architecture sim of olo_ft_fifo_packet_tb is
     signal Out_Data          : std_logic_vector(Width_g - 1 downto 0);
     signal Out_Size          : std_logic_vector(log2ceil(Depth_c + 1) - 1 downto 0);
     signal Out_Last          : std_logic;
-    signal Out_Next          : std_logic                                      := '0';
+    signal Out_Next          : std_logic;
+    signal NextArm           : std_logic                                      := '0';
     signal Out_Repeat        : std_logic                                      := '0';
     signal Out_EccSec        : std_logic;
     signal Out_EccDed        : std_logic;
@@ -202,12 +202,7 @@ begin
                 -- Out_Repeat is passed through the wrapper. Hold it high through the entire
                 -- first read of a packet (level, so no cycle alignment is needed), then release
                 -- it: the packet must be delivered twice, the following packet once.
-                --
-                -- Out_Repeat is sampled on the internal FIFO handshake. With EccPipeline_g > 0
-                -- that handshake runs ahead of the observed output (see the constraints note in
-                -- the documentation), so an output-observing driver cannot delimit the repeat
-                -- window; the case is only meaningful for EccPipeline_g = 0.
-                if FeatureSet_g = "FULL" and EccPipeline_g = 0 then
+                if FeatureSet_g = "FULL" then
                     Flip_v := (others => '0');
 
                     for i in 0 to 4 loop
@@ -235,11 +230,127 @@ begin
 
                     ftExpectBeat(net, AxisSlave_c, toUslv(16#B0#, Width_g), Flip_v, "Repeat follower", '1');
                 else
-                    -- DROP_SKIP_ONLY (no Out_Repeat) or EccPipeline_g > 0 (see above): no test
+                    -- DROP_SKIP_ONLY has no Out_Repeat: no test
                     null;
                 end if;
 
             ---------------------------------------------------------------------------------------
+            ---------------------------------------------------------------------------------------
+            elsif run("ResetState") then
+                -- Reset values of the complete output surface
+                check_equal(In_Ready, '1', "In_Ready reset state");
+                check_equal(Out_Valid, '0', "Out_Valid reset state");
+                check_equal(In_IsDropped, '0', "In_IsDropped reset state");
+                check_equal(PacketLevel, toUslv(0, PacketLevel'length), "PacketLevel reset state");
+                check_equal(FreeWords, toUslv(Depth_c, FreeWords'length), "FreeWords reset state");
+
+            ---------------------------------------------------------------------------------------
+            elsif run("Size1Packets") then
+                -- Single-beat packets: every beat is a packet boundary
+                Flip_v := (others => '0');
+
+                for i in 0 to 3 loop
+                    ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid,
+                               toUslv(16#30# + i, Width_g), Flip_v, '1');
+                end loop;
+
+                for i in 0 to 3 loop
+                    ftExpectBeat(net, AxisSlave_c, toUslv(16#30# + i, Width_g), Flip_v,
+                                 "Size1 packet " & integer'image(i), '1');
+                end loop;
+
+            ---------------------------------------------------------------------------------------
+            elsif run("NextPacket") then
+                -- Out_Next skips the remainder of the packet being read. Armed before the first
+                -- beat, so it fires on that beat and the rest of packet A is dropped.
+                Flip_v := (others => '0');
+
+                for i in 0 to 4 loop
+                    ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid,
+                               toUslv(16#C0# + i, Width_g), Flip_v, choose(i = 4, '1', '0'));
+                end loop;
+
+                for i in 0 to 2 loop
+                    ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid,
+                               toUslv(16#D0# + i, Width_g), Flip_v, choose(i = 2, '1', '0'));
+                end loop;
+
+                -- The skipped packet is terminated cleanly, so the delivered beat carries Last
+                NextArm <= '1';
+                ftExpectBeat(net, AxisSlave_c, toUslv(16#C0#, Width_g), Flip_v, "Next: first beat", '1');
+                wait until rising_edge(Clk) and Out_Valid = '1' and Out_Ready = '1';
+                NextArm <= '0';
+
+                -- The remainder of packet A is skipped, packet B follows complete
+                for i in 0 to 2 loop
+                    ftExpectBeat(net, AxisSlave_c, toUslv(16#D0# + i, Width_g), Flip_v,
+                                 "Next: packet B beat " & integer'image(i), choose(i = 2, '1', '0'));
+                end loop;
+
+            ---------------------------------------------------------------------------------------
+            elsif run("PacketLevelAndFreeWords") then
+                -- Both status words are pass-throughs of the internal FIFO and must be exact
+                Flip_v := (others => '0');
+
+                for i in 0 to 3 loop
+                    ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid,
+                               toUslv(16#50# + i, Width_g), Flip_v, choose(i = 3, '1', '0'));
+                end loop;
+
+                for i in 0 to 1 loop
+                    ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid,
+                               toUslv(16#60# + i, Width_g), Flip_v, choose(i = 1, '1', '0'));
+                end loop;
+
+                wait_until_idle(net, as_sync(AxisMaster_c));
+
+                for i in 0 to 5 loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                check_equal(PacketLevel, toUslv(2, PacketLevel'length), "PacketLevel after two packets");
+                check_equal(FreeWords, toUslv(Depth_c - 6, FreeWords'length), "FreeWords after six beats");
+
+                for i in 0 to 3 loop
+                    ftExpectBeat(net, AxisSlave_c, toUslv(16#50# + i, Width_g), Flip_v,
+                                 "Level drain A" & integer'image(i), choose(i = 3, '1', '0'));
+                end loop;
+
+                for i in 0 to 1 loop
+                    ftExpectBeat(net, AxisSlave_c, toUslv(16#60# + i, Width_g), Flip_v,
+                                 "Level drain B" & integer'image(i), choose(i = 1, '1', '0'));
+                end loop;
+
+                wait_until_idle(net, as_sync(AxisSlave_c));
+
+                for i in 0 to 5 loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                check_equal(PacketLevel, toUslv(0, PacketLevel'length), "PacketLevel when drained");
+                check_equal(FreeWords, toUslv(Depth_c, FreeWords'length), "FreeWords when drained");
+
+            ---------------------------------------------------------------------------------------
+            elsif run("Wraparound") then
+                -- Push and drain more beats than the FIFO is deep, so the RAM address wraps
+                Flip_v := (others => '0');
+
+                for pkt in 0 to 4 loop
+
+                    for i in 0 to 19 loop
+                        ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid,
+                                   toUslv(pkt * 20 + i, Width_g), Flip_v, choose(i = 19, '1', '0'));
+                    end loop;
+
+                    for i in 0 to 19 loop
+                        ftExpectBeat(net, AxisSlave_c, toUslv(pkt * 20 + i, Width_g), Flip_v,
+                                     "Wrap p" & integer'image(pkt) & " b" & integer'image(i),
+                                     choose(i = 19, '1', '0'));
+                    end loop;
+
+                    wait_until_idle(net, as_sync(AxisSlave_c));
+                end loop;
+
             elsif run("ResetInFlight") then
                 -- Store a complete packet that is never drained (no read expectation queued, so
                 -- the slave VC keeps Out_Ready low), then reset mid-operation. The FIFO must
@@ -249,8 +360,8 @@ begin
                 ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid, toUslv(16#41#, Width_g), Flip_v, '1');
                 wait_until_idle(net, as_sync(AxisMaster_c));
 
-                -- Let the packet settle through the FIFO into the output pipeline
-                for i in 0 to 6 + EccPipeline_g loop
+                -- Let the packet settle into the FIFO
+                for i in 0 to 6 loop
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -263,8 +374,8 @@ begin
                 wait until rising_edge(Clk);
                 Rst <= '0';
 
-                -- Flush longer than the deepest pipeline: no stale valid may re-appear
-                for i in 0 to 6 + EccPipeline_g loop
+                -- Flush a few cycles: no stale valid may re-appear
+                for i in 0 to 6 loop
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -292,6 +403,7 @@ begin
     Clk <= not Clk after 0.5 * ClkPeriod_c;
 
     Out_TUser <= Out_EccSec & Out_EccDed;
+    Out_Next  <= NextArm and Out_Valid and Out_Ready;
 
     -----------------------------------------------------------------------------------------------
     -- DUT
@@ -300,8 +412,7 @@ begin
         generic map (
             Width_g       => Width_g,
             Depth_g       => Depth_c,
-            FeatureSet_g  => FeatureSet_g,
-            EccPipeline_g => EccPipeline_g
+            FeatureSet_g  => FeatureSet_g
         )
         port map (
             Clk               => Clk,

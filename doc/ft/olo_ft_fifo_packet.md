@@ -38,7 +38,6 @@ not covered by the ECC parity (see
 | SmallRamStyle_g    | string   | "registers" | RAM style for the internal packet-boundary FIFO. The default "registers" keeps the packet boundaries in flip-flops so they can be covered by vendor TMR (see [Fault-Tolerant Storage of Packet Boundaries](#fault-tolerant-storage-of-packet-boundaries)). Overriding this to a RAM primitive re-introduces non-ECC-protected RAM state and is discouraged for fault-tolerant designs. |
 | SmallRamBehavior_g | string   | "same"  | RAM behavior for the internal packet-boundary FIFO           |
 | MaxPackets_g       | positive | 17      | Maximum number of packets in the FIFO (min 2)                |
-| EccPipeline_g      | natural  | 0       | Number of pipeline stages between ECC decode and the output (range 0..2, implemented with [olo_base_pl_stage](../base/olo_base_pl_stage.md)). 0 = combinational output. |
 
 ## Interfaces
 
@@ -47,7 +46,7 @@ not covered by the ECC parity (see
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Clk  | in     | 1      | -       | Clock                                                        |
-| Rst  | in     | 1      | -       | Reset (high-active, synchronous to _Clk_). Empties the FIFO and clears the internal error-injection latch and the output pipeline. |
+| Rst  | in     | 1      | -       | Reset (high-active, synchronous to _Clk_). Empties the FIFO and clears the internal error-injection latch. |
 
 ### Input Data
 
@@ -69,8 +68,8 @@ not covered by the ECC parity (see
 | Out_Data   | out    | _Width_g_               | N/A     | Output data (corrected if a single-bit error was detected)   |
 | Out_Size   | out    | _ceil(log2(Depth_g+1))_ | N/A     | Packet size in words                                         |
 | Out_Last   | out    | 1                       | N/A     | End of packet                                                |
-| Out_Next   | in     | 1                       | '0'     | Skip to the next packet. See Constraints regarding _EccPipeline_g_. |
-| Out_Repeat | in     | 1                       | '0'     | Repeat the current packet (FULL feature set only). See Constraints regarding _EccPipeline_g_. |
+| Out_Next   | in     | 1                       | '0'     | Skip to the next packet. Acts on the beat observed at the output, as in the base FIFO. |
+| Out_Repeat | in     | 1                       | '0'     | Repeat the current packet (FULL feature set only). Acts on the beat observed at the output, as in the base FIFO. |
 | Out_EccSec | out    | 1                       | N/A     | Single error corrected flag. Time-aligned with _Out_Data_.   |
 | Out_EccDed | out    | 1                       | N/A     | Double error detected flag. Read data is unreliable. Time-aligned with _Out_Data_. |
 
@@ -99,24 +98,30 @@ latched-strobe semantics shared across the _ft_ area.
 
 ![olo_ft_fifo_packet architecture](./fifo/olo_ft_fifo_packet_arch.drawio.png)
 
-The FIFO is a pipeline of four Open Logic entities:
+The entity is composed of three Open Logic entities:
 
-1. [olo_ft_ecc_encode](./olo_ft_ecc_encode.md) encodes each accepted input beat into a SECDED codeword
-   (combinational, the AXI-S handshake passes through).
+1. [olo_ft_ecc_encode](./olo_ft_ecc_encode.md) encodes each accepted input beat into a SECDED codeword.
 2. [olo_base_fifo_packet](../base/olo_base_fifo_packet.md) stores the codeword (entity configured with a
-   codeword-wide word). _In_Last_ / _In_Drop_ / _Out_Next_ / _Out_Repeat_ and the status outputs connect
-   directly to the base FIFO. The packet boundaries live in the base FIFO's internal packet-boundary FIFO,
-   implemented in flip-flops by default (_SmallRamStyle_g_ = "registers").
-3. [olo_ft_ecc_decode](./olo_ft_ecc_decode.md) decodes and corrects each beat combinationally on the read
-   side.
-4. [olo_base_pl_stage](../base/olo_base_pl_stage.md) (with `EccPipeline_g` stages) registers the decoded
-   data **bundled with its sideband** (_Out_EccSec_, _Out_EccDed_, _Out_Last_, _Out_Size_), so all output
-   signals stay time-aligned regardless of the pipeline depth.
+   codeword-wide word). _In_Last_, _In_Drop_, _Out_Next_, _Out_Repeat_, _Out_Last_, _Out_Size_ and the
+   status outputs connect straight through.
+3. [olo_ft_ecc_decode](./olo_ft_ecc_decode.md) decodes and corrects each beat on the read side and drives
+   _Out_EccSec_ / _Out_EccDed_.
 
-Because encoding happens before, and decoding after, all storage elements, the codeword is protected
-end-to-end through the FIFO.
+The codeword is protected end-to-end while it is inside the FIFO: encoding happens before, and decoding
+after, all storage elements.
 
-See [olo_base_fifo_packet](../base/olo_base_fifo_packet.md) for detailed FIFO behavior.
+### Combinational ECC Encoder and Decoder
+
+Both codecs are instantiated with `Pipeline_g = 0`. The datapath to and from the internal FIFO is
+therefore combinational, and the _ft_ entity behaves exactly like its
+[olo_base_fifo_packet](../base/olo_base_fifo_packet.md) counterpart.
+
+The ECC decode lies between the RAM output and the output ports and is the critical path of the entity.
+If it limits the achievable clock frequency, add an
+[olo_base_pl_stage](../base/olo_base_pl_stage.md) on the output side in the surrounding design.
+Register _Out_Data_, _Out_Last_, _Out_Size_, _Out_EccSec_ and _Out_EccDed_ in the same stage to keep them
+aligned. Note that _Out_Next_ and _Out_Repeat_ then refer to the beat inside that stage, not to the one
+observed behind it.
 
 ### Fault-Tolerant Storage of Packet Boundaries
 
@@ -154,11 +159,6 @@ See the corresponding sections in
   not part of the ECC codeword. They are kept in flip-flops by default (see
   [Fault-Tolerant Storage of Packet Boundaries](#fault-tolerant-storage-of-packet-boundaries)) and must be
   covered by vendor TMR as part of the surrounding radiation-hardened design, like all other control logic.
-- _Out_Next_ and _Out_Repeat_ are sampled on the **internal** FIFO read handshake. With
-  `EccPipeline_g > 0` the internal handshake runs ahead of the beats observed on the output ports
-  (bounded by the output pipeline's buffer capacity), so users driving _Out_Next_ / _Out_Repeat_ based on
-  observed output data cannot align them to specific beats or packets. Use `EccPipeline_g = 0` when
-  beat-accurate _Out_Next_ / _Out_Repeat_ control is required.
 - See
   [Open Logic Fault-Tolerance Principles - Constraints That Apply Across the Area](./olo_ft_principles.md#constraints-that-apply-across-the-area)
   for the constraints that apply across the _ft_ area.

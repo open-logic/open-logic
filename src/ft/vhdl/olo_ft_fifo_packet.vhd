@@ -11,6 +11,7 @@
 -- internal word to store parity bits alongside data. The ECC is transparent
 -- to the user: data is encoded on write and decoded/corrected on read.
 -- Note that FeatureSet_g=DROP_ONLY is not supported for fault-tolerance reasons
+-- and that the entity is intentionally free of output pipelining
 -- (see documentation).
 --
 -- Documentation:
@@ -43,8 +44,7 @@ entity olo_ft_fifo_packet is
         RamBehavior_g      : string                            := "RBW";
         SmallRamStyle_g    : string                            := "registers";
         SmallRamBehavior_g : string                            := "same";
-        MaxPackets_g       : positive range 2 to positive'high := 17;
-        EccPipeline_g      : natural range 0 to 2              := 0
+        MaxPackets_g       : positive range 2 to positive'high := 17
     );
     port (
         -- Control Ports
@@ -84,28 +84,16 @@ architecture rtl of olo_ft_fifo_packet is
     constant EntityName_c    : string   := "olo_ft_fifo_packet";
     constant CodewordWidth_c : positive := eccCodewordWidth(Width_g);
     constant SizeWidth_c     : positive := log2ceil(Depth_g + 1);
-    -- Sideband bundle width: {EccSec, EccDed, Last, Size, Data}
-    constant PlWidth_c       : positive := Width_g + 2 + 1 + SizeWidth_c;
 
     -- Encoder -> FIFO
     signal EncOut_Codeword : std_logic_vector(CodewordWidth_c - 1 downto 0);
     signal EncOut_Valid    : std_logic;
     signal EncOut_Ready    : std_logic;
 
-    -- FIFO -> decode + output pipeline
+    -- FIFO -> decoder
     signal Fifo_OutData  : std_logic_vector(CodewordWidth_c - 1 downto 0);
     signal Fifo_OutValid : std_logic;
     signal Fifo_OutReady : std_logic;
-    signal Fifo_OutLast  : std_logic;
-    signal Fifo_OutSize  : std_logic_vector(SizeWidth_c - 1 downto 0);
-
-    -- Combinational decoder outputs
-    signal Dec_Data   : std_logic_vector(Width_g - 1 downto 0);
-    signal Dec_EccSec : std_logic;
-    signal Dec_EccDed : std_logic;
-
-    signal Pl_InData  : std_logic_vector(PlWidth_c - 1 downto 0);
-    signal Pl_OutData : std_logic_vector(PlWidth_c - 1 downto 0);
 
 begin
 
@@ -163,63 +151,35 @@ begin
             Out_Valid    => Fifo_OutValid,
             Out_Ready    => Fifo_OutReady,
             Out_Data     => Fifo_OutData,
-            Out_Size     => Fifo_OutSize,
-            Out_Last     => Fifo_OutLast,
+            Out_Size     => Out_Size,
+            Out_Last     => Out_Last,
             Out_Next     => Out_Next,
             Out_Repeat   => Out_Repeat,
             PacketLevel  => PacketLevel,
             FreeWords    => FreeWords
         );
 
-    -- Combinational decoder (Pipeline_g=0). The output pl_stage carries the bundled sideband
-    -- (Sec/Ded/Last/Size) together with the decoded data, so the decoder itself doesn't need
-    -- its own pipeline.
+    -- Decoder. Combinational by design so that the read-side control (Out_Next, Out_Repeat) and
+    -- the status act on the beat the user actually observes, see documentation.
     i_dec : entity work.olo_ft_ecc_decode
         generic map (
             Width_g    => Width_g,
             Pipeline_g => 0,
-            UseReady_g => false
+            UseReady_g => true
         )
         port map (
             Clk            => Clk,
             Rst            => Rst,
-            In_Valid       => '1',
-            In_Ready       => open,
+            In_Valid       => Fifo_OutValid,
+            In_Ready       => Fifo_OutReady,
             In_Codeword    => Fifo_OutData,
-            Out_Valid      => open,
-            Out_Ready      => '1',
-            Out_Data       => Dec_Data,
-            Out_EccSec     => Dec_EccSec,
-            Out_EccDed     => Dec_EccDed,
+            Out_Valid      => Out_Valid,
+            Out_Ready      => Out_Ready,
+            Out_Data       => Out_Data,
+            Out_EccSec     => Out_EccSec,
+            Out_EccDed     => Out_EccDed,
             ErrInj_BitFlip => (others => '0'),
             ErrInj_Valid   => '0'
         );
-
-    -- Bundle decoded data + sideband for the output pipeline stage
-    Pl_InData <= Dec_EccSec & Dec_EccDed & Fifo_OutLast & Fifo_OutSize & Dec_Data;
-
-    -- Pipeline stage with Valid/Ready handshaking (0 stages = passthrough)
-    i_pl : entity work.olo_base_pl_stage
-        generic map (
-            Width_g  => PlWidth_c,
-            Stages_g => EccPipeline_g
-        )
-        port map (
-            Clk       => Clk,
-            Rst       => Rst,
-            In_Valid  => Fifo_OutValid,
-            In_Ready  => Fifo_OutReady,
-            In_Data   => Pl_InData,
-            Out_Valid => Out_Valid,
-            Out_Ready => Out_Ready,
-            Out_Data  => Pl_OutData
-        );
-
-    -- Unbundle output
-    Out_Data   <= Pl_OutData(Width_g - 1 downto 0);
-    Out_Size   <= Pl_OutData(Width_g + SizeWidth_c - 1 downto Width_g);
-    Out_Last   <= Pl_OutData(Width_g + SizeWidth_c);
-    Out_EccDed <= Pl_OutData(Width_g + SizeWidth_c + 1);
-    Out_EccSec <= Pl_OutData(Width_g + SizeWidth_c + 2);
 
 end architecture;
