@@ -129,6 +129,17 @@ def add_configs(olo_tb):
     # Sweep the full entity range (0..2), matching the ft RAM test benches
     for EccPipeline in [0, 1, 2]:
         named_config(tb, {'EccPipeline_g': EccPipeline})
+    # Coverage knobs of the base FIFO test bench. Depth 31 is the case where the decoder beats
+    # widen Out_Level beyond the width of the base FIFO.
+    for RamBehav in ['RBW', 'WBR']:
+        named_config(tb, {'RamBehavior_g': RamBehav})
+    for RstState in [0, 1]:
+        named_config(tb, {'ReadyRstState_g': RstState})
+    for Depth in [31, 53, 128]:
+        named_config(tb, {'Depth_g': Depth, 'EccPipeline_g': 2})
+    for AlmFull in [True, False]:
+        for AlmEmpty in [True, False]:
+            named_config(tb, {'AlmFullOn_g': AlmFull, 'AlmEmptyOn_g': AlmEmpty})
 
     ### olo_ft_fifo_packet ###
     tb = olo_tb.test_bench('olo_ft_fifo_packet_tb')

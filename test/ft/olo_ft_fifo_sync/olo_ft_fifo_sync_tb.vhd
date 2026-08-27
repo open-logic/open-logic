@@ -29,9 +29,14 @@ library olo;
 -- vunit: run_all_in_same_sim
 entity olo_ft_fifo_sync_tb is
     generic (
-        runner_cfg    : string;
-        Width_g       : positive range 5 to 128 := 32;
-        EccPipeline_g : natural range 0 to 2    := 0
+        runner_cfg      : string;
+        Width_g         : positive range 5 to 128 := 32;
+        Depth_g         : positive                := 32;
+        AlmFullOn_g     : boolean                 := true;
+        AlmEmptyOn_g    : boolean                 := true;
+        RamBehavior_g   : string                  := "RBW";
+        ReadyRstState_g : integer range 0 to 1    := 1;
+        EccPipeline_g   : natural range 0 to 2    := 0
     );
 end entity;
 
@@ -40,8 +45,12 @@ architecture sim of olo_ft_fifo_sync_tb is
     -----------------------------------------------------------------------------------------------
     -- Constants
     -----------------------------------------------------------------------------------------------
-    constant ClkPeriod_c     : time     := 10 ns;
-    constant Depth_c         : natural  := 32;
+    constant ClkPeriod_c     : time    := 10 ns;
+    constant Depth_c         : natural := Depth_g;
+    constant AlmFullLevel_c  : natural := Depth_c - 4;
+    constant AlmEmptyLevel_c : natural := 4;
+    -- Beats the ECC decoder can buffer (two per pipeline stage)
+    constant DecCapacity_c   : natural  := 2 * EccPipeline_g;
     constant CodewordWidth_c : positive := eccCodewordWidth(Width_g);
 
     -----------------------------------------------------------------------------------------------
@@ -75,12 +84,35 @@ architecture sim of olo_ft_fifo_sync_tb is
     signal Out_Data          : std_logic_vector(Width_g - 1 downto 0);
     signal Out_Valid         : std_logic;
     signal Out_Ready         : std_logic;
-    signal Out_Level         : std_logic_vector(log2ceil(Depth_c + 1) - 1 downto 0);
+    signal Slave_Ready       : std_logic;
+    signal Out_ReadyForce    : std_logic                                      := '0';
+    signal Out_Level         : std_logic_vector(log2ceil(Depth_c + DecCapacity_c + 1) - 1 downto 0);
     signal Out_EccSec        : std_logic;
     signal Out_EccDed        : std_logic;
     signal Out_TUser         : std_logic_vector(1 downto 0);
     signal Full              : std_logic;
+    signal AlmFull           : std_logic;
     signal Empty             : std_logic;
+    signal AlmEmpty          : std_logic;
+
+    -- AlmFull/AlmEmpty are tied low when the corresponding generic disables them
+    procedure checkAlmFull (expected : in std_logic; msg : in string) is
+        variable Exp_v : std_logic := expected;
+    begin
+        if not AlmFullOn_g then
+            Exp_v := '0';
+        end if;
+        check_equal(AlmFull, Exp_v, "AlmFull " & msg);
+    end procedure;
+
+    procedure checkAlmEmpty (expected : in std_logic; msg : in string) is
+        variable Exp_v : std_logic := expected;
+    begin
+        if not AlmEmptyOn_g then
+            Exp_v := '0';
+        end if;
+        check_equal(AlmEmpty, Exp_v, "AlmEmpty " & msg);
+    end procedure;
 
 begin
 
@@ -266,6 +298,170 @@ begin
                 ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid, toUslv(16#77#, Width_g), Flip_v);
                 ftExpectBeat(net, AxisSlave_c, toUslv(16#77#, Width_g), Flip_v, "Recovery beat");
 
+            ---------------------------------------------------------------------------------------
+            elsif run("StatusAndLevels") then
+                -- No read expectation is queued during the fill phases, so the slave VC keeps
+                -- Out_Ready low
+                check_equal(Empty, '1', "Empty must be high after reset");
+                check_equal(Full, '0', "Full must be low after reset");
+                checkAlmEmpty('1', "after reset");
+                checkAlmFull('0', "after reset");
+                check_equal(In_Level, toUslv(0, In_Level'length), "In_Level must be 0 after reset");
+                check_equal(Out_Level, toUslv(0, Out_Level'length), "Out_Level must be 0 after reset");
+
+                -- Mid fill
+                for i in 0 to 15 loop
+                    push_axi_stream(net, AxisMaster_c, toUslv(i, Width_g));
+                end loop;
+
+                wait_until_idle(net, as_sync(AxisMaster_c));
+
+                for i in 0 to 4 + EccPipeline_g loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                check_equal(Empty, '0', "Empty must be low at mid fill");
+                checkAlmEmpty('0', "at mid fill");
+                checkAlmFull('0', "at mid fill");
+                check_equal(Out_Level, toUslv(16, Out_Level'length),
+                    "Out_Level must include the beats buffered in the decoder");
+
+                -- Top up until the internal FIFO is full
+                for i in 16 to Depth_c + DecCapacity_c - 1 loop
+                    push_axi_stream(net, AxisMaster_c, toUslv(i, Width_g));
+                end loop;
+
+                wait_until_idle(net, as_sync(AxisMaster_c));
+
+                for i in 0 to 4 + EccPipeline_g loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                check_equal(Full, '1', "Full must be high once the internal FIFO is full");
+                checkAlmFull('1', "once the internal FIFO is full");
+                check_equal(In_Level, toUslv(Depth_c, In_Level'length),
+                    "In_Level must report the internal FIFO content");
+                check_equal(Out_Level, toUslv(Depth_c + DecCapacity_c, Out_Level'length),
+                    "Out_Level must report the entity content");
+
+                -- Drain everything
+                for i in 0 to Depth_c + DecCapacity_c - 1 loop
+                    check_axi_stream(net, AxisSlave_c, toUslv(i, Width_g), tuser => "00",
+                        msg                                                      => "StatusAndLevels drain " & integer'image(i), blocking => false);
+                end loop;
+
+                wait_until_idle(net, as_sync(AxisSlave_c));
+
+                for i in 0 to 4 + EccPipeline_g loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                check_equal(Empty, '1', "Empty must be high after the entity is drained");
+                checkAlmEmpty('1', "after the entity is drained");
+                check_equal(Full, '0', "Full must be low after the drain");
+                checkAlmFull('0', "after the drain");
+                check_equal(In_Level, toUslv(0, In_Level'length), "In_Level must be 0 when drained");
+                check_equal(Out_Level, toUslv(0, Out_Level'length), "Out_Level must be 0 when drained");
+
+            ---------------------------------------------------------------------------------------
+            elsif run("ReadEmptyFifo") then
+                -- Reading an empty FIFO must not produce data and must not disturb the status
+                check_equal(Empty, '1', "Empty must be high before the read attempt");
+
+                wait until rising_edge(Clk);
+                Out_ReadyForce <= '1';
+
+                for i in 0 to 9 loop
+                    wait until rising_edge(Clk);
+                    check_equal(Out_Valid, '0', "Out_Valid must stay low on an empty FIFO");
+                end loop;
+
+                Out_ReadyForce <= '0';
+                wait until rising_edge(Clk);
+                check_equal(Empty, '1', "Empty must still be high after the read attempt");
+                check_equal(Out_Level, toUslv(0, Out_Level'length), "Out_Level must still be 0");
+
+                -- The FIFO still works afterwards
+                Flip_v := (others => '0');
+                ftPushBeat(net, AxisMaster_c, Clk, In_ErrInj_BitFlip, In_ErrInj_Valid, toUslv(16#5A#, Width_g), Flip_v);
+                ftExpectBeat(net, AxisSlave_c, toUslv(16#5A#, Width_g), Flip_v, "Beat after empty read");
+
+            ---------------------------------------------------------------------------------------
+            elsif run("WriteFullFifo") then
+
+                -- Writing to a full FIFO must be blocked by In_Ready and must not corrupt content
+                for i in 0 to Depth_c + DecCapacity_c - 1 loop
+                    push_axi_stream(net, AxisMaster_c, toUslv(i, Width_g));
+                end loop;
+
+                wait_until_idle(net, as_sync(AxisMaster_c));
+
+                for i in 0 to 4 + EccPipeline_g loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                check_equal(Full, '1', "Full must be high");
+                check_equal(In_Ready, '0', "In_Ready must be low while full");
+
+                -- Offer more data while full, it must not be accepted
+                for i in 0 to 9 loop
+                    wait until rising_edge(Clk);
+                    check_equal(In_Ready, '0', "In_Ready must stay low while full");
+                end loop;
+
+                -- Everything written before is still delivered in order and unchanged
+                for i in 0 to Depth_c + DecCapacity_c - 1 loop
+                    check_axi_stream(net, AxisSlave_c, toUslv(i, Width_g), tuser => "00",
+                        msg                                                      => "WriteFullFifo drain " & integer'image(i), blocking => false);
+                end loop;
+
+            ---------------------------------------------------------------------------------------
+            elsif run("AlmostFlagsThresholds") then
+
+                -- AlmEmpty is computed inside the entity, so the threshold is checked exactly
+                for i in 0 to AlmEmptyLevel_c loop
+                    push_axi_stream(net, AxisMaster_c, toUslv(i, Width_g));
+                end loop;
+
+                wait_until_idle(net, as_sync(AxisMaster_c));
+
+                for i in 0 to 4 + EccPipeline_g loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                -- Exactly AlmEmptyLevel_c + 1 beats are pending, one above the threshold
+                checkAlmEmpty('0', "one beat above the threshold");
+
+                -- Drain one beat, now exactly at the threshold
+                check_axi_stream(net, AxisSlave_c, toUslv(0, Width_g), tuser => "00",
+                    msg                                                      => "Threshold drain", blocking => false);
+                wait_until_idle(net, as_sync(AxisSlave_c));
+
+                for i in 0 to 4 + EccPipeline_g loop
+                    wait until rising_edge(Clk);
+                end loop;
+
+                checkAlmEmpty('1', "exactly at the threshold");
+
+                -- Drain the rest
+                for i in 1 to AlmEmptyLevel_c loop
+                    check_axi_stream(net, AxisSlave_c, toUslv(i, Width_g), tuser => "00",
+                        msg                                                      => "Threshold rest " & integer'image(i), blocking => false);
+                end loop;
+
+            ---------------------------------------------------------------------------------------
+            elsif run("ReadyRstState") then
+                wait until rising_edge(Clk);
+                Rst <= '1';
+                wait until rising_edge(Clk);
+                wait until rising_edge(Clk);
+                check_equal(In_Ready, toStdl(ReadyRstState_g),
+                    "In_Ready must follow ReadyRstState_g during reset");
+                wait until rising_edge(Clk);
+                Rst <= '0';
+                wait until rising_edge(Clk);
+                check_equal(In_Ready, '1', "In_Ready must be high after reset");
+
             end if;
 
             wait_until_idle(net, as_sync(AxisMaster_c));
@@ -283,15 +479,37 @@ begin
     Clk <= not Clk after 0.5 * ClkPeriod_c;
 
     Out_TUser <= Out_EccSec & Out_EccDed;
+    Out_Ready <= Slave_Ready or Out_ReadyForce;
+
+    -----------------------------------------------------------------------------------------------
+    -- Status Monitors
+    -----------------------------------------------------------------------------------------------
+    -- Invariants that must hold in every test case
+    p_status_monitor : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            if Rst = '0' then
+                check_false(Empty = '1' and Out_Valid = '1',
+                    "Empty asserted while Out_Valid offers a beat");
+                check_equal(Full, not In_Ready, "Full must be the inverse of In_Ready");
+            end if;
+        end if;
+    end process;
 
     -----------------------------------------------------------------------------------------------
     -- DUT
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_ft_fifo_sync
         generic map (
-            Width_g       => Width_g,
-            Depth_g       => Depth_c,
-            EccPipeline_g => EccPipeline_g
+            Width_g         => Width_g,
+            Depth_g         => Depth_c,
+            AlmFullOn_g     => AlmFullOn_g,
+            AlmFullLevel_g  => AlmFullLevel_c,
+            AlmEmptyOn_g    => AlmEmptyOn_g,
+            AlmEmptyLevel_g => AlmEmptyLevel_c,
+            RamBehavior_g   => RamBehavior_g,
+            ReadyRstState_g => toStdl(ReadyRstState_g),
+            EccPipeline_g   => EccPipeline_g
         )
         port map (
             Clk               => Clk,
@@ -307,9 +525,9 @@ begin
             Out_EccSec        => Out_EccSec,
             Out_EccDed        => Out_EccDed,
             Full              => Full,
-            AlmFull           => open,
+            AlmFull           => AlmFull,
             Empty             => Empty,
-            AlmEmpty          => open,
+            AlmEmpty          => AlmEmpty,
             In_ErrInj_BitFlip => In_ErrInj_BitFlip,
             In_ErrInj_Valid   => In_ErrInj_Valid
         );
@@ -335,7 +553,7 @@ begin
         port map (
             AClk   => Clk,
             TValid => Out_Valid,
-            TReady => Out_Ready,
+            TReady => Slave_Ready,
             TData  => Out_Data,
             TUser  => Out_TUser
         );

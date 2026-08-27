@@ -57,7 +57,7 @@ entity olo_ft_fifo_sync is
         Out_Data          : out   std_logic_vector(Width_g - 1 downto 0);
         Out_Valid         : out   std_logic;
         Out_Ready         : in    std_logic                                                := '1';
-        Out_Level         : out   std_logic_vector(log2ceil(Depth_g + 1) - 1 downto 0);
+        Out_Level         : out   std_logic_vector(log2ceil(Depth_g + 2 * EccPipeline_g + 1) - 1 downto 0);
         Out_EccSec        : out   std_logic;
         Out_EccDed        : out   std_logic;
         -- Status
@@ -78,6 +78,9 @@ architecture rtl of olo_ft_fifo_sync is
 
     constant CodewordWidth_c : positive := eccCodewordWidth(Width_g);
 
+    -- Beats buffered in the ECC decoder (two per pipeline stage)
+    constant DecCapacity_c : natural := 2 * EccPipeline_g;
+
     -- Encoder -> FIFO interface
     signal EncOut_Codeword : std_logic_vector(CodewordWidth_c - 1 downto 0);
     signal EncOut_Valid    : std_logic;
@@ -88,11 +91,35 @@ architecture rtl of olo_ft_fifo_sync is
     signal FifoOut_Valid    : std_logic;
     signal FifoOut_Ready    : std_logic;
 
+    -- Status entity forward-declaration (defined later in this file)
+    component olo_private_ft_fifo_status is
+        generic (
+            Depth_g         : positive;
+            ExtraBeats_g    : natural;
+            AlmEmptyOn_g    : boolean;
+            AlmEmptyLevel_g : natural
+        );
+        port (
+            Clk       : in    std_logic;
+            Rst       : in    std_logic;
+            In_Valid  : in    std_logic;
+            In_Ready  : in    std_logic;
+            Out_Valid : in    std_logic;
+            Out_Ready : in    std_logic;
+            Level     : out   std_logic_vector(log2ceil(Depth_g + ExtraBeats_g + 1) - 1 downto 0);
+            Empty     : out   std_logic;
+            AlmEmpty  : out   std_logic
+        );
+    end component;
+
+    signal In_Ready_i  : std_logic;
+    signal Out_Valid_i : std_logic;
+
 begin
 
-    -- Encoder: AXI-S handshake propagates user In_Valid/In_Ready through the codec, latch lives
-    -- inside the codec. UseReady_g=true so the FIFO's back-pressure (FIFO.In_Ready) reaches the
-    -- user's In_Ready.
+    In_Ready  <= In_Ready_i;
+    Out_Valid <= Out_Valid_i;
+
     i_enc : entity work.olo_ft_ecc_encode
         generic map (
             Width_g    => Width_g,
@@ -103,7 +130,7 @@ begin
             Clk            => Clk,
             Rst            => Rst,
             In_Valid       => In_Valid,
-            In_Ready       => In_Ready,
+            In_Ready       => In_Ready_i,
             In_Data        => In_Data,
             Out_Valid      => EncOut_Valid,
             Out_Ready      => EncOut_Ready,
@@ -112,15 +139,15 @@ begin
             ErrInj_Valid   => In_ErrInj_Valid
         );
 
-    -- Base FIFO with codeword-wide word
     i_fifo : entity work.olo_base_fifo_sync
         generic map (
             Width_g         => CodewordWidth_c,
             Depth_g         => Depth_g,
             AlmFullOn_g     => AlmFullOn_g,
             AlmFullLevel_g  => AlmFullLevel_g,
-            AlmEmptyOn_g    => AlmEmptyOn_g,
-            AlmEmptyLevel_g => AlmEmptyLevel_g,
+            -- Read-side status is produced by i_status instead
+            AlmEmptyOn_g    => false,
+            AlmEmptyLevel_g => 0,
             RamStyle_g      => RamStyle_g,
             RamBehavior_g   => RamBehavior_g,
             ReadyRstState_g => ReadyRstState_g
@@ -135,15 +162,13 @@ begin
             Out_Data  => FifoOut_Codeword,
             Out_Valid => FifoOut_Valid,
             Out_Ready => FifoOut_Ready,
-            Out_Level => Out_Level,
+            Out_Level => open,
             Full      => Full,
             AlmFull   => AlmFull,
-            Empty     => Empty,
-            AlmEmpty  => AlmEmpty
+            Empty     => open,
+            AlmEmpty  => open
         );
 
-    -- Decoder: own pipeline stages (EccPipeline_g) and AXI-S handshake propagate FIFO's
-    -- Out_Valid/Out_Ready to the user.
     i_dec : entity work.olo_ft_ecc_decode
         generic map (
             Width_g    => Width_g,
@@ -156,7 +181,7 @@ begin
             In_Valid       => FifoOut_Valid,
             In_Ready       => FifoOut_Ready,
             In_Codeword    => FifoOut_Codeword,
-            Out_Valid      => Out_Valid,
+            Out_Valid      => Out_Valid_i,
             Out_Ready      => Out_Ready,
             Out_Data       => Out_Data,
             Out_EccSec     => Out_EccSec,
@@ -164,5 +189,130 @@ begin
             ErrInj_BitFlip => (others => '0'),
             ErrInj_Valid   => '0'
         );
+
+    -- Read-side status covers the FIFO and the ECC decoder, see documentation
+    i_status : component olo_private_ft_fifo_status
+        generic map (
+            Depth_g         => Depth_g,
+            ExtraBeats_g    => DecCapacity_c,
+            AlmEmptyOn_g    => AlmEmptyOn_g,
+            AlmEmptyLevel_g => AlmEmptyLevel_g
+        )
+        port map (
+            Clk       => Clk,
+            Rst       => Rst,
+            In_Valid  => In_Valid,
+            In_Ready  => In_Ready_i,
+            Out_Valid => Out_Valid_i,
+            Out_Ready => Out_Ready,
+            Level     => Out_Level,
+            Empty     => Empty,
+            AlmEmpty  => AlmEmpty
+        );
+
+end architecture;
+
+---------------------------------------------------------------------------------------------------
+-- Libraries
+---------------------------------------------------------------------------------------------------
+
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+
+library work;
+    use work.olo_base_pkg_math.all;
+
+---------------------------------------------------------------------------------------------------
+-- Read-Side Status Entity
+---------------------------------------------------------------------------------------------------
+-- Counts the beats a FIFO and the ExtraBeats_g stages behind it still have to deliver.
+---------------------------------------------------------------------------------------------------
+entity olo_private_ft_fifo_status is
+    generic (
+        Depth_g         : positive;
+        ExtraBeats_g    : natural;
+        AlmEmptyOn_g    : boolean;
+        AlmEmptyLevel_g : natural
+    );
+    port (
+        -- Control Ports
+        Clk       : in    std_logic;
+        Rst       : in    std_logic;
+        -- Handshakes
+        In_Valid  : in    std_logic;
+        In_Ready  : in    std_logic;
+        Out_Valid : in    std_logic;
+        Out_Ready : in    std_logic;
+        -- Status
+        Level     : out   std_logic_vector(log2ceil(Depth_g + ExtraBeats_g + 1) - 1 downto 0);
+        Empty     : out   std_logic;
+        AlmEmpty  : out   std_logic
+    );
+end entity;
+
+---------------------------------------------------------------------------------------------------
+-- Architecture
+---------------------------------------------------------------------------------------------------
+architecture rtl of olo_private_ft_fifo_status is
+
+    constant MaxLevel_c : natural := Depth_g + ExtraBeats_g;
+
+    type TwoProcess_r is record
+        Level : natural range 0 to MaxLevel_c;
+    end record;
+
+    signal r, r_next : TwoProcess_r;
+
+begin
+
+    -- *** Combinatorial Process ***
+    p_comb : process (all) is
+        variable v        : TwoProcess_r;
+        variable Enters_v : boolean;
+        variable Leaves_v : boolean;
+    begin
+        -- hold variables stable
+        v := r;
+
+        -- Level update
+        Enters_v := (In_Valid = '1') and (In_Ready = '1');
+        Leaves_v := (Out_Valid = '1') and (Out_Ready = '1');
+
+        if Enters_v and not Leaves_v and r.Level /= MaxLevel_c then
+            v.Level := r.Level + 1;
+        elsif Leaves_v and not Enters_v and r.Level /= 0 then
+            v.Level := r.Level - 1;
+        end if;
+
+        -- Status outputs
+        Level <= toUslv(r.Level, Level'length);
+
+        if r.Level = 0 then
+            Empty <= '1';
+        else
+            Empty <= '0';
+        end if;
+
+        if AlmEmptyOn_g and (r.Level <= AlmEmptyLevel_g) then
+            AlmEmpty <= '1';
+        else
+            AlmEmpty <= '0';
+        end if;
+
+        -- Assign signal
+        r_next <= v;
+    end process;
+
+    -- *** Sequential Process ***
+    p_seq : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            r <= r_next;
+            if Rst = '1' then
+                r.Level <= 0;
+            end if;
+        end if;
+    end process;
 
 end architecture;

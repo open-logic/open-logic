@@ -300,6 +300,10 @@ common constraints) are described once in
 
 ### RAM Implementations (olo_ft_ram_\<...\>)
 
+The ECC-protected counterparts of the [olo_base_ram_\<...\>](#ram-implementations-olo_base_ram_)
+entities. The _scrub_ variants additionally repair single-bit errors in the background and have no
+base counterpart.
+
 | Entity                                   | Description                                                  |
 | ---------------------------------------- | ------------------------------------------------------------ |
 | [olo_ft_ram_sp](./ft/olo_ft_ram_sp.md)   | ECC-protected single port RAM                                |
@@ -309,6 +313,10 @@ common constraints) are described once in
 | [olo_ft_ram_tdp](./ft/olo_ft_ram_tdp.md) | ECC-protected true dual-port RAM                             |
 
 ### FIFO Implementations (olo_ft_fifo_\<...\>)
+
+The ECC-protected counterparts of the [olo_base_fifo_\<...\>](#fifo-implementations-olo_base_fifo_)
+entities. An asynchronous variant will be introduced as well once fault-tolerant clock-crossing
+primitives have been introduced to the ft area.
 
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
