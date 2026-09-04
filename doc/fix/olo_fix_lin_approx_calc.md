@@ -51,6 +51,8 @@ point (_gradient_).
 
 The table index and the output are calculated as follows (_S_ and _I_ being the sign and integer bits of _InFmt_g_):
 
+!!! Clean-up formula !!!
+
 ```text
 segment_width  = 2**(S + I) / TableSize_g
 index          = floor(In_Data / segment_width) mod TableSize_g
@@ -58,23 +60,6 @@ segment_center = (floor(In_Data / segment_width) + 0.5) * segment_width
 
 Out_Result     = offset[index] + gradient[index] * (In_Data - segment_center)
 ```
-
-The upper _log2(TableSize_g)_ bits of _In_Data_ are used as table index, the remaining lower bits are the position
-within the segment. The lower bits are unsigned and relative to the beginning of the segment. By inverting their MSB,
-they are converted into the signed offset relative to the center of the segment - which is exactly what the
-multiplication above requires.
-
-For signed _InFmt_g_, negative input values wrap into the **upper half** of the table (the table index is simply the
-unsigned interpretation of the upper input bits). The code generator arranges the table content accordingly.
-
-### Precision
-
-The multiplication and the addition are executed at full precision (no rounding, no saturation). This allows the adder
-to be implemented within a DSP slice. Rounding and saturation are applied in separate pipeline stages at the output,
-controlled by _Round_g_ and _Saturate_g_.
-
-The approximation error depends on the number of table entries and the formats chosen for the table. The Python class
-[olo_fix_lin_approx](./olo_fix_lin_approx.md) provides an _analyze()_ method that helps finding suitable settings.
 
 ## Generics
 
@@ -128,7 +113,10 @@ available in the next clock cycle). Reads must not be gated - the table must del
 
 ### Architecture
 
-The pipeline is organized as follows:
+Below figure illustrates how the linear approximation is implemented.
+
+!!! FIGURE !!!
+
 
 | Stage | Operation                                                              |
 | :---- | :--------------------------------------------------------------------- |
@@ -149,6 +137,26 @@ The multiplication and the addition are executed into their natural (lossless) r
 saturation is required for them, the adder fits into the DSP slice and rounding/saturation only happen in the output
 stage. The formats of a linear approximation are small enough to always fit into a single multiplier, hence the number
 of multiplier pipeline stages is not configurable.
+
+### Table Details
+
+The upper _log2(TableSize_g)_ bits of _In_Data_ are used as table index, the remaining lower bits are the position
+within the segment. The lower bits are unsigned and relative to the beginning of the segment. By inverting their MSB,
+they are converted into the signed offset relative to the center of the segment - which is exactly what the
+multiplication above requires.
+
+For signed _InFmt_g_, negative input values wrap into the **upper half** of the table (the table index is simply the
+unsigned interpretation of the upper input bits). The code generator arranges the table content accordingly.
+
+### Precision
+
+The multiplication and the addition are executed at full precision (no rounding, no saturation). This allows the adder
+to be implemented within a DSP slice. Rounding and saturation are applied in separate pipeline stages at the output,
+controlled by _Round_g_ and _Saturate_g_.
+
+The approximation error depends on the number of table entries and the formats chosen for the table. The Python class
+[olo_fix_lin_approx](./olo_fix_lin_approx.md) provides an _analyze()_ method that helps finding suitable settings.
+
 
 ### Usage Example
 
