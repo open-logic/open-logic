@@ -9,6 +9,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src/
 from olo_fix import olo_fix_pkg_writer
 from en_cl_fix_pkg import *
 
+#Import test specific code generators
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../test/fix/olo_fix_lin_approx")))
+from lin_approx_codegen import generate as lin_approx_generate
+
 
 ########################################################################################################################
 # Code Generators
@@ -37,6 +41,9 @@ def generate():
     pkg_writer.add_vector("VectorFixFormatAsString_c", FixFormat, [FixFormat(1, 8, 8), FixFormat(1, 16, 16)], as_string=True)
 
     pkg_writer.write_vhdl_pkg("pkg_writer_test_pkg", "../test/fix/olo_fix_pkg_writer", olo_library="olo")
+
+    # Linear approximation (entities, testbenches and co-simulation files)
+    lin_approx_generate()
 
 if __name__ == "__main__":
     generate()
