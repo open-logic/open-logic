@@ -846,3 +846,10 @@ def add_configs(olo_tb):
     named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
 
 
+
+    ### olo_fix_lin_approx ###
+    # Entities and testbenches are generated through <root>/sim/codegen.py, which is executed before
+    # VUnit detects files. The generated testbenches check the HDL against the Python model.
+    for name in olo_fix_lin_approx.lin_approx_codegen.SAMPLES.keys():
+        tb = olo_tb.test_bench(f'olo_fix_lin_approx_{name}_tb')
+        named_config(tb, {}, short_name='default')
