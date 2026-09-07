@@ -847,6 +847,75 @@ def add_configs(olo_tb):
 
 
 
+    ### olo_fix_lin_approx_qsin ###
+    tb = olo_tb.test_bench('olo_fix_lin_approx_qsin_tb')
+    cosim = olo_fix_lin_approx_qsin.cosim.cosim
+    default_generics = {
+        'OutFmt_g': '(1, 0, 16)',
+        'InFmt_g': '(0, -2, 20)',
+        'CosOutput_g': True,
+        'MemStyle_g': 'auto',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+
+    # Check bit-trueness for all scalings
+    for IntBits in [0, 1]:
+        for FracBits in range(10, 21):
+            generics = default_generics | {'OutFmt_g': f'(1, {IntBits}, {FracBits})',
+                                           'InFmt_g': f'(0, -2, {FracBits+4})'}
+            named_config(tb, generics, pre_config=cosim,
+                         short_name=f'formats-OutFmt_g=(1,{IntBits},{FracBits})')
+
+    # Sine only (single table read port) and different memory styles
+    named_config(tb, default_generics | {'CosOutput_g': False}, pre_config=cosim,
+                 short_name='sin-only')
+
+    # Round / Saturate
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat},
+                         pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+    ### olo_fix_sin ###
+    tb = olo_tb.test_bench('olo_fix_sin_tb')
+    cosim = olo_fix_sin.cosim.cosim
+    default_generics = {
+        'OutFmt_g': '(1, 0, 16)',
+        'InFmt_g': '(0, 0, 20)',
+        'CosOutput_g': True,
+        'MemStyle_g': 'auto',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+
+    # Smallest, largest and one intermediate table for both scalings
+    for IntBits in [0, 1]:
+        for FracBits in [10, 16, 20]:
+            generics = default_generics | {'OutFmt_g': f'(1, {IntBits}, {FracBits})',
+                                           'InFmt_g': f'(0, 0, {FracBits+4})'}
+            named_config(tb, generics, pre_config=cosim,
+                         short_name=f'formats-OutFmt_g=(1,{IntBits},{FracBits})')
+
+    # Input formats - the phase wraps for integer bits and for negative values, formats covering
+    # less than one rotation only reach a part of the wave and low resolutions are zero padded
+    # The in-quadrant phase (InFmt_g.F-2 bits) must resolve the table index, which is 8 bits wide
+    # for the default output format - hence at least 11 fractional bits are required
+    for InFmt in ['(0, 2, 20)', '(1, 0, 20)', '(1, 3, 20)', '(0, -2, 20)', '(1, -1, 16)',
+                  '(0, 0, 11)']:
+        named_config(tb, default_generics | {'InFmt_g': InFmt}, pre_config=cosim,
+                     short_name=f'InFmt_g={InFmt}')
+
+    # Sine only (single table read port)
+    named_config(tb, default_generics | {'CosOutput_g': False}, pre_config=cosim,
+                 short_name='sin-only')
+
+    # Round / Saturate
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat},
+                         pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
     ### olo_fix_lin_approx ###
     # Entities and testbenches are generated through <root>/sim/codegen.py, which is executed before
     # VUnit detects files. The generated testbenches check the HDL against the Python model.
