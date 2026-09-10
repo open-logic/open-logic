@@ -845,6 +845,78 @@ def add_configs(olo_tb):
     cosim_overflow = partial(cosim, test_mode='overflow')
     named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
 
+    ### olo_fix_lin_approx ###
+    # Entities and testbenches are generated through <root>/sim/codegen.py, which is executed before
+    # VUnit detects files. The generated testbenches check the HDL against the Python model.
+    for name in olo_fix_lin_approx.lin_approx_codegen.SAMPLES.keys():
+        tb = olo_tb.test_bench(f'olo_fix_lin_approx_{name}_tb')
+        named_config(tb, {}, short_name='default')
+
+    ### olo_fix_lin_approx_qsin ###
+    tb = olo_tb.test_bench('olo_fix_lin_approx_qsin_tb')
+    cosim = olo_fix_lin_approx_qsin.cosim.cosim
+    default_generics = {
+        'OutFmt_g': '(1, 0, 16)',
+        'InFmt_g': '(0, -2, 20)',
+        'UsePortB_g': True,
+        'MemStyle_g': 'auto',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+
+    # Check bit-trueness for all scalings
+    for IntBits in [0, 1]:
+        for FracBits in range(10, 21):
+            generics = default_generics | {'OutFmt_g': f'(1, {IntBits}, {FracBits})',
+                                           'InFmt_g': f'(0, -2, {FracBits+4})'}
+            named_config(tb, generics, pre_config=cosim,
+                         short_name=f'formats-OutFmt_g=(1,{IntBits},{FracBits})')
+
+    # Single table read port and different memory styles
+    named_config(tb, default_generics | {'UsePortB_g': False}, pre_config=cosim,
+                 short_name='port-a-only')
+
+    # Round / Saturate
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat},
+                         pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+    ### olo_fix_sin ###
+    tb = olo_tb.test_bench('olo_fix_sin_tb')
+    cosim = olo_fix_sin.cosim.cosim
+    default_generics = {
+        'OutFmt_g': '(1, 0, 16)',
+        'InFmt_g': '(0, 0, 20)',
+        'CosOutput_g': True,
+        'MemStyle_g': 'auto',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+
+    # Smallest, largest and one intermediate table for both scalings
+    for IntBits in [0, 1]:
+        for FracBits in [10, 16, 20]:
+            generics = default_generics | {'OutFmt_g': f'(1, {IntBits}, {FracBits})',
+                                           'InFmt_g': f'(0, 0, {FracBits+4})'}
+            named_config(tb, generics, pre_config=cosim,
+                         short_name=f'formats-OutFmt_g=(1,{IntBits},{FracBits})')
+
+    # Input formats
+    for InFmt in ['(0, 2, 20)', '(1, 0, 20)', '(1, 3, 20)', '(0, -2, 20)', '(1, -1, 16)',
+                  '(0, 0, 11)']:
+        named_config(tb, default_generics | {'InFmt_g': InFmt}, pre_config=cosim,
+                     short_name=f'InFmt_g={InFmt}')
+
+    # Sine only (single table read port)
+    named_config(tb, default_generics | {'CosOutput_g': False}, pre_config=cosim,
+                 short_name='sin-only')
+
+    # Round / Saturate
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat},
+                         pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
 
 
     ### olo_fix_lin_approx ###
@@ -852,4 +924,4 @@ def add_configs(olo_tb):
     # VUnit detects files. The generated testbenches check the HDL against the Python model.
     for name in olo_fix_lin_approx.lin_approx_codegen.SAMPLES.keys():
         tb = olo_tb.test_bench(f'olo_fix_lin_approx_{name}_tb')
-        named_config(tb, {}, short_name='default')
+        named_config(tb, {}, short_name=name)

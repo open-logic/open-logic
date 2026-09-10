@@ -98,6 +98,38 @@ entity olo_fix_lin_approx_sin16b is
 end entity;
 ```
 
+### Generating a Table Package
+
+_generate_entity()_ produces one entity per approximation, with the table built in. If instead **one** entity must
+select between several tables at elaboration time (e.g. one table per supported output format), use the static
+_generate_package()_ instead. It takes a dictionary of approximations and writes a package containing one table per
+entry:
+
+```python
+approximations = {
+    "sin16b" : olo_fix_lin_approx(cfg16),
+    "sin20b" : olo_fix_lin_approx(cfg20),
+}
+olo_fix_lin_approx.generate_package(approximations, "my_tables_pkg", "./hdl")
+```
+
+The generated package provides the following public interface, where _\<name\>_ is the key used in the dictionary:
+
+| Function                | Description                                                                    |
+| :---------------------- | :------------------------------------------------------------------------------ |
+| getTable(\<name\>)       | Table content. Each entry contains the gradient (MSBs) and the offset (LSBs). |
+| getTableSize(\<name\>)   | Number of points (segments) of the table                                       |
+| getOffsetFmt(\<name\>)   | Format of the offset entries, as string                                        |
+| getGradientFmt(\<name\>) | Format of the gradient entries, as string                                      |
+
+All entries of all tables are zero padded to the same width so they fit into one array type. The padding is meant to
+be sliced away by the entity, hence it does not cost any memory.
+
+[olo_fix_lin_approx_qsin](./olo_fix_lin_approx_qsin.md) is an example of this pattern - it selects one of 22
+quarter-sine tables based on its output format.
+
+### Generating a Testbench
+
 _generate_tb()_ writes a [VUnit](https://vunit.github.io/) testbench that checks the generated HDL against the Python
 model. It uses the same verification components as all other _olo_fix_ testbenches
 (_olo_test_fix_stimuli_vc_ / _olo_test_fix_checker_vc_) and it also writes the co-simulation files containing the
@@ -151,6 +183,7 @@ finally the helpers used while designing an approximation.
 | next(in_data)        | Bit-true calculation of the approximation for the samples passed                |
 | process(in_data)     | Identical to _next()_ - the approximation is stateless                          |
 | generate_entity(...) | Generate the VHDL entity (including the table) and return the entity name       |
+| generate_package(...) | Static - generate a VHDL package containing the tables of several approximations and return the package name |
 | generate_tb(...)     | Generate the bit-true testbench plus co-simulation files and return the TB name  |
 | entity_name          | Property containing the name of the entity generated                            |
 | analyze(...)         | Design helper - plot accuracy and print the ranges required for the tables      |

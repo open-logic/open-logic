@@ -275,6 +275,92 @@ class olo_fix_lin_approx:
                      join(directory, f"{entity_name}_tb.vhd"))
         return f"{entity_name}_tb"
 
+    @staticmethod
+    def generate_package(approximations : dict, package_name : str,
+                         directory : str) -> str: # pragma: no cover
+        """
+        Generate a VHDL package containing the tables of several approximations
+
+        This is the alternative to generate_entity() for cases where one entity must be able to
+        select between several tables at elaboration time (e.g. one table per output format). The
+        entity then takes the table from the package instead of containing it.
+
+        For details, see documentation.
+
+        :param approximations: Dictionary of name (string) to olo_fix_lin_approx. One table is
+                               generated per entry. The names are the keys used by the getters.
+        :param package_name: Name of the package (and of the file) generated
+        :param directory: Target directory
+        :return: Name of the package generated
+        """
+        cls = olo_fix_lin_approx
+
+        # All entries share the same width, rounded up to a multiple of four for hex literals
+        widths      = [cl_fix_width(a.cfg.offs_fmt) + cl_fix_width(a.cfg.grad_fmt)
+                       for a in approximations.values()]
+        entry_width = ((max(widths) + 3)//4)*4
+
+        # Assemble the data of all tables
+        tables = []
+
+        for index, (name, approx) in enumerate(approximations.items()):
+            offs_fmt = approx.cfg.offs_fmt
+            grad_fmt = approx.cfg.grad_fmt
+            rows     = [cls._hex_string(g, grad_fmt, o, offs_fmt, entry_width)
+                        for g, o in zip(approx.grad_table, approx.offs_table)]
+            tables.append({
+                "index" : index,
+                "name" : name,
+                "points" : approx.cfg.points,
+                "width" : cl_fix_width(offs_fmt) + cl_fix_width(grad_fmt),
+                "offs_fmt" : cls._fmt_string(offs_fmt),
+                "grad_fmt" : cls._fmt_string(grad_fmt),
+                "rows" : rows
+            })
+
+        # Names listed in the error message of the lookup, wrapped so no line gets too long
+        available = []
+        line      = ""
+
+        for name in approximations.keys():
+            entry = name if line == "" else f", {name}"
+            if len(line) + len(entry) > 100:
+                available.append(line + ", ")
+                line = name
+            else:
+                line += entry
+        available.append(line)
+
+        data = {
+            "package_name" : package_name,
+            "entry_width" : entry_width,
+            "tables" : tables,
+            "available" : available
+        }
+
+        # Render template
+        cls._render("olo_fix_lin_approx_pkg_vhdl.template", data,
+                    join(directory, f"{package_name}.vhd"))
+        return package_name
+
+    @staticmethod
+    def _hex_string(grad, grad_fmt : FixFormat, offs, offs_fmt : FixFormat,
+                    width : int) -> str: # pragma: no cover
+        """
+        Hex representation of one table entry (gradient in the MSBs, offset in the LSBs)
+
+        :param grad: Gradient value
+        :param grad_fmt: Format of the gradient
+        :param offs: Offset value
+        :param offs_fmt: Format of the offset
+        :param width: Width the entry is zero padded to
+        :return: Hex string with width/4 characters
+        """
+        offs_width = cl_fix_width(offs_fmt)
+        offs_int   = int(cl_fix_to_integer(offs, offs_fmt))
+        grad_int   = int(cl_fix_to_integer(grad, grad_fmt))
+        return format((grad_int << offs_width) | offs_int, f"0{width//4}X")
+
     @property
     def entity_name(self) -> str: # pragma: no cover
         """
@@ -304,7 +390,8 @@ class olo_fix_lin_approx:
             integer += 2**width
         return format(integer, f"0{width}b")
 
-    def _render(self, template_name : str, data : dict, file_path : str) -> None: # pragma: no cover
+    @staticmethod
+    def _render(template_name : str, data : dict, file_path : str) -> None: # pragma: no cover
         """
         Render a jinja2 template into a file
 
@@ -312,7 +399,7 @@ class olo_fix_lin_approx:
         :param data: Data passed to the template
         :param file_path: Path of the file to write
         """
-        env = Environment(loader=FileSystemLoader(self._TEMPLATE_DIR),
+        env = Environment(loader=FileSystemLoader(olo_fix_lin_approx._TEMPLATE_DIR),
                           trim_blocks=True, lstrip_blocks=True)
         template = env.get_template(template_name)
         with open(file_path, "w+") as f:
