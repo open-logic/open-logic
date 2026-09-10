@@ -924,4 +924,4 @@ def add_configs(olo_tb):
     # VUnit detects files. The generated testbenches check the HDL against the Python model.
     for name in olo_fix_lin_approx.lin_approx_codegen.SAMPLES.keys():
         tb = olo_tb.test_bench(f'olo_fix_lin_approx_{name}_tb')
-        named_config(tb, {}, short_name='default')
+        named_config(tb, {}, short_name=name)
