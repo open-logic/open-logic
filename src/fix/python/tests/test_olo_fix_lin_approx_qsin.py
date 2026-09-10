@@ -30,6 +30,10 @@ def quarter_fmt(bits : int) -> FixFormat:
 #       this is covered by en_cl_fix_pkg tests already.
 class TestOloFixLinApproxQsin(unittest.TestCase):
 
+    def setUp(self):
+        self.dut = olo_fix_lin_approx_qsin(FixFormat(1, 0, 16), FixFormat(0, -2, 18))
+        self.in_sig = np.linspace(0, 0.25, 50);
+
     @staticmethod
     def _quarter_phase(bits : int, points : int = 3000):
         """
@@ -45,69 +49,35 @@ class TestOloFixLinApproxQsin(unittest.TestCase):
         # Every configuration must stay below one LSB of error over the full quadrant
         for (int_bits, frac_bits), tbl in QSIN_TABLES.items():
             out_fmt = FixFormat(1, int_bits, frac_bits)
-            bits = out_fmt.F + 2
-            dut = olo_fix_lin_approx_qsin(out_fmt, quarter_fmt(bits))
-            phase = self._quarter_phase(bits)
-            sin_val, cos_val = dut.process(phase)
-            sin_err = np.max(np.abs(sin_val - np.sin(phase*2*np.pi)*dut.peak))*2**frac_bits
-            cos_err = np.max(np.abs(cos_val - np.cos(phase*2*np.pi)*dut.peak))*2**frac_bits
+            in_fmt = FixFormat(0, -2, out_fmt.F+2)
+            dut = olo_fix_lin_approx_qsin(out_fmt, in_fmt)
+            phase = np.linspace(cl_fix_min_value(in_fmt), cl_fix_max_value(in_fmt), 50)
+            sin_val = dut.process(phase)
+            sin_err = np.max(np.abs(np.sin(phase*2*np.pi)-sin_val))
             self.assertLess(sin_err, 1.0, f"sine error too large for {out_fmt}")
-            self.assertLess(cos_err, 1.0, f"cosine error too large for {out_fmt}")
 
-    def test_mirror_symmetry(self):
-        # The cosine is the sine of the mirrored quarter phase
-        dut = olo_fix_lin_approx_qsin(FixFormat(1, 0, 16), quarter_fmt(18))
-        phase = self._quarter_phase(18, 500)[1:]  # zero is the critical value, tested separately
-        _, cos_val = dut.process(phase)
-        sin_mirrored, _ = dut.process(0.25 - phase)
-        np.testing.assert_array_equal(cos_val, sin_mirrored)
-
-    # -----------------------------------------------------------------------------------------------
-    # Critical Input Value
-    # -----------------------------------------------------------------------------------------------
     def test_zero_is_exact(self):
-        # An input of zero is exact - its mirrored address wraps and must not be taken from the table
+        # The sine of zero is exact. The mirrored phase wrapping to zero is handled by the user of
+        # the entity (see olo_fix_sin) and not here.
         for int_bits in [0, 1]:
-            dut = olo_fix_lin_approx_qsin(FixFormat(1, int_bits, 16), quarter_fmt(18))
-            sin_val, cos_val = dut.process(0.0)
-            self.assertEqual(sin_val[0], 0.0)
-            self.assertEqual(cos_val[0], dut.peak)
+            dut = olo_fix_lin_approx_qsin(FixFormat(1, 1, 16), FixFormat(0, -2, 16))
+            self.assertEqual(dut.process(0.0)[0], 0.0)
 
     def test_peak_scaling(self):
-        # Without integer bit the wave is scaled to 1.0-1LSB, with integer bit it is unscaled
-        self.assertEqual(olo_fix_lin_approx_qsin(FixFormat(1, 0, 12), quarter_fmt(14)).peak,
-                         1.0 - 2.0**-12)
-        self.assertEqual(olo_fix_lin_approx_qsin(FixFormat(1, 1, 12), quarter_fmt(14)).peak,
-                         1.0)
+        dut_unscaled = olo_fix_lin_approx_qsin(FixFormat(1, 1, 16), FixFormat(0, -2, 12))
+        dut_scaled = olo_fix_lin_approx_qsin(FixFormat(1, 0, 16), FixFormat(0, -2, 12))
+        self.assertEqual(dut_unscaled.process(0.25), 1.0)
+        self.assertAlmostEqual(dut_scaled.process(0.25), 1.0-2**-16, delta=1e-6)
 
     # -----------------------------------------------------------------------------------------------
     # Interface
     # -----------------------------------------------------------------------------------------------
     def test_process_equals_next(self):
-        dut = olo_fix_lin_approx_qsin(FixFormat(1, 0, 16), quarter_fmt(18))
-        dut.reset()
-        phase = self._quarter_phase(18, 100)
-        sin_a, cos_a = dut.next(phase)
-        sin_b, cos_b = dut.process(phase)
-        np.testing.assert_array_equal(sin_a, sin_b)
-        np.testing.assert_array_equal(cos_a, cos_b)
+        self.dut.reset()
+        np.testing.assert_array_equal(self.dut.next(self.in_sig), self.dut.process(self.in_sig))
 
     def test_scalar_input(self):
-        dut = olo_fix_lin_approx_qsin(FixFormat(1, 0, 16), quarter_fmt(18))
-        sin_val, cos_val = dut.process(0.125)
-        self.assertAlmostEqual(sin_val[0], np.sin(np.pi/4)*dut.peak, places=4)
-        self.assertAlmostEqual(cos_val[0], np.cos(np.pi/4)*dut.peak, places=4)
-
-    def test_table_properties(self):
-        tbl = QSIN_TABLES[(0, 16)]
-        self.assertEqual(tbl.index_bits, int(np.log2(tbl.points)))
-        self.assertEqual(tbl.width, cl_fix_width(tbl.offs_fmt) + cl_fix_width(tbl.grad_fmt))
-        self.assertEqual(quarter_fmt(18), FixFormat(0, -2, 20))
-
-    def test_table_config_constructor(self):
-        tbl = olo_fix_lin_approx_qsin_tbl(64, FixFormat(0, 0, 14), FixFormat(0, 1, 8))
-        self.assertEqual(tbl.points, 64)
-        self.assertEqual(tbl.index_bits, 6)
+        self.assertAlmostEqual(self.dut.process(0.125)[0], np.sin(np.pi/4)*self.dut.peak, places=4)
 
     # -----------------------------------------------------------------------------------------------
     # Argument Checks

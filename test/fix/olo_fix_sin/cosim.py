@@ -33,6 +33,9 @@ def cosim(output_path : str = None,
     phase_critical = [0, 0.25, 0.5, 0.75]
     phase = np.concatenate((phase_sweep, phase_critical))
 
+    #quantize input
+    phase = cl_fix_from_real(phase, InFmt_g)
+
     #Calculate
     dut = olo_fix_sin(OutFmt_g, InFmt_g, Round_g, Saturate_g)
     out_sin, out_cos = dut.process(phase)

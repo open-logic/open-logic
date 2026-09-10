@@ -53,30 +53,34 @@ def cosim(output_path : str = None,
     Round_g = FixRound[generics["Round_g"]]
     Saturate_g = FixSaturate[generics["Saturate_g"]]
 
-    #Generate inputs - the quarter phase covers [0, 0.25), zero is the critical value
-    quarter = stimuli_codes(InFmt_g, SAMPLES, 2**cl_fix_width(InFmt_g))
+    #Generate inputs - the quarter phase covers [0, 0.25). Port A sweeps the quadrant, port B is
+    #driven with the mirrored phase 0.25-t, which is how olo_fix_sin obtains the cosine.
+    phase_a = stimuli_codes(InFmt_g, SAMPLES, 2**cl_fix_width(InFmt_g))
+    phase_b = cl_fix_from_real((0.25 - phase_a) % 0.25, InFmt_g)
 
     #Calculate
     dut = olo_fix_lin_approx_qsin(OutFmt_g, InFmt_g, Round_g, Saturate_g)
-    out_sin, out_cos = dut.process(quarter)
+    out_a = dut.process(phase_a)
+    out_b = dut.process(phase_b)
 
     # Plot if enabled
     if not cosim_mode:
-        expected_sin = np.sin(quarter*2*np.pi)*dut.peak
-        expected_cos = np.cos(quarter*2*np.pi)*dut.peak
-        in_data = {"Quarter Phase [rotations]" : quarter}
-        out_data = {"Sine" : out_sin, "Cosine" : out_cos}
-        err_data = {"Error Sine [LSB]" : (out_sin - expected_sin)*2**OutFmt_g.F,
-                    "Error Cosine [LSB]" : (out_cos - expected_cos)*2**OutFmt_g.F}
+        expected_a = np.sin(phase_a*2*np.pi)*dut.peak
+        expected_b = np.sin(phase_b*2*np.pi)*dut.peak
+        in_data = {"Phase A [rotations]" : phase_a, "Phase B [rotations]" : phase_b}
+        out_data = {"Out A" : out_a, "Out B" : out_b}
+        err_data = {"Error A [LSB]" : (out_a - expected_a)*2**OutFmt_g.F,
+                    "Error B [LSB]" : (out_b - expected_b)*2**OutFmt_g.F}
         olo_fix_plots.plot_subplots({"Input Data" : in_data, "Output Data" : out_data,
                                      "Error Data" : err_data})
 
     #Write Files
     if cosim_mode:
         writer = olo_fix_cosim(output_path)
-        writer.write_cosim_file(quarter, InFmt_g, "Quarter.fix")
-        writer.write_cosim_file(out_sin, OutFmt_g, "Sin.fix")
-        writer.write_cosim_file(out_cos, OutFmt_g, "Cos.fix")
+        writer.write_cosim_file(phase_a, InFmt_g, "PhaseA.fix")
+        writer.write_cosim_file(phase_b, InFmt_g, "PhaseB.fix")
+        writer.write_cosim_file(out_a, OutFmt_g, "OutA.fix")
+        writer.write_cosim_file(out_b, OutFmt_g, "OutB.fix")
     return True
 
 if __name__ == "__main__":

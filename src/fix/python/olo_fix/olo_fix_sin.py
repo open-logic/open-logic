@@ -83,23 +83,32 @@ class olo_fix_sin:
         # Convert scalars to 1d array and quantize
         if np.isscalar(phase):
             phase = np.array([phase])
-        phase = cl_fix_from_real(phase, self.in_fmt)
+        # Use resize instead of cl_fix_from_real to produce wrapping behavior
+        #phase = cl_fix_from_real(phase, self.in_fmt)
+        phase = cl_fix_resize(phase, self.in_fmt, self.in_fmt, FixRound.Trunc_s, FixSaturate.None_s)
 
         # Convert the phase into one rotation
         quadrant = cl_fix_to_integer(cl_fix_resize(phase, self.in_fmt, self.quadrant_fmt, FixRound.Trunc_s, FixSaturate.None_s), self.quadrant_fmt)
         qphase = cl_fix_resize(phase, self.in_fmt, self.qphase_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        
+        # Sine / Cosine phase calculation
+        qphase_neg = cl_fix_neg(qphase, self.qphase_fmt, self.qphase_fmt)
+        phase_sin = np.where(quadrant % 2 == 0, qphase, qphase_neg)
+        phase_cos = np.where(quadrant % 2 == 0, qphase_neg, qphase)
+        qsin_val = self._qsin.process(phase_sin)
+        qcos_val = self._qsin.process(phase_cos)
 
-        # Quadrant approximation
-        qsin_val, qcos_val = self._qsin.process(qphase)
-
-        #Fix critical values
-        sin_val = np.where(qphase == 0.0, 0.0, qsin_val)
-        cos_val = np.where(qphase == 0.0, self.peak, qcos_val)
+        # Fix critical angles - for a quarter phase of zero the mirrored phase wraps back to zero,
+        # hence the mirrored port does not deliver the peak value. Both results are exact for it.
+        critical = (qphase == 0)
+        odd = (quadrant % 2 != 0)
+        qsin_val = np.where(critical, np.where(odd, self.peak, 0.0), qsin_val)
+        qcos_val = np.where(critical, np.where(odd, 0.0, self.peak), qcos_val)
 
         # Quadrant mapping - the quarter wave is mirrored and negated depending on the quadrant.
         # The negation is exact, because the negated value is representable in the output format.
-        sin_val_out = np.choose(quadrant, [sin_val,  cos_val, -sin_val, -cos_val])
-        cos_val_out = np.choose(quadrant, [cos_val, -sin_val, -cos_val,  sin_val])
+        sin_val_out = np.choose(quadrant, [qsin_val,  qsin_val, -qsin_val, -qsin_val])
+        cos_val_out = np.choose(quadrant, [qcos_val, -qcos_val, -qcos_val,  qcos_val])
 
         return sin_val_out, cos_val_out
 

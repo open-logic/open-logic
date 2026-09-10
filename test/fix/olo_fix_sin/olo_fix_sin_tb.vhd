@@ -51,8 +51,8 @@ architecture sim of olo_fix_sin_tb is
     constant Clk_Frequency_c : real := 100.0e6; -- 100 MHz
     constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
-    -- Latency: olo_fix_lin_approx_qsin (9) plus the output stage doing the quadrant mapping.
-    constant ExpectedLatency_c : natural := 10;
+    -- Latency: olo_fix_lin_approx_qsin (8) plus the input, phase mapping and output stage.
+    constant ExpectedLatency_c : natural := 11;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
@@ -221,21 +221,6 @@ begin
                 Valid    => Out_Valid,
                 Data     => Out_Cos
             );
-
-    end generate;
-
-    g_check_cos_zero : if not CosOutput_g generate
-
-        -- Out_Cos must be driven with zeros if the cosine output is disabled
-        p_check_cos_zero : process (Clk) is
-        begin
-            if rising_edge(Clk) then
-                if Out_Valid = '1' then
-                    check_equal(unsigned(Out_Cos), 0,
-                                "Out_Cos must be zero if CosOutput_g = false");
-                end if;
-            end if;
-        end process;
 
     end generate;
 

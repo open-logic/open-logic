@@ -33,13 +33,13 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_fix_lin_approx_qsin_tb is
     generic (
-        OutFmt_g    : string  := "(1,0,16)";
-        InFmt_g     : string  := "(0,-2,20)";
-        CosOutput_g : boolean := true;
-        MemStyle_g  : string  := "auto";
-        Round_g     : string  := "NonSymPos_s";
-        Saturate_g  : string  := "Sat_s";
-        runner_cfg  : string
+        OutFmt_g   : string  := "(1,0,16)";
+        InFmt_g    : string  := "(0,-2,20)";
+        UsePortB_g : boolean := true;
+        MemStyle_g : string  := "auto";
+        Round_g    : string  := "NonSymPos_s";
+        Saturate_g : string  := "Sat_s";
+        runner_cfg : string
     );
 end entity;
 
@@ -51,9 +51,9 @@ architecture sim of olo_fix_lin_approx_qsin_tb is
     constant Clk_Frequency_c : real := 100.0e6; -- 100 MHz
     constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
-    -- Latency: olo_fix_lin_approx_calc (8, both resize registers are always implemented) plus the
-    -- output stage handling the critical input value zero.
-    constant ExpectedLatency_c : natural := 9;
+    -- Latency: the entity contains the table and olo_fix_lin_approx_calc (8, both resize registers
+    -- are always implemented) only, hence it has the same latency as the calculation.
+    constant ExpectedLatency_c : natural := 8;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
@@ -61,23 +61,26 @@ architecture sim of olo_fix_lin_approx_qsin_tb is
     signal Clk       : std_logic                                                   := '0';
     signal Rst       : std_logic                                                   := '0';
     signal In_Valid  : std_logic                                                   := '0';
-    signal In_Data   : std_logic_vector(fixFmtWidthFromString(InFmt_g)-1 downto 0) := (others => '0');
+    signal In_A      : std_logic_vector(fixFmtWidthFromString(InFmt_g)-1 downto 0) := (others => '0');
+    signal In_B      : std_logic_vector(fixFmtWidthFromString(InFmt_g)-1 downto 0) := (others => '0');
     signal Out_Valid : std_logic;
-    signal Out_Sin   : std_logic_vector(fixFmtWidthFromString(OutFmt_g)-1 downto 0);
-    signal Out_Cos   : std_logic_vector(fixFmtWidthFromString(OutFmt_g)-1 downto 0);
+    signal Out_A     : std_logic_vector(fixFmtWidthFromString(OutFmt_g)-1 downto 0);
+    signal Out_B     : std_logic_vector(fixFmtWidthFromString(OutFmt_g)-1 downto 0);
 
     -----------------------------------------------------------------------------------------------
     -- TB Definitions
     -----------------------------------------------------------------------------------------------
     -- *** Verification Components ***
-    constant Stimuli_c    : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
-    constant CheckerSin_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
-    constant CheckerCos_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant StimuliA_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant StimuliB_c : olo_test_fix_stimuli_t := new_olo_test_fix_stimuli;
+    constant CheckerA_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
+    constant CheckerB_c : olo_test_fix_checker_t := new_olo_test_fix_checker;
 
     -- *** Constants ***
-    constant QuarterFile_c : string := output_path(runner_cfg) & "Quarter.fix";
-    constant SinFile_c     : string := output_path(runner_cfg) & "Sin.fix";
-    constant CosFile_c     : string := output_path(runner_cfg) & "Cos.fix";
+    constant PhaseAFile_c : string := output_path(runner_cfg) & "PhaseA.fix";
+    constant PhaseBFile_c : string := output_path(runner_cfg) & "PhaseB.fix";
+    constant OutAFile_c   : string := output_path(runner_cfg) & "OutA.fix";
+    constant OutBFile_c   : string := output_path(runner_cfg) & "OutB.fix";
 
 begin
 
@@ -102,30 +105,33 @@ begin
 
             -- *** First run at full speed ***
             if run("FullSpeed") then
-                fix_stimuli_play_file (net, Stimuli_c, QuarterFile_c);
-                fix_checker_check_file (net, CheckerSin_c, SinFile_c);
+                fix_stimuli_play_file (net, StimuliA_c, PhaseAFile_c);
+                fix_checker_check_file (net, CheckerA_c, OutAFile_c);
 
-                if CosOutput_g then
-                    fix_checker_check_file (net, CheckerCos_c, CosFile_c);
+                if UsePortB_g then
+                    fix_stimuli_play_file (net, StimuliB_c, PhaseBFile_c);
+                    fix_checker_check_file (net, CheckerB_c, OutBFile_c);
                 end if;
             end if;
 
             -- *** Second run with stalls ***
             if run("Throttled") then
-                fix_stimuli_play_file (net, Stimuli_c, QuarterFile_c, stall_probability => 0.5, stall_max_cycles => 10);
-                fix_checker_check_file (net, CheckerSin_c, SinFile_c);
+                fix_stimuli_play_file (net, StimuliA_c, PhaseAFile_c, stall_probability => 0.5, stall_max_cycles => 10);
+                fix_checker_check_file (net, CheckerA_c, OutAFile_c);
 
-                if CosOutput_g then
-                    fix_checker_check_file (net, CheckerCos_c, CosFile_c);
+                if UsePortB_g then
+                    fix_stimuli_play_file (net, StimuliB_c, PhaseBFile_c);
+                    fix_checker_check_file (net, CheckerB_c, OutBFile_c);
                 end if;
             end if;
 
             -- *** Wait until done ***
-            wait_until_idle(net, as_sync(Stimuli_c));
-            wait_until_idle(net, as_sync(CheckerSin_c));
+            wait_until_idle(net, as_sync(StimuliA_c));
+            wait_until_idle(net, as_sync(CheckerA_c));
 
-            if CosOutput_g then
-                wait_until_idle(net, as_sync(CheckerCos_c));
+            if UsePortB_g then
+                wait_until_idle(net, as_sync(StimuliB_c));
+                wait_until_idle(net, as_sync(CheckerB_c));
             end if;
             wait for 1 us;
 
@@ -167,76 +173,76 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_fix_lin_approx_qsin
         generic map (
-            OutFmt_g    => OutFmt_g,
-            InFmt_g     => InFmt_g,
-            CosOutput_g => CosOutput_g,
-            MemStyle_g  => MemStyle_g,
-            Round_g     => Round_g,
-            Saturate_g  => Saturate_g
+            OutFmt_g   => OutFmt_g,
+            InFmt_g    => InFmt_g,
+            UsePortB_g => UsePortB_g,
+            MemStyle_g => MemStyle_g,
+            Round_g    => Round_g,
+            Saturate_g => Saturate_g
         )
         port map (
             Clk       => Clk,
             Rst       => Rst,
             In_Valid  => In_Valid,
-            In_Data   => In_Data,
+            In_A      => In_A,
+            In_B      => In_B,
             Out_Valid => Out_Valid,
-            Out_Sin   => Out_Sin,
-            Out_Cos   => Out_Cos
+            Out_A     => Out_A,
+            Out_B     => Out_B
         );
 
     -----------------------------------------------------------------------------------------------
     -- Verification Components
     -----------------------------------------------------------------------------------------------
-    vc_stimuli : entity work.olo_test_fix_stimuli_vc
+    vc_stimuli_a : entity work.olo_test_fix_stimuli_vc
         generic map (
-            Instance => Stimuli_c,
+            Instance => StimuliA_c,
             Fmt      => cl_fix_format_from_string(InFmt_g)
         )
         port map (
             Clk      => Clk,
             Rst      => Rst,
             Valid    => In_Valid,
-            Data     => In_Data
+            Data     => In_A
         );
 
-    vc_checker_sin : entity work.olo_test_fix_checker_vc
+    vc_checker_a : entity work.olo_test_fix_checker_vc
         generic map (
-            Instance => CheckerSin_c,
+            Instance => CheckerA_c,
             Fmt      => cl_fix_format_from_string(OutFmt_g)
         )
         port map (
             Clk      => Clk,
             Valid    => Out_Valid,
-            Data     => Out_Sin
+            Data     => Out_A
         );
 
-    g_checker_cos : if CosOutput_g generate
+    g_port_b : if UsePortB_g generate
 
-        vc_checker_cos : entity work.olo_test_fix_checker_vc
+        -- Port B is fed in lock-step with port A, hence the timing is controlled by port A
+        vc_stimuli_b : entity work.olo_test_fix_stimuli_vc
             generic map (
-                Instance => CheckerCos_c,
+                Instance         => StimuliB_c,
+                Is_Timing_Master => false,
+                Fmt              => cl_fix_format_from_string(InFmt_g)
+            )
+            port map (
+                Clk      => Clk,
+                Rst      => Rst,
+                Valid    => In_Valid,
+                Data     => In_B
+            );
+
+        vc_checker_b : entity work.olo_test_fix_checker_vc
+            generic map (
+                Instance => CheckerB_c,
                 Fmt      => cl_fix_format_from_string(OutFmt_g)
             )
             port map (
                 Clk      => Clk,
                 Valid    => Out_Valid,
-                Data     => Out_Cos
+                Data     => Out_B
             );
-
-    end generate;
-
-    g_check_cos_zero : if not CosOutput_g generate
-
-        -- Out_Cos must be driven with zeros if the cosine output is disabled
-        p_check_cos_zero : process (Clk) is
-        begin
-            if rising_edge(Clk) then
-                if Out_Valid = '1' then
-                    check_equal(unsigned(Out_Cos), 0,
-                                "Out_Cos must be zero if CosOutput_g = false");
-                end if;
-            end if;
-        end process;
 
     end generate;
 

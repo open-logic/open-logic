@@ -41,13 +41,6 @@ class olo_fix_lin_approx_qsin_tbl:
         """
         return int(np.log2(self.points))
 
-    @property
-    def width(self) -> int:
-        """
-        Width of one table entry (gradient and offset concatenated)
-        """
-        return cl_fix_width(self.offs_fmt) + cl_fix_width(self.grad_fmt)
-
 # ---------------------------------------------------------------------------------------------------
 # Table Configurations
 #
@@ -98,8 +91,11 @@ class olo_fix_lin_approx_qsin:
     """
     Bit-true model of the olo_fix_lin_approx_qsin entity.
 
-    The entity approximates sine and cosine of one quadrant. The input is a phase in rotations
-    covering one quadrant, i.e. the range [0, 0.25), which corresponds to 0 to 90 degrees:
+    The entity approximates the sine of one quadrant. The input is a phase in rotations covering one
+    quadrant, i.e. the range [0, 0.25), which corresponds to 0 to 90 degrees.
+
+    The model covers one channel. The HDL reads the table through two independent ports (A and B),
+    which both approximate the same function - to model both, call the model twice.
 
     The class also generates the VHDL package containing the tables for all supported output formats.
     """
@@ -179,33 +175,23 @@ class olo_fix_lin_approx_qsin:
         Process next N samples
 
         :param phase: Phase in rotations, in the range [0, 0.25), i.e. 0 to 90 degrees
-        :return: Tuple (sine, cosine)
+        :return: Sine of the phase
         """
         # Convert scalars to 1d array and quantize
         if np.isscalar(phase):
             phase = np.array([phase])
-        sin_phase = cl_fix_from_real(phase, self.in_fmt)
-        cos_phase = cl_fix_from_real((0.25 - phase) % 0.25, self.in_fmt)
 
-        # Approximation
-        sin_val = self._approx.process(sin_phase)
-        cos_val = self._approx.process(cos_phase)
+        return self._approx.process(cl_fix_from_real(phase, self.in_fmt))
 
-        # An input of zero is exact and its mirrored address wraps, hence it is handled separately
-        sin_val = np.where(phase == 0.0, 0.0, sin_val)
-        cos_val = np.where(phase == 0.0, self.peak, cos_val)
-
-        return sin_val, cos_val
-
-    def process(self, quarter_phase):
+    def process(self, phase):
         """
         Process samples (without preserving previous state)
 
-        :param quarter_phase: Phase in rotations, in the range [0, 0.25), i.e. 0 to 90 degrees
-        :return: Tuple (sine, cosine)
+        :param phase: Phase in rotations, in the range [0, 0.25), i.e. 0 to 90 degrees
+        :return: Sine of the phase
         """
         # The approximation is stateless, hence process() and next() are identical
-        return self.next(quarter_phase)
+        return self.next(phase)
 
     # ---------------------------------------------------------------------------------------------------
     # Code Generation
