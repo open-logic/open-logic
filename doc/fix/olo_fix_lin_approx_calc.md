@@ -15,9 +15,11 @@ Bit-true Model: [olo_fix_lin_approx](../../src/fix/python/olo_fix/olo_fix_lin_ap
 
 ## Description
 
-This entity implements the calculation part of a linear approximation of an arbitrary function. The function is
-approximated by a table which contains the function value (_offset_) and the derivative of the function (_gradient_)
+This entity implements the calculation part of a piecewise linear approximation of an arbitrary function. The function
+is approximated by a table which contains the function value (_offset_) and the derivative of the function (_gradient_)
 for regularly spaced points. Between those points the function is approximated linearly.
+
+The _olo_fix_lin_approx_calc_ can calculate one approximation per clock cycle.
 
 The table itself is **not** part of this entity. It is attached through the _Tbl_Addr_ / _Tbl_Data_ interface. Normally
 the table is not written by hand but generated from Python. The Python class
@@ -33,33 +35,10 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 ### Approximation Principle
 
 The full range of _InFmt_g_ is split into _TableSize_g_ segments of equal width. For each segment, the table contains
-the value of the function at the **center** of the segment (_offset_) and the derivative of the function at the same
-point (_gradient_).
+the value of the function at the **center** of the segment (_offset_, red) and the derivative of the function at the
+same point (_gradient_, blue).
 
-```text
-  f(x)
-    ^                                   ,-o
-    |                             ,-o-''
-    |                       ,-o-''          o : table entry, offset[i], at the center of segment i
-    |                 ,-o-''
-    |           ,-o-''                      slope of the line through o : gradient[i]
-    |     ,-o-''
-    +-----|----|----|----|----|----|----|-------------> x
-          |<-->|
-          one segment (width = input range / TableSize_g)
-```
-
-The table index and the output are calculated as follows (_S_ and _I_ being the sign and integer bits of _InFmt_g_):
-
-!!! Clean-up formula !!!
-
-```text
-segment_width  = 2**(S + I) / TableSize_g
-index          = floor(In_Data / segment_width) mod TableSize_g
-segment_center = (floor(In_Data / segment_width) + 0.5) * segment_width
-
-Out_Result     = offset[index] + gradient[index] * (In_Data - segment_center)
-```
+![principle](./approx/olo_fix_lin_approx_principle.drawio.png)
 
 ## Generics
 
@@ -115,28 +94,9 @@ available in the next clock cycle). Reads must not be gated - the table must del
 
 Below figure illustrates how the linear approximation is implemented.
 
-!!! FIGURE !!!
+![arch](./approx/olo_fix_lin_approx_arch.drawio.png)
 
-
-| Stage | Operation                                                              |
-| :---- | :--------------------------------------------------------------------- |
-| 0     | Input register                                                         |
-| 1     | Split input into table index (_Tbl_Addr_) and remainder (MSB inverted) |
-| 2     | Reserved for the table read latency                                    |
-| 3     | Register table outputs (offset and gradient)                           |
-| 4     | Multiplication _gradient * remainder_ (full precision)                 |
-| 5     | Addition _offset + gradient*remainder_ (full precision)                |
-| 6     | Rounding to _OutFmt_g_ ([olo_fix_resize](./olo_fix_resize.md))         |
-| 7     | Saturation to _OutFmt_g_ ([olo_fix_resize](./olo_fix_resize.md))       |
-
-Both multiplier inputs (gradient and remainder) come from registers, so the multiplication can be mapped into a DSP
-slice including its input registers. The offset read from the table is delayed by one clock cycle so that it arrives at
-the adder together with the output of the multiplier.
-
-The multiplication and the addition are executed into their natural (lossless) result formats. Hence no rounding or
-saturation is required for them, the adder fits into the DSP slice and rounding/saturation only happen in the output
-stage. The formats of a linear approximation are small enough to always fit into a single multiplier, hence the number
-of multiplier pipeline stages is not configurable.
+_N-M_ is the number of address bits for the table.
 
 ### Table Details
 
@@ -156,7 +116,6 @@ controlled by _Round_g_ and _Saturate_g_.
 
 The approximation error depends on the number of table entries and the formats chosen for the table. The Python class
 [olo_fix_lin_approx](./olo_fix_lin_approx.md) provides an _analyze()_ method that helps finding suitable settings.
-
 
 ### Usage Example
 

@@ -918,3 +918,10 @@ def add_configs(olo_tb):
             named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat},
                          pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
 
+
+    ### olo_fix_lin_approx ###
+    # Entities and testbenches are generated through <root>/sim/codegen.py, which is executed before
+    # VUnit detects files. The generated testbenches check the HDL against the Python model.
+    for name in olo_fix_lin_approx.lin_approx_codegen.SAMPLES.keys():
+        tb = olo_tb.test_bench(f'olo_fix_lin_approx_{name}_tb')
+        named_config(tb, {}, short_name='default')

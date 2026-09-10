@@ -167,6 +167,11 @@ Data container describing one approximation.
 | round       | FixRound            | NonSymPos_s    | Rounding mode of the output stage                            |
 | saturate    | FixSaturate         | Sat_s          | Saturation mode of the output stage                          |
 
+Most things are self-explanatory. One thing being worth an explanation is _valid_range_. This setting does allow
+defining approximations that are only valid in a certain range. For example it is possible using _in_fmt=(0,0,10)_
+(which has a range of 0...~1.0) but define _valid_range=(0.25, 1.0)_ to design an approximation that is not valid
+in the lowest quarter of the values (e.g in case the value is very large in this area).
+
 ### olo_fix_lin_approx
 
 The methods are grouped the same way as in the source code: the bit-true model first, then the code generation and

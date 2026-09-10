@@ -285,16 +285,7 @@ class olo_fix_lin_approx:
         select between several tables at elaboration time (e.g. one table per output format). The
         entity then takes the table from the package instead of containing it.
 
-        The package provides the following public interface, where <name> is the key of the
-        approximation in the dictionary passed:
-
-            getTable(<name>)       - table content (gradient in the MSBs, offset in the LSBs)
-            getTableSize(<name>)   - number of points (segments) of the table
-            getOffsetFmt(<name>)   - format of the offset entries, as string
-            getGradientFmt(<name>) - format of the gradient entries, as string
-
-        All entries of all tables are zero padded to the same width, so they fit into one array
-        type. The padding is meant to be sliced away by the entity, hence it does not cost memory.
+        For details, see documentation.
 
         :param approximations: Dictionary of name (string) to olo_fix_lin_approx. One table is
                                generated per entry. The names are the keys used by the getters.
