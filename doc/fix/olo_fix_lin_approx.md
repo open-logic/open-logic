@@ -47,7 +47,7 @@ cfg = olo_fix_lin_approx_cfg(
     grad_fmt=FixFormat(1, 3, 12),
     points=256,
     name="sin16b")
-approx = olo_fix_lin_approx(cfg)
+my_approx = olo_fix_lin_approx(cfg)
 ```
 
 The function is approximated over the **full range** of _in_fmt_. Lambdas can be used to scale the X and Y axes, as
@@ -60,14 +60,14 @@ ranges required for the offset and gradient tables. It is meant to be used inter
 not part of the bit-true model.
 
 ```python
-approx.analyze()
+my_approx.analyze()
 ```
 
 Typical iteration steps are:
 
 - Increase _points_ if the approximation error is too large (the error scales roughly with _1/points^2_).
-- Adapt _offs_fmt_ and _grad_fmt_ to the ranges printed by _analyze()_ - they must cover the values in the table but
-  should not be wider than necessary because they define the table memory width.
+- Adapt _offs_fmt_ and _grad_fmt_ to the ranges printed by _analyze()_ - the higher their resolution the smaller the
+  output error - but also the higher the memory consumption for the table.
 - Restrict _valid_range_ if the function is only used on a part of the input range (e.g. _1/x_ or _sqrt(x)_ have very
   steep gradients close to zero). Table entries outside the valid range are still generated but they are not used for
   the analysis and for the generated testbench.
@@ -75,8 +75,8 @@ Typical iteration steps are:
 ### Generating Code
 
 ```python
-approx.generate_entity("./hdl")     # Generates ./hdl/olo_fix_lin_approx_sin16b.vhd
-approx.generate_tb("./testbench")   # Generates the testbench plus the co-simulation data files
+my_approx.generate_entity("./hdl")     # Generates ./hdl/olo_fix_lin_approx_sin16b.vhd
+my_approx.generate_tb("./testbench")   # Generates the testbench plus the co-simulation data files
 ```
 
 _generate_entity()_ writes a self-contained VHDL entity that contains the table (as ROM) and instantiates
@@ -109,7 +109,7 @@ the _olo_library_ argument.
 ### Using the Bit-True Model
 
 ```python
-out_data = approx.process(in_data)
+out_data = my_approx.process(in_data)
 ```
 
 The model is stateless, hence _next()_ and _process()_ are identical. The result is bit-true to the generated HDL.
@@ -135,6 +135,11 @@ Data container describing one approximation.
 | round       | FixRound            | NonSymPos_s    | Rounding mode of the output stage                            |
 | saturate    | FixSaturate         | Sat_s          | Saturation mode of the output stage                          |
 
+Most things are self-explanatory. One thing being worth an explanation is _valid_range_. This setting does allow
+defining approximations that are only valid in a certain range. For example it is possible using _in_fmt=(0,0,10)_
+(which has a range of 0...~1.0) but define _valid_range=(0.25, 1.0)_ to design an approximation that is not valid
+in the lowest quarter of the values (e.g in case the value is very large in this area).
+
 ### olo_fix_lin_approx
 
 The methods are grouped the same way as in the source code: the bit-true model first, then the code generation and
@@ -148,7 +153,6 @@ finally the helpers used while designing an approximation.
 | generate_entity(...) | Generate the VHDL entity (including the table) and return the entity name       |
 | generate_tb(...)     | Generate the bit-true testbench plus co-simulation files and return the TB name  |
 | entity_name          | Property containing the name of the entity generated                            |
-| stimuli(...)         | Helper - generate stimuli data covering the valid range of the approximation    |
 | analyze(...)         | Design helper - plot accuracy and print the ranges required for the tables      |
 
 ## Verification

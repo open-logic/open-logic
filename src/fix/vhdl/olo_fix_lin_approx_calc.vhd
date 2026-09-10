@@ -60,8 +60,7 @@ entity olo_fix_lin_approx_calc is
         Out_Result : out   std_logic_vector(fixFmtWidthFromString(OutFmt_g) - 1 downto 0);
         -- Table Interface
         Tbl_Addr   : out   std_logic_vector(log2ceil(TableSize_g) - 1 downto 0);
-        Tbl_Data   : in    std_logic_vector(fixFmtWidthFromString(OffsFmt_g) +
-                                            fixFmtWidthFromString(GradFmt_g) - 1 downto 0)
+        Tbl_Data   : in    std_logic_vector(fixFmtWidthFromString(OffsFmt_g) + fixFmtWidthFromString(GradFmt_g) - 1 downto 0)
     );
 end entity;
 
