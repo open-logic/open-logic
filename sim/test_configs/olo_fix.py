@@ -852,9 +852,9 @@ def add_configs(olo_tb):
         tb = olo_tb.test_bench(f'olo_fix_lin_approx_{name}_tb')
         named_config(tb, {}, short_name='default')
 
-    ### olo_fix_lin_approx_qsin ###
-    tb = olo_tb.test_bench('olo_fix_lin_approx_qsin_tb')
-    cosim = olo_fix_lin_approx_qsin.cosim.cosim
+    ### olo_fix_private_lin_approx_qsin ###
+    tb = olo_tb.test_bench('olo_fix_private_lin_approx_qsin_tb')
+    cosim = olo_fix_private_lin_approx_qsin.cosim.cosim
     default_generics = {
         'OutFmt_g': '(1, 0, 16)',
         'InFmt_g': '(0, -2, 20)',

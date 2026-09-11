@@ -125,8 +125,9 @@ The generated package provides the following public interface, where _\<name\>_ 
 All entries of all tables are zero padded to the same width so they fit into one array type. The padding is meant to
 be sliced away by the entity, hence it does not cost any memory.
 
-[olo_fix_lin_approx_qsin](./olo_fix_lin_approx_qsin.md) is an example of this pattern - it selects one of 22
-quarter-sine tables based on its output format.
+The internal quarter-sine approximation used by [olo_fix_sin](./olo_fix_sin.md)
+([olo_fix_private_lin_approx_qsin.vhd](../../src/fix/vhdl/olo_fix_private_lin_approx_qsin.vhd)) is an example of this
+pattern - it selects one of 22 quarter-sine tables based on its output format.
 
 ### Generating a Testbench
 

@@ -27,8 +27,8 @@ Driven by a phase accumulator (a plain counter incremented by the frequency word
 NCO/DDS. Compared to [olo_fix_cordic_rot](./olo_fix_cordic_rot.md) it trades memory for latency and logic: it needs
 a ROM but has a constant latency of 11 clock cycles instead of one iteration per output bit.
 
-_olo_fix_sin_ implements the **range reduction** only. The approximation itself is done by
-[olo_fix_lin_approx_qsin](./olo_fix_lin_approx_qsin.md), which covers one quadrant. Because the quarter phase is
+_olo_fix_sin_ implements the **range reduction**. The approximation of one quadrant is done by an internal table
+based piecewise linear approximation (see [Architecture](#architecture)). Because the quarter phase is
 expressed in the same unit (rotations), the in-quadrant part of the phase word is passed on without any rescaling.
 The quarter phase and its mirrored version are applied to the two read ports of the approximation - which of the two
 belongs to the sine and which one to the cosine depends on the quadrant.
@@ -113,15 +113,19 @@ The two MSBs of the phase select the quadrant, the remaining bits are the in-qua
 symmetric around the quadrant boundaries, the quarter phase is mirrored in the odd quadrants and the results are
 negated depending on the quadrant.
 
-Both the quarter phase and its mirrored version are calculated, and each of them is applied to one of the two read
-ports of [olo_fix_lin_approx_qsin](./olo_fix_lin_approx_qsin.md). Port _A_ delivers the sine and port _B_ the
-cosine, hence the two swap in the odd quadrants.
+The approximation of one quadrant is implemented by the internal entity _olo_fix_private_lin_approx_qsin_. It
+contains a quarter-sine table (one table per supported output format, so that no memory is wasted) and instantiates
+[olo_fix_lin_approx_calc](./olo_fix_lin_approx_calc.md) for the piecewise linear interpolation. Both the quarter
+phase and its mirrored version are calculated, and each of them is applied to one of the two read ports of the
+approximation. Port _A_ delivers the sine and port _B_ the cosine, hence the two swap in the odd quadrants. If
+_CosOutput_g_ is false, the second read port and the second interpolation are removed, which roughly halves the
+resource usage.
 
 ![Block Diagram](./approx/olo_fix_sin.drawio.png)
 
 The critical angles (0, 90, 180, 270 degree) are handled separately for the angle that reaches its peak value because
-the _olo_fix_lin_approx_qsin_ does only cover the range from 0 degree to just below 90°, hence the point where the
-cosine reaches the exact peak value is not contained.
+the approximation does only cover the range from 0 degree to just below 90°, hence the point where the cosine
+reaches the exact peak value is not contained.
 
 ## Bit-True Model
 

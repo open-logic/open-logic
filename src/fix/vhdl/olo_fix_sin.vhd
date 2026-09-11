@@ -11,7 +11,7 @@
 -- corresponds to 0 degrees and 1.0 corresponds to 360 degrees.
 --
 -- The entity implements the range reduction only. The approximation itself is done by
--- olo_fix_lin_approx_qsin, which covers one quadrant.
+-- olo_fix_private_lin_approx_qsin, which covers one quadrant.
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/fix/olo_fix_sin.md
@@ -70,11 +70,15 @@ architecture rtl of olo_fix_sin is
     constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
     constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
 
+    -- Supported output resolutions - one approximation table exists per resolution
+    constant MinOutFracBits_c : positive := 10;
+    constant MaxOutFracBits_c : positive := 20;
+
     -- Formats
     constant QuadrantFmt_c : FixFormat_t := (0, 0, 2);
     constant QPhaseFmt_c   : FixFormat_t := (0, -2, InFmt_c.F);
 
-    -- Latency of olo_fix_lin_approx_qsin.
+    -- Latency of olo_fix_private_lin_approx_qsin.
     constant QsinLatency_c : positive := 8;
 
     -- Peak value of the wave and the values at the critical angles (0, 90, 180 and 270 degrees)
@@ -114,6 +118,15 @@ begin
     -- synthesis translate_off
     assert OutFmt_c.S = 1
         report errorMessage(EntityName_c, "OutFmt_g must be signed")
+        severity error;
+    assert OutFmt_c.I = 0 or OutFmt_c.I = 1
+        report errorMessage(EntityName_c, "OutFmt_g must have zero or one integer bit, got " &
+               integer'image(OutFmt_c.I))
+        severity error;
+    assert OutFmt_c.F >= MinOutFracBits_c and OutFmt_c.F <= MaxOutFracBits_c
+        report errorMessage(EntityName_c, "OutFmt_g must have between " &
+               integer'image(MinOutFracBits_c) & " and " & integer'image(MaxOutFracBits_c) &
+               " fractional bits, got " & integer'image(OutFmt_c.F))
         severity error;
     assert InFmt_c.F >= 3
         report errorMessage(EntityName_c, "InFmt_g must have at least three fractional bits")
@@ -231,7 +244,7 @@ begin
     -- *** Component Instantiations ***
 
     -- Approximation of one quadrant
-    i_qsin : entity work.olo_fix_lin_approx_qsin
+    i_qsin : entity work.olo_fix_private_lin_approx_qsin
         generic map (
             OutFmt_g   => OutFmt_g,
             InFmt_g    => to_string(QPhaseFmt_c),

@@ -13,7 +13,7 @@ from .olo_fix_lin_approx import olo_fix_lin_approx, olo_fix_lin_approx_cfg
 # ---------------------------------------------------------------------------------------------------
 # Table Configuration
 # ---------------------------------------------------------------------------------------------------
-class olo_fix_lin_approx_qsin_tbl:
+class olo_fix_private_lin_approx_qsin_tbl:
 
     """
     Geometry of one quarter-sine table.
@@ -24,7 +24,7 @@ class olo_fix_lin_approx_qsin_tbl:
                  offs_fmt : FixFormat,
                  grad_fmt : FixFormat):
         """
-        Constructor of the olo_fix_lin_approx_qsin_tbl class
+        Constructor of the olo_fix_private_lin_approx_qsin_tbl class
 
         :param points: Number of segments in the table. Must be a power of two.
         :param offs_fmt: Format of the offset table (quarter sine at the segment centers)
@@ -46,33 +46,33 @@ class olo_fix_lin_approx_qsin_tbl:
 #
 # ---------------------------------------------------------------------------------------------------
 QSIN_TABLES = {
-    # (int_bits, frac_bits) : olo_fix_lin_approx_qsin_tbl(points, offs_fmt, grad_fmt)
+    # (int_bits, frac_bits) : olo_fix_private_lin_approx_qsin_tbl(points, offs_fmt, grad_fmt)
 
     # Scaled to 1.0 - 1 LSB (no integer bits)
-    (0, 10) : olo_fix_lin_approx_qsin_tbl(32,   FixFormat(0, 0, 12), FixFormat(0, 3, 4)),
-    (0, 11) : olo_fix_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 13), FixFormat(0, 3, 3)),
-    (0, 12) : olo_fix_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 14), FixFormat(0, 3, 5)),
-    (0, 13) : olo_fix_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 3, 4)),
-    (0, 14) : olo_fix_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 16), FixFormat(0, 3, 6)),
-    (0, 15) : olo_fix_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 17), FixFormat(0, 3, 5)),
-    (0, 16) : olo_fix_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 18), FixFormat(0, 3, 7)),
-    (0, 17) : olo_fix_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 19), FixFormat(0, 3, 6)),
-    (0, 18) : olo_fix_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 20), FixFormat(0, 3, 9)),
-    (0, 19) : olo_fix_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 21), FixFormat(0, 3, 9)),
-    (0, 20) : olo_fix_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 22), FixFormat(0, 3, 10)),
+    (0, 10) : olo_fix_private_lin_approx_qsin_tbl(32,   FixFormat(0, 0, 12), FixFormat(0, 3, 4)),
+    (0, 11) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 13), FixFormat(0, 3, 3)),
+    (0, 12) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 14), FixFormat(0, 3, 5)),
+    (0, 13) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 3, 4)),
+    (0, 14) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 16), FixFormat(0, 3, 6)),
+    (0, 15) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 17), FixFormat(0, 3, 5)),
+    (0, 16) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 18), FixFormat(0, 3, 7)),
+    (0, 17) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 19), FixFormat(0, 3, 6)),
+    (0, 18) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 20), FixFormat(0, 3, 9)),
+    (0, 19) : olo_fix_private_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 21), FixFormat(0, 3, 9)),
+    (0, 20) : olo_fix_private_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 22), FixFormat(0, 3, 10)),
 
     # Unscaled (one integer bit, peak at 1.0)
-    (1, 10) : olo_fix_lin_approx_qsin_tbl(32,   FixFormat(0, 0, 12), FixFormat(0, 3, 4)),
-    (1, 11) : olo_fix_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 13), FixFormat(0, 3, 3)),
-    (1, 12) : olo_fix_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 14), FixFormat(0, 3, 5)),
-    (1, 13) : olo_fix_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 3, 4)),
-    (1, 14) : olo_fix_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 16), FixFormat(0, 3, 6)),
-    (1, 15) : olo_fix_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 17), FixFormat(0, 3, 5)),
-    (1, 16) : olo_fix_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 18), FixFormat(0, 3, 7)),
-    (1, 17) : olo_fix_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 19), FixFormat(0, 3, 6)),
-    (1, 18) : olo_fix_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 20), FixFormat(0, 3, 9)),
-    (1, 19) : olo_fix_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 21), FixFormat(0, 3, 9)),
-    (1, 20) : olo_fix_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 22), FixFormat(0, 3, 10)),
+    (1, 10) : olo_fix_private_lin_approx_qsin_tbl(32,   FixFormat(0, 0, 12), FixFormat(0, 3, 4)),
+    (1, 11) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 13), FixFormat(0, 3, 3)),
+    (1, 12) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 14), FixFormat(0, 3, 5)),
+    (1, 13) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 3, 4)),
+    (1, 14) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 16), FixFormat(0, 3, 6)),
+    (1, 15) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 17), FixFormat(0, 3, 5)),
+    (1, 16) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 18), FixFormat(0, 3, 7)),
+    (1, 17) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 19), FixFormat(0, 3, 6)),
+    (1, 18) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 20), FixFormat(0, 3, 9)),
+    (1, 19) : olo_fix_private_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 21), FixFormat(0, 3, 9)),
+    (1, 20) : olo_fix_private_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 22), FixFormat(0, 3, 10)),
 }
 
 def qsin_table_name(out_fmt : FixFormat) -> str:
@@ -86,10 +86,13 @@ def qsin_table_name(out_fmt : FixFormat) -> str:
 # ---------------------------------------------------------------------------------------------------
 # Class
 # ---------------------------------------------------------------------------------------------------
-class olo_fix_lin_approx_qsin:
+class olo_fix_private_lin_approx_qsin:
 
     """
-    Bit-true model of the olo_fix_lin_approx_qsin entity.
+    Bit-true model of the olo_fix_private_lin_approx_qsin entity.
+
+    The entity is meant for internal use only (it is instantiated by olo_fix_sin, which adds the
+    quadrant handling) and hence it is not documented separately. Users shall use olo_fix_sin.
 
     The entity approximates the sine of one quadrant. The input is a phase in rotations covering one
     quadrant, i.e. the range [0, 0.25), which corresponds to 0 to 90 degrees.
@@ -111,7 +114,7 @@ class olo_fix_lin_approx_qsin:
                  round : FixRound = FixRound.NonSymPos_s,
                  saturate : FixSaturate = FixSaturate.Sat_s):
         """
-        Constructor of the olo_fix_lin_approx_qsin class
+        Constructor of the olo_fix_private_lin_approx_qsin class
 
         :param out_fmt: Format of the sine/cosine output. Must be (1, 0, 10..20) or (1, 1, 10..20).
                         Without integer bit the wave is scaled to 1.0-1LSB, with integer bit it is
@@ -124,17 +127,17 @@ class olo_fix_lin_approx_qsin:
         """
         # Output format
         if out_fmt.S != 1 or (out_fmt.I, out_fmt.F) not in QSIN_TABLES:
-            raise ValueError(f"olo_fix_lin_approx_qsin: out_fmt {out_fmt} is not supported "
+            raise ValueError(f"olo_fix_private_lin_approx_qsin: out_fmt {out_fmt} is not supported "
                              f"(supported: (1, 0/1, 10..20))")
         self.tbl = QSIN_TABLES[(out_fmt.I, out_fmt.F)]
 
         # Input format - the quarter phase covers [0, 0.25) and must resolve the table index
         if in_fmt.S != 0 or in_fmt.I != -2:
-            raise ValueError(f"olo_fix_lin_approx_qsin: in_fmt {in_fmt} must be (0, -2, N) - the "
+            raise ValueError(f"olo_fix_private_lin_approx_qsin: in_fmt {in_fmt} must be (0, -2, N) - the "
                              f"quarter phase covers one quadrant only, i.e. the range [0, 0.25) "
                              f"in rotations")
         if cl_fix_width(in_fmt) <= self.tbl.index_bits:
-            raise ValueError(f"olo_fix_lin_approx_qsin: in_fmt {in_fmt} must be wider than "
+            raise ValueError(f"olo_fix_private_lin_approx_qsin: in_fmt {in_fmt} must be wider than "
                              f"{self.tbl.index_bits} bits for a table with {self.tbl.points} "
                              f"points")
 
@@ -215,11 +218,11 @@ class olo_fix_lin_approx_qsin:
 
         for (int_bits, frac_bits) in sorted(QSIN_TABLES.keys()):
             out_fmt = FixFormat(1, int_bits, frac_bits)
-            model   = olo_fix_lin_approx_qsin._reference_model(out_fmt)
+            model   = olo_fix_private_lin_approx_qsin._reference_model(out_fmt)
             approximations[qsin_table_name(out_fmt)] = model._approx
 
         return olo_fix_lin_approx.generate_package(
-            approximations, olo_fix_lin_approx_qsin._PACKAGE_NAME, directory)
+            approximations, olo_fix_private_lin_approx_qsin._PACKAGE_NAME, directory)
 
     # ---------------------------------------------------------------------------------------------------
     # Private Methods
@@ -232,7 +235,7 @@ class olo_fix_lin_approx_qsin:
         The table content does not depend on the phase resolution, hence the recommended resolution
         of the configuration is used.
         """
-        return olo_fix_lin_approx_qsin(out_fmt, FixFormat(0, -2, out_fmt.F + 2))
+        return olo_fix_private_lin_approx_qsin(out_fmt, FixFormat(0, -2, out_fmt.F + 2))
 
 # ---------------------------------------------------------------------------------------------------
 # Command Line Interface
@@ -242,16 +245,16 @@ def main(): # pragma: no cover
     Command line interface of the design helpers
 
     Execute it from <root>/src/fix/python, for example:
-        python3 -m olo_fix.olo_fix_lin_approx_qsin --generate
-        python3 -m olo_fix.olo_fix_lin_approx_qsin --analyze "(1,0,15)"
+        python3 -m olo_fix.olo_fix_private_lin_approx_qsin --generate
+        python3 -m olo_fix.olo_fix_private_lin_approx_qsin --analyze "(1,0,15)"
     """
     import argparse
     from os.path import abspath, dirname, join
 
     parser = argparse.ArgumentParser(
-        description="Design helpers of the quarter sine approximation (olo_fix_lin_approx_qsin)",
+        description="Design helpers of the quarter sine approximation (olo_fix_private_lin_approx_qsin)",
         epilog="Execute from <root>/src/fix/python, e.g. "
-               "python3 -m olo_fix.olo_fix_lin_approx_qsin --generate")
+               "python3 -m olo_fix.olo_fix_private_lin_approx_qsin --generate")
     parser.add_argument("--generate", action="store_true",
                         help="Generate the VHDL package containing the tables of all supported "
                              "output formats into <root>/src/fix/vhdl")
@@ -268,7 +271,7 @@ def main(): # pragma: no cover
     if args.generate:
         # The package is part of Open Logic itself, hence it is written next to the other sources
         directory = abspath(join(dirname(__file__), "..", "..", "vhdl"))
-        name      = olo_fix_lin_approx_qsin.generate_package(directory)
+        name      = olo_fix_private_lin_approx_qsin.generate_package(directory)
         print(f"Generated {join(directory, name)}.vhd")
 
     if args.analyze is not None:
@@ -283,7 +286,7 @@ def main(): # pragma: no cover
         # The table content does not depend on the phase resolution, hence the approximation is
         # analyzed at the resolution recommended for the output format
         try:
-            model = olo_fix_lin_approx_qsin._reference_model(out_fmt)
+            model = olo_fix_private_lin_approx_qsin._reference_model(out_fmt)
         except ValueError as e:
             parser.error(f"--analyze: {e}")
 

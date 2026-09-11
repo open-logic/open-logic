@@ -30,5 +30,5 @@ from .olo_fix_sample_hold import *
 from .olo_fix_mov_avg import *
 from .olo_fix_fir_dec import *
 from .olo_fix_lin_approx import *
-from .olo_fix_lin_approx_qsin import *
+from .olo_fix_private_lin_approx_qsin import *
 from .olo_fix_sin import *

@@ -51,7 +51,7 @@ architecture sim of olo_fix_sin_tb is
     constant Clk_Frequency_c : real := 100.0e6; -- 100 MHz
     constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
-    -- Latency: olo_fix_lin_approx_qsin (8) plus the input, phase mapping and output stage.
+    -- Latency: olo_fix_private_lin_approx_qsin (8) plus the input, phase mapping and output stage.
     constant ExpectedLatency_c : natural := 11;
 
     -----------------------------------------------------------------------------------------------
