@@ -335,6 +335,14 @@ def add_configs(olo_tb):
     for DataWidth, CrcWidth in [(8, 8), (16, 8), (16, 16)]:
         named_config(tb, {'CrcWidth_g': CrcWidth, 'DataWidth_g': DataWidth})
 
+    ### olo_base_crc_append_be ###
+    crc_append_be_tb = 'olo_base_crc_append_be_tb'
+    tb = olo_tb.test_bench(crc_append_be_tb)  
+    CrcNames = ["CRC-8/DVB-S2", "CRC-16/DECT-X", "CRC-32/ISO-HDLC"]
+    for RandomStall in [True, False]:
+        for Crc in CrcNames:
+            named_config(tb, {'CrcName_g': Crc,'RandomStall_g' : RandomStall})
+
     ### olo_base_crc_check ###
     crc_check_tb = 'olo_base_crc_check_tb'
     tb = olo_tb.test_bench(crc_check_tb)  
