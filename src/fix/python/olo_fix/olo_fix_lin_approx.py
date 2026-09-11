@@ -356,9 +356,12 @@ class olo_fix_lin_approx:
         :param width: Width the entry is zero padded to
         :return: Hex string with width/4 characters
         """
+        # Both parts are stored in two's complement representation, hence negative values are
+        # wrapped into the unsigned range their format covers
         offs_width = cl_fix_width(offs_fmt)
-        offs_int   = int(cl_fix_to_integer(offs, offs_fmt))
-        grad_int   = int(cl_fix_to_integer(grad, grad_fmt))
+        grad_width = cl_fix_width(grad_fmt)
+        offs_int   = int(cl_fix_to_integer(offs, offs_fmt)) & (2**offs_width - 1)
+        grad_int   = int(cl_fix_to_integer(grad, grad_fmt)) & (2**grad_width - 1)
         return format((grad_int << offs_width) | offs_int, f"0{width//4}X")
 
     @property
