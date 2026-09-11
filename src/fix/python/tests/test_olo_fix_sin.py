@@ -140,9 +140,14 @@ class TestOloFixSin(unittest.TestCase):
         # Unsigned output
         with self.assertRaises(ValueError):
             olo_fix_sin(FixFormat(0, 0, 16), FixFormat(0, 0, 20))
+        # Unsupported number of integer bits
+        with self.assertRaises(ValueError):
+            olo_fix_sin(FixFormat(1, 2, 16), FixFormat(0, 0, 20))
         # Fractional bits outside of the supported range
         with self.assertRaises(ValueError):
             olo_fix_sin(FixFormat(1, 0, 21), FixFormat(0, 0, 24))
+        with self.assertRaises(ValueError):
+            olo_fix_sin(FixFormat(1, 0, 9), FixFormat(0, 0, 20))
 
 if __name__ == "__main__":
     unittest.main()

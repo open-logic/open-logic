@@ -13,7 +13,7 @@ import numpy as np
 
 #Import olo_fix
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../src/fix/python")))
-from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_lin_approx_qsin, olo_fix_plots
+from olo_fix import olo_fix_cosim, olo_fix_utils, olo_fix_private_lin_approx_qsin, olo_fix_plots
 from en_cl_fix_pkg import *
 
 def stimuli_codes(fmt : FixFormat, samples : int, critical_step : int):
@@ -59,7 +59,7 @@ def cosim(output_path : str = None,
     phase_b = cl_fix_from_real((0.25 - phase_a) % 0.25, InFmt_g)
 
     #Calculate
-    dut = olo_fix_lin_approx_qsin(OutFmt_g, InFmt_g, Round_g, Saturate_g)
+    dut = olo_fix_private_lin_approx_qsin(OutFmt_g, InFmt_g, Round_g, Saturate_g)
     out_a = dut.process(phase_a)
     out_b = dut.process(phase_b)
 

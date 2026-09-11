@@ -9,7 +9,7 @@
 from en_cl_fix_pkg import *
 import numpy as np
 
-from .olo_fix_lin_approx_qsin import (olo_fix_lin_approx_qsin, QSIN_TABLES)
+from .olo_fix_private_lin_approx_qsin import (olo_fix_private_lin_approx_qsin, QSIN_TABLES)
 
 # ---------------------------------------------------------------------------------------------------
 # Class
@@ -47,9 +47,19 @@ class olo_fix_sin:
         # Two quadrant bits plus at least one bit of in-quadrant phase are required
         if in_fmt.F < 3:
             raise ValueError(f"olo_fix_sin: in_fmt {in_fmt} must have at least 3 fractional bits")
-        if out_fmt.S != 1 or (out_fmt.I, out_fmt.F) not in QSIN_TABLES:
-            raise ValueError(f"olo_fix_sin: out_fmt {out_fmt} is not supported "
-                             f"(supported: (1, 0/1, 10..20))")
+
+        # One approximation table exists per supported output resolution. The same checks (and the
+        # same limits) are implemented in the VHDL entity.
+        min_frac_bits = min(frac_bits for _, frac_bits in QSIN_TABLES)
+        max_frac_bits = max(frac_bits for _, frac_bits in QSIN_TABLES)
+        if out_fmt.S != 1:
+            raise ValueError(f"olo_fix_sin: out_fmt {out_fmt} must be signed")
+        if out_fmt.I not in (0, 1):
+            raise ValueError(f"olo_fix_sin: out_fmt {out_fmt} must have zero or one integer bit, "
+                             f"got {out_fmt.I}")
+        if not min_frac_bits <= out_fmt.F <= max_frac_bits:
+            raise ValueError(f"olo_fix_sin: out_fmt {out_fmt} must have between {min_frac_bits} "
+                             f"and {max_frac_bits} fractional bits, got {out_fmt.F}")
 
         self.out_fmt = out_fmt
         self.in_fmt = in_fmt
@@ -58,7 +68,7 @@ class olo_fix_sin:
         # hence it is the in-quadrant part of the phase word without any rescaling.
         self.quadrant_fmt = FixFormat(0, 0, 2)
         self.qphase_fmt = FixFormat(0, -2, self.in_fmt.F)
-        self._qsin = olo_fix_lin_approx_qsin(out_fmt, self.qphase_fmt, round, saturate)
+        self._qsin = olo_fix_private_lin_approx_qsin(out_fmt, self.qphase_fmt, round, saturate)
         self.peak = self._qsin.peak
 
     # ---------------------------------------------------------------------------------------------------

@@ -31,7 +31,7 @@ library work;
 -- Entity
 ---------------------------------------------------------------------------------------------------
 -- vunit: run_all_in_same_sim
-entity olo_fix_lin_approx_qsin_tb is
+entity olo_fix_private_lin_approx_qsin_tb is
     generic (
         OutFmt_g   : string  := "(1,0,16)";
         InFmt_g    : string  := "(0,-2,20)";
@@ -43,7 +43,7 @@ entity olo_fix_lin_approx_qsin_tb is
     );
 end entity;
 
-architecture sim of olo_fix_lin_approx_qsin_tb is
+architecture sim of olo_fix_private_lin_approx_qsin_tb is
 
     -----------------------------------------------------------------------------------------------
     -- TB Definitions
@@ -171,7 +171,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- DUT
     -----------------------------------------------------------------------------------------------
-    i_dut : entity olo.olo_fix_lin_approx_qsin
+    i_dut : entity olo.olo_fix_private_lin_approx_qsin
         generic map (
             OutFmt_g   => OutFmt_g,
             InFmt_g    => InFmt_g,
