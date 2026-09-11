@@ -427,4 +427,15 @@ entities:
         out_reduce:
           Out_Sin: 17
           Out_Cos: 17
-
+  # olo_fix_inv
+  - entity_name: "olo_fix_inv"
+    configurations:
+      - name: "default"
+        generics:
+          OutFmt_g: '"(0, 8, 12)"'
+          InFmt_g: '"(0, 0, 16)"'
+          PrecisionBits_g: 18
+        in_reduce:
+          In_Data: 16
+        out_reduce:
+          Out_Result: 20

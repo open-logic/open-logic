@@ -845,6 +845,74 @@ def add_configs(olo_tb):
     cosim_overflow = partial(cosim, test_mode='overflow')
     named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
 
+    ### olo_fix_private_lin_approx_inv ###
+    tb = olo_tb.test_bench('olo_fix_private_lin_approx_inv_tb')
+    cosim = olo_fix_private_lin_approx_inv.cosim.cosim
+    default_generics = {
+        'OutFmt_g': '(0, 1, 18)',
+        'InFmt_g': '(0, 0, 20)',
+        'MemStyle_g': 'auto',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+
+    # Check bit-trueness for all precisions
+    for Precision in [10, 14, 18, 20]:
+        generics = default_generics | {'OutFmt_g': f'(0, 1, {Precision})',
+                                       'InFmt_g': f'(0, 0, {Precision+2})'}
+        named_config(tb, generics, pre_config=cosim,
+                     short_name=f'precision-OutFmt_g=(0,1,{Precision})')
+
+    # Mantissa resolutions below and above the recommended one
+    for InFmt in ['(0, 0, 10)', '(0, 0, 32)']:
+        named_config(tb, default_generics | {'InFmt_g': InFmt}, pre_config=cosim,
+                     short_name=f'InFmt_g={InFmt}')
+
+    # Memory styles
+    for MemStyle in ['block', 'distributed']:
+        named_config(tb, default_generics | {'MemStyle_g': MemStyle}, pre_config=cosim,
+                     short_name=f'MemStyle_g={MemStyle}')
+
+    # Round / Saturate
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat},
+                         pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+    ### olo_fix_inv ###
+    tb = olo_tb.test_bench('olo_fix_inv_tb')
+    cosim = olo_fix_inv.cosim.cosim
+    default_generics = {
+        'OutFmt_g': '(0, 8, 12)',
+        'InFmt_g': '(0, 0, 16)',
+        'PrecisionBits_g': 18,
+        'MemStyle_g': 'auto',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+
+    # All precisions
+    for Precision in [10, 14, 18, 20]:
+        named_config(tb, default_generics | {'PrecisionBits_g': Precision}, pre_config=cosim,
+                     short_name=f'PrecisionBits_g={Precision}')
+
+    # Input formats - unsigned/signed, integer bits, formats not containing 1.0 and the smallest
+    # format supported (two bits). The output format is chosen to cover the results.
+    in_out_fmts = [('(0, 0, 16)', '(0, 17, 8)'), ('(0, 8, 8)', '(0, 9, 12)'),
+                   ('(1, 0, 15)', '(1, 16, 8)'), ('(1, 7, 8)', '(1, 9, 12)'),
+                   ('(0, -2, 18)', '(0, 17, 4)'), ('(0, 12, -4)', '(0, 5, 16)'),
+                   ('(1, 1, 1)', '(1, 2, 12)'), ('(0, 0, 33)', '(0, 34, 4)'),
+                   ('(0, -20, 40)', '(0, 41, 0)'), ('(0, 0, 2)', '(0, 3, 4)')]
+    for InFmt, OutFmt in in_out_fmts:
+        named_config(tb, default_generics | {'InFmt_g': InFmt, 'OutFmt_g': OutFmt},
+                     pre_config=cosim, short_name=f'InFmt_g={InFmt}')
+
+    # Round / Saturate
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat},
+                         pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
     ### olo_fix_lin_approx ###
     # Entities and testbenches are generated through <root>/sim/codegen.py, which is executed before
     # VUnit detects files. The generated testbenches check the HDL against the Python model.
