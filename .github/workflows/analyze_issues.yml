@@ -11,9 +11,9 @@ jobs:
     steps:
       #General Setup
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       #Setup environment
       - name: Setup environment
         uses: ./.github/actions/setup-environment

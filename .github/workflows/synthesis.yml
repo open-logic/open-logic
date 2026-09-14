@@ -25,7 +25,7 @@ jobs:
     steps:
       #General Setup
       - name: Checkout actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Sleeping for 30 seconds to ensure the instance is ready
       - name: Sleep for 30 seconds
         run: sleep 30
@@ -42,11 +42,12 @@ jobs:
   # Synthesis Test
   synthesis:
     runs-on: [self-hosted, aws]
+    timeout-minutes: 720
     needs: start-instance
     steps:
       # Checkout the repository
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
       # Setup python

@@ -128,7 +128,6 @@ library ieee;
     use ieee.std_logic_1164.all;
     use ieee.numeric_std.all;
     use std.textio.all;
-    use ieee.std_logic_textio.all;
 
 library vunit_lib;
     context vunit_lib.vunit_context;
@@ -144,6 +143,7 @@ library work;
 
 library olo;
     use olo.en_cl_fix_pkg.all;
+    use olo.olo_fix_pkg.all;
 
 entity olo_test_fix_stimuli_vc is
     generic (
@@ -184,12 +184,8 @@ begin
         -- File
         file data_file : text;
 
-        variable line_v        : line;
-        variable next_line_v   : line;
-        variable fmt_v         : FixFormat_t;
         variable data_slv      : std_logic_vector(cl_fix_width(fmt)-1 downto 0);
         variable next_data_slv : std_logic_vector(cl_fix_width(fmt)-1 downto 0);
-        variable good          : boolean;
         variable has_data      : boolean;
         variable next_has_data : boolean;
 
@@ -230,24 +226,13 @@ begin
                 stall_min_cycles  := pop(request_msg);
                 msg_p             := new_string_ptr(pop_string(request_msg));
 
-                -- Open file and check format
+                -- Open file and check format (first line)
                 file_open(data_file, to_string(file_path_p), read_mode);
-
-                -- Check format (first line)
-                readline(data_file, line_v);
-                fmt_v := cl_fix_format_from_string(line_v.all);
-                assert fmt_v = fmt
-                    report "olo_test_fix_stimuli - " & to_string(msg_p) & "Format mismatch: expected " & to_string(fmt) &
-                           ", got " & to_string(fmt_v) & " in file " & to_string(file_path_p)
-                    severity error;
+                fixFileCheckHeader(data_file, fmt);
 
                 -- Read first data line
                 if not endfile(data_file) then
-                    readline(data_file, line_v);
-                    hread(line_v, data_slv, good);
-                    assert good
-                        report "olo_test_fix_stimuli - " & to_string(msg_p) & "- Failed to read from file" & to_string(file_path_p)
-                        severity error;
+                    data_slv := fixFileReadSample(data_file, fmt);
                     has_data := true;
                 else
                     has_data := false;
@@ -259,11 +244,7 @@ begin
                 while has_data loop
                     -- Try read next line
                     if not endfile(data_file) then
-                        readline(data_file, next_line_v);
-                        hread(next_line_v, next_data_slv, good);
-                        assert good
-                            report "olo_test_fix_stimuli - " & to_string(msg_p) & "- Failed to read from file" & to_string(file_path_p)
-                            severity error;
+                        next_data_slv := fixFileReadSample(data_file, fmt);
                         next_has_data := true;
                     else
                         next_has_data := false;

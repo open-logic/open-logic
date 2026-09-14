@@ -28,9 +28,11 @@ Note that components are split into categories.
     - [Design Utilities](#design-utilities)
     - [Basic Operations](#basic-operations)
     - [Simple Mathematics](#simple-mathematics)
-    - [CORDIC](#cordic)
     - [Mixers](#mixers)
+    - [CORDIC](#cordic)
     - [CIC Filters](#cic-filters)
+    - [FIR Filters](#fir-filters)
+    - [Function Approximations](#function-approximations)
     - [Miscellaneous](#miscellaneous-1)
 
 ## base
@@ -203,6 +205,7 @@ Below packages contain basic definitions like number format types etc.
 
 | Python File                                         | Description                                                  |
 | --------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_fix_lin_approx](./fix/olo_fix_lin_approx.md)   | Bit-true model and code generator for linear function approximations (see [olo_fix_lin_approx_calc](./fix/olo_fix_lin_approx_calc.md)). |
 | [olo_fix_pkg_writer](./fix/olo_fix_pkg_writer.md)   | Generate HDL (VHDL or Verilog) package with all number formats defined in Python. |
 | [olo_fix_cosim](./fix/olo_fix_cosim.md)                 | Python utilities for co-simulation with HDL simulators. Generate co-simulation files that can be read by [olo_fix_sim_stimuli](./fix/olo_fix_sim_stimuli.md) and [olo_fix_sim_checker](./fix/olo_fix_sim_checker.md) in HDL simulations. |
 
@@ -241,7 +244,7 @@ be used. For deciding which option to use, the following considerations shall be
 | [olo_fix_cplx_mult](./fix/olo_fix_cplx_mult.md)       | Multiply two complex fixed point numbers. <br> Supports a mixer mode (complex-to-complex) |
 | [olo_fix_madd](./fix/olo_fix_madd.md)                 | Multiply-accumulate (MAC) operation on fixed point numbers. <br> Aimed to be used to build MACC chains (e.g. for FIR filters)|
 
-### CORDIC
+### Mixers
 
 | Entity                                                | Description                                                  |
 | ----------------------------------------------------- | ------------------------------------------------------------ |
@@ -249,7 +252,7 @@ be used. For deciding which option to use, the following considerations shall be
 | [olo_fix_mix_r2c](./fix/olo_fix_mix_r2c.md)           | Real to complex mixer. Mixes a real signal with a complex local oscillator |
 | [olo_fix_mix_c2r](./fix/olo_fix_mix_c2r.md)           | Complex to real mixer. Mixes a complex signal with a complex local oscillator to produce a real output |
 
-### Mixers
+### CORDIC
 
 | Entity                                              | Description                                                  |
 | --------------------------------------------------- | ------------------------------------------------------------ |
@@ -263,6 +266,28 @@ be used. For deciding which option to use, the following considerations shall be
 | [olo_fix_cic_dec_tdm](./fix/olo_fix_cic_dec_tdm.md)         | CIC decimator (TDM input, TDM output), single- or multi-channel, ratio fixed or runtime configurable               |
 | [olo_fix_cic_dec_par_tdm](./fix/olo_fix_cic_dec_par_tdm.md) | CIC decimator (parallel input, TDM output), single- or multi-channel, ratio fixed or runtime configurable          |
 
+### FIR Filters
+
+Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_
+
+- dec/int: decimating or interpolating FIR filter
+- ser/par/semi: Tap processing (serial, parallel or semi-parallel)
+- tdm/par: TDM or parallel channel handling on input and output
+
+| Entity                                                      | Description                                                                                                        |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| [olo_fix_fir_dec_ser_chtdm](./fix/olo_fix_fir_dec_ser_chtdm.md) | Decimating FIR filter (TDM channels, serial tap computation), multi-channel only (not usable for single-channel) <br> Runtime-configurable or fixed ratio, tap count and coefficients - Can be used non-decimating (Ratio = 1)  |
+| [olo_fix_fir_dec_ser_chpar](./fix/olo_fix_fir_dec_ser_chpar.md) | Decimating FIR filter (parallel channels, serial tap computation), single- or multi-channel (one multiplier per channel) <br> Runtime-configurable or fixed ratio, tap count and coefficients - Can be used non-decimating (Ratio = 1) |
+| [olo_fix_fir_dec_semi_chtdm](./fix/olo_fix_fir_dec_semi_chtdm.md) | Decimating FIR filter (TDM channels, semi-parallel tap computation with a configurable number of chained multipliers), single- or multi-channel <br> Fixed ratio and tap count, fixed or runtime-configurable coefficients - Can be used non-decimating (Ratio = 1) |
+
+### Function Approximations
+
+| Entity                                              | Description                                                                                              |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [olo_fix_lin_approx_calc](./fix/olo_fix_lin_approx_calc.md) | Linear approximation of an arbitrary function (table based). Tables and wrapper entities are generated by [olo_fix_lin_approx](./fix/olo_fix_lin_approx.md). |
+| [olo_fix_cordic_rot](./fix/olo_fix_cordic_rot.md)   | CORDIC rotating mode - Can be used to approximate sine/cosine functions |
+| [olo_fix_sin](./fix/olo_fix_sin.md)                   | Sine and (optionally) cosine of a phase given in rotations. Table based, can be used to build an NCO/DDS. |
+
 ### Miscellaneous
 
 | Entity                                              | Description                                                                                              |
@@ -270,3 +295,4 @@ be used. For deciding which option to use, the following considerations shall be
 | [olo_fix_coef_storage](./fix/olo_fix_coef_storage.md) | Fixed-point coefficient storage - ROM or RAM with Coef read port and optional Cfg write/readback port. |
 | [olo_fix_sample_hold](./fix/olo_fix_sample_hold.md)   | Sample and hold a fixed point number - output holds the last sampled value until a new sample is taken.  |
 | [olo_fix_mov_avg](./fix/olo_fix_mov_avg.md)           | Moving average filter                                                                                    |
+| [olo_fix_lin_approx_calc](./fix/olo_fix_lin_approx_calc.md) | Linear approximation of an arbitrary function (table based). Tables and wrapper entities are generated by [olo_fix_lin_approx](./fix/olo_fix_lin_approx.md). |

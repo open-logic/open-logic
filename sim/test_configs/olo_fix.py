@@ -10,6 +10,7 @@
 from .utils import named_config
 import sys
 import os
+from functools import partial
 
 # Import for fix cosimulations
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../test'))
@@ -226,7 +227,9 @@ def add_configs(olo_tb):
             named_config(tb, {'AFmt_g': Format, 'Value_g': Value})
 
     ### olo_fix_pkg ###
-    # Does not need configuration
+    tb = olo_tb.test_bench('olo_fix_pkg_tb')
+    cosim = olo_fix_pkg.cosim.cosim
+    tb.add_config(name="default", pre_config=partial(cosim, generics={}))
 
     ### olo_fix_limit ###
     tb = olo_tb.test_bench('olo_fix_limit_tb')
@@ -710,3 +713,215 @@ def add_configs(olo_tb):
             else: # ROM
                 named_config(tb, {'StorageType_g': StorageType, 'RdLatency_g': Latency})
 
+    ### olo_fix_fir_dec_ser_chtdm ###
+    tb = olo_tb.test_bench('olo_fix_fir_dec_ser_chtdm_tb')
+    default_generics = {
+        'InFmt_g'          : '(1,0,15)',
+        'OutFmt_g'         : '(1,-1,17)',
+        'CoefFmt_g'        : '(1,0,17)',
+        'CoefStorageType_g': 'ROM',
+        'CoefRamReadback_g': False,
+        'Channels_g'       : 2,
+        'Ratio_g'          : 4,
+        'Taps_g'           : 16,
+        'MultRegs_g'       : 1,
+        'RuntimeCfg_g'     : True,
+        'Round_g'          : 'NonSymPos_s',
+        'Saturate_g'       : 'Sat_s',
+        'WriteCoefs_g'     : 'False',
+        'GuardBits_g'      : 1
+    }
+    cosim = olo_fix_fir_dec_ser_chtdm.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    #Different single-settings
+    named_config(tb, default_generics | {'Channels_g': 4, 'Ratio_g': 3, 'Taps_g': 5, 'MultRegs_g': 2, 'RuntimeCfg_g': False}, pre_config=cosim, short_name='ch4-r3-taps5-regs2')
+    named_config(tb, default_generics | {'Ratio_g': 2}, pre_config=cosim, short_name='ratio2')
+
+    # Different coef-storage
+    named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': True, 'CoefRamReadback_g': True}, pre_config=cosim, short_name='RAM-write')
+    named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': False, 'CoefRamReadback_g': False}, pre_config=cosim, short_name='RAM-no-write')
+
+    # Round/Sat
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat}, pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+    # Overflow
+    cosim_overflow = partial(cosim, test_mode='overflow')
+    named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
+
+    ### olo_fix_fir_dec_ser_chpar ###
+    tb = olo_tb.test_bench('olo_fix_fir_dec_ser_chpar_tb')
+    default_generics = {
+        'InFmt_g'          : '(1,0,15)',
+        'OutFmt_g'         : '(1,-1,17)',
+        'CoefFmt_g'        : '(1,0,17)',
+        'CoefStorageType_g': 'ROM',
+        'CoefRamReadback_g': False,
+        'Channels_g'       : 2,
+        'Ratio_g'          : 4,
+        'Taps_g'           : 16,
+        'MultRegs_g'       : 1,
+        'RuntimeCfg_g'     : True,
+        'Round_g'          : 'NonSymPos_s',
+        'Saturate_g'       : 'Sat_s',
+        'WriteCoefs_g'     : 'False',
+        'GuardBits_g'      : 1
+    }
+    # The bit-true model and cosimulation are shared with olo_fix_fir_dec_ser_tdm (same filter math,
+    # per-channel stimulus/reference files are reused). Hence the cosim is called from there.
+    cosim = olo_fix_fir_dec_ser_chtdm.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    #Different single-settings
+    named_config(tb, default_generics | {'Channels_g': 1, 'Ratio_g': 3, 'Taps_g': 5, 'MultRegs_g': 2, 'RuntimeCfg_g': False}, pre_config=cosim, short_name='ch1-r3-taps5-regs2')
+    named_config(tb, default_generics | {'Channels_g': 4}, pre_config=cosim, short_name='ch4')
+    named_config(tb, default_generics | {'Ratio_g': 1}, pre_config=cosim, short_name='ratio1')
+
+    # Different coef-storage
+    named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': True, 'CoefRamReadback_g': True}, pre_config=cosim, short_name='RAM-write')
+    named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': False, 'CoefRamReadback_g': False}, pre_config=cosim, short_name='RAM-no-write')
+
+    # Round/Sat
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat}, pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+    # Overflow
+    cosim_overflow = partial(cosim, test_mode='overflow')
+    named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
+
+    ### olo_fix_fir_dec_semi_chtdm ###
+    tb = olo_tb.test_bench('olo_fix_fir_dec_semi_chtdm_tb')
+    default_generics = {
+        'InFmt_g'              : '(1,0,15)',
+        'OutFmt_g'             : '(1,-1,17)',
+        'CoefFmt_g'            : '(1,0,17)',
+        'CoefStorageType_g'    : 'ROM',
+        'CoefRamReadback_g'    : False,
+        'Channels_g'           : 2,
+        'Ratio_g'              : 4,
+        'Taps_g'               : 16,
+        'Multipliers_g'        : 4,
+        'MultRegs_g'           : 1,
+        'FullInpRateSupport_g' : False,
+        'Round_g'              : 'NonSymPos_s',
+        'Saturate_g'           : 'Sat_s',
+        'WriteCoefs_g'         : 'False',
+        'GuardBits_g'          : 1
+    }
+    # The bit-true model and cosimulation are shared with olo_fix_fir_dec_ser_chtdm (same filter
+    # math, per-channel stimulus/reference files are reused). Hence the cosim is called from there.
+    cosim = olo_fix_fir_dec_ser_chtdm.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    # Different single-settings
+    named_config(tb, default_generics | {'Channels_g': 4, 'Ratio_g': 3, 'Taps_g': 5, 'Multipliers_g': 2, 'MultRegs_g': 2}, pre_config=cosim, short_name='ch4-r3-taps5-mul2')
+    named_config(tb, default_generics | {'Multipliers_g': 1}, pre_config=cosim, short_name='mul1')
+    named_config(tb, default_generics | {'Multipliers_g': 16, 'Taps_g': 16}, pre_config=cosim, short_name='fully-parallel')
+    named_config(tb, default_generics | {'Multipliers_g': 3, 'Taps_g': 17}, pre_config=cosim, short_name='taps17-mul3')
+    named_config(tb, default_generics | {'Channels_g' : 1}, pre_config=cosim, short_name='ch1')
+    named_config(tb, default_generics | {'Ratio_g': 1}, pre_config=cosim, short_name='ratio1')
+
+    # Full input rate support
+    named_config(tb, default_generics | {'FullInpRateSupport_g': True, 'Ratio_g': 8, 'Multipliers_g': 2}, pre_config=cosim, short_name='fullrate')
+    named_config(tb, default_generics | {'FullInpRateSupport_g': True, 'Ratio_g': 8, 'Multipliers_g': 2, 'Channels_g': 1}, pre_config=cosim, short_name='fullrate-1ch')
+
+
+    # Different coef-storage
+    named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': True, 'CoefRamReadback_g': True}, pre_config=cosim, short_name='RAM-write')
+    named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': False, 'CoefRamReadback_g': False}, pre_config=cosim, short_name='RAM-no-write')
+
+    # Round/Sat
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat}, pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+    # Overflow
+    cosim_overflow = partial(cosim, test_mode='overflow')
+    named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
+
+    ### olo_fix_lin_approx ###
+    # Entities and testbenches are generated through <root>/sim/codegen.py, which is executed before
+    # VUnit detects files. The generated testbenches check the HDL against the Python model.
+    for name in olo_fix_lin_approx.lin_approx_codegen.SAMPLES.keys():
+        tb = olo_tb.test_bench(f'olo_fix_lin_approx_{name}_tb')
+        named_config(tb, {}, short_name='default')
+
+    ### olo_fix_private_lin_approx_qsin ###
+    tb = olo_tb.test_bench('olo_fix_private_lin_approx_qsin_tb')
+    cosim = olo_fix_private_lin_approx_qsin.cosim.cosim
+    default_generics = {
+        'OutFmt_g': '(1, 0, 16)',
+        'InFmt_g': '(0, -2, 20)',
+        'UsePortB_g': True,
+        'MemStyle_g': 'auto',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+
+    # Check bit-trueness for all scalings
+    for IntBits in [0, 1]:
+        for FracBits in range(10, 21):
+            generics = default_generics | {'OutFmt_g': f'(1, {IntBits}, {FracBits})',
+                                           'InFmt_g': f'(0, -2, {FracBits+4})'}
+            named_config(tb, generics, pre_config=cosim,
+                         short_name=f'formats-OutFmt_g=(1,{IntBits},{FracBits})')
+
+    # Single table read port and different memory styles
+    named_config(tb, default_generics | {'UsePortB_g': False}, pre_config=cosim,
+                 short_name='port-a-only')
+
+    # Round / Saturate
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat},
+                         pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+    ### olo_fix_sin ###
+    tb = olo_tb.test_bench('olo_fix_sin_tb')
+    cosim = olo_fix_sin.cosim.cosim
+    default_generics = {
+        'OutFmt_g': '(1, 0, 16)',
+        'InFmt_g': '(0, 0, 20)',
+        'CosOutput_g': True,
+        'MemStyle_g': 'auto',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+
+    # Smallest, largest and one intermediate table for both scalings
+    for IntBits in [0, 1]:
+        for FracBits in [10, 16, 20]:
+            generics = default_generics | {'OutFmt_g': f'(1, {IntBits}, {FracBits})',
+                                           'InFmt_g': f'(0, 0, {FracBits+4})'}
+            named_config(tb, generics, pre_config=cosim,
+                         short_name=f'formats-OutFmt_g=(1,{IntBits},{FracBits})')
+
+    # Input formats
+    for InFmt in ['(0, 2, 20)', '(1, 0, 20)', '(1, 3, 20)', '(0, -2, 20)', '(1, -1, 16)',
+                  '(0, 0, 11)']:
+        named_config(tb, default_generics | {'InFmt_g': InFmt}, pre_config=cosim,
+                     short_name=f'InFmt_g={InFmt}')
+
+    # Sine only (single table read port)
+    named_config(tb, default_generics | {'CosOutput_g': False}, pre_config=cosim,
+                 short_name='sin-only')
+
+    # Round / Saturate
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat},
+                         pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+
+    ### olo_fix_lin_approx ###
+    # Entities and testbenches are generated through <root>/sim/codegen.py, which is executed before
+    # VUnit detects files. The generated testbenches check the HDL against the Python model.
+    for name in olo_fix_lin_approx.lin_approx_codegen.SAMPLES.keys():
+        tb = olo_tb.test_bench(f'olo_fix_lin_approx_{name}_tb')
+        named_config(tb, {}, short_name=name)

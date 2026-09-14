@@ -95,6 +95,70 @@ The function works exactly the same as `cl_fix_shift` but taking additional para
 Note that the shift direction is left (like in `cl_fix_shift`) if the shift value is positive and right if the shift
 value is negative.
 
+### Reading Fixed-Point Stimuli Files
+
+Stimuli files written by the _olo_fix_ cosimulation infrastructure (e.g. `olo_fix_cosim` in Python) follow a simple
+text format: the first line contains the fixed-point format string (e.g. `(1,0,15)`) and every following line contains
+one sample as hex value. The functions below allow reading such files from a testbench or behavioral model.
+
+The first two functions operate on an already opened file (`file f : text`) and read the header / one sample at a time:
+
+```vhdl
+-- Check the header (first line) against the expected format. Must be called once directly after
+-- opening the file because it consumes the header line. Asserts on a format mismatch.
+procedure fixFileCheckHeader (file f : text; fmt : FixFormat_t);
+
+-- Read a single sample (one data line) and return it as std_logic_vector with exactly
+-- cl_fix_width(fmt) bits.
+impure function fixFileReadSample (file f : text; fmt : FixFormat_t) return std_logic_vector;
+```
+
+`fixFileReadSample` returns the sample with exactly `cl_fix_width(fmt)` bits, so it can be assigned directly to a port
+or signal of the corresponding format.
+
+Usage example:
+
+```vhdl
+use std.textio.all;
+...
+constant Fmt_c : FixFormat_t := cl_fix_format_from_string("(1,0,15)");
+...
+file DataFile      : text;
+variable DataSlv_v : std_logic_vector(cl_fix_width(Fmt_c)-1 downto 0);
+...
+-- Open the file and check its header against the expected format
+file_open(DataFile, "stimuli.fix", read_mode);
+fixFileCheckHeader(DataFile, Fmt_c);
+
+-- Read all samples
+while not endfile(DataFile) loop
+    DataSlv_v := fixFileReadSample(DataFile, Fmt_c);
+    -- ... use DataSlv_v ...
+end loop;
+
+file_close(DataFile);
+```
+
+The next two functions read a complete file (given by its path) in one call. They open the file, check its header
+against the passed format and return all samples - either as `RealArray_t` or as a comma-separated string of real
+values (e.g. `"0.1, 1.0e2"`, which can be used to pass to coefficient initialization generics of _olo_fix_).
+
+```vhdl
+-- Read a complete file and return all samples as real values.
+impure function fixFileReadReal (filePath : string; fmt : FixFormat_t) return RealArray_t;
+
+-- Read a complete file and return all samples as a comma-separated string of real values.
+impure function fixFileReadString (filePath : string; fmt : FixFormat_t) return string;
+```
+
+Usage example:
+
+```vhdl
+constant Fmt_c    : FixFormat_t := cl_fix_format_from_string("(1,0,15)");
+constant Values_c : RealArray_t := fixFileReadReal("stimuli.fix", Fmt_c);
+constant String_c : string      := fixFileReadString("stimuli.fix", Fmt_c);
+```
+
 ### Internal Functions
 
 The following functions are used in _Open Logic_ internally but they are not intended for use by the user and hence

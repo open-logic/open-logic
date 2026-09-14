@@ -149,7 +149,7 @@ class EntityCollection:
             if line.startswith("port") or line.startswith(")") or line.startswith("--") or line == "":
                 continue
 
-            #Parse generic
+            #Parse port
             name, rem = line.split(":", 1)
             name = name.strip()
             dir, rem = rem.strip().split(" ", 1)

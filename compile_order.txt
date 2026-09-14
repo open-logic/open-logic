@@ -55,6 +55,7 @@ src/axi/vhdl/olo_axi_master_full.vhd
 src/axi/vhdl/olo_axi_lite_slave.vhd
 3rdParty/en_cl_fix/hdl/en_cl_fix_private_pkg.vhd
 3rdParty/en_cl_fix/hdl/en_cl_fix_pkg.vhd
+src/fix/vhdl/olo_fix_private_lin_approx_qsin_pkg.vhd
 src/fix/vhdl/olo_fix_pkg.vhd
 src/fix/vhdl/olo_fix_to_real.vhd
 src/fix/vhdl/olo_fix_sim_stimuli.vhd
@@ -72,6 +73,9 @@ src/fix/vhdl/olo_fix_mov_avg.vhd
 src/fix/vhdl/olo_fix_mix_r2c.vhd
 src/fix/vhdl/olo_fix_madd.vhd
 src/fix/vhdl/olo_fix_mix_c2r.vhd
+src/fix/vhdl/olo_fix_lin_approx_calc.vhd
+src/fix/vhdl/olo_fix_private_lin_approx_qsin.vhd
+src/fix/vhdl/olo_fix_sin.vhd
 src/fix/vhdl/olo_fix_limit.vhd
 src/fix/vhdl/olo_fix_from_real.vhd
 src/fix/vhdl/olo_fix_cplx_mult.vhd
@@ -79,6 +83,9 @@ src/fix/vhdl/olo_fix_cordic_vect.vhd
 src/fix/vhdl/olo_fix_cordic_rot.vhd
 src/fix/vhdl/olo_fix_compare.vhd
 src/fix/vhdl/olo_fix_coef_storage.vhd
+src/fix/vhdl/olo_fix_fir_dec_ser_chtdm.vhd
+src/fix/vhdl/olo_fix_fir_dec_ser_chpar.vhd
+src/fix/vhdl/olo_fix_fir_dec_semi_chtdm.vhd
 src/fix/vhdl/olo_fix_cic_dec_tdm.vhd
 src/fix/vhdl/olo_fix_cic_dec_par_tdm.vhd
 src/fix/vhdl/olo_fix_bin_div.vhd
