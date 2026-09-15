@@ -67,7 +67,6 @@ architecture rtl of olo_fix_mix_r2c is
     -- Formats
     constant InFmt_c  : FixFormat_t := cl_fix_format_from_string(InFmt_g);
     constant MixFmt_c : FixFormat_t := cl_fix_format_from_string(MixFmt_g);
-    constant OutFmt_c : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
 
     -- Q channel intermediate formats (mirrors olo_fix_cplx_mult MIX mode for bit-true match)
     constant MultFmt_c : FixFormat_t := cl_fix_mult_fmt(InFmt_c, MixFmt_c);

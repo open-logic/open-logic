@@ -54,8 +54,7 @@ end entity;
 architecture sim of olo_fix_sim_stimuli is
 
     -- constants
-    constant Fmt_c        : FixFormat_t := cl_fix_format_from_string(Fmt_g);
-    constant EntityName_c : string      := "olo_fix_sim_stimuli";
+    constant Fmt_c : FixFormat_t := cl_fix_format_from_string(Fmt_g);
 
 begin
 

@@ -84,20 +84,19 @@ architecture sim of olo_fix_mix_c2r_tb is
     constant CheckerReal_c  : olo_test_fix_checker_t := new_olo_test_fix_checker;
 
     -- File paths
-    constant SigIFile_c          : string := output_path(runner_cfg) & "SigI.fix";
-    constant SigQFile_c          : string := output_path(runner_cfg) & "SigQ.fix";
-    constant SigIqFile_c         : string := output_path(runner_cfg) & "SigIQ.fix";
-    constant MixIFile_c          : string := output_path(runner_cfg) & "MixI.fix";
-    constant MixQFile_c          : string := output_path(runner_cfg) & "MixQ.fix";
-    constant MixIqFile_c         : string := output_path(runner_cfg) & "MixIQ.fix";
-    constant ResultRealFile_c    : string := output_path(runner_cfg) & "Result_Real.fix";
-    constant LastParFile_c       : string := output_path(runner_cfg) & "LastPar.fix";
-    constant LastTdmFile_c       : string := output_path(runner_cfg) & "LastTdm.fix";
-    constant ResyncSigIqFile_c   : string := output_path(runner_cfg) & "Resync_SigIQ.fix";
-    constant ResyncMixIqFile_c   : string := output_path(runner_cfg) & "Resync_MixIQ.fix";
-    constant ResyncResultFile_c  : string := output_path(runner_cfg) & "Resync_ResultReal.fix";
-    constant ResyncLastInFile_c  : string := output_path(runner_cfg) & "Resync_LastIn.fix";
-    constant ResyncLastOutFile_c : string := output_path(runner_cfg) & "Resync_LastOut.fix";
+    constant SigIFile_c         : string := output_path(runner_cfg) & "SigI.fix";
+    constant SigQFile_c         : string := output_path(runner_cfg) & "SigQ.fix";
+    constant SigIqFile_c        : string := output_path(runner_cfg) & "SigIQ.fix";
+    constant MixIFile_c         : string := output_path(runner_cfg) & "MixI.fix";
+    constant MixQFile_c         : string := output_path(runner_cfg) & "MixQ.fix";
+    constant MixIqFile_c        : string := output_path(runner_cfg) & "MixIQ.fix";
+    constant ResultRealFile_c   : string := output_path(runner_cfg) & "Result_Real.fix";
+    constant LastParFile_c      : string := output_path(runner_cfg) & "LastPar.fix";
+    constant LastTdmFile_c      : string := output_path(runner_cfg) & "LastTdm.fix";
+    constant ResyncSigIqFile_c  : string := output_path(runner_cfg) & "Resync_SigIQ.fix";
+    constant ResyncMixIqFile_c  : string := output_path(runner_cfg) & "Resync_MixIQ.fix";
+    constant ResyncResultFile_c : string := output_path(runner_cfg) & "Resync_ResultReal.fix";
+    constant ResyncLastInFile_c : string := output_path(runner_cfg) & "Resync_LastIn.fix";
 
 begin
 
