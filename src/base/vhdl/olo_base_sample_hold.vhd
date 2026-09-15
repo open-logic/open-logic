@@ -60,10 +60,6 @@ architecture rtl of olo_base_sample_hold is
     constant RstVal_c     : std_logic_vector(Width_g - 1 downto 0) := ResetValue_g;
     constant RstValid_c   : std_logic                              := choose(ResetValid_g, '1', '0');
 
-    -- Registers
-    signal Data  : std_logic_vector(Width_g - 1 downto 0);
-    signal Valid : std_logic;
-
 begin
 
     -- Assertions

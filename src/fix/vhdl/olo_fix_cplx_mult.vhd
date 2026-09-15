@@ -76,9 +76,8 @@ architecture rtl of olo_fix_cplx_mult is
     constant EntityName_c : string := "olo_fix_cplx_mult";
 
     -- Formats
-    constant AFmt_c      : FixFormat_t := cl_fix_format_from_string(AFmt_g);
-    constant BFmt_c      : FixFormat_t := cl_fix_format_from_string(BFmt_g);
-    constant ResultFmt_c : FixFormat_t := cl_fix_format_from_string(ResultFmt_g);
+    constant AFmt_c : FixFormat_t := cl_fix_format_from_string(AFmt_g);
+    constant BFmt_c : FixFormat_t := cl_fix_format_from_string(BFmt_g);
 
     -- Round/Sat Registers
     constant RoundReg_c : string := choose(compareNoCase(Round_g, FixRound_Trunc_c), "NO", "YES");
