@@ -51,8 +51,9 @@ architecture sim of olo_fix_sin_tb is
     constant Clk_Frequency_c : real := 100.0e6; -- 100 MHz
     constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
-    -- Latency: olo_fix_private_lin_approx_qsin (8) plus the input, phase mapping and output stage.
-    constant ExpectedLatency_c : natural := 11;
+    -- Latency: olo_fix_private_lin_approx_qsin (same as olo_fix_lin_approx_calc with a table read
+    -- latency of two clock cycles) plus the input, phase mapping and output stage.
+    constant ExpectedLatency_c : natural := olo.olo_fix_lin_approx_pkg.linApproxLatency(2) + 3;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals

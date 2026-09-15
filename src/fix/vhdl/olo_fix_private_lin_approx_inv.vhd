@@ -80,6 +80,9 @@ architecture rtl of olo_fix_private_lin_approx_inv is
     constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
     constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
 
+    -- The table has a read latency of two clock cycles to improve timing
+    constant TableLatency_c : positive := 2;
+
     -- Supported precisions - one approximation table exists per precision. The list is the same as
     -- the one in the INV_TABLES dictionary of the Python model.
     constant FmtSupported_c : boolean := OutFmt_c.S = 0 and OutFmt_c.I = 1 and
@@ -105,6 +108,7 @@ architecture rtl of olo_fix_private_lin_approx_inv is
     -- Table types
     subtype TblEntry_t is std_logic_vector(TblWidth_c - 1 downto 0);
     type Tbl_t is array (0 to Points_c - 1) of TblEntry_t;
+    type TblData_t is array (1 to TableLatency_c) of TblEntry_t;
 
     -- Strip the padding the generated package uses to give all tables the same entry width
     function tableContent return Tbl_t is
@@ -129,7 +133,7 @@ architecture rtl of olo_fix_private_lin_approx_inv is
 
     -- Signals
     signal Addr : std_logic_vector(log2ceil(Points_c) - 1 downto 0);
-    signal Data : TblEntry_t;
+    signal Data : TblData_t;
 
 begin
 
@@ -148,11 +152,17 @@ begin
         severity error;
     -- synthesis translate_on
 
-    -- *** Table (ROM, one cycle read latency) ***
+    -- *** Table (ROM, TableLatency_c clock cycles read latency) ***
+    -- The registers after the first one are meant to be absorbed into the memory output registers
     p_table : process (Clk) is
     begin
         if rising_edge(Clk) then
-            Data <= Table_v(to_integer(unsigned(Addr)));
+            Data(1) <= Table_v(to_integer(unsigned(Addr)));
+
+            for i in 2 to TableLatency_c loop
+                Data(i) <= Data(i - 1);
+            end loop;
+
         end if;
     end process;
 
@@ -161,13 +171,14 @@ begin
     -- Approximation calculation
     i_calc : entity work.olo_fix_lin_approx_calc
         generic map (
-            InFmt_g     => InFmt_g,
-            OutFmt_g    => OutFmt_g,
-            OffsFmt_g   => OffsFmt_c,
-            GradFmt_g   => GradFmt_c,
-            TableSize_g => Points_c,
-            Round_g     => Round_g,
-            Saturate_g  => Saturate_g
+            InFmt_g        => InFmt_g,
+            OutFmt_g       => OutFmt_g,
+            OffsFmt_g      => OffsFmt_c,
+            GradFmt_g      => GradFmt_c,
+            TableSize_g    => Points_c,
+            TableLatency_g => TableLatency_c,
+            Round_g        => Round_g,
+            Saturate_g     => Saturate_g
         )
         port map (
             Clk        => Clk,
@@ -177,7 +188,7 @@ begin
             Out_Valid  => Out_Valid,
             Out_Result => Out_Data,
             Tbl_Addr   => Addr,
-            Tbl_Data   => Data
+            Tbl_Data   => Data(TableLatency_c)
         );
 
 end architecture;

@@ -19,6 +19,27 @@
 --       use an older version, the documentation might not match the code.
 
 ---------------------------------------------------------------------------------------------------
+-- Package
+---------------------------------------------------------------------------------------------------
+package olo_fix_lin_approx_pkg is
+
+    -- Latency of olo_fix_lin_approx_calc in clock cycles for a given TableLatency_g. Entities and
+    -- testbenches depending on the latency use this function, hence it is the only place to update
+    -- when the pipeline changes.
+    function linApproxLatency (TableLatency : positive) return positive;
+
+end package;
+
+package body olo_fix_lin_approx_pkg is
+
+    function linApproxLatency (TableLatency : positive) return positive is
+    begin
+        return 7 + TableLatency;
+    end function;
+
+end package body;
+
+---------------------------------------------------------------------------------------------------
 -- Libraries
 ---------------------------------------------------------------------------------------------------
 library ieee;
@@ -31,6 +52,7 @@ library work;
     use work.olo_base_pkg_string.all;
     use work.en_cl_fix_pkg.all;
     use work.olo_fix_pkg.all;
+    use work.olo_fix_lin_approx_pkg.all;
 
 ---------------------------------------------------------------------------------------------------
 -- Entity Declaration
@@ -39,14 +61,16 @@ library work;
 entity olo_fix_lin_approx_calc is
     generic (
         -- Formats (defined by the table, do not modify without regenerating the table)
-        InFmt_g     : string;
-        OutFmt_g    : string;
-        OffsFmt_g   : string;
-        GradFmt_g   : string;
-        TableSize_g : positive;
+        InFmt_g        : string;
+        OutFmt_g       : string;
+        OffsFmt_g      : string;
+        GradFmt_g      : string;
+        TableSize_g    : positive;
+        -- Table read latency in clock cycles (increase for better timing of slow ROMs)
+        TableLatency_g : positive range 1 to 3 := 1;
         -- Round / Saturate
-        Round_g     : string := FixRound_NonSymPos_c;
-        Saturate_g  : string := FixSaturate_Sat_c
+        Round_g        : string                := FixRound_NonSymPos_c;
+        Saturate_g     : string                := FixSaturate_Sat_c
     );
     port (
         -- Control Ports
@@ -69,7 +93,6 @@ architecture rtl of olo_fix_lin_approx_calc is
     -- Constants
     constant EntityName_c : string      := "olo_fix_lin_approx_calc";
     constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
-    constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
     constant OffsFmt_c    : FixFormat_t := cl_fix_format_from_string(OffsFmt_g);
     constant GradFmt_c    : FixFormat_t := cl_fix_format_from_string(GradFmt_g);
 
@@ -87,6 +110,11 @@ architecture rtl of olo_fix_lin_approx_calc is
     constant MulFmt_c       : FixFormat_t := cl_fix_mult_fmt(GradFmt_c, RemFmtSigned_c);
     constant AddFmt_c       : FixFormat_t := cl_fix_add_fmt(OffsFmt_c, MulFmt_c);
 
+    -- Pipeline stages depending on the table read latency
+    constant TblStg_c : positive := 2 + TableLatency_g; -- Register table outputs
+    constant MulStg_c : positive := TblStg_c + 1;       -- Multiplication
+    constant AddStg_c : positive := TblStg_c + 2;       -- Addition
+
     -- Table data ranges
     subtype OffsRng_c is natural range cl_fix_width(OffsFmt_c) - 1 downto 0;
     subtype GradRng_c is natural range cl_fix_width(GradFmt_c) + OffsRng_c'high downto
@@ -98,15 +126,16 @@ architecture rtl of olo_fix_lin_approx_calc is
 
     -- Two Process Method
     -- The offset is delayed by one stage to arrive at the adder together with the product.
+    -- Note: When changing the number of stages, update olo_fix_lin_approx_pkg.linApproxLatency().
     type TwoProcess_r is record
-        Valid    : std_logic_vector(0 to 5);
+        Valid    : std_logic_vector(0 to AddStg_c);
         In_0     : std_logic_vector(In_Data'range);
         TblIdx_1 : std_logic_vector(cl_fix_width(IdxFmt_c) - 1 downto 0);
-        Remain   : Rem_t(1 to 3);
-        Grad_3   : std_logic_vector(cl_fix_width(GradFmt_c) - 1 downto 0);
-        Offs     : Offs_t(3 to 4);
-        MulVal_4 : std_logic_vector(cl_fix_width(MulFmt_c) - 1 downto 0);
-        Add_5    : std_logic_vector(cl_fix_width(AddFmt_c) - 1 downto 0);
+        Remain   : Rem_t(1 to TblStg_c);
+        Grad     : std_logic_vector(cl_fix_width(GradFmt_c) - 1 downto 0);
+        Offs     : Offs_t(TblStg_c to MulStg_c);
+        MulVal   : std_logic_vector(cl_fix_width(MulFmt_c) - 1 downto 0);
+        AddVal   : std_logic_vector(cl_fix_width(AddFmt_c) - 1 downto 0);
     end record;
 
     signal r, r_next : TwoProcess_r;
@@ -121,6 +150,9 @@ begin
     assert IndexBits_c < cl_fix_width(InFmt_c)
         report errorMessage(EntityName_c, "TableSize_g must be smaller than 2**width(InFmt_g)")
         severity error;
+    assert linApproxLatency(TableLatency_g) = AddStg_c + 3
+        report errorMessage(EntityName_c, "Internal error: linApproxLatency() does not match the pipeline")
+        severity failure;
     -- synthesis translate_on
 
     -- *** Combinatorial Process ***
@@ -133,7 +165,7 @@ begin
         -- *** Pipe Handling ***
         v.Valid(1 to v.Valid'high)   := r.Valid(0 to r.Valid'high - 1);
         v.Remain(2 to v.Remain'high) := r.Remain(1 to r.Remain'high - 1);
-        v.Offs(4 to v.Offs'high)     := r.Offs(3 to r.Offs'high - 1);
+        v.Offs(MulStg_c)             := r.Offs(TblStg_c);
 
         -- *** Stage 0 - Input Register ***
         v.Valid(0) := In_Valid;
@@ -145,25 +177,25 @@ begin
         -- Invert MSB to get an offset relative to the center of the segment (signed)
         v.Remain(1)(v.Remain(1)'high) := not v.Remain(1)(v.Remain(1)'high);
 
-        -- *** Stage 2 - Reserved for Table Read Latency ***
+        -- *** Stages 2 to TblStg_c-1 - Reserved for Table Read Latency ***
 
-        -- *** Stage 3 - Register Table Outputs ***
-        v.Offs(3) := Tbl_Data(OffsRng_c);
-        v.Grad_3  := Tbl_Data(GradRng_c);
+        -- *** Stage TblStg_c - Register Table Outputs ***
+        v.Offs(TblStg_c) := Tbl_Data(OffsRng_c);
+        v.Grad           := Tbl_Data(GradRng_c);
 
-        -- *** Stage 4 - Multiplication ***
-        -- Both multiplier inputs are registered (r.Grad_3 and r.Remain(3)) to allow the
+        -- *** Stage MulStg_c - Multiplication ***
+        -- Both multiplier inputs are registered (r.Grad and r.Remain(TblStg_c)) to allow the
         -- multiplication to be mapped into a DSP slice including its input registers.
         -- The remainder is reinterpreted as signed (its MSB was inverted in stage 1)
-        v.MulVal_4 := cl_fix_mult(r.Grad_3, GradFmt_c,
-                                  r.Remain(3), RemFmtSigned_c,
-                                  MulFmt_c, Trunc_s, None_s);
+        v.MulVal := cl_fix_mult(r.Grad, GradFmt_c,
+                                r.Remain(TblStg_c), RemFmtSigned_c,
+                                MulFmt_c, Trunc_s, None_s);
 
-        -- *** Stage 5 - Addition ***
+        -- *** Stage AddStg_c - Addition ***
         -- Executed at full precision and without round/saturate to fit into a DSP slice
-        v.Add_5 := cl_fix_add(r.Offs(4), OffsFmt_c,
-                              r.MulVal_4, MulFmt_c,
-                              AddFmt_c, Trunc_s, None_s);
+        v.AddVal := cl_fix_add(r.Offs(MulStg_c), OffsFmt_c,
+                               r.MulVal, MulFmt_c,
+                               AddFmt_c, Trunc_s, None_s);
 
         -- *** Assign Signal ***
         r_next <= v;
@@ -200,8 +232,8 @@ begin
         port map (
             Clk        => Clk,
             Rst        => Rst,
-            In_Valid   => r.Valid(5),
-            In_A       => r.Add_5,
+            In_Valid   => r.Valid(AddStg_c),
+            In_A       => r.AddVal,
             Out_Valid  => Out_Valid,
             Out_Result => Out_Result
         );

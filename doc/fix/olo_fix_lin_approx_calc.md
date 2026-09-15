@@ -26,8 +26,8 @@ the table is not written by hand but generated from Python. The Python class
 [olo_fix_lin_approx](./olo_fix_lin_approx.md) generates a wrapper entity that contains the table and instantiates
 _olo_fix_lin_approx_calc_ - this is the normal way of using this entity.
 
-**Latency** of this entity is 8 clock cycles. The entity is fully pipelined, hence it accepts one input sample per
-clock cycle. As a result, back-pressure is not supported.
+**Latency** of this entity is _7 + TableLatency_g_ clock cycles (8 clock cycles for the default settings). The entity
+is fully pipelined, hence it accepts one input sample per clock cycle. As a result, back-pressure is not supported.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
@@ -49,11 +49,12 @@ same point (_gradient_, blue).
 | OffsFmt_g   | string   | -                | Format of the offset (function value) table entries<br />String representation of an _en_cl_fix Format_t_ |
 | GradFmt_g   | string   | -                | Format of the gradient (derivative) table entries<br />String representation of an _en_cl_fix Format_t_ |
 | TableSize_g | positive | -                | Number of entries in the table.<br />Must be a power of two and smaller than _2^width(InFmt_g)_ |
+| TableLatency_g | positive | 1             | Read latency of the table in clock cycles (range 1 to 3).<br />Increasing the value improves timing for slow ROMs, see [Table Interface](#table-interface) |
 | Round_g     | string   | "NonSymPos_s"    | Rounding mode of the output stage<br />String representation of an _en_cl_fix FixRound_t_. |
 | Saturate_g  | string   | "Sat_s"          | Saturation mode of the output stage<br />String representation of an _en_cl_fix FixSaturate_t_. |
 
-All generics except _Round_g_ and _Saturate_g_ are defined by the table content. They must not be modified without
-regenerating the table.
+All generics except _TableLatency_g_, _Round_g_ and _Saturate_g_ are defined by the table content. They must not be
+modified without regenerating the table.
 
 ## Interfaces
 
@@ -85,8 +86,10 @@ regenerating the table.
 | Tbl_Addr | out    | _log2(TableSize_g)_                       | N/A     | Table read address                              |
 | Tbl_Data | in     | _width(OffsFmt_g)+width(GradFmt_g)_       | -       | Table read data.<br />The gradient is stored in the MSBs (format _GradFmt_g_), the offset in the LSBs (format _OffsFmt_g_). |
 
-The table must be a synchronous memory with a **read latency of exactly one clock cycle** (address registered, data
-available in the next clock cycle). Reads must not be gated - the table must deliver data for every address applied.
+The table must be a synchronous memory with a **read latency of exactly _TableLatency_g_ clock cycles** (address
+registered, data available _TableLatency_g_ clock cycles later). A read latency of one clock cycle corresponds to a ROM
+with registered address. Values of two or three add output registers to the ROM, which improves timing for
+(slow) ROMs at the cost of latency. Reads must not be gated - the table must deliver data for every address applied.
 
 ## Details
 
@@ -96,7 +99,8 @@ Below figure illustrates how the linear approximation is implemented.
 
 ![arch](./approx/olo_fix_lin_approx_arch.drawio.png)
 
-_N-M_ is the number of address bits for the table.
+_N-M_ is the number of address bits for the table. The figure shows _TableLatency_g_ = 1. For higher values, the
+remainder path (lower branch) is delayed by the additional table read latency.
 
 ### Table Details
 
@@ -126,7 +130,7 @@ Below example shows how a table is attached manually. Normally the wrapper entit
 signal Tbl_Addr : std_logic_vector(7 downto 0);
 signal Tbl_Data : std_logic_vector(34 downto 0);
 ...
--- Table with one clock cycle read latency
+-- Table with one clock cycle read latency (matches the default TableLatency_g = 1)
 p_table : process (Clk) is
 begin
     if rising_edge(Clk) then

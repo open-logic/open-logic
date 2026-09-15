@@ -27,12 +27,11 @@ class TestOloFixLinApproxInv(unittest.TestCase):
         self.in_sig = np.linspace(0, 1, 50, endpoint=False)
 
     @staticmethod
-    def _mantissa(fmt : FixFormat, points : int = 3000):
+    def _mantissa(fmt : FixFormat):
         """
-        Mantissa fraction values covering [0, 1)
+        50 mantissa fraction values covering [0, 1)
         """
-        codes = np.unique(np.linspace(0, 2**cl_fix_width(fmt), points, endpoint=False).astype(np.int64))
-        return cl_fix_from_integer(codes, fmt)
+        return cl_fix_from_real(np.linspace(0, 1, 50, endpoint=False), fmt)
 
     # -----------------------------------------------------------------------------------------------
     # Accuracy

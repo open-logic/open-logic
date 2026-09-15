@@ -51,12 +51,16 @@ architecture sim of olo_fix_inv_tb is
     constant Clk_Frequency_c : real := 100.0e6; -- 100 MHz
     constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
-    -- Latency: input and absolute value stage (2), both barrel shifters, the approximation (8),
-    -- the sign stage (1) and the two registers of the output resize (2).
+    -- Latency: input, absolute value and shift count stage (3), both barrel shifters, the
+    -- approximation (same as olo_fix_lin_approx_calc with a table read latency of two clock cycles),
+    -- the sign stage (1) and the two registers of
+    -- the output resize (2).
+    -- Each barrel shifter has one stage for inputs of up to 16 bits and two stages for inputs of up
+    -- to 256 bits (the maximum supported), plus its input register.
     constant InFmt_c           : FixFormat_t := cl_fix_format_from_string(InFmt_g);
     constant AbsWidth_c        : positive    := InFmt_c.S + InFmt_c.I + InFmt_c.F;
-    constant SftLatency_c      : positive    := (log2ceil(AbsWidth_c) + 3)/4 + 1;
-    constant ExpectedLatency_c : natural     := 13 + 2*SftLatency_c;
+    constant SftLatency_c      : positive    := choose(AbsWidth_c <= 16, 2, 3);
+    constant ExpectedLatency_c : natural     := olo.olo_fix_lin_approx_pkg.linApproxLatency(2) + 6 + 2*SftLatency_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals

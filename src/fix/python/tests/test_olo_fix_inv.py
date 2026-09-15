@@ -43,7 +43,8 @@ class TestOloFixInv(unittest.TestCase):
         dut = olo_fix_inv(out_fmt, in_fmt, precision_bits)
         data = self._values(in_fmt)
         data = data[data != 0]
-        result = np.array(dut.process(data), dtype=float)
+        # Wide formats are represented as integers, hence the result is converted to real numbers
+        result = np.array(cl_fix_to_real(dut.process(data), out_fmt), dtype=float)
         data = np.array(data, dtype=float)
         error = np.max(np.abs((result - 1.0/data)*data))
         self.assertLess(error, 2.0**-(precision_bits - 1),
@@ -62,6 +63,10 @@ class TestOloFixInv(unittest.TestCase):
                        FixFormat(1, 7, 8), FixFormat(0, -2, 18), FixFormat(0, 12, -4),
                        FixFormat(1, 1, 1)]:
             self._check_accuracy(in_fmt, 14)
+
+    def test_accuracy_wide_formats(self):
+        # The shifted result exceeds the width of the narrow (float based) representation
+        self._check_accuracy(FixFormat(0, 20, 20), 18)
 
     def test_powers_of_two_are_exact(self):
         # The normalized value of a power of two is exactly 1.0, whose inverse is exact
@@ -136,6 +141,12 @@ class TestOloFixInv(unittest.TestCase):
         # A leading one plus at least one mantissa bit are required
         with self.assertRaises(ValueError):
             olo_fix_inv(FixFormat(0, 8, 8), FixFormat(0, 0, 1))
+
+    def test_input_too_wide(self):
+        # The latency calculation of the VHDL entity supports inputs of up to 256 bits
+        olo_fix_inv(FixFormat(0, 8, 8), FixFormat(0, 0, 256))
+        with self.assertRaises(ValueError):
+            olo_fix_inv(FixFormat(0, 8, 8), FixFormat(0, 0, 257))
 
     def test_unsigned_output_for_signed_input(self):
         with self.assertRaises(ValueError):

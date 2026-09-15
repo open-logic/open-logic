@@ -76,6 +76,9 @@ architecture rtl of olo_fix_private_lin_approx_qsin is
     constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
     constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
 
+    -- The table has a read latency of two clock cycles to improve timing
+    constant TableLatency_c : positive := 2;
+
     -- Supported output resolutions - one approximation table exists per resolution
     constant MinOutFracBits_c : positive := 10;
     constant MaxOutFracBits_c : positive := 20;
@@ -102,6 +105,7 @@ architecture rtl of olo_fix_private_lin_approx_qsin is
     -- Table types
     subtype TblEntry_t is std_logic_vector(TblWidth_c - 1 downto 0);
     type Tbl_t is array (0 to Points_c - 1) of TblEntry_t;
+    type TblData_t is array (1 to TableLatency_c) of TblEntry_t;
 
     -- Strip the padding the generated package uses to give all tables the same entry width
     function tableContent return Tbl_t is
@@ -126,9 +130,9 @@ architecture rtl of olo_fix_private_lin_approx_qsin is
 
     -- Signals
     signal AddrA : std_logic_vector(log2ceil(Points_c) - 1 downto 0);
-    signal DataA : TblEntry_t;
+    signal DataA : TblData_t;
     signal AddrB : std_logic_vector(log2ceil(Points_c) - 1 downto 0);
-    signal DataB : TblEntry_t;
+    signal DataB : TblData_t;
 
 begin
 
@@ -155,14 +159,23 @@ begin
         severity error;
     -- synthesis translate_on
 
-    -- *** Table (ROM, one cycle read latency) ***
-    p_table_a : process (Clk) is
+    -- *** Table (ROM, TableLatency_c clock cycles read latency) ***
+    -- The registers after the first one are meant to be absorbed into the memory output registers
+    p_table : process (Clk) is
     begin
         if rising_edge(Clk) then
-            DataA <= Table_v(to_integer(unsigned(AddrA)));
+            DataA(1) <= Table_v(to_integer(unsigned(AddrA)));
             if UsePortB_g then
-                DataB <= Table_v(to_integer(unsigned(AddrB)));
+                DataB(1) <= Table_v(to_integer(unsigned(AddrB)));
             end if;
+
+            for i in 2 to TableLatency_c loop
+                DataA(i) <= DataA(i - 1);
+                if UsePortB_g then
+                    DataB(i) <= DataB(i - 1);
+                end if;
+            end loop;
+
         end if;
     end process;
 
@@ -171,13 +184,14 @@ begin
     -- Port A calculation
     i_calc_a : entity work.olo_fix_lin_approx_calc
         generic map (
-            InFmt_g     => InFmt_g,
-            OutFmt_g    => OutFmt_g,
-            OffsFmt_g   => OffsFmt_c,
-            GradFmt_g   => GradFmt_c,
-            TableSize_g => Points_c,
-            Round_g     => Round_g,
-            Saturate_g  => Saturate_g
+            InFmt_g        => InFmt_g,
+            OutFmt_g       => OutFmt_g,
+            OffsFmt_g      => OffsFmt_c,
+            GradFmt_g      => GradFmt_c,
+            TableSize_g    => Points_c,
+            TableLatency_g => TableLatency_c,
+            Round_g        => Round_g,
+            Saturate_g     => Saturate_g
         )
         port map (
             Clk        => Clk,
@@ -187,7 +201,7 @@ begin
             Out_Valid  => Out_Valid,
             Out_Result => Out_A,
             Tbl_Addr   => AddrA,
-            Tbl_Data   => DataA
+            Tbl_Data   => DataA(TableLatency_c)
         );
 
     -- Port B calculation - uses the second read port of the same table
@@ -195,13 +209,14 @@ begin
 
         i_calc_b : entity work.olo_fix_lin_approx_calc
             generic map (
-                InFmt_g     => InFmt_g,
-                OutFmt_g    => OutFmt_g,
-                OffsFmt_g   => OffsFmt_c,
-                GradFmt_g   => GradFmt_c,
-                TableSize_g => Points_c,
-                Round_g     => Round_g,
-                Saturate_g  => Saturate_g
+                InFmt_g        => InFmt_g,
+                OutFmt_g       => OutFmt_g,
+                OffsFmt_g      => OffsFmt_c,
+                GradFmt_g      => GradFmt_c,
+                TableSize_g    => Points_c,
+                TableLatency_g => TableLatency_c,
+                Round_g        => Round_g,
+                Saturate_g     => Saturate_g
             )
             port map (
                 Clk        => Clk,
@@ -211,7 +226,7 @@ begin
                 Out_Valid  => open,
                 Out_Result => Out_B,
                 Tbl_Addr   => AddrB,
-                Tbl_Data   => DataB
+                Tbl_Data   => DataB(TableLatency_c)
             );
 
     end generate;
