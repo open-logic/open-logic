@@ -78,16 +78,16 @@ architecture rtl of olo_fix_sin is
     constant QuadrantFmt_c : FixFormat_t := (0, 0, 2);
     constant QPhaseFmt_c   : FixFormat_t := (0, -2, InFmt_c.F);
 
-    -- Latency of olo_fix_private_lin_approx_qsin.
-    constant QsinLatency_c : positive := 8;
+    -- Latency of olo_fix_private_lin_approx_qsin (equal to the one of olo_fix_lin_approx_calc). The
+    -- table has a fixed read latency of two clock cycles.
+    constant TableLatency_c : positive := 2;
+    constant QsinLatency_c  : positive := work.olo_fix_lin_approx_pkg.linApproxLatency(TableLatency_c);
 
     -- Peak value of the wave and the values at the critical angles (0, 90, 180 and 270 degrees)
     subtype Result_t is std_logic_vector(cl_fix_width(OutFmt_c) - 1 downto 0);
 
     -- Without integer bit the wave is scaled to 1.0-1LSB
     constant Peak_c    : Result_t := choose(OutFmt_c.I = 0, cl_fix_max_value(OutFmt_c), cl_fix_from_real(1.0, OutFmt_c));
-    constant NegPeak_c : Result_t := cl_fix_neg(Peak_c, OutFmt_c, OutFmt_c, Trunc_s, None_s);
-    constant Zero_c    : Result_t := (others => '0');
 
     -- Two Process Method
     type TwoProcess_r is record

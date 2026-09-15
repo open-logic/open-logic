@@ -51,9 +51,9 @@ architecture sim of olo_fix_private_lin_approx_qsin_tb is
     constant Clk_Frequency_c : real := 100.0e6; -- 100 MHz
     constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
-    -- Latency: the entity contains the table and olo_fix_lin_approx_calc (8, both resize registers
-    -- are always implemented) only, hence it has the same latency as the calculation.
-    constant ExpectedLatency_c : natural := 8;
+    -- Latency: the entity contains the table and olo_fix_lin_approx_calc only, hence it has the same
+    -- latency as the calculation. The table read latency is fixed to two clock cycles.
+    constant ExpectedLatency_c : natural := olo.olo_fix_lin_approx_pkg.linApproxLatency(2);
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals

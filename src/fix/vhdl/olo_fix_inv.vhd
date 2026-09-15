@@ -2,10 +2,6 @@
 -- Copyright (c) 2026 by Oliver Bruendler
 -- All rights reserved.
 -- Authors: Oliver Bruendler
---
--- Based on psi_fix_inv from the PSI psi_fix library
--- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
--- All rights reserved.
 ---------------------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------------------
@@ -78,23 +74,22 @@ architecture rtl of olo_fix_inv is
                                                PrecisionBits_g = 18 or PrecisionBits_g = 20;
 
     -- Absolute value of the input (lossless, hence one more integer bit for signed inputs)
-    constant AbsFmt_c   : FixFormat_t := (0, InFmt_c.I + InFmt_c.S, InFmt_c.F);
-    constant AbsWidth_c : positive    := cl_fix_width(AbsFmt_c);
+    constant AbsFmt_c : FixFormat_t := (0, InFmt_c.I + InFmt_c.S, InFmt_c.F);
 
     -- Normalization. The leading one of the normalized value is implicit, hence only the mantissa
     -- fraction is passed to the approximation.
-    constant MantFullFmt_c : FixFormat_t := (0, 0, AbsWidth_c - 1);
+    constant MantFullFmt_c : FixFormat_t := (0, 1, cl_fix_width(AbsFmt_c) - 1);
     constant MantFmt_c     : FixFormat_t := (0, 0, PrecisionBits_g + 2);
     constant ApproxFmt_c   : FixFormat_t := (0, 1, PrecisionBits_g);
 
     -- Shift. A zero input has no leading one - for it the shift is limited to its maximum, which
     -- yields a mantissa of zero (like an input of 1.0).
-    constant MaxShift_c        : positive := AbsWidth_c - 1;
+    constant MaxShift_c        : positive := cl_fix_width(AbsFmt_c) - 1;
     constant ShiftBits_c       : positive := log2ceil(MaxShift_c + 1);
     constant SelBitsPerStage_c : positive := 4;
 
     -- Result of the approximation shifted back (lossless)
-    constant ShiftedFmt_c : FixFormat_t := (0, AbsWidth_c, PrecisionBits_g);
+    constant ShiftedFmt_c : FixFormat_t := (0, cl_fix_width(AbsFmt_c), PrecisionBits_g);
     -- Reverting the normalization of the input is a shift by a constant, hence it is implemented
     -- by reinterpreting the shifted result - which is pure wiring.
     constant DenormFmt_c  : FixFormat_t := (0, ShiftedFmt_c.I + 1 - AbsFmt_c.I,
@@ -102,26 +97,30 @@ architecture rtl of olo_fix_inv is
     -- Signed for signed inputs, because the result of a negative input is negative
     constant ResFmt_c     : FixFormat_t := (InFmt_c.S, DenormFmt_c.I, DenormFmt_c.F);
 
-    -- Latencies of the sub-entities
-    constant SftLatency_c    : positive := (ShiftBits_c + SelBitsPerStage_c - 1)/SelBitsPerStage_c + 1;
-    constant ApproxLatency_c : positive := 8;
-
-    -- Delay lines. The shift count is applied to the result of the approximation, the sign to the
-    -- result of the output shifter.
-    constant ShiftDelay_c : positive := SftLatency_c + ApproxLatency_c;
-    constant SignDelay_c  : positive := 2*SftLatency_c + ApproxLatency_c + 2;
-
-    -- Types
-    type ShiftArray_t is array (natural range <>) of std_logic_vector(ShiftBits_c - 1 downto 0);
+    -- Latencies. With 4 select bits per stage, each barrel shifter has an input register plus one
+    -- stage for shifts of up to 4 bits (inputs of up to 16 bits) and two stages for shifts of up to 8
+    -- bits (inputs of up to 256 bits, the maximum supported).
+    constant MaxInWidth_c    : positive := 256;
+    constant SftLatency_c    : positive := choose(ShiftBits_c <= SelBitsPerStage_c, 2, 3);
+    -- The table of the approximation has a fixed read latency of two clock cycles (see
+    -- olo_fix_private_lin_approx_inv)
+    constant TableLatency_c  : positive := 2;
+    constant ApproxLatency_c : positive := work.olo_fix_lin_approx_pkg.linApproxLatency(TableLatency_c);
+    -- The shift count is delayed from the shift count stage to the output shifter
+    constant ShiftLatency_c  : positive := SftLatency_c + ApproxLatency_c;
+    -- The sign is delayed from the input stage to the output stage (absolute value and shift count
+    -- stage, both barrel shifters and the approximation)
+    constant SignLatency_c   : positive := 2 + 2*SftLatency_c + ApproxLatency_c;
 
     -- Two Process Method
     type TwoProcess_r is record
         Valid_0 : std_logic;
         In_0    : std_logic_vector(In_Data'range);
         Valid_1 : std_logic;
-        Abs_1   : std_logic_vector(AbsWidth_c - 1 downto 0);
-        Shift   : ShiftArray_t(0 to ShiftDelay_c - 1);
-        Sign    : std_logic_vector(0 to SignDelay_c - 1);
+        Abs_1   : std_logic_vector(cl_fix_width(AbsFmt_c) - 1 downto 0);
+        Valid_2 : std_logic;
+        Abs_2   : std_logic_vector(cl_fix_width(AbsFmt_c) - 1 downto 0);
+        Shift_2 : std_logic_vector(ShiftBits_c - 1 downto 0);
         ValidR  : std_logic;
         Res     : std_logic_vector(cl_fix_width(ResFmt_c) - 1 downto 0);
     end record;
@@ -131,14 +130,16 @@ architecture rtl of olo_fix_inv is
     -- Signals
     signal InSign    : std_logic;
     signal ShiftComb : std_logic_vector(ShiftBits_c - 1 downto 0);
+    signal ShiftDel  : std_logic_vector(ShiftBits_c - 1 downto 0);
     signal NormValid : std_logic;
-    signal NormData  : std_logic_vector(AbsWidth_c - 1 downto 0);
+    signal NormData  : std_logic_vector(cl_fix_width(AbsFmt_c) - 1 downto 0);
     signal Mantissa  : std_logic_vector(cl_fix_width(MantFmt_c) - 1 downto 0);
     signal ApprValid : std_logic;
     signal ApprData  : std_logic_vector(cl_fix_width(ApproxFmt_c) - 1 downto 0);
     signal SftInData : std_logic_vector(cl_fix_width(ShiftedFmt_c) - 1 downto 0);
     signal SftValid  : std_logic;
     signal SftData   : std_logic_vector(cl_fix_width(ShiftedFmt_c) - 1 downto 0);
+    signal SignDel   : std_logic_vector(0 downto 0);
 
 begin
 
@@ -151,6 +152,10 @@ begin
     assert cl_fix_width(InFmt_c) >= 2
         report errorMessage(EntityName_c, "InFmt_g must be at least two bits wide")
         severity error;
+    assert cl_fix_width(InFmt_c) <= MaxInWidth_c
+        report errorMessage(EntityName_c, "InFmt_g must be at most " & integer'image(MaxInWidth_c) &
+               " bits wide")
+        severity error;
     assert InFmt_c.S = 0 or OutFmt_c.S = 1
         report errorMessage(EntityName_c, "OutFmt_g must be signed because InFmt_g is signed")
         severity error;
@@ -158,7 +163,7 @@ begin
 
     -- *** Input sign ***
     g_sign : if InFmt_c.S = 1 generate
-        InSign <= In_Data(In_Data'high);
+        InSign <= r.In_0(r.In_0'high);
     end generate;
 
     g_nsign : if InFmt_c.S = 0 generate
@@ -171,15 +176,6 @@ begin
     ShiftComb <= std_logic_vector(to_unsigned(MaxShift_c - getLeadingSetBitIndex(r.Abs_1),
                                               ShiftBits_c));
 
-    -- *** Mantissa fraction ***
-    -- The normalized value is 1+m, the leading one is dropped. Truncating or zero padding the
-    -- mantissa to the resolution the approximation requires is pure wiring.
-    Mantissa <= cl_fix_resize(NormData(AbsWidth_c - 2 downto 0), MantFullFmt_c, MantFmt_c,
-                              Trunc_s, None_s);
-
-    -- *** Approximation result in the format of the output shifter ***
-    SftInData <= cl_fix_resize(ApprData, ApproxFmt_c, ShiftedFmt_c, Trunc_s, None_s);
-
     -- *** Combinatorial Process ***
     p_comb : process (all) is
         variable v        : TwoProcess_r;
@@ -188,23 +184,19 @@ begin
         -- *** Hold variables stable ***
         v := r;
 
-        -- *** Pipe Handling ***
-        v.Shift(1 to v.Shift'high) := r.Shift(0 to r.Shift'high - 1);
-        v.Sign(1 to v.Sign'high)   := r.Sign(0 to r.Sign'high - 1);
-
         -- *** Input Stage ***
         -- The input is registered before any logic is applied to it
         v.Valid_0 := In_Valid;
         v.In_0    := In_Data;
-        v.Sign(0) := InSign;
 
         -- *** Absolute Value Stage ***
         v.Valid_1 := r.Valid_0;
         v.Abs_1   := cl_fix_abs(r.In_0, InFmt_c, AbsFmt_c, Trunc_s, None_s);
 
-        -- *** Normalization Stage ***
-        -- The shift count is registered together with the input register of the barrel shifter
-        v.Shift(0) := ShiftComb;
+        -- *** Shift Count Stage ***
+        v.Valid_2 := r.Valid_1;
+        v.Abs_2   := r.Abs_1;
+        v.Shift_2 := ShiftComb;
 
         -- *** Output Stage ***
         -- Reverting the normalization is pure wiring, hence the shifted result is reinterpreted
@@ -212,7 +204,7 @@ begin
         Denorm_v := cl_fix_resize(SftData, DenormFmt_c, ResFmt_c, Trunc_s, None_s);
 
         -- Sign handling - the result of a negative input is negative
-        if InFmt_c.S = 1 and r.Sign(r.Sign'high) = '1' then
+        if InFmt_c.S = 1 and SignDel(0) = '1' then
             v.Res := cl_fix_neg(Denorm_v, ResFmt_c, ResFmt_c, Trunc_s, None_s);
         else
             v.Res := Denorm_v;
@@ -232,6 +224,7 @@ begin
             if Rst = '1' then
                 r.Valid_0 <= '0';
                 r.Valid_1 <= '0';
+                r.Valid_2 <= '0';
                 r.ValidR  <= '0';
             end if;
         end if;
@@ -245,18 +238,40 @@ begin
             Direction_g       => "LEFT",
             SelBitsPerStage_g => SelBitsPerStage_c,
             MaxShift_g        => MaxShift_c,
-            Width_g           => AbsWidth_c,
+            Width_g           => cl_fix_width(AbsFmt_c),
             SignExtend_g      => false
         )
         port map (
             Clk       => Clk,
             Rst       => Rst,
-            In_Valid  => r.Valid_1,
-            In_Shift  => ShiftComb,
-            In_Data   => r.Abs_1,
+            In_Valid  => r.Valid_2,
+            In_Shift  => r.Shift_2,
+            In_Data   => r.Abs_2,
             Out_Valid => NormValid,
             Out_Data  => NormData
         );
+
+    -- Delay of the shift count to the output shifter
+    i_shift_del : entity work.olo_base_latency_comp
+        generic map (
+            Width_g       => ShiftBits_c,
+            Mode_g        => "FIXED_CYCLES",
+            Latency_g     => ShiftLatency_c,
+            AssertsName_g => "shift"
+        )
+        port map (
+            Clk       => Clk,
+            Rst       => Rst,
+            In_Data   => r.Shift_2,
+            In_Valid  => r.Valid_2,
+            Out_Data  => ShiftDel,
+            Out_Valid => ApprValid
+        );
+
+    -- *** Mantissa fraction ***
+    -- The normalized value is 1+m, the leading one is dropped. Truncating or zero padding the
+    -- mantissa to the resolution the approximation requires is pure wiring.
+    Mantissa <= cl_fix_resize(NormData, MantFullFmt_c, MantFmt_c, Trunc_s, None_s);
 
     -- Approximation of 1/x in the range [1, 2)
     i_approx : entity work.olo_fix_private_lin_approx_inv
@@ -276,6 +291,9 @@ begin
             Out_Data  => ApprData
         );
 
+    -- *** Approximation result in the format of the output shifter ***
+    SftInData <= cl_fix_resize(ApprData, ApproxFmt_c, ShiftedFmt_c, Trunc_s, None_s);
+
     -- Compensation of the normalization shift
     i_sft_out : entity work.olo_base_dyn_sft
         generic map (
@@ -289,10 +307,27 @@ begin
             Clk       => Clk,
             Rst       => Rst,
             In_Valid  => ApprValid,
-            In_Shift  => r.Shift(r.Shift'high),
+            In_Shift  => ShiftDel,
             In_Data   => SftInData,
             Out_Valid => SftValid,
             Out_Data  => SftData
+        );
+
+    -- Delay of the input sign to the output stage
+    i_sign_del : entity work.olo_base_latency_comp
+        generic map (
+            Width_g       => 1,
+            Mode_g        => "FIXED_CYCLES",
+            Latency_g     => SignLatency_c,
+            AssertsName_g => "sign"
+        )
+        port map (
+            Clk        => Clk,
+            Rst        => Rst,
+            In_Data(0) => InSign,
+            In_Valid   => r.Valid_0,
+            Out_Data   => SignDel,
+            Out_Valid  => SftValid
         );
 
     -- Rounding and saturation to the user format

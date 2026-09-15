@@ -13,8 +13,7 @@
 from en_cl_fix_pkg import *
 import numpy as np
 
-from .olo_fix_private_lin_approx_inv import (olo_fix_private_lin_approx_inv, INV_TABLES,
-                                             inv_out_fmt)
+from .olo_fix_private_lin_approx_inv import olo_fix_private_lin_approx_inv, INV_TABLES
 
 # ---------------------------------------------------------------------------------------------------
 # Class
@@ -32,6 +31,9 @@ class olo_fix_inv:
     input range.
     """
 
+    # Maximum supported input width (same limit as in the VHDL entity)
+    MAX_IN_WIDTH = 256
+
     # ---------------------------------------------------------------------------------------------------
     # Constructor
     # ---------------------------------------------------------------------------------------------------
@@ -45,7 +47,7 @@ class olo_fix_inv:
         Constructor of the olo_fix_inv class
 
         :param out_fmt: Format of the result
-        :param in_fmt: Format of the input. Must be at least two bits wide.
+        :param in_fmt: Format of the input. Must be at least two and at most 256 bits wide.
         :param precision_bits: Number of fractional bits of the inversion approximation. One table
                                exists per supported value (see INV_TABLES).
         :param round: Rounding mode of the output stage
@@ -62,6 +64,11 @@ class olo_fix_inv:
         if cl_fix_width(in_fmt) < 2:
             raise ValueError(f"olo_fix_inv: in_fmt {in_fmt} must be at least two bits wide")
 
+        # The latency calculation in the VHDL entity is valid for inputs of up to 256 bits
+        if cl_fix_width(in_fmt) > self.MAX_IN_WIDTH:
+            raise ValueError(f"olo_fix_inv: in_fmt {in_fmt} must be at most {self.MAX_IN_WIDTH} "
+                             f"bits wide")
+
         # Negative results are only representable in a signed output format
         if in_fmt.S == 1 and out_fmt.S == 0:
             raise ValueError(f"olo_fix_inv: out_fmt {out_fmt} must be signed because in_fmt "
@@ -73,22 +80,28 @@ class olo_fix_inv:
         self.round = round
         self.saturate = saturate
 
-        # Absolute value (lossless, hence one more integer bit for signed inputs)
+        # Absolute value of the input (lossless, hence one more integer bit for signed inputs)
         self.abs_fmt = FixFormat(0, in_fmt.I + in_fmt.S, in_fmt.F)
-        self.width = cl_fix_width(self.abs_fmt)
 
-        # Normalized value. The leading one is implicit, hence only the mantissa fraction is
-        # forwarded to the approximation.
-        self.mant_full_fmt = FixFormat(0, 0, self.width - 1)
+        # Normalization. The leading one of the normalized value is implicit, hence only the
+        # mantissa fraction is passed to the approximation.
+        self.mant_full_fmt = FixFormat(0, 1, cl_fix_width(self.abs_fmt) - 1)
         self.mant_fmt = FixFormat(0, 0, precision_bits + 2)
-        self.approx_fmt = inv_out_fmt(precision_bits)
+        self.approx_fmt = FixFormat(0, 1, precision_bits)
         self._approx = olo_fix_private_lin_approx_inv(self.approx_fmt, self.mant_fmt)
 
-        # Denormalized result. Reverting the normalization is a shift by a constant, hence the
-        # format below is the shifted result format - the shift itself is pure wiring.
-        self.denorm_fmt = FixFormat(0, self.width - self.abs_fmt.I + 1,
-                                    precision_bits + self.abs_fmt.I - 1)
-        self.signed_fmt = FixFormat(1, self.denorm_fmt.I, self.denorm_fmt.F)
+        # Shift. A zero input has no leading one - for it the shift is limited to its maximum, which
+        # yields a mantissa of zero (like an input of 1.0).
+        self.max_shift = cl_fix_width(self.abs_fmt) - 1
+
+        # Result of the approximation shifted back (lossless)
+        self.shifted_fmt = FixFormat(0, cl_fix_width(self.abs_fmt), precision_bits)
+        # Reverting the normalization of the input is a shift by a constant, hence it is implemented
+        # by reinterpreting the shifted result - which is pure wiring.
+        self.denorm_fmt = FixFormat(0, self.shifted_fmt.I + 1 - self.abs_fmt.I,
+                                    self.shifted_fmt.F + self.abs_fmt.I - 1)
+        # Signed for signed inputs, because the result of a negative input is negative
+        self.res_fmt = FixFormat(in_fmt.S, self.denorm_fmt.I, self.denorm_fmt.F)
 
     # ---------------------------------------------------------------------------------------------------
     # Public Methods
@@ -118,42 +131,48 @@ class olo_fix_inv:
         # Absolute value (lossless)
         abs_val = cl_fix_abs(data, self.in_fmt, self.abs_fmt, FixRound.Trunc_s, FixSaturate.None_s)
 
-        # Normalization - shift left until the MSB is one. A zero input has no leading one, hence
-        # the shift is limited to its maximum, which yields a mantissa of zero (like 1.0).
-        raw   = np.array(cl_fix_to_integer(abs_val, self.abs_fmt), dtype=object)
-        shift = np.array([self.width - int(r).bit_length() if r > 0 else self.width - 1
-                          for r in raw], dtype=int)
+        # Normalization into the range [1, 2). The barrel shifter operates on the bits of the
+        # absolute value, hence they are reinterpreted in the normalized format (reinterpretation is
+        # a shift by a constant). The shift is the number of leading zeros, which is calculated
+        # through log2. For a zero input the shift is limited to its maximum.
+        norm_in = cl_fix_shift(abs_val, self.abs_fmt, 1 - self.abs_fmt.I, self.mant_full_fmt,
+                               FixRound.Trunc_s, FixSaturate.None_s)
+        norm_real = np.array(cl_fix_to_real(norm_in, self.mant_full_fmt), dtype=float)
+        shift = np.full(norm_real.shape, self.max_shift, dtype=int)
+        non_zero = norm_real > 0
+        shift[non_zero] = -np.floor(np.log2(norm_real[non_zero])).astype(int)
+        norm_data = cl_fix_shift(norm_in, self.mant_full_fmt, shift, self.mant_full_fmt,
+                                 FixRound.Trunc_s, FixSaturate.None_s)
 
-        # Mantissa fraction - the normalized value is 1+m, the leading one is dropped
-        mant_mask = 2**(self.width - 1) - 1
-        mant_raw  = np.array([(int(r) << int(s)) & mant_mask for r, s in zip(raw, shift)],
-                             dtype=object)
-        mant_full = cl_fix_from_integer(mant_raw, self.mant_full_fmt)
-        mant      = cl_fix_resize(mant_full, self.mant_full_fmt, self.mant_fmt,
-                                  FixRound.Trunc_s, FixSaturate.None_s)
+        # Mantissa fraction - the normalized value is 1+m, the leading one is dropped. Truncating or
+        # zero padding the mantissa to the resolution the approximation requires is pure wiring.
+        mantissa = cl_fix_resize(norm_data, self.mant_full_fmt, self.mant_fmt,
+                                 FixRound.Trunc_s, FixSaturate.None_s)
 
-        # Approximation of 1/(1+m)
-        approx = self._approx.process(mant)
+        # Approximation of 1/x in the range [1, 2)
+        appr_data = self._approx.process(mantissa)
 
-        # Denormalization - reverting the normalization of the input is a shift by a constant,
-        # hence it is merged into the shift compensating the normalization shift.
-        denorm = cl_fix_shift(approx, self.approx_fmt, shift + 1 - self.abs_fmt.I,
-                              self.denorm_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+        # Compensation of the normalization shift
+        sft_in_data = cl_fix_resize(appr_data, self.approx_fmt, self.shifted_fmt,
+                                    FixRound.Trunc_s, FixSaturate.None_s)
+        sft_data = cl_fix_shift(sft_in_data, self.shifted_fmt, shift, self.shifted_fmt,
+                                FixRound.Trunc_s, FixSaturate.None_s)
 
-        # Sign handling - the result is negated for negative inputs
+        # Reverting the normalization is pure wiring, hence the shifted result is reinterpreted
+        # (reinterpretation is a shift by a constant)
+        denorm = cl_fix_shift(sft_data, self.shifted_fmt, 1 - self.abs_fmt.I, self.denorm_fmt,
+                              FixRound.Trunc_s, FixSaturate.None_s)
+        result = cl_fix_resize(denorm, self.denorm_fmt, self.res_fmt,
+                               FixRound.Trunc_s, FixSaturate.None_s)
+
+        # Sign handling - the result of a negative input is negative
         if self.in_fmt.S == 1:
-            result = cl_fix_resize(denorm, self.denorm_fmt, self.signed_fmt,
-                                   FixRound.Trunc_s, FixSaturate.None_s)
-            negated = cl_fix_neg(result, self.signed_fmt, self.signed_fmt,
+            negated = cl_fix_neg(result, self.res_fmt, self.res_fmt,
                                  FixRound.Trunc_s, FixSaturate.None_s)
             result = np.where(data < 0, negated, result)
-            result_fmt = self.signed_fmt
-        else:
-            result = denorm
-            result_fmt = self.denorm_fmt
 
         # Output stage
-        return cl_fix_resize(result, result_fmt, self.out_fmt, self.round, self.saturate)
+        return cl_fix_resize(result, self.res_fmt, self.out_fmt, self.round, self.saturate)
 
     def process(self, data):
         """

@@ -25,7 +25,7 @@ Out_Cos = cos(2*pi*phase) * peak
 
 Driven by a phase accumulator (a plain counter incremented by the frequency word), this entity forms a table based
 NCO/DDS. Compared to [olo_fix_cordic_rot](./olo_fix_cordic_rot.md) it trades memory for latency and logic: it needs
-a ROM but has a constant latency of 11 clock cycles instead of one iteration per output bit.
+a ROM but has a constant latency of 12 clock cycles instead of one iteration per output bit.
 
 _olo_fix_sin_ implements the **range reduction**. The approximation of one quadrant is done by an internal table
 based piecewise linear approximation (see [Architecture](#architecture)). Because the quarter phase is
@@ -33,7 +33,7 @@ expressed in the same unit (rotations), the in-quadrant part of the phase word i
 The quarter phase and its mirrored version are applied to the two read ports of the approximation - which of the two
 belongs to the sine and which one to the cosine depends on the quadrant.
 
-**Latency** of this entity is 11 clock cycles. The entity is fully pipelined, hence it accepts one input sample per
+**Latency** of this entity is 12 clock cycles. The entity is fully pipelined, hence it accepts one input sample per
 clock cycle. As a result, back-pressure is not supported.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
@@ -97,17 +97,31 @@ The overall error stays below **one LSB** of the output over the full rotation, 
 
 ## Interfaces
 
-| Name       | In/Out | Length            | Default | Description                                    |
-| :--------- | :----- | :---------------- | ------- | :--------------------------------------------- |
-| Clk        | in     | 1                 | -       | Clock                                          |
-| Rst        | in     | 1                 | -       | Reset input (high-active, synchronous to _Clk_) |
-| In_Valid   | in     | 1                 | '1'     | AXI4-Stream handshaking signal for _In_Data_   |
-| In_Data    | in     | _width(InFmt_g)_  | -       | Phase in rotations (0.0 = 0 degrees, 1.0 = 360 degrees) |
-| Out_Valid  | out    | 1                 | N/A     | AXI4-Stream handshaking signal for _Out_Sin_ and _Out_Cos_ |
-| Out_Sin    | out    | _width(OutFmt_g)_ | N/A     | Sine of the phase                              |
-| Out_Cos    | out    | _width(OutFmt_g)_ | N/A     | Cosine of the phase (zeros if _CosOutput_g_ = false) |
+### Control
 
-## Architecture
+| Name | In/Out | Length | Default | Description                                     |
+| :--- | :----- | :----- | ------- | :---------------------------------------------- |
+| Clk  | in     | 1      | -       | Clock                                           |
+| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_) |
+
+### Input Data
+
+| Name     | In/Out | Length           | Default | Description                                                                  |
+| :------- | :----- | :--------------- | ------- | :--------------------------------------------------------------------------- |
+| In_Valid | in     | 1                | '1'     | AXI4-Stream handshaking signal for _In_Data_                                 |
+| In_Data  | in     | _width(InFmt_g)_ | -       | Phase in rotations (0.0 = 0 degrees, 1.0 = 360 degrees)<br />Format: _InFmt_g_ |
+
+### Output Data
+
+| Name      | In/Out | Length            | Default | Description                                                          |
+| :-------- | :----- | :---------------- | ------- | :------------------------------------------------------------------- |
+| Out_Valid | out    | 1                 | N/A     | AXI4-Stream handshaking signal for _Out_Sin_ and _Out_Cos_           |
+| Out_Sin   | out    | _width(OutFmt_g)_ | N/A     | Sine of the phase<br />Format: _OutFmt_g_                            |
+| Out_Cos   | out    | _width(OutFmt_g)_ | N/A     | Cosine of the phase (zeros if _CosOutput_g_ = false)<br />Format: _OutFmt_g_ |
+
+## Details
+
+### Architecture
 
 The two MSBs of the phase select the quadrant, the remaining bits are the in-quadrant phase. Because the wave is
 symmetric around the quadrant boundaries, the quarter phase is mirrored in the odd quadrants and the results are
@@ -126,16 +140,3 @@ resource usage.
 The critical angles (0, 90, 180, 270 degree) are handled separately for the angle that reaches its peak value because
 the approximation does only cover the range from 0 degree to just below 90°, hence the point where the cosine
 reaches the exact peak value is not contained.
-
-## Bit-True Model
-
-```python
-from olo_fix import olo_fix_sin
-from en_cl_fix_pkg import *
-
-dut = olo_fix_sin(out_fmt=FixFormat(1, 0, 16), in_fmt=FixFormat(0, 0, 20))
-sin_data, cos_data = dut.process(phase)
-```
-
-The model is stateless, hence _next()_ and _process()_ are identical. It always returns both outputs, independently
-of _CosOutput_g_ in the HDL.
