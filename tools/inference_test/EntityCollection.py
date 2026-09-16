@@ -1,6 +1,5 @@
 ###########################################################################
 # Copyright (c) 2024 by Oliver Bründler
-# All rights reserved.
 # Authors: Oliver Bruendler
 ###########################################################################
 # Parse a open-logic VHDL file and extract entity information to 

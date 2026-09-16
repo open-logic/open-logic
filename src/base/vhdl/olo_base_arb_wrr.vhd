@@ -1,7 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
 -- Copyright (c) 2024-2025 by Oliver Bruendler
--- All rights reserved.
 -- Authors: Oliver Bruendler, Rene Brglez
 ---------------------------------------------------------------------------------------------------
 
