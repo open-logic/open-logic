@@ -1,7 +1,6 @@
 # ---------------------------------------------------------------------------------------------------
 # Copyright (c) 2025 by Oliver Bründler
 # Copyright (c) 2025 by Alexander Ruede
-# All rights reserved.
 # Authors: Oliver Bruendler, Alexander Ruede
 # ---------------------------------------------------------------------------------------------------
 
