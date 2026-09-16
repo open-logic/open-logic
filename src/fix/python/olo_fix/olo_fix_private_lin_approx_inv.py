@@ -1,10 +1,6 @@
 # ---------------------------------------------------------------------------------------------------
 # Copyright (c) 2026 by Oliver Bründler
 # Authors: Oliver Bruendler
-#
-# Based on psi_fix_lin_approx_inv18b from the PSI psi_fix library
-# Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
-# All rights reserved.
 # ---------------------------------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------------------------------

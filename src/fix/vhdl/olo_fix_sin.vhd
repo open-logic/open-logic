@@ -87,7 +87,7 @@ architecture rtl of olo_fix_sin is
     subtype Result_t is std_logic_vector(cl_fix_width(OutFmt_c) - 1 downto 0);
 
     -- Without integer bit the wave is scaled to 1.0-1LSB
-    constant Peak_c    : Result_t := choose(OutFmt_c.I = 0, cl_fix_max_value(OutFmt_c), cl_fix_from_real(1.0, OutFmt_c));
+    constant Peak_c : Result_t := choose(OutFmt_c.I = 0, cl_fix_max_value(OutFmt_c), cl_fix_from_real(1.0, OutFmt_c));
 
     -- Two Process Method
     type TwoProcess_r is record
