@@ -439,3 +439,15 @@ entities:
           In_Data: 16
         out_reduce:
           Out_Result: 20
+  # olo_fix_sqrt
+  - entity_name: "olo_fix_sqrt"
+    configurations:
+      - name: "default"
+        generics:
+          OutFmt_g: '"(0, 1, 16)"'
+          InFmt_g: '"(0, 0, 16)"'
+          PrecisionBits_g: 18
+        in_reduce:
+          In_Data: 16
+        out_reduce:
+          Out_Result: 17

@@ -288,6 +288,7 @@ Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_
 | [olo_fix_cordic_rot](./fix/olo_fix_cordic_rot.md)   | CORDIC rotating mode - Can be used to approximate sine/cosine functions |
 | [olo_fix_sin](./fix/olo_fix_sin.md)                   | Sine and (optionally) cosine of a phase given in rotations. Based on piecewise linear approximation. |
 | [olo_fix_inv](./fix/olo_fix_inv.md)                   | Inversion (1/x) of a fixed point number. Based on shifting and piecewise linear approximation. |
+| [olo_fix_sqrt](./fix/olo_fix_sqrt.md)                 | Square root of a fixed point number. Based on shifting and piecewise linear approximation. |
 
 ### Miscellaneous
 
