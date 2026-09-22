@@ -34,3 +34,5 @@ from .olo_fix_private_lin_approx_qsin import *
 from .olo_fix_sin import *
 from .olo_fix_private_lin_approx_inv import *
 from .olo_fix_inv import *
+from .olo_fix_private_lin_approx_sqrt import *
+from .olo_fix_sqrt import *
