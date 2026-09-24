@@ -157,7 +157,7 @@ begin
     p_table : process (Clk) is
     begin
         if rising_edge(Clk) then
-            Data(1) <= Table_v(to_integer(unsigned(Addr)));
+            Data(1) <= Table_v(fromUslv(Addr));
 
             for i in 2 to TableLatency_c loop
                 Data(i) <= Data(i - 1);

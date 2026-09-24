@@ -173,8 +173,7 @@ begin
     -- *** Normalization shift count ***
     -- The number of leading zeros of the absolute value. For a zero input the function returns
     -- index zero, which limits the shift to its maximum.
-    ShiftComb <= std_logic_vector(to_unsigned(MaxShift_c - getLeadingSetBitIndex(r.Abs_1),
-                                              ShiftBits_c));
+    ShiftComb <= toUslv(MaxShift_c - getLeadingSetBitIndex(r.Abs_1), ShiftBits_c);
 
     -- *** Combinatorial Process ***
     p_comb : process (all) is
