@@ -104,7 +104,7 @@ begin
             StepSize_v := 2**(stg * SelBitsPerStageLimited_c);
 
             -- Shift implementation
-            Select_v := to_integer(unsigned(r.Shift(stg)(SelBitsPerStageLimited_c - 1 downto 0)));
+            Select_v := fromUslv(r.Shift(stg)(SelBitsPerStageLimited_c - 1 downto 0));
             if compareNoCase(Direction_g, "RIGHT") then
                 if SignExtend_g then
                     TempData_v := (others => r.Data(stg)(Width_g - 1));

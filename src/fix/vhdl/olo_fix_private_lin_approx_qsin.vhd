@@ -163,9 +163,9 @@ begin
     p_table : process (Clk) is
     begin
         if rising_edge(Clk) then
-            DataA(1) <= Table_v(to_integer(unsigned(AddrA)));
+            DataA(1) <= Table_v(fromUslv(AddrA));
             if UsePortB_g then
-                DataB(1) <= Table_v(to_integer(unsigned(AddrB)));
+                DataB(1) <= Table_v(fromUslv(AddrB));
             end if;
 
             for i in 2 to TableLatency_c loop

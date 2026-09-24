@@ -183,8 +183,8 @@ begin
                     v.CsHold     := Cmd_CsHold;
                     -- Assert only the selectec CS, put others to '1' for the case of CS hold in previous transfer
                     -- and now selecting a different slave
-                    v.Spi_Cs_n                                  := (others => '1');
-                    v.Spi_Cs_n(to_integer(unsigned(Cmd_Slave))) := '0';
+                    v.Spi_Cs_n                      := (others => '1');
+                    v.Spi_Cs_n(fromUslv(Cmd_Slave)) := '0';
                 end if;
                 v.CsHighCnt := 0;
                 v.ClkDivCnt := 0;
