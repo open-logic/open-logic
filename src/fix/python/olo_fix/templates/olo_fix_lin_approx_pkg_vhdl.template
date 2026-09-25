@@ -99,17 +99,21 @@ package body {{package_name}} is
     begin
 
 {% for t in tables %}
-        if Name = "{{t.name}}" then
+        {{ "if" if loop.first else "elsif" }} Name = "{{t.name}}" then
             return {{t.index}};
-        end if;
 
 {% endfor %}
-        report "{{package_name}}: no table named '" & Name & "'. Available tables: " &
+        -- Excluded from coverage because this line can't be reached with valid table names
+        -- coverage off
+        else
+            report "{{package_name}}: no table named '" & Name & "'. Available tables: " &
 {% for line in available %}
-               "{{line}}"{{ " &" if not loop.last }}
+                   "{{line}}"{{ " &" if not loop.last }}
 {% endfor %}
-            severity failure;
-        return 0;
+                severity failure;
+            return 0;
+        end if;
+        -- coverage on
     end function;
 
     -- *** Public Functions ***
@@ -120,7 +124,10 @@ package body {{package_name}} is
 {% for t in tables %}
             when {{t.index}} => return Table{{t.index}}_c;
 {% endfor %}
+            -- Excluded from coverage because this line can't be reached (tableIndex only returns valid indexes)
+            -- coverage off
             when others => return Table0_c;
+            -- coverage on
         end case;
 
     end function;

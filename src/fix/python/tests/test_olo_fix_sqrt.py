@@ -29,12 +29,7 @@ class TestOloFixSqrt(unittest.TestCase):
         Real values (and not quantized ones) are returned, because the models quantize their input
         themselves - which is not idempotent for formats wider than a double mantissa.
         """
-        # Codes of formats wider than a double mantissa do not fit into a numpy integer array,
-        # hence the range is swept directly for them
-        if cl_fix_is_wide(fmt):
-            return np.linspace(0.0, 2.0**fmt.I, points, endpoint=False)
-        codes = np.unique(np.linspace(0, 2**cl_fix_width(fmt), points, endpoint=False).astype(np.int64))
-        return np.array(cl_fix_to_real(cl_fix_from_integer(codes, fmt), fmt), dtype=float)
+        return np.linspace(0.0, cl_fix_max_value(fmt), points)
 
     def _check_accuracy(self, in_fmt : FixFormat, precision_bits : int):
         """
@@ -65,10 +60,10 @@ class TestOloFixSqrt(unittest.TestCase):
 
     def test_accuracy_input_formats(self):
         # Both parities of the integer bits, fractional bits only, formats not containing 1.0 and
-        # the smallest format supported (two bits)
+        # the smallest format supported (5 bits)
         for in_fmt in [FixFormat(0, 0, 16), FixFormat(0, 8, 8), FixFormat(0, 3, 13),
                        FixFormat(0, 7, 9), FixFormat(0, -2, 18), FixFormat(0, 12, -4),
-                       FixFormat(0, 1, 1), FixFormat(0, 0, 2)]:
+                       FixFormat(0, 1, 4), FixFormat(0, 0, 5)]:
             self._check_accuracy(in_fmt, 14)
 
     def test_accuracy_wide_formats(self):
@@ -128,9 +123,10 @@ class TestOloFixSqrt(unittest.TestCase):
             olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(1, 0, 16))
 
     def test_input_too_narrow(self):
-        # A leading one plus at least one bit below it are required
+        # At least 5 bits are required
+        olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 0, 5))
         with self.assertRaises(ValueError):
-            olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 0, 1))
+            olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 0, 4))
 
     def test_input_too_wide(self):
         # The latency calculation of the VHDL entity supports inputs of up to 256 bits

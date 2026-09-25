@@ -10,6 +10,7 @@ from en_cl_fix_pkg import *
 import numpy as np
 
 from .olo_fix_private_lin_approx_inv import olo_fix_private_lin_approx_inv, INV_TABLES
+from .olo_fix_utils import olo_fix_utils
 
 # ---------------------------------------------------------------------------------------------------
 # Class
@@ -129,14 +130,11 @@ class olo_fix_inv:
 
         # Normalization into the range [1, 2). The barrel shifter operates on the bits of the
         # absolute value, hence they are reinterpreted in the normalized format (reinterpretation is
-        # a shift by a constant). The shift is the number of leading zeros, which is calculated
-        # through log2. For a zero input the shift is limited to its maximum.
+        # a shift by a constant). The shift is the number of leading zeros. For a zero input the
+        # leading bit index is zero, which limits the shift to its maximum.
         norm_in = cl_fix_shift(abs_val, self.abs_fmt, 1 - self.abs_fmt.I, self.mant_full_fmt,
                                FixRound.Trunc_s, FixSaturate.None_s)
-        norm_real = np.array(cl_fix_to_real(norm_in, self.mant_full_fmt), dtype=float)
-        shift = np.full(norm_real.shape, self.max_shift, dtype=int)
-        non_zero = norm_real > 0
-        shift[non_zero] = -np.floor(np.log2(norm_real[non_zero])).astype(int)
+        shift = self.max_shift - olo_fix_utils.get_leading_bit_index(abs_val, self.abs_fmt)
         norm_data = cl_fix_shift(norm_in, self.mant_full_fmt, shift, self.mant_full_fmt,
                                  FixRound.Trunc_s, FixSaturate.None_s)
 

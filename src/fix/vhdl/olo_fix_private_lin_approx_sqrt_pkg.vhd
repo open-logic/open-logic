@@ -1806,24 +1806,25 @@ package body olo_fix_private_lin_approx_sqrt_pkg is
 
         if Name = "sqrt_f10" then
             return 0;
-        end if;
 
-        if Name = "sqrt_f14" then
+        elsif Name = "sqrt_f14" then
             return 1;
-        end if;
 
-        if Name = "sqrt_f18" then
+        elsif Name = "sqrt_f18" then
             return 2;
-        end if;
 
-        if Name = "sqrt_f20" then
+        elsif Name = "sqrt_f20" then
             return 3;
-        end if;
 
-        report "olo_fix_private_lin_approx_sqrt_pkg: no table named '" & Name & "'. Available tables: " &
-               "sqrt_f10, sqrt_f14, sqrt_f18, sqrt_f20"
-            severity failure;
-        return 0;
+        -- Excluded from coverage because this line can't be reached with valid table names
+        -- coverage off
+        else
+            report "olo_fix_private_lin_approx_sqrt_pkg: no table named '" & Name & "'. Available tables: " &
+                   "sqrt_f10, sqrt_f14, sqrt_f18, sqrt_f20"
+                severity failure;
+            return 0;
+        end if;
+        -- coverage on
     end function;
 
     -- *** Public Functions ***
@@ -1835,7 +1836,10 @@ package body olo_fix_private_lin_approx_sqrt_pkg is
             when 1 => return Table1_c;
             when 2 => return Table2_c;
             when 3 => return Table3_c;
+            -- Excluded from coverage because this line can't be reached (tableIndex only returns valid indexes)
+            -- coverage off
             when others => return Table0_c;
+            -- coverage on
         end case;
 
     end function;

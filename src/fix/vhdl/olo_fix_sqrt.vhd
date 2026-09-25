@@ -1,19 +1,14 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2026 by Oliver Bruendler
--- Authors: Oliver Bruendler
---
--- The concept (normalization into the range of a linear approximation through shifting) is based
--- on psi_fix_sqrt from the PSI psi_fix library
 -- Copyright (c) 2018 by Paul Scherrer Institute, Switzerland
+-- Authors: Oliver Bruendler
+
 ---------------------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------------------
 -- Description
 ---------------------------------------------------------------------------------------------------
 -- This entity calculates the square root of the input.
---
--- The entity implements the normalization only. The approximation itself is done by
--- olo_fix_private_lin_approx_sqrt, which covers the range [0.25, 1).
 --
 -- Documentation:
 -- https://github.com/open-logic/open-logic/blob/main/doc/fix/olo_fix_sqrt.md
@@ -69,48 +64,40 @@ architecture rtl of olo_fix_sqrt is
     -- Constants
     constant EntityName_c : string      := "olo_fix_sqrt";
     constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
-    constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
     constant InWidth_c    : positive    := cl_fix_width(InFmt_c);
 
-    -- Supported precisions - one approximation table exists per precision. The list is the same as
-    -- the one in the SQRT_TABLES dictionary of the Python model.
-    constant PrecisionSupported_c : boolean := PrecisionBits_g = 10 or PrecisionBits_g = 14 or
-                                               PrecisionBits_g = 18 or PrecisionBits_g = 20;
-
-    -- Normalization. The input bits are reinterpreted as a value in [0, 0.5) - the additional bit
-    -- at the top guarantees that the normalization shift is never negative. Reinterpreting is a
-    -- shift by the constant NormSft_c and hence pure wiring.
-    constant NormSft_c   : integer     := InFmt_c.I + 1;
-    constant NormInFmt_c : FixFormat_t := (0, -1, InWidth_c + 1);
-    constant NormFmt_c   : FixFormat_t := (0, 0, InWidth_c + 1);
+    -- Normalization. The input bits are reinterpreted as a value in [0, 1) by a shift of NormSft_c,
+    -- which is the number of integer bits rounded up to an even number (must be even because the
+    -- compensation shift at the output is half of it).
+    constant NormSft_c   : integer     := InFmt_c.I + (InFmt_c.I mod 2);
+    constant GuardBits_c : natural     := NormSft_c - InFmt_c.I;
+    constant NormFmt_c   : FixFormat_t := (0, 0, InWidth_c + GuardBits_c);
     constant MantFmt_c   : FixFormat_t := (0, 0, PrecisionBits_g + 2);
     constant ApproxFmt_c : FixFormat_t := (0, 0, PrecisionBits_g);
 
     -- Shift. The exponent left after the normalization must be even, because the square root halves
-    -- it. Hence the shift has the fixed parity Parity_c - it is the number of leading zeros, rounded
-    -- up to that parity. A zero input has no leading one - for it the shift is limited to its
-    -- maximum, which yields a normalized value of zero.
-    constant MaxShift_c        : positive := InWidth_c;
-    constant Parity_c          : natural  := NormSft_c mod 2;
+    -- it. Hence the shift is the number of leading zeros (including the guard bit) rounded down to
+    -- an even number, which normalizes into [0.25, 1). A zero input has no leading one - for it the
+    -- shift is limited to its maximum, which yields a normalized value of zero.
+    constant MaxShift_c        : positive := InWidth_c + GuardBits_c - 1;
     constant ShiftBits_c       : positive := log2ceil(MaxShift_c + 1);
-    constant SelBitsPerStage_c : positive := 4;
+    constant SelBitsPerStage_c : positive := (ShiftBits_c + 1)/2;  -- Results in always two stage barrel shifter
 
     -- Result of the approximation shifted back (lossless). The shift is halved, because the square
     -- root halves the exponent.
-    constant MaxShiftOut_c  : positive    := max(1, (MaxShift_c - Parity_c)/2);
-    constant ShiftOutBits_c : positive    := log2ceil(MaxShiftOut_c + 1);
-    constant ShiftedFmt_c   : FixFormat_t := (0, 0, PrecisionBits_g + MaxShiftOut_c);
+    constant MaxShiftOut_c        : positive    := max(2, MaxShift_c/2);
+    constant ShiftOutBits_c       : positive    := log2ceil(MaxShiftOut_c + 1);
+    constant SelBitsPerStageOut_c : positive    := (ShiftOutBits_c + 1)/2; -- Results in always two stage barrel shifter
+    constant ShiftedFmt_c         : FixFormat_t := (0, 0, PrecisionBits_g + MaxShiftOut_c);
+
     -- The remaining part of the normalization is a shift by a constant, hence it is implemented by
     -- reinterpreting the shifted result - which is pure wiring.
-    constant ConstSft_c     : integer     := (NormSft_c - Parity_c)/2;
-    constant ResFmt_c       : FixFormat_t := (0, ShiftedFmt_c.I + ConstSft_c,
-                                              ShiftedFmt_c.F - ConstSft_c);
+    constant ConstSft_c : integer     := NormSft_c/2;
+    constant ResFmt_c   : FixFormat_t := (0, ShiftedFmt_c.I + ConstSft_c,
+                                          ShiftedFmt_c.F - ConstSft_c);
 
-    -- Latencies. Each barrel shifter has an input register plus one stage per SelBitsPerStage_c
-    -- select bits.
-    constant MaxInWidth_c    : positive := 256;
-    constant SftLatency_c    : positive := (ShiftBits_c + SelBitsPerStage_c - 1)/SelBitsPerStage_c + 1;
-    constant SftOutLatency_c : positive := (ShiftOutBits_c + SelBitsPerStage_c - 1)/SelBitsPerStage_c + 1;
+    -- Latencies. The normalization barrel shifter has an input register plus two stages.
+    constant SftLatency_c    : positive := 3;
     -- The table of the approximation has a fixed read latency of two clock cycles (see
     -- olo_fix_private_lin_approx_sqrt)
     constant TableLatency_c  : positive := 2;
@@ -145,28 +132,24 @@ begin
 
     -- *** Assertions ***
     -- synthesis translate_off
-    assert PrecisionSupported_c
-        report errorMessage(EntityName_c, "PrecisionBits_g must be 10, 14, 18 or 20, got " &
-               integer'image(PrecisionBits_g))
+    assert PrecisionBits_g = 10 or PrecisionBits_g = 14 or PrecisionBits_g = 18 or PrecisionBits_g = 20
+        report errorMessage(EntityName_c, "PrecisionBits_g must be 10, 14, 18 or 20, got " & to_string(PrecisionBits_g))
         severity error;
     assert InFmt_c.S = 0
-        report errorMessage(EntityName_c, "InFmt_g must be unsigned - the square root is not " &
-               "defined for negative numbers")
+        report errorMessage(EntityName_c, "InFmt_g must be unsigned - the square root is not defined for negative numbers")
         severity error;
-    assert InWidth_c >= 2
-        report errorMessage(EntityName_c, "InFmt_g must be at least two bits wide")
+    assert InWidth_c >= 5
+        report errorMessage(EntityName_c, "InFmt_g must be at least 5 bits wide")
         severity error;
-    assert InWidth_c <= MaxInWidth_c
-        report errorMessage(EntityName_c, "InFmt_g must be at most " & integer'image(MaxInWidth_c) &
-               " bits wide")
+    assert InWidth_c <= 256
+        report errorMessage(EntityName_c, "InFmt_g must be at most 256 bits wide")
         severity error;
     -- synthesis translate_on
 
     -- *** Combinatorial Process ***
     p_comb : process (all) is
-        variable v          : TwoProcess_r;
-        variable LeadZero_v : natural;
-        variable Shift_v    : natural;
+        variable v       : TwoProcess_r;
+        variable Shift_v : std_logic_vector(ShiftBits_c - 1 downto 0);
     begin
         -- *** Hold variables stable ***
         v := r;
@@ -177,16 +160,16 @@ begin
         v.In_0    := In_Data;
 
         -- *** Shift Count Stage ***
-        -- The number of leading zeros of the input. For a zero input the function returns index
-        -- zero, which limits the shift to its maximum.
-        LeadZero_v := MaxShift_c - 1 - getLeadingSetBitIndex(r.In_0);
-        -- Round the shift up to the parity the square root requires
-        Shift_v := LeadZero_v + ((LeadZero_v + Parity_c) mod 2);
+        -- The number of leading zeros of the input (including the guard bit). For a zero input the
+        -- function returns index zero, which limits the shift to its maximum.
+        Shift_v := toUslv(MaxShift_c - getLeadingSetBitIndex(r.In_0), ShiftBits_c);
+        -- Round the shift down to an even number, as required by the square root
+        Shift_v(0) := '0';
 
         v.Valid_1  := r.Valid_0;
-        v.Norm_1   := cl_fix_resize(r.In_0, NormInFmt_c, NormFmt_c, Trunc_s, None_s);
-        v.Sft_1    := toUslv(Shift_v, ShiftBits_c);
-        v.SftOut_1 := toUslv((Shift_v - Parity_c)/2, ShiftOutBits_c);
+        v.Norm_1   := cl_fix_shift(r.In_0, InFmt_c, -NormSft_c, NormFmt_c, Trunc_s, None_s);
+        v.Sft_1    := Shift_v;
+        v.SftOut_1 := Shift_v(ShiftBits_c - 1 downto 1);
 
         -- *** Assign Signal ***
         r_next <= v;
@@ -273,7 +256,7 @@ begin
     i_sft_out : entity work.olo_base_dyn_sft
         generic map (
             Direction_g       => "RIGHT",
-            SelBitsPerStage_g => SelBitsPerStage_c,
+            SelBitsPerStage_g => SelBitsPerStageOut_c,
             MaxShift_g        => MaxShiftOut_c,
             Width_g           => cl_fix_width(ShiftedFmt_c),
             SignExtend_g      => false

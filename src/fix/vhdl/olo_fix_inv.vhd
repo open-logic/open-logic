@@ -85,8 +85,11 @@ architecture rtl of olo_fix_inv is
     -- Shift. A zero input has no leading one - for it the shift is limited to its maximum, which
     -- yields a mantissa of zero (like an input of 1.0).
     constant MaxShift_c        : positive := cl_fix_width(AbsFmt_c) - 1;
-    constant ShiftBits_c       : positive := log2ceil(MaxShift_c + 1);
-    constant SelBitsPerStage_c : positive := 4;
+    -- The barrel shifters are dimensioned for a maximum shift of at least two, so the shift has at
+    -- least two bits and the barrel shifters always have two pipeline stages.
+    constant SftMaxShift_c     : positive := max(2, MaxShift_c);
+    constant ShiftBits_c       : positive := log2ceil(SftMaxShift_c + 1);
+    constant SelBitsPerStage_c : positive := (ShiftBits_c + 1)/2;
 
     -- Result of the approximation shifted back (lossless)
     constant ShiftedFmt_c : FixFormat_t := (0, cl_fix_width(AbsFmt_c), PrecisionBits_g);
@@ -97,11 +100,9 @@ architecture rtl of olo_fix_inv is
     -- Signed for signed inputs, because the result of a negative input is negative
     constant ResFmt_c     : FixFormat_t := (InFmt_c.S, DenormFmt_c.I, DenormFmt_c.F);
 
-    -- Latencies. With 4 select bits per stage, each barrel shifter has an input register plus one
-    -- stage for shifts of up to 4 bits (inputs of up to 16 bits) and two stages for shifts of up to 8
-    -- bits (inputs of up to 256 bits, the maximum supported).
+    -- Latencies. Each barrel shifter has an input register plus two stages.
     constant MaxInWidth_c    : positive := 256;
-    constant SftLatency_c    : positive := choose(ShiftBits_c <= SelBitsPerStage_c, 2, 3);
+    constant SftLatency_c    : positive := 3;
     -- The table of the approximation has a fixed read latency of two clock cycles (see
     -- olo_fix_private_lin_approx_inv)
     constant TableLatency_c  : positive := 2;
@@ -237,7 +238,7 @@ begin
         generic map (
             Direction_g       => "LEFT",
             SelBitsPerStage_g => SelBitsPerStage_c,
-            MaxShift_g        => MaxShift_c,
+            MaxShift_g        => SftMaxShift_c,
             Width_g           => cl_fix_width(AbsFmt_c),
             SignExtend_g      => false
         )
@@ -299,7 +300,7 @@ begin
         generic map (
             Direction_g       => "LEFT",
             SelBitsPerStage_g => SelBitsPerStage_c,
-            MaxShift_g        => MaxShift_c,
+            MaxShift_g        => SftMaxShift_c,
             Width_g           => cl_fix_width(ShiftedFmt_c),
             SignExtend_g      => false
         )

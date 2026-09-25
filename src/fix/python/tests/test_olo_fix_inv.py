@@ -24,13 +24,11 @@ class TestOloFixInv(unittest.TestCase):
     @staticmethod
     def _values(fmt : FixFormat, points : int = 2000):
         """
-        Input values covering the full range of a format
+        Input values covering the full range of a format (quantized, so that the expected results
+        can be calculated from them directly)
         """
-        width = cl_fix_width(fmt)
-        codes = np.unique(np.linspace(0, 2**width, points, endpoint=False).astype(np.int64))
-        if fmt.S == 1:
-            codes = np.where(codes >= 2**(width - 1), codes - 2**width, codes)
-        return cl_fix_from_integer(codes, fmt)
+        values = np.linspace(cl_fix_min_value(fmt), cl_fix_max_value(fmt), points)
+        return cl_fix_from_real(values, fmt)
 
     def _check_accuracy(self, in_fmt : FixFormat, precision_bits : int):
         """

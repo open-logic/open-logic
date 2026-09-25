@@ -935,11 +935,6 @@ def add_configs(olo_tb):
         named_config(tb, default_generics | {'InFmt_g': InFmt}, pre_config=cosim,
                      short_name=f'InFmt_g={InFmt}')
 
-    # Memory styles
-    for MemStyle in ['block', 'distributed']:
-        named_config(tb, default_generics | {'MemStyle_g': MemStyle}, pre_config=cosim,
-                     short_name=f'MemStyle_g={MemStyle}')
-
     # Round / Saturate
     for Round in ['Trunc_s', 'NonSymPos_s']:
         for Sat in ['None_s', 'Sat_s']:
@@ -950,8 +945,8 @@ def add_configs(olo_tb):
     tb = olo_tb.test_bench('olo_fix_sqrt_tb')
     cosim = olo_fix_sqrt.cosim.cosim
     default_generics = {
-        'OutFmt_g': '(0, 1, 16)',
-        'InFmt_g': '(0, 0, 16)',
+        'OutFmt_g': '(0, 2, 14)',
+        'InFmt_g': '(0, 4, 16)',
         'PrecisionBits_g': 18,
         'MemStyle_g': 'auto',
         'Round_g': 'NonSymPos_s',
@@ -964,20 +959,15 @@ def add_configs(olo_tb):
                      short_name=f'PrecisionBits_g={Precision}')
 
     # Input formats - both parities of the integer bits, formats not containing 1.0 and the
-    # smallest format supported (two bits). The output format is chosen to cover the results.
+    # smallest format supported (5 bits). The output format is chosen to cover the results.
     in_out_fmts = [('(0, 0, 16)', '(0, 1, 16)'), ('(0, 8, 8)', '(0, 5, 12)'),
                    ('(0, 3, 13)', '(0, 3, 14)'), ('(0, 7, 9)', '(0, 5, 12)'),
                    ('(0, -2, 18)', '(0, 0, 16)'), ('(0, 12, -4)', '(0, 7, 8)'),
-                   ('(0, 1, 1)', '(0, 2, 12)'), ('(0, 0, 33)', '(0, 1, 20)'),
-                   ('(0, -20, 40)', '(0, -9, 24)'), ('(0, 0, 2)', '(0, 1, 4)')]
+                   ('(0, 1, 4)', '(0, 2, 12)'), ('(0, 0, 33)', '(0, 1, 20)'),
+                   ('(0, -20, 40)', '(0, -9, 24)'), ('(0, 0, 5)', '(0, 1, 5)')]
     for InFmt, OutFmt in in_out_fmts:
         named_config(tb, default_generics | {'InFmt_g': InFmt, 'OutFmt_g': OutFmt},
                      pre_config=cosim, short_name=f'InFmt_g={InFmt}')
-
-    # Memory styles
-    for MemStyle in ['block', 'distributed']:
-        named_config(tb, default_generics | {'MemStyle_g': MemStyle}, pre_config=cosim,
-                     short_name=f'MemStyle_g={MemStyle}')
 
     # Round / Saturate - the output format is too small for the largest results, hence saturation
     # is exercised

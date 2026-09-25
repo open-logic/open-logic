@@ -54,17 +54,9 @@ architecture sim of olo_fix_sqrt_tb is
     -- Latency: input and shift count stage (2), both barrel shifters, the approximation (same as
     -- olo_fix_lin_approx_calc with a table read latency of two clock cycles) and the two registers
     -- of the output resize (2).
-    -- Each barrel shifter has an input register plus one stage per SelBitsPerStage_c select bits.
-    constant InFmt_c           : FixFormat_t := cl_fix_format_from_string(InFmt_g);
-    constant InWidth_c         : positive    := cl_fix_width(InFmt_c);
-    constant SelBitsPerStage_c : positive    := 4;
-    constant Parity_c          : natural     := (InFmt_c.I + 1) mod 2;
-    constant ShiftBits_c       : positive    := log2ceil(InWidth_c + 1);
-    constant ShiftOutBits_c    : positive    := log2ceil(max(1, (InWidth_c - Parity_c)/2) + 1);
-    constant SftLatency_c      : positive    := (ShiftBits_c + SelBitsPerStage_c - 1)/SelBitsPerStage_c + 1;
-    constant SftOutLatency_c   : positive    := (ShiftOutBits_c + SelBitsPerStage_c - 1)/SelBitsPerStage_c + 1;
-    constant ExpectedLatency_c : natural     := olo.olo_fix_lin_approx_pkg.linApproxLatency(2) + 4 +
-                                                SftLatency_c + SftOutLatency_c;
+    -- Each barrel shifter has an input register plus two stages (3).
+    constant SftLatency_c      : positive := 3;
+    constant ExpectedLatency_c : natural  := olo.olo_fix_lin_approx_pkg.linApproxLatency(2) + 4 + 2*SftLatency_c;
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals

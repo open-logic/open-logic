@@ -10,6 +10,7 @@ from en_cl_fix_pkg import *
 import numpy as np
 
 from .olo_fix_private_lin_approx_sqrt import olo_fix_private_lin_approx_sqrt, SQRT_TABLES
+from .olo_fix_utils import olo_fix_utils
 
 # ---------------------------------------------------------------------------------------------------
 # Class
@@ -21,14 +22,11 @@ class olo_fix_sqrt:
 
     Calculates the square root of the input.
 
-    The input is normalized into the range [0.25, 1), the square root is taken through a table
-    based linear approximation and the normalization is reverted on the result. Because the square
-    root halves the exponent, the normalization shift is always even - which is why the
-    approximation covers two octaves instead of one. The precision of the approximation is selected
-    through precision_bits - the normalization covers the rest of the input range.
+    For documentation of the architecture, check the related entity documentation of olo_fix_sqrt.
     """
 
-    # Maximum supported input width (same limit as in the VHDL entity)
+    # Minimum and maximum supported input width (same limits as in the VHDL entity)
+    MIN_IN_WIDTH = 5
     MAX_IN_WIDTH = 256
 
     # ---------------------------------------------------------------------------------------------------
@@ -45,7 +43,7 @@ class olo_fix_sqrt:
 
         :param out_fmt: Format of the result
         :param in_fmt: Format of the input. Must be unsigned (the square root is not defined for
-                       negative numbers) and at least two and at most 256 bits wide.
+                       negative numbers) and at least 5 and at most 256 bits wide.
         :param precision_bits: Number of fractional bits of the square root approximation. One
                                table exists per supported value (see SQRT_TABLES).
         :param round: Rounding mode of the output stage
@@ -62,9 +60,9 @@ class olo_fix_sqrt:
         if in_fmt.S != 0:
             raise ValueError(f"olo_fix_sqrt: in_fmt {in_fmt} must be unsigned")
 
-        # The input must provide a leading one plus at least one bit below it
-        if cl_fix_width(in_fmt) < 2:
-            raise ValueError(f"olo_fix_sqrt: in_fmt {in_fmt} must be at least two bits wide")
+        if cl_fix_width(in_fmt) < self.MIN_IN_WIDTH:
+            raise ValueError(f"olo_fix_sqrt: in_fmt {in_fmt} must be at least {self.MIN_IN_WIDTH} "
+                             f"bits wide")
 
         # The latency calculation in the VHDL entity is valid for inputs of up to 256 bits
         if cl_fix_width(in_fmt) > self.MAX_IN_WIDTH:
@@ -77,31 +75,36 @@ class olo_fix_sqrt:
         self.round = round
         self.saturate = saturate
 
-        # Normalization. The input bits are reinterpreted as a value in [0, 0.5) - the additional
-        # bit at the top guarantees that the normalization shift is never negative.
+        # Normalization. The input bits are reinterpreted as a value in [0, 1) by a shift of
+        # norm_sft, which is the number of integer bits rounded up to an even number (must be even
+        # because the compensation shift at the output is half of it).
         width = cl_fix_width(in_fmt)
-        self.norm_fmt = FixFormat(0, 0, width + 1)
-        self.norm_sft = in_fmt.I + 1
-
-        # Shift. The exponent left after the normalization must be even, because the square root
-        # halves it. Hence the normalization shift has a fixed parity, given by self.parity.
-        self.max_shift = width
-        self.parity = self.norm_sft % 2
-
-        # Approximation of the square root in the range [0.25, 1)
+        self.norm_sft = in_fmt.I + (in_fmt.I % 2)
+        self.guard_bits = self.norm_sft - in_fmt.I
+        self.norm_fmt = FixFormat(0, 0, width + self.guard_bits)
         self.mant_fmt = FixFormat(0, 0, precision_bits + 2)
         self.approx_fmt = FixFormat(0, 0, precision_bits)
-        self._approx = olo_fix_private_lin_approx_sqrt(self.approx_fmt, self.mant_fmt)
 
-        # Result of the approximation shifted back (lossless). The shift is halved because the
+        # Shift. The exponent left after the normalization must be even, because the square root
+        # halves it. Hence the shift is the number of leading zeros (including the guard bit)
+        # rounded down to an even number, which normalizes into [0.25, 1). A zero input has no
+        # leading one - for it the shift is limited to its maximum, which yields a normalized value
+        # of zero.
+        self.max_shift = width + self.guard_bits - 1
+
+        # Result of the approximation shifted back (lossless). The shift is halved, because the
         # square root halves the exponent.
-        self.max_shift_out = max(1, (self.max_shift - self.parity)//2)
+        self.max_shift_out = max(2, self.max_shift//2)
         self.shifted_fmt = FixFormat(0, 0, precision_bits + self.max_shift_out)
+
         # The remaining part of the normalization is a shift by a constant, hence it is implemented
         # by reinterpreting the shifted result - which is pure wiring.
-        self.const_sft = (self.norm_sft - self.parity)//2
+        self.const_sft = self.norm_sft//2
         self.res_fmt = FixFormat(0, self.shifted_fmt.I + self.const_sft,
                                  self.shifted_fmt.F - self.const_sft)
+
+        # Approximation of sqrt(x) in the range [0.25, 1)
+        self._approx = olo_fix_private_lin_approx_sqrt(self.approx_fmt, self.mant_fmt)
 
     # ---------------------------------------------------------------------------------------------------
     # Public Methods
@@ -127,42 +130,46 @@ class olo_fix_sqrt:
             data = np.array([data])
         data = cl_fix_from_real(data, self.in_fmt)
 
-        # Normalization shift - the number of leading zeros, rounded up to the required parity.
-        # For a zero input the shift is limited to its maximum (like for the smallest non-zero
-        # input), which yields a normalized value of zero.
-        shift = self._leading_zeros(data)
-        shift = shift + np.mod(shift + self.parity, 2)
+        # *** Shift Count Stage ***
+        # The number of leading zeros of the input (including the guard bit). For a zero input the
+        # function returns index zero, which limits the shift to its maximum.
+        shift = self.max_shift - olo_fix_utils.get_leading_bit_index(data, self.in_fmt)
+        # Round the shift down to an even number, as required by the square root
+        shift = shift - np.mod(shift, 2)
+        sft_out = shift//2
+        # The barrel shifter operates on the bits of the input, hence they are reinterpreted in the
+        # normalized format (reinterpretation is a shift by a constant)
+        norm = cl_fix_shift(data, self.in_fmt, -self.norm_sft, self.norm_fmt,
+                            FixRound.Trunc_s, FixSaturate.None_s)
 
-        # Normalization into the range [0.25, 1). The barrel shifter operates on the bits of the
-        # input, hence they are reinterpreted in the normalized format (reinterpretation is a shift
-        # by a constant).
-        norm_in = cl_fix_shift(data, self.in_fmt, -self.norm_sft, self.norm_fmt,
-                               FixRound.Trunc_s, FixSaturate.None_s)
-        norm_data = cl_fix_shift(norm_in, self.norm_fmt, shift, self.norm_fmt,
+        # Normalization of the input into the range [0.25, 1)
+        norm_data = cl_fix_shift(norm, self.norm_fmt, shift, self.norm_fmt,
                                  FixRound.Trunc_s, FixSaturate.None_s)
 
+        # *** Approximation input ***
         # Truncating the normalized value to the resolution the approximation requires is pure
-        # wiring
+        # wiring.
         mantissa = cl_fix_resize(norm_data, self.norm_fmt, self.mant_fmt,
                                  FixRound.Trunc_s, FixSaturate.None_s)
 
-        # Approximation of the square root in the range [0.25, 1)
+        # Approximation of sqrt(x) in the range [0.25, 1)
         appr_data = self._approx.process(mantissa)
 
-        # Compensation of the normalization shift (halved, because the square root halves the
-        # exponent)
+        # *** Approximation result in the format of the output shifter ***
         sft_in_data = cl_fix_resize(appr_data, self.approx_fmt, self.shifted_fmt,
                                     FixRound.Trunc_s, FixSaturate.None_s)
-        sft_data = cl_fix_shift(sft_in_data, self.shifted_fmt, -(shift - self.parity)//2,
-                                self.shifted_fmt, FixRound.Trunc_s, FixSaturate.None_s)
 
-        # The remaining part of the normalization is pure wiring, hence the shifted result is
-        # reinterpreted (reinterpretation is a shift by a constant)
-        result = cl_fix_shift(sft_data, self.shifted_fmt, self.const_sft, self.res_fmt,
-                              FixRound.Trunc_s, FixSaturate.None_s)
+        # Compensation of the normalization shift
+        sft_data = cl_fix_shift(sft_in_data, self.shifted_fmt, -sft_out, self.shifted_fmt,
+                                FixRound.Trunc_s, FixSaturate.None_s)
 
-        # Output stage
-        return cl_fix_resize(result, self.res_fmt, self.out_fmt, self.round, self.saturate)
+        # Rounding and saturation to the user format. Reverting the remaining part of the
+        # normalization is pure wiring, hence the shifted result is reinterpreted (passed in as
+        # res_fmt). The model operates on values, hence the reinterpretation is a shift by a
+        # constant.
+        res_data = cl_fix_shift(sft_data, self.shifted_fmt, self.const_sft, self.res_fmt,
+                                FixRound.Trunc_s, FixSaturate.None_s)
+        return cl_fix_resize(res_data, self.res_fmt, self.out_fmt, self.round, self.saturate)
 
     def process(self, data):
         """
@@ -173,23 +180,3 @@ class olo_fix_sqrt:
         """
         # The calculation is stateless, hence process() and next() are identical
         return self.next(data)
-
-    # ---------------------------------------------------------------------------------------------------
-    # Private Methods
-    # ---------------------------------------------------------------------------------------------------
-    def _leading_zeros(self, data):
-        """
-        Number of leading zeros of the input data
-
-        The calculation is done on the integer representation, because the floating point
-        representation is not exact for inputs wider than a double mantissa. For a zero input the
-        maximum is returned - the same value the HDL implementation produces (getLeadingSetBitIndex
-        returns index zero for a zero input).
-
-        :param data: Input data (quantized to in_fmt)
-        :return: Number of leading zeros, limited to width(in_fmt)-1
-        """
-        width = cl_fix_width(self.in_fmt)
-        codes = np.atleast_1d(cl_fix_to_integer(data, self.in_fmt))
-        zeros = np.array([width - int(code).bit_length() for code in codes], dtype=int)
-        return np.minimum(zeros, width - 1)
