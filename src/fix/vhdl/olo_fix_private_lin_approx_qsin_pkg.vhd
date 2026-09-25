@@ -8236,98 +8236,81 @@ package body olo_fix_private_lin_approx_qsin_pkg is
 
         if Name = "qsin_i0f10" then
             return 0;
-        end if;
 
-        if Name = "qsin_i0f11" then
+        elsif Name = "qsin_i0f11" then
             return 1;
-        end if;
 
-        if Name = "qsin_i0f12" then
+        elsif Name = "qsin_i0f12" then
             return 2;
-        end if;
 
-        if Name = "qsin_i0f13" then
+        elsif Name = "qsin_i0f13" then
             return 3;
-        end if;
 
-        if Name = "qsin_i0f14" then
+        elsif Name = "qsin_i0f14" then
             return 4;
-        end if;
 
-        if Name = "qsin_i0f15" then
+        elsif Name = "qsin_i0f15" then
             return 5;
-        end if;
 
-        if Name = "qsin_i0f16" then
+        elsif Name = "qsin_i0f16" then
             return 6;
-        end if;
 
-        if Name = "qsin_i0f17" then
+        elsif Name = "qsin_i0f17" then
             return 7;
-        end if;
 
-        if Name = "qsin_i0f18" then
+        elsif Name = "qsin_i0f18" then
             return 8;
-        end if;
 
-        if Name = "qsin_i0f19" then
+        elsif Name = "qsin_i0f19" then
             return 9;
-        end if;
 
-        if Name = "qsin_i0f20" then
+        elsif Name = "qsin_i0f20" then
             return 10;
-        end if;
 
-        if Name = "qsin_i1f10" then
+        elsif Name = "qsin_i1f10" then
             return 11;
-        end if;
 
-        if Name = "qsin_i1f11" then
+        elsif Name = "qsin_i1f11" then
             return 12;
-        end if;
 
-        if Name = "qsin_i1f12" then
+        elsif Name = "qsin_i1f12" then
             return 13;
-        end if;
 
-        if Name = "qsin_i1f13" then
+        elsif Name = "qsin_i1f13" then
             return 14;
-        end if;
 
-        if Name = "qsin_i1f14" then
+        elsif Name = "qsin_i1f14" then
             return 15;
-        end if;
 
-        if Name = "qsin_i1f15" then
+        elsif Name = "qsin_i1f15" then
             return 16;
-        end if;
 
-        if Name = "qsin_i1f16" then
+        elsif Name = "qsin_i1f16" then
             return 17;
-        end if;
 
-        if Name = "qsin_i1f17" then
+        elsif Name = "qsin_i1f17" then
             return 18;
-        end if;
 
-        if Name = "qsin_i1f18" then
+        elsif Name = "qsin_i1f18" then
             return 19;
-        end if;
 
-        if Name = "qsin_i1f19" then
+        elsif Name = "qsin_i1f19" then
             return 20;
-        end if;
 
-        if Name = "qsin_i1f20" then
+        elsif Name = "qsin_i1f20" then
             return 21;
-        end if;
 
-        report "olo_fix_private_lin_approx_qsin_pkg: no table named '" & Name & "'. Available tables: " &
-               "qsin_i0f10, qsin_i0f11, qsin_i0f12, qsin_i0f13, qsin_i0f14, qsin_i0f15, qsin_i0f16, qsin_i0f17, " &
-               "qsin_i0f18, qsin_i0f19, qsin_i0f20, qsin_i1f10, qsin_i1f11, qsin_i1f12, qsin_i1f13, qsin_i1f14, " &
-               "qsin_i1f15, qsin_i1f16, qsin_i1f17, qsin_i1f18, qsin_i1f19, qsin_i1f20"
-            severity failure;
-        return 0;
+        -- Excluded from coverage because this line can't be reached with valid table names
+        -- coverage off
+        else
+            report "olo_fix_private_lin_approx_qsin_pkg: no table named '" & Name & "'. Available tables: " &
+                   "qsin_i0f10, qsin_i0f11, qsin_i0f12, qsin_i0f13, qsin_i0f14, qsin_i0f15, qsin_i0f16, qsin_i0f17, " &
+                   "qsin_i0f18, qsin_i0f19, qsin_i0f20, qsin_i1f10, qsin_i1f11, qsin_i1f12, qsin_i1f13, qsin_i1f14, " &
+                   "qsin_i1f15, qsin_i1f16, qsin_i1f17, qsin_i1f18, qsin_i1f19, qsin_i1f20"
+                severity failure;
+            return 0;
+        end if;
+        -- coverage on
     end function;
 
     -- *** Public Functions ***
@@ -8357,7 +8340,10 @@ package body olo_fix_private_lin_approx_qsin_pkg is
             when 19 => return Table19_c;
             when 20 => return Table20_c;
             when 21 => return Table21_c;
+            -- Excluded from coverage because this line can't be reached (tableIndex only returns valid indexes)
+            -- coverage off
             when others => return Table0_c;
+            -- coverage on
         end case;
 
     end function;

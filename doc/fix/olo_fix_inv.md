@@ -33,7 +33,7 @@ Because the normalization covers the full input range, the approximation only ha
 relatively small table delivers accurate results over the full range of any input format. The precision of the
 approximation is selected through _PrecisionBits_g_, see [Precision](#precision).
 
-**Latency** of this entity depends on the input format, see [Latency](#latency). The entity is fully pipelined,
+**Latency** of this entity is constant, see [Latency](#latency). The entity is fully pipelined,
 hence it accepts one input sample per clock cycle. As a result, back-pressure is not supported.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
@@ -53,19 +53,7 @@ represent `2^InFmt_g.F`, this result saturates to the maximum value of _OutFmt_g
 Latency is not guaranteed to be constant across different versions. It's therefore best to design user logic to be
 independent of the latency of this block (e.g. through [olo_base_latency_comp](../base/olo_base_latency_comp.md)).
 
-In the current version the latency can be calculated as follows:
-
-```text
-Latency = 15 + 2*ShiftLatency
-```
-
-_ShiftLatency_ is the latency of each of the two barrel shifters (normalization and its compensation). It depends on
-the width _W_ of _InFmt_g_:
-
-- _W_ <= 16: _ShiftLatency_ = 2
-- _W_ > 16: _ShiftLatency_ = 3
-
-This is 19 clock cycles for input formats up to 16 bits and 21 clock cycles for input formats up to 256 bits.
+In the current version the latency is 21 clock cycles, independently of the input format.
 
 ## Generics
 
@@ -112,7 +100,7 @@ the [Description](#description).
 
 The normalization shift _N_ is the number of leading zeros of the absolute value of the input. Normalization and its
 reversal are both implemented by [olo_base_dyn_sft](../base/olo_base_dyn_sft.md), which spreads the barrel shifter
-over several pipeline stages to achieve good timing. The shift count and the sign of the input are delayed to the
+over two pipeline stages to achieve good timing. The shift count and the sign of the input are delayed to the
 point where they are needed by [olo_base_latency_comp](../base/olo_base_latency_comp.md).
 
 The leading one of the normalized value `1+m` is known, hence it is dropped and only the **mantissa fraction** _m_

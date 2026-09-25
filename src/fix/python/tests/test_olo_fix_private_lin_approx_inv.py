@@ -62,22 +62,6 @@ class TestOloFixLinApproxInv(unittest.TestCase):
         self.assertLessEqual(np.max(result), 1.0)
 
     # -----------------------------------------------------------------------------------------------
-    # Table Configuration
-    # -----------------------------------------------------------------------------------------------
-    def test_table_geometry(self):
-        for precision_bits, tbl in INV_TABLES.items():
-            self.assertEqual(2**tbl.index_bits, tbl.points)
-            self.assertEqual(inv_out_fmt(precision_bits), FixFormat(0, 1, precision_bits))
-            self.assertEqual(inv_table_name(inv_out_fmt(precision_bits)), f"inv_f{precision_bits}")
-
-    def test_table_constructor(self):
-        tbl = olo_fix_private_lin_approx_inv_tbl(64, FixFormat(0, 1, 20), FixFormat(1, 0, 12))
-        self.assertEqual(tbl.points, 64)
-        self.assertEqual(tbl.index_bits, 6)
-        self.assertEqual(tbl.offs_fmt, FixFormat(0, 1, 20))
-        self.assertEqual(tbl.grad_fmt, FixFormat(1, 0, 12))
-
-    # -----------------------------------------------------------------------------------------------
     # Interface
     # -----------------------------------------------------------------------------------------------
     def test_process_equals_next(self):

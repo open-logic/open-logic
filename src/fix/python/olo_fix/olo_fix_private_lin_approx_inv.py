@@ -197,9 +197,8 @@ class olo_fix_private_lin_approx_inv:
         approximations = {}
 
         for precision_bits in sorted(INV_TABLES.keys()):
-            out_fmt = inv_out_fmt(precision_bits)
-            model   = olo_fix_private_lin_approx_inv._reference_model(out_fmt)
-            approximations[inv_table_name(out_fmt)] = model._approx
+            model = olo_fix_private_lin_approx_inv._reference_model(precision_bits)
+            approximations[inv_table_name(model.out_fmt)] = model._approx
 
         return olo_fix_lin_approx.generate_package(
             approximations, olo_fix_private_lin_approx_inv._PACKAGE_NAME, directory)
@@ -208,14 +207,15 @@ class olo_fix_private_lin_approx_inv:
     # Private Methods
     # ---------------------------------------------------------------------------------------------------
     @staticmethod
-    def _reference_model(out_fmt : FixFormat): # pragma: no cover
+    def _reference_model(precision_bits : int): # pragma: no cover
         """
         Model used to derive the table content of a precision
 
         The table content does not depend on the mantissa resolution, hence the resolution used by
         olo_fix_inv is applied.
         """
-        return olo_fix_private_lin_approx_inv(out_fmt, FixFormat(0, 0, out_fmt.F + 2))
+        return olo_fix_private_lin_approx_inv(inv_out_fmt(precision_bits),
+                                             FixFormat(0, 0, precision_bits + 2))
 
 # ---------------------------------------------------------------------------------------------------
 # Command Line Interface
@@ -255,7 +255,7 @@ def main(): # pragma: no cover
 
     if args.analyze is not None:
         try:
-            model = olo_fix_private_lin_approx_inv._reference_model(inv_out_fmt(args.analyze))
+            model = olo_fix_private_lin_approx_inv._reference_model(args.analyze)
         except ValueError as e:
             parser.error(f"--analyze: {e}")
 

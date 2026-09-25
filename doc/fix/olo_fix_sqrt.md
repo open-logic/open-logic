@@ -15,11 +15,9 @@ Bit-true Model: [olo_fix_sqrt](../../src/fix/python/olo_fix/olo_fix_sqrt.py)
 
 ## Description
 
-This entity calculates the square root of the input:
-
-```text
-Out_Result = sqrt(In_Data)
-```
+This entity calculates the square root. It does so based on piecewise linear approximation
+([olo_fix_lin_approx_calc](./olo_fix_lin_approx_calc.md)). It can process one sample per clock cycle but has a
+fixed latency. It is optimal for pipelined processing chains with high throughput.
 
 The input is normalized (blue) into the range `[0.25, 1)`, the square root is taken through a table based piecewise
 linear approximation (red) and the normalization is reverted on the result (green):
@@ -29,26 +27,21 @@ linear approximation (red) and the normalization is reverted on the result (gree
 Because the square root halves the exponent, the normalization shift _N_ must be **even** - which is why the
 approximation covers the two octaves `[0.25, 1)` and not just one.
 
-The implementation requires less LUT logic than a CORDIC, at the cost of a ROM and a multiplier. Because the
-normalization covers the full input range, a relatively small table delivers accurate results over the full range
-of any input format. The precision of the approximation is selected through _PrecisionBits_g_, see
-[Precision](#precision).
+Because the normalization maps the full input range to a relatively small range for approximation, a relatively small
+table delivers accurate results over the full range of any input format. The precision of the approximation is selected
+through _PrecisionBits_g_, see [Precision](#precision).
 
-_InFmt_g_ must be **unsigned** - the square root is not defined for negative numbers.
-
-**Latency** of this entity depends on the input format, see [Latency](#latency). The entity is fully pipelined,
-hence it accepts one input sample per clock cycle. As a result, back-pressure is not supported.
+The entity is fully pipelined, hence it accepts one input sample per clock cycle. As a result, back-pressure is
+not supported.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
 
 ### Corner Cases
 
-An input of **zero** delivers **exactly zero**. The approximation returns zero below its lower bound of `0.25` and
-a zero input is the only input that reaches this part of the table, hence no extra logic is required for this.
+An input of **zero** delivers **exactly zero**.
 
-**Powers of four** are _not_ inverted exactly - contrary to [olo_fix_inv](./olo_fix_inv.md), the square root of a
-normalized value is not an exact value the table can return. The relative error stays within the bounds given
+**Powers of four** are _not_ inverted exactly. The relative error stays within the bounds given
 under [Precision](#precision) for all inputs.
 
 ### Latency
@@ -56,35 +49,15 @@ under [Precision](#precision) for all inputs.
 Latency is not guaranteed to be constant across different versions. It's therefore best to design user logic to be
 independent of the latency of this block (e.g. through [olo_base_latency_comp](../base/olo_base_latency_comp.md)).
 
-In the current version the latency can be calculated as follows:
-
-```text
-Latency = 13 + InShiftLatency + OutShiftLatency
-```
-
-_InShiftLatency_ and _OutShiftLatency_ are the latencies of the two barrel shifters (normalization and its
-compensation). Each of them has an input register plus one pipeline stage per four shift-select bits. The
-normalization shifts by up to _W_ (the width of _InFmt_g_), its compensation by up to _W/2_.
-
-This results in the following overall latencies:
-
-| Width of _InFmt_g_ | Latency        |
-| ------------------ | -------------- |
-| 2 ... 15           | 17 clock cycles |
-| 16 ... 32          | 18 clock cycles |
-| 33 ... 255         | 19 clock cycles |
-| 256                | 20 clock cycles |
-
-Note: For widths at the boundaries of this table the latency can differ by one clock cycle, depending on the
-number of integer bits of _InFmt_g_ (which decides whether the normalization shift is even or odd).
+In the current version the latency is 19 clock cycles, independently of the input format.
 
 ## Generics
 
 | Name            | Type     | Default       | Description                                                  |
 | :-------------- | :------- | :------------ | :----------------------------------------------------------- |
 | OutFmt_g        | string   | -             | Output format                                                |
-| InFmt_g         | string   | -             | Input format. Must be unsigned and at least two and at most 256 bits wide. |
-| PrecisionBits_g | positive | 18            | Number of fractional bits of the square root approximation. Must be 10, 14, 18 or 20. |
+| InFmt_g         | string   | -             | Input format. Must be unsigned and at least 5 and at most 256 bits wide. |
+| PrecisionBits_g | positive | 18            | Number of fractional bits of the square root approximation.<br>Allowed values: 10, 14, 18, 20 |
 | MemStyle_g      | string   | "auto"        | Resource control for the table (_auto_, _block_ or _distributed_) |
 | Round_g         | string   | "NonSymPos_s" | Rounding mode of the output stage                            |
 | Saturate_g      | string   | "Sat_s"       | Saturation mode of the output stage                          |
@@ -121,13 +94,12 @@ the [Description](#description).
 
 ![Block Diagram](./approx/olo_fix_sqrt.drawio.png)
 
-The normalization shift _N_ is derived from the number of leading zeros of the input. Contrary to
-[olo_fix_inv](./olo_fix_inv.md) the shift cannot be the number of leading zeros directly - the exponent left after
-the normalization must be even, because the square root halves it. Hence _N_ is the number of leading zeros
-rounded up to the required parity, which normalizes the input into `[0.25, 1)` instead of one single octave.
+The normalization shift _N_ is derived from the number of leading zeros of the input. Because the compensation shift
+is half of the normalization shift, normalization shift must be even, which is automatically enforced by the logic
+itself. The input value is always normalized into the range `[0.25, 1)` after the shift.
 
 Normalization and its reversal are both implemented by [olo_base_dyn_sft](../base/olo_base_dyn_sft.md), which
-spreads the barrel shifter over several pipeline stages to achieve good timing. The output shift is _N/2_, because
+spreads the barrel shifter over two pipeline stages to achieve good timing. The output shift is _N/2_, because
 the square root halves the exponent. It is delayed to the point where it is needed by
 [olo_base_latency_comp](../base/olo_base_latency_comp.md).
 
@@ -157,3 +129,6 @@ Because the normalization makes the accuracy independent of the magnitude of the
 **relative** to the result:
 
 ![Error](./approx/olo_fix_sqrt_error.png)
+
+For very small outputs that are represented by less than _PrecisionBits_g_, the relative error can be larger,
+but the absolute error remains below 1 LSB.

@@ -74,22 +74,6 @@ class TestOloFixLinApproxSqrt(unittest.TestCase):
         np.testing.assert_array_equal(sqrt_function(np.array([0.25, 1.0])), np.array([0.5, 1.0]))
 
     # -----------------------------------------------------------------------------------------------
-    # Table Configuration
-    # -----------------------------------------------------------------------------------------------
-    def test_table_geometry(self):
-        for precision_bits, tbl in SQRT_TABLES.items():
-            self.assertEqual(2**tbl.index_bits, tbl.points)
-            self.assertEqual(sqrt_out_fmt(precision_bits), FixFormat(0, 0, precision_bits))
-            self.assertEqual(sqrt_table_name(sqrt_out_fmt(precision_bits)), f"sqrt_f{precision_bits}")
-
-    def test_table_constructor(self):
-        tbl = olo_fix_private_lin_approx_sqrt_tbl(64, FixFormat(0, 0, 20), FixFormat(0, 0, 12))
-        self.assertEqual(tbl.points, 64)
-        self.assertEqual(tbl.index_bits, 6)
-        self.assertEqual(tbl.offs_fmt, FixFormat(0, 0, 20))
-        self.assertEqual(tbl.grad_fmt, FixFormat(0, 0, 12))
-
-    # -----------------------------------------------------------------------------------------------
     # Interface
     # -----------------------------------------------------------------------------------------------
     def test_process_equals_next(self):

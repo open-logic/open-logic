@@ -432,8 +432,8 @@ entities:
     configurations:
       - name: "default"
         generics:
-          OutFmt_g: '"(0, 8, 12)"'
-          InFmt_g: '"(0, 0, 16)"'
+          OutFmt_g: '"(0, 8, 16)"'
+          InFmt_g: '"(0, 8, 16)"'
           PrecisionBits_g: 18
         in_reduce:
           In_Data: 16

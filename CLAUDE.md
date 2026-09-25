@@ -18,6 +18,7 @@ comment banners and coding style. Additional references:
 - `.claude/skills/olo-fix-new-entity/` - step-by-step skill for adding a new `olo_fix` entity.
 - For Headers, NEVER add "all rights reserved" (it is in conflict with the license of this repository).
 - NEVER add "Co-Authorship" for AI tools in Commit Messages. The Author still is the human developer.
+- Whenever you suspect I instructed you wrong or you see a CLEARLY better approach, raise it immediately.
 
 Every new entity needs: production code, a self-checking VUnit testbench, documentation in `doc/<area>` and a link
 from [doc/EntityList.md](./doc/EntityList.md).
