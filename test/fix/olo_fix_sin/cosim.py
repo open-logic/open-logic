@@ -37,7 +37,7 @@ def cosim(output_path : str = None,
     phase = cl_fix_from_real(phase, InFmt_g)
 
     #Calculate
-    dut = olo_fix_sin(OutFmt_g, InFmt_g, Round_g, Saturate_g)
+    dut = olo_fix_sin(InFmt_g, OutFmt_g, Round_g, Saturate_g)
     out_sin, out_cos = dut.process(phase)
 
     # Plot if enabled

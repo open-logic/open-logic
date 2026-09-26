@@ -109,19 +109,19 @@ class olo_fix_private_lin_approx_qsin:
     # Constructor
     # ---------------------------------------------------------------------------------------------------
     def __init__(self,
-                 out_fmt : FixFormat,
                  in_fmt : FixFormat,
+                 out_fmt : FixFormat,
                  round : FixRound = FixRound.NonSymPos_s,
                  saturate : FixSaturate = FixSaturate.Sat_s):
         """
         Constructor of the olo_fix_private_lin_approx_qsin class
 
-        :param out_fmt: Format of the sine/cosine output. Must be (1, 0, 10..20) or (1, 1, 10..20).
-                        Without integer bit the wave is scaled to 1.0-1LSB, with integer bit it is
-                        unscaled (peak at 1.0).
         :param in_fmt: Format of the quarter phase input. Must be (0, -2, N) because the input
                        covers one quadrant only, i.e. the range [0, 0.25) in rotations. The format
                        must provide more bits than the table has index bits.
+        :param out_fmt: Format of the sine/cosine output. Must be (1, 0, 10..20) or (1, 1, 10..20).
+                        Without integer bit the wave is scaled to 1.0-1LSB, with integer bit it is
+                        unscaled (peak at 1.0).
         :param round: Rounding mode of the output stage
         :param saturate: Saturation mode of the output stage
         """
@@ -235,7 +235,7 @@ class olo_fix_private_lin_approx_qsin:
         The table content does not depend on the phase resolution, hence the recommended resolution
         of the configuration is used.
         """
-        return olo_fix_private_lin_approx_qsin(out_fmt, FixFormat(0, -2, out_fmt.F + 2))
+        return olo_fix_private_lin_approx_qsin(FixFormat(0, -2, out_fmt.F + 2), out_fmt)
 
 # ---------------------------------------------------------------------------------------------------
 # Command Line Interface

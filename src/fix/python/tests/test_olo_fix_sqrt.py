@@ -39,8 +39,8 @@ class TestOloFixSqrt(unittest.TestCase):
         the approximation is measured.
         """
         # res_fmt is the lossless format of the result, hence it does not limit the accuracy
-        out_fmt = olo_fix_sqrt(FixFormat(0, 1, 1), in_fmt, precision_bits).res_fmt
-        dut = olo_fix_sqrt(out_fmt, in_fmt, precision_bits)
+        out_fmt = olo_fix_sqrt(in_fmt, FixFormat(0, 1, 1), precision_bits).res_fmt
+        dut = olo_fix_sqrt(in_fmt, out_fmt, precision_bits)
         data = self._values(in_fmt)
         result = np.array(cl_fix_to_real(dut.process(data), out_fmt), dtype=float)
         # The square root of zero is exact, the relative error is only defined for the rest
@@ -78,21 +78,21 @@ class TestOloFixSqrt(unittest.TestCase):
         # The approximation returns zero below its lower bound, which only a zero input reaches.
         # Hence the square root of zero is exactly zero.
         for in_fmt in [FixFormat(0, 0, 16), FixFormat(0, 8, 8)]:
-            dut = olo_fix_sqrt(FixFormat(0, 8, 16), in_fmt)
+            dut = olo_fix_sqrt(in_fmt, FixFormat(0, 8, 16))
             self.assertEqual(dut.process(0.0)[0], 0.0)
 
     def test_saturation(self):
         # Results not representable in the output format are saturated
-        dut = olo_fix_sqrt(FixFormat(0, 1, 8), FixFormat(0, 8, 8))
+        dut = olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 1, 8))
         self.assertEqual(dut.process(255.0)[0], cl_fix_max_value(FixFormat(0, 1, 8)))
         # Without saturation the result wraps
-        dut = olo_fix_sqrt(FixFormat(0, 1, 8), FixFormat(0, 8, 8), saturate=FixSaturate.None_s)
+        dut = olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 1, 8), saturate=FixSaturate.None_s)
         self.assertLess(dut.process(255.0)[0], 2.0)
 
     def test_rounding(self):
         # Truncation is always closer to zero than rounding
-        trunc = olo_fix_sqrt(FixFormat(0, 4, 4), FixFormat(0, 4, 8), round=FixRound.Trunc_s)
-        round_ = olo_fix_sqrt(FixFormat(0, 4, 4), FixFormat(0, 4, 8))
+        trunc = olo_fix_sqrt(FixFormat(0, 4, 8), FixFormat(0, 4, 4), round=FixRound.Trunc_s)
+        round_ = olo_fix_sqrt(FixFormat(0, 4, 8), FixFormat(0, 4, 4))
         data = self._values(FixFormat(0, 4, 8), 500)
         self.assertTrue(np.all(np.array(trunc.process(data), dtype=float) <=
                                np.array(round_.process(data), dtype=float)))
@@ -101,13 +101,13 @@ class TestOloFixSqrt(unittest.TestCase):
     # Interface
     # -----------------------------------------------------------------------------------------------
     def test_process_equals_next(self):
-        dut = olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 0, 16))
+        dut = olo_fix_sqrt(FixFormat(0, 0, 16), FixFormat(0, 8, 8))
         dut.reset()
         data = self._values(FixFormat(0, 0, 10))
         np.testing.assert_array_equal(dut.next(data), dut.process(data))
 
     def test_scalar_input(self):
-        dut = olo_fix_sqrt(FixFormat(0, 8, 12), FixFormat(0, 4, 12))
+        dut = olo_fix_sqrt(FixFormat(0, 4, 12), FixFormat(0, 8, 12))
         self.assertAlmostEqual(dut.process(3.0)[0], np.sqrt(3.0), places=3)
 
     # -----------------------------------------------------------------------------------------------
@@ -115,24 +115,24 @@ class TestOloFixSqrt(unittest.TestCase):
     # -----------------------------------------------------------------------------------------------
     def test_unsupported_precision(self):
         with self.assertRaises(ValueError):
-            olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 0, 16), 16)
+            olo_fix_sqrt(FixFormat(0, 0, 16), FixFormat(0, 8, 8), 16)
 
     def test_signed_input(self):
         # The square root is not defined for negative numbers
         with self.assertRaises(ValueError):
-            olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(1, 0, 16))
+            olo_fix_sqrt(FixFormat(1, 0, 16), FixFormat(0, 8, 8))
 
     def test_input_too_narrow(self):
         # At least 5 bits are required
-        olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 0, 5))
+        olo_fix_sqrt(FixFormat(0, 0, 5), FixFormat(0, 8, 8))
         with self.assertRaises(ValueError):
-            olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 0, 4))
+            olo_fix_sqrt(FixFormat(0, 0, 4), FixFormat(0, 8, 8))
 
     def test_input_too_wide(self):
         # The latency calculation of the VHDL entity supports inputs of up to 256 bits
-        olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 0, 256))
+        olo_fix_sqrt(FixFormat(0, 0, 256), FixFormat(0, 8, 8))
         with self.assertRaises(ValueError):
-            olo_fix_sqrt(FixFormat(0, 8, 8), FixFormat(0, 0, 257))
+            olo_fix_sqrt(FixFormat(0, 0, 257), FixFormat(0, 8, 8))
 
 if __name__ == "__main__":
     unittest.main()

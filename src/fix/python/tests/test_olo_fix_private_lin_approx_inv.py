@@ -23,7 +23,7 @@ from en_cl_fix_pkg import *
 class TestOloFixLinApproxInv(unittest.TestCase):
 
     def setUp(self):
-        self.dut = olo_fix_private_lin_approx_inv(inv_out_fmt(18), FixFormat(0, 0, 20))
+        self.dut = olo_fix_private_lin_approx_inv(FixFormat(0, 0, 20), inv_out_fmt(18))
         self.in_sig = np.linspace(0, 1, 50, endpoint=False)
 
     @staticmethod
@@ -41,7 +41,7 @@ class TestOloFixLinApproxInv(unittest.TestCase):
         for precision_bits in INV_TABLES:
             out_fmt = inv_out_fmt(precision_bits)
             in_fmt = FixFormat(0, 0, precision_bits + 2)
-            dut = olo_fix_private_lin_approx_inv(out_fmt, in_fmt)
+            dut = olo_fix_private_lin_approx_inv(in_fmt, out_fmt)
             mantissa = self._mantissa(in_fmt)
             result = dut.process(mantissa)
             error = np.max(np.abs(result - 1.0/(1.0 + mantissa)))*2**out_fmt.F
@@ -52,7 +52,7 @@ class TestOloFixLinApproxInv(unittest.TestCase):
         # exact, hence olo_fix_inv inverts powers of two exactly.
         for precision_bits in INV_TABLES:
             out_fmt = inv_out_fmt(precision_bits)
-            dut = olo_fix_private_lin_approx_inv(out_fmt, FixFormat(0, 0, precision_bits + 2))
+            dut = olo_fix_private_lin_approx_inv(FixFormat(0, 0, precision_bits + 2), out_fmt)
             self.assertEqual(dut.process(0.0)[0], 1.0, f"1/1.0 is not exact for {out_fmt}")
 
     def test_result_range(self):
@@ -77,23 +77,23 @@ class TestOloFixLinApproxInv(unittest.TestCase):
     def test_unsupported_out_fmt(self):
         # Signed output
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_inv(FixFormat(1, 1, 18), FixFormat(0, 0, 20))
+            olo_fix_private_lin_approx_inv(FixFormat(0, 0, 20), FixFormat(1, 1, 18))
         # Missing integer bit (1.0 must be representable)
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_inv(FixFormat(0, 0, 18), FixFormat(0, 0, 20))
+            olo_fix_private_lin_approx_inv(FixFormat(0, 0, 20), FixFormat(0, 0, 18))
         # Unsupported precision
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_inv(FixFormat(0, 1, 16), FixFormat(0, 0, 20))
+            olo_fix_private_lin_approx_inv(FixFormat(0, 0, 20), FixFormat(0, 1, 16))
 
     def test_unsupported_in_fmt(self):
         # The mantissa fraction covers [0, 1) only, hence it must be (0, 0, N)
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_inv(inv_out_fmt(18), FixFormat(1, 0, 20))
+            olo_fix_private_lin_approx_inv(FixFormat(1, 0, 20), inv_out_fmt(18))
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_inv(inv_out_fmt(18), FixFormat(0, 1, 20))
+            olo_fix_private_lin_approx_inv(FixFormat(0, 1, 20), inv_out_fmt(18))
         # Not enough bits to resolve the table index (512 points -> 9 index bits)
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_inv(inv_out_fmt(18), FixFormat(0, 0, 9))
+            olo_fix_private_lin_approx_inv(FixFormat(0, 0, 9), inv_out_fmt(18))
 
 if __name__ == "__main__":
     unittest.main()

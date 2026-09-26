@@ -59,7 +59,7 @@ def cosim(output_path : str = None,
     phase_b = cl_fix_from_real((0.25 - phase_a) % 0.25, InFmt_g)
 
     #Calculate
-    dut = olo_fix_private_lin_approx_qsin(OutFmt_g, InFmt_g, Round_g, Saturate_g)
+    dut = olo_fix_private_lin_approx_qsin(InFmt_g, OutFmt_g, Round_g, Saturate_g)
     out_a = dut.process(phase_a)
     out_b = dut.process(phase_b)
 

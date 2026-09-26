@@ -51,7 +51,7 @@ def cosim(output_path : str = None,
     Saturate_g = FixSaturate[generics["Saturate_g"]]
 
     #Calculate
-    dut = olo_fix_private_lin_approx_sqrt(OutFmt_g, InFmt_g, Round_g, Saturate_g)
+    dut = olo_fix_private_lin_approx_sqrt(InFmt_g, OutFmt_g, Round_g, Saturate_g)
 
     #Generate inputs - the normalized value covers [0.25, 1), below it the table returns zero
     normalized = stimuli_codes(InFmt_g, SAMPLES, dut.tbl.points)

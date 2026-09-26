@@ -35,16 +35,16 @@ class olo_fix_inv:
     # Constructor
     # ---------------------------------------------------------------------------------------------------
     def __init__(self,
-                 out_fmt : FixFormat,
                  in_fmt : FixFormat,
+                 out_fmt : FixFormat,
                  precision_bits : int = 18,
                  round : FixRound = FixRound.NonSymPos_s,
                  saturate : FixSaturate = FixSaturate.Sat_s):
         """
         Constructor of the olo_fix_inv class
 
-        :param out_fmt: Format of the result
         :param in_fmt: Format of the input. Must be at least two and at most 256 bits wide.
+        :param out_fmt: Format of the result
         :param precision_bits: Number of fractional bits of the inversion approximation. One table
                                exists per supported value (see INV_TABLES).
         :param round: Rounding mode of the output stage
@@ -85,7 +85,7 @@ class olo_fix_inv:
         self.mant_full_fmt = FixFormat(0, 1, cl_fix_width(self.abs_fmt) - 1)
         self.mant_fmt = FixFormat(0, 0, precision_bits + 2)
         self.approx_fmt = FixFormat(0, 1, precision_bits)
-        self._approx = olo_fix_private_lin_approx_inv(self.approx_fmt, self.mant_fmt)
+        self._approx = olo_fix_private_lin_approx_inv(self.mant_fmt, self.approx_fmt)
 
         # Shift. A zero input has no leading one - for it the shift is limited to its maximum, which
         # yields a mantissa of zero (like an input of 1.0).

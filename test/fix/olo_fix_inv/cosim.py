@@ -34,7 +34,7 @@ def cosim(output_path : str = None,
     data = cl_fix_from_real(data, InFmt_g)
 
     #Calculate
-    dut = olo_fix_inv(OutFmt_g, InFmt_g, PrecisionBits_g, Round_g, Saturate_g)
+    dut = olo_fix_inv(InFmt_g, OutFmt_g, PrecisionBits_g, Round_g, Saturate_g)
     result = dut.process(data)
 
     # Plot if enabled

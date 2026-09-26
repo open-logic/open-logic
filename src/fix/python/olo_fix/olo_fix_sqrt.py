@@ -33,17 +33,17 @@ class olo_fix_sqrt:
     # Constructor
     # ---------------------------------------------------------------------------------------------------
     def __init__(self,
-                 out_fmt : FixFormat,
                  in_fmt : FixFormat,
+                 out_fmt : FixFormat,
                  precision_bits : int = 18,
                  round : FixRound = FixRound.NonSymPos_s,
                  saturate : FixSaturate = FixSaturate.Sat_s):
         """
         Constructor of the olo_fix_sqrt class
 
-        :param out_fmt: Format of the result
         :param in_fmt: Format of the input. Must be unsigned (the square root is not defined for
                        negative numbers) and at least 5 and at most 256 bits wide.
+        :param out_fmt: Format of the result
         :param precision_bits: Number of fractional bits of the square root approximation. One
                                table exists per supported value (see SQRT_TABLES).
         :param round: Rounding mode of the output stage
@@ -104,7 +104,7 @@ class olo_fix_sqrt:
                                  self.shifted_fmt.F - self.const_sft)
 
         # Approximation of sqrt(x) in the range [0.25, 1)
-        self._approx = olo_fix_private_lin_approx_sqrt(self.approx_fmt, self.mant_fmt)
+        self._approx = olo_fix_private_lin_approx_sqrt(self.mant_fmt, self.approx_fmt)
 
     # ---------------------------------------------------------------------------------------------------
     # Public Methods
