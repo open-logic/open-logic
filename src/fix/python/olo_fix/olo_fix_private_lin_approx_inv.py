@@ -94,18 +94,18 @@ class olo_fix_private_lin_approx_inv:
     # Constructor
     # ---------------------------------------------------------------------------------------------------
     def __init__(self,
-                 out_fmt : FixFormat,
                  in_fmt : FixFormat,
+                 out_fmt : FixFormat,
                  round : FixRound = FixRound.NonSymPos_s,
                  saturate : FixSaturate = FixSaturate.Sat_s):
         """
         Constructor of the olo_fix_private_lin_approx_inv class
 
-        :param out_fmt: Format of the result. Must be (0, 1, P) with P being one of the supported
-                        precisions (see INV_TABLES).
         :param in_fmt: Format of the mantissa fraction input. Must be (0, 0, N) because the
                        mantissa fraction covers the range [0, 1). The format must provide more bits
                        than the table has index bits.
+        :param out_fmt: Format of the result. Must be (0, 1, P) with P being one of the supported
+                        precisions (see INV_TABLES).
         :param round: Rounding mode of the output stage
         :param saturate: Saturation mode of the output stage
         """
@@ -214,8 +214,8 @@ class olo_fix_private_lin_approx_inv:
         The table content does not depend on the mantissa resolution, hence the resolution used by
         olo_fix_inv is applied.
         """
-        return olo_fix_private_lin_approx_inv(inv_out_fmt(precision_bits),
-                                             FixFormat(0, 0, precision_bits + 2))
+        return olo_fix_private_lin_approx_inv(FixFormat(0, 0, precision_bits + 2),
+                                             inv_out_fmt(precision_bits))
 
 # ---------------------------------------------------------------------------------------------------
 # Command Line Interface

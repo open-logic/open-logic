@@ -117,18 +117,18 @@ class olo_fix_private_lin_approx_sqrt:
     # Constructor
     # ---------------------------------------------------------------------------------------------------
     def __init__(self,
-                 out_fmt : FixFormat,
                  in_fmt : FixFormat,
+                 out_fmt : FixFormat,
                  round : FixRound = FixRound.NonSymPos_s,
                  saturate : FixSaturate = FixSaturate.Sat_s):
         """
         Constructor of the olo_fix_private_lin_approx_sqrt class
 
-        :param out_fmt: Format of the result. Must be (0, 0, P) with P being one of the supported
-                        precisions (see SQRT_TABLES).
         :param in_fmt: Format of the normalized input. Must be (0, 0, N) because the normalized
                        value covers the range [0.25, 1). The format must provide more bits than the
                        table has index bits.
+        :param out_fmt: Format of the result. Must be (0, 0, P) with P being one of the supported
+                        precisions (see SQRT_TABLES).
         :param round: Rounding mode of the output stage
         :param saturate: Saturation mode of the output stage
         """
@@ -237,8 +237,8 @@ class olo_fix_private_lin_approx_sqrt:
         The table content does not depend on the input resolution, hence the resolution used by
         olo_fix_sqrt is applied.
         """
-        return olo_fix_private_lin_approx_sqrt(sqrt_out_fmt(precision_bits),
-                                              FixFormat(0, 0, precision_bits + 2))
+        return olo_fix_private_lin_approx_sqrt(FixFormat(0, 0, precision_bits + 2),
+                                              sqrt_out_fmt(precision_bits))
 
 # ---------------------------------------------------------------------------------------------------
 # Command Line Interface

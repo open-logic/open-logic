@@ -24,7 +24,7 @@ from en_cl_fix_pkg import *
 class TestOloFixLinApproxSqrt(unittest.TestCase):
 
     def setUp(self):
-        self.dut = olo_fix_private_lin_approx_sqrt(sqrt_out_fmt(18), FixFormat(0, 0, 20))
+        self.dut = olo_fix_private_lin_approx_sqrt(FixFormat(0, 0, 20), sqrt_out_fmt(18))
         self.in_sig = np.linspace(SQRT_LOWER_BOUND, 1, 50, endpoint=False)
 
     @staticmethod
@@ -42,7 +42,7 @@ class TestOloFixLinApproxSqrt(unittest.TestCase):
         for precision_bits in SQRT_TABLES:
             out_fmt = sqrt_out_fmt(precision_bits)
             in_fmt = FixFormat(0, 0, precision_bits + 2)
-            dut = olo_fix_private_lin_approx_sqrt(out_fmt, in_fmt)
+            dut = olo_fix_private_lin_approx_sqrt(in_fmt, out_fmt)
             normalized = self._normalized(in_fmt)
             result = dut.process(normalized)
             error = np.max(np.abs(result - np.sqrt(normalized)))*2**out_fmt.F
@@ -54,7 +54,7 @@ class TestOloFixLinApproxSqrt(unittest.TestCase):
         for precision_bits in SQRT_TABLES:
             out_fmt = sqrt_out_fmt(precision_bits)
             in_fmt = FixFormat(0, 0, precision_bits + 2)
-            dut = olo_fix_private_lin_approx_sqrt(out_fmt, in_fmt)
+            dut = olo_fix_private_lin_approx_sqrt(in_fmt, out_fmt)
             below = cl_fix_from_real(np.linspace(0, SQRT_LOWER_BOUND, 20, endpoint=False), in_fmt)
             np.testing.assert_array_equal(np.array(dut.process(below), dtype=float),
                                           np.zeros(len(below)))
@@ -89,23 +89,23 @@ class TestOloFixLinApproxSqrt(unittest.TestCase):
     def test_unsupported_out_fmt(self):
         # Signed output
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_sqrt(FixFormat(1, 0, 18), FixFormat(0, 0, 20))
+            olo_fix_private_lin_approx_sqrt(FixFormat(0, 0, 20), FixFormat(1, 0, 18))
         # Integer bit (the result covers [0.5, 1), hence no integer bit is allowed)
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_sqrt(FixFormat(0, 1, 18), FixFormat(0, 0, 20))
+            olo_fix_private_lin_approx_sqrt(FixFormat(0, 0, 20), FixFormat(0, 1, 18))
         # Unsupported precision
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_sqrt(FixFormat(0, 0, 16), FixFormat(0, 0, 20))
+            olo_fix_private_lin_approx_sqrt(FixFormat(0, 0, 20), FixFormat(0, 0, 16))
 
     def test_unsupported_in_fmt(self):
         # The normalized value covers [0.25, 1) only, hence it must be (0, 0, N)
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_sqrt(sqrt_out_fmt(18), FixFormat(1, 0, 20))
+            olo_fix_private_lin_approx_sqrt(FixFormat(1, 0, 20), sqrt_out_fmt(18))
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_sqrt(sqrt_out_fmt(18), FixFormat(0, 1, 20))
+            olo_fix_private_lin_approx_sqrt(FixFormat(0, 1, 20), sqrt_out_fmt(18))
         # Not enough bits to resolve the table index (512 points -> 9 index bits)
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_sqrt(sqrt_out_fmt(18), FixFormat(0, 0, 9))
+            olo_fix_private_lin_approx_sqrt(FixFormat(0, 0, 9), sqrt_out_fmt(18))
 
 if __name__ == "__main__":
     unittest.main()

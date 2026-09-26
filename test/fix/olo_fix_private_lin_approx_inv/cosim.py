@@ -50,7 +50,7 @@ def cosim(output_path : str = None,
     Saturate_g = FixSaturate[generics["Saturate_g"]]
 
     #Calculate
-    dut = olo_fix_private_lin_approx_inv(OutFmt_g, InFmt_g, Round_g, Saturate_g)
+    dut = olo_fix_private_lin_approx_inv(InFmt_g, OutFmt_g, Round_g, Saturate_g)
 
     #Generate inputs - the mantissa fraction covers [0, 1), the normalized value is 1+m
     mantissa = stimuli_codes(InFmt_g, SAMPLES, dut.tbl.points)

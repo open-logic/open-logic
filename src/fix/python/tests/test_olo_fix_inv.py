@@ -38,7 +38,7 @@ class TestOloFixInv(unittest.TestCase):
         the approximation is measured.
         """
         out_fmt = FixFormat(in_fmt.S, cl_fix_width(in_fmt) + 1 - in_fmt.I, precision_bits + in_fmt.I)
-        dut = olo_fix_inv(out_fmt, in_fmt, precision_bits)
+        dut = olo_fix_inv(in_fmt, out_fmt, precision_bits)
         data = self._values(in_fmt)
         data = data[data != 0]
         # Wide formats are represented as integers, hence the result is converted to real numbers
@@ -68,7 +68,7 @@ class TestOloFixInv(unittest.TestCase):
 
     def test_powers_of_two_are_exact(self):
         # The normalized value of a power of two is exactly 1.0, whose inverse is exact
-        dut = olo_fix_inv(FixFormat(0, 17, 17), FixFormat(0, 0, 16))
+        dut = olo_fix_inv(FixFormat(0, 0, 16), FixFormat(0, 17, 17))
         data = np.array([2.0**-k for k in range(1, 17)])
         np.testing.assert_array_equal(np.array(dut.process(data), dtype=float), 1.0/data)
 
@@ -79,7 +79,7 @@ class TestOloFixInv(unittest.TestCase):
         # The result of a negative input is the negated result of its absolute value. The output
         # format is lossless, so that the asymmetric rounding of the output stage does not apply.
         in_fmt = FixFormat(1, 4, 12)
-        dut = olo_fix_inv(FixFormat(1, 13, 22), in_fmt)
+        dut = olo_fix_inv(in_fmt, FixFormat(1, 13, 22))
         self.assertEqual(dut.denorm_fmt, FixFormat(0, 13, 22))
         data = self._values(in_fmt, 500)
         data = data[data > 0]
@@ -87,7 +87,7 @@ class TestOloFixInv(unittest.TestCase):
 
     def test_most_negative_input(self):
         # The absolute value of the most negative input needs one more integer bit
-        dut = olo_fix_inv(FixFormat(1, 4, 12), FixFormat(1, 3, 4))
+        dut = olo_fix_inv(FixFormat(1, 3, 4), FixFormat(1, 4, 12))
         self.assertEqual(dut.process(-8.0)[0], -0.125)
 
     # -----------------------------------------------------------------------------------------------
@@ -95,21 +95,21 @@ class TestOloFixInv(unittest.TestCase):
     # -----------------------------------------------------------------------------------------------
     def test_zero_input(self):
         # A zero input delivers the same result as the smallest non-zero input
-        dut = olo_fix_inv(FixFormat(0, 20, 4), FixFormat(0, 0, 16))
+        dut = olo_fix_inv(FixFormat(0, 0, 16), FixFormat(0, 20, 4))
         self.assertEqual(dut.process(0.0)[0], dut.process(2.0**-16)[0])
 
     def test_saturation(self):
         # Results not representable in the output format are saturated
-        dut = olo_fix_inv(FixFormat(0, 2, 8), FixFormat(0, 0, 16))
+        dut = olo_fix_inv(FixFormat(0, 0, 16), FixFormat(0, 2, 8))
         self.assertEqual(dut.process(2.0**-16)[0], cl_fix_max_value(FixFormat(0, 2, 8)))
         # Without saturation the result wraps
-        dut = olo_fix_inv(FixFormat(0, 2, 8), FixFormat(0, 0, 16), saturate=FixSaturate.None_s)
+        dut = olo_fix_inv(FixFormat(0, 0, 16), FixFormat(0, 2, 8), saturate=FixSaturate.None_s)
         self.assertEqual(dut.process(2.0**-16)[0], 0.0)
 
     def test_rounding(self):
         # Truncation is always closer to zero than rounding
-        trunc = olo_fix_inv(FixFormat(0, 4, 4), FixFormat(0, 0, 12), round=FixRound.Trunc_s)
-        round_ = olo_fix_inv(FixFormat(0, 4, 4), FixFormat(0, 0, 12))
+        trunc = olo_fix_inv(FixFormat(0, 0, 12), FixFormat(0, 4, 4), round=FixRound.Trunc_s)
+        round_ = olo_fix_inv(FixFormat(0, 0, 12), FixFormat(0, 4, 4))
         data = self._values(FixFormat(0, 0, 12), 500)
         data = data[data != 0]
         self.assertTrue(np.all(np.array(trunc.process(data), dtype=float) <=
@@ -119,13 +119,13 @@ class TestOloFixInv(unittest.TestCase):
     # Interface
     # -----------------------------------------------------------------------------------------------
     def test_process_equals_next(self):
-        dut = olo_fix_inv(FixFormat(0, 8, 8), FixFormat(0, 0, 16))
+        dut = olo_fix_inv(FixFormat(0, 0, 16), FixFormat(0, 8, 8))
         dut.reset()
         data = self._values(FixFormat(0, 0, 10))
         np.testing.assert_array_equal(dut.next(data), dut.process(data))
 
     def test_scalar_input(self):
-        dut = olo_fix_inv(FixFormat(0, 8, 12), FixFormat(0, 4, 12))
+        dut = olo_fix_inv(FixFormat(0, 4, 12), FixFormat(0, 8, 12))
         self.assertAlmostEqual(dut.process(3.0)[0], 1.0/3.0, places=3)
 
     # -----------------------------------------------------------------------------------------------
@@ -133,22 +133,22 @@ class TestOloFixInv(unittest.TestCase):
     # -----------------------------------------------------------------------------------------------
     def test_unsupported_precision(self):
         with self.assertRaises(ValueError):
-            olo_fix_inv(FixFormat(0, 8, 8), FixFormat(0, 0, 16), 16)
+            olo_fix_inv(FixFormat(0, 0, 16), FixFormat(0, 8, 8), 16)
 
     def test_input_too_narrow(self):
         # A leading one plus at least one mantissa bit are required
         with self.assertRaises(ValueError):
-            olo_fix_inv(FixFormat(0, 8, 8), FixFormat(0, 0, 1))
+            olo_fix_inv(FixFormat(0, 0, 1), FixFormat(0, 8, 8))
 
     def test_input_too_wide(self):
         # The latency calculation of the VHDL entity supports inputs of up to 256 bits
-        olo_fix_inv(FixFormat(0, 8, 8), FixFormat(0, 0, 256))
+        olo_fix_inv(FixFormat(0, 0, 256), FixFormat(0, 8, 8))
         with self.assertRaises(ValueError):
-            olo_fix_inv(FixFormat(0, 8, 8), FixFormat(0, 0, 257))
+            olo_fix_inv(FixFormat(0, 0, 257), FixFormat(0, 8, 8))
 
     def test_unsigned_output_for_signed_input(self):
         with self.assertRaises(ValueError):
-            olo_fix_inv(FixFormat(0, 8, 8), FixFormat(1, 0, 16))
+            olo_fix_inv(FixFormat(1, 0, 16), FixFormat(0, 8, 8))
 
 if __name__ == "__main__":
     unittest.main()

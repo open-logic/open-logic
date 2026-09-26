@@ -29,18 +29,18 @@ class olo_fix_sin:
     # Constructor
     # ---------------------------------------------------------------------------------------------------
     def __init__(self,
-                 out_fmt : FixFormat,
                  in_fmt : FixFormat,
+                 out_fmt : FixFormat,
                  round : FixRound = FixRound.NonSymPos_s,
                  saturate : FixSaturate = FixSaturate.Sat_s):
         """
         Constructor of the olo_fix_sin class
 
+        :param in_fmt: Format of the phase input (in rotations). Any format with at least three
+                       fractional bits is allowed.
         :param out_fmt: Format of the sine/cosine output. Must be (1, 0, 10..20) or (1, 1, 10..20).
                         Without integer bit the wave is scaled to 1.0-1LSB, with integer bit it is
                         unscaled (peak at 1.0).
-        :param in_fmt: Format of the phase input (in rotations). Any format with at least three
-                       fractional bits is allowed.
         :param round: Rounding mode of the output stage
         :param saturate: Saturation mode of the output stage
         """
@@ -68,7 +68,7 @@ class olo_fix_sin:
         # hence it is the in-quadrant part of the phase word without any rescaling.
         self.quadrant_fmt = FixFormat(0, 0, 2)
         self.qphase_fmt = FixFormat(0, -2, self.in_fmt.F)
-        self._qsin = olo_fix_private_lin_approx_qsin(out_fmt, self.qphase_fmt, round, saturate)
+        self._qsin = olo_fix_private_lin_approx_qsin(self.qphase_fmt, out_fmt, round, saturate)
         self.peak = self._qsin.peak
 
     # ---------------------------------------------------------------------------------------------------

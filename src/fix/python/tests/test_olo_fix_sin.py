@@ -32,7 +32,7 @@ class TestOloFixSin(unittest.TestCase):
         return cl_fix_from_integer(codes, fmt)
 
     def _check_accuracy(self, out_fmt : FixFormat, in_fmt : FixFormat):
-        dut = olo_fix_sin(out_fmt, in_fmt)
+        dut = olo_fix_sin(in_fmt, out_fmt)
         phase = self._phase(in_fmt)
         sin_val, cos_val = dut.process(phase)
         sin_err = np.max(np.abs(sin_val - np.sin(2*np.pi*phase)*dut.peak))*2**out_fmt.F
@@ -61,10 +61,10 @@ class TestOloFixSin(unittest.TestCase):
         # The in-quadrant phase (in_fmt.F-2 bits) must resolve the table index. A 256 point table
         # has 8 index bits, hence at least 11 fractional bits are required.
         with self.assertRaises(ValueError):
-            olo_fix_sin(FixFormat(1, 0, 16), FixFormat(0, 0, 10))
+            olo_fix_sin(FixFormat(0, 0, 10), FixFormat(1, 0, 16))
 
     def test_pythagoras(self):
-        dut = olo_fix_sin(FixFormat(1, 0, 18), FixFormat(0, 0, 22))
+        dut = olo_fix_sin(FixFormat(0, 0, 22), FixFormat(1, 0, 18))
         sin_val, cos_val = dut.process(self._phase(FixFormat(0, 0, 22), 5000))
         error = np.abs(sin_val**2 + cos_val**2 - dut.peak**2)
         self.assertLess(np.max(error)*2**18, 4.0)
@@ -75,7 +75,7 @@ class TestOloFixSin(unittest.TestCase):
     def test_critical_angles(self):
         # 0, 90, 180 and 270 degrees are exact
         for int_bits in [0, 1]:
-            dut = olo_fix_sin(FixFormat(1, int_bits, 16), FixFormat(0, 0, 20))
+            dut = olo_fix_sin(FixFormat(0, 0, 20), FixFormat(1, int_bits, 16))
             sin_val, cos_val = dut.process(np.array([0.0, 0.25, 0.5, 0.75]))
             peak = dut.peak
             np.testing.assert_array_equal(sin_val, np.array([0.0, peak, 0.0, -peak]))
@@ -84,7 +84,7 @@ class TestOloFixSin(unittest.TestCase):
     def test_quadrant_symmetry(self):
         # sin(x + 0.5) = -sin(x) and cos(x + 0.25) = -sin(x) hold exactly, because all quadrants are
         # derived from the same quarter wave
-        dut = olo_fix_sin(FixFormat(1, 0, 16), FixFormat(0, 0, 20))
+        dut = olo_fix_sin(FixFormat(0, 0, 20), FixFormat(1, 0, 16))
         phase = self._phase(FixFormat(0, 0, 18), 500)/4.0  # first quadrant
         sin_q0, cos_q0 = dut.process(phase)
         sin_q2, _ = dut.process(phase + 0.5)
@@ -94,7 +94,7 @@ class TestOloFixSin(unittest.TestCase):
 
     def test_phase_wraps(self):
         # The phase is periodic with one rotation - integer bits are dropped
-        dut = olo_fix_sin(FixFormat(1, 0, 16), FixFormat(1, 3, 18))
+        dut = olo_fix_sin(FixFormat(1, 3, 18), FixFormat(1, 0, 16))
         base = np.array([0.1, 0.3, 0.6, 0.9])
         sin_ref, cos_ref = dut.process(base)
 
@@ -105,9 +105,9 @@ class TestOloFixSin(unittest.TestCase):
 
     def test_negative_phase(self):
         # Negative phases wrap into the upper part of the rotation
-        dut = olo_fix_sin(FixFormat(1, 0, 16), FixFormat(1, 0, 18))
+        dut = olo_fix_sin(FixFormat(1, 0, 18), FixFormat(1, 0, 16))
         sin_neg, cos_neg = dut.process(np.array([-0.25, -0.1]))
-        dut_u = olo_fix_sin(FixFormat(1, 0, 16), FixFormat(0, 0, 18))
+        dut_u = olo_fix_sin(FixFormat(0, 0, 18), FixFormat(1, 0, 16))
         sin_pos, cos_pos = dut_u.process(np.array([0.75, 0.9]))
         np.testing.assert_array_equal(sin_neg, sin_pos)
         np.testing.assert_array_equal(cos_neg, cos_pos)
@@ -116,7 +116,7 @@ class TestOloFixSin(unittest.TestCase):
     # Interface
     # -----------------------------------------------------------------------------------------------
     def test_process_equals_next(self):
-        dut = olo_fix_sin(FixFormat(1, 0, 16), FixFormat(0, 0, 20))
+        dut = olo_fix_sin(FixFormat(0, 0, 20), FixFormat(1, 0, 16))
         dut.reset()
         phase = self._phase(FixFormat(0, 0, 12))
         sin_a, cos_a = dut.next(phase)
@@ -125,7 +125,7 @@ class TestOloFixSin(unittest.TestCase):
         np.testing.assert_array_equal(cos_a, cos_b)
 
     def test_scalar_input(self):
-        dut = olo_fix_sin(FixFormat(1, 0, 16), FixFormat(0, 0, 20))
+        dut = olo_fix_sin(FixFormat(0, 0, 20), FixFormat(1, 0, 16))
         sin_val, cos_val = dut.process(0.125)
         self.assertAlmostEqual(sin_val[0], np.sin(np.pi/4)*dut.peak, places=4)
         self.assertAlmostEqual(cos_val[0], np.cos(np.pi/4)*dut.peak, places=4)
@@ -136,18 +136,18 @@ class TestOloFixSin(unittest.TestCase):
     def test_unsupported_formats(self):
         # Not enough fractional bits to split off the two quadrant bits
         with self.assertRaises(ValueError):
-            olo_fix_sin(FixFormat(1, 0, 16), FixFormat(0, 0, 2))
+            olo_fix_sin(FixFormat(0, 0, 2), FixFormat(1, 0, 16))
         # Unsigned output
         with self.assertRaises(ValueError):
-            olo_fix_sin(FixFormat(0, 0, 16), FixFormat(0, 0, 20))
+            olo_fix_sin(FixFormat(0, 0, 20), FixFormat(0, 0, 16))
         # Unsupported number of integer bits
         with self.assertRaises(ValueError):
-            olo_fix_sin(FixFormat(1, 2, 16), FixFormat(0, 0, 20))
+            olo_fix_sin(FixFormat(0, 0, 20), FixFormat(1, 2, 16))
         # Fractional bits outside of the supported range
         with self.assertRaises(ValueError):
-            olo_fix_sin(FixFormat(1, 0, 21), FixFormat(0, 0, 24))
+            olo_fix_sin(FixFormat(0, 0, 24), FixFormat(1, 0, 21))
         with self.assertRaises(ValueError):
-            olo_fix_sin(FixFormat(1, 0, 9), FixFormat(0, 0, 20))
+            olo_fix_sin(FixFormat(0, 0, 20), FixFormat(1, 0, 9))
 
 if __name__ == "__main__":
     unittest.main()
