@@ -33,8 +33,10 @@ src/base/vhdl/olo_base_wconv_n2m.vhd
 src/base/vhdl/olo_base_rate_limit.vhd
 src/base/vhdl/olo_base_prbs.vhd
 src/base/vhdl/olo_base_fifo_sync.vhd
+src/ft/vhdl/olo_ft_fifo_sync.vhd
 src/base/vhdl/olo_base_flowctrl_handler.vhd
 src/base/vhdl/olo_base_fifo_packet.vhd
+src/ft/vhdl/olo_ft_fifo_packet.vhd
 src/base/vhdl/olo_base_dyn_sft.vhd
 src/base/vhdl/olo_base_delay_cfg.vhd
 src/base/vhdl/olo_base_delay.vhd
