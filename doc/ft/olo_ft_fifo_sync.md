@@ -115,9 +115,11 @@ therefore combinational, and the _ft_ entity behaves exactly like its
 [olo_base_fifo_sync](../base/olo_base_fifo_sync.md) counterpart.
 
 The ECC decode lies between the RAM output and the output ports and is the critical path of the entity.
-Where it limits the achievable clock frequency, add an
-[olo_base_pl_stage](../base/olo_base_pl_stage.md) on the output side in the surrounding design.
-Register _Out_Data_, _Out_EccSec_ and _Out_EccDed_ in the same stage to keep them aligned.
+Where it limits the clock frequency, use
+[olo_base_fifo_sync](../base/olo_base_fifo_sync.md) directly and place registered
+[olo_ft_ecc_encode](./olo_ft_ecc_encode.md) / [olo_ft_ecc_decode](./olo_ft_ecc_decode.md) instances
+around it in the surrounding design. The levels and status flags of the base FIFO then do not account for
+the beats held in the codec pipelines.
 
 ### ECC Overhead, Error Injection and Status Flags
 

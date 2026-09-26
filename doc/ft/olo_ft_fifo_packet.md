@@ -117,11 +117,12 @@ therefore combinational, and the _ft_ entity behaves exactly like its
 [olo_base_fifo_packet](../base/olo_base_fifo_packet.md) counterpart.
 
 The ECC decode lies between the RAM output and the output ports and is the critical path of the entity.
-If it limits the achievable clock frequency, add an
-[olo_base_pl_stage](../base/olo_base_pl_stage.md) on the output side in the surrounding design.
-Register _Out_Data_, _Out_Last_, _Out_Size_, _Out_EccSec_ and _Out_EccDed_ in the same stage to keep them
-aligned. Note that _Out_Next_ and _Out_Repeat_ then refer to the beat inside that stage, not to the one
-observed behind it.
+Where it limits the clock frequency, use
+[olo_base_fifo_packet](../base/olo_base_fifo_packet.md) directly and place registered
+[olo_ft_ecc_encode](./olo_ft_ecc_encode.md) / [olo_ft_ecc_decode](./olo_ft_ecc_decode.md) instances
+around it in the surrounding design. _Out_Last_ and _Out_Size_ must then be delayed by the same number of
+stages as the data, and the levels and status flags of the base FIFO do not account for the beats held in
+the codec pipelines.
 
 ### Fault-Tolerant Storage of Packet Boundaries
 
