@@ -40,140 +40,151 @@ architecture sim of olo_base_pkg_crc_tb is
     -----------------------------------------------------------------------------------------------
     -- Functions
     -----------------------------------------------------------------------------------------------
+    type CrcSettingsPtr_t is access CrcSettings_r;
+
     -- Get crc algorithms from https://crccalc.com
     function getCrcSettings (crcName : in string) return CrcSettings_r is
+        variable Result_v : CrcSettingsPtr_t;
     begin
         if crcName = "Crc8_Autosar_c" then
-            return Crc8_Autosar_c;
+            Result_v := new CrcSettings_r'(Crc8_Autosar_c);
         elsif crcName = "Crc8_Bluetooth_c" then
-            return Crc8_Bluetooth_c;
+            Result_v := new CrcSettings_r'(Crc8_Bluetooth_c);
         elsif crcName = "Crc8_Cdma2000_c" then
-            return Crc8_Cdma2000_c;
+            Result_v := new CrcSettings_r'(Crc8_Cdma2000_c);
         elsif crcName = "Crc8_Darc_c" then
-            return Crc8_Darc_c;
+            Result_v := new CrcSettings_r'(Crc8_Darc_c);
         elsif crcName = "Crc8_DvbS2_c" then
-            return Crc8_DvbS2_c;
+            Result_v := new CrcSettings_r'(Crc8_DvbS2_c);
         elsif crcName = "Crc8_GsmA_c" then
-            return Crc8_GsmA_c;
+            Result_v := new CrcSettings_r'(Crc8_GsmA_c);
         elsif crcName = "Crc8_GsmB_c" then
-            return Crc8_GsmB_c;
+            Result_v := new CrcSettings_r'(Crc8_GsmB_c);
         elsif crcName = "Crc8_Hitag_c" then
-            return Crc8_Hitag_c;
+            Result_v := new CrcSettings_r'(Crc8_Hitag_c);
         elsif crcName = "Crc8_I4321_c" then
-            return Crc8_I4321_c;
+            Result_v := new CrcSettings_r'(Crc8_I4321_c);
         elsif crcName = "Crc8_ICode_c" then
-            return Crc8_ICode_c;
+            Result_v := new CrcSettings_r'(Crc8_ICode_c);
         elsif crcName = "Crc8_Lte_c" then
-            return Crc8_Lte_c;
+            Result_v := new CrcSettings_r'(Crc8_Lte_c);
         elsif crcName = "Crc8_MaximDow_c" then
-            return Crc8_MaximDow_c;
+            Result_v := new CrcSettings_r'(Crc8_MaximDow_c);
         elsif crcName = "Crc8_MifareMad_c" then
-            return Crc8_MifareMad_c;
+            Result_v := new CrcSettings_r'(Crc8_MifareMad_c);
         elsif crcName = "Crc8_Nrsc5_c" then
-            return Crc8_Nrsc5_c;
+            Result_v := new CrcSettings_r'(Crc8_Nrsc5_c);
         elsif crcName = "Crc8_Opensafety_c" then
-            return Crc8_Opensafety_c;
+            Result_v := new CrcSettings_r'(Crc8_Opensafety_c);
         elsif crcName = "Crc8_Rohc_c" then
-            return Crc8_Rohc_c;
+            Result_v := new CrcSettings_r'(Crc8_Rohc_c);
         elsif crcName = "Crc8_SaeJ1850_c" then
-            return Crc8_SaeJ1850_c;
+            Result_v := new CrcSettings_r'(Crc8_SaeJ1850_c);
         elsif crcName = "Crc8_Smbus_c" then
-            return Crc8_Smbus_c;
+            Result_v := new CrcSettings_r'(Crc8_Smbus_c);
         elsif crcName = "Crc8_Tech3250_c" then
-            return Crc8_Tech3250_c;
+            Result_v := new CrcSettings_r'(Crc8_Tech3250_c);
         elsif crcName = "Crc8_Wcdma_c" then
-            return Crc8_Wcdma_c;
+            Result_v := new CrcSettings_r'(Crc8_Wcdma_c);
         elsif crcName = "Crc16_Arc_c" then
-            return Crc16_Arc_c;
+            Result_v := new CrcSettings_r'(Crc16_Arc_c);
         elsif crcName = "Crc16_Cdma2000_c" then
-            return Crc16_Cdma2000_c;
+            Result_v := new CrcSettings_r'(Crc16_Cdma2000_c);
         elsif crcName = "Crc16_Cms_c" then
-            return Crc16_Cms_c;
+            Result_v := new CrcSettings_r'(Crc16_Cms_c);
         elsif crcName = "Crc16_Dds110_c" then
-            return Crc16_Dds110_c;
+            Result_v := new CrcSettings_r'(Crc16_Dds110_c);
         elsif crcName = "Crc16_DectR_c" then
-            return Crc16_DectR_c;
+            Result_v := new CrcSettings_r'(Crc16_DectR_c);
         elsif crcName = "Crc16_DectX_c" then
-            return Crc16_DectX_c;
+            Result_v := new CrcSettings_r'(Crc16_DectX_c);
         elsif crcName = "Crc16_Dnp_c" then
-            return Crc16_Dnp_c;
+            Result_v := new CrcSettings_r'(Crc16_Dnp_c);
         elsif crcName = "Crc16_En13757_c" then
-            return Crc16_En13757_c;
+            Result_v := new CrcSettings_r'(Crc16_En13757_c);
         elsif crcName = "Crc16_Genibus_c" then
-            return Crc16_Genibus_c;
+            Result_v := new CrcSettings_r'(Crc16_Genibus_c);
         elsif crcName = "Crc16_Gsm_c" then
-            return Crc16_Gsm_c;
+            Result_v := new CrcSettings_r'(Crc16_Gsm_c);
         elsif crcName = "Crc16_Ibm3740_c" then
-            return Crc16_Ibm3740_c;
+            Result_v := new CrcSettings_r'(Crc16_Ibm3740_c);
         elsif crcName = "Crc16_IbmSdlc_c" then
-            return Crc16_IbmSdlc_c;
+            Result_v := new CrcSettings_r'(Crc16_IbmSdlc_c);
         elsif crcName = "Crc16_IsoIec144433A_c" then
-            return Crc16_IsoIec144433A_c;
+            Result_v := new CrcSettings_r'(Crc16_IsoIec144433A_c);
         elsif crcName = "Crc16_Kermit_c" then
-            return Crc16_Kermit_c;
+            Result_v := new CrcSettings_r'(Crc16_Kermit_c);
         elsif crcName = "Crc16_Lj1200_c" then
-            return Crc16_Lj1200_c;
+            Result_v := new CrcSettings_r'(Crc16_Lj1200_c);
         elsif crcName = "Crc16_M17_c" then
-            return Crc16_M17_c;
+            Result_v := new CrcSettings_r'(Crc16_M17_c);
         elsif crcName = "Crc16_MaximDow_c" then
-            return Crc16_MaximDow_c;
+            Result_v := new CrcSettings_r'(Crc16_MaximDow_c);
         elsif crcName = "Crc16_Mcrf4xx_c" then
-            return Crc16_Mcrf4xx_c;
+            Result_v := new CrcSettings_r'(Crc16_Mcrf4xx_c);
         elsif crcName = "Crc16_Modbus_c" then
-            return Crc16_Modbus_c;
+            Result_v := new CrcSettings_r'(Crc16_Modbus_c);
         elsif crcName = "Crc16_Nrsc5_c" then
-            return Crc16_Nrsc5_c;
+            Result_v := new CrcSettings_r'(Crc16_Nrsc5_c);
         elsif crcName = "Crc16_OpensafetyA_c" then
-            return Crc16_OpensafetyA_c;
+            Result_v := new CrcSettings_r'(Crc16_OpensafetyA_c);
         elsif crcName = "Crc16_OpensafetyB_c" then
-            return Crc16_OpensafetyB_c;
+            Result_v := new CrcSettings_r'(Crc16_OpensafetyB_c);
         elsif crcName = "Crc16_Profibus_c" then
-            return Crc16_Profibus_c;
+            Result_v := new CrcSettings_r'(Crc16_Profibus_c);
         elsif crcName = "Crc16_Riello_c" then
-            return Crc16_Riello_c;
+            Result_v := new CrcSettings_r'(Crc16_Riello_c);
         elsif crcName = "Crc16_SpiFujitsu_c" then
-            return Crc16_SpiFujitsu_c;
+            Result_v := new CrcSettings_r'(Crc16_SpiFujitsu_c);
         elsif crcName = "Crc16_T10Dif_c" then
-            return Crc16_T10Dif_c;
+            Result_v := new CrcSettings_r'(Crc16_T10Dif_c);
         elsif crcName = "Crc16_Teledisk_c" then
-            return Crc16_Teledisk_c;
+            Result_v := new CrcSettings_r'(Crc16_Teledisk_c);
         elsif crcName = "Crc16_Tms37157_c" then
-            return Crc16_Tms37157_c;
+            Result_v := new CrcSettings_r'(Crc16_Tms37157_c);
         elsif crcName = "Crc16_Umts_c" then
-            return Crc16_Umts_c;
+            Result_v := new CrcSettings_r'(Crc16_Umts_c);
         elsif crcName = "Crc16_Usb_c" then
-            return Crc16_Usb_c;
+            Result_v := new CrcSettings_r'(Crc16_Usb_c);
         elsif crcName = "Crc16_Xmodem_c" then
-            return Crc16_Xmodem_c;
+            Result_v := new CrcSettings_r'(Crc16_Xmodem_c);
         elsif crcName = "Crc32_Aixm_c" then
-            return Crc32_Aixm_c;
+            Result_v := new CrcSettings_r'(Crc32_Aixm_c);
         elsif crcName = "Crc32_Autosar_c" then
-            return Crc32_Autosar_c;
+            Result_v := new CrcSettings_r'(Crc32_Autosar_c);
         elsif crcName = "Crc32_Base91D_c" then
-            return Crc32_Base91D_c;
+            Result_v := new CrcSettings_r'(Crc32_Base91D_c);
         elsif crcName = "Crc32_Bzip2_c" then
-            return Crc32_Bzip2_c;
+            Result_v := new CrcSettings_r'(Crc32_Bzip2_c);
         elsif crcName = "Crc32_CdRomEdc_c" then
-            return Crc32_CdRomEdc_c;
+            Result_v := new CrcSettings_r'(Crc32_CdRomEdc_c);
         elsif crcName = "Crc32_Cksum_c" then
-            return Crc32_Cksum_c;
+            Result_v := new CrcSettings_r'(Crc32_Cksum_c);
         elsif crcName = "Crc32_Iscsi_c" then
-            return Crc32_Iscsi_c;
+            Result_v := new CrcSettings_r'(Crc32_Iscsi_c);
         elsif crcName = "Crc32_IsoHdlc_c" then
-            return Crc32_IsoHdlc_c;
+            Result_v := new CrcSettings_r'(Crc32_IsoHdlc_c);
         elsif crcName = "Crc32_Jamcrc_c" then
-            return Crc32_Jamcrc_c;
+            Result_v := new CrcSettings_r'(Crc32_Jamcrc_c);
         elsif crcName = "Crc32_Mef_c" then
-            return Crc32_Mef_c;
+            Result_v := new CrcSettings_r'(Crc32_Mef_c);
         elsif crcName = "Crc32_Mpeg2_c" then
-            return Crc32_Mpeg2_c;
+            Result_v := new CrcSettings_r'(Crc32_Mpeg2_c);
         elsif crcName = "Crc32_Xfer_c" then
-            return Crc32_Xfer_c;
+            Result_v := new CrcSettings_r'(Crc32_Xfer_c);
         else
             assert false
                 report "Error: Unsupported crcName"
                 severity error;
         end if;
+        -- Workaround for modelsim: The CRC settings have to be printed, otherwise the TB fails due to a bug
+        -- in modelsim
+        info ("CRC Initial Value: " & to_string(Result_v.all.InitialValue));
+        info ("CRC Polynomial: " & to_string(Result_v.all.Polynomial));
+        info ("CRC Bit Order: " & Result_v.all.BitOrder);
+        info ("CRC Bit Flip Output: " & boolean'image(Result_v.all.BitFlipOutput));
+        info ("CRC XOR Output: " & to_string(Result_v.all.XorOutput));
+        return Result_v.all;
     end function;
 
     -- Get expected crc from https://crccalc.com
@@ -771,12 +782,18 @@ begin
 
         while test_suite loop
 
+            -- Print CRC settings
+            -- Workaround to make modelsim simulation running - without it, modelsim strangely fails for some CRC
+            -- configurations
+            info("Crc Initial Value: " & to_string(CrcSettings_c.initialValue));
+
             -- Reset
             wait until rising_edge(Clk);
             Rst <= '1';
             wait for 1 us;
             wait until rising_edge(Clk);
             Rst <= '0';
+            wait until rising_edge(Clk);
             wait until rising_edge(Clk);
 
             if run("Test-OneByte") then
