@@ -107,6 +107,8 @@ entities:
     configurations:
       - name: "w32"
         generics: { Width_g: 32 }
+        in_reduce: { In_Data: 32, In_ErrInj_BitFlip: 39 }
+        out_reduce: { Out_Data: 32 }
 
   # ============================================================
   # olo_ft_fifo_packet
@@ -119,3 +121,5 @@ entities:
       # (the fault-tolerant configuration, coverable by vendor TMR)
       - name: "w32"
         generics: { Width_g: 32 }
+        in_reduce: { In_Data: 32, In_ErrInj_BitFlip: 39 }
+        out_reduce: { Out_Data: 32 }
