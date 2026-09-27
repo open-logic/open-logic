@@ -122,7 +122,7 @@ architecture rtl of olo_ft_private_scrubber is
     -- Optional pacer (ScrubPeriod_g > 0.0): one "start a pass" strobe every ScrubPeriod_g seconds.
     constant Paced_c    : boolean  := ScrubPeriod_g > 0.0;
     constant BaseHz_c   : real     := 1000.0;
-    constant DivRatio_c : positive := integer(round(maximum(1.0, ScrubPeriod_g * BaseHz_c)));
+    constant DivRatio_c : positive := integer(round(max(1.0, ScrubPeriod_g * BaseHz_c)));
 
     signal PeriodPulse : std_logic;
 

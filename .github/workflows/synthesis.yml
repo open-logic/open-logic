@@ -90,6 +90,14 @@ jobs:
           name: synthesis-utilzation
           path: |
             tools/inference_test/results/*.txt
+      # Upload tool logs if synthesis failed
+      - name: Upload Synthesis logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthesis-logs
+          path: |
+            tools/inference_test/project/**/*.log
 
   # Stopping the instance is not required (it stops automatically
   # when it is unused for some time, controlled by AWS alarm)
