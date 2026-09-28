@@ -28,26 +28,24 @@ runs:
       run: |
         pip install "setuptools<70" setuptools_scm wheel
         pip install --no-build-isolation -r ./.github/workflows/requirements.txt
-    #Setup GHDL (prebuilt mcode release, only requires the GNAT runtime)
-    #.. apt-get update is only executed if the install fails due to outdated package lists
+    #Setup GHDL (prebuilt LLVM release, runtime dependencies are listed in ubuntu.requirements of the release)
     - name: Install GHDL
       if: inputs.ghdl == 'true'
       shell: bash
       run: |
-        sudo apt-get install -y --no-install-recommends libgnat-9 || \
-          { sudo apt-get update && sudo apt-get install -y --no-install-recommends libgnat-9; }
         mkdir -p ~/ghdl
-        wget -q https://github.com/ghdl/ghdl/releases/download/v4.1.0/ghdl-gha-ubuntu-20.04-mcode.tgz
-        tar zxf ghdl-gha-ubuntu-20.04-mcode.tgz -C ~/ghdl
+        wget -q https://github.com/ghdl/ghdl/releases/download/v6.0.0/ghdl-llvm-6.0.0-ubuntu24.04-x86_64.tar.gz
+        tar zxf ghdl-llvm-6.0.0-ubuntu24.04-x86_64.tar.gz -C ~/ghdl --strip-components=1
+        sudo apt-get update
+        xargs -a ~/ghdl/ubuntu.requirements sudo apt-get install -y --no-install-recommends
         ~/ghdl/bin/ghdl --version
         echo "$HOME/ghdl/bin" >> $GITHUB_PATH
     #Setup NVC (prebuilt Debian package from the NVC release)
-    #.. apt-get update is only executed if the install fails due to outdated package lists
     - name: Install NVC
       if: inputs.nvc == 'true'
       shell: bash
       run: |
         wget -q -O /tmp/nvc.deb https://github.com/nickg/nvc/releases/download/r1.19.0/nvc_1.19.0-1_amd64_ubuntu-24.04.deb
-        sudo apt-get install -y --no-install-recommends /tmp/nvc.deb || \
-          { sudo apt-get update && sudo apt-get install -y --no-install-recommends /tmp/nvc.deb; }
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends /tmp/nvc.deb
         nvc --version
