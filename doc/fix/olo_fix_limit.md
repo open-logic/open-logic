@@ -54,8 +54,8 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 | Name     | In/Out | Length              | Default | Description                                                  |
 | :------- | :----- | :------------------ | ------- | :----------------------------------------------------------- |
 | In_Data  | in     | _width(InFmt_g)_    | -       | Input data<br />Format: _InFmt_g_                            |
-| In_LimLo | in     | _width(LoLimFmt_g)_ | 0       | Input lower limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _LoLimFmt_g_ |
-| In_LimHi | in     | _width(HiLimFmt_g)_ | 0       | Input upper limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _HiLimFmt_g_ |
+| In_LimLo | in     | _width(LimLoFmt_g)_ | 0       | Input lower limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _LimLoFmt_g_ |
+| In_LimHi | in     | _width(LimHiFmt_g)_ | 0       | Input upper limit<br />Only used if _UseFixedLimits_g=false_<br>Format: _LimHiFmt_g_ |
 | In_Valid | in     | 1                   | '1'     | AXI4-Stream handshaking signal for _In_A_ and _In_B_         |
 
 ### Output Data
@@ -75,11 +75,11 @@ First, all inputs are extended to the maximum common format that allows fully re
 compared to the limits and based on the result either one of the limits or the data is selected. And at the very output
 the result is resized to _ResultFmt_g_.
 
-From the structure it is obvious that rounding and saturation are not required if _InFmt_g_, _LoLimFmt_g_, _HiLimFmt_g_
+From the structure it is obvious that rounding and saturation are not required if _InFmt_g_, _LimLoFmt_g_, _LimHiFmt_g_
 and _ResultFmt_g_ are all the same.
 
 Because the logic does never increase the range of the signal, saturation may only be required because of rounding in
-case of _LoLimFmt_g_ or _HiLimFmt_g_ having more fractional bits than _InFmt_g_. For _Saturate_g="Trunc_s"_ no
+case of _LimLoFmt_g_ or _LimHiFmt_g_ having more fractional bits than _InFmt_g_. For _Round_g="Trunc_s"_ no
 saturation is required.
 
 For static limiting (i.e. _UseFixedLimits_g=true_), neither rounding nor saturation are required. The internal format

@@ -159,12 +159,18 @@ constant Values_c : RealArray_t := fixFileReadReal("stimuli.fix", Fmt_c);
 constant String_c : string      := fixFileReadString("stimuli.fix", Fmt_c);
 ```
 
-### Internal Functions
+### Internal Functions and Constants
 
-The following functions are used in _Open Logic_ internally but they are not intended for use by the user and hence
-they are undocumented
+The following functions and constants are used in _Open Logic_ internally but they are not intended for use by the user
+and hence they are undocumented
 
 ```vhdl
+constant FixFmt_Unused_c : FixFormat_t := (0, 1, 0);
+
+function fixFmtWidthFromStringTolerant (fmt : string) return natural;
+
+function fixFmtFromStringTolerant (fmt : string) return FixFormat_t;
+
 function fixImplementReg (
         logicPresent : boolean;
         regMode      : string) return boolean;

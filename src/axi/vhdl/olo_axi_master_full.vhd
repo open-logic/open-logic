@@ -39,17 +39,17 @@ library work;
 entity olo_axi_master_full is
     generic (
         -- AXI Configuration
-        AxiAddrWidth_g             : natural range 12 to 64  := 32;
-        AxiDataWidth_g             : natural range 8 to 1024 := 32;
-        AxiMaxBeats_g              : natural range 1 to 256  := 256;
-        AxiMaxOpenTransactions_g   : natural range 1 to 8    := 8;
+        AxiAddrWidth_g             : positive range 12 to 64  := 32;
+        AxiDataWidth_g             : positive range 8 to 1024 := 32;
+        AxiMaxBeats_g              : positive range 1 to 256  := 256;
+        AxiMaxOpenTransactions_g   : positive range 1 to 8    := 8;
         -- User Configuration
-        UserTransactionSizeBits_g  : natural                 := 24;
-        DataFifoDepth_g            : natural                 := 1024;
-        UserDataWidth_g            : natural                 := 32;
-        ImplRead_g                 : boolean                 := true;
-        ImplWrite_g                : boolean                 := true;
-        RamBehavior_g              : string                  := "RBW"
+        UserTransactionSizeBits_g  : positive                 := 24;
+        DataFifoDepth_g            : positive                 := 1024;
+        UserDataWidth_g            : positive                 := 32;
+        ImplRead_g                 : boolean                  := true;
+        ImplWrite_g                : boolean                  := true;
+        RamBehavior_g              : string                   := "RBW"
     );
     port (
         -- Control Signals
