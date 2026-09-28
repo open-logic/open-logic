@@ -18,8 +18,14 @@ on:
   
 #Jobs  
 jobs:
-  simulation-ghdl:
+  simulation:
+    name: simulation-${{ matrix.simulator }}-${{ matrix.area }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        simulator: [ghdl, nvc]
+        area: [base, axi, intf, fix, ft]
     steps:
       #General Setup
       - name: Setup node
@@ -38,29 +44,8 @@ jobs:
         uses: ./.github/actions/simulation
         with:
           os: ${{ runner.os }}
-          simulator: ghdl
-
-  simulation-nvc:
-    runs-on: ubuntu-latest
-    steps:
-      #General Setup
-      - name: Setup node
-        uses: actions/setup-node@v5
-      - name: Checkout repo
-        uses: actions/checkout@v5
-        with:
-          submodules: true
-      #Setup environment
-      - name: Setup environment
-        uses: ./.github/actions/setup-environment
-        with:
-          os: ${{ runner.os }}
-      #Run Simulation
-      - name: Run Simulation
-        uses: ./.github/actions/simulation
-        with:
-          os: ${{ runner.os }}
-          simulator: nvc
+          simulator: ${{ matrix.simulator }}
+          area: ${{ matrix.area }}
 
   linting:
     runs-on: ubuntu-latest
