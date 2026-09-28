@@ -8,6 +8,9 @@ inputs:
   simulator:
     description: 'ghdl, nvc'
     required: true
+  area:
+    description: 'Open Logic area to simulate (base, axi, intf, fix, ft)'
+    required: true
 
 runs:
   using: 'composite'
@@ -17,11 +20,11 @@ runs:
       shell: bash
       run: |
         cd ./sim
-        python3 run.py --${{ inputs.simulator }} --xunit-xml sim_report_${{ inputs.simulator }}.xml -p 16
+        python3 run.py --${{ inputs.simulator }} --minimal "olo_tb.olo_${{ inputs.area }}_*" --xunit-xml sim_report_${{ inputs.simulator }}_${{ inputs.area }}.xml -p 16
     - name: Upload sim results
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: simulation-${{ inputs.simulator }}-artifacts
-        path: sim/sim_report_${{ inputs.simulator }}.xml
+        name: simulation-${{ inputs.simulator }}-${{ inputs.area }}-artifacts
+        path: sim/sim_report_${{ inputs.simulator }}_${{ inputs.area }}.xml
 
