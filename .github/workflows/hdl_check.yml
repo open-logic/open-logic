@@ -39,6 +39,8 @@ jobs:
         uses: ./.github/actions/setup-environment
         with:
           os: ${{ runner.os }}
+          ghdl: ${{ matrix.simulator == 'ghdl' }}
+          nvc: ${{ matrix.simulator == 'nvc' }}
       #Run Simulation
       - name: Run Simulation
         uses: ./.github/actions/simulation
