@@ -74,8 +74,8 @@ specifications.
 | Name      | In/Out | Length                | Default | Description                                   |
 | :-------- | :----- | :-------------------- | ------- | :-------------------------------------------- |
 | Out_Crc   | out    | _width(Polynomial_g)_ | -       | Output CRC checksum                           |
-| Out_Valid | out    | 1                     | -       | AXI4-Stream handshaking signal for _Out_Data_ |
-| Out_Ready | in     | 1                     | '1'     | AXI4-Stream handshaking signal for _Out_Data_ |
+| Out_Valid | out    | 1                     | -       | AXI4-Stream handshaking signal for _Out_Crc_  |
+| Out_Ready | in     | 1                     | '1'     | AXI4-Stream handshaking signal for _Out_Crc_  |
 
 ## Architecture
 

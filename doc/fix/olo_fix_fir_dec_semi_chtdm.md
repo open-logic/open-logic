@@ -194,7 +194,7 @@ synthesizer can map them onto a DSP cascade. In every calculation cycle the chai
 _Multipliers_g_ tap products; these partial sums are accumulated over _ceil(Taps_g / Multipliers_g)_ cycles
 to form one output sample.
 
-This architecture is depicted by below example of a 2-stage architecture (_Multipiers_g = 2_):
+This architecture is depicted by below example of a 2-stage architecture (_Multipliers_g = 2_):
 
 ![architecture](./fir/olo_fix_fir_dec_semi_chtdm_full.drawio.png)
 

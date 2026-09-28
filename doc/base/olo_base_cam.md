@@ -61,12 +61,12 @@ application.
 | **RamBehavior_g**    | string   | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 | **RamBlockDepth_g**  | positive | 512     | RAM depth at maximum width configuration for the target RAM technology<br />For mapping the CAM efficiently into RAM elements of a given technology, the width and depth of the underlying RAM element must be known.<br />**Use the RAM configuration with maximum width.** The CAM gets more resource efficient the wider BRAM ports are. |
 | ClearAfterReset_g    | boolean  | true    | **True**: After reset the CAM content is cleared. This process takes _RamBlockDepth_g_ clock cycles during which _Wr_Ready_ and _Rd_Ready_ stay low.<br />**False**: The CAM is not cleared after reset. Contents from before the reset stay in the CAM but the CAM is operable immedieatly.<br />_Note:_ It is strongly suggested to keep this setting enabled if the CAM is receiving resets after it was once operated. Clearing a CAM manually requires looping through all possible content values which can be time-consuming. |
-| ReadPriority_g       | boolean  | true    | **True**: _Rd_Valid_ and _Wr_Valid_ are high at the same time, the read is executed first. This means that writes are delayed (_Wr_Ready_ held low) until reads are done. <br />**False**: _Rd_Valid_ and _Wr_Valid_ are high at the same time, the write is executed first. This means that reads are delayed (_Rd_Ready_ held low)until reads are done. <br />Default value is _true_ to ensure constant read-latency because read-latency is one of the main drivers for using CAMs. |
+| ReadPriority_g       | boolean  | true    | **True**: _Rd_Valid_ and _Wr_Valid_ are high at the same time, the read is executed first. This means that writes are delayed (_Wr_Ready_ held low) until reads are done. <br />**False**: _Rd_Valid_ and _Wr_Valid_ are high at the same time, the write is executed first. This means that reads are delayed (_Rd_Ready_ held low) until writes are done. <br />Default value is _true_ to ensure constant read-latency because read-latency is one of the main drivers for using CAMs. |
 | StrictOrdering_g     | boolean  | false   | **True:** After a write to the CAM, the next read is delayed by one clock-cycle by holding _Rd_Ready_ low to ensure the read already sees the updated CAM content.<br />**False:** A read following a write immediately (in the next clock cycle) may read the old CAM content. In return compared to the _StrictOrdering_g=true_ setting reads can follow writes immediately and are not delayed in this case.<br />Default value is _false_ to ensure constant read-latency because read-latency is one of the main drivers for using CAMs. |
 | UseAddrOut_g         | boolean  | true    | **True**: The binary-encoded address output (_Addr_..._) is implemented. This often is more logical to the user but requires additional logic for first-bit decoding. <br />**False**: Only the match output (_Match_..._) is implemented. The binary-encoded output is omitted to save logic. Normally the same can be achieved by just not connecting the output and relying on the tools optimizing away the related logic. |
 | RegisterInput_g      | boolean  | true    | **True:** All inputs are registered. This is optimal for throughput/clock-speed but adds one cycle of latency.<br />**False:** The address lines of the RAM blocks are driven by user inputs combinatorially. This reduces the latency but may negatively affect the possible clock-speed. |
 | RegisterMatch_g      | boolean  | true    | **True:** The match output (_Match_..._) is registered. This is optimal for throughput/clock-speed but adds one cycle of latency. <br />**False:** The match output is driven by RAM blocks combinatorially. This reduces the latency but may negatively affect the possible clock-speed. |
-| FirstBitDecLatency_g | natural  | 1       | Number of FF stages for calculating the binary address output _Addr\_..._ after the one-hot output _Match_..._ is known.<br />Range: 0 ... ceil(log2(_InWidth_g_))/2-1 |
+| FirstBitDecLatency_g | natural  | 1       | Number of FF stages for calculating the binary address output _Addr\_..._ after the one-hot output _Match_..._ is known.<br />Range: 0 ... ceil(log2(_Addresses_g_))/2-1 |
 
 ## Interfaces
 
@@ -82,7 +82,7 @@ application.
 | Name       | In/Out | Length           | Default | Description                                     |
 | :--------- | :----- | :--------------- | ------- | :---------------------------------------------- |
 | Rd_Content | in     | _ContentWidth_g_ | -       | Content to find address for                     |
-| Rd_Valid   | in     | 1-               |         | AXI4-Stream handshaking signal for _Rd_Content_ |
+| Rd_Valid   | in     | 1                | -       | AXI4-Stream handshaking signal for _Rd_Content_ |
 | Rd_Ready   | out    | 1                | N/A     | AXI4-Stream handshaking signal for _Rd_Content_ |
 
 ### Write Request
@@ -123,7 +123,6 @@ Below figure shows the architecture for the following properties:
 - _Addresses_g_=64
 - _ContentWidth_g_=18
 - AMD 7-Series BRAM18
-  - _RamBlockWidth_g_=32
   - _RamBlockDepth_g_=512
 
 The match-entries are stored with one bit per address. Hence overall the RAM must be 64 bits wide, which leads to the
