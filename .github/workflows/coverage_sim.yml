@@ -57,8 +57,15 @@ jobs:
       - name: Run Simulation
         run: |
           source $LOCAL_TOOLS
+          # TEMPORARY: Diagnostics for "execv: Argument list too long"
+          echo "ARG_MAX: $(getconf ARG_MAX)"
+          echo "Stack soft/hard: $(ulimit -s) / $(ulimit -Hs)"
+          echo "Environment size: $(env | wc -c)"
+          echo "Longest environment variables:"
+          env | awk '{print length($0), substr($0,1,60)}' | sort -rn | head -5
           cd ./sim
-          python3 -u ./run.py --modelsim --coverage
+          # TEMPORARY: Run only the failing test for quick reproduction
+          python3 -u ./run.py --modelsim --coverage "*olo_base_ram_sdp_tb.Width_g=5*"
       # Coverage Simulation (check > 95%)
       # On PRs errors are required if coverage is low
       - name: Check Coverage Level
