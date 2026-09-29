@@ -12,6 +12,7 @@ coverage.xml
 #Vunit files
 sim/vunit_out/
 sim/coverage_data
+sim/cov_*.ucdb
 sim/coverage_report.txt
 sim/transcript
 

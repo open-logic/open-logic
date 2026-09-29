@@ -54,63 +54,21 @@ jobs:
           pip install "setuptools<70" setuptools_scm wheel
           pip install --no-build-isolation -r requirements.txt
       # Run simulation
+      # Areas are simulated in separate chunks to keep each VUnit run small. The per-area coverage
+      # databases are merged afterwards.
       - name: Run Simulation
         run: |
           source $LOCAL_TOOLS
-          # TEMPORARY: Diagnostics for "execv: Argument list too long"
-          echo "ARG_MAX: $(getconf ARG_MAX)"
-          echo "Stack soft/hard: $(ulimit -s) / $(ulimit -Hs)"
-          echo "Environment size: $(env | wc -c)"
-          echo "Longest environment variables:"
-          echo "ARG_MAX: $(getconf ARG_MAX)"
-          echo "Stack soft/hard: $(ulimit -s) / $(ulimit -Hs)"
-          echo "Environment size: $(env | wc -c)"          
           cd ./sim
-          python3 -u ./run.py --modelsim --coverage
-      # TEMPORARY: Post-fail diagnosis for "execv: Argument list too long"
-      - name: Post-Fail Diagnosis
-        if: failure()
-        run: |
-          set +e
-          source $LOCAL_TOOLS
-          cd ./sim
-          echo "===== System ====="
-          ulimit -a; getconf ARG_MAX; df -h . /tmp; free -m
-          echo "/tmp entries: $(ls /tmp | wc -l), VSOU files: $(ls /tmp | grep -c VSOU)"
-          echo "===== Resource samples (last 20) ====="
-          tail -20 diag/resources.log
-          echo "===== VUnit output ====="
-          du -sh vunit_out/*
-          ls -la vunit_out/modelsim
-          wc -c vunit_out/modelsim/modelsim.ini vunit_out/modelsim/coverage_files.txt
-          for lib in vunit_out/modelsim/libraries/*; do
-            echo "$lib: $(ls $lib | wc -l) entries, $(ls $lib | grep -c opt) opt units, $(du -sh $lib | cut -f1)"
+          FAIL=0
+          for area in base axi intf fix ft; do
+            echo "===== Area: $area ====="
+            rm -f coverage_data
+            python3 -u ./run.py --modelsim --coverage "olo_tb.olo_${area}_*" || FAIL=1
+            mv coverage_data cov_${area}.ucdb
           done
-          echo "===== Tests with E2BIG ====="
-          grep -l "Argument list too long" vunit_out/test_output/*/output.txt > diag/e2big_tests.txt
-          echo "Count: $(wc -l < diag/e2big_tests.txt) of $(ls vunit_out/test_output | wc -l) test outputs"
-          head -20 diag/e2big_tests.txt
-          echo "===== Order of E2BIG failures (by modification time) ====="
-          ls -tr --full-time $(cat diag/e2big_tests.txt) | head -5
-          FIRST=$(head -1 diag/e2big_tests.txt)
-          if [ -n "$FIRST" ]; then
-            cp "$FIRST" diag/first_e2big_output.txt
-            echo "===== First E2BIG output: $FIRST ====="
-            cat "$FIRST"
-            # Rerun the failing test alone in the accumulated state (no strace, it breaks Questa)
-            TEST=$(basename "$(dirname "$FIRST")" | sed 's/_[0-9a-f]\{40\}$//')
-            echo "===== Rerun of $TEST ====="
-            python3 -u ./run.py --modelsim --coverage "$TEST" > diag/rerun.txt 2>&1
-            tail -30 diag/rerun.txt
-          fi
-      - name: Upload Diagnosis
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2big-diagnosis
-          path: |
-            sim/diag/
-            sim/vunit_out/modelsim/modelsim.ini
+          vcover merge coverage_data cov_*.ucdb
+          exit $FAIL
       # Coverage Simulation (check > 95%)
       # On PRs errors are required if coverage is low
       - name: Check Coverage Level
