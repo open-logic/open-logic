@@ -17,7 +17,7 @@ runs:
       shell: bash
       run: |
         cd ./sim
-        python3 run.py --${{ inputs.simulator }} --xunit-xml sim_report_${{ inputs.simulator }}.xml -p 16
+        python3 -u run.py --${{ inputs.simulator }} --xunit-xml sim_report_${{ inputs.simulator }}.xml -p 16
     - name: Upload sim results
       if: always()
       uses: actions/upload-artifact@v4
