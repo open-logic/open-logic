@@ -62,18 +62,11 @@ jobs:
           echo "Stack soft/hard: $(ulimit -s) / $(ulimit -Hs)"
           echo "Environment size: $(env | wc -c)"
           echo "Longest environment variables:"
-          env | awk '{print length($0), substr($0,1,60)}' | sort -rn | head -5
+          echo "ARG_MAX: $(getconf ARG_MAX)"
+          echo "Stack soft/hard: $(ulimit -s) / $(ulimit -Hs)"
+          echo "Environment size: $(env | wc -c)"          
           cd ./sim
-          # TEMPORARY: Sample resources every 60s in the background
-          mkdir -p diag
-          (while true; do
-            echo "$(date +%T) mem_avail_mb=$(free -m | awk '/Mem:/{print $7}')" \
-                 "tmp_files=$(ls /tmp | wc -l) procs=$(ps -e --no-headers | wc -l)" \
-                 "opt_units=$(ls vunit_out/modelsim/libraries/olo_tb 2>/dev/null | grep -c opt)" \
-                 "tests_done=$(ls vunit_out/test_output 2>/dev/null | wc -l)"
-            sleep 60
-          done) > diag/resources.log 2>&1 &
-          python3 -u ./run.py --modelsim --coverage --xunit-xml diag/sim_report.xml
+          python3 -u ./run.py --modelsim --coverage
       # TEMPORARY: Post-fail diagnosis for "execv: Argument list too long"
       - name: Post-Fail Diagnosis
         if: failure()
@@ -104,15 +97,11 @@ jobs:
             cp "$FIRST" diag/first_e2big_output.txt
             echo "===== First E2BIG output: $FIRST ====="
             cat "$FIRST"
-            # Rerun the failing test alone in the accumulated state, tracing failed execve calls only
+            # Rerun the failing test alone in the accumulated state (no strace, it breaks Questa)
             TEST=$(basename "$(dirname "$FIRST")" | sed 's/_[0-9a-f]\{40\}$//')
             echo "===== Rerun of $TEST ====="
-            STRACE=""
-            command -v strace && STRACE="strace -f -e trace=execve -e status=failed -s 100000 -o diag/strace_rerun.txt"
-            $STRACE python3 -u ./run.py --modelsim --coverage "$TEST" > diag/rerun.txt 2>&1
+            python3 -u ./run.py --modelsim --coverage "$TEST" > diag/rerun.txt 2>&1
             tail -30 diag/rerun.txt
-            echo "===== Failed execve calls (size, start) ====="
-            awk '{print length($0), substr($0,1,300)}' diag/strace_rerun.txt | sort -rn | head -10
           fi
       - name: Upload Diagnosis
         if: failure()
