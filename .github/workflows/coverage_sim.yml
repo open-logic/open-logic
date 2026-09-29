@@ -64,8 +64,64 @@ jobs:
           echo "Longest environment variables:"
           env | awk '{print length($0), substr($0,1,60)}' | sort -rn | head -5
           cd ./sim
-          # TEMPORARY: Run only the failing test for quick reproduction
-          python3 -u ./run.py --modelsim --coverage "*olo_base_ram_sdp_tb.Width_g=5*"
+          # TEMPORARY: Sample resources every 60s in the background
+          mkdir -p diag
+          (while true; do
+            echo "$(date +%T) mem_avail_mb=$(free -m | awk '/Mem:/{print $7}')" \
+                 "tmp_files=$(ls /tmp | wc -l) procs=$(ps -e --no-headers | wc -l)" \
+                 "opt_units=$(ls vunit_out/modelsim/libraries/olo_tb 2>/dev/null | grep -c opt)" \
+                 "tests_done=$(ls vunit_out/test_output 2>/dev/null | wc -l)"
+            sleep 60
+          done) > diag/resources.log 2>&1 &
+          python3 -u ./run.py --modelsim --coverage --xunit-xml diag/sim_report.xml
+      # TEMPORARY: Post-fail diagnosis for "execv: Argument list too long"
+      - name: Post-Fail Diagnosis
+        if: failure()
+        run: |
+          set +e
+          source $LOCAL_TOOLS
+          cd ./sim
+          echo "===== System ====="
+          ulimit -a; getconf ARG_MAX; df -h . /tmp; free -m
+          echo "/tmp entries: $(ls /tmp | wc -l), VSOU files: $(ls /tmp | grep -c VSOU)"
+          echo "===== Resource samples (last 20) ====="
+          tail -20 diag/resources.log
+          echo "===== VUnit output ====="
+          du -sh vunit_out/*
+          ls -la vunit_out/modelsim
+          wc -c vunit_out/modelsim/modelsim.ini vunit_out/modelsim/coverage_files.txt
+          for lib in vunit_out/modelsim/libraries/*; do
+            echo "$lib: $(ls $lib | wc -l) entries, $(ls $lib | grep -c opt) opt units, $(du -sh $lib | cut -f1)"
+          done
+          echo "===== Tests with E2BIG ====="
+          grep -l "Argument list too long" vunit_out/test_output/*/output.txt > diag/e2big_tests.txt
+          echo "Count: $(wc -l < diag/e2big_tests.txt) of $(ls vunit_out/test_output | wc -l) test outputs"
+          head -20 diag/e2big_tests.txt
+          echo "===== Order of E2BIG failures (by modification time) ====="
+          ls -tr --full-time $(cat diag/e2big_tests.txt) | head -5
+          FIRST=$(head -1 diag/e2big_tests.txt)
+          if [ -n "$FIRST" ]; then
+            cp "$FIRST" diag/first_e2big_output.txt
+            echo "===== First E2BIG output: $FIRST ====="
+            cat "$FIRST"
+            # Rerun the failing test alone in the accumulated state, tracing failed execve calls only
+            TEST=$(basename "$(dirname "$FIRST")" | sed 's/_[0-9a-f]\{40\}$//')
+            echo "===== Rerun of $TEST ====="
+            STRACE=""
+            command -v strace && STRACE="strace -f -e trace=execve -e status=failed -s 100000 -o diag/strace_rerun.txt"
+            $STRACE python3 -u ./run.py --modelsim --coverage "$TEST" > diag/rerun.txt 2>&1
+            tail -30 diag/rerun.txt
+            echo "===== Failed execve calls (size, start) ====="
+            awk '{print length($0), substr($0,1,300)}' diag/strace_rerun.txt | sort -rn | head -10
+          fi
+      - name: Upload Diagnosis
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2big-diagnosis
+          path: |
+            sim/diag/
+            sim/vunit_out/modelsim/modelsim.ini
       # Coverage Simulation (check > 95%)
       # On PRs errors are required if coverage is low
       - name: Check Coverage Level
