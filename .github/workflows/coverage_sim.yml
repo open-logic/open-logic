@@ -58,7 +58,7 @@ jobs:
         run: |
           source $LOCAL_TOOLS
           cd ./sim
-          python3 -u ./run.py --modelsim --coverage
+          python3 -u ./run.py --modelsim --coverage --unique-sim
       # Coverage Simulation (check > 95%)
       # On PRs errors are required if coverage is low
       - name: Check Coverage Level
