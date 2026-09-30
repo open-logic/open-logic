@@ -2,7 +2,7 @@
 
 Guidance for AI coding agents working in this repository.
 
-_Open Logic_ is a VHDL library of FPGA building blocks (areas: `base`, `axi`, `intf`, `fix`), usable from both
+_Open Logic_ is a VHDL library of FPGA building blocks (areas: `base`, `axi`, `intf`, `fix`, `ft`), usable from both
 VHDL and Verilog. Sources live in `src/<area>/vhdl`, testbenches in `test/<area>/<entity>`, documentation in
 `doc/<area>`.
 
@@ -15,6 +15,8 @@ comment banners and coding style. Additional references:
 - [Contributing.md](./Contributing.md) - contribution workflow, branch naming, PR rules.
 - [doc/HowTo.md](./doc/HowTo.md) - detailed instructions for all tooling described below.
 - [doc/fix/olo_fix_principles.md](./doc/fix/olo_fix_principles.md) - concepts behind the `olo_fix` area.
+- [doc/ft/olo_ft_principles.md](./doc/ft/olo_ft_principles.md) - concepts behind the `olo_ft` (fault-tolerance)
+  area (SECDED ECC, error injection, error status flags).
 - `.claude/skills/olo-fix-new-entity/` - step-by-step skill for adding a new `olo_fix` entity.
 - For Headers, NEVER add "all rights reserved" (it is in conflict with the license of this repository).
 - NEVER add "Co-Authorship" for AI tools in Commit Messages. The Author still is the human developer.
@@ -82,8 +84,8 @@ python3 run.py "*olo_fix_sin*" # filter by test-name pattern
 python3 run.py <testcase> --gui  # open waveforms (GTKWave for GHDL/NVC)
 ```
 
-New testbenches must be registered in `sim/test_configs/olo_<area>.py`. For `olo_fix` entities also add an entry
-in `tools/inference_test/yaml/fix.yml`.
+New testbenches must be registered in `sim/test_configs/olo_<area>.py`. New entities also need an entry in
+`tools/inference_test/yaml/<area>.yml`.
 
 Code coverage (Questasim only):
 
