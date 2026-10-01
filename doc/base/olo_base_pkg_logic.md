@@ -165,3 +165,24 @@ This function behaves the same whether the input vector is defined with a `downt
 ```vhdl
 function getTrailingSetBitIndex(vec : in std_logic_vector) return integer;
 ```
+
+### setBits()
+
+Build a _std\_logic\_vector_ of the given width with `'1'` at the listed bit
+indexes and `'0'` elsewhere. Useful for constructing bit-flip patterns and masks.
+
+```vhdl
+function setBits(indexes : in IntegerArray_t; width : in positive) return std_logic_vector;
+function setBits(idx     : in natural;        width : in positive) return std_logic_vector;
+```
+
+Examples:
+
+```vhdl
+setBits(5, 10)         -- "0000100000"   (bit 5 set in a 10-bit vector)
+setBits((3, 5), 10)    -- "0000101000"   (bits 3 and 5 set)
+setBits(IntegerArray_t'(0, 2, 5), 8)  -- "00100101"
+```
+
+Note: VHDL aggregates need at least two elements, so the single-bit case must use the
+`(idx, width)` overload. The array overload covers two or more indexes via positional aggregate.

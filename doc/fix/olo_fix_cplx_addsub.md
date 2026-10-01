@@ -45,19 +45,19 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Clk  | in     | 1      | '0'     | Clock<br />Not required if all registers are disabled (_OpRegs_g=0, RoundReg_g="NO", SatReg_g="NO"_) |
-| Rst  | in     | 1      | '0'     | Reset input (high-active, synchronous to _Clk_)<br />Not required if all registers are disabled (_OpRegs_g=0, RoundReg_g="NO", SatReg_g="NO"_) |
+| Clk  | in     | 1      | -       | Clock                                                        |
+| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_)              |
 
 ### Input Data
 
 | Name     | In/Out | Length          | Default | Description                                                                   |
 | :------- | :----- | :-------------- | ------- | :---------------------------------------------------------------------------- |
-| InA_I    | in     | _width(AFmt_g)_ | 0       | Input data in-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_         |
-| InA_Q    | in     | _width(AFmt_g)_ | 0       | Input data quadrature-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_ |
-| InA_IQ   | in     | _width(AFmt_g)_ | 0       | Input data for _IqHandling_g=TDM_<br />Format: _AFmt_g_                       |
-| InB_I    | in     | _width(BFmt_g)_ | 0       | Input data in-phase for _IqHandling_g=Parallel_<br />Format: _BFmt_g_         |
-| InB_Q    | in     | _width(BFmt_g)_ | 0       | Input data quadrature-phase for _IqHandling_g=Parallel_<br />Format: _BFmt_g_ |
-| InB_IQ   | in     | _width(BFmt_g)_ | 0       | Input data for _IqHandling_g=TDM_<br />Format: _BFmt_g_                       |
+| InA_I    | in     | _width(AFmt_g)_ | -       | Input data in-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_         |
+| InA_Q    | in     | _width(AFmt_g)_ | -       | Input data quadrature-phase for _IqHandling_g=Parallel_<br />Format: _AFmt_g_ |
+| InA_IQ   | in     | _width(AFmt_g)_ | -       | Input data for _IqHandling_g=TDM_<br />Format: _AFmt_g_                       |
+| InB_I    | in     | _width(BFmt_g)_ | -       | Input data in-phase for _IqHandling_g=Parallel_<br />Format: _BFmt_g_         |
+| InB_Q    | in     | _width(BFmt_g)_ | -       | Input data quadrature-phase for _IqHandling_g=Parallel_<br />Format: _BFmt_g_ |
+| InB_IQ   | in     | _width(BFmt_g)_ | -       | Input data for _IqHandling_g=TDM_<br />Format: _BFmt_g_                       |
 | In_Valid | in     | 1               | '1'     | AXI4-Stream handshaking signal for _InA_ and _InB_                            |
 | In_Last  | in     | 1               | '0'     | Used for optional TDM synchronization for _IqHandling=TDM_.                   |
 

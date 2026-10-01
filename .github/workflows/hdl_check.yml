@@ -80,7 +80,7 @@ jobs:
         shell: bash
         run: |
           cd ./lint/script
-          python3 script.py
+          python3 -u script.py
       #Upload Linting results
       - name: Upload Linting results
         if: always()

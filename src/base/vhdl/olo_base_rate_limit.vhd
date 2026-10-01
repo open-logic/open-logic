@@ -168,8 +168,8 @@ begin
                 -- to01 and resize required to workaround simulation issues. Functionally they do not
                 -- have impact so this is tolerable.
                 v.CfgSmoothLimit := unsigned(to01(Cfg_Period)) - resize(unsigned(to01(Cfg_MaxSamples)), Cfg_Period'length);
-                PeriodMin1_v     := to_integer(unsigned(to01(r.CfgPeriod))); -- This is period minus 1 because the definition of the port is like that
-                MaxSamples_v     := to_integer(unsigned(to01(r.CfgMaxSamples)))+1;
+                PeriodMin1_v     := fromUslv(to01(r.CfgPeriod)); -- This is period minus 1 because the definition of the port is like that
+                MaxSamples_v     := fromUslv(to01(r.CfgMaxSamples))+1;
                 SmoothLimit_v    := to_integer(r.CfgSmoothLimit);
                 -- synthesis translate_off
                 assert MaxSamples_v <= PeriodMin1_v+1

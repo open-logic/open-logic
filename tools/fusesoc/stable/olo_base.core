@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : "open-logic:open-logic:base:4.6.0"
+name : "open-logic:open-logic:base:4.7.0"
 description : "stable release (downloaded from GitHub); Basic Circuitry (e.g. FIFOs, CDCs, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#base"
 
 filesets:
@@ -32,6 +32,7 @@ filesets:
       - "src/base/vhdl/olo_base_latency_comp.vhd"
       - "src/base/vhdl/olo_base_pkg_array.vhd"
       - "src/base/vhdl/olo_base_pkg_attribute.vhd"
+      - "src/base/vhdl/olo_base_pkg_crc.vhd"
       - "src/base/vhdl/olo_base_pkg_logic.vhd"
       - "src/base/vhdl/olo_base_pkg_math.vhd"
       - "src/base/vhdl/olo_base_pkg_string.vhd"
@@ -72,5 +73,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 4.6.0
+  version : 4.7.0
   

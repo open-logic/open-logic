@@ -1,6 +1,5 @@
 ###########################################################################
 # Copyright (c) 2024 by Oliver Bründler
-# All rights reserved.
 # Authors: Oliver Bruendler
 ###########################################################################
 # Parse a open-logic VHDL file and extract entity information to 
@@ -149,7 +148,7 @@ class EntityCollection:
             if line.startswith("port") or line.startswith(")") or line.startswith("--") or line == "":
                 continue
 
-            #Parse generic
+            #Parse port
             name, rem = line.split(":", 1)
             name = name.strip()
             dir, rem = rem.strip().split(" ", 1)

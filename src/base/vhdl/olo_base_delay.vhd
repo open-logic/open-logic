@@ -129,7 +129,7 @@ begin
 
                 -- Reset
                 if Rst = '1' then
-                    WrAddr <= std_logic_vector(to_unsigned(MemTaps_c - 1, WrAddr'length));
+                    WrAddr <= toUslv(MemTaps_c - 1, WrAddr'length);
                     RdAddr <= (others => '0');
                 end if;
             end if;

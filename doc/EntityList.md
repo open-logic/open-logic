@@ -28,11 +28,18 @@ Note that components are split into categories.
     - [Design Utilities](#design-utilities)
     - [Basic Operations](#basic-operations)
     - [Simple Mathematics](#simple-mathematics)
-    - [CORDIC](#cordic)
     - [Mixers](#mixers)
+    - [CORDIC](#cordic)
     - [CIC Filters](#cic-filters)
     - [FIR Filters](#fir-filters)
+    - [Function Approximations](#function-approximations)
     - [Miscellaneous](#miscellaneous-1)
+  - [ft](#ft)
+    - [Packages (olo\_ft\_pkg\_\<...\>)](#packages-olo_ft_pkg_)
+    - [ECC Codec (olo\_ft\_ecc\_\<...\>)](#ecc-codec-olo_ft_ecc_)
+    - [RAM Implementations (olo\_ft\_ram\_\<...\>)](#ram-implementations-olo_ft_ram_)
+    - [FIFO Implementations (olo\_ft\_fifo\_\<...\>)](#fifo-implementations-olo_ft_fifo_)
+    - [Private Entities](#private-entities)
 
 ## base
 
@@ -48,6 +55,7 @@ Packages with type declarations and functions used in _Open Logic_ internally or
 | [olo_base_pkg_math](./base/olo_base_pkg_math.md)           | Mathematic functions (e.g. _log2_)                           |
 | [olo_base_pkg_logic](./base/olo_base_pkg_logic.md)         | Mathematic functions (e.g. _binaryToGray_)                   |
 | [olo_base_pkg_string](./base/olo_base_pkg_string.md)       | String functions (e.g. _toLower_)                            |
+| [olo_base_pkg_crc](./base/olo_base_pkg_crc.md)             | Crc Settings definitions (e.g. _Crc8_DvbS2_c_)               |
 | [olo_base_pkg_attribute](./base/olo_base_pkg_attribute.md) | Definition of synthesis attributes for different tools. **For internal use within Open Logic only** |
 
 ### Clock Crossings (_olo_base_cc_\<...\>_)
@@ -204,6 +212,7 @@ Below packages contain basic definitions like number format types etc.
 
 | Python File                                         | Description                                                  |
 | --------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_fix_lin_approx](./fix/olo_fix_lin_approx.md)   | Bit-true model and code generator for linear function approximations (see [olo_fix_lin_approx_calc](./fix/olo_fix_lin_approx_calc.md)). |
 | [olo_fix_pkg_writer](./fix/olo_fix_pkg_writer.md)   | Generate HDL (VHDL or Verilog) package with all number formats defined in Python. |
 | [olo_fix_cosim](./fix/olo_fix_cosim.md)                 | Python utilities for co-simulation with HDL simulators. Generate co-simulation files that can be read by [olo_fix_sim_stimuli](./fix/olo_fix_sim_stimuli.md) and [olo_fix_sim_checker](./fix/olo_fix_sim_checker.md) in HDL simulations. |
 
@@ -242,7 +251,7 @@ be used. For deciding which option to use, the following considerations shall be
 | [olo_fix_cplx_mult](./fix/olo_fix_cplx_mult.md)       | Multiply two complex fixed point numbers. <br> Supports a mixer mode (complex-to-complex) |
 | [olo_fix_madd](./fix/olo_fix_madd.md)                 | Multiply-accumulate (MAC) operation on fixed point numbers. <br> Aimed to be used to build MACC chains (e.g. for FIR filters)|
 
-### CORDIC
+### Mixers
 
 | Entity                                                | Description                                                  |
 | ----------------------------------------------------- | ------------------------------------------------------------ |
@@ -250,7 +259,7 @@ be used. For deciding which option to use, the following considerations shall be
 | [olo_fix_mix_r2c](./fix/olo_fix_mix_r2c.md)           | Real to complex mixer. Mixes a real signal with a complex local oscillator |
 | [olo_fix_mix_c2r](./fix/olo_fix_mix_c2r.md)           | Complex to real mixer. Mixes a complex signal with a complex local oscillator to produce a real output |
 
-### Mixers
+### CORDIC
 
 | Entity                                              | Description                                                  |
 | --------------------------------------------------- | ------------------------------------------------------------ |
@@ -276,6 +285,17 @@ Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | [olo_fix_fir_dec_ser_chtdm](./fix/olo_fix_fir_dec_ser_chtdm.md) | Decimating FIR filter (TDM channels, serial tap computation), multi-channel only (not usable for single-channel) <br> Runtime-configurable or fixed ratio, tap count and coefficients - Can be used non-decimating (Ratio = 1)  |
 | [olo_fix_fir_dec_ser_chpar](./fix/olo_fix_fir_dec_ser_chpar.md) | Decimating FIR filter (parallel channels, serial tap computation), single- or multi-channel (one multiplier per channel) <br> Runtime-configurable or fixed ratio, tap count and coefficients - Can be used non-decimating (Ratio = 1) |
+| [olo_fix_fir_dec_semi_chtdm](./fix/olo_fix_fir_dec_semi_chtdm.md) | Decimating FIR filter (TDM channels, semi-parallel tap computation with a configurable number of chained multipliers), single- or multi-channel <br> Fixed ratio and tap count, fixed or runtime-configurable coefficients - Can be used non-decimating (Ratio = 1) |
+
+### Function Approximations
+
+| Entity                                              | Description                                                                                              |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| [olo_fix_lin_approx_calc](./fix/olo_fix_lin_approx_calc.md) | Linear approximation of an arbitrary function (table based). Tables and wrapper entities are generated by [olo_fix_lin_approx](./fix/olo_fix_lin_approx.md). |
+| [olo_fix_cordic_rot](./fix/olo_fix_cordic_rot.md)   | CORDIC rotating mode - Can be used to approximate sine/cosine functions |
+| [olo_fix_sin](./fix/olo_fix_sin.md)                   | Sine and (optionally) cosine of a phase given in rotations. Based on piecewise linear approximation. |
+| [olo_fix_inv](./fix/olo_fix_inv.md)                   | Inversion (1/x) of a fixed point number. Based on shifting and piecewise linear approximation. |
+| [olo_fix_sqrt](./fix/olo_fix_sqrt.md)                 | Square root of a fixed point number. Based on shifting and piecewise linear approximation. |
 
 ### Miscellaneous
 
@@ -284,3 +304,60 @@ Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_
 | [olo_fix_coef_storage](./fix/olo_fix_coef_storage.md) | Fixed-point coefficient storage - ROM or RAM with Coef read port and optional Cfg write/readback port. |
 | [olo_fix_sample_hold](./fix/olo_fix_sample_hold.md)   | Sample and hold a fixed point number - output holds the last sampled value until a new sample is taken.  |
 | [olo_fix_mov_avg](./fix/olo_fix_mov_avg.md)           | Moving average filter                                                                                    |
+| [olo_fix_lin_approx_calc](./fix/olo_fix_lin_approx_calc.md) | Linear approximation of an arbitrary function (table based). Tables and wrapper entities are generated by [olo_fix_lin_approx](./fix/olo_fix_lin_approx.md). |
+
+## ft
+
+This area contains fault-tolerant entities for use in radiation-sensitive environments (e.g. space or avionics).
+All RAM entities use SECDED (Single Error Correction, Double Error Detection).
+
+The cross-cutting concepts (codeword layout, ECC overhead, error injection semantics, status flags, ECC pipeline,
+common constraints) are described once in
+[Open Logic Fault-Tolerance Principles](./ft/olo_ft_principles.md) and referenced from the per-entity docs.
+
+### Packages (olo_ft_pkg_\<...\>)
+
+| Package                                       | Description                                                  |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| [olo_ft_pkg_ecc](./ft/olo_ft_pkg_ecc.md)      | SECDED Hamming code functions for ECC-protected memories. |
+
+### ECC Codec (olo_ft_ecc_\<...\>)
+
+| Entity                                          | Description                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| [olo_ft_ecc_encode](./ft/olo_ft_ecc_encode.md)  | SECDED encoder with AXI4-Stream handshake, optional pipeline, and codeword-wide bit-flip injection |
+| [olo_ft_ecc_decode](./ft/olo_ft_ecc_decode.md)  | SECDED decoder with AXI4-Stream handshake and optional distributed pipeline |
+
+### RAM Implementations (olo_ft_ram_\<...\>)
+
+The ECC-protected counterparts of the [olo_base_ram_\<...\>](#ram-implementations-olo_base_ram_)
+entities. The _scrub_ variants additionally repair single-bit errors in the background and have no
+base counterpart.
+
+| Entity                                   | Description                                                  |
+| ---------------------------------------- | ------------------------------------------------------------ |
+| [olo_ft_ram_sp](./ft/olo_ft_ram_sp.md)   | ECC-protected single port RAM                                |
+| [olo_ft_ram_sp_scrub](./ft/olo_ft_ram_sp_scrub.md)   | ECC-protected single-port RAM with an opportunistic background memory scrubber |
+| [olo_ft_ram_sdp](./ft/olo_ft_ram_sdp.md) | ECC-protected simple dual port RAM                           |
+| [olo_ft_ram_sdp_scrub](./ft/olo_ft_ram_sdp_scrub.md) | ECC-protected simple dual-port RAM with an opportunistic background memory scrubber |
+| [olo_ft_ram_tdp](./ft/olo_ft_ram_tdp.md) | ECC-protected true dual-port RAM                             |
+
+### FIFO Implementations (olo_ft_fifo_\<...\>)
+
+The ECC-protected counterparts of the [olo_base_fifo_\<...\>](#fifo-implementations-olo_base_fifo_)
+entities. An asynchronous variant will be introduced as well once fault-tolerant clock-crossing
+primitives have been introduced to the ft area.
+
+| Entity                                               | Description                                                  |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_ft_fifo_sync](./ft/olo_ft_fifo_sync.md)         | ECC-protected synchronous FIFO (single clock)               |
+| [olo_ft_fifo_packet](./ft/olo_ft_fifo_packet.md)     | ECC-protected packet FIFO (store and forward) with the ability to drop packets on the write side and skip or repeat packets on the read side |
+
+### Private Entities
+
+Internal building blocks instantiated by other ft entities. They are documented for reference but not
+intended for direct end-user instantiation.
+
+| Entity                                                           | Description                                                  |
+| ---------------------------------------------------------------- | ------------------------------------------------------------ |
+| [olo_ft_private_scrubber](./ft/olo_ft_private_scrubber.md)       | Opportunistic memory-scrub engine (FSM and user/scrub arbitration) shared by the two scrub RAM wrappers |

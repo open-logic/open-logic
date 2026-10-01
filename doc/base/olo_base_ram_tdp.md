@@ -20,8 +20,8 @@ ports run on separate clocks - although connecting the same clock to both ports 
 The RAM is implemented in pure VHDL but in a way that allows tools to implement it in block-RAMs.
 
 > [!WARNING]
-> True dual port RAM is _NOT_ supported when compiling with Yosys for Gologne Chip FPGAs.
-> Please use _olo_base_ram_sdp_ instead.
+> True dual port RAM with different clocks for teh two ports is _NOT_ supported when compiling with Yosys for Gologne
+> Chip FPGAs. Please use _olo_base_ram_sdp_ instead or connect the same clock to both ports.
 
 ## Generics
 

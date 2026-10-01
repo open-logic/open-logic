@@ -292,15 +292,15 @@ begin
         if rising_edge(Clk) then
             if compareNoCase(RamBehavior_g, "RBW") then
                 if RdEna = '1' then
-                    RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
+                    RdPipe(1) <= Mem_v(fromUslv(Addr));
                 end if;
             end if;
             if WrEna = '1' then
-                Mem_v(to_integer(unsigned(Addr))) := WrData;
+                Mem_v(fromUslv(Addr)) := WrData;
             end if;
             if not compareNoCase(RamBehavior_g, "RBW") then
                 if RdEna = '1' then
-                    RdPipe(1) <= Mem_v(to_integer(unsigned(Addr)));
+                    RdPipe(1) <= Mem_v(fromUslv(Addr));
                 end if;
             end if;
 

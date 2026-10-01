@@ -39,8 +39,6 @@ the first _Out_Data_ word - and the lower bits are the first results of the LFSR
 | Seed_g          | std_logic_vector | -       | Initial state of the LFSR. Needs to be the same width as _Polynomial_g_. Must be non-zero vector. |
 | BitsPerSymbol_g | positive         | 1       | Number of bits of the PRBS sequence to present at the output for every symbol (width of _Out_Data_). <br />Must be at least 1. |
 
-For new designs, _LfsrWidth_g_ shall be left unassigned.
-
 ## Interfaces
 
 ### Control

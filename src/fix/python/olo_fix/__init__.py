@@ -29,4 +29,10 @@ from .olo_fix_mix_c2r import *
 from .olo_fix_sample_hold import *
 from .olo_fix_mov_avg import *
 from .olo_fix_fir_dec import *
-
+from .olo_fix_lin_approx import *
+from .olo_fix_private_lin_approx_qsin import *
+from .olo_fix_sin import *
+from .olo_fix_private_lin_approx_inv import *
+from .olo_fix_inv import *
+from .olo_fix_private_lin_approx_sqrt import *
+from .olo_fix_sqrt import *

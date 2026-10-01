@@ -662,8 +662,8 @@ begin
     Rd_Error      <= r.Rd_Error;
 
     -- *** Constant Outputs ***
-    M_Axi_AwSize  <= std_logic_vector(to_unsigned(log2(AxiDataWidth_g / 8), 3));
-    M_Axi_ArSize  <= std_logic_vector(to_unsigned(log2(AxiDataWidth_g / 8), 3));
+    M_Axi_AwSize  <= toUslv(log2(AxiDataWidth_g / 8), 3);
+    M_Axi_ArSize  <= toUslv(log2(AxiDataWidth_g / 8), 3);
     M_Axi_AwBurst <= AxiBurst_Incr_c;
     M_Axi_ArBurst <= AxiBurst_Incr_c;
     M_Axi_AwCache <= "0011";              -- According AXI reference guide

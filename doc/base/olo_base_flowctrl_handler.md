@@ -54,7 +54,7 @@ processingitself:
 
 | Name     | In/Out | Length    | Default | Description                                  |
 | :------- | :----- | :-------- | ------- | :------------------------------------------- |
-| In_Data  | in     | _Width_g_ | -       | Input data                                   |
+| In_Data  | in     | _InWidth_g_ | -       | Input data                                   |
 | In_Valid | in     | 1         | '1'     | AXI4-Stream handshaking signal for _In_Data_ |
 | In_Ready | out    | 1         | N/A     | AXI4-Stream handshaking signal for _In_Data_ |
 
@@ -62,7 +62,7 @@ processingitself:
 
 | Name      | In/Out | Length    | Default | Description                                   |
 | :-------- | :----- | :-------- | ------- | :-------------------------------------------- |
-| Out_Data  | out    | _Width_g_ | N/A     | Output data                                   |
+| Out_Data  | out    | _OutWidth_g_ | N/A     | Output data                                   |
 | Out_Valid | out    | 1         | N/A     | AXI4-Stream handshaking signal for _Out_Data_ |
 | Out_Ready | in     | 1         | '1'     | AXI4-Stream handshaking signal for _Out_Data_ |
 
@@ -70,14 +70,14 @@ processingitself:
 
 | Name         | In/Out | Length    | Default | Description                                      |
 | :----------- | :----- | :-------- | ------- | :----------------------------------------------- |
-| ToProc_Data  | out    | _Width_g_ | N/A     | Input data to processing                         |
+| ToProc_Data  | out    | _InWidth_g_ | N/A     | Input data to processing                         |
 | ToProc_Valid | out    | 1         | N/A     | AXI4-Stream handshaking signal for _ToProc_Data_ |
 
 ### Processing Output
 
 | Name           | In/Out | Length    | Default | Description                                        |
 | :------------- | :----- | :-------- | ------- | :------------------------------------------------- |
-| FromProc_Data  | in     | _Width_g_ | -       | Output data from processing                        |
+| FromProc_Data  | in     | _OutWidth_g_ | -       | Output data from processing                        |
 | FromProc_Valid | in     | 1         | -       | AXI4-Stream handshaking signal for _FromProc_Data_ |
 
 ## Architecture

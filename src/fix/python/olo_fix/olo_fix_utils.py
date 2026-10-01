@@ -34,4 +34,22 @@ class olo_fix_utils:
                 raise e
             return format_str if tolerate_str else None
 
-    
+    @staticmethod
+    def get_leading_bit_index(a, a_fmt : FixFormat):
+        """
+        Index of the leading set bit of fixed-point numbers.
+
+        Refelects the behavior of the VHDL function olo_base_pkgt_math.getLeadingSetBitIndex().
+
+        representation is not exact for inputs wider than a double mantissa.
+
+        :param a: Input data (quantized to a_fmt)
+        :param a_fmt: Format of the input data
+        :return: Index of the leading set bit per sample (1d array)
+        """
+        width = cl_fix_width(a_fmt)
+        codes = np.atleast_1d(cl_fix_to_integer(a, a_fmt))
+        # Python integers are used to support formats wider than 64 bits. The modulo converts
+        # negative numbers to their two's complement bit pattern.
+        return np.array([max((int(code) % 2**width).bit_length() - 1, 0) for code in codes],
+                        dtype=int)

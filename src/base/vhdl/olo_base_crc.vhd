@@ -106,6 +106,7 @@ begin
         variable InBit_v     : std_logic;
         variable Out_v       : std_logic_vector(CrcWidth_c-1 downto 0);
         variable InputHigh_v : natural;
+        variable ShiftBits_v : natural;
         variable BePlus_v    : std_logic_vector(In_Be'range);
     begin
         if rising_edge(Clk) then
@@ -121,9 +122,12 @@ begin
 
                 InputHigh_v := count(In_Be, '1') * 8 - 1;
 
-                -- Yosys cannot synthesize slices that use variable index ranges, for example:
-                --   Input_v(InputHigh_v downto 0) := In_Data(InputHigh_v downto 0)
-                -- Workaround: copy the data byte-by-byte inside a fixed-range loop
+                -- Zero the invalid (upper) bytes so the full-width reversals below bring in zeros
+                -- when the valid window is re-aligned to the LSB.
+                Input_v := (others => '0');
+
+                -- Copy the valid data byte-by-byte in a fixed-range loop (variable-index slices are
+                -- not synthesizable).
                 for i in 0 to In_Be'length - 1 loop
                     if (i * 8 <= InputHigh_v) then
                         Input_v((i + 1) * 8 - 1 downto i * 8) := In_Data((i + 1) * 8 - 1 downto i * 8);
@@ -135,16 +139,21 @@ begin
                 InputHigh_v := In_Data'high;
             end if;
 
-            -- Handle Input permutation (LFSR always processes MSB first)
+            -- Handle Input permutation (LFSR always processes MSB first). The reversals act on the
+            -- valid, LSB-aligned window [InputHigh_v:0]. Each windowed reversal is done as a
+            -- full-width (statically bounded) reversal followed by a variable right-shift that
+            -- re-aligns the window to the LSB. A variable-width slice into a reversal function is
+            -- NOT synthesizable and silently drops the data in hardware, so it must be avoided.
+            ShiftBits_v := In_Data'high - InputHigh_v;
             if compareNoCase(BitOrder_g, "MSB_FIRST") then
                 if compareNoCase(ByteOrder_g, "LSB_FIRST") then
-                    Input_v(InputHigh_v downto 0) := invertByteOrder(Input_v(InputHigh_v downto 0));
+                    Input_v := std_logic_vector(shift_right(unsigned(invertByteOrder(Input_v)), ShiftBits_v));
                 end if;
             else
                 if compareNoCase(ByteOrder_g, "MSB_FIRST") then
-                    Input_v(InputHigh_v downto 0) := invertByteOrder(Input_v(InputHigh_v downto 0));
+                    Input_v := std_logic_vector(shift_right(unsigned(invertByteOrder(Input_v)), ShiftBits_v));
                 end if;
-                Input_v(InputHigh_v downto 0) := invertBitOrder(Input_v(InputHigh_v downto 0));
+                Input_v := std_logic_vector(shift_right(unsigned(invertBitOrder(Input_v)), ShiftBits_v));
             end if;
 
             -- Reset valid after output transmitted

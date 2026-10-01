@@ -30,8 +30,8 @@ library work;
 ---------------------------------------------------------------------------------------------------
 entity olo_base_tdm_mux is
     generic (
-        Channels_g  : natural;
-        Width_g     : natural
+        Channels_g  : positive;
+        Width_g     : positive
     );
     port (
         Clk         : in    std_logic;
