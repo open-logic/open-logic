@@ -24,7 +24,7 @@ The user code **must** expect them in the speed they arrive.
 
 Below figures shows how read transactions are signaled to user-code. The validity of read-data must be acknowledged by
 _Rb_RdValid_. If this does not happen within _ReadTimeoutClks_g_ an error is signaled to the master who requested the
-read. Note that the read latency (from _Rb_Rd_ to _Rb_Valid_) does not have to be constant.
+read. Note that the read latency (from _Rb_Rd_ to _Rb_RdValid_) does not have to be constant.
 
 ![Read Transaction](./slave/SlaveRead.png)
 

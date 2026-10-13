@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : "open-logic:open-logic:fix:4.6.0"
+name : "open-logic:open-logic:fix:4.7.0"
 description : "stable release (downloaded from GitHub); Fixed point mathematics see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#fix"
 
 filesets:
@@ -18,10 +18,13 @@ filesets:
       - "src/fix/vhdl/olo_fix_cordic_vect.vhd"
       - "src/fix/vhdl/olo_fix_cplx_addsub.vhd"
       - "src/fix/vhdl/olo_fix_cplx_mult.vhd"
+      - "src/fix/vhdl/olo_fix_fir_dec_semi_chtdm.vhd"
       - "src/fix/vhdl/olo_fix_fir_dec_ser_chpar.vhd"
       - "src/fix/vhdl/olo_fix_fir_dec_ser_chtdm.vhd"
       - "src/fix/vhdl/olo_fix_from_real.vhd"
+      - "src/fix/vhdl/olo_fix_inv.vhd"
       - "src/fix/vhdl/olo_fix_limit.vhd"
+      - "src/fix/vhdl/olo_fix_lin_approx_calc.vhd"
       - "src/fix/vhdl/olo_fix_madd.vhd"
       - "src/fix/vhdl/olo_fix_mix_c2r.vhd"
       - "src/fix/vhdl/olo_fix_mix_r2c.vhd"
@@ -29,6 +32,12 @@ filesets:
       - "src/fix/vhdl/olo_fix_mult.vhd"
       - "src/fix/vhdl/olo_fix_neg.vhd"
       - "src/fix/vhdl/olo_fix_pkg.vhd"
+      - "src/fix/vhdl/olo_fix_private_lin_approx_inv.vhd"
+      - "src/fix/vhdl/olo_fix_private_lin_approx_inv_pkg.vhd"
+      - "src/fix/vhdl/olo_fix_private_lin_approx_qsin.vhd"
+      - "src/fix/vhdl/olo_fix_private_lin_approx_qsin_pkg.vhd"
+      - "src/fix/vhdl/olo_fix_private_lin_approx_sqrt.vhd"
+      - "src/fix/vhdl/olo_fix_private_lin_approx_sqrt_pkg.vhd"
       - "src/fix/vhdl/olo_fix_private_optional_reg.vhd"
       - "src/fix/vhdl/olo_fix_resize.vhd"
       - "src/fix/vhdl/olo_fix_round.vhd"
@@ -37,13 +46,15 @@ filesets:
       - "src/fix/vhdl/olo_fix_sim_checker.vhd"
       - "src/fix/vhdl/olo_fix_sim_from_real.vhd"
       - "src/fix/vhdl/olo_fix_sim_stimuli.vhd"
+      - "src/fix/vhdl/olo_fix_sin.vhd"
+      - "src/fix/vhdl/olo_fix_sqrt.vhd"
       - "src/fix/vhdl/olo_fix_sub.vhd"
       - "src/fix/vhdl/olo_fix_to_real.vhd"
     file_type : "vhdlSource-2008"
     logical_name : "olo"
     depend :
-      - "^open-logic:open-logic:base:4.6.0"
-      - "^open-logic:open-logic:en_cl_fix:2.3.2"
+      - "^open-logic:open-logic:base:4.7.0"
+      - "^open-logic:open-logic:en_cl_fix:2.4.0"
 
 
 targets:
@@ -54,5 +65,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 4.6.0
+  version : 4.7.0
   

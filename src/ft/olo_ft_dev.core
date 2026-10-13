@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : "open-logic:open-logic-dev:ft:4.5.0"
+name : "open-logic:open-logic-dev:ft:4.7.0"
 description : "local files (release plus WIP); Fault tolerant circuitry (e.g. SECDED protected RAMs, scrubbers, ...) see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#ft"
 
 filesets:
@@ -20,7 +20,7 @@ filesets:
     file_type : "vhdlSource-2008"
     logical_name : "olo"
     depend :
-      - "^open-logic:open-logic-dev:base:4.5.0"
+      - "^open-logic:open-logic-dev:base:4.7.0"
 
 
 targets:

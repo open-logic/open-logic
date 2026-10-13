@@ -42,7 +42,7 @@ can be added on the read side of the FIFO.
 | AlmEmptyLevel_g | natural   | 0       | Level to generate _AlmEmpty_ flag at. <br>Has no effect if _AlmEmptyOn_g_ = false |
 | RamStyle_g      | string    | "auto"  | Through this generic, the exact resource to use for implementation can be controlled. This generic is applied to the attributes _ram_style_ and _ramstyle_ which vendors offer to control RAM implementation.<br>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
 | RamBehavior_g   | string    | "RBW"   | "RBW" = read-before-write, "WBR" = write-before-read<br/>For details refer to the description in [olo_base_ram_sdp](./olo_base_ram_sdp.md). |
-| ReadyRstState_g | std_logic | '1'     | Controls the status of the _In_Ready_ signal in during reset.<br> Choose '1' for minimal logic on the (often timing-critical) _In_Ready_ path. <br |
+| ReadyRstState_g | std_logic | '1'     | Controls the status of the _In_Ready_ signal in during reset.<br> Choose '1' for minimal logic on the (often timing-critical) _In_Ready_ path.     |
 
 ## Interfaces
 
@@ -78,7 +78,7 @@ can be added on the read side of the FIFO.
 | Full      | out    | 1                       | N/A     | Status flag. Asserted if the FIFO is full.                   |
 | Empty     | out    | 1                       | N/A     | Status flag. Asserted if the FIFO is empty.                  |
 | AlmFull   | out    | 1                       | N/A     | Status flag. Asserted if the FIFO fill level is >= _AlmFullLevel_g_.<br>Output is undefined if _AlmFullOn_g_=false. |
-| AlmEmpty  | out    | 1                       | N/A     | Status flag. Asserted if the FIFO fill level is <= _AlmEmptyevel_g_.<br>Output is undefined if _AlmEmptyOn_g_=false. |
+| AlmEmpty  | out    | 1                       | N/A     | Status flag. Asserted if the FIFO fill level is <= _AlmEmptyLevel_g_.<br>Output is undefined if _AlmEmptyOn_g_=false. |
 
 ## Architecture
 

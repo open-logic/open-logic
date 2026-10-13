@@ -37,7 +37,7 @@ This component offers the following additional features compared to [olo_base_fi
     occurs and the transmission is aborted. In this situation the user logic can assert _Out_Repeat_ to read the same
     packet again and retry the transmission.
 
-Below samples assumes _Depth_g_=32  and _Optimiization_g_=SPEED.
+Below samples assumes _Depth_g_=32  and _Optimization_g_=SPEED.
 
 ![BasicWaveform](./fifo/olo_base_fifo_packet_basic.png)
 

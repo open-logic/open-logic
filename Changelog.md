@@ -2,6 +2,71 @@
 
 # Changelog
 
+## 4.7.0
+
+28-Sep-2026
+
+### Added Features
+
+- Added _olo_ft_ area (fault tolerance)
+  - _olo_ft_pkg_ecc_, _olo_ft_ecc_encode_ and _olo_ft_ecc_decode_ (SECDED ECC codec)
+  - _olo_ft_ram_sp_, _olo_ft_ram_sdp_ and _olo_ft_ram_tdp_ (ECC-protected RAMs)
+  - _olo_ft_ram_sp_scrub_ and _olo_ft_ram_sdp_scrub_ (ECC-protected RAMs with memory scrubber)
+  - _olo_ft_fifo_sync_ and _olo_ft_fifo_packet_ (ECC-protected FIFOs)
+  - Contributed by: [Rustyqt](https://github.com/Rustyqt)
+
+- Added _olo_base_pkg_crc_
+  - Predefined CRC settings for common CRC standards
+  - Contributed by: [rbrglez](https://github.com/rbrglez)
+
+- Added _olo_fix_fir_dec_semi_chtdm_
+  - FIR decimator with TDM channel handling and semi-parallel tap computation (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_lin_approx_ and _olo_fix_lin_approx_calc_
+  - Bit-true model, code generator and HDL implementation for linear function approximations (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_sin_
+  - Sine and cosine calculation (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_inv_
+  - Inversion 1/x (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_sqrt_
+  - Square root (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Various documentation improvements
+  - Some contributed by: [obruendl](https://github.com/obruendl)
+
+### Backward Compatible Changes
+
+- Update to latest _en_cl_fix_
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- Fixed synthesis issue in _olo_base_crc_ for compilation with Vivado
+  - Contributed by: [tasgomes](https://github.com/tasgomes)
+
+### Reporters
+
+- None
+
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+- [Rustyqt](https://github.com/Rustyqt)
+- [rbrglez](https://github.com/rbrglez)
+- [tasgomes](https://github.com/tasgomes)
+
 ## 4.6.0
 
 04-Jul-2026

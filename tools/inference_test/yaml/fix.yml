@@ -209,6 +209,10 @@ entities:
           Out_Data: 32
   # olo_fix_fir_dec_semi_chtdm
   - entity_name: "olo_fix_fir_dec_semi_chtdm"
+    tool_generics:
+      gowin:
+        DataRamBehavior_g: '"WBR"'
+        CoefRamBehavior_g: '"WBR"'
     configurations:
       - name: "default"
         generics:
@@ -436,9 +440,9 @@ entities:
           InFmt_g: '"(0, 8, 16)"'
           PrecisionBits_g: 18
         in_reduce:
-          In_Data: 16
+          In_Data: 24
         out_reduce:
-          Out_Result: 20
+          Out_Result: 24
   # olo_fix_sqrt
   - entity_name: "olo_fix_sqrt"
     configurations:

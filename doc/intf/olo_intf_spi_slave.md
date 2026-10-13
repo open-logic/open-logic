@@ -197,10 +197,10 @@ information is not needed and the user can leave all _Resp_..._ ports unconnecte
 
 For single transactions, there are the following options:
 
-1. One _Resp_Aborted_='1' response if the user passed data through the _Tx_..._ intetrface and _Spi_Cs_n_ is pulled high
+1. One _Resp_Aborted_='1' response if the user passed data through the _Tx_..._ interface and _Spi_Cs_n_ is pulled high
    during the transaction.
 2. One _Resp_Sent_='1' followed by one _Resp_CleanEnd_='1' response if the user passed data through the _Tx_..._
-   intetrface and _Csp_Cs_n_ is pulled high after the transaction completed.
+   interface and _Spi_Cs_n_ is pulled high after the transaction completed.
 3. One _Resp_CleanEnd_='1' response if the user did not pass data through the _Tx_..._ interface and _Spi_Cs_n_ is
    pulled high. Whether _Spi_Cs_n_ is pulled high after all bits were transferred or during the transfer does not play
    any role in this case.
@@ -222,8 +222,8 @@ cycles:
 - One clock cycle for setting *_pi_Miso_
 
 As a result **the master must be configured to ensure a at least 5 _Clk_ periods of time between the falling edge of
-_Spi_Cs_n_ and the first sampling edge of _Spi_Sclk_**. For _SpiCPH_g=1_ this normally is the case anyways. For
-_SpiCPH_g=0_ it might require special attention.
+_Spi_Cs_n_ and the first sampling edge of _Spi_Sclk_**. For _SpiCpha_g=1_ this normally is the case anyways. For
+_SpiCpha_g=0_ it might require special attention.
 
 #### Spi_Sclk to Spi_Miso Propagation Delay
 

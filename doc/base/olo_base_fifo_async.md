@@ -80,7 +80,7 @@ can be added on the read side of the FIFO.
 | In_Full     | out    | 1                       | N/A     | Status flag. Asserted if the FIFO is full (synchronous to _In_Clk_) |
 | In_Empty    | out    | 1                       | N/A     | Status flag. Asserted if the FIFO is empty (synchronous to _In_Clk_) |
 | In_AlmFull  | out    | 1                       | N/A     | Status flag. Asserted if the FIFO fill level is >= _AlmFullLevel_g_ (synchronous to _In_Clk_)<br/>Output is undefined if _AlmFullOn_g_=false. |
-| In_AlmEmpty | out    | 1                       | N/A     | Status flag. Asserted if the FIFO fill level is <= _AlmEmptyevel_g_ (synchronous to _In_Clk_)<br/>Output is undefined if _AlmEmptyOn_g_=false. |
+| In_AlmEmpty | out    | 1                       | N/A     | Status flag. Asserted if the FIFO fill level is <= _AlmEmptyLevel_g_ (synchronous to _In_Clk_)<br/>Output is undefined if _AlmEmptyOn_g_=false. |
 | In_Level    | out    | ceil(log2(_Depth_g_+1)) | N/A     | FIFO fill level calculated on the write side (synchronous to _In_Clk_) |
 
 ### Output Status
@@ -90,7 +90,7 @@ can be added on the read side of the FIFO.
 | Out_Full     | out    | 1                       | N/A     | Status flag. Asserted if the FIFO is full (synchronous to _Out_Clk_) |
 | Out_Empty    | out    | 1                       | N/A     | Status flag. Asserted if the FIFO is empty (synchronous to _Out_Clk_) |
 | Out_AlmFull  | out    | 1                       | N/A     | Status flag. Asserted if the FIFO fill level is >= _AlmFullLevel_g_ (synchronous to _Out_Clk_)<br/>Output is undefined if _AlmFullOn_g_=false. |
-| Out_AlmEmpty | out    | 1                       | N/A     | Status flag. Asserted if the FIFO fill level is <= _AlmEmptyevel_g_ (synchronous to _Out_Clk_)<br/>Output is undefined if _AlmEmptyOn_g_=false. |
+| Out_AlmEmpty | out    | 1                       | N/A     | Status flag. Asserted if the FIFO fill level is <= _AlmEmptyLevel_g_ (synchronous to _Out_Clk_)<br/>Output is undefined if _AlmEmptyOn_g_=false. |
 | Out_Level    | out    | ceil(log2(_Depth_g_+1)) | N/A     | FIFO fill level calculated on the write side (synchronous to _Out_Clk_) |
 
 ## Architecture

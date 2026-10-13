@@ -18,7 +18,8 @@ Bit-true Model: [olo_fix_cplx_mult](../../src/fix/python/olo_fix/olo_fix_cplx_mu
 This entity performs multiplication of two complex fixed-point numbers.
 
 The entity also can be configured to operate
-as mixer (complex to complex) by selection _Mode_g=MIX_. In mixer mode the imaginary part of _In_B_ is inverted.
+as mixer (complex to complex) by selection _Mode_g=MIX_. In mixer mode the imaginary part of the _InB_ input
+(_InB_Q_ or the Q sample on _InB_IQ_) is inverted.
 
 I (in-phase) and Q (quadrature-phase) can be handled parallel or TDM.
 
@@ -79,7 +80,7 @@ When used as a mixer, _InA_ is the signal to be mixed and _InB_ is the mixing fr
 | Out_I      | out    | _width(ResultFmt_g)_ | N/A     | Result data in-phase for _IqHandling_g=Parallel_<br />Format _ResultFmt_g_         |
 | Out_Q      | out    | _width(ResultFmt_g)_ | N/A     | Result data quadrature-phase for _IqHandling_g=Parallel_<br />Format _ResultFmt_g_ |
 | Out_IQ     | out    | _width(ResultFmt_g)_ | N/A     | Result data for _IqHandling_g=TDM_<br />Format _ResultFmt_g_                       |
-| Out_Valid  | out    | 1                    | N/A     | AXI-S handshaking signal for _Out_Result_                                          |
+| Out_Valid  | out    | 1                    | N/A     | AXI-S handshaking signal for _Out_I_, _Out_Q_ and _Out_IQ_                        |
 | Out_Last   | out    | 1                    | N/A     | Used for optional TDM synchronization for _IqHandling_g=TDM_.                      |
 
 ## Detail
