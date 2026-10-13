@@ -14,6 +14,12 @@ VHDL Source: [olo_ft_ecc_decode](../../src/ft/vhdl/olo_ft_ecc_decode.vhd)
 
 ## Description
 
+> [!NOTE]
+> _ft_ entities protect only RAM storage contents (by ECC). All regular logic (LUTs and flip-flops, including control
+> logic, counters and pipeline registers) is written under the assumption that **TMR (Triple Modular Redundancy) is
+> enabled in synthesis**. Without TMR, upsets in this logic are not covered. See
+> [Protection Scope](./olo_ft_principles.md#protection-scope) for details.
+
 This entity provides a reusable, optionally pipelined SECDED decoder. It wraps the package functions
 [eccSyndromeAndParity](./olo_ft_pkg_ecc.md#eccsyndromeandparity),
 [eccCorrectData](./olo_ft_pkg_ecc.md#ecccorrectdata),

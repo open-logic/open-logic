@@ -14,6 +14,12 @@ VHDL Source: [olo_ft_ram_sp](../../src/ft/vhdl/olo_ft_ram_sp.vhd)
 
 ## Description
 
+> [!NOTE]
+> _ft_ entities protect only RAM storage contents (by ECC). All regular logic (LUTs and flip-flops, including control
+> logic, counters and pipeline registers) is written under the assumption that **TMR (Triple Modular Redundancy) is
+> enabled in synthesis**. Without TMR, upsets in this logic are not covered. See
+> [Protection Scope](./olo_ft_principles.md#protection-scope) for details.
+
 This component implements an **ECC-protected single-port RAM** using SECDED (Single Error Correction, Double Error
 Detection) Hamming code. It wraps [olo_base_ram_sp](../base/olo_base_ram_sp.md) internally with a wider word to store
 parity bits alongside data.
