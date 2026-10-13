@@ -14,6 +14,12 @@ VHDL Source: [olo_ft_ecc_encode](../../src/ft/vhdl/olo_ft_ecc_encode.vhd)
 
 ## Description
 
+> [!NOTE]
+> _ft_ entities protect only RAM storage contents (by ECC). All regular logic (LUTs and flip-flops, including control
+> logic, counters and pipeline registers) is written under the assumption that **TMR (Triple Modular Redundancy) is
+> enabled in synthesis**. Without TMR, upsets in this logic are not covered. See
+> [Protection Scope](./olo_ft_principles.md#protection-scope) for details.
+
 This entity provides a reusable, optionally pipelined SECDED encoder. It wraps the
 [eccEncode](./olo_ft_pkg_ecc.md#eccencode) function from [olo_ft_pkg_ecc](./olo_ft_pkg_ecc.md) into a standalone
 entity exposing an AXI4-Stream forward handshake (_In\_Valid_ / _In\_Ready_, _Out\_Valid_ / _Out\_Ready_).
