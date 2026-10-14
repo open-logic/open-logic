@@ -45,7 +45,7 @@ def add_configs(olo_tb):
     for AddrWidth in [16, 20, 32]:
         named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiAddrWidth_g': AddrWidth})
     for DataWidth in [16, 32, 64]:
-        for UserWidth in [16, 32, 64]:
+        for UserWidth in [8, 16, 32, 64]:
             if UserWidth > DataWidth: continue #Skip illegal configurations
             named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True,
                                 'AxiDataWidth_g': DataWidth, 'UserDataWidth_g': UserWidth})
