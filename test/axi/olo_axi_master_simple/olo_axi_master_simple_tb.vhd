@@ -423,7 +423,7 @@ begin
                 if ImplRead_g then
                     -- Slave
                     expect_ar(net, AxiSlave_c, X"0300");
-                    push_r(net, AxiSlave_c, X"23", resp => AxiResp_SlvErr_c);
+                    push_r(net, AxiSlave_c, X"23", error_code => AxiResp_SlvErr_c);
                     -- Master
                     pushCommand(net, RdCmdMaster_c, X"0300", 1);
                     expectRdData(net, X"23");
@@ -518,7 +518,7 @@ begin
                     -- 2 words before boundary, 6 after, 8 total
                     -- Slave first burst
                     expect_ar(net, AxiSlave_c, X"3000"-2*AxiDataWidth_g/8, len => 2);
-                    push_r(net, AxiSlave_c, X"12", beats => 2, resp => AxiResp_SlvErr_c);
+                    push_r(net, AxiSlave_c, X"12", beats => 2, error_code => AxiResp_SlvErr_c);
                     -- Slave second burst
                     push_burst_read_aligned (net, AxiSlave_c, X"3000", X"14", 1, 6);
                     -- Master
