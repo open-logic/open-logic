@@ -456,10 +456,10 @@ begin
                     if (M_Axi_BResp /= AxiResp_Okay_c) then
                         v.Wr_Error := '1';
                     else
-                        v.Wr_Error    := r.WrRespError;
-                        v.Wr_Done     := not r.WrRespError;
-                        v.WrRespError := '0';
+                        v.Wr_Error := r.WrRespError;
+                        v.Wr_Done  := not r.WrRespError;
                     end if;
+                    v.WrRespError := '0';
                 elsif M_Axi_BResp /= AxiResp_Okay_c then
                     v.WrRespError := '1';
                 end if;
@@ -586,13 +586,16 @@ begin
                     if (M_Axi_RResp /= AxiResp_Okay_c) then
                         v.Rd_Error := '1';
                     else
-                        v.Rd_Error    := r.RdRespError;
-                        v.Rd_Done     := not r.RdRespError;
-                        v.RdRespError := '0';
+                        v.Rd_Error := r.RdRespError;
+                        v.Rd_Done  := not r.RdRespError;
                     end if;
+                    v.RdRespError := '0';
                 elsif M_Axi_RResp /= AxiResp_Okay_c then
                     v.RdRespError := '1';
                 end if;
+            -- An error on any other beat of a burst also leads to Rd_Error
+            elsif (M_Axi_RValid = '1') and (M_Axi_RReady_I = '1') and (M_Axi_RResp /= AxiResp_Okay_c) then
+                v.RdRespError := '1';
             end if;
 
         end if;
