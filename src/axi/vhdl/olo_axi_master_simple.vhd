@@ -325,7 +325,8 @@ begin
                     if (r.WrTfVld = '1') and (r.AwFsmRdy = '1') then
                         v.WrTfVld := '0';
                         v.WrBeats := r.WrBeats - r.WrTfBeats;
-                        v.WrAddr  := r.WrAddr + resize(2**UnusedAddrBits_c * r.WrTfBeats, v.WrAddr'length);
+                        -- Shift at address width: natural * unsigned would truncate the bytes per beat to the width of WrTfBeats
+                        v.WrAddr := r.WrAddr + shift_left(resize(r.WrTfBeats, v.WrAddr'length), UnusedAddrBits_c);
                         if r.WrTfIsLast = '1' then
                             v.WriteTfGenState := Idle_s;
                         else
@@ -510,7 +511,8 @@ begin
                     if (r.RdTfVld = '1') and (r.ArFsmRdy = '1') then
                         v.RdTfVld := '0';
                         v.RdBeats := r.RdBeats - r.RdTfBeats;
-                        v.RdAddr  := r.RdAddr + resize(2**UnusedAddrBits_c * r.RdTfBeats, v.RdAddr'length);
+                        -- Shift at address width: natural * unsigned would truncate the bytes per beat to the width of RdTfBeats
+                        v.RdAddr := r.RdAddr + shift_left(resize(r.RdTfBeats, v.RdAddr'length), UnusedAddrBits_c);
                         if r.RdTfIsLast = '1' then
                             v.ReadTfGenState := Idle_s;
                         else
