@@ -345,8 +345,9 @@ begin
             -- AW generation FSM
             case r.AwFsm is
                 when Idle_s =>
-                    if ((r.WrLowLat = '1') or (r.WrBeatsNoCmd >= signed('0' & r.WrTfBeats))) and
-                       (r.WrOpenTrans < AxiMaxOpenTransactions_g) and (r.WrTfVld = '1') then
+                    -- Check WrTfVld first: WrTfBeats is not reset and undefined until the first transfer
+                    if (r.WrTfVld = '1') and (r.WrOpenTrans < AxiMaxOpenTransactions_g) and
+                       ((r.WrLowLat = '1') or (r.WrBeatsNoCmd >= signed('0' & r.WrTfBeats))) then
                         v.AwFsmRdy := '1';
                     end if;
                     if (r.AwFsmRdy = '1') and (r.WrTfVld = '1') then
@@ -529,8 +530,9 @@ begin
             -- AR Generation FSM
             case r.ArFsm is
                 when Idle_s =>
-                    if ((r.RdLowLat = '1') or (r.RdFifoSpaceFree >= signed('0' & r.RdTfBeats))) and
-                       (r.RdOpenTrans < AxiMaxOpenTransactions_g) and (r.RdTfVld = '1') then
+                    -- Check RdTfVld first: RdTfBeats is not reset and undefined until the first transfer
+                    if (r.RdTfVld = '1') and (r.RdOpenTrans < AxiMaxOpenTransactions_g) and
+                       ((r.RdLowLat = '1') or (r.RdFifoSpaceFree >= signed('0' & r.RdTfBeats))) then
                         v.ArFsmRdy := '1';
                     end if;
                     if (r.ArFsmRdy = '1') and (r.RdTfVld = '1') then
