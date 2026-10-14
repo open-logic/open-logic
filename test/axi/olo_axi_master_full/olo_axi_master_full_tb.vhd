@@ -31,12 +31,13 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_axi_master_full_tb is
     generic (
-        AxiAddrWidth_g              : natural range 16 to 64 := 32;
-        AxiDataWidth_g              : natural range 16 to 64 := 32;
+        AxiAddrWidth_g              : natural range 12 to 64 := 32;
+        AxiDataWidth_g              : natural range 8 to 64  := 32;
         UserDataWidth_g             : natural                := 16;
         ImplRead_g                  : boolean                := true;
         ImplWrite_g                 : boolean                := true;
         RamBehavior_g               : string                 := "RBW";
+        UserTransactionSizeBits_g   : natural                := 10;
         runner_cfg                  : string
     );
 end entity;
@@ -46,10 +47,9 @@ architecture sim of olo_axi_master_full_tb is
     -----------------------------------------------------------------------------------------------
     -- Fixed Generics
     -----------------------------------------------------------------------------------------------
-    constant UserTransactionSizeBits_c : natural := 10;
-    constant AxiMaxBeats_c             : natural := 32;
-    constant DataFifoDepth_c           : natural := 16;
-    constant AxiMaxOpenTransactions_c  : natural := 2;
+    constant AxiMaxBeats_c            : natural := 32;
+    constant DataFifoDepth_c          : natural := 16;
+    constant AxiMaxOpenTransactions_c : natural := 2;
 
     -----------------------------------------------------------------------------------------------
     -- AXI Definition
@@ -76,7 +76,7 @@ architecture sim of olo_axi_master_full_tb is
     -- Constants
     -----------------------------------------------------------------------------------------------
     subtype CmdAddrRange_c is natural range AxiAddrWidth_g-1 downto 0;
-    subtype CmdSizeRange_c is natural range UserTransactionSizeBits_c+CmdAddrRange_c'high downto CmdAddrRange_c'high+1;
+    subtype CmdSizeRange_c is natural range UserTransactionSizeBits_g+CmdAddrRange_c'high downto CmdAddrRange_c'high+1;
     constant CmdLowLat_c : natural := CmdSizeRange_c'high+1;
 
     constant UserBytes_c : natural := UserDataWidth_g/8;
@@ -98,13 +98,13 @@ architecture sim of olo_axi_master_full_tb is
     signal Rst          : std_logic := '0';
     -- Write Command Interface
     signal CmdWr_Addr   : std_logic_vector(AxiAddrWidth_g - 1 downto 0)            := (others => '0');
-    signal CmdWr_Size   : std_logic_vector(UserTransactionSizeBits_c - 1 downto 0) := (others => '0');
+    signal CmdWr_Size   : std_logic_vector(UserTransactionSizeBits_g - 1 downto 0) := (others => '0');
     signal CmdWr_LowLat : std_logic                                                := '0';
     signal CmdWr_Valid  : std_logic                                                := '0';
     signal CmdWr_Ready  : std_logic;
     -- Read Command Interface
     signal CmdRd_Addr   : std_logic_vector(AxiAddrWidth_g - 1 downto 0)            := (others => '0');
-    signal CmdRd_Size   : std_logic_vector(UserTransactionSizeBits_c - 1 downto 0) := (others => '0');
+    signal CmdRd_Size   : std_logic_vector(UserTransactionSizeBits_g - 1 downto 0) := (others => '0');
     signal CmdRd_LowLat : std_logic                                                := '0';
     signal CmdRd_Valid  : std_logic                                                := '0';
     signal CmdRd_Ready  : std_logic;
@@ -138,11 +138,11 @@ architecture sim of olo_axi_master_full_tb is
         stall_config => new_stall_config(0.0, 0, 0)
     );
     constant WrCmdMaster_c  : axi_stream_master_t  := new_axi_stream_master (
-        data_length => AxiAddrWidth_g+UserTransactionSizeBits_c+1,
+        data_length => AxiAddrWidth_g+UserTransactionSizeBits_g+1,
         stall_config => new_stall_config(0.0, 0, 0)
     );
     constant RdCmdMaster_c  : axi_stream_master_t  := new_axi_stream_master (
-        data_length => AxiAddrWidth_g+UserTransactionSizeBits_c+1,
+        data_length => AxiAddrWidth_g+UserTransactionSizeBits_g+1,
         stall_config => new_stall_config(0.0, 0, 0)
     );
     constant WrDataMaster_c : axi_stream_master_t  := new_axi_stream_master (
@@ -160,7 +160,7 @@ architecture sim of olo_axi_master_full_tb is
         variable TData_v : std_logic_vector(CmdLowLat_c downto 0);
     begin
         TData_v(CmdAddrRange_c) := std_logic_vector(resize(CmdAddr, AxiAddrWidth_g));
-        TData_v(CmdSizeRange_c) := toUslv(CmdSize, UserTransactionSizeBits_c);
+        TData_v(CmdSizeRange_c) := toUslv(CmdSize, UserTransactionSizeBits_g);
         TData_v(CmdLowLat_c)    := CmdLowLat;
         push_axi_stream(net, CmdMaster, TData_v);
     end procedure;
@@ -546,7 +546,7 @@ begin
             AxiMaxBeats_g               => AxiMaxBeats_c,
             AxiMaxOpenTransactions_g    => AxiMaxOpenTransactions_c,
             -- User Configuration
-            UserTransactionSizeBits_g   => UserTransactionSizeBits_c,
+            UserTransactionSizeBits_g   => UserTransactionSizeBits_g,
             DataFifoDepth_g             => DataFifoDepth_c,
             UserDAtaWidth_g             => UserDataWidth_g,
             ImplRead_g                  => ImplRead_g,

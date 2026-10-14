@@ -49,6 +49,10 @@ def add_configs(olo_tb):
             if UserWidth > DataWidth: continue #Skip illegal configurations
             named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True,
                                 'AxiDataWidth_g': DataWidth, 'UserDataWidth_g': UserWidth})
+    #Check 8-bit AXI data and the narrowest address widths for the size width (default size width at 26 bits)
+    named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiDataWidth_g': 8, 'UserDataWidth_g': 8})
+    named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiAddrWidth_g': 12})
+    named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiAddrWidth_g': 26, 'UserTransactionSizeBits_g': 24})
     #Check Partial Implementations
     for ImplRead in [True, False]:
         for ImplWrite in [True, False]:
