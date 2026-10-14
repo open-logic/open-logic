@@ -269,7 +269,7 @@ begin
                 when Idle_s =>
                     v.CmdWr_Ready := '1';
                     v.WrLastAddr  := unsigned(CmdWr_Addr) + unsigned(CmdWr_Size) - 1;
-                    if unsigned(CmdWr_Size(log2(DataBytes_c) - 1 downto 0)) = 0 then
+                    if (DataBytes_c = 1) or (unsigned(CmdWr_Size(log2(DataBytes_c) - 1 downto 0)) = 0) then
                         v.WrDataWordsCmd := resize(unsigned(CmdWr_Size(CmdWr_Size'high downto log2(DataBytes_c))), UserTransactionSizeBits_g);
                     else
                         v.WrDataWordsCmd := resize(unsigned(CmdWr_Size(CmdWr_Size'high downto log2(DataBytes_c))) + 1, UserTransactionSizeBits_g);
@@ -345,7 +345,7 @@ begin
 
             -- Word- to Byte-Enable conversion
             for i in 0 to AxiBytes_c - 1 loop
-                WriteBe_v(i) := WrData_We(i / UserDataWidth_g);
+                WriteBe_v(i) := WrData_We(i / DataBytes_c);
             end loop;
 
             -- FSM
