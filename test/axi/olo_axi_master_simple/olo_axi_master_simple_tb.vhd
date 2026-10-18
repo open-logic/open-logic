@@ -31,13 +31,14 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_axi_master_simple_tb is
     generic (
-        AxiAddrWidth_g              : natural range 12 to 64 := 32;
-        AxiDataWidth_g              : natural range 8 to 64  := 32;
-        AxiMaxBeats_g               : natural range 1 to 256 := 32;
-        AxiMaxOpenTransactions_g    : natural range 1 to 8   := 2;
-        ImplRead_g                  : boolean                := true;
-        ImplWrite_g                 : boolean                := true;
-        RamBehavior_g               : string                 := "RBW";
+        AxiAddrWidth_g              : natural range 12 to 64  := 32;
+        AxiDataWidth_g              : natural range 8 to 1024 := 32;
+        AxiMaxBeats_g               : natural range 1 to 256  := 32;
+        AxiMaxOpenTransactions_g    : natural range 1 to 8    := 2;
+        ImplRead_g                  : boolean                 := true;
+        ImplWrite_g                 : boolean                 := true;
+        RamBehavior_g               : string                  := "RBW";
+        UserTransactionSizeBits_g   : natural range 1 to 16   := 10;
         runner_cfg                  : string
     );
 end entity;
@@ -47,8 +48,10 @@ architecture sim of olo_axi_master_simple_tb is
     -----------------------------------------------------------------------------------------------
     -- Fixed Generics
     -----------------------------------------------------------------------------------------------
-    constant UserTransactionSizeBits_c : natural := 10;
+    constant UserTransactionSizeBits_c : natural := UserTransactionSizeBits_g;
     constant DataFifoDepth_c           : natural := 16;
+    -- Transfers split at AxiMaxBeats_g, limited to the largest command size
+    constant MaxTfBeats_c              : natural := minimum(AxiMaxBeats_g*2+5, 2**UserTransactionSizeBits_g - 1);
 
     -- Tests with a fixed burst structure (error responses, full FIFO) use bursts of up to DataFifoDepth_c beats
     constant FixedBursts_c : boolean := AxiMaxBeats_g >= DataFifoDepth_c;
@@ -211,7 +214,7 @@ architecture sim of olo_axi_master_simple_tb is
 
     end procedure;
 
-    -- Expect a burst write on AXI, split into transactions of at most AxiMaxBeats_g beats
+    -- Expect a burst write on AXI, split into transactions of at most AxiMaxBeats_g beats within 4 KB
     procedure expectAxiWrite (
         signal net : inout network_t;
         addr       : unsigned;
@@ -222,13 +225,16 @@ architecture sim of olo_axi_master_simple_tb is
         variable Data_v  : unsigned(AxiDataWidth_g-1 downto 0);
         variable Left_v  : natural := beats;
         variable Beats_v : natural;
+        variable To4k_v  : natural;
     begin
         Addr_v := resize(addr, AxiAddrWidth_g);
         Data_v := resize(startValue, AxiDataWidth_g);
 
         -- loop through transactions
         while Left_v > 0 loop
-            Beats_v := minimum(Left_v, AxiMaxBeats_g);
+            -- AXI bursts must not cross a 4 KB boundary
+            To4k_v  := (4096 - to_integer(Addr_v(11 downto 0))) / ByteWidth_c;
+            Beats_v := minimum(minimum(Left_v, AxiMaxBeats_g), To4k_v);
             expect_burst_write_aligned(net, AxiSlave_c, Addr_v, Data_v, 1, Beats_v, beat_delay => beatDelay);
             Addr_v  := Addr_v + Beats_v*ByteWidth_c;
             Data_v  := Data_v + Beats_v;
@@ -237,7 +243,7 @@ architecture sim of olo_axi_master_simple_tb is
 
     end procedure;
 
-    -- Push a burst read on AXI, split into transactions of at most AxiMaxBeats_g beats
+    -- Push a burst read on AXI, split into transactions of at most AxiMaxBeats_g beats within 4 KB
     procedure pushAxiRead (
         signal net : inout network_t;
         addr       : unsigned;
@@ -248,13 +254,16 @@ architecture sim of olo_axi_master_simple_tb is
         variable Data_v  : unsigned(AxiDataWidth_g-1 downto 0);
         variable Left_v  : natural := beats;
         variable Beats_v : natural;
+        variable To4k_v  : natural;
     begin
         Addr_v := resize(addr, AxiAddrWidth_g);
         Data_v := resize(startValue, AxiDataWidth_g);
 
         -- loop through transactions
         while Left_v > 0 loop
-            Beats_v := minimum(Left_v, AxiMaxBeats_g);
+            -- AXI bursts must not cross a 4 KB boundary
+            To4k_v  := (4096 - to_integer(Addr_v(11 downto 0))) / ByteWidth_c;
+            Beats_v := minimum(minimum(Left_v, AxiMaxBeats_g), To4k_v);
             push_burst_read_aligned(net, AxiSlave_c, Addr_v, Data_v, 1, Beats_v, beat_delay => beatDelay);
             Addr_v  := Addr_v + Beats_v*ByteWidth_c;
             Data_v  := Data_v + Beats_v;
@@ -347,11 +356,11 @@ begin
                     -- Both latency modes
                     for LowLatency in 0 to 1 loop
                         -- Slave
-                        expect_single_write (net, AxiSlave_c, X"1088", X"ABC1");
+                        expect_single_write (net, AxiSlave_c, X"1100", X"ABC1");
                         -- Master
                         pushWrData(net, X"ABC1");
                         wait for 200 ns;
-                        pushCommand(net, WrCmdMaster_c, X"1088", 1, CmdLowLat => choose(LowLatency=1, '1', '0'));
+                        pushCommand(net, WrCmdMaster_c, X"1100", 1, CmdLowLat => choose(LowLatency=1, '1', '0'));
                         -- Blocking
                         expectWrResponse(RespSuccess);
                     end loop;
@@ -365,7 +374,7 @@ begin
                     -- Both latency modes
                     for LowLatency in 0 to 1 loop
                         -- Master
-                        pushCommand(net, WrCmdMaster_c, X"1090", 1, CmdLowLat => choose(LowLatency=1, '1', '0'));
+                        pushCommand(net, WrCmdMaster_c, X"1180", 1, CmdLowLat => choose(LowLatency=1, '1', '0'));
                         wait for 200 ns;
                         if LowLatency = 0 then
                             check_equal(AxiMs.aw_valid, '0', "HighLatency write executed before data was present");
@@ -374,7 +383,7 @@ begin
                         end if;
                         pushWrData(net, X"ABC2");
                         -- Slave
-                        expect_single_write (net, AxiSlave_c, X"1090", X"ABC2");
+                        expect_single_write (net, AxiSlave_c, X"1180", X"ABC2");
                         -- Blocking
                         expectWrResponse(RespSuccess);
                     end loop;
@@ -409,9 +418,9 @@ begin
             if run("SingleWrite-DelayedBValid") then
                 if ImplWrite_g then
                     -- Slave
-                    expect_single_write (net, AxiSlave_c, X"0208", X"05", b_valid_delay => 200 ns);
+                    expect_single_write (net, AxiSlave_c, X"0280", X"05", b_valid_delay => 200 ns);
                     -- Master
-                    pushCommand(net, WrCmdMaster_c, X"0208", 1);
+                    pushCommand(net, WrCmdMaster_c, X"0280", 1);
                     pushWrData(net, X"05");
                     -- Blocking
                     expectWrResponse(RespSuccess);
@@ -453,9 +462,9 @@ begin
             if run("SingleRead-DelayedArReady") then
                 if ImplRead_g then
                     -- Slave
-                    push_single_read (net, AxiSlave_c, X"0208", X"10", ar_ready_delay => 200 ns);
+                    push_single_read (net, AxiSlave_c, X"0280", X"10", ar_ready_delay => 200 ns);
                     -- Master
-                    pushCommand(net, RdCmdMaster_c, X"0208", 1);
+                    pushCommand(net, RdCmdMaster_c, X"0280", 1);
                     expectRdData(net, X"10");
                     -- Blocking
                     expectRdResponse(RespSuccess);
@@ -465,9 +474,9 @@ begin
             if run("SingleRead-DelayedRValid") then
                 if ImplRead_g then
                     -- Slave
-                    push_single_read (net, AxiSlave_c, X"0210", X"20", r_valid_delay => 200 ns);
+                    push_single_read (net, AxiSlave_c, X"0200", X"20", r_valid_delay => 200 ns);
                     -- Master
-                    pushCommand(net, RdCmdMaster_c, X"0210", 1);
+                    pushCommand(net, RdCmdMaster_c, X"0200", 1);
                     expectRdData(net, X"20");
                     -- Blocking
                     expectRdResponse(RespSuccess);
@@ -566,9 +575,9 @@ begin
                     -- Both latency modes
                     for LowLatency in 0 to 1 loop
                         -- Slave
-                        pushAxiRead(net, X"0210", X"10EF", 12);
+                        pushAxiRead(net, X"0200", X"10EF", 12);
                         -- Master
-                        pushCommand(net, RdCmdMaster_c, X"0210", 12, CmdLowLat => choose(LowLatency=1, '1', '0'));
+                        pushCommand(net, RdCmdMaster_c, X"0200", 12, CmdLowLat => choose(LowLatency=1, '1', '0'));
                         expectRdData(net, X"10EF", 1, 12);
                         -- Blocking
                         expectRdResponse(RespSuccess);
@@ -676,9 +685,9 @@ begin
             if run("BurstRead-SlowData") then
                 if ImplRead_g then
                     -- Slave
-                    pushAxiRead(net, X"0210", X"10EF", 12, beatDelay => 50 ns);
+                    pushAxiRead(net, X"0200", X"10EF", 12, beatDelay => 50 ns);
                     -- Master
-                    pushCommand(net, RdCmdMaster_c, X"0210", 12, CmdLowLat => '0');
+                    pushCommand(net, RdCmdMaster_c, X"0200", 12, CmdLowLat => '0');
                     expectRdData(net, X"10EF", 1, 12);
                     -- Blocking
                     expectRdResponse(RespSuccess);
@@ -701,10 +710,10 @@ begin
             if run("BurstRead-MaxTransactionSize") then
                 if ImplRead_g then
                     -- Slave
-                    pushAxiRead(net, X"0210", X"10EF", AxiMaxBeats_g*2+5);
+                    pushAxiRead(net, X"0200", X"10EF", MaxTfBeats_c);
                     -- Master
-                    pushCommand(net, RdCmdMaster_c, X"0210", AxiMaxBeats_g*2+5, CmdLowLat => '1'); -- must be lowlatency becuause larger than FIFO
-                    expectRdData(net, X"10EF", 1, AxiMaxBeats_g*2+5);
+                    pushCommand(net, RdCmdMaster_c, X"0200", MaxTfBeats_c, CmdLowLat => '1'); -- must be lowlatency becuause larger than FIFO
+                    expectRdData(net, X"10EF", 1, MaxTfBeats_c);
                     -- Blocking
                     expectRdResponse(RespSuccess);
                 end if;
@@ -713,10 +722,10 @@ begin
             if run("BurstWrite-MaxTransactionSize") then
                 if ImplWrite_g then
                     -- Slave
-                    expectAxiWrite(net, X"0100", X"1234", AxiMaxBeats_g*2+5);
+                    expectAxiWrite(net, X"0100", X"1234", MaxTfBeats_c);
                     -- Master
-                    pushCommand(net, WrCmdMaster_c, X"0100", AxiMaxBeats_g*2+5, CmdLowLat => '1'); -- must be lowlatency becuause larger than FIFO
-                    pushWrData(net, X"1234", 1, AxiMaxBeats_g*2+5);
+                    pushCommand(net, WrCmdMaster_c, X"0100", MaxTfBeats_c, CmdLowLat => '1'); -- must be lowlatency becuause larger than FIFO
+                    pushWrData(net, X"1234", 1, MaxTfBeats_c);
                     -- Blocking
                     expectWrResponse(RespSuccess);
                 end if;
