@@ -286,7 +286,8 @@ begin
                     if (DataBytes_c = 1) or (unsigned(CmdWr_Size(log2(DataBytes_c) - 1 downto 0)) = 0) then
                         v.WrDataWordsCmd := resize(unsigned(CmdWr_Size(CmdWr_Size'high downto log2(DataBytes_c))), UserTransactionSizeBits_g);
                     else
-                        v.WrDataWordsCmd := resize(unsigned(CmdWr_Size(CmdWr_Size'high downto log2(DataBytes_c))) + 1, UserTransactionSizeBits_g);
+                        -- Resize before the increment: 2**(UserTransactionSizeBits_g-log2(DataBytes_c)) words need one bit more than the slice
+                        v.WrDataWordsCmd := resize(unsigned(CmdWr_Size(CmdWr_Size'high downto log2(DataBytes_c))), UserTransactionSizeBits_g) + 1;
                     end if;
                     v.AxiWrCmd_Addr   := std_logic_vector(alignedAddr(unsigned(CmdWr_Addr)));
                     v.WrShift         := byteOffset(unsigned(CmdWr_Addr));
