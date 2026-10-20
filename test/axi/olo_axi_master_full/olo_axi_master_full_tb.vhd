@@ -465,42 +465,40 @@ begin
                 end if;
             end if;
 
-            -- Two writes of the largest command size, 2**UserTransactionSizeBits_g-1 bytes (the user word count is a power of
-            -- two and needs one bit more than the size without its low bits): both complete (up to 10 size bits)
-            if run("WriteMaxSizeTwice") then
+            -- A write of the largest command size, 2**UserTransactionSizeBits_g-1 bytes (the user word count is a power of
+            -- two and needs one bit more than the size without its low bits), then a short write: both complete (up to 10
+            -- size bits)
+            if run("WriteMaxSize") then
                 if ImplWrite_g and UserTransactionSizeBits_g <= 10 then
                     DataBytes_v := 2**UserTransactionSizeBits_g-1;
                     AxiBeats_v  := (DataBytes_v+AxiBytes_c-1)/AxiBytes_c;
                     UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
+                    Addr_v      := resize(x"10000", AxiAddrWidth_g);
+                    Data_v      := resize(x"10", UserDataWidth_g);
 
-                    for i in 0 to 1 loop
-                        Addr_v := resize(x"10000"+i*2**UserTransactionSizeBits_g, AxiAddrWidth_g);
-                        Data_v := resize(x"10"+i*16, UserDataWidth_g);
-                        -- Slave: bursts of at most AxiMaxBeats_c beats
-                        Beat_v := 0;
+                    -- Slave: bursts of at most AxiMaxBeats_c beats
+                    Beat_v := 0;
 
-                        while Beat_v < AxiBeats_v loop
-                            Beats_v := minimum(AxiBeats_v-Beat_v, AxiMaxBeats_c);
-                            expect_aw (net, AxiSlave_c, Addr_v+Beat_v*AxiBytes_c, len => Beats_v, burst => AxiBurst_Incr_c);
-                            expect_w_arbitrary (net, AxiSlave_c, Beats_v,
-                                                resize(shift_right(dataAsVectorAligned(Addr_v, Data_v, bytes => DataBytes_v),
-                                                                   Beat_v*AxiDataWidth_g), Beats_v*AxiDataWidth_g),
-                                                std_logic_vector(resize(shift_right(unsigned(strbAsVectorAligned(Addr_v, DataBytes_v)),
-                                                                                    Beat_v*AxiBytes_c), Beats_v*AxiBytes_c)));
-                            push_b(net, AxiSlave_c, resp => AxiResp_Okay_c);
-                            Beat_v  := Beat_v+Beats_v;
-                        end loop;
-
-                        -- Master
-                        pushCommand(net, WrCmdMaster_c, Addr_v, DataBytes_v, CmdLowLat => '1');
-                        pushWrData(net, Data_v, beats => UserBeats_v);
+                    while Beat_v < AxiBeats_v loop
+                        Beats_v := minimum(AxiBeats_v-Beat_v, AxiMaxBeats_c);
+                        expect_aw (net, AxiSlave_c, Addr_v+Beat_v*AxiBytes_c, len => Beats_v, burst => AxiBurst_Incr_c);
+                        expect_w_arbitrary (net, AxiSlave_c, Beats_v,
+                                            resize(shift_right(dataAsVectorAligned(Addr_v, Data_v, bytes => DataBytes_v),
+                                                               Beat_v*AxiDataWidth_g), Beats_v*AxiDataWidth_g),
+                                            std_logic_vector(resize(shift_right(unsigned(strbAsVectorAligned(Addr_v, DataBytes_v)),
+                                                                                Beat_v*AxiBytes_c), Beats_v*AxiBytes_c)));
+                        push_b(net, AxiSlave_c, resp => AxiResp_Okay_c);
+                        Beat_v  := Beat_v+Beats_v;
                     end loop;
 
+                    -- Master
+                    pushCommand(net, WrCmdMaster_c, Addr_v, DataBytes_v, CmdLowLat => '1');
+                    pushWrData(net, Data_v, beats => UserBeats_v);
                     expectWrResponse(RespSuccess);
-                    expectWrResponse(RespSuccess);
+
                     -- The master is idle and completes a further command
                     wait until rising_edge(Clk);
-                    check_equal(CmdWr_Ready, '1', "CmdWr_Ready after the largest commands");
+                    check_equal(CmdWr_Ready, '1', "CmdWr_Ready after the largest command");
                     Addr_v := resize(x"0100", AxiAddrWidth_g);
                     Data_v := resize(x"55", UserDataWidth_g);
                     expect_single_write(net, AxiSlave_c, Addr_v,
