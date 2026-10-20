@@ -133,8 +133,7 @@ architecture rtl of olo_axi_master_full is
     constant OffsBits_c    : positive := max(log2(AxiBytes_c), 1);
     -- AXI words of a transfer (the beat count of olo_axi_master_simple): an unaligned transfer of up to
     -- 2**UserTransactionSizeBits_g-1 bytes touches up to 2**(UserTransactionSizeBits_g-log2(AxiBytes_c))+1 words
-    constant AxiSizeBits_c : positive := choose(AxiBytes_c = 1, UserTransactionSizeBits_g,
-                                                max(UserTransactionSizeBits_g - log2(AxiBytes_c) + 1, 2));
+    constant AxiSizeBits_c : positive := max(UserTransactionSizeBits_g - log2(AxiBytes_c) + 1, 2);
 
     -- *** Type ***
     type WriteCmdFsm_t is (Idle_s, Apply_s);
@@ -154,10 +153,9 @@ architecture rtl of olo_axi_master_full is
 
     function byteOffset (Addr : in unsigned(AxiAddrWidth_g-1 downto 0))
     return unsigned is
-        variable Offs_v : unsigned(OffsBits_c - 1 downto 0) := (others => '0');
     begin
-        Offs_v(log2(AxiBytes_c) - 1 downto 0) := Addr(log2(AxiBytes_c) - 1 downto 0);
-        return Offs_v;
+        -- For 8-bit AXI data the slice is a null range, resize returns zero
+        return resize(Addr(log2(AxiBytes_c) - 1 downto 0), OffsBits_c);
     end function;
 
     -- *** Two Process Record ***
@@ -257,7 +255,7 @@ begin
         report errorMessage(EntityName_c, "AxiDataWidth_g must be a multiple of UserDataWidth_g")
         severity failure;
     assert AxiSizeBits_c < AxiAddrWidth_g - log2(AxiBytes_c)
-        report errorMessage(EntityName_c, "UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-1 (8-bit AXI data: AxiAddrWidth_g), see documentation")
+        report errorMessage(EntityName_c, "UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-1, see documentation")
         severity failure;
 
     -- *** Combinatorial Process ***
