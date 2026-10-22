@@ -19,7 +19,7 @@ on:
 #Jobs  
 jobs:
   simulation-ghdl:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       #General Setup
       - name: Setup node
@@ -41,7 +41,7 @@ jobs:
           simulator: ghdl
 
   simulation-nvc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       #General Setup
       - name: Setup node
@@ -63,7 +63,7 @@ jobs:
           simulator: nvc
 
   linting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       #General Setup
       - name: Setup node
@@ -92,7 +92,7 @@ jobs:
             lint/report/vsg_vc_vhdl.xml
 
   check-synthesis-config:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       #General Setup
       - name: Setup node

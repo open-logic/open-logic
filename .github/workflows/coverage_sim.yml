@@ -21,7 +21,7 @@ on:
 #Jobs  
 jobs:
   start-instance:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       #General Setup
       - name: Checkout actions
