@@ -1,5 +1,4 @@
 gnat
-libgnat-9
 build-essential 
 automake 
 autoconf
