@@ -96,13 +96,16 @@ package olo_test_axi_slave_pkg is
         delay      : time             := 0 ns); -- delay before executing transaction
 
     -- Push R transaction (counter based)
+    -- error_code is sent on beat error_beat (0 = first beat), all other beats are OKAY.
+    -- With error_beat = -1, error_code is sent on all beats.
     procedure push_r (
         signal net  : inout network_t;
         axi_slave   : olo_test_axi_slave_t;
         start_value : unsigned;
         increment   : natural          := 1;
         beats       : natural          := 1;     -- number of beats to write
-        resp        : resp_t           := AxiResp_Okay_c;
+        error_code  : resp_t           := AxiResp_Okay_c;
+        error_beat  : integer          := -1;    -- beat to send error_code on (-1 = all beats)
         id          : std_logic_vector := "X";
         delay       : time             := 0 ns;  -- delay before executing transaction
         beat_delay  : time             := 0 ns); -- delay between beats
@@ -110,12 +113,14 @@ package olo_test_axi_slave_pkg is
     -- Push R transaction (arbitrary data)
     -- all_data must have the correct length and contain all data for all beats concatenated.
     -- The data at the right end (low index) are transferred first.
+    -- error_code and error_beat work as for push_r.
     procedure push_r_arbitrary (
         signal net : inout network_t;
         axi_slave  : olo_test_axi_slave_t;
         beats      : natural          := 1;
         all_data   : unsigned;
-        resp       : resp_t           := AxiResp_Okay_c;
+        error_code : resp_t           := AxiResp_Okay_c;
+        error_beat : integer          := -1;    -- beat to send error_code on (-1 = all beats)
         id         : std_logic_vector := "X";
         delay      : time             := 0 ns;  -- delay before executing transaction
         beat_delay : time             := 0 ns); -- delay between beats
@@ -348,7 +353,8 @@ package body olo_test_axi_slave_pkg is
         start_value : unsigned;
         increment   : natural          := 1;
         beats       : natural          := 1;       -- number of beats to write
-        resp        : resp_t           := AxiResp_Okay_c;
+        error_code  : resp_t           := AxiResp_Okay_c;
+        error_beat  : integer          := -1;      -- beat to send error_code on (-1 = all beats)
         id          : std_logic_vector := "X";
         delay       : time             := 0 ns;    -- delay before executing transaction
         beat_delay  : time             := 0 ns) is -- delay between beats
@@ -372,7 +378,7 @@ package body olo_test_axi_slave_pkg is
         end loop;
 
         -- implementation
-        push_r_arbitrary(net, axi_slave, beats, all_data_v, resp, id_v, delay, beat_delay);
+        push_r_arbitrary(net, axi_slave, beats, all_data_v, error_code, error_beat, id_v, delay, beat_delay);
     end procedure;
 
     procedure push_r_arbitrary (
@@ -380,7 +386,8 @@ package body olo_test_axi_slave_pkg is
         axi_slave  : olo_test_axi_slave_t;
         beats      : natural          := 1;
         all_data   : unsigned;
-        resp       : resp_t           := AxiResp_Okay_c;
+        error_code : resp_t           := AxiResp_Okay_c;
+        error_beat : integer          := -1;      -- beat to send error_code on (-1 = all beats)
         id         : std_logic_vector := "X";
         delay      : time             := 0 ns;    -- delay before executing transaction
         beat_delay : time             := 0 ns) is -- delay between beats
@@ -388,6 +395,7 @@ package body olo_test_axi_slave_pkg is
         variable id_v   : std_logic_vector(axi_slave.id_width-1 downto 0) := (others => '0');
         variable data_v : unsigned(axi_slave.data_width-1 downto 0);
         variable last_v : std_logic;
+        variable resp_v : resp_t;
     begin
         -- checks
         if id /= "X" then
@@ -395,10 +403,10 @@ package body olo_test_axi_slave_pkg is
             id_v := id;
         end if;
         check_equal(all_data'length, axi_slave.data_width*beats, "push_r_arbitrary: all_data has wrong length");
+        check((error_beat >= -1) and (error_beat < beats), "push_r_arbitrary: error_beat out of range");
 
         -- implementation
         msg := new_msg(axi_r_msg);
-        push(msg, resp);
         push(msg, id_v);
         push(msg, delay);
         push(msg, beat_delay);
@@ -410,8 +418,13 @@ package body olo_test_axi_slave_pkg is
             if i = beats-1 then
                 last_v := '1';
             end if;
+            resp_v := AxiResp_Okay_c;
+            if (error_beat = -1) or (error_beat = i) then
+                resp_v := error_code;
+            end if;
             push(msg, data_v);
             push(msg, last_v);
+            push(msg, resp_v);
         end loop;
 
         send(net, axi_slave.p_actor, msg);
@@ -444,7 +457,7 @@ package body olo_test_axi_slave_pkg is
         r_valid_delay  : time := 0 ns) is
     begin
         expect_ar(net, axi_slave, addr, delay => ar_ready_delay);
-        push_r(net, axi_slave, data, resp => AxiResp_Okay_c, delay => r_valid_delay);
+        push_r(net, axi_slave, data, error_code => AxiResp_Okay_c, delay => r_valid_delay);
     end procedure;
 
     -- Burst write (aligned)
@@ -478,7 +491,7 @@ package body olo_test_axi_slave_pkg is
         beat_delay     : time    := 0 ns) is
     begin
         expect_ar(net, axi_slave, addr, len => beats, delay => ar_ready_delay);
-        push_r(net, axi_slave, data_start, data_increment, beats, resp => AxiResp_Okay_c, delay => r_valid_delay, beat_delay => beat_delay);
+        push_r(net, axi_slave, data_start, data_increment, beats, error_code => AxiResp_Okay_c, delay => r_valid_delay, beat_delay => beat_delay);
     end procedure;
 
     -- Constructor
@@ -914,7 +927,6 @@ begin
             -- process message
             if msg_type = axi_r_msg then
                 -- Pop per transfer information
-                resp       := pop(msg);
                 id         := pop(msg);
                 delay      := pop(msg);
                 beat_delay := pop(msg);
@@ -929,6 +941,7 @@ begin
                     -- Pop Information
                     data := pop(msg);
                     last := pop(msg);
+                    resp := pop(msg);
                     -- Apply AXI data
                     axi_sm.r_data  <= std_logic_vector(data);
                     axi_sm.r_last  <= last;
