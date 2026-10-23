@@ -16,6 +16,12 @@ against an already-ECC-protected RAM.
 
 ## Description
 
+> [!NOTE]
+> _ft_ entities protect only RAM storage contents (by ECC). All regular logic (LUTs and flip-flops, including control
+> logic, counters and pipeline registers) is written under the assumption that **TMR (Triple Modular Redundancy) is
+> enabled in synthesis**. Without TMR, upsets in this logic are not covered. See
+> [Protection Scope](./olo_ft_principles.md#protection-scope) for details.
+
 The scrubber walks the RAM address space autonomously and rewrites a word whenever the wrapped RAM reports a
 correctable single-bit error (SEC) on it, refreshing the stored codeword before a second upset can turn a correctable
 error into an uncorrectable one. It is **opportunistic**: scrub reads fill idle read-port cycles, writebacks wait for

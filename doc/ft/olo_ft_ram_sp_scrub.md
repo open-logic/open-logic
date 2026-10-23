@@ -14,6 +14,12 @@ VHDL Source: [olo_ft_ram_sp_scrub](../../src/ft/vhdl/olo_ft_ram_sp_scrub.vhd)
 
 ## Description
 
+> [!NOTE]
+> _ft_ entities protect only RAM storage contents (by ECC). All regular logic (LUTs and flip-flops, including control
+> logic, counters and pipeline registers) is written under the assumption that **TMR (Triple Modular Redundancy) is
+> enabled in synthesis**. Without TMR, upsets in this logic are not covered. See
+> [Protection Scope](./olo_ft_principles.md#protection-scope) for details.
+
 This component implements an **ECC-protected single-port RAM with an opportunistic memory scrubber**.
 
 The user-facing interface is identical to [olo_ft_ram_sp](./olo_ft_ram_sp.md) plus a scrubber-enable input and four

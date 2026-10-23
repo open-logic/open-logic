@@ -8,18 +8,21 @@
 
 The table below gives an overview about which workflows are triggered by which events and where they run.
 
-| Workflow                                          | Runs on:<br />PR to _develop_<br />(contribution) | Runs on:<br />PR to _main_<br />(pre release) | Run on:<br />Push to _main_<br />(post release) | Runs monthly | Runs daily | Infrastructure:<br />GitHub Runner | Infrastructure:<br />AWS Runner |
-| ------------------------------------------------- | :-----------------------------------------------: | :-------------------------------------------: | :---------------------------------------------: | :----------: | :--------: | :--------------------------------: | :-----------------------------: |
-| [HDL-Check](#hdl-check)                           |                         x                         |                       x                       |                        x                        |      x       |            |                 x                  |                                 |
-| [Doc-Check](#doc-check)                           |                         x                         |                       x                       |                        x                        |      x       |            |                 x                  |                                 |
-| [analyze-issues](#analyze-issues)                 |                                                   |                                               |                                                 |              |     x      |                 x                  |                                 |
-| [Coverage Simulation](#coverage-simulation)       |                                                   |                       x                       |                        x                        |      x       |            |                                    |                x                |
-| [FuseSoC Test](#fusesoc-test)                     |                                                   |                       x                       |                        x                        |      x       |            |                                    |                x                |
-| [Reference Design Build](#reference-design-build) |                                                   |                       x                       |                        x                        |      x       |            |                                    |                x                |
-| [Synthesis Test](#synthesis-test)                 |                                                   |                       x                       |                        x                        |      x       |            |                                    |                x                |
+| Workflow                                                        | Runs on:<br />PR to _develop_<br />(contribution) | Runs on:<br />PR to _main_<br />(pre release) | Run on:<br />Push to _main_<br />(post release) | Runs weekly | Runs monthly | Runs daily | Infrastructure:<br />GitHub Runner | Infrastructure:<br />AWS Runner |
+| --------------------------------------------------------------- | :-----------------------------------------------: | :-------------------------------------------: | :---------------------------------------------: | :---------: | :----------: | :--------: | :--------------------------------: | :-----------------------------: |
+| [HDL-Check](#hdl-check)                                         |                         x                         |                       x                       |                        x                        |      x      |              |            |                 x                  |                                 |
+| [Doc-Check](#doc-check)                                         |                         x                         |                       x                       |                                                 |      x      |              |            |                 x                  |                                 |
+| [Python-Check](#python-check)                                   |                         x                         |                       x                       |                        x                        |      x      |              |            |                 x                  |                                 |
+| [analyze-issues](#analyze-issues)                               |                                                   |                                               |                                                 |             |              |     x      |                 x                  |                                 |
+| [AWS Heartbeat](#aws-heartbeat)                                 |                                                   |                                               |                                                 |      x      |              |            |                 x                  |                x                |
+| [Coverage Simulation](#coverage-simulation)                     |                                                   |                       x                       |                        x                        |             |      x       |            |                                    |                x                |
+| [FuseSoC Test](#fusesoc-test)                                   |                                                   |                       x                       |                        x                        |             |      x       |            |                                    |                x                |
+| [Reference Design Build](#reference-design-build)               |                                                   |                       x                       |                        x                        |             |      x       |            |                                    |                x                |
+| [Synthesis Test](#synthesis-test)                               |                                                   |                       x                       |                        x                        |             |      x       |            |                                    |                x                |
+| [Include Submodules in Release](#include-submodules-in-release) |                                                   |                                               |                                                 |             |              |            |                 x                  |                                 |
 
 **Note:** Workflow runs of PRs from forks require approval by the maintainer. This setup was chosen to avoid needless
-ost regarding AWS infrastructure and for security reasons (to avoid malicious code being executed in CI pipelines
+cost regarding AWS infrastructure and for security reasons (to avoid malicious code being executed in CI pipelines
 of _Open Logic_).
 
 ## Tool Versions
@@ -41,6 +44,7 @@ This workflow does the following things:
 
 - HDL Simulations without coverage using free Simulators (NVC, GHDL)
   - No coverage check
+  - One parallel job per simulator and area (`base`, `axi`, `intf`, `fix`, `ft`) to reduce the runtime
 - HDL Linting (VSG)
 - Check if all entities are covered by the YAML files for _Synthesis Test_
   - But not actually running synthesis (synthesis requires an AWS runner)
@@ -55,6 +59,14 @@ This workflow does the following things:
 
 This workflow is specifically written to run on a free GitHub runner, so it can run on every contribution PR at no cost.
 
+## Python-Check
+
+This workflow does the following things:
+
+- Unit tests of the _olo_fix_ Python models (pytest, including statement coverage)
+
+This workflow is specifically written to run on a free GitHub runner, so it can run on every contribution PR at no cost.
+
 ## analyze-issues
 
 This workflow does the following things:
@@ -64,6 +76,11 @@ This workflow does the following things:
 This workflow is specifically written to run on a free GitHub runner, so it can run on every contribution PR at no cost.
 
 This workflow runs daily to ensure information about bugs and potential bugs is up to date.
+
+## AWS Heartbeat
+
+This workflow starts the AWS runner once a week. It is not functionally required but prevents GitHub from
+unregistering the runner due to inactivity.
 
 ## Coverage Simulation
 
@@ -100,3 +117,8 @@ This workflow does the following things:
 - Build all reference designs contained in the tutorials
 
 Tools for this workflow requires large tool installations and NIC locked licenses, therefore it runs on an AWS runner.
+
+## Include Submodules in Release
+
+This workflow runs when a release is published. It packs all sources including submodules into _CompleteSources.zip_
+and attaches it to the release.
