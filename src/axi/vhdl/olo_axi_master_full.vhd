@@ -126,9 +126,15 @@ end entity;
 architecture rtl of olo_axi_master_full is
 
     -- *** Constants ***
-    constant EntityName_c : string  := "olo_axi_master_full";
-    constant AxiBytes_c   : natural := AxiDataWidth_g / 8;
-    constant DataBytes_c  : natural := UserDataWidth_g / 8;
+    constant EntityName_c  : string  := "olo_axi_master_full";
+    constant AxiBytes_c    : natural := AxiDataWidth_g / 8;
+    constant DataBytes_c   : natural := UserDataWidth_g / 8;
+    -- Byte offset within an AXI word: at least one bit, so that 8-bit AXI data has no null range (offset 0)
+    constant OffsBits_c    : positive := max(log2(AxiBytes_c), 1);
+    -- AXI words of a transfer (the beat count of olo_axi_master_simple): an unaligned transfer of up to
+    -- 2**UserTransactionSizeBits_g-1 bytes touches up to 2**(UserTransactionSizeBits_g-log2(AxiBytes_c))+1 words
+    constant AxiSizeBits_c : positive := choose(AxiBytes_c = 1, UserTransactionSizeBits_g,
+                                                max(UserTransactionSizeBits_g - log2(AxiBytes_c) + 1, 2));
 
     -- *** Type ***
     type WriteCmdFsm_t is (Idle_s, Apply_s);
@@ -146,6 +152,14 @@ architecture rtl of olo_axi_master_full is
         return Addr_v;
     end function;
 
+    function byteOffset (Addr : in unsigned(AxiAddrWidth_g-1 downto 0))
+    return unsigned is
+        variable Offs_v : unsigned(OffsBits_c - 1 downto 0) := (others => '0');
+    begin
+        Offs_v(log2(AxiBytes_c) - 1 downto 0) := Addr(log2(AxiBytes_c) - 1 downto 0);
+        return Offs_v;
+    end function;
+
     -- *** Two Process Record ***
     type TwoProcess_r is record
         -- *** Write Related Registers ***
@@ -153,8 +167,8 @@ architecture rtl of olo_axi_master_full is
         WrLastAddr      : unsigned(AxiAddrWidth_g - 1 downto 0);
         CmdWr_Ready     : std_logic;
         AxiWrCmd_Addr   : std_logic_vector(AxiAddrWidth_g - 1 downto 0);
-        AxiWrCmd_Size   : std_logic_vector(UserTransactionSizeBits_g - 1 downto 0);
-        WrAlignCmdSize  : std_logic_vector(UserTransactionSizeBits_g - 1 downto 0);
+        AxiWrCmd_Size   : std_logic_vector(AxiSizeBits_c - 1 downto 0);
+        WrAlignCmdSize  : std_logic_vector(AxiSizeBits_c - 1 downto 0);
         AxiWrCmd_LowLat : std_logic;
         AxiWrCmd_Vld    : std_logic;
         WrWconvFsm      : WriteWconvFsm_t;
@@ -165,8 +179,8 @@ architecture rtl of olo_axi_master_full is
         WrAlignFsm      : WriteAlignFsm_t;
         WrAlignReg      : std_logic_vector(AxiDataWidth_g * 2 - 1 downto 0);
         WrAlignBe       : std_logic_vector(AxiBytes_c * 2 - 1 downto 0);
-        WrShift         : unsigned(log2(AxiBytes_c) - 1 downto 0);
-        WrAlignShift    : unsigned(log2(AxiBytes_c) - 1 downto 0);
+        WrShift         : unsigned(OffsBits_c - 1 downto 0);
+        WrAlignShift    : unsigned(OffsBits_c - 1 downto 0);
         WrAlignVld      : std_logic;
         AxiWordCnt      : unsigned(UserTransactionSizeBits_g - 1 downto 0);
         WrLastBe        : std_logic_vector(AxiBytes_c - 1 downto 0);
@@ -176,12 +190,12 @@ architecture rtl of olo_axi_master_full is
         -- *** Read Related Registers ***
         RdCmdFsm        : ReadCmdFsm_t;
         RdLastAddr      : unsigned(AxiAddrWidth_g - 1 downto 0);
-        RdFirstAddrOffs : unsigned(log2(AxiBytes_c) - 1 downto 0);
+        RdFirstAddrOffs : unsigned(OffsBits_c - 1 downto 0);
         CmdRd_Ready     : std_logic;
         AxiRdCmd_Addr   : std_logic_vector(AxiAddrWidth_g - 1 downto 0);
         AxiRdCmd_LowLat : std_logic;
         AxiRdCmd_Vld    : std_logic;
-        AxiRdCmd_Size   : std_logic_vector(UserTransactionSizeBits_g - 1 downto 0);
+        AxiRdCmd_Size   : std_logic_vector(AxiSizeBits_c - 1 downto 0);
         RdFirstBe       : std_logic_vector(AxiBytes_c - 1 downto 0);
         RdLastBe        : std_logic_vector(AxiBytes_c - 1 downto 0);
         RdDataFsm       : ReadDataFsm_t;
@@ -189,11 +203,11 @@ architecture rtl of olo_axi_master_full is
         RdDataEna       : std_logic;
         RdDatFirstBe    : std_logic_vector(AxiBytes_c - 1 downto 0);
         RdDatLastBe     : std_logic_vector(AxiBytes_c - 1 downto 0);
-        RdDataWords     : unsigned(UserTransactionSizeBits_g - 1 downto 0);
+        RdDataWords     : unsigned(AxiSizeBits_c - 1 downto 0);
         RdCurrentWord   : unsigned(UserTransactionSizeBits_g - 1 downto 0);
-        RdShift         : unsigned(log2(AxiBytes_c) - 1 downto 0);
+        RdShift         : unsigned(OffsBits_c - 1 downto 0);
         RdLowIdx        : unsigned(log2(AxiBytes_c) downto 0);
-        RdAlignShift    : unsigned(log2(AxiBytes_c) - 1 downto 0);
+        RdAlignShift    : unsigned(OffsBits_c - 1 downto 0);
         RdAlignLowIdx   : unsigned(log2(AxiBytes_c) downto 0);
         RdAlignByteVld  : std_logic_vector(AxiBytes_c * 2 - 1 downto 0);
         RdAlignReg      : std_logic_vector(AxiDataWidth_g * 2 - 1 downto 0);
@@ -242,8 +256,8 @@ begin
     assert AxiDataWidth_g mod UserDataWidth_g = 0
         report errorMessage(EntityName_c, "AxiDataWidth_g must be a multiple of UserDataWidth_g")
         severity failure;
-    assert UserTransactionSizeBits_g <= AxiAddrWidth_g
-        report errorMessage(EntityName_c, "UserTransactionSizeBits_g must be smaller or equal to AxiAddrWidth_g")
+    assert AxiSizeBits_c < AxiAddrWidth_g - log2(AxiBytes_c)
+        report errorMessage(EntityName_c, "UserTransactionSizeBits_g must be smaller than AxiAddrWidth_g-1 (8-bit AXI data: AxiAddrWidth_g), see documentation")
         severity failure;
 
     -- *** Combinatorial Process ***
@@ -269,13 +283,14 @@ begin
                 when Idle_s =>
                     v.CmdWr_Ready := '1';
                     v.WrLastAddr  := unsigned(CmdWr_Addr) + unsigned(CmdWr_Size) - 1;
-                    if unsigned(CmdWr_Size(log2(DataBytes_c) - 1 downto 0)) = 0 then
+                    if (DataBytes_c = 1) or (unsigned(CmdWr_Size(log2(DataBytes_c) - 1 downto 0)) = 0) then
                         v.WrDataWordsCmd := resize(unsigned(CmdWr_Size(CmdWr_Size'high downto log2(DataBytes_c))), UserTransactionSizeBits_g);
                     else
-                        v.WrDataWordsCmd := resize(unsigned(CmdWr_Size(CmdWr_Size'high downto log2(DataBytes_c))) + 1, UserTransactionSizeBits_g);
+                        -- Resize before the increment: 2**(UserTransactionSizeBits_g-log2(DataBytes_c)) words need one bit more than the slice
+                        v.WrDataWordsCmd := resize(unsigned(CmdWr_Size(CmdWr_Size'high downto log2(DataBytes_c))), UserTransactionSizeBits_g) + 1;
                     end if;
                     v.AxiWrCmd_Addr   := std_logic_vector(alignedAddr(unsigned(CmdWr_Addr)));
-                    v.WrShift         := unsigned(CmdWr_Addr(v.WrShift'range));
+                    v.WrShift         := byteOffset(unsigned(CmdWr_Addr));
                     v.AxiWrCmd_LowLat := CmdWr_LowLat;
                     if CmdWr_Valid = '1' then
                         v.CmdWr_Ready := '0';
@@ -289,11 +304,11 @@ begin
                         v.WrCmdFsm      := Idle_s;
                         v.CmdWr_Ready   := '1';
                         v.AxiWrCmd_Size := std_logic_vector(resize(shift_right(alignedAddr(r.WrLastAddr) - unsigned(r.AxiWrCmd_Addr), log2(AxiBytes_c)) + 1,
-                                                                   UserTransactionSizeBits_g));
+                                                                   AxiSizeBits_c));
 
                         -- Calculate byte enables for last word
                         for byte in 0 to AxiBytes_c - 1 loop
-                            if r.WrLastAddr(log2(AxiBytes_c) - 1 downto 0) >= byte then
+                            if byteOffset(r.WrLastAddr) >= byte then
                                 v.WrLastBe(byte) := '1';
                             else
                                 v.WrLastBe(byte) := '0';
@@ -345,7 +360,7 @@ begin
 
             -- Word- to Byte-Enable conversion
             for i in 0 to AxiBytes_c - 1 loop
-                WriteBe_v(i) := WrData_We(i / UserDataWidth_g);
+                WriteBe_v(i) := WrData_We(i / DataBytes_c);
             end loop;
 
             -- FSM
@@ -435,11 +450,11 @@ begin
                 when Idle_s =>
                     v.CmdRd_Ready     := '1';
                     v.RdLastAddr      := unsigned(CmdRd_Addr) + unsigned(CmdRd_Size) - 1;
-                    v.RdFirstAddrOffs := unsigned(CmdRd_Addr(v.RdFirstAddrOffs'range));
+                    v.RdFirstAddrOffs := byteOffset(unsigned(CmdRd_Addr));
                     v.AxiRdCmd_Addr   := std_logic_vector(alignedAddr(unsigned(CmdRd_Addr)));
                     v.AxiRdCmd_LowLat := CmdRd_LowLat;
-                    v.RdShift         := unsigned(CmdRd_Addr(v.RdShift'range));
-                    v.RdLowIdx        := to_unsigned(AxiBytes_c, v.RdLowIdx'length) - unsigned(CmdRd_Addr(v.RdShift'range));
+                    v.RdShift         := byteOffset(unsigned(CmdRd_Addr));
+                    v.RdLowIdx        := to_unsigned(AxiBytes_c, v.RdLowIdx'length) - byteOffset(unsigned(CmdRd_Addr));
                     if CmdRd_Valid = '1' then
                         v.CmdRd_Ready := '0';
                         v.RdCmdFsm    := Apply_s;
@@ -452,11 +467,11 @@ begin
                         v.RdCmdFsm      := WaitDataFsm_s;
                         v.RdStartTf     := '1';
                         v.AxiRdCmd_Size := std_logic_vector(resize(shift_right(alignedAddr(r.RdLastAddr) - unsigned(r.AxiRdCmd_Addr), log2(AxiBytes_c)) + 1,
-                                                                   UserTransactionSizeBits_g));
+                                                                   AxiSizeBits_c));
 
                         -- Calculate byte enables for last byte
                         for byte in 0 to AxiBytes_c - 1 loop
-                            if r.RdLastAddr(log2(AxiBytes_c) - 1 downto 0) >= byte then
+                            if byteOffset(r.RdLastAddr) >= byte then
                                 v.RdLastBe(byte) := '1';
                             else
                                 v.RdLastBe(byte) := '0';
@@ -611,7 +626,7 @@ begin
             AxiDataWidth_g              => AxiDataWidth_g,
             AxiMaxBeats_g               => AxiMaxBeats_g,
             AxiMaxOpenTransactions_g    => AxiMaxOpenTransactions_g,
-            UserTransactionSizeBits_g   => UserTransactionSizeBits_g,
+            UserTransactionSizeBits_g   => AxiSizeBits_c,
             DataFifoDepth_g             => DataFifoDepth_g,
             ImplRead_g                  => ImplRead_g,
             ImplWrite_g                 => ImplWrite_g,
