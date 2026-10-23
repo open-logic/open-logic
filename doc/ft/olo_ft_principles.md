@@ -16,6 +16,23 @@ exposed because the stored charge representing each bit is small and the cell de
 The _ft_ area provides building blocks that detect and correct such bit flips transparently to the surrounding
 design.
 
+## Protection Scope
+
+The _ft_ entities protect **only the contents of RAM storage** (RAM primitives, FIFO buffers) by ECC. RAM cells
+hold their content for arbitrarily long and cannot be covered by vendor TMR (Triple Modular Redundancy), which is
+why ECC is used there.
+
+All regular logic (LUTs and flip-flops, including control logic, FSMs, counters, pointers and pipeline registers) is
+written under the assumption that **TMR is enabled in synthesis** (e.g. `syn_radhardlevel = "tmr"` for Synplify or
+the equivalent setting of the toolchain used). The _ft_ entities do not add any protection of their own for this
+logic. Without TMR, upsets in it are not covered.
+
+Users must therefore:
+
+- Enable TMR for the logic surrounding and including the _ft_ entities.
+- Verify in the synthesis report that TMR was actually applied (and that no storage intended to be TMR protected,
+  e.g. small register-based FIFOs, was inferred as a RAM primitive).
+
 ## SECDED Hamming Code
 
 All ECC-protected entities in the _ft_ area use the same **SECDED** (Single Error Correction, Double Error
