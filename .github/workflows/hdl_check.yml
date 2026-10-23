@@ -20,7 +20,7 @@ on:
 jobs:
   simulation:
     name: simulation-${{ matrix.simulator }}-${{ matrix.area }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -50,7 +50,7 @@ jobs:
           area: ${{ matrix.area }}
 
   linting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       #General Setup
       - name: Setup node
@@ -79,7 +79,7 @@ jobs:
             lint/report/vsg_vc_vhdl.xml
 
   check-synthesis-config:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       #General Setup
       - name: Setup node
