@@ -62,7 +62,7 @@ jobs:
           for area_dir in ../src/*/vhdl; do
             area=$(basename $(dirname $area_dir))
             echo "### Simulating area: $area"
-            python3 -u ./run.py --modelsim --coverage -p 8 --coverage_file=coverage_area_$area "olo_tb.olo_${area}_*"
+            python3 ./run.py --modelsim --coverage --coverage_file=coverage_area_$area "olo_tb.olo_${area}_*"
           done
           vcover merge coverage_data coverage_area_*
       # Coverage Simulation (check > 95%)
