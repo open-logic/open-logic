@@ -58,6 +58,11 @@ cli.parser.add_argument(
     help="Enables simulation coverage",
 )
 cli.parser.add_argument(
+    "--coverage_file",
+    default="coverage_data",
+    help="Name of the merged coverage output file (default: coverage_data)",
+)
+cli.parser.add_argument(
     "--vhdl_ls",
     action="store_true",
     default=False,
@@ -190,10 +195,10 @@ if args.coverage:
 
     def post_run(results):
         if simulator == 'modelsim':
-            results.merge_coverage(file_name='coverage_data')
+            results.merge_coverage(file_name=args.coverage_file)
         if simulator == 'nvc':
-            os.system('nvc --cover-merge --output coverage_data ./*.ncdb')
-            os.system('nvc --cover-report --per-file --output nvc_coverage coverage_data > nvc_coverage.txt 2>&1')
+            os.system(f'nvc --cover-merge --output {args.coverage_file} ./*.ncdb')
+            os.system(f'nvc --cover-report --per-file --output nvc_coverage {args.coverage_file} > nvc_coverage.txt 2>&1')
 else:
     def post_run(results):
         pass

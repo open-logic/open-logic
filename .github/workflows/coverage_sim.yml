@@ -54,11 +54,17 @@ jobs:
           pip install "setuptools<70" setuptools_scm wheel
           pip install --no-build-isolation -r requirements.txt
       # Run simulation
+      # .. per area to keep the individual runs small (single large runs crashed regularly)
       - name: Run Simulation
         run: |
           source $LOCAL_TOOLS
           cd ./sim
-          python3 -u ./run.py --modelsim --coverage -p 8
+          for area_dir in ../src/*/vhdl; do
+            area=$(basename $(dirname $area_dir))
+            echo "### Simulating area: $area"
+            python3 ./run.py --modelsim --coverage --coverage_file=coverage_area_$area "olo_tb.olo_${area}_*"
+          done
+          vcover merge coverage_data coverage_area_*
       # Coverage Simulation (check > 95%)
       # On PRs errors are required if coverage is low
       - name: Check Coverage Level
