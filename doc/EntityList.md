@@ -311,6 +311,12 @@ Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_
 This area contains fault-tolerant entities for use in radiation-sensitive environments (e.g. space or avionics).
 All RAM entities use SECDED (Single Error Correction, Double Error Detection).
 
+> [!NOTE]
+> _ft_ entities protect only RAM storage contents (by ECC). All regular logic (LUTs and flip-flops, including control
+> logic, counters and pipeline registers) is written under the assumption that **TMR (Triple Modular Redundancy) is
+> enabled in synthesis**. Without TMR, upsets in this logic are not covered. See
+> [Protection Scope](./ft/olo_ft_principles.md#protection-scope) for details.
+
 The cross-cutting concepts (codeword layout, ECC overhead, error injection semantics, status flags, ECC pipeline,
 common constraints) are described once in
 [Open Logic Fault-Tolerance Principles](./ft/olo_ft_principles.md) and referenced from the per-entity docs.

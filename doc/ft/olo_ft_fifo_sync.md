@@ -14,6 +14,12 @@ VHDL Source: [olo_ft_fifo_sync](../../src/ft/vhdl/olo_ft_fifo_sync.vhd)
 
 ## Description
 
+> [!NOTE]
+> _ft_ entities protect only RAM storage contents (by ECC). All regular logic (LUTs and flip-flops, including control
+> logic, counters and pipeline registers) is written under the assumption that **TMR (Triple Modular Redundancy) is
+> enabled in synthesis**. Without TMR, upsets in this logic are not covered. See
+> [Protection Scope](./olo_ft_principles.md#protection-scope) for details.
+
 This component implements an **ECC-protected synchronous FIFO** using SECDED (Single Error Correction, Double Error
 Detection) Hamming code. The interface and behavior match [olo_base_fifo_sync](../base/olo_base_fifo_sync.md).
 
