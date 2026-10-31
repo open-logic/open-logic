@@ -1050,6 +1050,37 @@ def add_configs(olo_tb):
             named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat},
                          pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
 
+    ### olo_fix_dds ###
+    tb = olo_tb.test_bench('olo_fix_dds_tb')
+    cosim = olo_fix_dds.cosim.cosim
+    default_generics = {
+        'Channels_g': 1,
+        'PhaseFmt_g': '(0, 0, 32)',
+        'OutFmt_g': '(1, 0, 16)',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s',
+        'Resource_g': 'AUTO'
+    }
+
+    # Channel counts (1 = no storage, 2 = single register, others = SRL)
+    for Channels in [1, 2, 3, 5]:
+        named_config(tb, default_generics | {'Channels_g': Channels}, pre_config=cosim,
+                     short_name=f'Channels_g={Channels}')
+
+    # BRAM storage (reset of the RAM content is verified by running all test cases in one sim)
+    named_config(tb, default_generics | {'Channels_g': 8, 'Resource_g': 'BRAM'}, pre_config=cosim,
+                 short_name='Channels_g=8-BRAM')
+
+    # Formats - phase narrower than OutFmt_g.F + 4 (no rounding) and both output scalings
+    for PhaseFmt, OutFmt in [('(0, 0, 16)', '(1, 0, 16)'), ('(0, 0, 32)', '(1, 1, 10)'),
+                             ('(0, 0, 28)', '(1, 0, 20)')]:
+        named_config(tb, default_generics | {'Channels_g': 3, 'PhaseFmt_g': PhaseFmt, 'OutFmt_g': OutFmt},
+                     pre_config=cosim, short_name=f'PhaseFmt_g={PhaseFmt}-OutFmt_g={OutFmt}')
+
+    # Round / Saturate
+    named_config(tb, default_generics | {'Round_g': 'Trunc_s', 'Saturate_g': 'None_s'}, pre_config=cosim,
+                 short_name='Round=Trunc_s-Sat=None_s')
+
 
     ### olo_fix_lin_approx ###
     # Entities and testbenches are generated through <root>/sim/codegen.py, which is executed before
