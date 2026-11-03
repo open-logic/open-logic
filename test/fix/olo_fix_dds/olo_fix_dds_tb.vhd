@@ -33,13 +33,12 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_fix_dds_tb is
     generic (
-        Channels_g : positive := 1;
-        PhaseFmt_g : string   := "(0,0,24)";
-        OutFmt_g   : string   := "(1,0,16)";
-        Round_g    : string   := "NonSymPos_s";
-        Saturate_g : string   := "Sat_s";
-        Resource_g : string   := "AUTO";
-        runner_cfg : string
+        Channels_g      : positive := 1;
+        PhaseFmt_g      : string   := "(0,0,24)";
+        OutFmt_g        : string   := "(1,0,16)";
+        Round_g         : string   := "NonSymPos_s";
+        DelayResource_g : string   := "AUTO";
+        runner_cfg      : string
     );
 end entity;
 
@@ -97,6 +96,9 @@ begin
     p_control : process is
     begin
         test_runner_setup(runner, runner_cfg);
+
+        -- Latency must match the value stated in the documentation
+        check_equal(ExpectedLatency_c, 14, msg => "ExpectedLatency_c does not match documentation");
 
         while test_suite loop
 
@@ -177,12 +179,11 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_fix_dds
         generic map (
-            Channels_g => Channels_g,
-            PhaseFmt_g => PhaseFmt_g,
-            OutFmt_g   => OutFmt_g,
-            Round_g    => Round_g,
-            Saturate_g => Saturate_g,
-            Resource_g => Resource_g
+            Channels_g      => Channels_g,
+            PhaseFmt_g      => PhaseFmt_g,
+            OutFmt_g        => OutFmt_g,
+            Round_g         => Round_g,
+            DelayResource_g => DelayResource_g
         )
         port map (
             Clk            => Clk,

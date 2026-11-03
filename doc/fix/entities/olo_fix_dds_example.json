@@ -1,0 +1,12 @@
+{"signal": [
+  {"name": "Clk",            "wave": "P......|.......", "period": 1},
+  {"name": "In_Valid",       "wave": "01.01.0|.......", "period": 1},
+  {"name": "In_PhaseStep",   "wave": "x53x53x|.......", "data": ["Ch0", "Ch1", "Ch0", "Ch1"], "period": 1},
+  {"name": "In_PhaseOffset", "wave": "x53x53x|.......", "data": ["Ch0", "Ch1", "Ch0", "Ch1"], "period": 1},
+  {"name": "In_Restart",     "wave": "0...10.|.......", "period": 1},
+  {},
+  {"name": "Out_Valid",      "wave": "0......|.1.01.0", "period": 1},
+  {"name": "Out_Sin",        "wave": "x......|.53x53x", "data": ["Ch0", "Ch1", "Ch0", "Ch1"], "period": 1},
+  {"name": "Out_Cos",        "wave": "x......|.53x53x", "data": ["Ch0", "Ch1", "Ch0", "Ch1"], "period": 1},
+  {"name": "Out_Last",       "wave": "0......|..10.10", "period": 1}
+]}
