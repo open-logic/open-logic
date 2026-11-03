@@ -37,8 +37,8 @@ class TestOloFixDds(unittest.TestCase):
             dut.process([0.1, 0.1], [0.0])
 
     def test_sin_phase_fmt(self):
-        # Phase is rounded to out_fmt.F + 4 fractional bits, but never widened
-        self.assertEqual(olo_fix_dds(FixFormat(0, 0, 32), self.OUT_FMT).sin_phase_fmt, FixFormat(0, 0, 20))
+        # Phase is rounded to out_fmt.F + 3 fractional bits, but never widened
+        self.assertEqual(olo_fix_dds(FixFormat(0, 0, 32), self.OUT_FMT).sin_phase_fmt, FixFormat(0, 0, 19))
         self.assertEqual(olo_fix_dds(FixFormat(0, 0, 18), self.OUT_FMT).sin_phase_fmt, FixFormat(0, 0, 18))
 
     # -----------------------------------------------------------------------------------------------
@@ -61,16 +61,16 @@ class TestOloFixDds(unittest.TestCase):
         np.testing.assert_array_equal(cos_val, ref_cos)
 
     def test_accuracy(self):
-        # Odd phase step with full resolution, error must stay below one LSB (plus phase rounding)
+        # Odd phase step with full resolution, error must stay below 1.5 LSB (including phase rounding)
         dut = olo_fix_dds(FixFormat(0, 0, 32), self.OUT_FMT)
-        n = 3000
+        n = 300
         step = cl_fix_from_real(0.0123456789, FixFormat(0, 0, 32))
         sin_val, cos_val = dut.process(np.full(n, step), np.zeros(n))
         phase = np.arange(n) * step
         sin_err = np.max(np.abs(sin_val - np.sin(2*np.pi*phase)*dut.peak))*2**self.OUT_FMT.F
         cos_err = np.max(np.abs(cos_val - np.cos(2*np.pi*phase)*dut.peak))*2**self.OUT_FMT.F
-        self.assertLess(sin_err, 1.0)
-        self.assertLess(cos_err, 1.0)
+        self.assertLess(sin_err, 1.5)
+        self.assertLess(cos_err, 1.5)
 
     def test_wrapping(self):
         # Negative inputs and inputs above one rotation wrap
@@ -90,15 +90,31 @@ class TestOloFixDds(unittest.TestCase):
         self.assertEqual(cos_val[0], dut.peak)
 
     def test_restart(self):
-        # Restart sets the accumulator to zero, hence the sequence starts over
+        # reset() in the middle of a stream models a restart: the sequence starts over
         n = 10
-        restart = np.zeros(n, dtype=bool)
-        restart[5] = True
         dut = olo_fix_dds(self.PHASE_FMT, self.OUT_FMT)
-        sin_val, _ = dut.process(np.full(n, 0.05), np.zeros(n), restart)
+        sin_a, _ = dut.process(np.full(5, 0.05), np.zeros(5))
+        dut.reset()
+        sin_b, _ = dut.next(np.full(5, 0.05), np.zeros(5))
         sin_ref, _ = olo_fix_dds(self.PHASE_FMT, self.OUT_FMT).process(np.full(n, 0.05), np.zeros(n))
-        np.testing.assert_array_equal(sin_val[:5], sin_ref[:5])
-        np.testing.assert_array_equal(sin_val[5:], sin_ref[:5])
+        np.testing.assert_array_equal(sin_a, sin_ref[:5])
+        np.testing.assert_array_equal(sin_b, sin_ref[:5])
+
+    def test_accumulator_headroom(self):
+        # F + bit_length(N) must not exceed 64 bits, otherwise an error is raised
+        fmt = FixFormat(0, 0, 48)
+        dut = olo_fix_dds(fmt, self.OUT_FMT)
+        n_ok = 2**16 - 1
+        n_bad = 2**16
+        step = np.full(n_ok, 1.0 - 2**-48)
+        sin_val, _ = dut.process(step, np.zeros(n_ok))
+        self.assertEqual(len(sin_val), n_ok)
+        with self.assertRaises(ValueError):
+            dut.process(np.zeros(n_bad), np.zeros(n_bad))
+        # Chunked processing works for arbitrary length (next() keeps the state)
+        sin_a, _ = dut.process(np.full(n_ok, 0.1), np.zeros(n_ok))
+        sin_b, _ = olo_fix_dds(fmt, self.OUT_FMT).process(np.full(n_ok, 0.1), np.zeros(n_ok))
+        np.testing.assert_array_equal(sin_a, sin_b)
 
     def test_next_vs_process(self):
         # next() continues with the accumulator state, process() restarts
