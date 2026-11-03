@@ -26,7 +26,6 @@ def cosim(output_path : str = None,
     PhaseFmt_g = olo_fix_utils.fix_format_from_string(generics["PhaseFmt_g"])
     OutFmt_g = olo_fix_utils.fix_format_from_string(generics["OutFmt_g"])
     Round_g = FixRound[generics["Round_g"]]
-    Saturate_g = FixSaturate[generics["Saturate_g"]]
 
     # Samples per channel (reduced for many channels to keep the simulation time reasonable, long
     # for plotting to get a good FFT resolution)
@@ -38,16 +37,24 @@ def cosim(output_path : str = None,
     # - CH2: Varying frequency, constant phase
     # - CH3: Varying frequency and phase
     # - Others: Random step/offset that change at runtime
-    # Varying values follow sine patterns. Restarts are applied randomly to all channels except
-    # CH0 (to keep its spectrum clean).
+    # Varying values follow square patterns with different periods (< 500 samples, hence all edges are
+    # visible in the plots).
+    # A single restart is applied to CH3 (only if Channels_g > 3) in
+    # the middle of the stream. The model has no restart input, a restart is modeled by calling
+    # reset().
+    restart_ch_idx = 3
+    restart_sample = min(250, SAMPLES*3//8)
     rng = np.random.default_rng(seed=Channels_g)
     n = np.arange(SAMPLES)
     step_const = 0.0123456789
     offset_const = 0.3
-    step_vary_a = 0.05 + 0.04*np.sin(2*np.pi*n/(SAMPLES/2))
-    step_vary_b = 0.2 + 0.1*np.sin(2*np.pi*n/(SAMPLES/3))
-    offset_vary_a = 0.5 + 0.45*np.sin(2*np.pi*n/(SAMPLES/3))
-    offset_vary_b = 0.5 + 0.3*np.sin(2*np.pi*n/(SAMPLES/5))
+    def square(low, high, period):
+        # Toggles between low and high with the given period in samples (50% duty cycle)
+        return np.where((n*2//period) % 2 == 0, low, high)
+    step_vary_a = square(0.01, 0.09, 160)
+    step_vary_b = square(0.1, 0.3, 230)
+    offset_vary_a = square(0.05, 0.95, 300)
+    offset_vary_b = square(0.2, 0.8, 110)
     step_ch = []
     offset_ch = []
     restart_ch = []
@@ -69,19 +76,30 @@ def cosim(output_path : str = None,
             step[SAMPLES//2:] = rng.uniform(0.0, 1.0)
             offset = np.full(SAMPLES, rng.uniform(0.0, 1.0))
             offset[SAMPLES*3//4:] = rng.uniform(0.0, 1.0)
-        restart = rng.uniform(0.0, 1.0, SAMPLES) < 0.03
-        if ch == 0:
-            restart[:] = False
+        restart = np.zeros(SAMPLES)
+        if ch == restart_ch_idx:
+            restart[restart_sample] = 1.0
         step_ch.append(cl_fix_from_real(step, PhaseFmt_g, FixSaturate.Sat_s))
         offset_ch.append(cl_fix_from_real(offset, PhaseFmt_g, FixSaturate.Sat_s))
-        restart_ch.append(restart.astype(float))
+        restart_ch.append(restart)
 
     #Calculate (the model is single-channel, hence one instance per channel)
     sin_ch = []
     cos_ch = []
     for ch in range(Channels_g):
-        dut = olo_fix_dds(PhaseFmt_g, OutFmt_g, Round_g, Saturate_g)
-        out_sin, out_cos = dut.process(step_ch[ch], offset_ch[ch], restart_ch[ch])
+        dut = olo_fix_dds(PhaseFmt_g, OutFmt_g, Round_g)
+        if ch == restart_ch_idx:
+            # A restart sets the accumulator to zero before the restarted sample is processed, which is
+            # what reset() does. Hence the stream is processed in two parts with reset() in between.
+            part_a = slice(0, restart_sample)
+            part_b = slice(restart_sample, SAMPLES)
+            sin_a, cos_a = dut.next(step_ch[ch][part_a], offset_ch[ch][part_a])
+            dut.reset()
+            sin_b, cos_b = dut.next(step_ch[ch][part_b], offset_ch[ch][part_b])
+            out_sin = np.concatenate((sin_a, sin_b))
+            out_cos = np.concatenate((cos_a, cos_b))
+        else:
+            out_sin, out_cos = dut.process(step_ch[ch], offset_ch[ch])
         sin_ch.append(out_sin)
         cos_ch.append(out_cos)
 
@@ -95,11 +113,11 @@ def cosim(output_path : str = None,
 
     # Plot if enabled
     if not cosim_mode:
-        # Time domain (first 4 channels, output zoomed in to keep the waveforms visible)
+        # Time domain (first 4 channels, zoomed in to the first 500 samples to keep the waveforms visible)
         plot_ch = range(min(Channels_g, 4))
         zoom = slice(0, 500)
-        plots = {"Step [rotations]" : {f"CH{ch}" : step[ch::Channels_g] for ch in plot_ch},
-                 "Offset [rotations]" : {f"CH{ch}" : offset[ch::Channels_g] for ch in plot_ch}}
+        plots = {"Step [rotations] (first 500 samples)" : {f"CH{ch}" : step[ch::Channels_g][zoom] for ch in plot_ch},
+                 "Offset [rotations] (first 500 samples)" : {f"CH{ch}" : offset[ch::Channels_g][zoom] for ch in plot_ch}}
         for ch in plot_ch:
             plots[f"CH{ch} Output (first 500 samples)"] = {"Sine" : out_sin[ch::Channels_g][zoom],
                                                             "Cosine" : out_cos[ch::Channels_g][zoom]}
@@ -137,7 +155,6 @@ if __name__ == "__main__":
         "Channels_g": "4",
         "PhaseFmt_g": "(0, 0, 32)",
         "OutFmt_g": "(1, 0, 16)",
-        "Round_g": "NonSymPos_s",
-        "Saturate_g": "Sat_s"
+        "Round_g": "NonSymPos_s"
     }
     cosim(generics=generics, cosim_mode=False)

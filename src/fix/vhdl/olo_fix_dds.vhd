@@ -34,18 +34,17 @@ library work;
 entity olo_fix_dds is
     generic (
         -- Configuration
-        Channels_g    : positive := 1;
+        Channels_g         : positive := 1;
         -- Formats
-        PhaseFmt_g    : string;
-        OutFmt_g      : string;
-        -- Round / Saturate
-        Round_g       : string   := FixRound_NonSymPos_c;
-        Saturate_g    : string   := FixSaturate_Sat_c;
+        PhaseFmt_g         : string;
+        OutFmt_g           : string;
+        -- Round
+        Round_g            : string   := FixRound_NonSymPos_c;
         -- Resource control
-        MemStyle_g    : string   := "auto";
-        Resource_g    : string   := "AUTO";
-        RamBehavior_g : string   := "RBW";
-        RamStyle_g    : string   := "auto"
+        SinMemStyle_g      : string   := "auto";
+        DelayResource_g    : string   := "AUTO";
+        DelayRamBehavior_g : string   := "RBW";
+        DelayRamStyle_g    : string   := "auto"
     );
     port (
         -- Control Ports
@@ -74,23 +73,28 @@ architecture rtl of olo_fix_dds is
     constant PhaseFmt_c   : FixFormat_t := cl_fix_format_from_string(PhaseFmt_g);
     constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
 
-    -- The phase is rounded to four fractional bits more than the output before it is applied to
-    -- olo_fix_sin. This keeps the error caused by phase quantization well below one LSB.
-    constant SinPhaseFmt_c : FixFormat_t := (0, 0, work.olo_base_pkg_math.min(PhaseFmt_c.F, OutFmt_c.F + 4));
+    -- The phase is rounded to three fractional bits more than the output before it is applied to
+    -- olo_fix_sin. This keeps the error caused by phase quantization below half an LSB.
+    constant SinPhaseFmt_c : FixFormat_t := (0, 0, work.olo_base_pkg_math.min(PhaseFmt_c.F, OutFmt_c.F + 3));
 
     -- Types
     subtype Phase_t is std_logic_vector(cl_fix_width(PhaseFmt_c) - 1 downto 0);
 
+    -- Two Process Method
+    type TwoProcess_r is record
+        Valid_0    : std_logic;
+        Accu_0     : Phase_t;
+        Phase_0    : Phase_t;
+        Valid_1    : std_logic;
+        SinPhase_1 : std_logic_vector(cl_fix_width(SinPhaseFmt_c) - 1 downto 0);
+        OutCnt     : integer range 0 to Channels_g - 1;
+    end record;
+
+    signal r, r_next : TwoProcess_r;
+
     -- Signals
     signal AccuStored : Phase_t;
-    signal AccuCur    : Phase_t;
-    signal Valid_0    : std_logic;
-    signal Accu_0     : Phase_t;
-    signal Phase_0    : Phase_t;
-    signal Valid_1    : std_logic;
-    signal SinPhase_1 : std_logic_vector(cl_fix_width(SinPhaseFmt_c) - 1 downto 0);
     signal SinValid   : std_logic;
-    signal OutCnt     : integer range 0 to Channels_g - 1;
 
 begin
 
@@ -101,69 +105,86 @@ begin
         severity error;
     -- synthesis translate_on
 
-    -- *** Accumulator Restart ***
-    AccuCur <= (others => '0') when In_Restart = '1' else AccuStored;
+    -- *** Combinatorial Process ***
+    p_comb : process (all) is
+        variable v         : TwoProcess_r;
+        variable AccuCur_v : Phase_t;
+    begin
+        -- *** Hold variables stable ***
+        v := r;
+
+        -- *** Accumulator Restart ***
+        if In_Restart = '1' then
+            AccuCur_v := (others => '0');
+        else
+            AccuCur_v := AccuStored;
+        end if;
+
+        -- *** Stage 0: Phase Accumulation ***
+        -- Both adders wrap, which implements the modulo one rotation behavior of the phase.
+        v.Valid_0 := In_Valid;
+        if In_Valid = '1' then
+            v.Accu_0  := cl_fix_add(AccuCur_v, PhaseFmt_c, In_PhaseStep, PhaseFmt_c,
+                                    PhaseFmt_c, Trunc_s, None_s);
+            v.Phase_0 := cl_fix_add(AccuCur_v, PhaseFmt_c, In_PhaseOffset, PhaseFmt_c,
+                                    PhaseFmt_c, Trunc_s, None_s);
+        end if;
+
+        -- *** Stage 1: Phase Rounding ***
+        -- Rounding up to one rotation wraps to zero, which is correct for a phase.
+        v.Valid_1    := r.Valid_0;
+        v.SinPhase_1 := cl_fix_resize(r.Phase_0, PhaseFmt_c, SinPhaseFmt_c, NonSymPos_s, None_s);
+
+        -- *** Output Channel Counter ***
+        if SinValid = '1' then
+            if r.OutCnt = Channels_g - 1 then
+                v.OutCnt := 0;
+            else
+                v.OutCnt := r.OutCnt + 1;
+            end if;
+        end if;
+
+        -- *** Assign Signal ***
+        r_next <= v;
+    end process;
 
     -- *** Sequential Process ***
-    p_reg : process (Clk) is
+    p_seq : process (Clk) is
     begin
         if rising_edge(Clk) then
-
-            -- *** Stage 0: Phase Accumulation ***
-            -- Both adders wrap, which implements the modulo one rotation behavior of the phase.
-            Valid_0 <= In_Valid;
-            if In_Valid = '1' then
-                Accu_0  <= cl_fix_add(AccuCur, PhaseFmt_c, In_PhaseStep, PhaseFmt_c,
-                                      PhaseFmt_c, Trunc_s, None_s);
-                Phase_0 <= cl_fix_add(AccuCur, PhaseFmt_c, In_PhaseOffset, PhaseFmt_c,
-                                      PhaseFmt_c, Trunc_s, None_s);
-            end if;
-
-            -- *** Stage 1: Phase Rounding ***
-            -- Rounding up to one rotation wraps to zero, which is correct for a phase.
-            Valid_1    <= Valid_0;
-            SinPhase_1 <= cl_fix_resize(Phase_0, PhaseFmt_c, SinPhaseFmt_c, NonSymPos_s, None_s);
-
-            -- *** Output Channel Counter ***
-            if SinValid = '1' then
-                if OutCnt = Channels_g - 1 then
-                    OutCnt <= 0;
-                else
-                    OutCnt <= OutCnt + 1;
-                end if;
-            end if;
+            r <= r_next;
 
             -- Reset
             if Rst = '1' then
-                Valid_0 <= '0';
-                Accu_0  <= (others => '0');
-                Valid_1 <= '0';
-                OutCnt  <= 0;
+                r.Valid_0 <= '0';
+                r.Accu_0  <= (others => '0');
+                r.Valid_1 <= '0';
+                r.OutCnt  <= 0;
             end if;
         end if;
     end process;
 
     -- *** Outputs ***
     Out_Valid <= SinValid;
-    Out_Last  <= '1' when OutCnt = Channels_g - 1 else '0';
+    Out_Last  <= '1' when r.OutCnt = Channels_g - 1 else '0';
 
     -- *** Component Instantiations ***
 
-    -- Accumulator storage. Together with the accumulator register (Accu_0) it forms a delay of
+    -- Accumulator storage. Together with the accumulator register (r.Accu_0) it forms a delay of
     -- Channels_g samples. After reset, zeros are returned for all channels.
     i_accu : entity work.olo_base_delay
         generic map (
             Width_g       => cl_fix_width(PhaseFmt_c),
             Delay_g       => Channels_g - 1,
-            Resource_g    => Resource_g,
+            Resource_g    => DelayResource_g,
             RstState_g    => true,
-            RamBehavior_g => RamBehavior_g,
-            RamStyle_g    => RamStyle_g
+            RamBehavior_g => DelayRamBehavior_g,
+            RamStyle_g    => DelayRamStyle_g
         )
         port map (
             Clk      => Clk,
             Rst      => Rst,
-            In_Data  => Accu_0,
+            In_Data  => r.Accu_0,
             In_Valid => In_Valid,
             Out_Data => AccuStored
         );
@@ -174,15 +195,15 @@ begin
             OutFmt_g    => OutFmt_g,
             InFmt_g     => to_string(SinPhaseFmt_c),
             CosOutput_g => true,
-            MemStyle_g  => MemStyle_g,
+            MemStyle_g  => SinMemStyle_g,
             Round_g     => Round_g,
-            Saturate_g  => Saturate_g
+            Saturate_g  => FixSaturate_None_c
         )
         port map (
             Clk       => Clk,
             Rst       => Rst,
-            In_Valid  => Valid_1,
-            In_Data   => SinPhase_1,
+            In_Valid  => r.Valid_1,
+            In_Data   => r.SinPhase_1,
             Out_Valid => SinValid,
             Out_Sin   => Out_Sin,
             Out_Cos   => Out_Cos
