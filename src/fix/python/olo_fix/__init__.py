@@ -37,3 +37,5 @@ from .olo_fix_private_lin_approx_inv import *
 from .olo_fix_inv import *
 from .olo_fix_private_lin_approx_sqrt import *
 from .olo_fix_sqrt import *
+from .olo_fix_private_lin_approx_log2 import *
+from .olo_fix_log2 import *
