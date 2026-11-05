@@ -62,7 +62,7 @@ In the current version the latency is 21 clock cycles, independently of the inpu
 | OutFmt_g        | string   | -             | Output format. Must be signed if _InFmt_g_ is signed.        |
 | InFmt_g         | string   | -             | Input format. Any format that is at least two and at most 256 bits wide. |
 | PrecisionBits_g | positive | 18            | Number of fractional bits of the inversion approximation. Must be 10, 14, 18 or 20. |
-| MemStyle_g      | string   | "auto"        | Resource control for the table (_auto_, _block_ or _distributed_) |
+| MemStyle_g      | string   | "auto"        | Resource control for the table. Applied to the ROM attributes _rom_style_, _romstyle_ and _syn_romstyle_.<br>For values refer to _MemStyle_g_ in [olo_fix_coef_storage](./olo_fix_coef_storage.md#generics) |
 | Round_g         | string   | "NonSymPos_s" | Rounding mode of the output stage                            |
 | Saturate_g      | string   | "Sat_s"       | Saturation mode of the output stage                          |
 

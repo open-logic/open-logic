@@ -72,7 +72,7 @@ supplied with.
 | PhaseFmt_g         | string   | -             | Format of phase step, phase offset and accumulator (in rotations). Must be `(0, 0, M)`. |
 | OutFmt_g           | string   | -             | Output Format, one of the formats supported by [olo_fix_sin](./olo_fix_sin.md) <br> `(1, 0, 10..20)` or `(1, 1, 10..20)`. |
 | Round_g            | string   | "NonSymPos_s" | Rounding mode of the sine/cosine output stage                |
-| SinMemStyle_g      | string   | "auto"        | Resource control for the sine table (_auto_, _block_ or _distributed_). <br />See [olo_fix_sin](./olo_fix_sin.md) |
+| SinMemStyle_g      | string   | "auto"        | Resource control for the sine table. Applied to the ROM attributes _rom_style_, _romstyle_ and _syn_romstyle_.<br />For values refer to _MemStyle_g_ in [olo_fix_coef_storage](./olo_fix_coef_storage.md#generics) |
 | DelayResource_g    | string   | "AUTO"        | Resource control for the accumulator storage (_AUTO_, _SRL_ or _BRAM_). <br />See [olo_base_delay](../base/olo_base_delay.md) |
 | DelayRamBehavior_g | string   | "RBW"         | RAM behavior of the accumulator storage (only relevant if BRAM is used). <br />See [olo_base_delay](../base/olo_base_delay.md) |
 | DelayRamStyle_g    | string   | "auto"        | RAM style of the accumulator storage (only relevant if BRAM is used). <br />See [olo_base_delay](../base/olo_base_delay.md) |
