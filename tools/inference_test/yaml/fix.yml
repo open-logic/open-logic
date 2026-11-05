@@ -279,6 +279,21 @@ entities:
           Coef_WrData: 18
         out_reduce:
           Out_Data: 16
+      - name: "symmetric-halfband-fixed"
+        generics:
+          Channels_g: '2'
+          Ratio_g: '2'
+          Taps_g: '9'
+          IsSymmetric_g: true
+          InFmt_g: '"(1, 0, 15)"'
+          OutFmt_g: '"(1, 0, 15)"'
+          CoefFmt_g: '"(1, 0, 17)"'
+          CoefInit_g: '"0.0,-0.0227,0.0,0.2740,0.4974,0.2740,0.0,-0.0227,0.0"'
+        in_reduce:
+          In_Data: 16
+          Coef_WrData: 18
+        out_reduce:
+          Out_Data: 16
   # olo_fix_cplx_addsub
   - entity_name: "olo_fix_cplx_addsub"
     configurations:

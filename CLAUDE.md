@@ -29,6 +29,9 @@ from [doc/EntityList.md](./doc/EntityList.md).
 
 - Do limit the entity descriptions in file-headers to 1-2 sentences. Detailed descriptions are provided
   in the documentation that's linked from the header.
+- Use the concise conversion functions from the `olo_base_pkg_*` packages instead of nested `ieee` conversions, e.g.
+  `fromUslv(Addr)` instead of `to_integer(unsigned(Addr))` and `toUslv(Val, Width)` instead of
+  `std_logic_vector(to_unsigned(Val, Width))`.
 
 ## Fixed-Point Code (`olo_fix`)
 
@@ -42,8 +45,8 @@ never with plain `ieee.numeric_std` `signed`/`unsigned` arithmetic.**
 - Formats, rounding and saturation are passed as strings on generics (e.g. `"(1,8,23)"`, `"Trunc_s"`, `"Sat_s"`)
   so that entities remain instantiable from Verilog. Convert with `cl_fix_format_from_string()` /
   `to_string()` inside the architecture.
-- `numeric_std` conversions are acceptable only for non-arithmetic purposes, e.g. `to_integer(unsigned(Addr))`
-  for table/RAM addressing.
+- `numeric_std` conversions are acceptable only for non-arithmetic purposes, e.g. `fromUslv(Addr)` for table/RAM
+  addressing.
 
 Rationale: doing the math in `olo_fix`/`en_cl_fix` keeps the VHDL bit-true against the Python model in
 `src/fix/python/olo_fix`, and keeps rounding/saturation behaviour consistent across the library.
