@@ -237,7 +237,8 @@ class olo_fix_lin_approx:
         return entity_name
 
     def generate_tb(self, directory : str, olo_library : str = "olo", # pragma: no cover
-                    sim_points : int = 1000, sim_range : Tuple[float, float] = None) -> str:
+                    sim_points : int = 1000, sim_range : Tuple[float, float] = None,
+                    vunit : bool = True) -> str:
         """
         Generate a bit-true testbench for the approximation (including stimuli/response files)
 
@@ -246,6 +247,9 @@ class olo_fix_lin_approx:
                             optional and the default library is "olo".
         :param sim_points: Number of points to simulate
         :param sim_range: Range of the values to simulate. If None, the valid range is used.
+        :param vunit: If True (default), a VUnit testbench is generated (using the Open Logic VUnit
+                      verification components). If False, a plain VHDL testbench is generated
+                      (using olo_fix_sim_stimuli/olo_fix_sim_checker) that runs without VUnit.
         :return: Name of the testbench entity generated
         """
         entity_name = self.entity_name
@@ -267,11 +271,14 @@ class olo_fix_lin_approx:
             "out_fmt" : self._fmt_string(self.cfg.out_fmt),
             "data_dir" : join(os.path.abspath(directory), ""),
             "in_file" : f"{entity_name}_In.fix",
-            "out_file" : f"{entity_name}_Out.fix"
+            "out_file" : f"{entity_name}_Out.fix",
+            "samples" : len(in_data)
         }
 
         # Render template
-        self._render("olo_fix_lin_approx_tb_vhdl.template", data,
+        template = "olo_fix_lin_approx_tb_vhdl.template" if vunit else \
+                   "olo_fix_lin_approx_tb_plain_vhdl.template"
+        self._render(template, data,
                      join(directory, f"{entity_name}_tb.vhd"))
         return f"{entity_name}_tb"
 
