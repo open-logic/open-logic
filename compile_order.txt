@@ -99,6 +99,7 @@ src/fix/vhdl/olo_fix_private_lin_approx_inv.vhd
 src/fix/vhdl/olo_fix_limit.vhd
 src/fix/vhdl/olo_fix_inv.vhd
 src/fix/vhdl/olo_fix_from_real.vhd
+src/fix/vhdl/olo_fix_fir_dec_par_chtdm.vhd
 src/fix/vhdl/olo_fix_dds.vhd
 src/fix/vhdl/olo_fix_cplx_mult.vhd
 src/fix/vhdl/olo_fix_cordic_vect.vhd

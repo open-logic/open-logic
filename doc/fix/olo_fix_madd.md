@@ -23,7 +23,7 @@ supported by many FPGAs as a hard-wired DSP block and hence it can be implemente
 
 Note that the entity does not support any rounding or saturation at the output because most hard-wired DSP blocks
 do not support this or at least not in a consistent and inferrable way. Where not all bits of the result can be
-represented, truncation is applied.
+represented, truncation is applied. Results exceeding the range of _AddChainFmt_g_ wrap without any warning.
 
 Inputs _InA_ and _InC_ (if used) are intended to be dynamic signals. _InB_ is intended to be either a dynamic signal
 as well or a static coefficient that is stored inside a DSP block register (_InBIsCoef_g=true_).

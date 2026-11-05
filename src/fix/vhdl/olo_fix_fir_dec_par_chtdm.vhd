@@ -84,23 +84,22 @@ architecture rtl of olo_fix_fir_dec_par_chtdm is
     constant EntityName_c : string := "olo_fix_fir_dec_par_chtdm";
 
     -- *** Formats ***
-    constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
-    constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
-    constant CoefFmt_c    : FixFormat_t := cl_fix_format_from_string(CoefFmt_g);
-    constant MultFmt_c    : FixFormat_t := cl_fix_mult_fmt(InFmt_c, CoefFmt_c);
-    -- Full-precision running sum (never overflows, hence no rounding/saturation warnings)
-    constant FullSumFmt_c : FixFormat_t := (1, MultFmt_c.I + log2Ceil(Taps_g), MultFmt_c.F);
-    -- Guarded accumulator format (matches the bit-true Python model)
-    constant AccuFmt_c    : FixFormat_t := (1, OutFmt_c.I + GuardBits_g, MultFmt_c.F);
+    constant InFmt_c   : FixFormat_t := cl_fix_format_from_string(InFmt_g);
+    constant OutFmt_c  : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
+    constant CoefFmt_c : FixFormat_t := cl_fix_format_from_string(CoefFmt_g);
+    constant MultFmt_c : FixFormat_t := cl_fix_mult_fmt(InFmt_c, CoefFmt_c);
+    -- Adder chain format (matches the bit-true Python model). Intermediate sums may wrap, this does not
+    -- affect the final result. A wider format would not fit the DSP cascade for many taps.
+    constant AccuFmt_c : FixFormat_t := (1, OutFmt_c.I + GuardBits_g, MultFmt_c.F);
 
     -- *** Types ***
     subtype InData_t   is std_logic_vector(cl_fix_width(InFmt_c) - 1 downto 0);
     subtype CoefData_t is std_logic_vector(cl_fix_width(CoefFmt_c) - 1 downto 0);
-    subtype FullSum_t  is std_logic_vector(cl_fix_width(FullSumFmt_c) - 1 downto 0);
+    subtype AccuData_t is std_logic_vector(cl_fix_width(AccuFmt_c) - 1 downto 0);
 
     type InData_a   is array (natural range <>) of InData_t;
     type CoefData_a is array (natural range <>) of CoefData_t;
-    type FullSum_a  is array (natural range <>) of FullSum_t;
+    type AccuData_a is array (natural range <>) of AccuData_t;
 
     -- *** Functions ***
     -- Taps not specified in the initialization string are initialized to zero
@@ -135,13 +134,12 @@ architecture rtl of olo_fix_fir_dec_par_chtdm is
     signal CoefData   : CoefData_a(0 to Taps_g - 1);
     signal CoefWe     : std_logic_vector(0 to Taps_g - 1);
     -- Adder chain, AddChain(i) is the input to tap i
-    signal AddChain   : FullSum_a(0 to Taps_g);
+    signal AddChain   : AccuData_a(0 to Taps_g);
     signal ChainValid : std_logic;
     -- Decimation
     signal ChCnt      : natural range 0 to Channels_g - 1;
     signal DecCnt     : natural range 0 to Ratio_g - 1;
     signal SumValid   : std_logic;
-    signal SumData    : std_logic_vector(cl_fix_width(AccuFmt_c) - 1 downto 0);
     -- Output
     signal OutChCnt   : natural range 0 to Channels_g - 1;
     signal OutValid_i : std_logic;
@@ -248,7 +246,7 @@ begin
                     ACascade_g    => true,
                     AFmt_g        => InFmt_g,
                     BFmt_g        => CoefFmt_g,
-                    AddChainFmt_g => to_string(FullSumFmt_c),
+                    AddChainFmt_g => to_string(AccuFmt_c),
                     MultRegs_g    => MultRegs_g
                 )
                 port map (
@@ -367,9 +365,6 @@ begin
 
     SumValid <= ChainValid when DecCnt = 0 else '0';
 
-    -- The model truncates the full sum to the accumulator format, wrapping is intended.
-    SumData <= cl_fix_resize(AddChain(Taps_g), FullSumFmt_c, AccuFmt_c, Trunc_s, None_s);
-
     -----------------------------------------------------------------------------------------------
     -- Output Resize (round + saturate accumulator to output format)
     -----------------------------------------------------------------------------------------------
@@ -386,7 +381,7 @@ begin
             Clk        => Clk,
             Rst        => Rst,
             In_Valid   => SumValid,
-            In_A       => SumData,
+            In_A       => AddChain(Taps_g),
             Out_Valid  => OutValid_i,
             Out_Result => Out_Data
         );
