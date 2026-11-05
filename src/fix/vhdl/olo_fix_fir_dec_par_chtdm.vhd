@@ -1,0 +1,415 @@
+---------------------------------------------------------------------------------------------------
+-- Copyright (c) 2019 by Paul Scherrer Institute, Switzerland
+-- Copyright (c) 2026 by Oliver Bründler
+-- Authors: Oliver Bruendler
+---------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------
+-- Description
+---------------------------------------------------------------------------------------------------
+-- This entity implements a decimating FIR filter with one multiplier per tap. It supports one or
+-- more channels (time-division-multiplexed) and can process one input sample on every clock cycle.
+--
+-- Documentation:
+-- https://github.com/open-logic/open-logic/blob/main/doc/fix/olo_fix_fir_dec_par_chtdm.md
+--
+-- Note: The link points to the documentation of the latest release. If you
+--       use an older version, the documentation might not match the code.
+
+---------------------------------------------------------------------------------------------------
+-- Libraries
+---------------------------------------------------------------------------------------------------
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+    use ieee.math_real.all;
+
+library work;
+    use work.olo_base_pkg_math.all;
+    use work.olo_base_pkg_array.all;
+    use work.olo_base_pkg_string.all;
+    use work.en_cl_fix_pkg.all;
+    use work.olo_fix_pkg.all;
+
+---------------------------------------------------------------------------------------------------
+-- Entity
+---------------------------------------------------------------------------------------------------
+entity olo_fix_fir_dec_par_chtdm is
+    generic (
+        -- Formats
+        InFmt_g           : string;
+        OutFmt_g          : string;
+        CoefFmt_g         : string;
+        -- Filter parameters
+        Channels_g        : positive := 1;
+        Ratio_g           : positive := 1;
+        Taps_g            : positive;
+        -- Arithmetic
+        GuardBits_g       : natural  := 1;
+        Round_g           : string   := FixRound_Trunc_c;
+        Saturate_g        : string   := FixSaturate_Warn_c;
+        MultRegs_g        : positive := 1;
+        -- Coefficients
+        CoefInit_g        : string   := "0.0";
+        CoefWritable_g    : boolean  := false;
+        -- Data delay lines (multi-channel only)
+        DataRamBehavior_g : string   := "RBW";
+        DataMemStyle_g    : string   := "auto"
+    );
+    port (
+        -- Control Ports
+        Clk         : in    std_logic;
+        Rst         : in    std_logic;
+        -- Coefficient Config Port
+        Coef_Addr   : in    std_logic_vector(log2Ceil(Taps_g) - 1 downto 0)                 := (others => '0');
+        Coef_WrEna  : in    std_logic                                                       := '0';
+        Coef_WrData : in    std_logic_vector(fixFmtWidthFromString(CoefFmt_g) - 1 downto 0) := (others => '0');
+        -- Input
+        In_Valid    : in    std_logic;
+        In_Data     : in    std_logic_vector(fixFmtWidthFromString(InFmt_g) - 1 downto 0);
+        In_Last     : in    std_logic                                                       := '0';
+        -- Output
+        Out_Valid   : out   std_logic;
+        Out_Data    : out   std_logic_vector(fixFmtWidthFromString(OutFmt_g) - 1 downto 0);
+        Out_Last    : out   std_logic
+    );
+end entity;
+
+---------------------------------------------------------------------------------------------------
+-- Architecture
+---------------------------------------------------------------------------------------------------
+architecture rtl of olo_fix_fir_dec_par_chtdm is
+
+    -- *** Entity Name ***
+    constant EntityName_c : string := "olo_fix_fir_dec_par_chtdm";
+
+    -- *** Formats ***
+    constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
+    constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
+    constant CoefFmt_c    : FixFormat_t := cl_fix_format_from_string(CoefFmt_g);
+    constant MultFmt_c    : FixFormat_t := cl_fix_mult_fmt(InFmt_c, CoefFmt_c);
+    -- Full-precision running sum (never overflows, hence no rounding/saturation warnings)
+    constant FullSumFmt_c : FixFormat_t := (1, MultFmt_c.I + log2Ceil(Taps_g), MultFmt_c.F);
+    -- Guarded accumulator format (matches the bit-true Python model)
+    constant AccuFmt_c    : FixFormat_t := (1, OutFmt_c.I + GuardBits_g, MultFmt_c.F);
+
+    -- *** Types ***
+    subtype InData_t   is std_logic_vector(cl_fix_width(InFmt_c) - 1 downto 0);
+    subtype CoefData_t is std_logic_vector(cl_fix_width(CoefFmt_c) - 1 downto 0);
+    subtype FullSum_t  is std_logic_vector(cl_fix_width(FullSumFmt_c) - 1 downto 0);
+
+    type InData_a   is array (natural range <>) of InData_t;
+    type CoefData_a is array (natural range <>) of CoefData_t;
+    type FullSum_a  is array (natural range <>) of FullSum_t;
+
+    -- *** Functions ***
+    -- Taps not specified in the initialization string are initialized to zero
+    function getCoefInit return CoefData_a is
+        constant InitReal_c : RealArray_t                 := fromString(CoefInit_g);
+        variable Coefs_v    : CoefData_a(0 to Taps_g - 1) := (others => (others => '0'));
+    begin
+
+        for i in 0 to Taps_g - 1 loop
+            if i <= InitReal_c'high then
+                Coefs_v(i) := cl_fix_from_real(InitReal_c(i), CoefFmt_c);
+            end if;
+        end loop;
+
+        return Coefs_v;
+    end function;
+
+    constant CoefInit_c : CoefData_a(0 to Taps_g - 1) := getCoefInit;
+
+    -- A multiplier is only required if the coefficient can be different from zero
+    function tapRequiresMult (tap : natural) return boolean is
+    begin
+        return CoefWritable_g or unsigned(CoefInit_c(tap)) /= 0;
+    end function;
+
+    -- *** Signals ***
+    -- Tap inputs, TapValid(i) belongs to tap i and is delayed by one clock cycle per tap
+    signal TapValid   : std_logic_vector(0 to Taps_g - 1);
+    signal TapData    : InData_a(0 to Taps_g - 1);
+    signal ACascOut   : InData_a(0 to Taps_g - 1);
+    -- Coefficients
+    signal CoefData   : CoefData_a(0 to Taps_g - 1);
+    signal CoefWe     : std_logic_vector(0 to Taps_g - 1);
+    -- Adder chain, AddChain(i) is the input to tap i
+    signal AddChain   : FullSum_a(0 to Taps_g);
+    signal ChainValid : std_logic;
+    -- Decimation
+    signal ChCnt      : natural range 0 to Channels_g - 1;
+    signal DecCnt     : natural range 0 to Ratio_g - 1;
+    signal SumValid   : std_logic;
+    signal SumData    : std_logic_vector(cl_fix_width(AccuFmt_c) - 1 downto 0);
+    -- Output
+    signal OutChCnt   : natural range 0 to Channels_g - 1;
+    signal OutValid_i : std_logic;
+
+begin
+
+    -----------------------------------------------------------------------------------------------
+    -- Assertions
+    -----------------------------------------------------------------------------------------------
+    -- synthesis translate_off
+    assert Taps_g >= 2
+        report errorMessage(EntityName_c, "Taps_g must be >= 2.")
+        severity error;
+
+    -- Check TDM framing
+    p_assert : process (Clk) is
+        variable ChCnt_v : natural range 0 to Channels_g - 1;
+    begin
+        if rising_edge(Clk) then
+            if Rst = '1' then
+                ChCnt_v := 0;
+            elsif In_Valid = '1' then
+                if In_Last = '1' then
+                    assert ChCnt_v = Channels_g - 1
+                        report errorMessage(EntityName_c, "In_Last asserted at channel index " &
+                               integer'image(ChCnt_v) & " but expected at " &
+                               integer'image(Channels_g - 1))
+                        severity error;
+                end if;
+                if ChCnt_v = Channels_g - 1 then
+                    ChCnt_v := 0;
+                else
+                    ChCnt_v := ChCnt_v + 1;
+                end if;
+            end if;
+        end if;
+    end process;
+
+    -- synthesis translate_on
+
+    -----------------------------------------------------------------------------------------------
+    -- Coefficients
+    -----------------------------------------------------------------------------------------------
+    -- Fixed coefficients: The inputs of all multipliers are constant
+    g_coef_fixed : if not CoefWritable_g generate
+        CoefData <= CoefInit_c;
+        CoefWe   <= (others => '1');
+    end generate;
+
+    -- Writable coefficients: Stored in the B input registers of the multipliers
+    g_coef_writable : if CoefWritable_g generate
+        signal Written : std_logic := '0';
+    begin
+
+        p_coef : process (Clk) is
+        begin
+            if rising_edge(Clk) then
+                -- Coefficient write
+                CoefData <= (others => Coef_WrData);
+                CoefWe   <= (others => '0');
+                if Coef_WrEna = '1' and Rst = '0' then
+                    Written <= '1';
+                    if to_integer(unsigned(Coef_Addr)) < Taps_g then
+                        CoefWe(to_integer(unsigned(Coef_Addr))) <= '1';
+                    end if;
+                end if;
+
+                -- Reset loads the initial values unless coefficients were written at runtime
+                if Rst = '1' and Written = '0' then
+                    CoefData <= CoefInit_c;
+                    CoefWe   <= (others => '1');
+                end if;
+            end if;
+        end process;
+
+    end generate;
+
+    -----------------------------------------------------------------------------------------------
+    -- MACC Chain
+    -----------------------------------------------------------------------------------------------
+    TapValid(0) <= In_Valid;
+    TapData(0)  <= In_Data;
+    AddChain(0) <= (others => '0');
+
+    p_tap_valid : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            TapValid(1 to Taps_g - 1) <= TapValid(0 to Taps_g - 2);
+            if Rst = '1' then
+                TapValid(1 to Taps_g - 1) <= (others => '0');
+            end if;
+        end if;
+    end process;
+
+    g_tap : for i in 0 to Taps_g - 1 generate
+        signal TapOutValid : std_logic;
+    begin
+
+        g_madd : if tapRequiresMult(i) generate
+
+            i_madd : entity work.olo_fix_madd
+                generic map (
+                    InBIsCoef_g   => true,
+                    ACascade_g    => true,
+                    AFmt_g        => InFmt_g,
+                    BFmt_g        => CoefFmt_g,
+                    AddChainFmt_g => to_string(FullSumFmt_c),
+                    MultRegs_g    => MultRegs_g
+                )
+                port map (
+                    Clk        => Clk,
+                    Rst        => Rst,
+                    InAC_Valid => TapValid(i),
+                    InA_Data   => TapData(i),
+                    InB_Valid  => CoefWe(i),
+                    InB_Data   => CoefData(i),
+                    MaccIn     => AddChain(i),
+                    ACascOut   => ACascOut(i),
+                    Out_Valid  => TapOutValid,
+                    Out_Data   => AddChain(i + 1)
+                );
+
+        end generate;
+
+        -- Coefficient fixed to zero: No multiplier, only the registers that keep the timing of olo_fix_madd
+        g_no_madd : if not tapRequiresMult(i) generate
+            signal A_0     : InData_t;
+            signal VldPipe : std_logic_vector(0 to MultRegs_g + 2);
+        begin
+
+            p_no_madd : process (Clk) is
+            begin
+                if rising_edge(Clk) then
+                    -- A cascade
+                    if TapValid(i) = '1' then
+                        A_0 <= TapData(i);
+                    end if;
+                    ACascOut(i) <= A_0;
+
+                    -- Adder chain
+                    AddChain(i + 1) <= AddChain(i);
+
+                    -- Valid
+                    VldPipe <= TapValid(i) & VldPipe(0 to VldPipe'high - 1);
+
+                    -- Reset
+                    if Rst = '1' then
+                        A_0             <= (others => '0');
+                        ACascOut(i)     <= (others => '0');
+                        AddChain(i + 1) <= (others => '0');
+                        VldPipe         <= (others => '0');
+                    end if;
+                end if;
+            end process;
+
+            TapOutValid <= VldPipe(VldPipe'high);
+
+        end generate;
+
+        -- All taps run with the same timing, the output of the last tap marks the valid sums
+        g_last : if i = Taps_g - 1 generate
+            ChainValid <= TapOutValid;
+        end generate;
+
+        -- Delay to the next tap: A sample of the same channel is Channels_g samples old and
+        -- the A cascade already provides one sample of delay.
+        g_next : if i < Taps_g - 1 generate
+
+            g_single : if Channels_g = 1 generate
+                TapData(i + 1) <= ACascOut(i);
+            end generate;
+
+            g_multi : if Channels_g > 1 generate
+
+                i_delay : entity work.olo_base_delay
+                    generic map (
+                        Width_g       => cl_fix_width(InFmt_c),
+                        Delay_g       => Channels_g - 1,
+                        RstState_g    => true,
+                        RamBehavior_g => DataRamBehavior_g,
+                        RamStyle_g    => DataMemStyle_g
+                    )
+                    port map (
+                        Clk      => Clk,
+                        Rst      => Rst,
+                        In_Data  => ACascOut(i),
+                        In_Valid => TapValid(i + 1),
+                        Out_Data => TapData(i + 1)
+                    );
+
+            end generate;
+
+        end generate;
+
+    end generate;
+
+    -----------------------------------------------------------------------------------------------
+    -- Decimation
+    -----------------------------------------------------------------------------------------------
+    p_dec : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            if ChainValid = '1' then
+                if ChCnt = Channels_g - 1 then
+                    ChCnt <= 0;
+                    if DecCnt = Ratio_g - 1 then
+                        DecCnt <= 0;
+                    else
+                        DecCnt <= DecCnt + 1;
+                    end if;
+                else
+                    ChCnt <= ChCnt + 1;
+                end if;
+            end if;
+
+            -- Reset
+            if Rst = '1' then
+                ChCnt  <= 0;
+                DecCnt <= 0;
+            end if;
+        end if;
+    end process;
+
+    SumValid <= ChainValid when DecCnt = 0 else '0';
+
+    -- The model truncates the full sum to the accumulator format, wrapping is intended.
+    SumData <= cl_fix_resize(AddChain(Taps_g), FullSumFmt_c, AccuFmt_c, Trunc_s, None_s);
+
+    -----------------------------------------------------------------------------------------------
+    -- Output Resize (round + saturate accumulator to output format)
+    -----------------------------------------------------------------------------------------------
+    i_resize : entity work.olo_fix_resize
+        generic map (
+            AFmt_g      => to_string(AccuFmt_c),
+            ResultFmt_g => OutFmt_g,
+            Round_g     => Round_g,
+            Saturate_g  => Saturate_g,
+            RoundReg_g  => "YES",
+            SatReg_g    => "YES"
+        )
+        port map (
+            Clk        => Clk,
+            Rst        => Rst,
+            In_Valid   => SumValid,
+            In_A       => SumData,
+            Out_Valid  => OutValid_i,
+            Out_Result => Out_Data
+        );
+
+    Out_Valid <= OutValid_i;
+    Out_Last  <= OutValid_i when OutChCnt = Channels_g - 1 else '0';
+
+    p_out : process (Clk) is
+    begin
+        if rising_edge(Clk) then
+            if OutValid_i = '1' then
+                if OutChCnt = Channels_g - 1 then
+                    OutChCnt <= 0;
+                else
+                    OutChCnt <= OutChCnt + 1;
+                end if;
+            end if;
+
+            -- Reset
+            if Rst = '1' then
+                OutChCnt <= 0;
+            end if;
+        end if;
+    end process;
+
+end architecture;

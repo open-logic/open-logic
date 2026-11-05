@@ -48,6 +48,10 @@ def cosim(output_path: str = None,
     coefs =  cl_fix_from_real(coefs_f, CoefFmt_g)
     if test_mode == "overflow":
         coefs = cl_fix_from_real(np.ones(Taps_g) * 0.5, CoefFmt_g)
+    if test_mode == "halfband":
+        # Every second coefficient is zero by nature. For Taps_g = 4k+1 this includes first and last.
+        coefs = cl_fix_from_real(sps.firwin(Taps_g, 0.5), CoefFmt_g)
+        assert coefs[0] == 0.0 and coefs[1] != 0.0 and coefs[2] == 0.0 and coefs[-1] == 0.0, "Not a halfband filter"
 
     # *** Build per-channel input signals ***
     in_ch  = []

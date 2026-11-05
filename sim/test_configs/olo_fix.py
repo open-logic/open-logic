@@ -574,7 +574,8 @@ def add_configs(olo_tb):
                         for PreAddOp in ['Add', 'Sub']:
                             named_config(tb, {'PreAdd_g': PreAdd, 'PreAddOp_g': PreAddOp, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef})
                     else:
-                        named_config(tb, {'PreAdd_g': PreAdd, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef})
+                        named_config(tb, {'PreAdd_g': PreAdd, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef, 'ACascade_g': False})
+                        named_config(tb, {'PreAdd_g': PreAdd, 'Operation_g': Operation, 'MultRegs_g': MultRegs, 'InBIsCoef_g': InBIsCoef, 'ACascade_g': True})
 
     ### olo_fix_cplx_mult  ###
     tb = olo_tb.test_bench('olo_fix_cplx_mult_tb')  
@@ -834,6 +835,53 @@ def add_configs(olo_tb):
     # Different coef-storage
     named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': True, 'CoefRamReadback_g': True}, pre_config=cosim, short_name='RAM-write')
     named_config(tb, default_generics | {'CoefStorageType_g': 'RAM', 'WriteCoefs_g': False, 'CoefRamReadback_g': False}, pre_config=cosim, short_name='RAM-no-write')
+
+    # Round/Sat
+    for Round in ['Trunc_s', 'NonSymPos_s']:
+        for Sat in ['None_s', 'Sat_s']:
+            named_config(tb, default_generics | {'Round_g': Round, 'Saturate_g': Sat}, pre_config=cosim, short_name=f'Round={Round}-Sat={Sat}')
+
+    # Overflow
+    cosim_overflow = partial(cosim, test_mode='overflow')
+    named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
+
+    ### olo_fix_fir_dec_par_chtdm ###
+    tb = olo_tb.test_bench('olo_fix_fir_dec_par_chtdm_tb')
+    default_generics = {
+        'InFmt_g'        : '(1,0,15)',
+        'OutFmt_g'       : '(1,-1,17)',
+        'CoefFmt_g'      : '(1,0,17)',
+        'CoefWritable_g' : False,
+        'Channels_g'     : 2,
+        'Ratio_g'        : 4,
+        'Taps_g'         : 16,
+        'MultRegs_g'     : 1,
+        'Round_g'        : 'NonSymPos_s',
+        'Saturate_g'     : 'Sat_s',
+        'WriteCoefs_g'   : False,
+        'GuardBits_g'    : 1
+    }
+    # The bit-true model and cosimulation are shared with olo_fix_fir_dec_ser_chtdm (same filter
+    # math, per-channel stimulus/reference files are reused). Hence the cosim is called from there.
+    cosim = olo_fix_fir_dec_ser_chtdm.cosim.cosim
+
+    named_config(tb, default_generics, pre_config=cosim, short_name='default')
+
+    # Different single-settings
+    named_config(tb, default_generics | {'Channels_g': 1}, pre_config=cosim, short_name='ch1')
+    named_config(tb, default_generics | {'Channels_g': 3, 'Ratio_g': 3, 'Taps_g': 5, 'MultRegs_g': 2}, pre_config=cosim, short_name='ch3-r3-taps5-mr2')
+    named_config(tb, default_generics | {'Channels_g': 130, 'Taps_g': 3, 'Ratio_g': 1}, pre_config=cosim, short_name='bram-delay')
+    named_config(tb, default_generics | {'Ratio_g': 1}, pre_config=cosim, short_name='ratio1')
+    named_config(tb, default_generics | {'Ratio_g': 1, 'Channels_g': 1, 'Taps_g': 2}, pre_config=cosim, short_name='ratio1-ch1-taps2')
+    named_config(tb, default_generics | {'Taps_g': 17, 'GuardBits_g': 3}, pre_config=cosim, short_name='taps17-guard3')
+
+    # Coefficient handling
+    named_config(tb, default_generics | {'CoefWritable_g': True}, pre_config=cosim, short_name='writable-init')
+    named_config(tb, default_generics | {'CoefWritable_g': True, 'WriteCoefs_g': True}, pre_config=cosim, short_name='writable-write')
+    named_config(tb, default_generics | {'CoefWritable_g': True, 'WriteCoefs_g': True, 'Taps_g': 5, 'Channels_g': 1}, pre_config=cosim, short_name='writable-write-taps5')
+
+    # Taps with coefficients fixed to zero are implemented without multiplier
+    named_config(tb, default_generics | {'Ratio_g': 2, 'Taps_g': 17, 'MultRegs_g': 2}, pre_config=partial(cosim, test_mode='halfband'), short_name='halfband')
 
     # Round/Sat
     for Round in ['Trunc_s', 'NonSymPos_s']:
