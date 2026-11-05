@@ -77,6 +77,17 @@ SAMPLES = {
         saturate=FixSaturate.Sat_s),
 }
 
+# Sample used to verify the plain VHDL (non-VUnit) testbench generation. The generated testbench is
+# executed through the VUnit wrapper olo_fix_lin_approx_plain_tb.vhd.
+PLAIN_SAMPLE = olo_fix_lin_approx_cfg(
+    function=lambda x: np.tanh(3*x),
+    in_fmt=FixFormat(1, 0, 16),
+    out_fmt=FixFormat(1, 0, 16),
+    offs_fmt=FixFormat(1, 0, 18),
+    grad_fmt=FixFormat(0, 2, 12),
+    points=256,
+    name="tanh_plain")
+
 # ---------------------------------------------------------------------------------------------------
 # Functionality
 # ---------------------------------------------------------------------------------------------------
@@ -92,6 +103,11 @@ def generate():
         approx = olo_fix_lin_approx(cfg)
         approx.generate_entity(GENERATED_DIR, olo_library="olo")
         approx.generate_tb(GENERATED_DIR, olo_library="olo", sim_points=SIM_POINTS)
+
+    # Plain VHDL testbench (without VUnit)
+    approx = olo_fix_lin_approx(PLAIN_SAMPLE)
+    approx.generate_entity(GENERATED_DIR, olo_library="olo")
+    approx.generate_tb(GENERATED_DIR, olo_library="olo", sim_points=SIM_POINTS, vunit=False)
 
 if __name__ == "__main__":
     generate()
