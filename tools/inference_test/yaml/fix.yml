@@ -230,6 +230,55 @@ entities:
         out_reduce:
           Coef_RdData: 18
           Out_Data: 16
+  # olo_fix_fir_dec_par_chtdm
+  - entity_name: "olo_fix_fir_dec_par_chtdm"
+    tool_generics:
+      gowin:
+        DataRamBehavior_g: '"WBR"'
+    configurations:
+      - name: "fixed-coefs"
+        generics:
+          Channels_g: '2'
+          Ratio_g: '1'
+          Taps_g: '9'
+          InFmt_g: '"(1, 0, 15)"'
+          OutFmt_g: '"(1, 0, 15)"'
+          CoefFmt_g: '"(1, 0, 17)"'
+          CoefInit_g: '"0.0234,-0.0517,0.1353,0.4471,0.4471,0.1353,-0.0517,0.0234"'
+        in_reduce:
+          In_Data: 16
+          Coef_WrData: 18
+        out_reduce:
+          Out_Data: 16
+      - name: "halfband"
+        generics:
+          Channels_g: '2'
+          Ratio_g: '2'
+          Taps_g: '9'
+          InFmt_g: '"(1, 0, 15)"'
+          OutFmt_g: '"(1, 0, 15)"'
+          CoefFmt_g: '"(1, 0, 17)"'
+          CoefInit_g: '"0.0,-0.0227,0.0,0.2740,0.4974,0.2740,0.0,-0.0227,0.0"'
+        in_reduce:
+          In_Data: 16
+          Coef_WrData: 18
+        out_reduce:
+          Out_Data: 16
+      - name: "writable-coefs"
+        generics:
+          Channels_g: '2'
+          Ratio_g: '1'
+          Taps_g: '9'
+          InFmt_g: '"(1, 0, 15)"'
+          OutFmt_g: '"(1, 0, 15)"'
+          CoefFmt_g: '"(1, 0, 17)"'
+          CoefWritable_g: true
+          CoefInit_g: '"0.0234,-0.0517,0.1353,0.4471,0.4471,0.1353,-0.0517,0.0234"'
+        in_reduce:
+          In_Data: 16
+          Coef_WrData: 18
+        out_reduce:
+          Out_Data: 16
   # olo_fix_cplx_addsub
   - entity_name: "olo_fix_cplx_addsub"
     configurations:
