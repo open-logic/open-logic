@@ -22,10 +22,7 @@ class olo_fix_log2:
 
     Calculates the binary logarithm log2(x) of the input.
 
-    The input is normalized into the range [1, 2) (x = 2^k * (1+m)). The number of leading zeros
-    delivers the integer part k of the result, a table based linear approximation of log2(1+m)
-    delivers the fractional part. The precision of the approximation is selected through
-    precision_bits - the normalization covers the rest of the input range.
+    For details refer to the HDL documentation.
     """
 
     # Maximum supported input width (same limit as in the VHDL entity)
@@ -37,7 +34,6 @@ class olo_fix_log2:
     def __init__(self,
                  in_fmt : FixFormat,
                  out_fmt : FixFormat,
-                 precision_bits : int = 18,
                  round : FixRound = FixRound.NonSymPos_s,
                  saturate : FixSaturate = FixSaturate.Sat_s):
         """
@@ -47,17 +43,16 @@ class olo_fix_log2:
                        wide.
         :param out_fmt: Format of the result. The result is negative for inputs below 1.0, hence
                         a signed format is required to represent it (otherwise it saturates).
-        :param precision_bits: Number of fractional bits of the logarithm approximation. One table
-                               exists per supported value (see LOG2_TABLES).
+                        At most 20 fractional bits are supported. The table of the approximation
+                        is selected accordingly (see LOG2_TABLES).
         :param round: Rounding mode of the output stage
         :param saturate: Saturation mode of the output stage
         """
         # Precision - one approximation table exists per supported precision. The same checks (and
         # the same limits) are implemented in the VHDL entity.
-        if precision_bits not in LOG2_TABLES:
-            supported = ", ".join(str(p) for p in sorted(LOG2_TABLES.keys()))
-            raise ValueError(f"olo_fix_log2: precision_bits {precision_bits} is not supported "
-                             f"(supported: {supported})")
+        if out_fmt.F > max(LOG2_TABLES):
+            raise ValueError(f"olo_fix_log2: out_fmt {out_fmt} must have at most {max(LOG2_TABLES)} "
+                             f"fractional bits")
 
         # The logarithm of a negative number is undefined
         if in_fmt.S != 0:
@@ -67,16 +62,22 @@ class olo_fix_log2:
         if cl_fix_width(in_fmt) < 2:
             raise ValueError(f"olo_fix_log2: in_fmt {in_fmt} must be at least two bits wide")
 
-        # The latency calculation in the VHDL entity is valid for inputs of up to 256 bits
+        # The limit avoids too big barrel shifters (the input is normalized by a barrel shifter)
         if cl_fix_width(in_fmt) > self.MAX_IN_WIDTH:
             raise ValueError(f"olo_fix_log2: in_fmt {in_fmt} must be at most {self.MAX_IN_WIDTH} "
                              f"bits wide")
 
         self.out_fmt = out_fmt
         self.in_fmt = in_fmt
+        # Smallest table delivering at least the fractional bits of the output
+        precision_bits = min(p for p in LOG2_TABLES if p >= out_fmt.F)
         self.precision_bits = precision_bits
         self.round = round
         self.saturate = saturate
+
+        # Handle case where approximation is not needed (see HDL documentation for details)
+        self.omit_frac = (out_fmt.F <= 0 and round == FixRound.Trunc_s) or \
+                         (out_fmt.F < 0 and round == FixRound.NonSymPos_s)
 
         # Normalization. The leading one of the normalized value is implicit, hence only the
         # mantissa fraction is passed to the approximation.
@@ -90,17 +91,15 @@ class olo_fix_log2:
         # yields a mantissa of zero (like the smallest non-zero input).
         self.max_shift = in_width - 1
 
-        # Integer part of the result. The input is x = 2^k * (1+m) with k = I-1-shift, which ranges
-        # from -F (smallest non-zero input) to I-1 (leading one in the MSB).
-        k_min = -in_fmt.F
-        k_max = in_fmt.I - 1
-        int_bits = 0
-        while -2**int_bits > k_min or 2**int_bits - 1 < k_max:
-            int_bits += 1
+        # The barrel shifter is dimensioned for a maximum shift of at least two
+        self.shift_fmt = FixFormat(0, olo_fix_utils.log2ceil(max(2, self.max_shift) + 1), 0)
+
+        # Integer part of the result.
+        int_bits = max(olo_fix_utils.log2ceil(max(in_fmt.I, 0)), olo_fix_utils.log2ceil(max(in_fmt.F, 0)))
         self.int_fmt = FixFormat(1, int_bits, 0)
 
         # The integer part and the fractional part are concatenated (pure wiring)
-        self.res_fmt = FixFormat(1, int_bits, precision_bits)
+        self.res_fmt = FixFormat(1, int_bits, 0 if self.omit_frac else precision_bits)
 
     # ---------------------------------------------------------------------------------------------------
     # Public Methods
@@ -127,13 +126,24 @@ class olo_fix_log2:
             data = np.array([data])
         data = cl_fix_from_real(data, self.in_fmt)
 
+        # The shift is the number of leading zeros. For a zero input the leading bit index is zero,
+        # which limits the shift to its maximum.
+        shift = self.max_shift - olo_fix_utils.get_leading_bit_index(data, self.in_fmt)
+
+        # Integer part of the result (I-1-shift). It always fits, hence no rounding/saturation.
+        k_const = cl_fix_from_real(self.in_fmt.I - 1, self.int_fmt)
+        integer = cl_fix_sub(k_const, self.int_fmt, cl_fix_from_integer(shift, self.shift_fmt),
+                             self.shift_fmt, self.int_fmt, FixRound.Trunc_s, FixSaturate.None_s)
+
+        # The fractional part cannot affect the result
+        if self.omit_frac:
+            return cl_fix_resize(integer, self.res_fmt, self.out_fmt, self.round, self.saturate)
+
         # Normalization into the range [1, 2). The barrel shifter operates on the bits of the
         # input, hence they are reinterpreted in the normalized format (reinterpretation is a shift
-        # by a constant). The shift is the number of leading zeros. For a zero input the leading
-        # bit index is zero, which limits the shift to its maximum.
+        # by a constant).
         norm_in = cl_fix_shift(data, self.in_fmt, 1 - self.in_fmt.I, self.mant_full_fmt,
                                FixRound.Trunc_s, FixSaturate.None_s)
-        shift = self.max_shift - olo_fix_utils.get_leading_bit_index(data, self.in_fmt)
         norm_data = cl_fix_shift(norm_in, self.mant_full_fmt, shift, self.mant_full_fmt,
                                  FixRound.Trunc_s, FixSaturate.None_s)
 
@@ -144,12 +154,6 @@ class olo_fix_log2:
 
         # Fractional part of the result
         frac = self._approx.process(mantissa)
-
-        # Integer part of the result (I-1-shift). It always fits, hence no rounding/saturation.
-        k_const = cl_fix_from_real(self.in_fmt.I - 1, self.int_fmt)
-        shift_fmt = FixFormat(0, int(self.max_shift).bit_length(), 0)
-        integer = cl_fix_sub(k_const, self.int_fmt, cl_fix_from_integer(shift, shift_fmt), shift_fmt,
-                             self.int_fmt, FixRound.Trunc_s, FixSaturate.None_s)
 
         # Integer part and fractional part are concatenated, which is the same as adding them
         result = cl_fix_add(integer, self.int_fmt, frac, self.approx_fmt, self.res_fmt,

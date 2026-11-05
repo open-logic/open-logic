@@ -38,14 +38,13 @@ library work;
 entity olo_fix_log2 is
     generic (
         -- Formats
-        OutFmt_g        : string;
-        InFmt_g         : string;
+        OutFmt_g   : string;
+        InFmt_g    : string;
         -- Configuration
-        PrecisionBits_g : positive := 18;
-        MemStyle_g      : string   := "auto";
+        MemStyle_g : string := "auto";
         -- Round / Saturate
-        Round_g         : string   := FixRound_NonSymPos_c;
-        Saturate_g      : string   := FixSaturate_Sat_c
+        Round_g    : string := FixRound_NonSymPos_c;
+        Saturate_g : string := FixSaturate_Sat_c
     );
     port (
         -- Control Ports
@@ -65,18 +64,46 @@ architecture rtl of olo_fix_log2 is
     -- Constants
     constant EntityName_c : string      := "olo_fix_log2";
     constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
+    constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
+    constant Round_c      : FixRound_t  := cl_fix_round_from_string(Round_g);
     constant InWidth_c    : positive    := cl_fix_width(InFmt_c);
 
     -- Supported precisions - one approximation table exists per precision. The list is the same as
     -- the one in the LOG2_TABLES dictionary of the Python model.
-    constant PrecisionSupported_c : boolean := PrecisionBits_g = 10 or PrecisionBits_g = 14 or
-                                               PrecisionBits_g = 18 or PrecisionBits_g = 20;
+    type Precisions_t is array (natural range <>) of positive;
+
+    constant Precisions_c : Precisions_t(0 to 3) := (10, 14, 18, 20);
+
+    -- Select the smallest table delivering at least the fractional bits of the output. For
+    -- unsupported formats the biggest table is returned, so that elaboration reaches the assertion.
+    function getPrecisionBits return positive is
+        variable Precision_v : positive := Precisions_c(Precisions_c'high);
+    begin
+
+        for i in Precisions_c'range loop
+            if Precisions_c(i) >= OutFmt_c.F then
+                Precision_v := Precisions_c(i);
+                exit;
+            end if;
+        end loop;
+
+        return Precision_v;
+    end function;
+
+    constant PrecisionBits_c : positive := getPrecisionBits;
+
+    -- The fractional part cannot affect the result if it is truncated away, or if rounding to a
+    -- multiple of two or more only adds an integer (rounding decision is independent of the
+    -- fraction). Normalization and approximation are omitted in this case.
+    constant OmitFrac_c : boolean := (OutFmt_c.F <= 0 and Round_c = Trunc_s) or
+                                     (OutFmt_c.F < 0 and Round_c = NonSymPos_s);
+    constant ResFrac_c  : natural := choose(OmitFrac_c, 0, PrecisionBits_c);
 
     -- Normalization. The leading one of the normalized value is implicit, hence only the mantissa
     -- fraction is passed to the approximation.
     constant MantFullFmt_c : FixFormat_t := (0, 1, InWidth_c - 1);
-    constant MantFmt_c     : FixFormat_t := (0, 0, PrecisionBits_g + 2);
-    constant ApproxFmt_c   : FixFormat_t := (0, 0, PrecisionBits_g);
+    constant MantFmt_c     : FixFormat_t := (0, 0, PrecisionBits_c + 2);
+    constant ApproxFmt_c   : FixFormat_t := (0, 0, PrecisionBits_c);
 
     -- Shift. A zero input has no leading one - for it the shift is limited to its maximum, which
     -- yields a mantissa of zero (like the smallest non-zero input).
@@ -97,7 +124,7 @@ architecture rtl of olo_fix_log2 is
     constant KConst_c  : std_logic_vector(cl_fix_width(IntFmt_c) - 1 downto 0) :=
         cl_fix_from_real(real(InFmt_c.I - 1), IntFmt_c);
     -- Integer part and fractional part are concatenated, hence it is pure wiring
-    constant ResFmt_c  : FixFormat_t := (1, IntBits_c, PrecisionBits_g);
+    constant ResFmt_c  : FixFormat_t := (1, IntBits_c, ResFrac_c);
 
     -- Latencies. The barrel shifter has an input register plus two stages.
     constant MaxInWidth_c    : positive := 256;
@@ -127,21 +154,17 @@ architecture rtl of olo_fix_log2 is
     signal r, r_next : TwoProcess_r;
 
     -- Signals
-    signal IntDel    : std_logic_vector(cl_fix_width(IntFmt_c) - 1 downto 0);
-    signal NormValid : std_logic;
-    signal NormData  : std_logic_vector(InWidth_c - 1 downto 0);
-    signal Mantissa  : std_logic_vector(cl_fix_width(MantFmt_c) - 1 downto 0);
-    signal ApprValid : std_logic;
-    signal ApprData  : std_logic_vector(cl_fix_width(ApproxFmt_c) - 1 downto 0);
-    signal Result    : std_logic_vector(cl_fix_width(ResFmt_c) - 1 downto 0);
+    signal ResValid : std_logic;
+    signal Result   : std_logic_vector(cl_fix_width(ResFmt_c) - 1 downto 0);
 
 begin
 
     -- *** Assertions ***
     -- synthesis translate_off
-    assert PrecisionSupported_c
-        report errorMessage(EntityName_c, "PrecisionBits_g must be 10, 14, 18 or 20, got " &
-               integer'image(PrecisionBits_g))
+    assert OutFmt_c.F <= Precisions_c(Precisions_c'high)
+        report errorMessage(EntityName_c, "OutFmt_g must have at most " &
+               integer'image(Precisions_c(Precisions_c'high)) & " fractional bits, got " &
+               integer'image(OutFmt_c.F))
         severity error;
     assert InFmt_c.S = 0
         report errorMessage(EntityName_c, "InFmt_g must be unsigned")
@@ -207,68 +230,83 @@ begin
 
     -- *** Component Instantiations ***
 
-    -- Normalization of the input into the range [1, 2)
-    i_sft_in : entity work.olo_base_dyn_sft
-        generic map (
-            Direction_g       => "LEFT",
-            SelBitsPerStage_g => SelBitsPerStage_c,
-            MaxShift_g        => SftMaxShift_c,
-            Width_g           => InWidth_c,
-            SignExtend_g      => false
-        )
-        port map (
-            Clk       => Clk,
-            Rst       => Rst,
-            In_Valid  => r.Valid_2,
-            In_Shift  => r.Shift_2,
-            In_Data   => r.In_2,
-            Out_Valid => NormValid,
-            Out_Data  => NormData
-        );
+    -- *** Fractional part required ***
+    g_approx : if not OmitFrac_c generate
+        signal IntDel    : std_logic_vector(cl_fix_width(IntFmt_c) - 1 downto 0);
+        signal NormValid : std_logic;
+        signal NormData  : std_logic_vector(InWidth_c - 1 downto 0);
+        signal Mantissa  : std_logic_vector(cl_fix_width(MantFmt_c) - 1 downto 0);
+        signal ApprData  : std_logic_vector(cl_fix_width(ApproxFmt_c) - 1 downto 0);
+    begin
 
-    -- Delay of the integer part to the output of the approximation
-    i_int_del : entity work.olo_base_latency_comp
-        generic map (
-            Width_g       => cl_fix_width(IntFmt_c),
-            Mode_g        => "FIXED_CYCLES",
-            Latency_g     => IntLatency_c,
-            AssertsName_g => "int"
-        )
-        port map (
-            Clk       => Clk,
-            Rst       => Rst,
-            In_Data   => r.Int_3,
-            In_Valid  => r.Valid_3,
-            Out_Data  => IntDel,
-            Out_Valid => ApprValid
-        );
+        -- Normalization of the input into the range [1, 2)
+        i_sft_in : entity work.olo_base_dyn_sft
+            generic map (
+                Direction_g       => "LEFT",
+                SelBitsPerStage_g => SelBitsPerStage_c,
+                MaxShift_g        => SftMaxShift_c,
+                Width_g           => InWidth_c,
+                SignExtend_g      => false
+            )
+            port map (
+                Clk       => Clk,
+                Rst       => Rst,
+                In_Valid  => r.Valid_2,
+                In_Shift  => r.Shift_2,
+                In_Data   => r.In_2,
+                Out_Valid => NormValid,
+                Out_Data  => NormData
+            );
 
-    -- *** Mantissa fraction ***
-    -- The normalized value is 1+m, the leading one is dropped. Truncating or zero padding the
-    -- mantissa to the resolution the approximation requires is pure wiring.
-    Mantissa <= cl_fix_resize(NormData, MantFullFmt_c, MantFmt_c, Trunc_s, None_s);
+        -- Delay of the integer part to the output of the approximation
+        i_int_del : entity work.olo_base_latency_comp
+            generic map (
+                Width_g       => cl_fix_width(IntFmt_c),
+                Mode_g        => "FIXED_CYCLES",
+                Latency_g     => IntLatency_c,
+                AssertsName_g => "int"
+            )
+            port map (
+                Clk       => Clk,
+                Rst       => Rst,
+                In_Data   => r.Int_3,
+                In_Valid  => r.Valid_3,
+                Out_Data  => IntDel,
+                Out_Valid => ResValid
+            );
 
-    -- Approximation of log2(1+m) in the range [0, 1) - the fractional part of the result
-    i_approx : entity work.olo_fix_private_lin_approx_log2
-        generic map (
-            OutFmt_g   => to_string(ApproxFmt_c),
-            InFmt_g    => to_string(MantFmt_c),
-            MemStyle_g => MemStyle_g,
-            Round_g    => FixRound_NonSymPos_c,
-            Saturate_g => FixSaturate_Sat_c
-        )
-        port map (
-            Clk       => Clk,
-            Rst       => Rst,
-            In_Valid  => NormValid,
-            In_Data   => Mantissa,
-            Out_Valid => ApprValid,
-            Out_Data  => ApprData
-        );
+        -- Mantissa fraction. The normalized value is 1+m, the leading one is dropped. Truncating or
+        -- zero padding the mantissa to the resolution the approximation requires is pure wiring.
+        Mantissa <= cl_fix_resize(NormData, MantFullFmt_c, MantFmt_c, Trunc_s, None_s);
 
-    -- *** Result ***
-    -- The integer part (two's complement) and the fractional part are concatenated
-    Result <= IntDel & ApprData;
+        -- Approximation of log2(1+m) in the range [0, 1) - the fractional part of the result
+        i_approx : entity work.olo_fix_private_lin_approx_log2
+            generic map (
+                OutFmt_g   => to_string(ApproxFmt_c),
+                InFmt_g    => to_string(MantFmt_c),
+                MemStyle_g => MemStyle_g,
+                Round_g    => FixRound_NonSymPos_c,
+                Saturate_g => FixSaturate_Sat_c
+            )
+            port map (
+                Clk       => Clk,
+                Rst       => Rst,
+                In_Valid  => NormValid,
+                In_Data   => Mantissa,
+                Out_Valid => ResValid,
+                Out_Data  => ApprData
+            );
+
+        -- The integer part (two's complement) and the fractional part are concatenated
+        Result <= IntDel & ApprData;
+
+    end generate;
+
+    -- *** Fractional part cannot affect the result ***
+    g_no_approx : if OmitFrac_c generate
+        Result   <= r.Int_3;
+        ResValid <= r.Valid_3;
+    end generate;
 
     -- Rounding and saturation to the user format
     i_resize : entity work.olo_fix_resize
@@ -283,7 +321,7 @@ begin
         port map (
             Clk        => Clk,
             Rst        => Rst,
-            In_Valid   => ApprValid,
+            In_Valid   => ResValid,
             In_A       => Result,
             Out_Valid  => Out_Valid,
             Out_Result => Out_Result

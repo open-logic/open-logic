@@ -41,6 +41,13 @@ class TestOloFixLinApproxLog2(unittest.TestCase):
             error = np.max(np.abs(result - np.log2(1.0 + mantissa)))*2**out_fmt.F
             self.assertLessEqual(error, 1.0, f"error too large for {out_fmt}")
 
+    def test_mantissa_zero_is_exact(self):
+        # This is what makes the result for powers of two exact in olo_fix_log2
+        for precision_bits in LOG2_TABLES:
+            dut = olo_fix_private_lin_approx_log2(FixFormat(0, 0, precision_bits + 2),
+                                                  log2_out_fmt(precision_bits))
+            self.assertEqual(dut.process(0.0)[0], 0.0)
+
     def test_result_range(self):
         # The result of log2(1+x) for x in [0, 1) is in [0, 1)
         mantissa = cl_fix_from_real(self.in_sig, self.dut.in_fmt)
