@@ -22,12 +22,11 @@ are chained in a MACC (multiply-accumulate) chain that maps onto the cascade pat
 As a result, the filter accepts one input sample on every clock cycle, independently of the number of taps and
 channels. It never generates backpressure and no rate limiting is required.
 
-A single channel (_Channels_g = 1_) is supported as well; the input is then a plain sample stream.
+A single channel (_Channels_g = 1_) is supported as well.
 
 The filter can decimate (_Ratio_g > 1_) by dropping output samples. This does not save any multipliers, because all
-taps are computed for all samples. If the input rate permits, prefer
-[olo_fix_fir_dec_semi_chtdm](./olo_fix_fir_dec_semi_chtdm.md) or
-[olo_fix_fir_dec_ser_chtdm](./olo_fix_fir_dec_ser_chtdm.md), which share multipliers between taps.
+taps are computed for all samples. [olo_fix_fir_dec_semi_chtdm](./olo_fix_fir_dec_semi_chtdm.md) saves multipliers
+but depending on configuration may consume more logic.
 
 For details about the fixed-point number format used in _Open Logic_, refer to the
 [fixed point principles](./olo_fix_principles.md).
@@ -71,7 +70,7 @@ reset and every _Ratio_g_-th frame after it produce an output sample.
 
 | Name         | In/Out | Length             | Default | Description                                         |
 | :----------- | :----- | :----------------- | :------ | :-------------------------------------------------- |
-| Coef\_Addr   | in     | _log2ceil(Taps_g)_ | 0       | Coefficient address (writes above _Taps_g-1_ are ignored) |
+| Coef\_Addr   | in     | _log2ceil(Taps_g)_ | 0       | Coefficient address<br>Address 0 is the coefficient applied to the newest input sample (first value in _CoefInit_g_), address _Taps_g-1_ the one applied to the oldest sample<br>Writes above _Taps_g-1_ are ignored |
 | Coef\_WrEna  | in     | 1                  | '0'     | Coefficient write enable                            |
 | Coef\_WrData | in     | _width(CoefFmt_g)_ | 0       | Coefficient write data                              |
 
@@ -129,15 +128,9 @@ The datapath consists of _Taps_g_ [olo_fix_madd](./olo_fix_madd.md) stages using
 
 ![architecture](./fir/olo_fix_fir_dec_par_chtdm.drawio.png)
 
-Each stage is drawn one register to the right of the previous one. For _MultRegs_g = 1_, registers in the same column
-process a given sample on the same clock cycle.
-
-The valid signal of each stage is delayed by one clock cycle compared to the previous stage. The sum therefore reaches
-each stage at the same time as the sample belonging to it. The A cascade of [olo_fix_madd](./olo_fix_madd.md) provides a
-delay of one sample between two stages. For _Channels_g > 1_, an [olo_base_delay](../base/olo_base_delay.md) adds the
+For _Channels_g > 1_, an [olo_base_delay](../base/olo_base_delay.md) adds the
 remaining _Channels_g - 1_ samples, so that each stage sees the sample of the same channel one sampling period earlier.
-
-The delay lines only move on valid input samples, hence any pattern of _In_Valid_ is supported.
+For Channels_g = 1, this delay is not required and omitted.
 
 For _Channels_g = 1_, the delay between stages can use the dedicated data cascade of the DSP blocks. For
 _Channels_g > 1_, the data must leave the DSP blocks to pass through the delay line, so noticeably more logic registers
@@ -158,10 +151,8 @@ change. This saves DSP blocks for filters with many zero coefficients (e.g. half
 For _CoefWritable_g = true_, each coefficient is stored in the input B registers of its
 [olo_fix_madd](./olo_fix_madd.md) stage:
 
-- _Rst_ loads the values from _CoefInit_g_ as long as no coefficient was written. Hence _Rst_ must be asserted before
-  the filter is used and before the first coefficient is written.
-- After the first write, _Rst_ does not change the coefficients anymore. All coefficients that were written or loaded
-  before are kept.
+_Rst_ loads the values from _CoefInit_g_ as long as no coefficient was written. Hence _Rst_ must be asserted before
+the filter is used and before the first coefficient is written.
 
 **Coefficients must only be written while no calculation is ongoing**, which means that no samples are applied to the
 input and no output samples are outstanding. The entity does not synchronize coefficient updates to the data, so a
@@ -175,16 +166,21 @@ a reset is bit-true to the Python model, which initializes its delay line to zer
 
 ### Accumulator Format
 
-The adder chain operates at full multiply precision and cannot overflow. Its result is then reduced to the following
-format by dropping the most significant bits, as done by the Python model:
+The adder chain operates in _AccuFmt_, which keeps all fractional bits of the multiplier results:
 
-- _MultFmt = cl_fix_mult_fmt(InFmt_g, CoefFmt_g)_
 - _AccuFmt = (1, Out.I + GuardBits_g, MultFmt.F)_
+- _MultFmt = cl_fix_mult_fmt(InFmt_g, CoefFmt_g)_
 
 _GuardBits_g_ integer guard bits above _OutFmt_g_ allow the result to exceed the output range, so that it can be
 saturated correctly. With the default of one guard bit, results of up to twice the _OutFmt_g_ maximum are supported.
 The user is responsible for choosing _GuardBits_g_, the coefficients and the formats accordingly. Otherwise the
 result wraps.
+
+Intermediate sums in the adder chain may wrap, as this does not affect the final result. Only the final result must
+fit into _AccuFmt_.
+
+The adder chain only maps to the cascade paths of DSP blocks if _AccuFmt_ is not wider than the DSP block adder (e.g.
+48 bits for many AMD devices). Otherwise it is implemented in logic, which is much more expensive.
 
 ### Last Handling
 
