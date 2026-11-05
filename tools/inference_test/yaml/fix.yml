@@ -475,8 +475,15 @@ entities:
         generics:
           OutFmt_g: '"(1, 5, 16)"'
           InFmt_g: '"(0, 8, 16)"'
-          PrecisionBits_g: 18
         in_reduce:
           In_Data: 24
         out_reduce:
           Out_Result: 22
+      - name: "no_approximation"
+        generics:
+          OutFmt_g: '"(1, 5, -1)"'
+          InFmt_g: '"(0, 8, 16)"'
+        in_reduce:
+          In_Data: 24
+        out_reduce:
+          Out_Result: 5

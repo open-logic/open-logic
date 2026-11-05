@@ -61,12 +61,13 @@ class olo_fix_private_lin_approx_log2_tbl:
 #
 # One table exists per supported precision. The configurations are the ones with the smallest table
 # memory (points times entry width) that stay within an error band of +/-1 LSB of out_fmt for every
-# possible input code. The same precisions as for olo_fix_inv and olo_fix_sqrt are supported, so
+# possible input code and that return exactly zero for a mantissa fraction of zero (which makes the
+# result for powers of two exact). The same precisions as for olo_fix_inv and olo_fix_sqrt are supported, so
 # that the entities can be used interchangeably.
 # ---------------------------------------------------------------------------------------------------
 LOG2_TABLES = {
     # precision_bits : olo_fix_private_lin_approx_log2_tbl(points, offs_fmt, grad_fmt)
-    10 : olo_fix_private_lin_approx_log2_tbl(32,   FixFormat(0, 0, 11), FixFormat(0, 1, 5)),
+    10 : olo_fix_private_lin_approx_log2_tbl(32,   FixFormat(0, 0, 11), FixFormat(0, 1, 6)),
     14 : olo_fix_private_lin_approx_log2_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 1, 7)),
     18 : olo_fix_private_lin_approx_log2_tbl(512,  FixFormat(0, 0, 19), FixFormat(0, 1, 10)),
     20 : olo_fix_private_lin_approx_log2_tbl(1024, FixFormat(0, 0, 21), FixFormat(0, 1, 11)),

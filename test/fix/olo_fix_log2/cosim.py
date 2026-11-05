@@ -25,16 +25,17 @@ def cosim(output_path : str = None,
     #Parse Generics
     OutFmt_g = olo_fix_utils.fix_format_from_string(generics["OutFmt_g"])
     InFmt_g = olo_fix_utils.fix_format_from_string(generics["InFmt_g"])
-    PrecisionBits_g = int(generics["PrecisionBits_g"])
     Round_g = FixRound[generics["Round_g"]]
     Saturate_g = FixSaturate[generics["Saturate_g"]]
 
-    #Generate inputs
-    data = np.linspace(cl_fix_min_value(InFmt_g), cl_fix_max_value(InFmt_g), SAMPLES)
-    data = cl_fix_from_real(data, InFmt_g)
+    #Generate inputs - a linear sweep only reaches the top octaves, hence it is complemented by a
+    #logarithmic sweep starting at the smallest non-zero value
+    lin = np.linspace(cl_fix_min_value(InFmt_g), cl_fix_max_value(InFmt_g), SAMPLES)
+    log = np.geomspace(2.0**-InFmt_g.F, cl_fix_max_value(InFmt_g), SAMPLES)
+    data = cl_fix_from_real(np.concatenate((lin, log)), InFmt_g)
 
     #Calculate
-    dut = olo_fix_log2(InFmt_g, OutFmt_g, PrecisionBits_g, Round_g, Saturate_g)
+    dut = olo_fix_log2(InFmt_g, OutFmt_g, Round_g, Saturate_g)
     result = dut.process(data)
 
     # Plot if enabled
@@ -66,7 +67,6 @@ if __name__ == "__main__":
     generics = {
         "OutFmt_g": "(1, 4, 16)",
         "InFmt_g": "(0, 8, 8)",
-        "PrecisionBits_g": 18,
         "Round_g": "NonSymPos_s",
         "Saturate_g": "Sat_s"
     }

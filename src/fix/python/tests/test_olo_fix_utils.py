@@ -56,5 +56,15 @@ class TestOloFixUtils_GetLeadingBitIndex(unittest.TestCase):
         data = cl_fix_from_integer(np.array([1, 2**99, 2**99 + 1], dtype=object), fmt)
         np.testing.assert_array_equal(dut.get_leading_bit_index(data, fmt), [0, 99, 99])
 
+class TestOloFixUtils_Log2Ceil(unittest.TestCase):
+
+    def test_zero(self):
+        # log2(0) is undefined, the VHDL function returns zero
+        self.assertEqual(dut.log2ceil(0), 0)
+
+    def test_values(self):
+        for arg, expected in [(1, 0), (2, 1), (3, 2), (4, 2), (5, 3), (255, 8), (256, 8), (257, 9)]:
+            self.assertEqual(dut.log2ceil(arg), expected)
+
 if __name__ == '__main__':
     unittest.main()

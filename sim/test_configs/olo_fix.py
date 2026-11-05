@@ -1012,16 +1012,22 @@ def add_configs(olo_tb):
     default_generics = {
         'OutFmt_g': '(1, 4, 12)',
         'InFmt_g': '(0, 8, 8)',
-        'PrecisionBits_g': 18,
         'MemStyle_g': 'auto',
         'Round_g': 'NonSymPos_s',
         'Saturate_g': 'Sat_s'
     }
 
-    # All precisions
-    for Precision in [10, 14, 18, 20]:
-        named_config(tb, default_generics | {'PrecisionBits_g': Precision}, pre_config=cosim,
-                     short_name=f'PrecisionBits_g={Precision}')
+    # All precisions - selected through the fractional bits of the output format. The list covers
+    # all tables, formats between two tables and the case of no fractional bits at all.
+    for OutFrac in [0, 10, 11, 14, 18, 19, 20]:
+        named_config(tb, default_generics | {'OutFmt_g': f'(1, 4, {OutFrac})'}, pre_config=cosim,
+                     short_name=f'OutFrac={OutFrac}')
+
+    # Without fractional bits - the approximation is omitted if the fractional part cannot affect
+    # the result. The last two configurations keep it because the fractional part decides on ties.
+    for OutFrac, Round in [(0, 'Trunc_s'), (-2, 'NonSymPos_s'), (-1, 'NonSymNeg_s'), (-1, 'ConvEven_s')]:
+        named_config(tb, default_generics | {'OutFmt_g': f'(1, 4, {OutFrac})', 'Round_g': Round},
+                     pre_config=cosim, short_name=f'OutFrac={OutFrac}-Round={Round}')
 
     # Input formats - integer bits only, fractional bits only, formats not containing 1.0 and the
     # smallest format supported (two bits). The output format is chosen to cover the results.
