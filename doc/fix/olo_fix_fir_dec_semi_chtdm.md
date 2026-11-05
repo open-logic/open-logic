@@ -246,10 +246,10 @@ bit-true agreement with the Python model, which initializes its delay line to ze
 
 ### Coefficient Format
 
-The accumulator operates at full multiply precision:
+The MACC chain and the accumulator operate in _AccuFmt_, which keeps all fractional bits of the multiplier results:
 
-- _MultFmt = (max(In.S, Coef.S), In.I + Coef.I, In.F + Coef.F)_
-- _AccuFmt = (1, Out.I + GuardBits_g, In.F + Coef.F)_ (_GuardBits_g_ guard bits above output)
+- _AccuFmt = (1, Out.I + GuardBits_g, MultFmt.F)_ (_GuardBits_g_ guard bits above output)
+- _MultFmt = cl_fix_mult_fmt(InFmt_g, CoefFmt_g)_
 
 Choosing _OutFmt.I_ or _GuardBits_g_ too small risks accumulator overflow. Ensure
 _max\_sum\_of\_products <= 2^(OutFmt.I + GuardBits_g) - 1 LSB_.
@@ -262,6 +262,11 @@ range during the accumulation without overflowing. With the default of one guard
 results of up to twice the _OutFmt_g_ maximum are supported. The user is responsible for choosing
 _GuardBits_g_, the coefficients and the formats such that the accumulator does not overflow; otherwise
 the number of guard bits or the output format must be increased.
+
+Intermediate sums may wrap, as this does not affect the final result. Only the final result must fit into _AccuFmt_.
+
+The MACC chain only maps to the cascade paths of DSP blocks if _AccuFmt_ is not wider than the DSP block adder (e.g.
+48 bits for many AMD devices). Otherwise it is implemented in logic, which is much more expensive.
 
 ### Last Handling
 

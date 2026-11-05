@@ -251,11 +251,13 @@ begin
                 MulReg(i) <= MulReg(i-1);
             end loop;
 
-            -- Add/Sub
+            -- Add/Sub (results that do not fit AddChainFmt_g wrap)
             if compareNoCase(Operation_g, "Add") then
-                Out_Data <= cl_fix_add(MaccIn, AddChainFmt_c, MulReg(MultRegs_g - 1), MultOutFmt_c, AddChainFmt_c);
+                Out_Data <= cl_fix_add(MaccIn, AddChainFmt_c, MulReg(MultRegs_g - 1), MultOutFmt_c, AddChainFmt_c,
+                                       Trunc_s, None_s);
             else
-                Out_Data <= cl_fix_sub(MaccIn, AddChainFmt_c, MulReg(MultRegs_g - 1), MultOutFmt_c, AddChainFmt_c);
+                Out_Data <= cl_fix_sub(MaccIn, AddChainFmt_c, MulReg(MultRegs_g - 1), MultOutFmt_c, AddChainFmt_c,
+                                       Trunc_s, None_s);
             end if;
 
             -- Valid Handling

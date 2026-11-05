@@ -101,14 +101,13 @@ architecture rtl of olo_fix_fir_dec_semi_chtdm is
     constant EntityName_c : string := "olo_fix_fir_dec_semi_chtdm";
 
     -- *** Formats ***
-    constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
-    constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
-    constant CoefFmt_c    : FixFormat_t := cl_fix_format_from_string(CoefFmt_g);
-    constant MultFmt_c    : FixFormat_t := cl_fix_mult_fmt(InFmt_c, CoefFmt_c);
-    -- Full-precision running sum (never overflows, hence no rounding/saturation warnings)
-    constant FullSumFmt_c : FixFormat_t := (1, MultFmt_c.I + log2Ceil(Taps_g), MultFmt_c.F);
-    -- Guarded accumulator format (matches the bit-true Python model)
-    constant AccuFmt_c    : FixFormat_t := (1, OutFmt_c.I + GuardBits_g, MultFmt_c.F);
+    constant InFmt_c   : FixFormat_t := cl_fix_format_from_string(InFmt_g);
+    constant OutFmt_c  : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
+    constant CoefFmt_c : FixFormat_t := cl_fix_format_from_string(CoefFmt_g);
+    constant MultFmt_c : FixFormat_t := cl_fix_mult_fmt(InFmt_c, CoefFmt_c);
+    -- Adder chain and accumulator format (matches the bit-true Python model). Intermediate sums may wrap,
+    -- this does not affect the final result. A wider format would not fit the DSP cascade for many taps.
+    constant AccuFmt_c : FixFormat_t := (1, OutFmt_c.I + GuardBits_g, MultFmt_c.F);
 
     -- *** Port Widths ***
     constant InWidth_c   : natural := fixFmtWidthFromString(InFmt_g);
@@ -157,12 +156,11 @@ architecture rtl of olo_fix_fir_dec_semi_chtdm is
     -- *** Types ***
     subtype InData_t   is std_logic_vector(InWidth_c - 1 downto 0);
     subtype CoefData_t is std_logic_vector(CoefWidth_c - 1 downto 0);
-    subtype FullSum_t  is std_logic_vector(cl_fix_width(FullSumFmt_c) - 1 downto 0);
     subtype AccuData_t is std_logic_vector(cl_fix_width(AccuFmt_c) - 1 downto 0);
     subtype OutData_t  is std_logic_vector(OutWidth_c - 1 downto 0);
 
     type Data_a    is array (natural range <>) of InData_t;
-    type FullSum_a is array (natural range <>) of FullSum_t;
+    type AccuData_a is array (natural range <>) of AccuData_t;
     type TapAddr_a is array (natural range <>) of unsigned(TapSelBits_c - 1 downto 0);
     type Channel_a is array (natural range <>) of unsigned(ChSelBits_c - 1 downto 0);
     type RamAddr_a is array (natural range <>) of std_logic_vector(RamAddrBits_c - 1 downto 0);
@@ -193,8 +191,7 @@ architecture rtl of olo_fix_fir_dec_semi_chtdm is
         CoefRdAddr     : CoefIdx_a(3 to Multipliers_g + 2);
         TapRdAddr      : RamAddr_a(3 to Multipliers_g + 2);
         -- Output side
-        Accu           : FullSum_t;
-        AccuResized    : AccuData_t;
+        Accu           : AccuData_t;
         AccuValid      : std_logic;
         OutChCnt       : natural range 0 to Channels_g - 1;
         Out_Valid      : std_logic;
@@ -212,7 +209,7 @@ architecture rtl of olo_fix_fir_dec_semi_chtdm is
     type CoefData_a is array (natural range <>) of CoefData_t;
 
     signal DataInChain : Data_a(1 to Multipliers_g + 1);
-    signal AccuChain   : FullSum_a(0 to Multipliers_g);
+    signal AccuChain   : AccuData_a(0 to Multipliers_g);
     signal ResizeData  : OutData_t;
     signal ResizeValid : std_logic;
     signal CfgRdData   : CoefData_a(0 to Multipliers_g - 1);
@@ -352,13 +349,12 @@ begin
             if r.CalcFirst(SpatialStage_c) = '1' then
                 v.Accu := AccuChain(Multipliers_g);
             else
-                v.Accu := cl_fix_add(r.Accu, FullSumFmt_c,
-                                     AccuChain(Multipliers_g), FullSumFmt_c,
-                                     FullSumFmt_c, Trunc_s, None_s);
+                v.Accu := cl_fix_add(r.Accu, AccuFmt_c,
+                                     AccuChain(Multipliers_g), AccuFmt_c,
+                                     AccuFmt_c, Trunc_s, None_s);
             end if;
             if r.CalcLast(SpatialStage_c) = '1' then
-                v.AccuValid   := '1';
-                v.AccuResized := cl_fix_resize(v.Accu, FullSumFmt_c, AccuFmt_c, Trunc_s, None_s);
+                v.AccuValid := '1';
             end if;
         end if;
 
@@ -494,7 +490,7 @@ begin
             Clk        => Clk,
             Rst        => Rst,
             In_Valid   => r.AccuValid,
-            In_A       => r.AccuResized,
+            In_A       => r.Accu,
             Out_Valid  => ResizeValid,
             Out_Result => ResizeData
         );
@@ -634,7 +630,7 @@ begin
             generic map (
                 AFmt_g        => InFmt_g,
                 BFmt_g        => CoefFmt_g,
-                AddChainFmt_g => to_string(FullSumFmt_c),
+                AddChainFmt_g => to_string(AccuFmt_c),
                 MultRegs_g    => MultRegs_g
             )
             port map (
