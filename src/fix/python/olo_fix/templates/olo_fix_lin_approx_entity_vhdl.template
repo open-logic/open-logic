@@ -52,10 +52,14 @@ architecture rtl of {{entity_name}} is
     -- Table Geometry
     constant TableSize_c  : positive := {{table_size}};
     constant TableWidth_c : positive := {{table_width}};
+    -- Entries are zero padded to a multiple of four bits (hex literals). The padding is sliced away
+    -- when reading the table, hence it does not cost any memory.
+    constant EntryWidth_c : positive := {{entry_width}};
 
     -- Types
     subtype TableEntry_t is std_logic_vector(TableWidth_c - 1 downto 0);
-    type TableEntryArray_t is array (natural range <>) of TableEntry_t;
+    subtype TableEntryPadded_t is std_logic_vector(EntryWidth_c - 1 downto 0);
+    type TableEntryArray_t is array (natural range <>) of TableEntryPadded_t;
 
     -- Table content - each entry contains the gradient (MSBs) and the offset (LSBs)
     -- Implemented as shared variable because attributes do not apply properly to constants
@@ -63,7 +67,7 @@ architecture rtl of {{entity_name}} is
     -- vsg_off variable_400
     shared variable Table_v : TableEntryArray_t(0 to TableSize_c - 1) := (
 {% for row in table %}
-        {{ '"%s"'|format(row) }}{{ "," if not loop.last }}
+        x"{{row}}"{{ "," if not loop.last }}
 {% endfor %}
     );
     -- vsg_on variable_400
@@ -83,7 +87,7 @@ begin
     p_table : process (Clk) is
     begin
         if rising_edge(Clk) then
-            Tbl_Data <= Table_v(to_integer(unsigned(Tbl_Addr)));
+            Tbl_Data <= Table_v(to_integer(unsigned(Tbl_Addr)))(TableWidth_c - 1 downto 0);
         end if;
     end process;
 
