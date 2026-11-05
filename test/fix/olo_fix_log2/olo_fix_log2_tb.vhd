@@ -33,13 +33,12 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_fix_log2_tb is
     generic (
-        OutFmt_g        : string   := "(1,4,12)";
-        InFmt_g         : string   := "(0,8,8)";
-        PrecisionBits_g : positive := 18;
-        MemStyle_g      : string   := "auto";
-        Round_g         : string   := "NonSymPos_s";
-        Saturate_g      : string   := "Sat_s";
-        runner_cfg      : string
+        OutFmt_g   : string := "(1,4,12)";
+        InFmt_g    : string := "(0,8,8)";
+        MemStyle_g : string := "auto";
+        Round_g    : string := "NonSymPos_s";
+        Saturate_g : string := "Sat_s";
+        runner_cfg : string
     );
 end entity;
 
@@ -51,12 +50,12 @@ architecture sim of olo_fix_log2_tb is
     constant Clk_Frequency_c : real := 100.0e6; -- 100 MHz
     constant Clk_Period_c    : time := (1 sec) / Clk_Frequency_c;
 
-    -- Latency: input, leading one and shift count stage (3), the barrel shifter, the approximation (same as
-    -- olo_fix_lin_approx_calc with a table read latency of two clock cycles) and the two registers
-    -- of the output resize (2).
-    -- The barrel shifter has an input register plus two stages (3).
-    constant SftLatency_c      : positive := 3;
-    constant ExpectedLatency_c : natural  := olo.olo_fix_lin_approx_pkg.linApproxLatency(2) + 5 + SftLatency_c;
+    -- Latency as documented, depending on whether the approximation is omitted
+    constant OutFmt_c          : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
+    constant Round_c           : FixRound_t  := cl_fix_round_from_string(Round_g);
+    constant OmitFrac_c        : boolean     := (OutFmt_c.F <= 0 and Round_c = Trunc_s) or
+                                                (OutFmt_c.F < 0 and Round_c = NonSymPos_s);
+    constant ExpectedLatency_c : natural     := choose(OmitFrac_c, 6, 17);
 
     -----------------------------------------------------------------------------------------------
     -- Interface Signals
@@ -155,12 +154,11 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_fix_log2
         generic map (
-            OutFmt_g        => OutFmt_g,
-            InFmt_g         => InFmt_g,
-            PrecisionBits_g => PrecisionBits_g,
-            MemStyle_g      => MemStyle_g,
-            Round_g         => Round_g,
-            Saturate_g      => Saturate_g
+            OutFmt_g   => OutFmt_g,
+            InFmt_g    => InFmt_g,
+            MemStyle_g => MemStyle_g,
+            Round_g    => Round_g,
+            Saturate_g => Saturate_g
         )
         port map (
             Clk        => Clk,

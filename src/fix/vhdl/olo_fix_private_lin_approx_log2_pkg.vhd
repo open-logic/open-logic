@@ -70,7 +70,7 @@ package body olo_fix_private_lin_approx_log2_pkg is
     );
 
     constant GradFmts_c : FixFormatArray_t(0 to Tables_c - 1) := (
-        (0, 1, 5),
+        (0, 1, 6),
         (0, 1, 7),
         (0, 1, 10),
         (0, 1, 11)
@@ -87,40 +87,40 @@ package body olo_fix_private_lin_approx_log2_pkg is
     -- Aligning the table entries as suggested by the linter is not sensible for large tables
     -- vsg_off constant_400
 
-    -- "log2_f10": 32 points, 17 bit per entry
+    -- "log2_f10": 32 points, 18 bit per entry
     constant Table0_c : LinApproxTable_t(0 to 31) := (
-        x"00001682E",
-        x"000016087",
-        x"0000158DE",
-        x"000015133",
-        x"000014185",
-        x"0000139D5",
-        x"000013222",
-        x"000012A6E",
-        x"0000122B8",
-        x"000012300",
-        x"000011B46",
-        x"00001138B",
-        x"000010BCE",
-        x"000010410",
-        x"000010450",
-        x"00000FC8F",
-        x"00000F4CD",
-        x"00000F509",
-        x"00000ED44",
-        x"00000ED7E",
-        x"00000E5B7",
-        x"00000E5EF",
-        x"00000DE25",
-        x"00000DE5B",
-        x"00000D690",
-        x"00000D6C4",
-        x"00000CEF7",
-        x"00000CF29",
-        x"00000C75A",
-        x"00000C78A",
-        x"00000C7BA",
-        x"00000BFE9"
+        x"00002D82E",
+        x"00002C087",
+        x"00002B0DE",
+        x"000029933",
+        x"000028985",
+        x"0000279D5",
+        x"000026A22",
+        x"000025A6E",
+        x"000024AB8",
+        x"000023B00",
+        x"000023346",
+        x"00002238B",
+        x"0000213CE",
+        x"000020C10",
+        x"000020450",
+        x"00001F48F",
+        x"00001ECCD",
+        x"00001E509",
+        x"00001DD44",
+        x"00001CD7E",
+        x"00001C5B7",
+        x"00001BDEF",
+        x"00001B625",
+        x"00001AE5B",
+        x"00001A690",
+        x"000019EC4",
+        x"000019EF7",
+        x"000019729",
+        x"000018F5A",
+        x"00001878A",
+        x"000017FBA",
+        x"000017FE9"
     );
 
     -- "log2_f14": 128 points, 23 bit per entry
