@@ -855,6 +855,7 @@ def add_configs(olo_tb):
         'Channels_g'     : 2,
         'Ratio_g'        : 4,
         'Taps_g'         : 16,
+        'IsSymmetric_g'  : False,
         'MultRegs_g'     : 1,
         'Round_g'        : 'NonSymPos_s',
         'Saturate_g'     : 'Sat_s',
@@ -891,6 +892,19 @@ def add_configs(olo_tb):
     # Overflow
     cosim_overflow = partial(cosim, test_mode='overflow')
     named_config(tb, default_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='Overflow')
+
+    # Symmetric filters (even and odd number of taps)
+    sym_generics = default_generics | {'IsSymmetric_g': True}
+    named_config(tb, sym_generics, pre_config=cosim, short_name='sym-even')
+    named_config(tb, sym_generics | {'Taps_g': 17}, pre_config=cosim, short_name='sym-odd')
+    named_config(tb, sym_generics | {'Channels_g': 1, 'Ratio_g': 1}, pre_config=cosim, short_name='sym-even-ch1')
+    named_config(tb, sym_generics | {'Channels_g': 1, 'Ratio_g': 1, 'Taps_g': 17}, pre_config=cosim, short_name='sym-odd-ch1')
+    named_config(tb, sym_generics | {'Channels_g': 1, 'Ratio_g': 1, 'Taps_g': 2}, pre_config=cosim, short_name='sym-taps2')
+    named_config(tb, sym_generics | {'CoefWritable_g': True}, pre_config=cosim, short_name='sym-writable-init')
+    named_config(tb, sym_generics | {'CoefWritable_g': True, 'WriteCoefs_g': True}, pre_config=cosim, short_name='sym-even-writable-write')
+    named_config(tb, sym_generics | {'CoefWritable_g': True, 'WriteCoefs_g': True, 'Taps_g': 5, 'Channels_g': 1}, pre_config=cosim, short_name='sym-odd-writable-write')
+    named_config(tb, sym_generics | {'Ratio_g': 2, 'Taps_g': 17, 'MultRegs_g': 2}, pre_config=partial(cosim, test_mode='halfband'), short_name='sym-halfband')
+    named_config(tb, sym_generics | {'OutFmt_g': '(1,-1,15)', 'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'Taps_g': 13}, pre_config=cosim_overflow, short_name='sym-Overflow')
 
     ### olo_fix_private_lin_approx_inv ###
     tb = olo_tb.test_bench('olo_fix_private_lin_approx_inv_tb')
