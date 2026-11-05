@@ -44,6 +44,7 @@ entity olo_fix_fir_dec_par_chtdm_tb is
         Channels_g     : positive := 2;
         Ratio_g        : positive := 4;
         Taps_g         : positive := 16;
+        IsSymmetric_g  : boolean  := false;
         MultRegs_g     : positive := 1;
         Round_g        : string   := "NonSymPos_s";
         Saturate_g     : string   := "Sat_s";
@@ -63,6 +64,9 @@ architecture sim of olo_fix_fir_dec_par_chtdm_tb is
 
     constant InFmt_c  : FixFormat_t := cl_fix_format_from_string(InFmt_g);
     constant OutFmt_c : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
+
+    -- Symmetric filters have one stage per pair of taps
+    constant Stages_c : positive := choose(IsSymmetric_g, (Taps_g + 1) / 2, Taps_g);
 
     -- Coefficients are read from the file written by the cosimulation
     constant CoefFmt_c    : FixFormat_t := cl_fix_format_from_string(CoefFmt_g);
@@ -130,6 +134,10 @@ begin
                     Coef_Addr   <= toUslv(i, Coef_Addr'length);
                     Coef_WrData <= fixFileReadSample(CoefFile_v, CoefFmt_c);
                     Coef_WrEna  <= '1';
+                    -- Symmetric: Writes to the upper half must be ignored
+                    if i >= Stages_c then
+                        Coef_WrData <= (others => '1');
+                    end if;
                     wait until rising_edge(Clk);
                 end loop;
 
@@ -178,7 +186,7 @@ begin
                 wait until rising_edge(Clk);
                 Dirty_Valid <= '0';
 
-                for i in 1 to Taps_g + MultRegs_g + 3 loop
+                for i in 1 to Stages_c + MultRegs_g + 3 loop
                     wait until rising_edge(Clk);
                     check_equal(Out_Valid, '0', "Out_Valid too early, cycle " & to_string(i));
                 end loop;
@@ -252,6 +260,7 @@ begin
             Channels_g     => Channels_g,
             Ratio_g        => Ratio_g,
             Taps_g         => Taps_g,
+            IsSymmetric_g  => IsSymmetric_g,
             GuardBits_g    => GuardBits_g,
             Round_g        => Round_g,
             Saturate_g     => Saturate_g,

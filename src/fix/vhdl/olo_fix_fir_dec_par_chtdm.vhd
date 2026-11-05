@@ -44,6 +44,7 @@ entity olo_fix_fir_dec_par_chtdm is
         Channels_g        : positive := 1;
         Ratio_g           : positive := 1;
         Taps_g            : positive;
+        IsSymmetric_g     : boolean  := false;
         -- Arithmetic
         GuardBits_g       : natural  := 1;
         Round_g           : string   := FixRound_Trunc_c;
@@ -92,6 +93,11 @@ architecture rtl of olo_fix_fir_dec_par_chtdm is
     -- affect the final result. A wider format would not fit the DSP cascade for many taps.
     constant AccuFmt_c : FixFormat_t := (1, OutFmt_c.I + GuardBits_g, MultFmt_c.F);
 
+    -- *** Tap Stages ***
+    -- Symmetric filters share one multiplier between two taps. For an odd number of taps, the center tap
+    -- has a multiplier of its own.
+    constant Stages_c : positive := choose(IsSymmetric_g, (Taps_g + 1) / 2, Taps_g);
+
     -- *** Types ***
     subtype InData_t   is std_logic_vector(cl_fix_width(InFmt_c) - 1 downto 0);
     subtype CoefData_t is std_logic_vector(cl_fix_width(CoefFmt_c) - 1 downto 0);
@@ -126,15 +132,17 @@ architecture rtl of olo_fix_fir_dec_par_chtdm is
     end function;
 
     -- *** Signals ***
-    -- Tap inputs, TapValid(i) belongs to tap i and is delayed by one clock cycle per tap
-    signal TapValid   : std_logic_vector(0 to Taps_g - 1);
-    signal TapData    : InData_a(0 to Taps_g - 1);
-    signal ACascOut   : InData_a(0 to Taps_g - 1);
+    -- Stage inputs, TapValid(i) belongs to stage i and is delayed by one clock cycle per stage
+    signal TapValid   : std_logic_vector(0 to Stages_c - 1);
+    signal TapData    : InData_a(0 to Stages_c - 1);
+    signal ACascOut   : InData_a(0 to Stages_c - 1);
+    -- Folded delay line (symmetric only), DelayLine(i) is the input delayed by i samples per channel
+    signal DelayLine  : InData_a(0 to Taps_g - 1);
     -- Coefficients
-    signal CoefData   : CoefData_a(0 to Taps_g - 1);
-    signal CoefWe     : std_logic_vector(0 to Taps_g - 1);
-    -- Adder chain, AddChain(i) is the input to tap i
-    signal AddChain   : AccuData_a(0 to Taps_g);
+    signal CoefData   : CoefData_a(0 to Stages_c - 1);
+    signal CoefWe     : std_logic_vector(0 to Stages_c - 1);
+    -- Adder chain, AddChain(i) is the input to stage i
+    signal AddChain   : AccuData_a(0 to Stages_c);
     signal ChainValid : std_logic;
     -- Decimation
     signal ChCnt      : natural range 0 to Channels_g - 1;
@@ -153,6 +161,18 @@ begin
     assert Taps_g >= 2
         report errorMessage(EntityName_c, "Taps_g must be >= 2.")
         severity error;
+
+    -- Check symmetry of fixed coefficients (after quantization to CoefFmt_g)
+    g_check_symmetry : if IsSymmetric_g and not CoefWritable_g generate
+
+        g_tap : for i in 0 to Taps_g / 2 - 1 generate
+            assert CoefInit_c(i) = CoefInit_c(Taps_g - 1 - i)
+                report errorMessage(EntityName_c, "IsSymmetric_g=true but coefficients of taps " &
+                       integer'image(i) & " and " & integer'image(Taps_g - 1 - i) & " differ.")
+                severity error;
+        end generate;
+
+    end generate;
 
     -- Check TDM framing
     p_assert : process (Clk) is
@@ -185,7 +205,7 @@ begin
     -----------------------------------------------------------------------------------------------
     -- Fixed coefficients: The inputs of all multipliers are constant
     g_coef_fixed : if not CoefWritable_g generate
-        CoefData <= CoefInit_c;
+        CoefData <= CoefInit_c(0 to Stages_c - 1);
         CoefWe   <= (others => '1');
     end generate;
 
@@ -202,14 +222,14 @@ begin
                 CoefWe   <= (others => '0');
                 if Coef_WrEna = '1' and Rst = '0' then
                     Written <= '1';
-                    if to_integer(unsigned(Coef_Addr)) < Taps_g then
-                        CoefWe(to_integer(unsigned(Coef_Addr))) <= '1';
+                    if fromUslv(Coef_Addr) < Stages_c then
+                        CoefWe(fromUslv(Coef_Addr)) <= '1';
                     end if;
                 end if;
 
                 -- Reset loads the initial values unless coefficients were written at runtime
                 if Rst = '1' and Written = '0' then
-                    CoefData <= CoefInit_c;
+                    CoefData <= CoefInit_c(0 to Stages_c - 1);
                     CoefWe   <= (others => '1');
                 end if;
             end if;
@@ -224,21 +244,51 @@ begin
     TapData(0)  <= In_Data;
     AddChain(0) <= (others => '0');
 
-    p_tap_valid : process (Clk) is
-    begin
-        if rising_edge(Clk) then
-            TapValid(1 to Taps_g - 1) <= TapValid(0 to Taps_g - 2);
-            if Rst = '1' then
-                TapValid(1 to Taps_g - 1) <= (others => '0');
-            end if;
-        end if;
-    end process;
+    g_tap_valid : if Stages_c > 1 generate
 
-    g_tap : for i in 0 to Taps_g - 1 generate
+        p_tap_valid : process (Clk) is
+        begin
+            if rising_edge(Clk) then
+                TapValid(1 to Stages_c - 1) <= TapValid(0 to Stages_c - 2);
+                if Rst = '1' then
+                    TapValid(1 to Stages_c - 1) <= (others => '0');
+                end if;
+            end if;
+        end process;
+
+    end generate;
+
+    -- Symmetric: All taps read from one folded delay line that runs in the timing of the input
+    g_delay_line : if IsSymmetric_g generate
+        DelayLine(0) <= In_Data;
+
+        g_sample : for i in 1 to Taps_g - 1 generate
+
+            i_delay : entity work.olo_base_delay
+                generic map (
+                    Width_g       => cl_fix_width(InFmt_c),
+                    Delay_g       => Channels_g,
+                    RstState_g    => true,
+                    RamBehavior_g => DataRamBehavior_g,
+                    RamStyle_g    => DataMemStyle_g
+                )
+                port map (
+                    Clk      => Clk,
+                    Rst      => Rst,
+                    In_Data  => DelayLine(i - 1),
+                    In_Valid => In_Valid,
+                    Out_Data => DelayLine(i)
+                );
+
+        end generate;
+
+    end generate;
+
+    g_tap : for i in 0 to Stages_c - 1 generate
         signal TapOutValid : std_logic;
     begin
 
-        g_madd : if tapRequiresMult(i) generate
+        g_madd : if tapRequiresMult(i) and not IsSymmetric_g generate
 
             i_madd : entity work.olo_fix_madd
                 generic map (
@@ -264,21 +314,102 @@ begin
 
         end generate;
 
+        -- Symmetric: Stage i is i clock cycles late because of the adder chain, the samples must be too.
+        -- Free-running without reset: After a reset, the first sample only sees the cleared delay line.
+        g_madd_sym : if tapRequiresMult(i) and IsSymmetric_g generate
+            signal AlignedA : InData_t;
+            signal AlignedC : InData_t;
+        begin
+
+            i_align_a : entity work.olo_base_delay
+                generic map (
+                    Width_g       => cl_fix_width(InFmt_c),
+                    Delay_g       => i,
+                    RstState_g    => false,
+                    RamBehavior_g => DataRamBehavior_g,
+                    RamStyle_g    => DataMemStyle_g
+                )
+                port map (
+                    Clk      => Clk,
+                    Rst      => Rst,
+                    In_Data  => DelayLine(i),
+                    Out_Data => AlignedA
+                );
+
+            i_align_c : entity work.olo_base_delay
+                generic map (
+                    Width_g       => cl_fix_width(InFmt_c),
+                    Delay_g       => i,
+                    RstState_g    => false,
+                    RamBehavior_g => DataRamBehavior_g,
+                    RamStyle_g    => DataMemStyle_g
+                )
+                port map (
+                    Clk      => Clk,
+                    Rst      => Rst,
+                    In_Data  => DelayLine(Taps_g - 1 - i),
+                    Out_Data => AlignedC
+                );
+
+            -- Odd number of taps: The center tap has no partner and hence does not use a pre-adder. There
+            -- the A cascade registers provide the latency of the pre-adder and input C is unused.
+            i_madd : entity work.olo_fix_madd
+                generic map (
+                    PreAdd_g      => 2 * i /= Taps_g - 1,
+                    InBIsCoef_g   => true,
+                    ACascade_g    => 2 * i = Taps_g - 1,
+                    AFmt_g        => InFmt_g,
+                    BFmt_g        => CoefFmt_g,
+                    CFmt_g        => InFmt_g,
+                    AddChainFmt_g => to_string(AccuFmt_c),
+                    MultRegs_g    => MultRegs_g
+                )
+                port map (
+                    Clk        => Clk,
+                    Rst        => Rst,
+                    InAC_Valid => TapValid(i),
+                    InA_Data   => AlignedA,
+                    InC_Data   => AlignedC,
+                    InB_Valid  => CoefWe(i),
+                    InB_Data   => CoefData(i),
+                    MaccIn     => AddChain(i),
+                    Out_Valid  => TapOutValid,
+                    Out_Data   => AddChain(i + 1)
+                );
+
+        end generate;
+
         -- Coefficient fixed to zero: No multiplier, only the registers that keep the timing of olo_fix_madd
         g_no_madd : if not tapRequiresMult(i) generate
-            signal A_0     : InData_t;
             signal VldPipe : std_logic_vector(0 to MultRegs_g + 2);
         begin
+
+            -- A cascade (symmetric filters do not have one)
+            g_a_cascade : if not IsSymmetric_g generate
+                signal A_0 : InData_t;
+            begin
+
+                p_a_cascade : process (Clk) is
+                begin
+                    if rising_edge(Clk) then
+                        if TapValid(i) = '1' then
+                            A_0 <= TapData(i);
+                        end if;
+                        ACascOut(i) <= A_0;
+
+                        -- Reset
+                        if Rst = '1' then
+                            A_0         <= (others => '0');
+                            ACascOut(i) <= (others => '0');
+                        end if;
+                    end if;
+                end process;
+
+            end generate;
 
             p_no_madd : process (Clk) is
             begin
                 if rising_edge(Clk) then
-                    -- A cascade
-                    if TapValid(i) = '1' then
-                        A_0 <= TapData(i);
-                    end if;
-                    ACascOut(i) <= A_0;
-
                     -- Adder chain
                     AddChain(i + 1) <= AddChain(i);
 
@@ -287,8 +418,6 @@ begin
 
                     -- Reset
                     if Rst = '1' then
-                        A_0             <= (others => '0');
-                        ACascOut(i)     <= (others => '0');
                         AddChain(i + 1) <= (others => '0');
                         VldPipe         <= (others => '0');
                     end if;
@@ -300,13 +429,13 @@ begin
         end generate;
 
         -- All taps run with the same timing, the output of the last tap marks the valid sums
-        g_last : if i = Taps_g - 1 generate
+        g_last : if i = Stages_c - 1 generate
             ChainValid <= TapOutValid;
         end generate;
 
         -- Delay to the next tap: A sample of the same channel is Channels_g samples old and
         -- the A cascade already provides one sample of delay.
-        g_next : if i < Taps_g - 1 generate
+        g_next : if i < Stages_c - 1 and not IsSymmetric_g generate
 
             g_single : if Channels_g = 1 generate
                 TapData(i + 1) <= ACascOut(i);
@@ -381,7 +510,7 @@ begin
             Clk        => Clk,
             Rst        => Rst,
             In_Valid   => SumValid,
-            In_A       => AddChain(Taps_g),
+            In_A       => AddChain(Stages_c),
             Out_Valid  => OutValid_i,
             Out_Result => Out_Data
         );

@@ -35,6 +35,8 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 
 The latency from _In_Valid_ to _Out_Valid_ is _Taps_g + MultRegs_g + 4_ clock cycles.
 
+For _IsSymmetric_g = true_, the latency is _ceil(Taps_g/2) + MultRegs_g + 4_ clock cycles.
+
 For _Ratio_g > 1_, this applies to the input samples for which an output sample is produced. The first frame after
 reset and every _Ratio_g_-th frame after it produce an output sample.
 
@@ -48,6 +50,7 @@ reset and every _Ratio_g_-th frame after it produce an output sample.
 | Channels_g        | positive | 1          | Number of TDM channels (>= 1; single- or multi-channel)       |
 | Ratio_g           | positive | 1          | Decimation ratio (one output per _Ratio_g_ input sample sets) |
 | Taps_g            | positive | -          | Number of filter taps (must be >= 2)                          |
+| IsSymmetric_g     | boolean  | false      | _false_ - No assumption about the coefficients, one multiplier per tap<br>_true_ - Coefficients are symmetric, one multiplier per pair of taps. See [Symmetric Coefficients](#symmetric-coefficients). |
 | GuardBits_g       | natural  | 1          | Number of integer guard bits in the accumulator above _OutFmt_g_ |
 | Round_g           | string   | "Trunc\_s" | Rounding mode<br>String representation of an _en\_cl\_fix FixRound\_t_ |
 | Saturate_g        | string   | "Warn\_s"  | Saturation mode<br>String representation of an _en\_cl\_fix FixSaturate\_t_ |
@@ -70,7 +73,7 @@ reset and every _Ratio_g_-th frame after it produce an output sample.
 
 | Name         | In/Out | Length             | Default | Description                                         |
 | :----------- | :----- | :----------------- | :------ | :-------------------------------------------------- |
-| Coef\_Addr   | in     | _log2ceil(Taps_g)_ | 0       | Coefficient address<br>Address 0 is the coefficient applied to the newest input sample (first value in _CoefInit_g_), address _Taps_g-1_ the one applied to the oldest sample<br>Writes above _Taps_g-1_ are ignored |
+| Coef\_Addr   | in     | _log2ceil(Taps_g)_ | 0       | Coefficient address<br>Address 0 is the coefficient applied to the newest input sample (first value in _CoefInit_g_), address _Taps_g-1_ the one applied to the oldest sample<br>Writes above _Taps_g-1_ are ignored<br>For _IsSymmetric_g = true_, writes above _ceil(Taps_g/2)-1_ are ignored |
 | Coef\_WrEna  | in     | 1                  | '0'     | Coefficient write enable                            |
 | Coef\_WrData | in     | _width(CoefFmt_g)_ | 0       | Coefficient write data                              |
 
@@ -139,6 +142,39 @@ are required per tap.
 The sum of the last stage is decimated, then rounded and saturated to _OutFmt_g_ using
 [olo_fix_resize](./olo_fix_resize.md).
 
+### Symmetric Coefficients
+
+Linear-phase FIR filters have symmetric coefficients: Coefficient _i_ equals coefficient _Taps_g-1-i_. For
+_IsSymmetric_g = true_, this property is exploited to compute both taps with one multiplier. As a result, a filter with
+_Taps_g_ taps only requires _ceil(Taps_g/2)_ multipliers. Even and odd values of _Taps_g_ are supported.
+
+![architecture symmetric](./fir/olo_fix_fir_dec_par_chtdm_sym.drawio.png)
+
+The delay line is folded: All samples pass through one chain of _Taps_g-1_ [olo_base_delay](../base/olo_base_delay.md)
+instances of _Channels_g_ samples each. Each stage adds the two samples sharing a coefficient in the pre-adder of its
+[olo_fix_madd](./olo_fix_madd.md). Because stage _i_ is _i_ clock cycles late due to the registers in the adder chain,
+its two samples pass through a delay of _i_ clock cycles first.
+
+The figure shows an odd number of taps, where the center tap has no partner. It is computed by a stage without
+pre-adder but with the same latency. For an even number of taps, there are two center taps and they form a normal pair
+in the last stage. The two ends of the delay line are then connected through one more delay of _Channels_g_ samples.
+
+The output is bit-true to a filter with _IsSymmetric_g = false_ and the same coefficients. The pre-adder does not lose
+any bits, it has one integer bit more than _InFmt_g_. This must be taken into account for mapping to DSP blocks: The
+pre-adder output must fit the multiplier input (e.g. 25 bits, hence _InFmt_g_ up to 24 bits).
+
+The savings in multipliers come at the cost of logic for the delays that align the samples. The two delays of stage _i_
+take _2 * i_ registers per bit. For long filters, this is a noticeable amount of logic, which however maps to SRLs on
+devices that support them.
+
+The coefficients are handled as follows:
+
+- For _CoefWritable_g = false_, _CoefInit_g_ must contain all _Taps_g_ coefficients. After quantization to _CoefFmt_g_
+  they must be symmetric, otherwise an assertion fires in simulation.
+- For _CoefWritable_g = true_, only the lower half of the coefficients including the center tap(s) is stored
+  (addresses _0_ to _ceil(Taps_g/2)-1_). Writes to the upper half and values in the upper half of _CoefInit_g_ are
+  ignored, no assertion fires for them.
+
 ### Coefficients
 
 For _CoefWritable_g = false_, the coefficients are constants given by _CoefInit_g_. Synthesis tools may optimize the
@@ -153,6 +189,8 @@ For _CoefWritable_g = true_, each coefficient is stored in the input B registers
 
 _Rst_ loads the values from _CoefInit_g_ as long as no coefficient was written. Hence _Rst_ must be asserted before
 the filter is used and before the first coefficient is written.
+
+For _IsSymmetric_g = true_, there is one coefficient per stage. See [Symmetric Coefficients](#symmetric-coefficients).
 
 **Coefficients must only be written while no calculation is ongoing**, which means that no samples are applied to the
 input and no output samples are outstanding. The entity does not synchronize coefficient updates to the data, so a
