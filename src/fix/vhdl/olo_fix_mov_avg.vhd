@@ -38,7 +38,7 @@ entity olo_fix_mov_avg is
         InFmt_g           : string;
         OutFmt_g          : string;
         Taps_g            : positive;
-        GainCorrCoefFmt_g : string := "(0, 1, 16)";
+        GainCorrCoefFmt_g : string := "(0,1,16)";
         GainCorrDataFmt_g : string := "AUTO";
         GainCorrType_g    : string := "EXACT";
         Round_g           : string := FixRound_Trunc_c;
