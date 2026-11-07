@@ -438,6 +438,10 @@ def add_configs(olo_tb):
                             pre_config=cosim,
                             short_name=f'CH{Channels}-FixedRatio={FixedRatio}-Default')           
 
+            #Gain Correction off
+            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'GainCorrCoefFmt_g': 'NONE'},
+                            pre_config=cosim,
+                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-NoGc')
             # Different Ratios & Orders
             named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'Order_g': '6', 'Ratio_g': '3'},
                             pre_config=cosim,
@@ -447,11 +451,6 @@ def add_configs(olo_tb):
             named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'DiffDelay_g': '2'},
                             pre_config=cosim,
                             short_name=f'CH{Channels}-FixedRatio={FixedRatio}-DiffDelay=2')
-
-            #Gain Correction off
-            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'GainCorrCoefFmt_g': 'NONE'},
-                            pre_config=cosim,
-                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-NoGc')
 
     # Overflow
     named_config(tb, default_generics  | {'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'OutFmt_g': '(1, -2, 15)'},
@@ -531,21 +530,26 @@ def add_configs(olo_tb):
     cosim = olo_fix_cic_intp_tdm_par.cosim.cosim
 
     for Channels in ['1', '3']:
+        # Different Ratios & Orders
+        named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'Order_g': '6', 'Ratio_g': '5'},
+                        pre_config=cosim,
+                        short_name=f'CH{Channels}-Order=6-Ratio=5')
+
+        # Different Diff Delay
+        named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'DiffDelay_g': '2'},
+                        pre_config=cosim,
+                        short_name=f'CH{Channels}-DiffDelay=2')
+
+        # Ratio 1
+        named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'Ratio_g': '1', 'FixedRatio_g': 'True'},
+                        pre_config=cosim,
+                        short_name=f'CH{Channels}-Ratio=1')
+
         for FixedRatio in ['False', 'True']:
             # Default
             named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}'},
                             pre_config=cosim,
                             short_name=f'CH{Channels}-FixedRatio={FixedRatio}-Default')
-
-            # Different Ratios & Orders
-            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'Order_g': '6', 'Ratio_g': '5'},
-                            pre_config=cosim,
-                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-Order=6-Ratio=5')
-
-            # Different Diff Delay
-            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'DiffDelay_g': '2'},
-                            pre_config=cosim,
-                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-DiffDelay=2')
 
             #Gain Correction off
             named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'GainCorrCoefFmt_g': 'NONE'},
@@ -562,11 +566,6 @@ def add_configs(olo_tb):
     named_config(tb, default_generics  | {'Channels_g': '6', 'Ratio_g': '3'},
                     pre_config=cosim,
                     short_name=f'CH6-Ratio=3')
-
-    # Ratio 1
-    named_config(tb, default_generics  | {'Ratio_g': '1', 'FixedRatio_g': 'True', 'Channels_g': '2'},
-                    pre_config=cosim,
-                    short_name=f'CH2-Ratio=1')
 
     # Overflow
     named_config(tb, default_generics  | {'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'OutFmt_g': '(1, -2, 15)'},

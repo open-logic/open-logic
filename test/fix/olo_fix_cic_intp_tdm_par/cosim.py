@@ -83,7 +83,18 @@ def cosim(output_path : str = None,
     if not cosim_mode:
         in_data = {"Input" : in_ch[0]}
         out_data = {"Output" : out_ch[0]}
-        olo_fix_plots.plot_subplots({"Input Data" : in_data, "Output Data" : out_data})
+        olo_fix_plots.plot_subplots({"Input Data" : in_data, "Output Data" : out_data}, show=False)
+
+        # Spectrum of the chirp section of the output vs. theoretical CIC response (normalized to 0 dB at DC)
+        # Tukey window with short taper: for a chirp, time maps to frequency, so a full window would shape the spectrum
+        chirp_out = out_ch[0][:SAMPLES_LOGIC*Ratio_g]
+        f = np.linspace(0, Ratio_g/2, 10000)
+        h = np.abs(np.sinc(DiffDelay_g*f)/np.sinc(f/Ratio_g))**Order_g
+        olo_fix_plots.plot_spectrum({"Output Spectrum (chirp)" : chirp_out},
+                                    window=sps.windows.tukey(len(chirp_out), 0.1),
+                                    freq_scale=Ratio_g, freq_unit="Fs_in",
+                                    overlays={"Theoretical CIC Response" : (f, 20*np.log10(h + 1e-20))},
+                                    title="Output Spectrum")
 
     #Write Files
     if cosim_mode:
