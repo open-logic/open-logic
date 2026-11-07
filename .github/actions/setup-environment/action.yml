@@ -45,7 +45,7 @@ runs:
       if: inputs.nvc == 'true'
       shell: bash
       run: |
-        wget -q -O /tmp/nvc.deb https://github.com/nickg/nvc/releases/download/r1.19.0/nvc_1.19.0-1_amd64_ubuntu-24.04.deb
+        wget -q -O /tmp/nvc.deb https://github.com/nickg/nvc/releases/download/r1.23.1/nvc_1.23.1-1_amd64_ubuntu-24.04.deb
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends /tmp/nvc.deb
         nvc --version

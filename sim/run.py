@@ -192,9 +192,8 @@ if args.coverage:
         f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
     for f in olo_tb.get_source_files("*_pkg_tb.vhd"):
         f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
-    for tb in olo_tb.get_test_benches("*"):
-          for config in tb._test_bench._configs.values():
-              config.set_sim_option("nvc.elab_flags", ["--cover"])
+    # VUnit only passes --cover-file to nvc, coverage collection must be enabled explicitly
+    olo_tb.set_sim_option("nvc.elab_flags", ["--cover"])
 
     def post_run(results):
         if simulator == 'modelsim':
