@@ -47,3 +47,53 @@ class olo_fix_plots:
         fig.subplots_adjust(hspace=0.5)  # Adjust vertical spacing between subplots
         if show:
             plt.show()
+
+    @staticmethod
+    def plot_spectrum(signals: dict, window: np.ndarray = None, freq_scale: float = 1.0, ref_level: float = None,
+                      overlays: dict = None, title: str = "Spectrum", freq_unit: str = "Fs",
+                      ylim: tuple = (-150, 10), show: bool = True) -> None: # pragma: no cover - testing plots automated is difficult
+        """
+        Plot the magnitude spectrum of one or more signals, optionally with overlays (e.g. theoretical response
+        or specification mask).
+
+        Real signals are plotted one-sided (0 ... Fs/2), complex signals two-sided (-Fs/2 ... Fs/2).
+
+        Args:
+            signals (dict): Name (key) and time-domain data (value) pairs. All signals must have the same length.
+            window (np.ndarray): Window applied before the FFT. None means rectangular. The window choice depends
+                                 on the signal and is therefore left to the caller.
+            freq_scale (float): Scale factor for the frequency axis. The default 1.0 gives frequencies normalized to
+                                the sample rate of the signals.
+            ref_level (float): Amplitude corresponding to 0 dBFS. None normalizes to the peak of the first signal.
+            overlays (dict): Name (key) and (freq, mag_db) tuple (value) pairs, plotted as dashed lines. Frequencies
+                             must be given in the same unit as the scaled frequency axis.
+            title (str): Title of the plot.
+            freq_unit (str): Unit shown on the frequency axis label.
+            ylim (tuple): Limits of the magnitude axis in dB.
+            show (bool): If True, display the plot. Defaults to True.
+        """
+        plt.figure(figsize=(10, 5))
+        norm = None
+        for name, values in signals.items():
+            values = np.asarray(values)
+            win = np.ones(len(values)) if window is None else window
+            if np.iscomplexobj(values):
+                spec = np.abs(np.fft.fftshift(np.fft.fft(values*win)))
+                freq = np.fft.fftshift(np.fft.fftfreq(len(values)))
+            else:
+                spec = np.abs(np.fft.rfft(values*win))
+                freq = np.fft.rfftfreq(len(values))
+                spec[1:] *= 2 # One-sided: Account for energy in negative frequencies (DC is not doubled)
+            if norm is None:
+                norm = np.max(spec) if ref_level is None else ref_level*np.sum(win)
+            plt.plot(freq*freq_scale, 20*np.log10(spec/norm + 1e-20), label=name)
+        for name, (freq, mag_db) in (overlays or {}).items():
+            plt.plot(freq, mag_db, "--", label=name)
+        plt.title(title)
+        plt.xlabel(f"Frequency [{freq_unit}]")
+        plt.ylabel("Magnitude [dB]" if ref_level is None else "Magnitude [dBFS]")
+        plt.ylim(*ylim)
+        plt.grid(True)
+        plt.legend()
+        if show:
+            plt.show()

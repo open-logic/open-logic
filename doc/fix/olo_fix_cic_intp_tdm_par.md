@@ -129,6 +129,10 @@ These ports are only required for _FixedRatio_g = false_ and can be left unconne
 responsible for applying the correct values to these ports. The ratio is only allowed to be changed when the CIC is in
 reset (i.e. _Rst_=1_).
 
+**Note:** The configuration values are not range checked. If _Cfg_Ratio_ is configured for a ratio larger than
+_Ratio_g_ or if _Cfg_Shift_ and _Cfg_GainCorr_ do not match the formulas given in
+[CIC Gain Handling](#cic-gain-handling), the behavior is undefined.
+
 The width of _Cfg_Shift_ is fixed to 8 bits for simplicity reasons. In practice, CICs with more than 255 bits of growth
 are not practical anyways because they would require too much resources and lead to timing issues. Therefore a fixed
 width of 8 bits is sufficient for all sane use-cases.
@@ -223,6 +227,10 @@ is an FIR filter, so rounding errors of the multiplier are not accumulated by th
 filter like any other input signal (i.e. with a gain of 1.0 after gain correction). Note that it would **not** be
 possible to place the multiplier between the comb stages and the integrators because the integrators would accumulate
 the rounding errors.
+
+In fixed ratio mode (_FixedRatio_g_ = true), the multiplier is omitted automatically if the CIC gain is a power of two
+(i.e. _Ratio_g_ and _DiffDelay_g_ are both powers of two). In this case the gain correction coefficient is exactly 1.0
+and the multiplication is replaced by a bit-true resize, which saves a DSP slice.
 
 Because the gain correction factor is in the range 1.0 to 2.0, the multiplier output has one more integer bit than
 _InFmt_g_. The multiplier output is rounded and saturated according to _Round_g_ and _Saturate_g_ to the format
