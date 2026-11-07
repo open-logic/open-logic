@@ -513,6 +513,71 @@ def add_configs(olo_tb):
                     pre_config=cosim,
                     short_name=f'ShortFormats')    
 
+    ### olo_fix_cic_intp_tdm_par ###
+    tb = olo_tb.test_bench('olo_fix_cic_intp_tdm_par_tb')
+    #Test formats and round/sat modes
+    default_generics = {
+        'Channels_g': '1',
+        'Order_g': '3',
+        'Ratio_g': '4',
+        'FixedRatio_g': 'False',
+        'DiffDelay_g': '1',
+        'InFmt_g': '(1, 0, 11)',
+        'OutFmt_g': '(1, 0, 15)',
+        'GainCorrCoefFmt_g': '(0, 1, 16)',
+        'Round_g': 'NonSymPos_s',
+        'Saturate_g': 'Sat_s'
+    }
+    cosim = olo_fix_cic_intp_tdm_par.cosim.cosim
+
+    for Channels in ['1', '3']:
+        for FixedRatio in ['False', 'True']:
+            # Default
+            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}'},
+                            pre_config=cosim,
+                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-Default')
+
+            # Different Ratios & Orders
+            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'Order_g': '6', 'Ratio_g': '5'},
+                            pre_config=cosim,
+                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-Order=6-Ratio=5')
+
+            # Different Diff Delay
+            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'DiffDelay_g': '2'},
+                            pre_config=cosim,
+                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-DiffDelay=2')
+
+            #Gain Correction off
+            named_config(tb, default_generics  | {'Channels_g': f'{Channels}', 'FixedRatio_g': f'{FixedRatio}', 'GainCorrCoefFmt_g': 'NONE'},
+                            pre_config=cosim,
+                            short_name=f'CH{Channels}-FixedRatio={FixedRatio}-NoGc')
+
+    # Diff delay with multiple running sum taps
+    for FixedRatio in ['False', 'True']:
+        named_config(tb, default_generics  | {'Channels_g': '3', 'FixedRatio_g': f'{FixedRatio}', 'DiffDelay_g': '3'},
+                        pre_config=cosim,
+                        short_name=f'CH3-FixedRatio={FixedRatio}-DiffDelay=3')
+
+    # More channels than ratio (In_Ready never deasserted)
+    named_config(tb, default_generics  | {'Channels_g': '6', 'Ratio_g': '3'},
+                    pre_config=cosim,
+                    short_name=f'CH6-Ratio=3')
+
+    # Ratio 1
+    named_config(tb, default_generics  | {'Ratio_g': '1', 'FixedRatio_g': 'True', 'Channels_g': '2'},
+                    pre_config=cosim,
+                    short_name=f'CH2-Ratio=1')
+
+    # Overflow
+    named_config(tb, default_generics  | {'Round_g': 'Trunc_s', 'Saturate_g': 'None_s', 'OutFmt_g': '(1, -2, 15)'},
+                    pre_config=cosim,
+                    short_name=f'Overflow')
+
+    # Shorter formats (unsigned)
+    named_config(tb, default_generics  | {'InFmt_g': '(0,0,8)', 'OutFmt_g': '(0,0,8)'},
+                    pre_config=cosim,
+                    short_name=f'ShortFormats')
+
     ### olo_fix_cplx_addsub  ###
     tb = olo_tb.test_bench('olo_fix_cplx_addsub_tb')  
 
