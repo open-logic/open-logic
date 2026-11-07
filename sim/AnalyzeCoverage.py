@@ -126,7 +126,7 @@ for entity in sorted(entities, key=lambda e: e.name):
     if entity.name.endswith("_tb"):
         continue
     # Print coverage
-    print(f"{entity.name:25}: {entity.statements:9}% {entity.branches:9}%")
+    print(f"{entity.name:40}: {entity.statements:9}% {entity.branches:9}%")
     # Crate badge
     if args.badges:
         create_coverage_badge(entity.name, entity.statements)
