@@ -470,7 +470,8 @@ If you want to run simulations on your PC, you need the following prerequisites:
 2. VUnit must be installed: `pip3 install vunit_hdl`
 3. Simulator must be installed and added to the _PATH_ environment variable  
    1. Default choice: [GHDL](https://github.com/ghdl/ghdl/releases)
-   2. Alternative (used for code-coverage analysis): Questasim.
+   2. Alternatives: [NVC](https://github.com/nickg/nvc/releases) or Questasim (both support code-coverage analysis,
+      see [Analyze Coverage](#analyze-coverage)).
 
 ### Run Simulations from Commandline
 
@@ -556,9 +557,12 @@ will map it to Ctrl+Alt+S:
 
 ## Analyze Coverage
 
-To analyze code-coverage, the Questasim simulator must be used and coverage must be enabled. After simulations with
-coverage enabled are ran, the coverage can be reported nicely formated in the console by running the corresponding
-python script.
+Code-coverage can be analyzed using either Questasim or NVC. After simulations with coverage enabled are ran, the
+coverage can be reported nicely formated in the console by running the corresponding python script.
+
+### Coverage with Questasim
+
+Questasim is the reference for code-coverage in Open Logic (the coverage badges are produced with it).
 
 Below commands must be ran from the _\<root\>/sim_ directory:
 
@@ -570,6 +574,42 @@ python3 ./AnalyzeCoverage.py
 You should now see a clean summary of the statement coverage: <br>
 
 ![simulation](./general/Coverage.png)
+
+### Coverage with NVC
+
+NVC is a free and open-source simulator. Coverage with NVC therefore allows contributors without a Questasim license to
+check the code-coverage of their changes. NVC coverage is also collected in the CI (informative only, no minimum
+coverage is enforced).
+
+> [!WARNING]
+> NVC coverage is usable but results are not yet 100% perfect. Reported numbers are not always correct, especially for
+> large test sets (e.g. when running all tests at once). Results are mostly right when running the tests of individual
+> entities. In case of doubt, Questasim results are the reference.
+
+NVC coverage is tested with the following versions (other versions may not work or produce different results):
+
+- NVC: [1.23.1](https://github.com/nickg/nvc/releases/tag/r1.23.1)
+- VUnit: 5.0.0.dev10 (development release, must be installed explicitly: `pip3 install vunit_hdl==5.0.0.dev10`)
+
+Below commands must be ran from the _\<root\>/sim_ directory:
+
+```shell
+python3 run.py --nvc --coverage
+python3 ./AnalyzeCoverage.py --simulator=nvc
+```
+
+To analyze the coverage of a single entity (recommended for NVC, see note above), filter both the simulations and the
+analysis:
+
+```shell
+python3 run.py --nvc --coverage "olo_tb.olo_base_fifo_sync_tb*"
+python3 ./AnalyzeCoverage.py --simulator=nvc --filter="olo_base_fifo_sync"
+```
+
+The `--filter` argument accepts wildcards (e.g. `--filter="olo_base_*"`).
+
+Besides the console summary, NVC produces a detailed HTML report in _\<root\>/sim/nvc_coverage_. It shows which
+statements and branches are not covered and is helpful for finding gaps in the testbench.
 
 ## Update Badges
 
