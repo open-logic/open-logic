@@ -29,9 +29,11 @@ from [doc/EntityList.md](./doc/EntityList.md).
 
 - Do limit the entity descriptions in file-headers to 1-2 sentences. Detailed descriptions are provided
   in the documentation that's linked from the header.
-- Use the concise conversion functions from the `olo_base_pkg_*` packages instead of nested `ieee` conversions, e.g.
-  `fromUslv(Addr)` instead of `to_integer(unsigned(Addr))` and `toUslv(Val, Width)` instead of
-  `std_logic_vector(to_unsigned(Val, Width))`.
+- Write code in two-process method (with a record for registers and combinatorial/sequential process)
+  - Exceptions: Very simple entities, code that clearly belongs to component instantiations goes there
+- Prefer shorthand conversions from Open Logic packages over nested `numeric_std` conversions.
+  - Example: use `fromUslv()` instead of `to_integer(unsigned(...))` for conversions from `std_logic_vector`.
+  - Example: use `toUslv()` instead of `std_logic_vector(to_unsigned(...))` for conversions to `std_logic_vector`.
 
 ## Fixed-Point Code (`olo_fix`)
 
@@ -128,6 +130,33 @@ Markdown is linted too (`.markdownlint.json`, max line length 120):
 ```shell
 npx markdownlint-cli2 --config .markdownlint.json "**/*.md"
 ```
+
+## Resource Consumption Assessment
+
+Ground Rule: NEVER run synthesis and resource optimizations without asking the user first. They consume time. Only
+consider doing so when you already suspect resource issues or if the user asks for it explicitly.
+
+Resource usage (LUTs/ALMs, registers, RAM, DSP) is assessed by synthesizing entities with the inference test tool in
+`tools/inference_test` (details in [tools/inference_test/inference_test.md](./tools/inference_test/inference_test.md)).
+The synthesis tools must be installed and on the `PATH`. Run from `tools/inference_test`:
+
+```shell
+python3 ./InferenceTest.py --entity=<entity> --yml ./yaml/<area>.yml --tool=<tool>   # one entity
+python3 ./InferenceTest.py --entity=<entity> --config=<config> --yml ./yaml/<area>.yml --tool=<tool>
+python3 ./InferenceTest.py --yml ./yaml/<area>.yml --tool=<tool> --check-coverage    # all entities of an area
+```
+
+Supported tools: `vivado`, `quartus`, `gowin`, `efinity`, `libero`, `cologne`. A resource table is printed per
+configuration; results are also written to `tools/inference_test/results/`.
+
+- Configurations (generics, `in_reduce`/`out_reduce`, `omitted_ports`) are defined in `yaml/<area>.yml`. To assess a
+  specific generics combination, add a configuration there (keep it if it adds value, otherwise remove it again).
+- To find out _where_ resources are used, inspect the reports of the last run in `tools/inference_test/project/`
+  (e.g. for Quartus `tutorial_prj.fit.rpt`, section _DSP Block Details_, and `tutorial_prj.map.rpt` for the
+  per-hierarchy utilization).
+- Default generics apply to everything not set in the YAML (e.g. gain correction enabled by default). Check them
+  before interpreting unexpected numbers.
+- When optimizing, compare the numbers before and after the change and report both.
 
 ## Before Declaring a Task Complete
 
