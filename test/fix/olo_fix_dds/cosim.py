@@ -10,7 +10,6 @@
 import sys
 import os
 import numpy as np
-from matplotlib import pyplot as plt
 
 #Import olo_fix
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../src/fix/python")))
@@ -125,18 +124,9 @@ def cosim(output_path : str = None,
 
         # Spectrum of CH0 (complex signal, Kaiser window with high sidelobe suppression)
         cplx = out_cos[0::Channels_g] + 1j*out_sin[0::Channels_g]
-        window = np.kaiser(SAMPLES, 20)
-        spec = np.fft.fftshift(np.fft.fft(cplx*window))
-        spec_db = 20*np.log10(np.abs(spec)/(dut.peak*np.sum(window)) + 1e-20)
-        freq = np.fft.fftshift(np.fft.fftfreq(SAMPLES))
-        plt.figure(figsize=(10, 5))
-        plt.plot(freq, spec_db)
-        plt.title(f"CH0 Spectrum (Step = {step_const} rotations, OutFmt = {OutFmt_g})")
-        plt.xlabel("Frequency [Fs]")
-        plt.ylabel("Magnitude [dBFS]")
-        plt.ylim(-200, 10)
-        plt.grid(True)
-        plt.show()
+        olo_fix_plots.plot_spectrum({"CH0" : cplx}, window=np.kaiser(SAMPLES, 20), ref_level=dut.peak,
+                                    title=f"CH0 Spectrum (Step = {step_const} rotations, OutFmt = {OutFmt_g})",
+                                    ylim=(-200, 10))
 
     #Write Files
     if cosim_mode:

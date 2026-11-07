@@ -276,6 +276,13 @@ Note: [olo_fix_dds](./fix/olo_fix_dds.md) can be used to generate the local osci
 | [olo_fix_cic_dec_par_tdm](./fix/olo_fix_cic_dec_par_tdm.md) | CIC decimator (parallel input, TDM output), single- or multi-channel, ratio fixed or runtime configurable          |
 | [olo_fix_cic_intp_tdm_par](./fix/olo_fix_cic_intp_tdm_par.md) | CIC interpolator (TDM input, parallel output), single- or multi-channel, ratio fixed or runtime configurable |
 
+For single-channel systems, use [olo_fix_cic_intp_tdm_par](./fix/olo_fix_cic_intp_tdm_par.md) with just one channel
+for interpolation or  use [olo_fix_cic_dec_par_tdm](./fix/olo_fix_cic_dec_par_tdm.md) with just one channel for
+decimation.
+
+For multi-channel systems with parallel inputs and outputs, use several instances of the single-channel
+suggestions above in parallel.
+
 ### FIR Filters
 
 Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_

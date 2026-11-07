@@ -114,6 +114,10 @@ architecture rtl of olo_fix_cic_intp_tdm_par is
     constant FixedGc_c : std_logic_vector(cl_fix_width(GainCorrCoefFmt_c) - 1 downto 0) :=
         cl_fix_from_real(RealGc_c, GainCorrCoefFmt_c);
 
+    -- For fixed ratio with a power-of-two CIC gain, the gain correction coefficient is exactly 1.0 and the
+    -- multiplier can be omitted. The gain R^(N-1)*D^N is a power of two if and only if R and D are powers of two.
+    constant GcBypass_c : boolean := FixedRatio_g and isPower2(Ratio_g) and isPower2(DiffDelay_g);
+
     -- Widths
     constant AccuWidth_c : positive := cl_fix_width(AccuFmt_c);
     constant OutWidth_c  : positive := cl_fix_width(OutFmt_c);
@@ -126,6 +130,7 @@ architecture rtl of olo_fix_cic_intp_tdm_par is
     -- Two Process Method
     type TwoProcess_t is record
         -- Configuration Registers
+        Ratio    : std_logic_vector(Cfg_Ratio'range);
         GcCoef   : std_logic_vector(cl_fix_width(GainCorrCoefFmt_c)-1 downto 0);
         SftSel   : std_logic_vector(SftSelBits_c - 1 downto 0);
         -- Input Handshaking
@@ -188,21 +193,24 @@ begin
         -- hold variables stable
         v := r;
 
-        -- Ratio from port or constant
+        -- Ratio from constant or registered port (register improves timing)
         if FixedRatio_g then
             Ratio_v := toUslv(Ratio_g - 1, Cfg_Ratio'length);
         else
-            Ratio_v := Cfg_Ratio;
+            Ratio_v := r.Ratio;
         end if;
 
         -- *** Configuration Registers ***
+        if not FixedRatio_g then
+            v.Ratio := Cfg_Ratio;
+        end if;
+
         -- Left shift before the integrators (see documentation)
         if not FixedRatio_g then
-            Shift_v := fromUslv(Cfg_Shift);
-            if Shift_v > MaxShift_c then
-                Shift_v := MaxShift_c;
-            end if;
-            v.SftSel := toUslv(MaxShift_c - Shift_v, SftSelBits_c);
+            -- No range checking (out of range values lead to undefined behavior, see documentation). The modulo only
+            -- prevents simulation errors for negative values, in hardware it is a simple truncation.
+            Shift_v  := fromUslv(Cfg_Shift);
+            v.SftSel := toUslv((MaxShift_c - Shift_v) mod 2**SftSelBits_c, SftSelBits_c);
         end if;
 
         if GainCorrOn_c then
@@ -385,7 +393,7 @@ begin
     -- *** Gain Correction ***
     -- Gain correction is done at the input, so only one multiplier is required for all channels. Rounding errors
     -- are not accumulated because the CIC filter as a whole (combs plus integrators) is an FIR filter.
-    g_gc : if GainCorrOn_c generate
+    g_gc : if GainCorrOn_c and not GcBypass_c generate
         signal GcCoef_0 : std_logic_vector(cl_fix_width(GainCorrCoefFmt_c) - 1 downto 0);
     begin
 
@@ -408,6 +416,29 @@ begin
                 In_Valid   => r.VldIn_0,
                 In_A       => r.Input_0,
                 In_B       => GcCoef_0,
+                Out_Valid  => CicIn_Valid,
+                Out_Result => CicIn
+            );
+
+    end generate;
+
+    -- Multiplication by exactly 1.0 is equivalent to a resize to the gain correction output format (bit-true)
+    g_gc_bypass : if GainCorrOn_c and GcBypass_c generate
+
+        i_gc_resize : entity work.olo_fix_resize
+            generic map (
+                AFmt_g      => to_string(InFmt_c),
+                ResultFmt_g => to_string(GcOutFmt_c),
+                Round_g     => Round_g,
+                Saturate_g  => Saturate_g,
+                RoundReg_g  => "auto",
+                SatReg_g    => "auto"
+            )
+            port map (
+                Clk        => Clk,
+                Rst        => Rst,
+                In_Valid   => r.VldIn_0,
+                In_A       => r.Input_0,
                 Out_Valid  => CicIn_Valid,
                 Out_Result => CicIn
             );
