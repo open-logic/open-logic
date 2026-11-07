@@ -20,6 +20,7 @@ AKA Table of Content
   - [Use Open Logic in a Yosys / oss-cad-suite Project](#use-open-logic-in-a-yosys--oss-cad-suite-project)
   - [Use Open Logic through FuseSoC](#use-open-logic-through-fusesoc)
 - Contribution Related
+  - [VSCode Integration](#vscode-integration)
   - [Use the Linter](#use-the-linter)
   - [Use VHDL Language Server](#use-vhdl-language-server)
   - [Run Simulations](#run-simulations)
@@ -38,7 +39,7 @@ assign all input ports explicitly. For unused ports, assign the default value gi
 
 Example:
 
-```vhdl
+```verilog
 olo_base_wconv_xn2n
 #(
     .InWidth_g  (256),
@@ -47,11 +48,11 @@ i_wconf
 (
     .Clk (clk),
     .Rst (rst),
-    .In_Valid (ivalid)
+    .In_Valid (ivalid),
     .In_Ready (iready),
     .In_Data (idata),
     .In_WordEna (2'b11),
-    .In_Last (0)
+    .In_Last (0),
     .Out_Valid (ovalid),
     .Out_Ready (oready),
     .Out_Data (odata)
@@ -59,7 +60,7 @@ i_wconf
 ```
 
 Without the explicit assignment of `.In_WordEna (2'b11)` this example does not synthesize correctly although the
-default port value is set to `(others => '1')`in VHDL.
+default port value is set to `(others => '1')` in VHDL.
 
 ## Use Open Logic in a Gowin Project
 
@@ -96,7 +97,7 @@ constraints.
 There is a script to import all _Open Logic_ sources into a Libero project.
 
 **Note:** The script does not setup automatic constraints because Libero does not support scoped constraints (in
-contrast to the AMD Vivado tools). For Efinity all constraints must be added manually.
+contrast to the AMD Vivado tools). For Libero all constraints must be added manually.
 
 To run the script, follow the steps below:
 
@@ -113,7 +114,7 @@ To run the script, follow the steps below:
    original location, they are not copied into the project. All sources are imported into the library selected (see
    point 3, default is _olo_) and are available to be used.<br>
    In case you do not need all open-logic files and you don't want to clutter the project, just manually remove the
-   filesp you do not need.<br>![Dialog](./general/libero/import_sources_files.png)
+   files you do not need.<br>![Dialog](./general/libero/import_sources_files.png)
 
 ## Use Open Logic in a Questasim Simulation
 
@@ -214,18 +215,19 @@ There is a script to compile all _Open Logic_ sources into a Yosys project.
 To run the script, follow the steps below:
 
 1. In a shell, navigate to the working directory of your _oss-cad-suite_ project
-2. Execute teh command 'python3 <open-logic-root>/tools/yosys/compile_olo.py'
+2. Execute the command `python3 <open-logic-root>/tools/yosys/compile_olo.py`
 
 That's it. From there on Open Logic can be used in your project.
 
 An example of this flow is available in the [Cologne Chip Tutorial](./tutorials/CologneChipTutorial.md).
 
 Note: By default Open Logic is compiled into the library _olo_. If you want to use another library, pass the name of
-the target library through the '--library=<library-name>' argument to the script.
+the target library through the `--library=<library-name>` argument to the script. For usage from Verilog, use
+`--library=work`.
 
 > [!WARNING]
-> True dual port RAM (_olo_base_ram_tdp_) is _NOT_ supported on **Cologne Chip** FPGAs. Please use _olo_base_ram_sdp_
-> instead.
+> True dual port RAMs (_olo_base_ram_tdp_ and _olo_ft_ram_tdp_) are _NOT_ supported on **Cologne Chip** FPGAs. Please
+> use the simple dual port variants (_olo_base_ram_sdp_ and _olo_ft_ram_sdp_) instead.
 
 ## Use Open Logic through FuseSoC
 
@@ -250,9 +252,9 @@ instantiated using e.g. `i_fifo : entity olo.olo_base_fifo_sync`.
 version available through _fusesoc-cores_ may be a few releases behind. Add Open Logic directly (see above) if you want
 to be sure to use the latest release.
 
-You should now get one package listed for every area in Open Logic. You can use the areas
-independently (dependencies are modeled in FuseSoC correctly and resolved automatically). You also see the tutorials
-being available and buildable through FuseSoC.
+You should now get one package listed for every area in Open Logic (plus the _en_cl_fix_ third-party library the
+_fix_ area depends on). You can use the areas independently (dependencies are modeled in FuseSoC correctly and resolved
+automatically). You also see the tutorials being available and buildable through FuseSoC.
 
 ```shell
 user$ fusesoc core list
@@ -261,17 +263,24 @@ Available cores:
 
 Core                                             Cache status  Description
 ================================================================================
-open-logic:open-logic-dev:axi:3.0.2             :      local : local files (release plus WIP); AXI related modules ...
-open-logic:open-logic-dev:base:3.0.2            :      local : local files (release plus WIP); Basic Circuitry ...
-open-logic:open-logic-dev:intf:3.0.2            :      local : local files (release plus WIP); Interfaces ...
-open-logic:open-logic:axi:3.0.2                 :      empty : stable release (downloaded from GitHub); AXI related ...
-open-logic:open-logic:base:3.0.2                : downloaded : stable release (downloaded from GitHub); Basic  ...
-open-logic:open-logic:intf:3.0.2                : downloaded : stable release (downloaded from GitHub); Interfaces ...
-open-logic:tutorials-dev:quartus_tutorial:3.0.2 :      local : local files (release plus WIP); quartus tutorial ...
-open-logic:tutorials-dev:vivado_tutorial:3.0.2  :      local : local files (release plus WIP); vivado tutorial ...
-open-logic:tutorials:quartus_tutorial:3.0.2     :      empty : stable release (downloaded from GitHub); quartus ...
-open-logic:tutorials:vivado_tutorial:3.0.2      : downloaded : stable release (downloaded from GitHub); vivado ...
-
+open-logic:open-logic-dev:axi:4.7.0              :      local : local files (release plus WIP); AXI related modules ...
+open-logic:open-logic-dev:base:4.7.0             :      local : local files (release plus WIP); Basic Circuitry ...
+open-logic:open-logic-dev:en_cl_fix:2.4.0        :      local : local files (release plus WIP); ...
+open-logic:open-logic-dev:fix:4.7.0              :      local : local files (release plus WIP); Fixed point ...
+open-logic:open-logic-dev:ft:4.7.0               :      local : local files (release plus WIP); Fault tolerant ...
+open-logic:open-logic-dev:intf:4.7.0             :      local : local files (release plus WIP); Interfaces ...
+open-logic:open-logic:axi:4.7.0                  :      empty : stable release (downloaded from GitHub); AXI related ...
+open-logic:open-logic:base:4.7.0                 : downloaded : stable release (downloaded from GitHub); Basic ...
+open-logic:open-logic:en_cl_fix:2.4.0            : downloaded : stable release (downloaded from GitHub); ...
+open-logic:open-logic:fix:4.7.0                  : downloaded : stable release (downloaded from GitHub); Fixed point ...
+open-logic:open-logic:ft:4.7.0                   :      empty : stable release (downloaded from GitHub); Fault ...
+open-logic:open-logic:intf:4.7.0                 : downloaded : stable release (downloaded from GitHub); Interfaces ...
+open-logic:tutorials-dev:olo_fix_tutorial:4.7.0  :      local : local files (release plus WIP); olo_fix tutorial ...
+open-logic:tutorials-dev:quartus_tutorial:4.7.0  :      local : local files (release plus WIP); quartus tutorial ...
+open-logic:tutorials-dev:vivado_tutorial:4.7.0   :      local : local files (release plus WIP); vivado tutorial ...
+open-logic:tutorials:olo_fix_tutorial:4.7.0      :      empty : stable release (downloaded from GitHub); olo_fix ...
+open-logic:tutorials:quartus_tutorial:4.7.0      :      empty : stable release (downloaded from GitHub); quartus ...
+open-logic:tutorials:vivado_tutorial:4.7.0       : downloaded : stable release (downloaded from GitHub); vivado ...
 ```
 
 Packages are provided in two libraries:
@@ -282,14 +291,14 @@ Packages are provided in two libraries:
   - This option also allows using content of a feature branch that is checked out.
 
 The commands listed at the very beginning of the section will add the latest release of Open Logic. However, this is not
-always exactly what is wanted. Therefore a few alternative scenarios are described below. The `--sync_version` switch
+always exactly what is wanted. Therefore a few alternative scenarios are described below. The `--sync-version` switch
 allows selecting the exact version to add.
 
 ### Adding a Specific Release
 
 In cases where a project uses a specific release of Open Logic, exactly this version shall be added and not the latest
 one. This especially is true in cases where the latest release contains non-backward compatible changes (major version
-number increments). Adding a specific version of Open Logic can be achieved be the command below (the example adds
+number increments). Adding a specific version of Open Logic can be achieved by the command below (the example adds
 version 2.3.0):
 
 ```shell
@@ -344,10 +353,9 @@ Downloading a release from GitHub would be exactly what is NOT wanted in this sc
 Integration of the [Linter](#integrate-linter-with-vscode) and [Simulations](#integrate-simulations-with-vscode) with
 VSCode is described in the corresponding sections.
 
-Additionally a configuration [toml](../vhdl_ls.toml) to use the [VHDL-LS](https://github.com/VHDL-LS/rust_hdl_vscode)
-extension is provided. This extensions allows live syntax checking and things like "go to declaration". To use
-it, simply install the _VHDL-LS_ extension and open the open-logic folder in VSCode. _VHDL-LS_ will automatically
-do its job.
+Additionally the [VHDL-LS](https://github.com/VHDL-LS/rust_hdl_vscode) extension can be used. This extension allows
+live syntax checking and things like "go to declaration". The required configuration file is generated by a script,
+see [Use VHDL Language Server](#use-vhdl-language-server).
 
 ## Use the Linter
 
@@ -425,7 +433,7 @@ clicking on the specific problem. <br>
 ![vsg-output](./general/linting/vsg_vscode.png)
 
 You can also map this as keyboard shortcut by editing your local _keybindings.json_ file in VSCode. The example below
-will map it the Ctrl+Alt+L:
+will map it to Ctrl+Alt+L:
 
 ```json
     {
@@ -454,7 +462,7 @@ To generate the _VHDL_LS_ TOML, run the following command from the _\<root\>/sim
 python3 run.py --vhdl_ls
 ```
 
-Note, the command does NOT run simulations. it only creates the TOML file.
+Note, the command does NOT run simulations. It only creates the TOML file.
 
 When opening the root folder of _Open Logic_ in VSCode, you should now be able to use VHDL_LS. You can try it out
 by going to a VHDL file and for some signal in the architecture use _"Go to Declaration"_ from the right-click menu,
@@ -484,7 +492,7 @@ python3 run.py --rivierapro # For Riviera Pro (see note below)
 python3 run.py --nvc        # For NVC
 ```
 
-Tipp: For faster runtimes, you may want to use multiple threads to execute simulations. This can be achieved by adding
+Tip: For faster runtimes, you may want to use multiple threads to execute simulations. This can be achieved by adding
 the argument `-p 16` (16 is the number of threads, you may use any other number fitting your CPU).
 
 You should now see an output indicating that all tests pass. <br>
@@ -523,7 +531,7 @@ The simulator GUI will show up (the example is showing GTKWave - the GHDL/NVC GU
 
 A custom task configuration for running the simulations from VSCode is provided in _\<root\>/.vscode/tasks.json_ and
 loaded automatically if you open the root folder of Open Logic in VSCode. Note that the configuration is written for
-GHDL/GTKWave only.
+GHDL/GTKWave only (NVC and Questasim are not supported by the tasks, use the commandline for them).
 
 You can then run the simulations for the currently open file by doing:
 _Ctrl+Shift+P > Tasks: Run Task > VUnit - This File_.
@@ -557,14 +565,14 @@ will map it to Ctrl+Alt+S:
 
 ## Analyze Coverage
 
-Code-coverage can be analyzed using either Questasim or NVC. After simulations with coverage enabled are ran, the
-coverage can be reported nicely formated in the console by running the corresponding python script.
+Code-coverage can be analyzed using either Questasim or NVC. After simulations with coverage enabled are run, the
+coverage can be reported nicely formatted in the console by running the corresponding python script.
 
 ### Coverage with Questasim
 
 Questasim is the reference for code-coverage in Open Logic (the coverage badges are produced with it).
 
-Below commands must be ran from the _\<root\>/sim_ directory:
+Below commands must be run from the _\<root\>/sim_ directory:
 
 ```shell
 python3 run.py --modelsim --coverage
@@ -591,7 +599,7 @@ NVC coverage is tested with the following versions (other versions may not work 
 - NVC: [1.23.1](https://github.com/nickg/nvc/releases/tag/r1.23.1)
 - VUnit: 5.0.0.dev10 (development release, must be installed explicitly: `pip3 install vunit_hdl==5.0.0.dev10`)
 
-Below commands must be ran from the _\<root\>/sim_ directory:
+Below commands must be run from the _\<root\>/sim_ directory:
 
 ```shell
 python3 run.py --nvc --coverage
