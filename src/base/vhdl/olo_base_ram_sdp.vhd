@@ -332,15 +332,15 @@ begin
             if rising_edge(Clk) then
                 if compareNoCase(RamBehavior_g, "RBW") then
                     if Rd_Ena = '1' then
-                        RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
+                        RdPipe(1) <= Mem_v(fromUslv(Rd_Addr));
                     end if;
                 end if;
                 if Wr_Ena = '1' then
-                    Mem_v(to_integer(unsigned(Wr_Addr))) := Wr_Data;
+                    Mem_v(fromUslv(Wr_Addr)) := Wr_Data;
                 end if;
                 if not compareNoCase(RamBehavior_g, "RBW") then
                     if Rd_Ena = '1' then
-                        RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
+                        RdPipe(1) <= Mem_v(fromUslv(Rd_Addr));
                     end if;
                 end if;
 
@@ -359,7 +359,7 @@ begin
         begin
             if rising_edge(Clk) then
                 if Wr_Ena = '1' then
-                    Mem_v(to_integer(unsigned(Wr_Addr))) := Wr_Data;
+                    Mem_v(fromUslv(Wr_Addr)) := Wr_Data;
                 end if;
             end if;
         end process;
@@ -369,7 +369,7 @@ begin
         begin
             if rising_edge(Rd_Clk) then
                 if Rd_Ena = '1' then
-                    RdPipe(1) <= Mem_v(to_integer(unsigned(Rd_Addr)));
+                    RdPipe(1) <= Mem_v(fromUslv(Rd_Addr));
                 end if;
 
                 -- Read-data pipeline registers

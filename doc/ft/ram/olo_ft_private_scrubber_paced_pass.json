@@ -1,0 +1,15 @@
+{signal: [
+  {name: 'Clk',            wave: 'p..............'},
+  {name: 'PeriodPulse',    wave: '010....10....10', node: '.a.....b.....c.'},
+  {name: 'Scrub_Enable',   wave: '1..............'},
+  {},
+  {name: 'User_Rd_Ena',    wave: '0.......1......'},
+  {},
+  {name: 'ScrubActive',    wave: '0.1...0.1......'},
+  {name: 'Scrub_PassDone', wave: '0....10........'},
+  {name: 'Scrub_Overrun',  wave: '0............10'},
+],
+  edge: ['a~>b one period', 'b~>c one period'],
+  head: {text: 'Paced operation (schematic): one pass per period; overrun when the pass cannot finish', tick: 0},
+  config: {hscale: 2},
+}

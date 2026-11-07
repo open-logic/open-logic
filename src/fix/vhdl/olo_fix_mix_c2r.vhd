@@ -1,6 +1,5 @@
 ---------------------------------------------------------------------------------------------------
 -- Copyright (c) 2026 by Oliver Bründler
--- All rights reserved.
 -- Authors: Oliver Bruendler
 ---------------------------------------------------------------------------------------------------
 
@@ -70,7 +69,6 @@ architecture rtl of olo_fix_mix_c2r is
     constant EntityName_c : string      := "olo_fix_mix_c2r";
     constant InFmt_c      : FixFormat_t := cl_fix_format_from_string(InFmt_g);
     constant MixFmt_c     : FixFormat_t := cl_fix_format_from_string(MixFmt_g);
-    constant OutFmt_c     : FixFormat_t := cl_fix_format_from_string(OutFmt_g);
 
     -- Multiply and chain formats (same structure as olo_fix_cplx_mult MULT4)
     constant MultFmt_c  : FixFormat_t := cl_fix_mult_fmt(InFmt_c, MixFmt_c);

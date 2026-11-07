@@ -2660,9 +2660,10 @@ rule:
         severity: Error # Could be Warning for Development
     length_002:
         # This rule checks the length of a file.
-        length: 1000
-        phase: 7
-        severity: Error # Could be Warning for Development
+        # Disabled: generated files (e.g. approximation tables) are long by nature and splitting
+        # them by hand is not sensible. The rule cannot be switched off per file because VSG
+        # reports it without a line number, hence vsg_off pragmas do not apply to it.
+        disable: true
     length_003:
         # This rule checks the length of a process statement.
         disable: true #Does not make sense for two-process design and TBs, which is the default for open logic

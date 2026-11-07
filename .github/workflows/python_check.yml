@@ -19,13 +19,13 @@ on:
 #Jobs  
 jobs:
   olo-fix-unittests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       #General Setup
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
       #Setup environment
@@ -36,4 +36,4 @@ jobs:
       #Run Tests
       - name: Run Tests
         run: |
-          python3 -m pytest src/fix/python/tests/ --cov=src/fix/python/olo_fix --cov-report=term-missing
+          python3 -u -m pytest src/fix/python/tests/ --cov=src/fix/python/olo_fix --cov-report=term-missing

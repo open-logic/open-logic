@@ -37,13 +37,14 @@ package olo_test_spi_slave_pkg is
 
     -- Transaction
     procedure spi_slave_push_transaction (
-        signal net       : inout network_t;
-        spi              : olo_test_spi_slave_t;
-        transaction_bits : positive;
-        data_mosi        : std_logic_vector := "X";
-        data_miso        : std_logic_vector := "X";
-        timeout          : time             := 1 ms;
-        msg              : string           := "");
+        signal net        : inout network_t;
+        spi               : olo_test_spi_slave_t;
+        transaction_bits  : positive;
+        data_mosi         : std_logic_vector := "X";
+        data_miso         : std_logic_vector := "X";
+        timeout           : time             := 1 ms;
+        wait_for_csn_high : boolean          := true;
+        msg               : string           := "");
 
     -- *** VUnit Operations ***
     -- Message Types
@@ -68,13 +69,14 @@ package body olo_test_spi_slave_pkg is
 
     -- Transaction
     procedure spi_slave_push_transaction (
-        signal net       : inout network_t;
-        spi              : olo_test_spi_slave_t;
-        transaction_bits : positive;
-        data_mosi        : std_logic_vector := "X";
-        data_miso        : std_logic_vector := "X";
-        timeout          : time             := 1 ms;
-        msg              : string           := "") is
+        signal net        : inout network_t;
+        spi               : olo_test_spi_slave_t;
+        transaction_bits  : positive;
+        data_mosi         : std_logic_vector := "X";
+        data_miso         : std_logic_vector := "X";
+        timeout           : time             := 1 ms;
+        wait_for_csn_high : boolean          := true;
+        msg               : string           := "") is
         variable msg_v  : msg_t                                            := new_msg(spi_slave_push_transaction_msg);
         variable mosi_v : std_logic_vector(spi.max_trans_width-1 downto 0) := (others => '0');
         variable miso_v : std_logic_vector(spi.max_trans_width-1 downto 0) := (others => 'X');
@@ -93,6 +95,7 @@ package body olo_test_spi_slave_pkg is
         push(msg_v, transaction_bits);
         push(msg_v, mosi_v);
         push(msg_v, miso_v);
+        push(msg_v, wait_for_csn_high);
         push(msg_v, timeout);
         push_string(msg_v, msg);
 
@@ -164,13 +167,14 @@ begin
     -- Main Process
     main : process is
         -- Messaging
-        variable request_msg      : msg_t;
-        variable msg_type         : msg_type_t;
-        variable transaction_bits : positive;
-        variable data_mosi        : std_logic_vector(instance.max_trans_width-1 downto 0);
-        variable data_miso        : std_logic_vector(instance.max_trans_width-1 downto 0);
-        variable timeout          : time;
-        variable msg_p            : string_ptr_t;
+        variable request_msg       : msg_t;
+        variable msg_type          : msg_type_t;
+        variable transaction_bits  : positive;
+        variable data_mosi         : std_logic_vector(instance.max_trans_width-1 downto 0);
+        variable data_miso         : std_logic_vector(instance.max_trans_width-1 downto 0);
+        variable wait_for_csn_high : boolean;
+        variable timeout           : time;
+        variable msg_p             : string_ptr_t;
 
         -- Shift Registers
         variable shift_reg_rx : std_logic_vector(instance.max_trans_width-1 downto 0);
@@ -191,11 +195,12 @@ begin
             -- *** Handle Messages ***
             if msg_type = spi_slave_push_transaction_msg then
                 -- Pop Transaction
-                transaction_bits := pop(request_msg);
-                data_mosi        := pop(request_msg);
-                data_miso        := pop(request_msg);
-                timeout          := pop(request_msg);
-                msg_p            := new_string_ptr(pop_string(request_msg));
+                transaction_bits  := pop(request_msg);
+                data_mosi         := pop(request_msg);
+                data_miso         := pop(request_msg);
+                wait_for_csn_high := pop(request_msg);
+                timeout           := pop(request_msg);
+                msg_p             := new_string_ptr(pop_string(request_msg));
 
                 -- Wait for CSn
                 wait_for_value_stdl(cs_n, '0', timeout, to_string(msg_p));
@@ -253,8 +258,10 @@ begin
 
                 end loop;
 
-                -- wait fir CS going high
-                wait_for_value_stdl(cs_n, '1', timeout, to_string(msg_p));
+                -- wait for CS going high
+                if wait_for_csn_high then
+                    wait_for_value_stdl(cs_n, '1', timeout, to_string(msg_p));
+                end if;
                 miso <= 'Z';
 
                 -- checks

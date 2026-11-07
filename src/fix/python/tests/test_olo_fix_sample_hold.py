@@ -151,5 +151,45 @@ class TestOloFixSampleHold(unittest.TestCase):
         expected = cl_fix_from_real(0.25, FixFormat(1, 2, 2))
         self.assertEqual(result, expected)
 
+    def test_numpy_array_input(self):
+        """Numpy arrays with multiple samples are accepted as input"""
+        dut = olo_fix_sample_hold(fmt=self.FMT)
+        result = dut.next(input=np.array([1.0, 2.0, 3.5]), out_samples=1)
+        self.assertEqual(result, cl_fix_from_real(3.5, self.FMT))
+
+    def test_next_each(self):
+        """Vectorized processing holds each input sample for out_samples outputs"""
+        dut = olo_fix_sample_hold(fmt=self.FMT)
+        result = dut.next_each(input=[1.0, -2.5, 3.25], out_samples=3)
+        expected = cl_fix_from_real([1.0]*3 + [-2.5]*3 + [3.25]*3, self.FMT)
+        np.testing.assert_array_equal(result, expected)
+        # Last sample stays held
+        self.assertEqual(dut.next(out_samples=1), cl_fix_from_real(3.25, self.FMT))
+
+    def test_next_each_matches_next(self):
+        """Vectorized processing produces the same result as sample-by-sample processing"""
+        np.random.seed(0)
+        inp = np.random.uniform(-10, 10, 50)
+        dut = olo_fix_sample_hold(fmt=self.FMT)
+        expected = np.concatenate([dut.next(input=x, out_samples=4) for x in inp])
+        dut.reset()
+        np.testing.assert_array_equal(dut.next_each(input=inp, out_samples=4), expected)
+
+    def test_next_each_scalar_and_empty(self):
+        """Scalar input is accepted, empty input produces no output and keeps the held value"""
+        dut = olo_fix_sample_hold(fmt=self.FMT, reset_value=1.5)
+        np.testing.assert_array_equal(dut.next_each(input=[], out_samples=2), np.array([]))
+        self.assertEqual(dut.next(out_samples=1), cl_fix_from_real(1.5, self.FMT))
+        np.testing.assert_array_equal(dut.next_each(input=2.0, out_samples=2), cl_fix_from_real([2.0, 2.0], self.FMT))
+
+    def test_wide_format(self):
+        """Wide formats (> 53 bits) are held without corruption"""
+        fmt = FixFormat(1, 4, 60)
+        dut = olo_fix_sample_hold(fmt=fmt)
+        expected = cl_fix_from_real(np.array([-2.75]), fmt)
+        self.assertEqual(dut.next(input=-2.75, out_samples=1), expected[0])
+        np.testing.assert_array_equal(dut.next(out_samples=3), np.repeat(expected, 3))
+        np.testing.assert_array_equal(dut.next_each(input=[-2.75], out_samples=2), np.repeat(expected, 2))
+
 if __name__ == '__main__':
     unittest.main()

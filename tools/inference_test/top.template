@@ -9,6 +9,7 @@ library olo;
     use olo.olo_base_pkg_string.all;
     use olo.olo_fix_pkg.all;
     use olo.en_cl_fix_pkg.all;
+    use olo.olo_ft_pkg_ecc.all;
 
 entity test is
     generic (

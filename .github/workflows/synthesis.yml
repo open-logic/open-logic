@@ -21,11 +21,11 @@ on:
 #Jobs  
 jobs:
   start-instance:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       #General Setup
       - name: Checkout actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Sleeping for 30 seconds to ensure the instance is ready
       - name: Sleep for 30 seconds
         run: sleep 30
@@ -42,11 +42,12 @@ jobs:
   # Synthesis Test
   synthesis:
     runs-on: [self-hosted, aws]
+    timeout-minutes: 720
     needs: start-instance
     steps:
       # Checkout the repository
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
       # Setup python
@@ -77,6 +78,11 @@ jobs:
           source $LOCAL_TOOLS
           cd ./tools/inference_test
           python3 -u ./InferenceTest.py --yml=./yaml/fix.yml --no-tables --check-coverage
+      - name: ft
+        run: |
+          source $LOCAL_TOOLS
+          cd ./tools/inference_test
+          python3 -u ./InferenceTest.py --yml=./yaml/ft.yml --no-tables --check-coverage
       # Upload Synthesis results    - name: Upload sim results
       - name: Upload Synthesis results
         uses: actions/upload-artifact@v4
@@ -84,6 +90,14 @@ jobs:
           name: synthesis-utilzation
           path: |
             tools/inference_test/results/*.txt
+      # Upload tool logs if synthesis failed
+      - name: Upload Synthesis logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthesis-logs
+          path: |
+            tools/inference_test/project/**/*.log
 
   # Stopping the instance is not required (it stops automatically
   # when it is unused for some time, controlled by AWS alarm)

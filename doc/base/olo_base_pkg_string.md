@@ -31,6 +31,17 @@ function toUpper (a : in string) return string;
 function toLower (a : in string) return string;
 ```
 
+### Case Insensitive Comparison
+
+Compare two strings case insensitive. Leading and trailing whitespaces are ignored (both strings are trimmed before
+comparison).
+
+```vhdl
+function compareNoCase (
+    a : in string;
+    b : in string) return boolean;
+```
+
 ### Trim Whitespaces
 
 Trip white-spaces at the beginning and the end of a string.

@@ -21,11 +21,11 @@ on:
 #Jobs  
 jobs:
   start-instance:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       #General Setup
       - name: Checkout actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       #Start AWS Instance
       - name: Start Instance
         uses: ./.github/actions/start-aws-instance
@@ -38,11 +38,12 @@ jobs:
 
   simulation:
     runs-on: [self-hosted, aws]
+    timeout-minutes: 720
     needs: start-instance
     steps:
       # Checkout the repository
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
       # Setup python
@@ -53,11 +54,17 @@ jobs:
           pip install "setuptools>=77" setuptools_scm wheel
           pip install --no-build-isolation -r requirements.txt
       # Run simulation
+      # .. per area to keep the individual runs small (single large runs crashed regularly)
       - name: Run Simulation
         run: |
           source $LOCAL_TOOLS
           cd ./sim
-          python3 ./run.py --modelsim --coverage
+          for area_dir in ../src/*/vhdl; do
+            area=$(basename $(dirname $area_dir))
+            echo "### Simulating area: $area"
+            python3 ./run.py --modelsim --coverage --coverage_file=coverage_area_$area "olo_tb.olo_${area}_*"
+          done
+          vcover merge coverage_data coverage_area_*
       # Coverage Simulation (check > 95%)
       # On PRs errors are required if coverage is low
       - name: Check Coverage Level
@@ -65,7 +72,7 @@ jobs:
         run: |
           source $LOCAL_TOOLS
           cd ./sim
-          python3 ./AnalyzeCoverage.py --min_coverage=95
+          python3 -u ./AnalyzeCoverage.py --min_coverage=95
       # Coverage Simulation (update badges)
       # On main, we want to udpate badges ALWAYS (also if coverage is low)
       - name: Create Coverage Badges
@@ -73,7 +80,7 @@ jobs:
         run: |
           source $LOCAL_TOOLS
           cd ./sim
-          python3 ./AnalyzeCoverage.py --badges
+          python3 -u ./AnalyzeCoverage.py --badges
 
 
   # Stopping the instance is not required (it stops automatically

@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : open-logic:open-logic:en_cl_fix:2.3.2
+name : open-logic:open-logic:en_cl_fix:2.4.0
 description : stable release (downloaded from GitHub);  see https://github.com/enclustra/en_cl_fix/blob/main/README.md
 
 filesets:
@@ -23,5 +23,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : en_cl_fix
-  version : open-logic-2.3.2
+  version : open-logic-2.4.0
   

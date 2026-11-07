@@ -10,7 +10,7 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_base_sample_hold.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_base_sample_hold.json?cacheSeconds=0)
 
-VHDL Source: [olo_base_sample_hold](../../src/fix/vhdl/olo_base_sample_hold.vhd)
+VHDL Source: [olo_base_sample_hold](../../src/base/vhdl/olo_base_sample_hold.vhd)
 
 ## Description
 

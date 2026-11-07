@@ -20,16 +20,16 @@ nevertheless as a user you are free to use it for your code of course.
 
 ## Definitions
 
-### StdlvArray\<N\>_t
+### StlvArray\<N\>_t
 
 Arrays of _std_logic_vector_ of width N for regularly used widths.
 
-Options for \<N\>: 2...32, 36, 48, 64, 512
+Options for \<N\>: 2...30, 32, 36, 48, 64, 512
 
 Example:
 
 ```vhdl
-variable x : StdlvArray4_t(0 to 9);  -- An array containint 10 std_logic_vector(3 downto 0);
+variable x : StlvArray4_t(0 to 9);  -- An array containing 10 std_logic_vector(3 downto 0);
 ```
 
 ### \<T\>Array_t

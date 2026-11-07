@@ -23,7 +23,7 @@ supported by many FPGAs as a hard-wired DSP block and hence it can be implemente
 
 Note that the entity does not support any rounding or saturation at the output because most hard-wired DSP blocks
 do not support this or at least not in a consistent and inferrable way. Where not all bits of the result can be
-represented, truncation is applied.
+represented, truncation is applied. Results exceeding the range of _AddChainFmt_g_ wrap without any warning.
 
 Inputs _InA_ and _InC_ (if used) are intended to be dynamic signals. _InB_ is intended to be either a dynamic signal
 as well or a static coefficient that is stored inside a DSP block register (_InBIsCoef_g=true_).
@@ -47,7 +47,22 @@ When the generic _PreAdd_g_ is set to false, the entity performs the following o
 
 Note that in this case, _InC_Data_ is not used and can be left unconnected.
 
-**Latency** of this entity is _MultRegs_g_+2 clock cycles for _PreAdd_g=false_.
+**Latency** of this entity is _MultRegs_g_+2 clock cycles for _PreAdd_g=false_ and _ACascade_g=false_.
+
+### A Cascade Enabled
+
+When the generic _ACascade_g_ is set to true, input A passes through a second input register and is made available on
+_ACascOut_. This is the structure of the input A cascade (e.g. _ACOUT/ACIN_) that many DSP blocks provide. Input B is
+registered twice as well, to stay aligned with input A.
+
+![MADD with A cascade](./entities/olo_fix_madd_acascade.drawio.png)
+
+The first input A register is updated when _InAC_Valid_='1', the second one on every clock cycle. Hence a new sample
+appears on _ACascOut_ two clock cycles after _InAC_Valid_='1'.
+
+The A cascade is not supported together with the pre-adder (_PreAdd_g=true_).
+
+**Latency** of this entity is _MultRegs_g_+3 clock cycles for _ACascade_g=true_.
 
 ## Generics
 
@@ -62,6 +77,7 @@ Note that in this case, _InC_Data_ is not used and can be left unconnected.
 | AddChainFmt_g  | string  | -          | Format of the result and _MaccIn_ <br />String representation of an _en_cl_fix Format_t_ (e.g. "(0,1,15)") |
 | MultRegs_g     | natural | 1          | Number of pipeline stages for the multiplication                  |
 | InBIsCoef_g    | boolean | false      | Whether _InB_ is a static coefficient that should be stored in a DSP block register (true) or a dynamic signal (false) |
+| ACascade_g     | boolean | false      | Whether input A is registered twice and output on _ACascOut_ (true) or not (false)<br>Must be false for _PreAdd_g=true_<br>See [A Cascade Enabled](#a-cascade-enabled) |
 
 When choosing number formats, keep in mind that in case _PreAdd_g=true_, the pre-adder multiplier input has one
 bit more than _AFmt_g_ and _CFmt_g_ to avoid overflow in the pre-adder stage. This is an important consideration
@@ -73,8 +89,8 @@ for mapping the logic optimally to hard-wired DSP blocks.
 
 | Name | In/Out | Length | Default | Description                                                  |
 | :--- | :----- | :----- | ------- | :----------------------------------------------------------- |
-| Clk  | in     | 1      | '0'     | Clock                                                        |
-| Rst  | in     | 1      | '0'     | Reset input (high-active, synchronous to _Clk_)              |
+| Clk  | in     | 1      | -       | Clock                                                        |
+| Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_)              |
 
 ### Input Data
 
@@ -91,6 +107,12 @@ for mapping the logic optimally to hard-wired DSP blocks.
 | Name       | In/Out | Length                 | Default | Description                                                                     |
 | :--------- | :----- | :--------------------- | ------- | :------------------------------------------------------------------------------ |
 | MaccIn     | in     | _width(AddChainFmt_g)_ | 0       | Input for the adder chain <br />Format: _AddChainFmt_g_         |
+
+### A Cascade Output
+
+| Name       | In/Out | Length          | Default | Description                                                                     |
+| :--------- | :----- | :-------------- | ------- | :------------------------------------------------------------------------------ |
+| ACascOut   | out    | _width(AFmt_g)_ | N/A     | Input A after the second input register<br />Format: _AFmt_g_<br />Tied to zero for _ACascade_g=false_ |
 
 ### Output Data
 
@@ -111,3 +133,8 @@ shall be produced when only the coefficient is changed (_InB_Valid_='1') but onl
 (_InAC_Valid_='1').
 
 ![B Static](./entities/olo_fix_madd_coef.drawio.png)
+
+### Reset Behavior of the A Cascade
+
+For _ACascade_g=true_ the two input A registers are cleared by _Rst_. The input B registers are never cleared, so a
+coefficient stored for _InBIsCoef_g=true_ is kept over a reset.

@@ -2,6 +2,156 @@
 
 # Changelog
 
+## 4.7.0
+
+28-Sep-2026
+
+### Added Features
+
+- Added _olo_ft_ area (fault tolerance)
+  - _olo_ft_pkg_ecc_, _olo_ft_ecc_encode_ and _olo_ft_ecc_decode_ (SECDED ECC codec)
+  - _olo_ft_ram_sp_, _olo_ft_ram_sdp_ and _olo_ft_ram_tdp_ (ECC-protected RAMs)
+  - _olo_ft_ram_sp_scrub_ and _olo_ft_ram_sdp_scrub_ (ECC-protected RAMs with memory scrubber)
+  - _olo_ft_fifo_sync_ and _olo_ft_fifo_packet_ (ECC-protected FIFOs)
+  - Contributed by: [Rustyqt](https://github.com/Rustyqt)
+
+- Added _olo_base_pkg_crc_
+  - Predefined CRC settings for common CRC standards
+  - Contributed by: [rbrglez](https://github.com/rbrglez)
+
+- Added _olo_fix_fir_dec_semi_chtdm_
+  - FIR decimator with TDM channel handling and semi-parallel tap computation (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_lin_approx_ and _olo_fix_lin_approx_calc_
+  - Bit-true model, code generator and HDL implementation for linear function approximations (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_sin_
+  - Sine and cosine calculation (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_inv_
+  - Inversion 1/x (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_sqrt_
+  - Square root (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Various documentation improvements
+  - Some contributed by: [obruendl](https://github.com/obruendl)
+
+### Backward Compatible Changes
+
+- Update to latest _en_cl_fix_
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- Fixed synthesis issue in _olo_base_crc_ for compilation with Vivado
+  - Contributed by: [tasgomes](https://github.com/tasgomes)
+
+### Reporters
+
+- None
+
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+- [Rustyqt](https://github.com/Rustyqt)
+- [rbrglez](https://github.com/rbrglez)
+- [tasgomes](https://github.com/tasgomes)
+
+## 4.6.0
+
+04-Jul-2026
+
+### Added Features
+
+- Added _olo_fix_mix_r2c_
+  - Real to complex mixer (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_mix_c2r_
+  - Complex to real mixer (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_coef_storage_
+  - Fixed-point coefficient memory (RAM or ROM)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_fir_dec_ser_chtdm_
+  - FIR decimator with TDM channel handling and serial tap computation (fixed-point)
+  - Works with one multiplier, shared between all taps and channels
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_fir_dec_par_chtdm_
+  - FIR decimator with parallel channel handling and serial tap computation (fixed-point)
+  - Works with one multiplier per channel
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_mov_avg_
+  - Moving average filter (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added RdEna/RdValid ports to all RAMs
+  - This allows for more efficient handling of RAMs with multiple cycles of read latency
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- In _olo_intf_spi_master_ allow multiple transactions without _CSn_ going high in between
+  - Contributed by: [obruendl](https://github.com/obruendl)
+  - Reported by: [ffeldbauer](https://github.com/ffeldbauer)
+
+### Backward Compatible Changes
+
+- Speedup questa/modelsim simulation by disabling novopt
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Use native VUnit argument parser instead of custom code
+  - Contributed by: [tasgomes](https://github.com/tasgomes)
+
+- Optimize resource usage for _olo_fix_cplx_mult_
+  - Reported by: [postoroniy](https://github.com/postoroniy)
+
+- Improved license handling for AWS runner
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Quantize input to all _olo_fix_ bit-true models
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Unify assertion messages in VHDL
+  - Print related entity in all cases
+  - Contributed by: [obruendl](https://github.com/obruendl)
+  - Reported by: [lukileu](https://github.com/lukileu)
+
+- Update GitHub actions to use Node24
+  - Required due to infrastructure changes on GitHub
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- None
+
+### Reporters
+
+- [postoroniy](https://github.com/postoroniy)
+- [lukileu](https://github.com/lukileu)
+- [ffeldbauer](https://github.com/ffeldbauer)
+  
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+- [tasgomes](https://github.com/tasgomes)
+
 ## 4.5.0
 
 25-Apr-2026
