@@ -200,7 +200,6 @@ if args.coverage:
             results.merge_coverage(file_name=args.coverage_file)
         if simulator == 'nvc':
             results.merge_coverage(file_name='coverage_data')
-            os.system('nvc --cover-report --per-file --output nvc_coverage coverage_data.ncdb')
             os.system('nvc --cover-report --per-file --output nvc_coverage coverage_data.ncdb > nvc_coverage.txt 2>&1')
 else:
     def post_run(results):
