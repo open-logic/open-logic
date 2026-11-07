@@ -34,22 +34,24 @@ library work;
 
 entity olo_fix_mov_avg is
     generic (
+        -- Channels
+        Channels_g        : positive := 1;
         -- Formats / Round / Saturate
         InFmt_g           : string;
         OutFmt_g          : string;
         Taps_g            : positive;
-        GainCorrCoefFmt_g : string := "(0, 1, 16)";
-        GainCorrDataFmt_g : string := "AUTO";
-        GainCorrType_g    : string := "EXACT";
-        Round_g           : string := FixRound_Trunc_c;
-        Saturate_g        : string := FixSaturate_Warn_c;
+        GainCorrCoefFmt_g : string   := "(0, 1, 16)";
+        GainCorrDataFmt_g : string   := "AUTO";
+        GainCorrType_g    : string   := "EXACT";
+        Round_g           : string   := FixRound_Trunc_c;
+        Saturate_g        : string   := FixSaturate_Warn_c;
         -- Registers
-        RoundReg_g        : string := "YES";
-        SatReg_g          : string := "YES";
+        RoundReg_g        : string   := "YES";
+        SatReg_g          : string   := "YES";
         -- Resource control generics
-        RamBehavior_g     : string := "RBW";
-        RamStyle_g        : string := "auto";
-        Resource_g        : string := "AUTO"
+        RamBehavior_g     : string   := "RBW";
+        RamStyle_g        : string   := "auto";
+        Resource_g        : string   := "AUTO"
     );
     port (
         -- Control Ports
@@ -58,9 +60,11 @@ entity olo_fix_mov_avg is
         -- Input
         In_Valid    : in    std_logic := '1';
         In_Data     : in    std_logic_vector(fixFmtWidthFromString(InFmt_g) - 1 downto 0);
+        In_Last     : in    std_logic := '0';
         -- Output
         Out_Valid   : out   std_logic;
-        Out_Result  : out   std_logic_vector(fixFmtWidthFromString(OutFmt_g) - 1 downto 0)
+        Out_Result  : out   std_logic_vector(fixFmtWidthFromString(OutFmt_g) - 1 downto 0);
+        Out_Last    : out   std_logic
     );
 end entity;
 
@@ -84,16 +88,19 @@ architecture rtl of olo_fix_mov_avg is
 
     -- Two Process Method
     type TwoProcess_r is record
-        Valid  : std_logic_vector(0 to 2);
-        Data_0 : std_logic_vector(In_Data'range);
-        Diff_1 : std_logic_vector(cl_fix_width(DiffFmt_c) - 1 downto 0);
-        Sum_2  : std_logic_vector(cl_fix_width(MovSumFmt_c) - 1 downto 0);
+        Valid    : std_logic_vector(0 to 2);
+        Data_0   : std_logic_vector(In_Data'range);
+        Diff_1   : std_logic_vector(cl_fix_width(DiffFmt_c) - 1 downto 0);
+        Sum_2    : std_logic_vector(cl_fix_width(MovSumFmt_c) - 1 downto 0);
+        OutChCnt : natural range 0 to Channels_g - 1;
     end record;
 
     signal r, r_next : TwoProcess_r;
 
     -- Instantiation Signals
-    signal Del_Data : std_logic_vector(In_Data'range);
+    signal Del_Data  : std_logic_vector(In_Data'range);
+    signal SumDel    : std_logic_vector(cl_fix_width(MovSumFmt_c) - 1 downto 0);
+    signal Res_Valid : std_logic;
 
 begin
 
@@ -123,10 +130,20 @@ begin
         v.Valid(1) := r.Valid(0);
 
         -- *** Stage 2 - Calculate Moving Sum ***
+        -- SumDel is the previous sum of the same channel (equal to r.Sum_2 for Channels_g=1)
         if r.Valid(1) = '1' then
-            v.Sum_2 := cl_fix_add(r.Diff_1, DiffFmt_c, r.Sum_2, MovSumFmt_c, MovSumFmt_c);
+            v.Sum_2 := cl_fix_add(r.Diff_1, DiffFmt_c, SumDel, MovSumFmt_c, MovSumFmt_c);
         end if;
         v.Valid(2) := r.Valid(1);
+
+        -- *** Output Channel Counter (for Out_Last) ***
+        if Channels_g > 1 and Res_Valid = '1' then
+            if r.OutChCnt = Channels_g - 1 then
+                v.OutChCnt := 0;
+            else
+                v.OutChCnt := r.OutChCnt + 1;
+            end if;
+        end if;
 
         -- *** Assign Signal ***
         r_next <= v;
@@ -140,11 +157,51 @@ begin
 
             -- Reset
             if Rst = '1' then
-                r.Valid <= (others => '0');
-                r.Sum_2 <= (others => '0');
+                r.Valid    <= (others => '0');
+                r.Sum_2    <= (others => '0');
+                r.OutChCnt <= 0;
             end if;
         end if;
     end process;
+
+    -- *** Output Assignment ***
+    -- For Channels_g=1, every sample is the last one of its TDM group (Out_Last constantly high)
+    Out_Valid <= Res_Valid;
+    Out_Last  <= '1' when Channels_g = 1 else
+                 '1' when r.OutChCnt = Channels_g - 1 else
+                 '0';
+
+    -- *** Input TDM Validation ***
+    -- synthesis translate_off
+    g_tdm_check : if Channels_g > 1 generate
+
+        p_assert_in : process (Clk) is
+            variable ChCnt_v : natural range 0 to Channels_g - 1;
+        begin
+            if rising_edge(Clk) then
+                if Rst = '1' then
+                    ChCnt_v := 0;
+                elsif In_Valid = '1' then
+                    -- Only report if In_Last is asserted when NOT expected
+                    if In_Last = '1' then
+                        assert ChCnt_v = Channels_g - 1
+                            report errorMessage(EntityName_c, "In_Last asserted at channel index " & integer'image(ChCnt_v) &
+                                   " but expected at " & integer'image(Channels_g - 1))
+                            severity error;
+                    end if;
+
+                    if ChCnt_v = Channels_g - 1 then
+                        ChCnt_v := 0;
+                    else
+                        ChCnt_v := ChCnt_v + 1;
+                    end if;
+                end if;
+            end if;
+        end process;
+
+    end generate;
+
+    -- synthesis translate_on
 
     -- *** Component Instantiations ***
 
@@ -152,7 +209,7 @@ begin
     i_del : entity work.olo_base_delay
         generic map (
             Width_g       => In_Data'length,
-            Delay_g       => Taps_g,
+            Delay_g       => Taps_g * Channels_g,
             RstState_g    => True,
             Resource_g    => Resource_g,
             RamBehavior_g => RamBehavior_g,
@@ -164,6 +221,26 @@ begin
             In_Valid => r.Valid(0),
             In_Data  => r.Data_0,
             Out_Data => Del_Data
+        );
+
+    -- Sum Delay (per channel sum storage)
+    -- .. Pushed when a new sum is calculated, hence the output is the sum of the same channel. For
+    -- .. Channels_g=1 the delay is zero (wiring only).
+    i_sum_del : entity work.olo_base_delay
+        generic map (
+            Width_g       => cl_fix_width(MovSumFmt_c),
+            Delay_g       => Channels_g - 1,
+            RstState_g    => True,
+            Resource_g    => Resource_g,
+            RamBehavior_g => RamBehavior_g,
+            RamStyle_g    => RamStyle_g
+        )
+        port map (
+            Clk      => Clk,
+            Rst      => Rst,
+            In_Valid => r.Valid(1),
+            In_Data  => r.Sum_2,
+            Out_Data => SumDel
         );
 
     -- Output Resize
@@ -183,7 +260,7 @@ begin
                 Rst        => Rst,
                 In_Valid   => r.Valid(2),
                 In_A       => r.Sum_2,
-                Out_Valid  => Out_Valid,
+                Out_Valid  => Res_Valid,
                 Out_Result => Out_Result
             );
 
@@ -210,7 +287,7 @@ begin
                 Rst        => Rst,
                 In_Valid   => r.Valid(2),
                 In_A       => Shifted,
-                Out_Valid  => Out_Valid,
+                Out_Valid  => Res_Valid,
                 Out_Result => Out_Result
             );
 
@@ -239,7 +316,7 @@ begin
                 In_Valid   => r.Valid(2),
                 In_A       => Shifted,
                 In_B       => GcFix_c,
-                Out_Valid  => Out_Valid,
+                Out_Valid  => Res_Valid,
                 Out_Result => Out_Result
             );
 

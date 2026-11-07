@@ -662,6 +662,11 @@ def add_configs(olo_tb):
                         pre_config=cosim)
     # Test gain correction through shift for power2 taps
     named_config(tb, default_generics | {'Taps_g': 4, 'GainCorrType_g': 'EXACT'}, pre_config=cosim)
+    # Multi-channel (TDM)
+    for GainCorrType in ['EXACT', 'SHIFT', 'NONE']:
+        named_config(tb, default_generics | {'Channels_g': 3, 'GainCorrType_g': GainCorrType}, pre_config=cosim,
+                     short_name=f'CH3-GainCorrType={GainCorrType}')
+    named_config(tb, default_generics | {'Channels_g': 3, 'Taps_g': 1}, pre_config=cosim, short_name='CH3-Taps=1')
 
     ### olo_fix_mix_r2c ###
     tb = olo_tb.test_bench('olo_fix_mix_r2c_tb')

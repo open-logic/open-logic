@@ -32,17 +32,18 @@ library work;
 -- vunit: run_all_in_same_sim
 entity olo_fix_mov_avg_tb is
     generic (
+        Channels_g        : positive := 1;
         -- Formats / Round / Saturate
         InFmt_g           : string;
         OutFmt_g          : string;
         Taps_g            : positive;
-        GainCorrCoefFmt_g : string := "(0, 1, 16)";
-        GainCorrDataFmt_g : string := "AUTO";
-        GainCorrType_g    : string := "EXACT";
-        Round_g           : string := FixRound_Trunc_c;
-        Saturate_g        : string := FixSaturate_Warn_c;
-        RoundReg_g        : string := "YES";
-        SatReg_g          : string := "YES";
+        GainCorrCoefFmt_g : string   := "(0, 1, 16)";
+        GainCorrDataFmt_g : string   := "AUTO";
+        GainCorrType_g    : string   := "EXACT";
+        Round_g           : string   := FixRound_Trunc_c;
+        Saturate_g        : string   := FixSaturate_Warn_c;
+        RoundReg_g        : string   := "YES";
+        SatReg_g          : string   := "YES";
         runner_cfg        : string
     );
 end entity;
@@ -62,8 +63,10 @@ architecture sim of olo_fix_mov_avg_tb is
     signal Rst        : std_logic := '0';
     signal In_Valid   : std_logic;
     signal In_Data    : std_logic_vector(fixFmtWidthFromString(InFmt_g) - 1 downto 0);
+    signal In_Last    : std_logic;
     signal Out_Valid  : std_logic;
     signal Out_Result : std_logic_vector(fixFmtWidthFromString(OutFmt_g) - 1 downto 0);
+    signal Out_Last   : std_logic;
 
     -----------------------------------------------------------------------------------------------
     -- TB Defnitions
@@ -99,14 +102,18 @@ begin
 
             -- *** First Run ***
             if run("FullSpeed") then
-                fix_stimuli_play_file (net, Stimuli_c, InFile_c);
-                fix_checker_check_file (net, Checker_c, OutFile_c);
+                fix_stimuli_play_file (net, Stimuli_c, InFile_c, Mode => stimuli_mode_tdm, Tdm_Slots => Channels_g);
+                fix_checker_check_file (net, Checker_c, OutFile_c, Mode => checker_mode_tdm, Tdm_Slots => Channels_g);
             end if;
 
             -- *** Second run with delay ***
             if run("Throttled") then
-                fix_stimuli_play_file (net, Stimuli_c, InFile_c, stall_probability => 0.5, stall_max_cycles => 10);
-                fix_checker_check_file (net, Checker_c, OutFile_c);
+                fix_stimuli_play_file (net, Stimuli_c, InFile_c,
+                                       stall_probability => 0.5,
+                                       stall_max_cycles  => 10,
+                                       Mode              => stimuli_mode_tdm,
+                                       Tdm_Slots         => Channels_g);
+                fix_checker_check_file (net, Checker_c, OutFile_c, Mode => checker_mode_tdm, Tdm_Slots => Channels_g);
             end if;
 
             -- *** Wait until done ***
@@ -130,6 +137,7 @@ begin
     -----------------------------------------------------------------------------------------------
     i_dut : entity olo.olo_fix_mov_avg
         generic map (
+            Channels_g        => Channels_g,
             InFmt_g           => InFmt_g,
             OutFmt_g          => OutFmt_g,
             Taps_g            => Taps_g,
@@ -146,8 +154,10 @@ begin
             Rst         => Rst,
             In_Valid    => In_Valid,
             In_Data     => In_Data,
+            In_Last     => In_Last,
             Out_Valid   => Out_Valid,
-            Out_Result  => Out_Result
+            Out_Result  => Out_Result,
+            Out_Last    => Out_Last
         );
 
     -----------------------------------------------------------------------------------------------
@@ -162,6 +172,7 @@ begin
             Clk      => Clk,
             Rst      => Rst,
             Valid    => In_Valid,
+            Last     => In_Last,
             Data     => In_Data
         );
 
@@ -173,6 +184,7 @@ begin
         port map (
             Clk      => Clk,
             Valid    => Out_Valid,
+            Last     => Out_Last,
             Data     => Out_Result
         );
 
