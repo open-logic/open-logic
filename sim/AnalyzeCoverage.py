@@ -1,4 +1,4 @@
-#Usage: python3 AnalyzeCoverage.py [--badges]
+#Usage: python3 AnalyzeCoverage.py [--badges] [--min_coverage=<percent>] [--simulator=<sim>] [--filter=<pattern>]
 ########################################################################################################################
 # Imports
 ########################################################################################################################
@@ -8,6 +8,7 @@ from Badge import create_coverage_version_badge, create_coverage_badge, create_b
 import sys
 import argparse
 import atexit
+import fnmatch
 
 ########################################################################################################################
 # Parse Arguments
@@ -29,6 +30,11 @@ parser.add_argument(
     choices=["modelsim", "nvc"],
     default="modelsim",
     help="Simulator to use for coverage analysis (default: modelsim)."
+)
+parser.add_argument(
+    "--filter",
+    default="*",
+    help="Only analyze entities whose name matches this wildcard pattern, e.g. 'olo_base_*' (default: all)."
 )
 args = parser.parse_args()
 
@@ -119,6 +125,9 @@ for line in fd.readlines():
         if "statement:" in line:
             entity.parse_statement_line(line)
             entities.append(entity)
+
+#*** Filter entities ***
+entities = [entity for entity in entities if fnmatch.fnmatchcase(entity.name, args.filter)]
 
 #*** NVC Note (printed at the very end, also if the minimum coverage check fails) ***
 if args.simulator == "nvc":

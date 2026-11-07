@@ -11,6 +11,10 @@ inputs:
   area:
     description: 'Open Logic area to simulate (base, axi, intf, fix, ft)'
     required: true
+  coverage:
+    description: 'Collect code coverage and report it (true/false, only supported for nvc)'
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -20,7 +24,14 @@ runs:
       shell: bash
       run: |
         cd ./sim
-        python3 -u run.py --${{ inputs.simulator }} --minimal "olo_tb.olo_${{ inputs.area }}_*" --xunit-xml sim_report_${{ inputs.simulator }}_${{ inputs.area }}.xml -p 16
+        python3 -u run.py --${{ inputs.simulator }} --minimal "olo_tb.olo_${{ inputs.area }}_*" --xunit-xml sim_report_${{ inputs.simulator }}_${{ inputs.area }}.xml -p 16 ${{ inputs.coverage == 'true' && '--coverage' || '' }}
+    #Report Coverage (informative only, no minimum coverage is enforced)
+    - name: Report Coverage
+      if: inputs.coverage == 'true'
+      shell: bash
+      run: |
+        cd ./sim
+        python3 -u AnalyzeCoverage.py --simulator=${{ inputs.simulator }} --filter="olo_${{ inputs.area }}_*"
     - name: Upload sim results
       if: always()
       uses: actions/upload-artifact@v4
