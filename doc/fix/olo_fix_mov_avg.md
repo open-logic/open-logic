@@ -18,6 +18,11 @@ Bit-true Model: [olo_fix_mov_avg](../../src/fix/python/olo_fix/olo_fix_mov_avg.p
 This entity implements a moving average filter. For each input sample, it computes the average over the last
 _Taps_g_ samples.
 
+The entity supports one or multiple channels (time-division-multiplexed, TDM). For _Channels_g_ > 1, the input
+samples of all channels are applied in a round-robin fashion (channel 0, channel 1, ... channel _Channels_g_-1,
+channel 0, ...) and the moving average is computed separately for each channel. The output is in the same TDM order.
+For details about the TDM signal format, refer to the [conventions](../Conventions.md#tdm-time-division-multiplexing).
+
 **Latency** of this entity is 3 clock cycles for the core computation, plus optional rounding and saturation
 registers from the output stage. The default generics lead to a latency of 5 clock cycles.
 
@@ -39,6 +44,7 @@ _GainCorrType_g_:
 
 | Name               | Type     | Default      | Description                                                  |
 | :----------------- | :------- | ------------ | :----------------------------------------------------------- |
+| Channels_g         | positive | 1            | Number of TDM channels                                       |
 | InFmt_g            | string   | -            | Input data format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | OutFmt_g           | string   | -            | Output data format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | Taps_g             | positive | -            | Number of taps (samples averaged)                            |
@@ -77,6 +83,7 @@ specific resource optimiation scenarios:
 | :------- | :----- | :--------------- | ------- | :----------------------------------------- |
 | In_Valid | in     | 1                | '1'     | AXI4-Stream handshaking signal for _In_Data_ |
 | In_Data  | in     | _width(InFmt_g)_ | -       | Input data<br />Format: _InFmt_g_          |
+| In_Last  | in     | 1                | '0'     | Marks the last channel of a TDM sample-group<br />Only used for checking in simulation. <br> Can be omitted for single-channel use |
 
 ### Output Data
 
@@ -84,6 +91,7 @@ specific resource optimiation scenarios:
 | :--------- | :----- | :---------------- | ------- | :----------------------------------------- |
 | Out_Valid  | out    | 1                 | N/A     | AXI4-Stream handshaking signal for _Out_Result_ |
 | Out_Result | out    | _width(OutFmt_g)_ | N/A     | Result data<br />Format: _OutFmt_g_        |
+| Out_Last   | out    | 1                 | N/A     | Marks the last channel of a TDM sample-group<br />For _Channels_g_=1, _Out_Last_ is constantly high |
 
 ## Detail
 
@@ -93,3 +101,14 @@ Below figure shows the internal architecture of the moving average filter. The d
 types are shown in colors (red for "NONE", blue for "SHIFT" and yellow for "EXACT").
 
 ![Architecture](./entities/olo_fix_mov_avg.drawio.png)
+
+For _Channels_g_ > 1, the architecture is extended as follows:
+
+- The tap delay line is _Taps_g_ \* _Channels_g_ samples long, so it delivers the sample of the same channel from
+  _Taps_g_ samples ago.
+- The moving sum register is extended by a delay line of _Channels_g_-1 samples. Together, they store the moving sum
+  of each channel. For _Channels_g_=1, this delay line is empty and the architecture is the same as shown in the
+  figure.
+
+Resource usage of these delay lines (SRL or BRAM) can be controlled through _Resource_g_, _RamBehavior_g_ and
+_RamStyle_g_.

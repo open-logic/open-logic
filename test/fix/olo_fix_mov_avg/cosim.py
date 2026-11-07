@@ -24,6 +24,7 @@ def cosim(output_path : str = None,
     InFmt_g = olo_fix_utils.fix_format_from_string(generics["InFmt_g"])
     OutFmt_g = olo_fix_utils.fix_format_from_string(generics["OutFmt_g"])
     Taps_g = int(generics["Taps_g"])
+    Channels_g = int(generics.get("Channels_g", 1))
     GainCorrCoefFmt_g = olo_fix_utils.fix_format_from_string(generics["GainCorrCoefFmt_g"])
     GainCorrDataFmt_g = generics["GainCorrDataFmt_g"]
     if GainCorrDataFmt_g != "AUTO":
@@ -32,17 +33,25 @@ def cosim(output_path : str = None,
     Round_g = FixRound[generics["Round_g"]]
     Saturate_g = FixSaturate[generics["Saturate_g"]]
 
-    #Calculation
+    #Calculation (model is single channel, hence it is run once per channel)
     np.random.seed(42)  # Set the seed for reproducibility
-    in_step = np.concatenate(([0], cl_fix_max_value(InFmt_g)/2*np.ones(Taps_g+2)))
-    in_negstep = cl_fix_min_value(InFmt_g)/2*np.ones(Taps_g+2)
-    in_rand = np.random.uniform(cl_fix_min_value(InFmt_g), cl_fix_max_value(InFmt_g), 10)
-    in_data = np.concatenate((in_step, in_negstep, in_rand))
-    in_data = cl_fix_from_real(in_data, InFmt_g)
-    dut = olo_fix_mov_avg(InFmt_g, OutFmt_g, Taps_g, GainCorrCoefFmt_g, GainCorrDataFmt_g, GainCorrType_g, Round_g, Saturate_g)
-    out_data = dut.process(in_data)
+    in_ch = []
+    out_ch = []
+    for ch in range(Channels_g):
+        # Different amplitude per channel to detect channel mixing
+        scale = (ch+1)/Channels_g
+        in_step = np.concatenate(([0], cl_fix_max_value(InFmt_g)/2*scale*np.ones(Taps_g+2)))
+        in_negstep = cl_fix_min_value(InFmt_g)/2*scale*np.ones(Taps_g+2)
+        in_rand = np.random.uniform(cl_fix_min_value(InFmt_g), cl_fix_max_value(InFmt_g), 10)
+        in_data = np.concatenate((in_step, in_negstep, in_rand))
+        in_data = cl_fix_from_real(in_data, InFmt_g)
+        dut = olo_fix_mov_avg(InFmt_g, OutFmt_g, Taps_g, GainCorrCoefFmt_g, GainCorrDataFmt_g, GainCorrType_g,
+                              Round_g, Saturate_g)
+        out_data = dut.process(in_data)
+        in_ch.append(in_data)
+        out_ch.append(out_data)
 
-    # Plot if enabled
+    # Plot if enabled (only last channel)
     if not cosim_mode:
         py_out = np.convolve(np.concatenate((np.zeros(Taps_g-1), in_data)), np.ones(Taps_g)/Taps_g, mode='valid')
         olo_fix_plots.plot_subplots({"Ideal vs. Fix" : {"Fix" : out_data, "Ideal" : py_out},
@@ -51,8 +60,9 @@ def cosim(output_path : str = None,
     #Write Files
     if cosim_mode:
         writer = olo_fix_cosim(output_path)
-        writer.write_cosim_file(in_data, InFmt_g, "In.fix")
-        writer.write_cosim_file(out_data, OutFmt_g, "Out.fix")
+        # Interleaved (TDM)
+        writer.write_cosim_file(np.array(in_ch).T.flatten(), InFmt_g, "In.fix")
+        writer.write_cosim_file(np.array(out_ch).T.flatten(), OutFmt_g, "Out.fix")
     return True
 
 if __name__ == "__main__":
@@ -61,6 +71,7 @@ if __name__ == "__main__":
         "InFmt_g": "(1, 4, 8)",
         "OutFmt_g": "(1, 4, 8)",
         "Taps_g": "3",
+        "Channels_g": "1",
         "GainCorrCoefFmt_g": "(0, 1, 16)",
         "GainCorrDataFmt_g": "AUTO",
         "GainCorrType_g": "EXACT",
