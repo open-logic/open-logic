@@ -201,6 +201,9 @@ if args.coverage:
         if simulator == 'nvc':
             results.merge_coverage(file_name='coverage_data')
             os.system('nvc --cover-report --per-file --output nvc_coverage coverage_data.ncdb > nvc_coverage.txt 2>&1')
+            print("WARNING: NVC coverage is not yet fully reliable. Reported numbers are not always correct, "
+                  "especially for large test sets.\n"
+                  "         Results are mostly right when running the tests of individual entities.")
 else:
     def post_run(results):
         pass

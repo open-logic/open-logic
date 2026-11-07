@@ -7,6 +7,7 @@ import json
 from Badge import create_coverage_version_badge, create_coverage_badge, create_branch_badge
 import sys
 import argparse
+import atexit
 
 ########################################################################################################################
 # Parse Arguments
@@ -118,6 +119,12 @@ for line in fd.readlines():
         if "statement:" in line:
             entity.parse_statement_line(line)
             entities.append(entity)
+
+#*** NVC Note (printed at the very end, also if the minimum coverage check fails) ***
+if args.simulator == "nvc":
+    atexit.register(print, "WARNING: NVC coverage is not yet fully reliable. Reported numbers are not always correct, "
+                           "especially for large test sets.\n"
+                           "         Results are mostly right when running the tests of individual entities.")
 
 #*** Generate Output ***
 print("Entity:                        Statements Branches")
