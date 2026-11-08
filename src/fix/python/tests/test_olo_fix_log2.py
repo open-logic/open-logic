@@ -13,7 +13,7 @@ import sys
 import os
 import numpy as np
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from olo_fix import olo_fix_log2
+from olo_fix import olo_fix_log2, olo_fix_utils
 from olo_fix.olo_fix_private_lin_approx_log2 import LOG2_TABLES
 from en_cl_fix_pkg import *
 
@@ -38,7 +38,8 @@ class TestOloFixLog2(unittest.TestCase):
 
         The integer bits of the output are chosen wide enough to not saturate. The normalization
         makes the error independent of the magnitude of the input. The limit is relative to the
-        LSB of the output and includes the rounding error of the output stage.
+        LSB of the output, includes the rounding error of the output stage and is the one given in
+        the documentation.
         """
         out_fmt = FixFormat(1, 9, out_frac)
         dut = olo_fix_log2(in_fmt, out_fmt)
@@ -46,7 +47,7 @@ class TestOloFixLog2(unittest.TestCase):
         data = data[data != 0]
         result = np.array(cl_fix_to_real(dut.process(data), out_fmt), dtype=float)
         error = np.max(np.abs(result - np.log2(np.array(data, dtype=float))))
-        self.assertLess(error, 1.1*2.0**-out_frac,
+        self.assertLess(error, 1.5*2.0**-out_frac,
                         f"error too large for {in_fmt} / {out_frac}")
 
     # -----------------------------------------------------------------------------------------------
@@ -158,6 +159,22 @@ class TestOloFixLog2(unittest.TestCase):
         data = self._values(in_fmt, 500)
         self.assertTrue(np.all(np.array(trunc.process(data), dtype=float) <=
                                np.array(round_.process(data), dtype=float)))
+
+    def test_edge_values_all_precisions(self):
+        # Limits of the range, powers of two and their neighbours
+        for precision_bits in LOG2_TABLES:
+            for in_fmt in [FixFormat(0, 0, 16), FixFormat(0, 8, 8), FixFormat(0, 12, -4)]:
+                out_fmt = FixFormat(1, 9, precision_bits)
+                dut = olo_fix_log2(in_fmt, out_fmt)
+                data = olo_fix_utils.edge_values(in_fmt)
+                data = data[data != 0]
+                result = np.array(cl_fix_to_real(dut.process(data), out_fmt), dtype=float)
+                error = np.max(np.abs(result - np.log2(data)))
+                self.assertLess(error, 1.5*2.0**-precision_bits,
+                                f"error too large for {in_fmt} / {precision_bits}")
+                # Powers of two are exact
+                powers = np.log2(data) % 1 == 0
+                np.testing.assert_array_equal(result[powers], np.log2(data[powers]))
 
     # -----------------------------------------------------------------------------------------------
     # Interface

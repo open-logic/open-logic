@@ -14,6 +14,7 @@ import os
 import numpy as np
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from olo_fix import olo_fix_sin
+from olo_fix.olo_fix_private_lin_approx_qsin import QSIN_TABLES
 from en_cl_fix_pkg import *
 
 # Note: Test coverage is OK for the Open Logic code, it does not cover all numerics because
@@ -111,6 +112,28 @@ class TestOloFixSin(unittest.TestCase):
         sin_pos, cos_pos = dut_u.process(np.array([0.75, 0.9]))
         np.testing.assert_array_equal(sin_neg, sin_pos)
         np.testing.assert_array_equal(cos_neg, cos_pos)
+
+    def test_edge_values_all_output_formats(self):
+        for int_bits, frac_bits in QSIN_TABLES:
+            out_fmt = FixFormat(1, int_bits, frac_bits)
+            in_fmt = FixFormat(0, 0, frac_bits + 4)
+            dut = olo_fix_sin(in_fmt, out_fmt)
+            lsb = 2.0**-in_fmt.F
+            critical = np.array([0.0, 0.25, 0.5, 0.75])
+            # Critical angles are exact
+            sin_val, cos_val = dut.process(critical)
+            peak = dut.peak
+            np.testing.assert_array_equal(sin_val, np.array([0.0, peak, 0.0, -peak]))
+            np.testing.assert_array_equal(cos_val, np.array([peak, 0.0, -peak, 0.0]))
+            # Neighbours of the critical angles, including the wrap at the end of the range
+            phase = np.concatenate(((critical + lsb), (critical + 1.0 - lsb) % 1.0))
+            sin_val, cos_val = dut.process(phase)
+            sin_err = np.max(np.abs(sin_val - np.sin(2*np.pi*phase)*peak))*2**out_fmt.F
+            cos_err = np.max(np.abs(cos_val - np.cos(2*np.pi*phase)*peak))*2**out_fmt.F
+            self.assertLess(sin_err, 1.0, f"sine error too large for {out_fmt}")
+            self.assertLess(cos_err, 1.0, f"cosine error too large for {out_fmt}")
+            # The peak is never exceeded
+            self.assertLessEqual(max(np.max(np.abs(sin_val)), np.max(np.abs(cos_val))), peak)
 
     # -----------------------------------------------------------------------------------------------
     # Interface

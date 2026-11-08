@@ -55,6 +55,25 @@ class olo_fix_utils:
                         dtype=int)
 
     @staticmethod
+    def edge_values(fmt : FixFormat):
+        """
+        Values at the edges of a format, used to verify corner cases
+
+        Contains the limits of the range, zero, all powers of two (for signed formats also the negated
+        ones) and the direct neighbours of all of them. Only meant for formats that fit into a double.
+
+        :param fmt: Format to get the edge values for
+        :return: Sorted unique values, all representable in fmt
+        """
+        lsb = 2.0**-fmt.F
+        low = cl_fix_min_value(fmt)
+        high = cl_fix_max_value(fmt)
+        powers = 2.0**np.arange(-fmt.F, fmt.I)
+        centers = np.concatenate(([low, 0.0, high], powers, -powers))
+        values = np.concatenate((centers - lsb, centers, centers + lsb))
+        return np.unique(values[(values >= low) & (values <= high)])
+
+    @staticmethod
     def log2ceil(arg : int) -> int:
         """
         Reflects the behavior of the VHDL function olo_base_pkg_math.log2ceil()

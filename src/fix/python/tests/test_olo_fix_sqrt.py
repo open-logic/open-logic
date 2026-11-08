@@ -13,7 +13,7 @@ import sys
 import os
 import numpy as np
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from olo_fix import olo_fix_sqrt
+from olo_fix import olo_fix_sqrt, olo_fix_utils
 from olo_fix.olo_fix_private_lin_approx_sqrt import SQRT_TABLES
 from en_cl_fix_pkg import *
 
@@ -96,6 +96,21 @@ class TestOloFixSqrt(unittest.TestCase):
         data = self._values(FixFormat(0, 4, 8), 500)
         self.assertTrue(np.all(np.array(trunc.process(data), dtype=float) <=
                                np.array(round_.process(data), dtype=float)))
+
+    def test_edge_values_all_precisions(self):
+        # Limits of the range, powers of two and their neighbours
+        for precision_bits in SQRT_TABLES:
+            for in_fmt in [FixFormat(0, 0, 16), FixFormat(0, 3, 13), FixFormat(0, 12, -4)]:
+                out_fmt = olo_fix_sqrt(in_fmt, FixFormat(0, 1, 1), precision_bits).res_fmt
+                dut = olo_fix_sqrt(in_fmt, out_fmt, precision_bits)
+                data = olo_fix_utils.edge_values(in_fmt)
+                result = np.array(cl_fix_to_real(dut.process(data), out_fmt), dtype=float)
+                # Zero is exact, everything else is within the relative error limit
+                self.assertEqual(result[data == 0][0], 0.0)
+                expected = np.sqrt(data[data != 0])
+                error = np.max(np.abs((result[data != 0] - expected)/expected))
+                self.assertLessEqual(error, 2.0**-(precision_bits - 1),
+                                     f"relative error too large for {in_fmt} / {precision_bits}")
 
     # -----------------------------------------------------------------------------------------------
     # Interface

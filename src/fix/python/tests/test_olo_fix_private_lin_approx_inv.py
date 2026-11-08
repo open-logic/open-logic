@@ -47,6 +47,19 @@ class TestOloFixLinApproxInv(unittest.TestCase):
             error = np.max(np.abs(result - 1.0/(1.0 + mantissa)))*2**out_fmt.F
             self.assertLess(error, 1.0, f"error too large for {out_fmt}")
 
+    def test_wide_inputs_all_configurations(self):
+        # Inputs wider than the table input are truncated to it, hence the true value can be anywhere
+        # between one input code and the next one. All codes are checked, because the worst case is
+        # only reached at very few of them.
+        for precision_bits in INV_TABLES:
+            in_fmt = FixFormat(0, 0, precision_bits + 2)
+            dut = olo_fix_private_lin_approx_inv(in_fmt, inv_out_fmt(precision_bits))
+            lsb = 2.0**-in_fmt.F
+            codes = np.arange(0, 2**in_fmt.F, dtype=np.int64)*lsb
+            result = np.asarray(dut.process(codes), dtype=float)
+            error = np.maximum(np.abs(result - (lambda m: 1.0/(1.0 + m))(codes)), np.abs(result - (lambda m: 1.0/(1.0 + m))(codes + lsb)))
+            self.assertLess(np.max(error*(1.0 + codes + lsb))*2**precision_bits, 2.0)
+
     def test_one_is_exact(self):
         # A mantissa of zero means a normalized value of 1.0, whose inverse is 1.0. The result is
         # exact, hence olo_fix_inv inverts powers of two exactly.

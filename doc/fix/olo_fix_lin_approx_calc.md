@@ -16,7 +16,7 @@ Bit-true Model: [olo_fix_lin_approx](../../src/fix/python/olo_fix/olo_fix_lin_ap
 ## Description
 
 This entity implements the calculation part of a piecewise linear approximation of an arbitrary function. The function
-is approximated by a table which contains the function value (_offset_) and the derivative of the function (_gradient_)
+is approximated by a table which contains an _offset_ and the derivative of the function (_gradient_)
 for regularly spaced points. Between those points the function is approximated linearly.
 
 The _olo_fix_lin_approx_calc_ can calculate one approximation per clock cycle.
@@ -35,10 +35,14 @@ For details about the fixed-point number format used in _Open Logic_, refer to t
 ### Approximation Principle
 
 The full range of _InFmt_g_ is split into _TableSize_g_ segments of equal width. For each segment, the table contains
-the value of the function at the **center** of the segment (_offset_, red) and the derivative of the function at the
-same point (_gradient_, blue).
+the value of the approximation at the **center** of the segment (_offset_, red) and the derivative of the function at
+the same point (_gradient_, blue).
 
 ![principle](./approx/olo_fix_lin_approx_principle.drawio.png)
+
+The figure shows the offset as the function value at the center of the segment. The Python class
+[olo_fix_lin_approx](./olo_fix_lin_approx.md) shifts it slightly, so that the largest positive and negative error of
+each segment are equal in magnitude.
 
 ## Generics
 
@@ -46,7 +50,7 @@ same point (_gradient_, blue).
 | :---------- | :------- | ---------------- | :----------------------------------------------------------- |
 | InFmt_g     | string   | -                | Input data format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
 | OutFmt_g    | string   | -                | Output data format<br />String representation of an _en_cl_fix Format_t_ (e.g. "(1,1,15)") |
-| OffsFmt_g   | string   | -                | Format of the offset (function value) table entries<br />String representation of an _en_cl_fix Format_t_ |
+| OffsFmt_g   | string   | -                | Format of the offset table entries<br />String representation of an _en_cl_fix Format_t_ |
 | GradFmt_g   | string   | -                | Format of the gradient (derivative) table entries<br />String representation of an _en_cl_fix Format_t_ |
 | TableSize_g | positive | -                | Number of entries in the table.<br />Must be a power of two and smaller than _2^width(InFmt_g)_ |
 | TableLatency_g | positive | 1             | Read latency of the table in clock cycles (range 1 to 3).<br />Increasing the value improves timing for slow ROMs, see [Table Interface](#table-interface) |

@@ -30,8 +30,11 @@ def cosim(output_path : str = None,
 
     #Generate inputs - one quadrant is 2**(F-2) codes, hence those are the critical angles
     phase_sweep = np.linspace(cl_fix_min_value(InFmt_g), cl_fix_max_value(InFmt_g), SAMPLES)
-    phase_critical = [0, 0.25, 0.5, 0.75]
-    phase = np.concatenate((phase_sweep, phase_critical))
+    phase_critical = np.array([0, 0.25, 0.5, 0.75])
+    lsb = 2.0**-InFmt_g.F
+    phase = np.concatenate((phase_sweep, phase_critical, phase_critical - lsb, phase_critical + lsb,
+                            olo_fix_utils.edge_values(InFmt_g)))
+    phase = phase[(phase >= cl_fix_min_value(InFmt_g)) & (phase <= cl_fix_max_value(InFmt_g))]
 
     #quantize input
     phase = cl_fix_from_real(phase, InFmt_g)

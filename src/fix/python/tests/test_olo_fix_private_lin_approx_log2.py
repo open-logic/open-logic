@@ -41,6 +41,19 @@ class TestOloFixLinApproxLog2(unittest.TestCase):
             error = np.max(np.abs(result - np.log2(1.0 + mantissa)))*2**out_fmt.F
             self.assertLessEqual(error, 1.0, f"error too large for {out_fmt}")
 
+    def test_wide_inputs_all_configurations(self):
+        # Inputs wider than the table input are truncated to it, hence the true value can be anywhere
+        # between one input code and the next one. All codes are checked, because the worst case is
+        # only reached at very few of them.
+        for precision_bits in LOG2_TABLES:
+            in_fmt = FixFormat(0, 0, precision_bits + 2)
+            dut = olo_fix_private_lin_approx_log2(in_fmt, log2_out_fmt(precision_bits))
+            lsb = 2.0**-in_fmt.F
+            codes = np.arange(0, 2**in_fmt.F, dtype=np.int64)*lsb
+            result = np.asarray(dut.process(codes), dtype=float)
+            error = np.maximum(np.abs(result - log2_function(codes)), np.abs(result - log2_function(codes + lsb)))
+            self.assertLessEqual(np.max(error)*2**precision_bits, 1.5)
+
     def test_mantissa_zero_is_exact(self):
         # This is what makes the result for powers of two exact in olo_fix_log2
         for precision_bits in LOG2_TABLES:
@@ -98,9 +111,9 @@ class TestOloFixLinApproxLog2(unittest.TestCase):
             olo_fix_private_lin_approx_log2(FixFormat(1, 0, 20), log2_out_fmt(18))
         with self.assertRaises(ValueError):
             olo_fix_private_lin_approx_log2(FixFormat(0, 1, 20), log2_out_fmt(18))
-        # Not enough bits to resolve the table index (512 points -> 9 index bits)
+        # Not enough bits to resolve the table index (256 points -> 8 index bits)
         with self.assertRaises(ValueError):
-            olo_fix_private_lin_approx_log2(FixFormat(0, 0, 9), log2_out_fmt(18))
+            olo_fix_private_lin_approx_log2(FixFormat(0, 0, 8), log2_out_fmt(18))
 
 if __name__ == "__main__":
     unittest.main()

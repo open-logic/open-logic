@@ -43,7 +43,8 @@ class olo_fix_lin_approx_cfg:
                          must be able to process numpy arrays.
         :param in_fmt: Format of the input to the approximation
         :param out_fmt: Format of the output of the approximation
-        :param offs_fmt: Format of the offset table (function values at the segment centers)
+        :param offs_fmt: Format of the offset table (values at the segment centers, chosen to balance
+                         the positive and negative error of each segment)
         :param grad_fmt: Format of the gradient table (derivatives at the segment centers)
         :param points: Number of points (segments) in the offset/gradient table. Must be a power of two.
         :param name: Name suffix of the approximator generated (used for code generation)
@@ -91,15 +92,19 @@ class olo_fix_lin_approx:
     """
     Bit-true model and code generator of olo_fix_lin_approx_calc based function approximations.
 
-    A function is approximated by a table containing the function value (offset) and its derivative
-    (gradient) for regularly spaced points. Between those points the function is approximated
-    linearly.
+    A function is approximated by a table containing an offset and a gradient (the derivative of the
+    function) for regularly spaced points. Between those points the function is approximated
+    linearly. The offset is chosen so that the largest positive and negative error of each segment
+    are equal in magnitude.
 
     The class does not only implement the bit-true model but it also generates the VHDL entity
     (containing the table) and a corresponding bit-true testbench.
     """
 
     _TEMPLATE_DIR = os.path.abspath(join(os.path.dirname(__file__), "templates"))
+
+    # Number of equally spaced positions per segment evaluated to find the offset
+    _OFFSET_SAMPLES = 2**10
 
     # ---------------------------------------------------------------------------------------------------
     # Constructor
@@ -137,7 +142,7 @@ class olo_fix_lin_approx:
         # Tables
         self.grad_table = cl_fix_from_real(self._derivative(cfg.function, centers),
                                            cfg.grad_fmt, FixSaturate.Sat_s)
-        self.offs_table = cl_fix_from_real(cfg.function(centers),
+        self.offs_table = cl_fix_from_real(self._balanced_offsets(centers, step),
                                            cfg.offs_fmt, FixSaturate.Sat_s)
         self.centers = centers
 
@@ -248,7 +253,7 @@ class olo_fix_lin_approx:
         :param directory: Target directory (the testbench reads the data files from this directory)
         :param olo_library: Name of the VHDL library Open Logic is compiled into. This argument is
                             optional and the default library is "olo".
-        :param sim_points: Number of points to simulate
+        :param sim_points: Number of points to simulate, the corner cases are simulated in addition
         :param sim_range: Range of the values to simulate. If None, the valid range is used.
         :param vunit: If True (default), a VUnit testbench is generated (using the Open Logic VUnit
                       verification components). If False, a plain VHDL testbench is generated
@@ -258,7 +263,7 @@ class olo_fix_lin_approx:
         entity_name = self.entity_name
 
         # Calculate stimuli/response
-        in_data = self.stimuli(sim_points, sim_range)
+        in_data = np.concatenate((self.stimuli(sim_points, sim_range), self.edge_stimuli(sim_range)))
         out_data = self.process(in_data)
 
         # Write stimuli/response files
@@ -422,6 +427,24 @@ class olo_fix_lin_approx:
             sim_range = self.cfg.valid_range
         return cl_fix_from_real(np.linspace(sim_range[0], sim_range[1], sim_points), self.cfg.in_fmt)
 
+    def edge_stimuli(self, sim_range : Tuple[float, float] = None):
+        """
+        Generate stimuli data for the corner cases of the approximation, which are the limits of the
+        range plus the first and last input value of all segments
+
+        :param sim_range: Range to generate the stimuli for. If None, the valid range is used.
+        :return: Stimuli data (quantized to in_fmt)
+        """
+        if sim_range is None:
+            sim_range = self.cfg.valid_range
+        lsb = 2.0**-self.cfg.in_fmt.F
+        lower_bound = cl_fix_min_value(self.cfg.in_fmt)
+        borders = lower_bound + (2.0**self.cfg.in_fmt.I - lower_bound)/self.cfg.points*np.arange(self.cfg.points)
+        values = np.concatenate((borders, borders - lsb, sim_range, np.array(sim_range) + lsb,
+                                 np.array(sim_range) - lsb))
+        values = values[(values >= sim_range[0]) & (values <= sim_range[1])]
+        return cl_fix_from_real(np.unique(values), self.cfg.in_fmt)
+
     def analyze(self, sim_points : int = 100000, sim_range : Tuple[float, float] = None): # pragma: no cover
         """
         Analyze the performance of an approximation. This function is meant to be used interactively
@@ -476,6 +499,53 @@ class olo_fix_lin_approx:
         :return: Derivative of the function at the points passed
         """
         return (function(x + dx) - function(x - dx)) / (2.0*dx)
+
+    def _balanced_offsets(self, centers, step : float):
+        """
+        Offsets that make the largest positive and negative error of each segment equal in magnitude
+
+        For a given gradient, the line through the middle of the residual range is the best possible
+        one. The residual is calculated with the quantized gradient, so that the gradient
+        quantization and saturation are compensated as well.
+
+        The sampling positions are relative to the segment and do not depend on the resolution of
+        in_fmt. This is required because the tables of the private approximations are checked in as
+        VHDL packages, while their input format is selected by the user.
+
+        Segments outside of valid_range and segments without any finite residual use the function
+        value at their center.
+
+        :param centers: Segment centers, in the order of the table
+        :param step: Width of one segment
+        :return: Offsets (not quantized), in the order of the table
+        """
+        # The right border belongs to the next segment and the function may be discontinuous there
+        # (see sqrt_function()), hence only a position very close to it is evaluated.
+        positions = np.append(np.arange(self._OFFSET_SAMPLES)/self._OFFSET_SAMPLES, 1.0 - 2.0**-20)
+        relative = (positions - 0.5)*step
+
+        # The default upper limit of valid_range depends on the resolution of in_fmt and is not a
+        # restriction, hence it is ignored.
+        lower = self.cfg.valid_range[0]
+        upper = self.cfg.valid_range[1]
+        if upper >= cl_fix_max_value(self.cfg.in_fmt):
+            upper = np.inf
+
+        offsets = np.array(self.cfg.function(centers), dtype=float)
+
+        # Functions may be undefined at positions never used as segment center (e.g. 1/x at zero)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            for i, (center, gradient) in enumerate(zip(centers, self.grad_table)):
+                x = center + relative
+                x = x[(x >= lower) & (x <= upper)]
+                if x.size == 0:
+                    continue
+                residual = self.cfg.function(x) - gradient*(x - center)
+                residual = residual[np.isfinite(residual)]
+                if residual.size > 0:
+                    offsets[i] = (np.max(residual) + np.min(residual))/2.0
+
+        return offsets
 
     def _table_index(self, in_data):
         """

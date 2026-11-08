@@ -27,7 +27,7 @@ class olo_fix_private_lin_approx_inv_tbl:
         Constructor of the olo_fix_private_lin_approx_inv_tbl class
 
         :param points: Number of segments in the table. Must be a power of two.
-        :param offs_fmt: Format of the offset table (inversion at the segment centers)
+        :param offs_fmt: Format of the offset table (see olo_fix_lin_approx_cfg)
         :param grad_fmt: Format of the gradient table (derivatives at the segment centers)
         """
         self.points = points
@@ -50,10 +50,10 @@ class olo_fix_private_lin_approx_inv_tbl:
 # ---------------------------------------------------------------------------------------------------
 INV_TABLES = {
     # precision_bits : olo_fix_private_lin_approx_inv_tbl(points, offs_fmt, grad_fmt)
-    10 : olo_fix_private_lin_approx_inv_tbl(32,   FixFormat(0, 1, 13), FixFormat(1, 0, 7)),
-    14 : olo_fix_private_lin_approx_inv_tbl(128,  FixFormat(0, 1, 17), FixFormat(1, 0, 10)),
-    18 : olo_fix_private_lin_approx_inv_tbl(512,  FixFormat(0, 1, 21), FixFormat(1, 0, 13)),
-    20 : olo_fix_private_lin_approx_inv_tbl(1024, FixFormat(0, 1, 22), FixFormat(1, 0, 11)),
+    10 : olo_fix_private_lin_approx_inv_tbl(16,   FixFormat(0, 1, 13), FixFormat(1, 0, 8)),
+    14 : olo_fix_private_lin_approx_inv_tbl(64,   FixFormat(0, 1, 19), FixFormat(1, 0, 12)),
+    18 : olo_fix_private_lin_approx_inv_tbl(512,  FixFormat(0, 1, 19), FixFormat(1, 0, 9)),
+    20 : olo_fix_private_lin_approx_inv_tbl(1024, FixFormat(0, 1, 21), FixFormat(1, 0, 10)),
 }
 
 def inv_out_fmt(precision_bits : int) -> FixFormat:

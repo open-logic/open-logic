@@ -13,7 +13,7 @@ import sys
 import os
 import numpy as np
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from olo_fix import olo_fix_inv
+from olo_fix import olo_fix_inv, olo_fix_utils
 from olo_fix.olo_fix_private_lin_approx_inv import INV_TABLES
 from en_cl_fix_pkg import *
 
@@ -114,6 +114,25 @@ class TestOloFixInv(unittest.TestCase):
         data = data[data != 0]
         self.assertTrue(np.all(np.array(trunc.process(data), dtype=float) <=
                                np.array(round_.process(data), dtype=float)))
+
+    def test_edge_values_all_precisions(self):
+        # Limits of the range, powers of two and their neighbours
+        for precision_bits in INV_TABLES:
+            for in_fmt in [FixFormat(0, 0, 16), FixFormat(1, 7, 8), FixFormat(0, 12, -4)]:
+                out_fmt = FixFormat(in_fmt.S, cl_fix_width(in_fmt) + 1 - in_fmt.I,
+                                    precision_bits + in_fmt.I)
+                dut = olo_fix_inv(in_fmt, out_fmt, precision_bits)
+                data = olo_fix_utils.edge_values(in_fmt)
+                data = data[data != 0]
+                result = np.array(cl_fix_to_real(dut.process(data), out_fmt), dtype=float)
+                error = np.max(np.abs((result - 1.0/data)*data))
+                self.assertLess(error, 2.0**-(precision_bits - 1),
+                                f"relative error too large for {in_fmt} / {precision_bits}")
+                # The sign is never wrong
+                self.assertTrue((np.sign(result) == np.sign(data)).all())
+                # Powers of two are exact
+                powers = np.log2(np.abs(data)) % 1 == 0
+                np.testing.assert_array_equal(result[powers], 1.0/data[powers])
 
     # -----------------------------------------------------------------------------------------------
     # Interface

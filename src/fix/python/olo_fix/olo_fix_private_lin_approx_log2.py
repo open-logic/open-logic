@@ -42,7 +42,7 @@ class olo_fix_private_lin_approx_log2_tbl:
         Constructor of the olo_fix_private_lin_approx_log2_tbl class
 
         :param points: Number of segments in the table. Must be a power of two.
-        :param offs_fmt: Format of the offset table (log2(1+x) at the segment centers)
+        :param offs_fmt: Format of the offset table (see olo_fix_lin_approx_cfg)
         :param grad_fmt: Format of the gradient table (derivatives at the segment centers)
         """
         self.points = points
@@ -67,10 +67,10 @@ class olo_fix_private_lin_approx_log2_tbl:
 # ---------------------------------------------------------------------------------------------------
 LOG2_TABLES = {
     # precision_bits : olo_fix_private_lin_approx_log2_tbl(points, offs_fmt, grad_fmt)
-    10 : olo_fix_private_lin_approx_log2_tbl(32,   FixFormat(0, 0, 11), FixFormat(0, 1, 6)),
-    14 : olo_fix_private_lin_approx_log2_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 1, 7)),
-    18 : olo_fix_private_lin_approx_log2_tbl(512,  FixFormat(0, 0, 19), FixFormat(0, 1, 10)),
-    20 : olo_fix_private_lin_approx_log2_tbl(1024, FixFormat(0, 0, 21), FixFormat(0, 1, 11)),
+    10 : olo_fix_private_lin_approx_log2_tbl(16,   FixFormat(0, 0, 13), FixFormat(0, 1, 5)),
+    14 : olo_fix_private_lin_approx_log2_tbl(64,   FixFormat(0, 0, 16), FixFormat(0, 1, 9)),
+    18 : olo_fix_private_lin_approx_log2_tbl(256,  FixFormat(0, 0, 21), FixFormat(0, 1, 11)),
+    20 : olo_fix_private_lin_approx_log2_tbl(512,  FixFormat(0, 0, 22), FixFormat(0, 1, 12)),
 }
 
 def log2_out_fmt(precision_bits : int) -> FixFormat:

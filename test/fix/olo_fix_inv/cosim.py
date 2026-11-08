@@ -31,6 +31,7 @@ def cosim(output_path : str = None,
 
     #Generate inputs
     data = np.linspace(cl_fix_min_value(InFmt_g), cl_fix_max_value(InFmt_g), SAMPLES)
+    data = np.unique(np.concatenate((data, olo_fix_utils.edge_values(InFmt_g))))
     data = cl_fix_from_real(data, InFmt_g)
 
     #Calculate

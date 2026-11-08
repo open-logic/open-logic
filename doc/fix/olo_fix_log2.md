@@ -163,10 +163,10 @@ the number of fractional bits of _OutFmt_g_. More than 20 fractional bits lead t
 
 | Fractional bits of _OutFmt_g_ | Precision of the approximation | Table size    |
 | ----------------------------- | ------------------------------ | ------------- |
-| up to 10                      | 10 bits                        | 32 x 18 bit   |
-| 11 to 14                      | 14 bits                        | 128 x 23 bit  |
-| 15 to 18                      | 18 bits                        | 512 x 30 bit  |
-| 19 to 20                      | 20 bits                        | 1024 x 33 bit |
+| up to 10                      | 10 bits                        | 16 x 19 bit   |
+| 11 to 14                      | 14 bits                        | 64 x 26 bit   |
+| 15 to 18                      | 18 bits                        | 256 x 33 bit  |
+| 19 to 20                      | 20 bits                        | 512 x 35 bit  |
 
 Because the normalization makes the accuracy independent of the magnitude of the input, the error is defined as an
 **absolute** error. The approximation stays within +/-1.5 LSB of an output with _PrecisionBits_g_ fractional bits.

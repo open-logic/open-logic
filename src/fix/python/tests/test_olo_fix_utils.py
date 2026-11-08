@@ -21,6 +21,18 @@ class TestOloFixUtils_FixFormatFromString(unittest.TestCase):
     def setUp(self):
         pass
 
+    def test_edge_values_unsigned(self):
+        values = dut.edge_values(FixFormat(0, 2, 1))
+        np.testing.assert_array_equal(values, np.arange(0, 8)*0.5)
+
+    def test_edge_values_signed(self):
+        values = dut.edge_values(FixFormat(1, 3, 1))
+        self.assertEqual(values[0], -8.0)
+        self.assertEqual(values[-1], 7.5)
+        for expected in [-4.5, -4.0, -3.5, -0.5, 0.0, 0.5, 3.5, 4.0, 4.5]:
+            self.assertIn(expected, values)
+        self.assertNotIn(6.0, values)
+
     def test_ok(self):
         self.assertEqual(dut.fix_format_from_string("(1,2,7)"), FixFormat(1,2,7))
         self.assertEqual(dut.fix_format_from_string("(1, -2, 7 )"), FixFormat(1,-2,7))

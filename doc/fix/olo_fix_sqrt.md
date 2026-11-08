@@ -122,8 +122,8 @@ per supported value, hence only the values listed below are allowed - any other 
 | ----------------- | ------------- |
 | 10                | 32 x 16 bit   |
 | 14                | 128 x 23 bit  |
-| 18                | 512 x 29 bit  |
-| 20                | 1024 x 33 bit |
+| 18                | 512 x 30 bit  |
+| 20                | 1024 x 34 bit |
 
 Because the normalization makes the accuracy independent of the magnitude of the input, the error is defined
 **relative** to the result:

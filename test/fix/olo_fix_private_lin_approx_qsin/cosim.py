@@ -55,7 +55,8 @@ def cosim(output_path : str = None,
 
     #Generate inputs - the quarter phase covers [0, 0.25). Port A sweeps the quadrant, port B is
     #driven with the mirrored phase 0.25-t, which is how olo_fix_sin obtains the cosine.
-    phase_a = stimuli_codes(InFmt_g, SAMPLES, 2**cl_fix_width(InFmt_g))
+    tbl_points = olo_fix_private_lin_approx_qsin(InFmt_g, OutFmt_g, Round_g, Saturate_g).tbl.points
+    phase_a = stimuli_codes(InFmt_g, SAMPLES, 2**cl_fix_width(InFmt_g)//tbl_points)
     phase_b = cl_fix_from_real((0.25 - phase_a) % 0.25, InFmt_g)
 
     #Calculate

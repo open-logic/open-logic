@@ -27,7 +27,7 @@ class olo_fix_private_lin_approx_qsin_tbl:
         Constructor of the olo_fix_private_lin_approx_qsin_tbl class
 
         :param points: Number of segments in the table. Must be a power of two.
-        :param offs_fmt: Format of the offset table (quarter sine at the segment centers)
+        :param offs_fmt: Format of the offset table (see olo_fix_lin_approx_cfg)
         :param grad_fmt: Format of the gradient table (derivatives at the segment centers)
         """
         self.points = points
@@ -49,30 +49,30 @@ QSIN_TABLES = {
     # (int_bits, frac_bits) : olo_fix_private_lin_approx_qsin_tbl(points, offs_fmt, grad_fmt)
 
     # Scaled to 1.0 - 1 LSB (no integer bits)
-    (0, 10) : olo_fix_private_lin_approx_qsin_tbl(32,   FixFormat(0, 0, 12), FixFormat(0, 3, 4)),
-    (0, 11) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 13), FixFormat(0, 3, 3)),
-    (0, 12) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 14), FixFormat(0, 3, 5)),
-    (0, 13) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 3, 4)),
-    (0, 14) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 16), FixFormat(0, 3, 6)),
-    (0, 15) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 17), FixFormat(0, 3, 5)),
-    (0, 16) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 18), FixFormat(0, 3, 7)),
-    (0, 17) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 19), FixFormat(0, 3, 6)),
-    (0, 18) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 20), FixFormat(0, 3, 9)),
-    (0, 19) : olo_fix_private_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 21), FixFormat(0, 3, 9)),
-    (0, 20) : olo_fix_private_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 22), FixFormat(0, 3, 10)),
+    (0, 10) : olo_fix_private_lin_approx_qsin_tbl(32,   FixFormat(0, 0, 11), FixFormat(0, 3, 3)),
+    (0, 11) : olo_fix_private_lin_approx_qsin_tbl(32,   FixFormat(0, 0, 13), FixFormat(0, 3, 4)),
+    (0, 12) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 13), FixFormat(0, 3, 4)),
+    (0, 13) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 15), FixFormat(0, 3, 5)),
+    (0, 14) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 3, 5)),
+    (0, 15) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 18), FixFormat(0, 3, 6)),
+    (0, 16) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 18), FixFormat(0, 3, 6)),
+    (0, 17) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 20), FixFormat(0, 3, 7)),
+    (0, 18) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 20), FixFormat(0, 3, 7)),
+    (0, 19) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 22), FixFormat(0, 3, 8)),
+    (0, 20) : olo_fix_private_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 22), FixFormat(0, 3, 8)),
 
     # Unscaled (one integer bit, peak at 1.0)
-    (1, 10) : olo_fix_private_lin_approx_qsin_tbl(32,   FixFormat(0, 0, 12), FixFormat(0, 3, 4)),
-    (1, 11) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 13), FixFormat(0, 3, 3)),
-    (1, 12) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 14), FixFormat(0, 3, 5)),
-    (1, 13) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 3, 4)),
-    (1, 14) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 16), FixFormat(0, 3, 6)),
-    (1, 15) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 17), FixFormat(0, 3, 5)),
-    (1, 16) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 18), FixFormat(0, 3, 7)),
-    (1, 17) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 19), FixFormat(0, 3, 6)),
-    (1, 18) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 20), FixFormat(0, 3, 9)),
-    (1, 19) : olo_fix_private_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 21), FixFormat(0, 3, 9)),
-    (1, 20) : olo_fix_private_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 22), FixFormat(0, 3, 10)),
+    (1, 10) : olo_fix_private_lin_approx_qsin_tbl(32,   FixFormat(0, 0, 11), FixFormat(0, 3, 3)),
+    (1, 11) : olo_fix_private_lin_approx_qsin_tbl(32,   FixFormat(0, 0, 13), FixFormat(0, 3, 4)),
+    (1, 12) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 13), FixFormat(0, 3, 4)),
+    (1, 13) : olo_fix_private_lin_approx_qsin_tbl(64,   FixFormat(0, 0, 15), FixFormat(0, 3, 5)),
+    (1, 14) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 3, 5)),
+    (1, 15) : olo_fix_private_lin_approx_qsin_tbl(128,  FixFormat(0, 0, 17), FixFormat(0, 3, 6)),
+    (1, 16) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 17), FixFormat(0, 3, 6)),
+    (1, 17) : olo_fix_private_lin_approx_qsin_tbl(256,  FixFormat(0, 0, 20), FixFormat(0, 3, 7)),
+    (1, 18) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 20), FixFormat(0, 3, 7)),
+    (1, 19) : olo_fix_private_lin_approx_qsin_tbl(512,  FixFormat(0, 0, 22), FixFormat(0, 3, 8)),
+    (1, 20) : olo_fix_private_lin_approx_qsin_tbl(1024, FixFormat(0, 0, 22), FixFormat(0, 3, 8)),
 }
 
 def qsin_table_name(out_fmt : FixFormat) -> str:

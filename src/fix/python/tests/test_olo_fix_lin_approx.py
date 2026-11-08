@@ -152,6 +152,57 @@ class TestOloFixLinApprox(unittest.TestCase):
         error = (result - cfg.function(in_data))*2**cfg.out_fmt.F
         self.assertLess(max(abs(error)), 4.0)
 
+    # -----------------------------------------------------------------------------------------------
+    # Offset Calculation
+    # -----------------------------------------------------------------------------------------------
+    def _assert_error_balanced(self, cfg):
+        # The largest positive and negative error of each segment within the valid range must be
+        # equal in magnitude, except for the offset quantization and for the small difference between
+        # the positions evaluated by the generator and the input values tested here
+        dut = olo_fix_lin_approx(cfg)
+        lsb = 2.0**-cfg.in_fmt.F
+        step = lsb*2**(cl_fix_width(cfg.in_fmt) - int(np.log2(cfg.points)))
+        relative = np.arange(-step/2, step/2, lsb)
+        offs_lsb = 2.0**-cfg.offs_fmt.F
+        for center, grad, offs in zip(dut.centers, dut.grad_table, dut.offs_table):
+            x = center + relative
+            if x[0] < cfg.valid_range[0] or x[-1] > cfg.valid_range[1]:
+                continue
+            error = offs + grad*(x - center) - cfg.function(x)
+            self.assertLessEqual(abs(np.max(error) + np.min(error)),
+                                 0.01*(np.max(error) - np.min(error)) + offs_lsb)
+
+    def test_error_balanced_unsigned(self):
+        self._assert_error_balanced(self._cfg_unsigned(in_fmt=FixFormat(0, 0, 16),
+                                                       offs_fmt=FixFormat(0, 0, 24)))
+
+    def test_error_balanced_signed(self):
+        self._assert_error_balanced(self._cfg_signed(in_fmt=FixFormat(1, 0, 16),
+                                                     offs_fmt=FixFormat(1, 0, 24)))
+
+    def test_tables_independent_of_input_resolution(self):
+        # The tables of the private approximations are checked in as VHDL packages while the user
+        # selects the input format, hence the table content must not depend on its resolution
+        dut_coarse = olo_fix_lin_approx(self._cfg_unsigned(in_fmt=FixFormat(0, 0, 12), valid_range=None))
+        dut_fine = olo_fix_lin_approx(self._cfg_unsigned(in_fmt=FixFormat(0, 0, 20), valid_range=None))
+        np.testing.assert_array_equal(dut_coarse.offs_table, dut_fine.offs_table)
+        np.testing.assert_array_equal(dut_coarse.grad_table, dut_fine.grad_table)
+
+    def test_offset_outside_valid_range_is_center_value(self):
+        cfg = self._cfg_unsigned()
+        dut = olo_fix_lin_approx(cfg)
+        outside = dut.centers < 0.25 - 1.0/cfg.points
+        expected = cl_fix_from_real(cfg.function(dut.centers[outside]), cfg.offs_fmt, FixSaturate.Sat_s)
+        np.testing.assert_array_equal(dut.offs_table[outside], expected)
+
+    def test_offset_function_undefined_in_segment(self):
+        # 1/x is undefined at zero, which is part of the first segment but never a segment center
+        dut = olo_fix_lin_approx(self._cfg_unsigned(function=lambda x: 1.0/x,
+                                                    offs_fmt=FixFormat(0, 14, 10),
+                                                    grad_fmt=FixFormat(1, 14, 10),
+                                                    valid_range=None))
+        self.assertTrue(np.isfinite(dut.offs_table).all())
+
     def test_reset(self):
         # The approximation is stateless, hence reset() must not have any effect on the result
         dut = olo_fix_lin_approx(self._cfg_signed())
@@ -182,6 +233,22 @@ class TestOloFixLinApprox(unittest.TestCase):
         dut = olo_fix_lin_approx(cfg)
         result = dut.process(dut.stimuli(50))
         self.assertEqual(max(result), cl_fix_max_value(cfg.out_fmt))
+
+    def test_edge_stimuli(self):
+        cfg = self._cfg_unsigned()
+        dut = olo_fix_lin_approx(cfg)
+        lsb = 2.0**-cfg.in_fmt.F
+        in_data = dut.edge_stimuli()
+        # Limits of the valid range
+        self.assertEqual(min(in_data), 0.25)
+        self.assertEqual(max(in_data), cl_fix_max_value(cfg.in_fmt))
+        # First and last value of a segment, values outside of the valid range are not contained
+        self.assertIn(0.5, in_data)
+        self.assertIn(0.5 - lsb, in_data)
+        # Explicit range
+        in_data = dut.edge_stimuli(sim_range=(0.5, 0.75))
+        self.assertEqual(min(in_data), 0.5)
+        self.assertEqual(max(in_data), 0.75)
 
     def test_stimuli_range(self):
         dut = olo_fix_lin_approx(self._cfg_unsigned())

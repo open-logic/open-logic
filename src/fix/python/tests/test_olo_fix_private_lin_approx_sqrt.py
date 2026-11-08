@@ -48,6 +48,19 @@ class TestOloFixLinApproxSqrt(unittest.TestCase):
             error = np.max(np.abs(result - np.sqrt(normalized)))*2**out_fmt.F
             self.assertLessEqual(error, 1.0, f"error too large for {out_fmt}")
 
+    def test_wide_inputs_all_configurations(self):
+        # Inputs wider than the table input are truncated to it, hence the true value can be anywhere
+        # between one input code and the next one. All codes are checked, because the worst case is
+        # only reached at very few of them.
+        for precision_bits in SQRT_TABLES:
+            in_fmt = FixFormat(0, 0, precision_bits + 2)
+            dut = olo_fix_private_lin_approx_sqrt(in_fmt, sqrt_out_fmt(precision_bits))
+            lsb = 2.0**-in_fmt.F
+            codes = np.arange(2**in_fmt.F//4, 2**in_fmt.F, dtype=np.int64)*lsb
+            result = np.asarray(dut.process(codes), dtype=float)
+            error = np.maximum(np.abs(result - np.sqrt(codes)), np.abs(result - np.sqrt(codes + lsb)))
+            self.assertLessEqual(np.max(error/np.sqrt(codes))*2**precision_bits, 2.0)
+
     def test_below_lower_bound_is_zero(self):
         # Below 0.25 the table returns zero. Only a zero input reaches this part of the table, so
         # this is what makes the square root of zero exactly zero in olo_fix_sqrt.

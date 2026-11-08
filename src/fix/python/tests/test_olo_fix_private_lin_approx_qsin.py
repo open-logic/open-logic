@@ -51,9 +51,9 @@ class TestOloFixLinApproxQsin(unittest.TestCase):
             out_fmt = FixFormat(1, int_bits, frac_bits)
             in_fmt = FixFormat(0, -2, out_fmt.F+2)
             dut = olo_fix_private_lin_approx_qsin(in_fmt, out_fmt)
-            phase = np.linspace(cl_fix_min_value(in_fmt), cl_fix_max_value(in_fmt), 50)
+            phase = cl_fix_from_real(np.linspace(cl_fix_min_value(in_fmt), cl_fix_max_value(in_fmt), 50), in_fmt)
             sin_val = dut.process(phase)
-            sin_err = np.max(np.abs(np.sin(phase*2*np.pi)-sin_val))
+            sin_err = np.max(np.abs(np.sin(phase*2*np.pi)*dut.peak - sin_val))*2**out_fmt.F
             self.assertLess(sin_err, 1.0, f"sine error too large for {out_fmt}")
 
     def test_zero_is_exact(self):
@@ -62,6 +62,17 @@ class TestOloFixLinApproxQsin(unittest.TestCase):
         for int_bits in [0, 1]:
             dut = olo_fix_private_lin_approx_qsin(FixFormat(0, -2, 16), FixFormat(1, 1, 16))
             self.assertEqual(dut.process(0.0)[0], 0.0)
+
+    def test_range_all_configurations(self):
+        # The result stays within [0, peak] and the largest phase reaches the peak
+        for int_bits, frac_bits in QSIN_TABLES:
+            out_fmt = FixFormat(1, int_bits, frac_bits)
+            in_fmt = quarter_fmt(frac_bits + 2)
+            dut = olo_fix_private_lin_approx_qsin(in_fmt, out_fmt)
+            result = dut.process(self._quarter_phase(frac_bits + 2))
+            self.assertGreaterEqual(np.min(result), 0.0, f"negative result for {out_fmt}")
+            self.assertLessEqual(np.max(result), dut.peak, f"peak exceeded for {out_fmt}")
+            self.assertEqual(dut.process(float(cl_fix_max_value(in_fmt)))[0], dut.peak)
 
     def test_peak_scaling(self):
         dut_unscaled = olo_fix_private_lin_approx_qsin(FixFormat(0, -2, 12), FixFormat(1, 1, 16))

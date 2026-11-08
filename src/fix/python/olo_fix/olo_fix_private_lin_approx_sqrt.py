@@ -50,7 +50,7 @@ class olo_fix_private_lin_approx_sqrt_tbl:
         Constructor of the olo_fix_private_lin_approx_sqrt_tbl class
 
         :param points: Number of segments in the table. Must be a power of two.
-        :param offs_fmt: Format of the offset table (square root at the segment centers)
+        :param offs_fmt: Format of the offset table (see olo_fix_lin_approx_cfg)
         :param grad_fmt: Format of the gradient table (derivatives at the segment centers)
         """
         self.points = points
@@ -74,9 +74,9 @@ class olo_fix_private_lin_approx_sqrt_tbl:
 SQRT_TABLES = {
     # precision_bits : olo_fix_private_lin_approx_sqrt_tbl(points, offs_fmt, grad_fmt)
     10 : olo_fix_private_lin_approx_sqrt_tbl(32,   FixFormat(0, 0, 11), FixFormat(0, 0, 5)),
-    14 : olo_fix_private_lin_approx_sqrt_tbl(128,  FixFormat(0, 0, 15), FixFormat(0, 0, 8)),
-    18 : olo_fix_private_lin_approx_sqrt_tbl(512,  FixFormat(0, 0, 19), FixFormat(0, 0, 10)),
-    20 : olo_fix_private_lin_approx_sqrt_tbl(1024, FixFormat(0, 0, 21), FixFormat(0, 0, 12)),
+    14 : olo_fix_private_lin_approx_sqrt_tbl(128,  FixFormat(0, 0, 16), FixFormat(0, 0, 7)),
+    18 : olo_fix_private_lin_approx_sqrt_tbl(512,  FixFormat(0, 0, 21), FixFormat(0, 0, 9)),
+    20 : olo_fix_private_lin_approx_sqrt_tbl(1024, FixFormat(0, 0, 24), FixFormat(0, 0, 10)),
 }
 
 def sqrt_out_fmt(precision_bits : int) -> FixFormat:

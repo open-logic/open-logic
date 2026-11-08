@@ -123,10 +123,10 @@ supported value, hence only the values listed below are allowed - any other valu
 
 | _PrecisionBits_g_ | Table size    |
 | ----------------- | ------------- |
-| 10                | 32 x 22 bit   |
-| 14                | 128 x 29 bit  |
-| 18                | 512 x 36 bit  |
-| 20                | 1024 x 35 bit |
+| 10                | 16 x 23 bit   |
+| 14                | 64 x 33 bit   |
+| 18                | 512 x 30 bit  |
+| 20                | 1024 x 33 bit |
 
 Because the normalization makes the accuracy independent of the magnitude of the input, the error is defined
 **relative** to the absolute value of the result:
