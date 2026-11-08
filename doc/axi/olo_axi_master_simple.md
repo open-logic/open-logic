@@ -137,9 +137,9 @@ transaction. If some application or tool require these signals, the user should 
 | Name     | In/Out | Length | Default | Description                                                  |
 | :------- | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Wr_Done  | out    | 1      | -       | Pulsed high when a write command was completed successfully. |
-| Wr_Error | out    | 1      | -       | Pulsed high when a write command was completed but  failed (AXI response from slave indicated an error) |
+| Wr_Error | out    | 1      | -       | Pulsed high instead of _Wr_Done_ when a write command was completed but at least one of its AXI transactions failed (B response from slave indicated an error) |
 | Rd_Done  | out    | 1      | -       | Pulsed high when a read command was completed successfully.  |
-| Rd_Error | out    | 1      | -       | Pulsed high when a read command was completed but at least one transaction failed (AXI response from slave indicated an error) |
+| Rd_Error | out    | 1      | -       | Pulsed high instead of _Rd_Done_ when a read command was completed but at least one transaction failed (R response from slave indicated an error on any beat, not only on the last beat of a burst) |
 
 ## Architecture
 
