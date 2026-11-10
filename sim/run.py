@@ -187,18 +187,23 @@ if args.coverage:
     olo.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
     olo.set_compile_option('modelsim.vlog_flags', ['+cover=bs'])
     olo_tb.set_sim_option("enable_coverage", True)
-    # Add coverage for package TBs (otherwise coverage does not work)
+    # Add coverage for package TBs (otherwise coverage does not work for Modelsim/Questa)
     for f in olo_tb.get_source_files("*_pkg_*_tb.vhd"):
         f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
     for f in olo_tb.get_source_files("*_pkg_tb.vhd"):
         f.set_compile_option('modelsim.vcom_flags', ['+cover=bs'])
+    # VUnit only passes --cover-file to nvc, coverage collection must be enabled explicitly
+    olo_tb.set_sim_option("nvc.elab_flags", ["--cover"])
 
     def post_run(results):
         if simulator == 'modelsim':
             results.merge_coverage(file_name=args.coverage_file)
         if simulator == 'nvc':
-            os.system(f'nvc --cover-merge --output {args.coverage_file} ./*.ncdb')
-            os.system(f'nvc --cover-report --per-file --output nvc_coverage {args.coverage_file} > nvc_coverage.txt 2>&1')
+            results.merge_coverage(file_name='coverage_data')
+            os.system('nvc --cover-report --per-file --output nvc_coverage coverage_data.ncdb > nvc_coverage.txt 2>&1')
+            print("WARNING: NVC coverage is not yet fully reliable. Reported numbers are not always correct, "
+                  "especially for large test sets.\n"
+                  "         Results are mostly right when running the tests of individual entities.")
 else:
     def post_run(results):
         pass
