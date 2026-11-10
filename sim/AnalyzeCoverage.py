@@ -1,4 +1,4 @@
-#Usage: python3 AnalyzeCoverage.py [--badges]
+#Usage: python3 AnalyzeCoverage.py [--badges] [--min_coverage=<percent>] [--simulator=<sim>] [--filter=<pattern>]
 ########################################################################################################################
 # Imports
 ########################################################################################################################
@@ -7,6 +7,8 @@ import json
 from Badge import create_coverage_version_badge, create_coverage_badge, create_branch_badge
 import sys
 import argparse
+import atexit
+import fnmatch
 
 ########################################################################################################################
 # Parse Arguments
@@ -23,20 +25,23 @@ parser.add_argument(
     default=0.0,
     help="Minimum coverage percentage required (default: 0.0)."
 )
+parser.add_argument(
+    "--simulator",
+    choices=["modelsim", "nvc"],
+    default="modelsim",
+    help="Simulator to use for coverage analysis (default: modelsim)."
+)
+parser.add_argument(
+    "--filter",
+    default="*",
+    help="Only analyze entities whose name matches this wildcard pattern, e.g. 'olo_base_*' (default: all)."
+)
 args = parser.parse_args()
 
 ########################################################################################################################
 # Types
 ########################################################################################################################
-class Entity:
-    @classmethod
-    def fill_manually(cls, name : str, statements : float, branches : float):
-        entity = cls()
-        entity.name = name
-        entity.statements = statements
-        entity.branches = branches
-        return entity
-
+class EntityModelsim:
     def __init__(self):
         self.name = None
         self.statements = None
@@ -54,52 +59,97 @@ class Entity:
         parts = line.split()
         self.branches = float(parts[-1].replace("%", ""))
 
+class EntityNvc:
+    def __init__(self):
+        self.name = None
+        self.statements = None
+        self.branches = 100.0 #Default 100%, if there are no branches the default is never modified
+
+    def parse_name_line(self, line : str):
+        filename = line.split(":")[-1]
+        self.name = filename.split(".")[0].strip()
+
+    def parse_statement_line(self, line : str):
+        parts = line.split(":")
+        self.statements = parts[-1].split("%")[0].strip()
+        if self.statements == "N.A.":
+            self.statements = 100.0
+            print("Warning: Statement coverage is N.A., setting to 100% for entity " + self.name)
+        else:
+            self.statements = float(self.statements)
+
+    def parse_branch_line(self, line : str):
+        parts = line.split(":")
+        self.branches = parts[-1].split("%")[0].strip()
+        # If there are no branches, the coverage is 100%
+        if self.branches == "N.A.":
+            self.branches = 100.0
+        else:
+            self.branches = float(self.branches)
+
 
 ########################################################################################################################
 # Script
 ########################################################################################################################
 #*** Parse Coverage File from Modelsim ***
-os.system("vcover report -byfile -nocomment coverage_data > coverage_report.txt")
-fd = open("coverage_report.txt")
+if args.simulator == "modelsim":
+    os.system("vcover report -byfile -nocomment coverage_data > coverage_report.txt")
+    filename = "coverage_report.txt"
+elif args.simulator == "nvc":
+    filename = "nvc_coverage.txt"
+else:
+    raise ValueError(f"Unsupported simulator: {args.simulator}")
+fd = open(filename)
+
 entities = []
 for line in fd.readlines():
-    if "File:" in line:
-        entity = Entity()
-        entity.parse_name_line(line)
-    if "Branches" in line:
-        entity.parse_branch_line(line)
-    if "Statements" in line:
-        entity.parse_statement_line(line)
-        entities.append(entity)
 
-#*** Enforce report for entities without statements ***
-# These entities do not aturally not show up in reports. We can add them if they are missing (and like this
-# we for sure do not override real coverage results)
-enforc_entities = ["olo_fix_cplx_addsub", "olo_fix_sample_hold"]
-for enforce_entity in enforc_entities:
-    if not enforc_entities in [entity.name for entity in entities]:
-        print(f"Adding missing entity {enforce_entity} with 100% coverage")
-        entities.append(Entity.fill_manually(enforce_entity, 100.0, 100.0))
+    # Modelsim Parsing
+    if args.simulator == "modelsim":
+        if "File:" in line:
+            entity = EntityModelsim()
+            entity.parse_name_line(line)
+        if "Branches" in line:
+            entity.parse_branch_line(line)
+        if "Statements" in line:
+            entity.parse_statement_line(line)
+            entities.append(entity)
 
+    # NVC Parsing
+    elif args.simulator == "nvc":
+        if "code coverage results for:" in line:
+            entity = EntityNvc()
+            entity.parse_name_line(line)
+        if "branch:" in line:
+            entity.parse_branch_line(line)
+        if "statement:" in line:
+            entity.parse_statement_line(line)
+            entities.append(entity)
+
+#*** Filter entities ***
+entities = [entity for entity in entities if fnmatch.fnmatchcase(entity.name, args.filter)]
+
+#*** NVC Note (printed at the very end, also if the minimum coverage check fails) ***
+if args.simulator == "nvc":
+    atexit.register(print, "WARNING: NVC coverage is not yet fully reliable. Reported numbers are not always correct, "
+                           "especially for large test sets.\n"
+                           "         Results are mostly right when running the tests of individual entities.")
 
 #*** Generate Output ***
 print("Entity:                        Statements Branches")
-for entity in entities:
-    # SKip TBs
+for entity in sorted(entities, key=lambda e: e.name):
+    #Do not show TBs
     if entity.name.endswith("_tb"):
         continue
-    # Skip non OLO entities
-    if not entity.name.startswith("olo_"):
-        continue
     # Print coverage
-    print(f"{entity.name:25}: {entity.statements:9}% {entity.branches:9}%")
+    print(f"{entity.name:40}: {entity.statements:9}% {entity.branches:9}%")
     # Crate badge
     if args.badges:
         create_coverage_badge(entity.name, entity.statements)
         create_branch_badge(entity.name, entity.branches)
 if args.badges:
     create_coverage_version_badge()
- 
+
 # Check if minimum coverage is met (after creating badges). We do
 # .. not want to hide bad coverage!
 for entity in entities:
