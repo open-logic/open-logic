@@ -36,7 +36,7 @@ would be unclear when _Out_Last_ shall be assigned.
 ![Wave](./wconv/olo_base_wconv_xn2n.png)
 
 This entity does only do a width conversion but not clock crossing. If a double-clock-half-width conversion is required,
-[olo_base_cc_n2xn](./olo_base_cc_n2xn)  component can be used in front of the width conversion.
+[olo_base_cc_n2xn](./olo_base_cc_n2xn.md)  component can be used in front of the width conversion.
 
 ## Generics
 

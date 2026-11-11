@@ -28,7 +28,7 @@ _Open Logic_ content - aims to be fully usable from Verilog and VHDL, which lead
 ### Components vs. Functions
 
 The core functionality provided by [en_cl_fix](https://github.com/enclustra/en_cl_fix) are a set of functions provided
-by [en_cl_fix pkg](./en_cl_fix_pkg.md), which allow to implement fixed-point mathematics in a very concise and
+by [en_cl_fix pkg][en_cl_fix_pkg], which allow to implement fixed-point mathematics in a very concise and
 well-readable way. Functionally they are exactly what is needed but unfortunately functions from VHDL packages cannot be
 called from Verilog.
 
@@ -39,12 +39,12 @@ easily.
 Beyond simply wrapping the functions, the entities allow to add [pipeline registers](#pipeline-registers) where needed.
 
 Verilog users are limited to using the entities provided by Open Logic. VHDL users are free to either use those entities
-or to write their own processes using the [en_cl_fix pkg](./en_cl_fix_pkg.md) directly. Both options are fully supported
+or to write their own processes using the [en_cl_fix pkg][en_cl_fix_pkg] directly. Both options are fully supported
 and allow direct interfacing with fixed-point related Open Logic components.
 
 ### String Generics
 
-The [en_cl_fix pkg](./en_cl_fix_pkg.md) defines a number of custom types:
+The [en_cl_fix pkg][en_cl_fix_pkg] defines a number of custom types:
 
 - FixFormat_t
   - Fixed point number format defined as record
@@ -90,7 +90,7 @@ constant round : string := "Trunc_s";
 constant saturate : string := "Sat_s";
 ```
 
-Note that in VHDL it is easily possible to convert the custom types defined in [en_cl_fix pkg](./en_cl_fix_pkg.md) to
+Note that in VHDL it is easily possible to convert the custom types defined in [en_cl_fix pkg][en_cl_fix_pkg] to
 their string representation using the _to_string()_ function as shown below. This is especially useful when working in
 VHDL and using _en_cl_fix_ functions and types in your custom code for converting the types to string for instantiating
 _Open Logic_ entities.
@@ -231,3 +231,5 @@ Note that complex number handling only is implemented for operations where the s
 quadrature-phase does not lead to the same result as handling complex numbers. Operations that can be applied
 to in-phase and quadrature-phase separately (e.g. FIR filters, CIC filters) do not have a complex number handling
 option.
+
+[en_cl_fix_pkg]: ../../3rdParty/en_cl_fix/README.md

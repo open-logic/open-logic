@@ -10,7 +10,7 @@
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/branches/olo_fix_pkg.json?cacheSeconds=0)
 ![Endpoint Badge](https://img.shields.io/endpoint?url=https://storage.googleapis.com/open-logic-badges/issues/olo_fix_pkg.json?cacheSeconds=0)
 
-VHDL Source: [olo_base_pkg_array](../../src/fix/vhdl/olo_fix_pkg.vhd)
+VHDL Source: [olo_fix_pkg](../../src/fix/vhdl/olo_fix_pkg.vhd)
 
 ## Description
 
