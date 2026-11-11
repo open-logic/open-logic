@@ -8,7 +8,7 @@
 
 This is a pure Python utility and therefore does not come with VHDL simulation status.
 
-Python Source: [olo_fix_cosim](../../src/fix/python/olo_fix_cosim.py)
+Python Source: [olo_fix_cosim](../../src/fix/python/olo_fix/olo_fix_cosim.py)
 
 ## Usage
 

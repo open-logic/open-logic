@@ -83,7 +83,7 @@ modified without regenerating the table.
 
 | Name     | In/Out | Length                                    | Default | Description                                     |
 | :------- | :----- | :---------------------------------------- | ------- | :---------------------------------------------- |
-| Tbl_Addr | out    | _log2(TableSize_g)_                       | N/A     | Table read address                              |
+| Tbl_Addr | out    | _ceil(log2(TableSize_g))_                 | N/A     | Table read address                              |
 | Tbl_Data | in     | _width(OffsFmt_g)+width(GradFmt_g)_       | -       | Table read data.<br />The gradient is stored in the MSBs (format _GradFmt_g_), the offset in the LSBs (format _OffsFmt_g_). |
 
 The table must be a synchronous memory with a **read latency of exactly _TableLatency_g_ clock cycles** (address

@@ -41,11 +41,9 @@ entity olo_base_arb_wrr is
         Clk        : in    std_logic;
         Rst        : in    std_logic;
 
-        -- Static Configuration
-        Weights    : in    std_logic_vector(WeightWidth_g*GrantWidth_g-1 downto 0);
-
         -- Request Interface
         In_Valid   : in    std_logic;
+        Weights    : in    std_logic_vector(WeightWidth_g*GrantWidth_g-1 downto 0);
         In_Req     : in    std_logic_vector(GrantWidth_g-1 downto 0);
 
         -- Grant Interface
