@@ -8,7 +8,7 @@
 
 This is a pure Python utility and therefore does not come with VHDL simulation status.
 
-Python Source: [olo_fix_pkg_writer](../../src/fix/python/olo_fix_pkg_writer.py)
+Python Source: [olo_fix_pkg_writer](../../src/fix/python/olo_fix/olo_fix_pkg_writer.py)
 
 ## Usage
 

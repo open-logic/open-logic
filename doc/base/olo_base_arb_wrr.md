@@ -80,18 +80,13 @@ Changes in _In_Req_ are applied immediately.
 | Clk  | in     | 1      | -       | Clock                                           |
 | Rst  | in     | 1      | -       | Reset input (high-active, synchronous to _Clk_) |
 
-### Static Configuration
-
-| Name       | In/Out | Length                         | Default | Description                                                  |
-| :--------- | :----- | :----------------------------- | ------- | :----------------------------------------------------------- |
-| Weights    | in     | _GrantWidth\_g*WeightWidth\_g_ | -       | Weights for each requestor, static control signal |
-
 ### Request Interface
 
 | Name       | In/Out | Length                         | Default | Description                                                  |
 | :--------- | :----- | :----------------------------- | ------- | :----------------------------------------------------------- |
-| In_Valid   | in     | 1                              | -       | AXI4-Stream handshaking signal for _In\_Weights_ and _In\_Req_ |
+| In_Valid   | in     | 1                              | -       | AXI4-Stream handshaking signal for _Weights_ and _In\_Req_ |
 | In_Req     | in     | _GrantWidth\_g_                | -       | Request vector. The highest (left-most) bit has highest priority |
+| Weights    | in     | _GrantWidth\_g*WeightWidth\_g_ | -       | Weights for each requestor, static control signal |
 
 ### Grant Interface
 

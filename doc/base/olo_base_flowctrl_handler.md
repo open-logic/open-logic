@@ -26,7 +26,7 @@ output samples from processing can be absorbed without data-loss when _Out_Ready
 chosen large enough to provide full throughput (i.e. not add any needless stall-cycles).
 
 For processing entities that do not even provide the handling of the _Valid_ flag, the _Valid_ flag handling can
-easily be implemented by adding an [olo_base_delay](*./olo_base_delay.md) component with the same delay as the
+easily be implemented by adding an [olo_base_delay](./olo_base_delay.md) component with the same delay as the
 processingitself:
 
 ![Usage 1](./misc/olo_base_flowctrl_handler_usage2.svg)

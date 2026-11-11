@@ -179,7 +179,7 @@ All channel data is stored in a single simple dual-port RAM ([olo_base_ram_sdp](
 higher address bits select the channel region; the lower bits address the tap (delay line) within that channel. The
 write port stores new input samples; the read port reads historical samples during computation.
 
-Coefficients are stored in a dedicated [olo_fix_coef_storage](../olo_fix_coef_storage.md) instance (ROM or RAM
+Coefficients are stored in a dedicated [olo_fix_coef_storage](./olo_fix_coef_storage.md) instance (ROM or RAM
 depending on _CoefStorageType_g_).
 
 Below figure depics the conceptual architecture.
