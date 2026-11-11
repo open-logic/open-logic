@@ -22,6 +22,7 @@ All sub-sections (###, ####) that appear between "## Interfaces" (or "## Ports")
 - others => '0' in VHDL and 0 in Markdown are regarded as equal
 - others => '0' in VHDL and all '0'  in Markdown are regarded as equal
 - toUslv(SomeVal, xxx) in VHDL and SomeVal in Markdown are regarded as equal
+- bidir and inout are regarded as equal
 
 ## Report Format
 
