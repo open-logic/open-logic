@@ -5,6 +5,7 @@
 from vunit import VUnit, VUnitCLI
 from glob import glob
 import os
+import logging
 
 # Import open-logic test configurations
 # .. they are in separate files to keep the size of run.py in range
@@ -107,6 +108,19 @@ if os.environ.get('VUNIT_SIMULATOR') == 'rivierapro':
 # Only allow coverage for modelsim or nvc
 if args.coverage and simulator not in ['modelsim', 'nvc']:
     raise Exception("Coverage is only allowed with --modelsim or --nvc.")
+
+# Suppress VUnit "matches testbench name regex but has no runner_cfg" warnings for plain VHDL (non-VUnit)
+# testbenches that are executed through a VUnit wrapper testbench.
+WRAPPED_PLAIN_TBS = [
+    'olo_fix_lin_approx_tanh_plain_tb',  # wrapped by olo_fix_lin_approx_plain_tb
+]
+
+class _WrappedPlainTbFilter(logging.Filter):
+    def filter(self, record):
+        msg = record.getMessage()
+        return not ('has no generic runner_cfg' in msg and any(f' {tb} ' in msg for tb in WRAPPED_PLAIN_TBS))
+
+logging.getLogger('vunit.test.bench_list').addFilter(_WrappedPlainTbFilter())
 
 # Parse VUnit Arguments
 vu = VUnit.from_args(args=args)
