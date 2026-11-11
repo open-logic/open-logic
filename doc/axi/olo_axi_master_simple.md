@@ -57,7 +57,7 @@ producing access patterns with many single-beat transactions.**
 | AxiDataWidth_g            | positive | 32      | AXI data width (must be a power of 2 of bytes)<br />Range: 8 ... 1024 |
 | AxiMaxBeats_g             | positive | 256     | Maximum number of beats in one AXI transaction. <br />Values given by the AXI specification are 16 for AXI-3 and 256 for AXI-4. However, the user may choose any other number for scheduling reasons.<br />Range: 1 ... 256 |
 | AxiMaxOpenTransactions_g  | positive | 8       | Maximum number of AXI commands (AW/AR-channel) to send before the first command is completed (outstanding transactions).<br />Range: 1 ... 8 |
-| UserTransactionSizeBits_g | positive | 24      | Number of bits used to specify the number of beats to transfer on the user command interface. This is the only limiting factor for the transfer size requested.<br />This value must be chosen in a way that a single user transaction cannot exceed the AXI address range:  _UserTransactionSizeBits_g <= AxiAddrWidth_g-log2(AxiDataWidth_g/8)_ |
+| UserTransactionSizeBits_g | positive | 24      | Number of bits used to specify the number of beats to transfer on the user command interface. This is the only limiting factor for the transfer size requested.<br />This value must be chosen in a way that a single user transaction cannot exceed the AXI address range:  _UserTransactionSizeBits_g < AxiAddrWidth_g-log2(AxiDataWidth_g/8)_ |
 | DataFifoDepth_g           | positive | 1024    | Number of entries in the read/write data FIFOs (in words, not bytes).<br />Suggested value is at least _2 x AxiMaxBeats_g_. <br />Values smaller than _AxiMaxBeats_g_ can block the entity completely if non-low-latency transfers are requested (because the FIFO never can hold all data of one maximum size burst). The suggestion is _2 x AxiMaxBeats_g_ to allow continuous read data-transfer in non-low-latency transfers - with values the next read transaction could only be started after the last transaction is fully read from the FIFO (see [Read FIFO full with High Latency (Default)](#read-fifo-full-with-high-latency-default)), which would limit bandwidth. |
 | ImplRead_g                | boolean  | true    | Implement read functionality (can be disabled to save resources) |
 | ImplWrite_g               | boolean  | true    | Implement write functionality (can be disabled to save resources) |
@@ -137,9 +137,9 @@ transaction. If some application or tool require these signals, the user should 
 | Name     | In/Out | Length | Default | Description                                                  |
 | :------- | :----- | :----- | ------- | :----------------------------------------------------------- |
 | Wr_Done  | out    | 1      | -       | Pulsed high when a write command was completed successfully. |
-| Wr_Error | out    | 1      | -       | Pulsed high when a write command was completed but  failed (AXI response from slave indicated an error) |
+| Wr_Error | out    | 1      | -       | Pulsed high instead of _Wr_Done_ when a write command was completed but at least one of its AXI transactions failed (B response from slave indicated an error) |
 | Rd_Done  | out    | 1      | -       | Pulsed high when a read command was completed successfully.  |
-| Rd_Error | out    | 1      | -       | Pulsed high when a read command was completed but at least one transaction failed (AXI response from slave indicated an error) |
+| Rd_Error | out    | 1      | -       | Pulsed high instead of _Rd_Done_ when a read command was completed but at least one transaction failed (R response from slave indicated an error on any beat, not only on the last beat of a burst) |
 
 ## Architecture
 

@@ -7,6 +7,7 @@
 # Imports
 # ---------------------------------------------------------------------------------------------------
 from en_cl_fix_pkg import *
+import numpy as np
 
 # ---------------------------------------------------------------------------------------------------
 # Class
@@ -28,8 +29,10 @@ class olo_fix_sample_hold:
         :param reset_value: Value to apply to output before the first input sample arrives
         """
         self._fmt = fmt
-        self._reset_value = reset_value
-        self._hold_value = reset_value
+        # Values are stored quantized (and are not quantized again when output, which would be wrong for
+        # wide formats where the internal representation is an integer)
+        self._reset_value = cl_fix_from_real(reset_value, fmt)
+        self._hold_value = self._reset_value
 
 
     def reset(self):
@@ -53,7 +56,7 @@ class olo_fix_sample_hold:
         :return: Result (float if out_samples=1, otherwise numpy array of floats)
         """
         #  Apply new input
-        if input != None:
+        if input is not None:
             # Quantize input
             input = cl_fix_from_real(input, self._fmt)
 
@@ -64,11 +67,30 @@ class olo_fix_sample_hold:
 
         # Product output
         if out_samples == 1:
-            return cl_fix_from_real(self._hold_value, self._fmt)
+            return self._hold_value
         elif out_samples > 1:
-            return np.full(out_samples, cl_fix_from_real(self._hold_value, self._fmt))
+            return np.full(out_samples, self._hold_value, dtype=object if cl_fix_is_wide(self._fmt) else None)
         else:
             return None
+
+    def next_each(self, input, out_samples : int):
+        """
+        Vectorized processing: Apply each input sample and produce out_samples output samples for every input sample
+        (i.e. each input sample is held for out_samples output samples). The last input sample stays held after the
+        call.
+
+        Example: inst.next_each(input=[1.0, 2.0], out_samples=3) returns [1.0, 1.0, 1.0, 2.0, 2.0, 2.0]
+
+        :param input: Input samples (float or iterable of floats)
+        :param out_samples: Number of output samples to produce per input sample
+        :return: Result (numpy array of floats with len(input)*out_samples elements)
+        """
+        input = np.atleast_1d(input)
+        if input.size == 0:
+            return np.array([])
+        input = cl_fix_from_real(input, self._fmt)
+        self._hold_value = input[-1]
+        return np.repeat(input, out_samples)
 
     def process(self, input=None, out_samples=0):
         """

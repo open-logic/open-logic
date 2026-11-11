@@ -217,8 +217,8 @@ Conversion between the two can be achieved by the entities commonly used for TDM
 
 | Entity                                               | Description                                                  |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
-| [olo_base_wconv_n2xn](./base/olo_base_wconv_n2xn.md) | Convert from TDM to parallel (see [Conventions](../Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
-| [olo_base_wconv_xn2n](./base/olo_base_wconv_xn2n.md) | Convert from parallel to TDM (see [Conventions](../Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
+| [olo_base_wconv_n2xn](../base/olo_base_wconv_n2xn.md) | Convert from TDM to parallel (see [Conventions](../Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
+| [olo_base_wconv_xn2n](../base/olo_base_wconv_xn2n.md) | Convert from parallel to TDM (see [Conventions](../Conventions.md))<br />This is not a pure TDM entity but it can be used for TDM purposes. |
 
 The TDM handling follows the [TDM Conventions](../Conventions.md#tdm-time-division-multiplexing).
 

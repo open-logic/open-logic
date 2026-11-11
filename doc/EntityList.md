@@ -259,6 +259,8 @@ be used. For deciding which option to use, the following considerations shall be
 | [olo_fix_mix_r2c](./fix/olo_fix_mix_r2c.md)           | Real to complex mixer. Mixes a real signal with a complex local oscillator |
 | [olo_fix_mix_c2r](./fix/olo_fix_mix_c2r.md)           | Complex to real mixer. Mixes a complex signal with a complex local oscillator to produce a real output |
 
+Note: [olo_fix_dds](./fix/olo_fix_dds.md) can be used to generate the local oscillator signals for the mixers.
+
 ### CORDIC
 
 | Entity                                              | Description                                                  |
@@ -272,6 +274,14 @@ be used. For deciding which option to use, the following considerations shall be
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | [olo_fix_cic_dec_tdm](./fix/olo_fix_cic_dec_tdm.md)         | CIC decimator (TDM input, TDM output), single- or multi-channel, ratio fixed or runtime configurable               |
 | [olo_fix_cic_dec_par_tdm](./fix/olo_fix_cic_dec_par_tdm.md) | CIC decimator (parallel input, TDM output), single- or multi-channel, ratio fixed or runtime configurable          |
+| [olo_fix_cic_intp_tdm_par](./fix/olo_fix_cic_intp_tdm_par.md) | CIC interpolator (TDM input, parallel output), single- or multi-channel, ratio fixed or runtime configurable |
+
+For single-channel systems, use [olo_fix_cic_intp_tdm_par](./fix/olo_fix_cic_intp_tdm_par.md) with just one channel
+for interpolation or  use [olo_fix_cic_dec_par_tdm](./fix/olo_fix_cic_dec_par_tdm.md) with just one channel for
+decimation.
+
+For multi-channel systems with parallel inputs and outputs, use several instances of the single-channel
+suggestions above in parallel.
 
 ### FIR Filters
 
@@ -285,6 +295,7 @@ Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | [olo_fix_fir_dec_ser_chtdm](./fix/olo_fix_fir_dec_ser_chtdm.md) | Decimating FIR filter (TDM channels, serial tap computation), multi-channel only (not usable for single-channel) <br> Runtime-configurable or fixed ratio, tap count and coefficients - Can be used non-decimating (Ratio = 1)  |
 | [olo_fix_fir_dec_ser_chpar](./fix/olo_fix_fir_dec_ser_chpar.md) | Decimating FIR filter (parallel channels, serial tap computation), single- or multi-channel (one multiplier per channel) <br> Runtime-configurable or fixed ratio, tap count and coefficients - Can be used non-decimating (Ratio = 1) |
+| [olo_fix_fir_dec_par_chtdm](./fix/olo_fix_fir_dec_par_chtdm.md) | Decimating FIR filter (TDM channels, fully parallel tap computation with one multiplier per tap), single- or multi-channel, one input sample per clock cycle <br> Fixed ratio and tap count, fixed or runtime-configurable coefficients - Can be used non-decimating (Ratio = 1) <br> Optionally exploits coefficient symmetry (one multiplier per pair of taps) |
 | [olo_fix_fir_dec_semi_chtdm](./fix/olo_fix_fir_dec_semi_chtdm.md) | Decimating FIR filter (TDM channels, semi-parallel tap computation with a configurable number of chained multipliers), single- or multi-channel <br> Fixed ratio and tap count, fixed or runtime-configurable coefficients - Can be used non-decimating (Ratio = 1) |
 
 ### Function Approximations
@@ -296,6 +307,7 @@ Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_
 | [olo_fix_sin](./fix/olo_fix_sin.md)                   | Sine and (optionally) cosine of a phase given in rotations. Based on piecewise linear approximation. |
 | [olo_fix_inv](./fix/olo_fix_inv.md)                   | Inversion (1/x) of a fixed point number. Based on shifting and piecewise linear approximation. |
 | [olo_fix_sqrt](./fix/olo_fix_sqrt.md)                 | Square root of a fixed point number. Based on shifting and piecewise linear approximation. |
+| [olo_fix_log2](./fix/olo_fix_log2.md)                 | Binary logarithm (log2(x)) of a fixed point number. Based on leading zero detection and piecewise linear approximation.<br />Other logarithms (e.g. log10 or dB) can be derived by scaling the result, see [Other Logarithms](./fix/olo_fix_log2.md#other-logarithms). |
 
 ### Miscellaneous
 
@@ -303,8 +315,9 @@ Naming convention: _olo_fix_fir\_<dec/int\>\_\<ser/par/semi\>\_ch\<tdm/par\>_
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | [olo_fix_coef_storage](./fix/olo_fix_coef_storage.md) | Fixed-point coefficient storage - ROM or RAM with Coef read port and optional Cfg write/readback port. |
 | [olo_fix_sample_hold](./fix/olo_fix_sample_hold.md)   | Sample and hold a fixed point number - output holds the last sampled value until a new sample is taken.  |
-| [olo_fix_mov_avg](./fix/olo_fix_mov_avg.md)           | Moving average filter                                                                                    |
+| [olo_fix_mov_avg](./fix/olo_fix_mov_avg.md)           | Moving average filter, single- or multi-channel (TDM)                                                    |
 | [olo_fix_lin_approx_calc](./fix/olo_fix_lin_approx_calc.md) | Linear approximation of an arbitrary function (table based). Tables and wrapper entities are generated by [olo_fix_lin_approx](./fix/olo_fix_lin_approx.md). |
+| [olo_fix_dds](./fix/olo_fix_dds.md)                   | Direct digital synthesizer (DDS) with complex output (sine and cosine), single- or multi-channel (TDM) |
 
 ## ft
 

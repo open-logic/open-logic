@@ -53,3 +53,13 @@ class olo_fix_utils:
         # negative numbers to their two's complement bit pattern.
         return np.array([max((int(code) % 2**width).bit_length() - 1, 0) for code in codes],
                         dtype=int)
+
+    @staticmethod
+    def log2ceil(arg : int) -> int:
+        """
+        Reflects the behavior of the VHDL function olo_base_pkg_math.log2ceil()
+
+        :param arg: Natural number
+        :return: log2(arg) rounded up, zero for an argument of zero
+        """
+        return int(np.ceil(np.log2(arg))) if arg > 0 else 0

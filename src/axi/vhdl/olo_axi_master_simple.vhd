@@ -306,7 +306,7 @@ begin
                     if WrMax4kBeats_v > AxiMaxBeats_g then
                         v.WrMaxBeats := to_unsigned(AxiMaxBeats_g, BeatsBits_c);
                     else
-                        v.WrMaxBeats := WrMax4kBeats_v(BeatsBits_c - 1 downto 0);
+                        v.WrMaxBeats := resize(WrMax4kBeats_v, BeatsBits_c);
                     end if;
                     v.WriteTfGenState := GenTf_s;
 
@@ -315,7 +315,7 @@ begin
                         v.WrTfBeats  := r.WrMaxBeats;
                         v.WrTfIsLast := '0';
                     else
-                        v.WrTfBeats  := r.WrBeats(BeatsBits_c - 1 downto 0);
+                        v.WrTfBeats  := resize(r.WrBeats, BeatsBits_c);
                         v.WrTfIsLast := '1';
                     end if;
                     v.WrTfVld         := '1';
@@ -324,8 +324,9 @@ begin
                 when WriteTf_s =>
                     if (r.WrTfVld = '1') and (r.AwFsmRdy = '1') then
                         v.WrTfVld := '0';
-                        v.WrBeats := r.WrBeats - r.WrTfBeats;
-                        v.WrAddr  := r.WrAddr + resize(2**UnusedAddrBits_c * r.WrTfBeats, v.WrAddr'length);
+                        v.WrBeats := r.WrBeats - resize(r.WrTfBeats, r.WrBeats'length);
+                        -- Shift at address width: natural * unsigned would truncate the bytes per beat to the width of WrTfBeats
+                        v.WrAddr := r.WrAddr + shift_left(resize(r.WrTfBeats, v.WrAddr'length), UnusedAddrBits_c);
                         if r.WrTfIsLast = '1' then
                             v.WriteTfGenState := Idle_s;
                         else
@@ -345,8 +346,9 @@ begin
             -- AW generation FSM
             case r.AwFsm is
                 when Idle_s =>
-                    if ((r.WrLowLat = '1') or (r.WrBeatsNoCmd >= signed('0' & r.WrTfBeats))) and
-                       (r.WrOpenTrans < AxiMaxOpenTransactions_g) and (r.WrTfVld = '1') then
+                    -- Check WrTfVld first: WrTfBeats is not reset and undefined until the first transfer
+                    if (r.WrTfVld = '1') and (r.WrOpenTrans < AxiMaxOpenTransactions_g) and
+                       ((r.WrLowLat = '1') or (r.WrBeatsNoCmd >= signed('0' & r.WrTfBeats))) then
                         v.AwFsmRdy := '1';
                     end if;
                     if (r.AwFsmRdy = '1') and (r.WrTfVld = '1') then
@@ -456,10 +458,10 @@ begin
                     if (M_Axi_BResp /= AxiResp_Okay_c) then
                         v.Wr_Error := '1';
                     else
-                        v.Wr_Error    := r.WrRespError;
-                        v.Wr_Done     := not r.WrRespError;
-                        v.WrRespError := '0';
+                        v.Wr_Error := r.WrRespError;
+                        v.Wr_Done  := not r.WrRespError;
                     end if;
+                    v.WrRespError := '0';
                 elsif M_Axi_BResp /= AxiResp_Okay_c then
                     v.WrRespError := '1';
                 end if;
@@ -490,7 +492,7 @@ begin
                     if RdMax4kBeats_v > AxiMaxBeats_g then
                         v.RdMaxBeats := to_unsigned(AxiMaxBeats_g, BeatsBits_c);
                     else
-                        v.RdMaxBeats := RdMax4kBeats_v(BeatsBits_c - 1 downto 0);
+                        v.RdMaxBeats := resize(RdMax4kBeats_v, BeatsBits_c);
                     end if;
                     v.ReadTfGenState := GenTf_s;
 
@@ -499,7 +501,7 @@ begin
                         v.RdTfBeats  := r.RdMaxBeats;
                         v.RdTfIsLast := '0';
                     else
-                        v.RdTfBeats  := r.RdBeats(BeatsBits_c - 1 downto 0);
+                        v.RdTfBeats  := resize(r.RdBeats, BeatsBits_c);
                         v.RdTfIsLast := '1';
                     end if;
                     v.RdTfVld        := '1';
@@ -508,8 +510,9 @@ begin
                 when WriteTf_s =>
                     if (r.RdTfVld = '1') and (r.ArFsmRdy = '1') then
                         v.RdTfVld := '0';
-                        v.RdBeats := r.RdBeats - r.RdTfBeats;
-                        v.RdAddr  := r.RdAddr + resize(2**UnusedAddrBits_c * r.RdTfBeats, v.RdAddr'length);
+                        v.RdBeats := r.RdBeats - resize(r.RdTfBeats, r.RdBeats'length);
+                        -- Shift at address width: natural * unsigned would truncate the bytes per beat to the width of RdTfBeats
+                        v.RdAddr := r.RdAddr + shift_left(resize(r.RdTfBeats, v.RdAddr'length), UnusedAddrBits_c);
                         if r.RdTfIsLast = '1' then
                             v.ReadTfGenState := Idle_s;
                         else
@@ -529,8 +532,9 @@ begin
             -- AR Generation FSM
             case r.ArFsm is
                 when Idle_s =>
-                    if ((r.RdLowLat = '1') or (r.RdFifoSpaceFree >= signed('0' & r.RdTfBeats))) and
-                       (r.RdOpenTrans < AxiMaxOpenTransactions_g) and (r.RdTfVld = '1') then
+                    -- Check RdTfVld first: RdTfBeats is not reset and undefined until the first transfer
+                    if (r.RdTfVld = '1') and (r.RdOpenTrans < AxiMaxOpenTransactions_g) and
+                       ((r.RdLowLat = '1') or (r.RdFifoSpaceFree >= signed('0' & r.RdTfBeats))) then
                         v.ArFsmRdy := '1';
                     end if;
                     if (r.ArFsmRdy = '1') and (r.RdTfVld = '1') then
@@ -586,13 +590,16 @@ begin
                     if (M_Axi_RResp /= AxiResp_Okay_c) then
                         v.Rd_Error := '1';
                     else
-                        v.Rd_Error    := r.RdRespError;
-                        v.Rd_Done     := not r.RdRespError;
-                        v.RdRespError := '0';
+                        v.Rd_Error := r.RdRespError;
+                        v.Rd_Done  := not r.RdRespError;
                     end if;
+                    v.RdRespError := '0';
                 elsif M_Axi_RResp /= AxiResp_Okay_c then
                     v.RdRespError := '1';
                 end if;
+            -- An error on any other beat of a burst also leads to Rd_Error
+            elsif (M_Axi_RValid = '1') and (M_Axi_RReady_I = '1') and (M_Axi_RResp /= AxiResp_Okay_c) then
+                v.RdRespError := '1';
             end if;
 
         end if;

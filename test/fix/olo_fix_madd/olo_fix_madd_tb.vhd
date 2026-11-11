@@ -37,6 +37,7 @@ entity olo_fix_madd_tb is
         PreAddOp_g    : string  := "Add";
         MultRegs_g    : natural := 1;
         InBIsCoef_g   : boolean := false;
+        ACascade_g    : boolean := false;
         runner_cfg    : string
     );
 end entity;
@@ -67,6 +68,7 @@ architecture sim of olo_fix_madd_tb is
     signal InB_Valid  : std_logic                                                  := '0';
     signal Out_Valid  : std_logic;
     signal Out_Data   : std_logic_vector(cl_fix_width(AddChainFmt_c) - 1 downto 0);
+    signal ACascOut   : std_logic_vector(cl_fix_width(AFmt_c) - 1 downto 0);
 
 begin
 
@@ -78,6 +80,7 @@ begin
     p_control : process is
         variable A_v, B_v, C_v, Macc_v, Result_v, AC_v       : real;
         variable A2_v, B2_v, C2_v, Macc2_v, Result2_v, AC2_v : real;
+        variable ACascExp_v                                  : real;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -94,10 +97,12 @@ begin
             if run("ResetState") then
                 check_equal(Out_Valid, '0', "Out_Valid should be '0' after reset");
                 check_equal(Out_Data, 0, "Out_Data should be '0' after reset");
+                check_equal(ACascOut, 0, "ACascOut should be '0' after reset");
             end if;
 
             -- *** Spaced Samples ***
             if run("SpacedSamples") then
+                ACascExp_v := 0.0;
 
                 for i in 0 to 1 loop
                     -- Calculate Testcase
@@ -137,11 +142,16 @@ begin
                     InA_Data   <= (others => 'X');
                     InB_Data   <= (others => 'X');
                     InC_Data   <= (others => 'X');
-                    -- adder
-                    if PreAdd_g then
+                    check_equal(ACascOut, cl_fix_from_real(ACascExp_v, AFmt_c), "ACascOut changed too early");
+                    -- adder or second A register
+                    if PreAdd_g or ACascade_g then
                         wait until falling_edge(Clk);
                         check_equal(Out_Valid, '0', "Unexpected Out_Valid");
                     end if;
+                    if ACascade_g then
+                        ACascExp_v := A_v;
+                    end if;
+                    check_equal(ACascOut, cl_fix_from_real(ACascExp_v, AFmt_c), "Wrong ACascOut");
                     -- Mult Regs
 
                     for i in 0 to MultRegs_g - 1 loop
@@ -155,6 +165,7 @@ begin
                     MaccIn <= (others => 'X');
                     check_equal(Out_Valid, '1', "Out_Valid should be '1' for valid output sample");
                     check_equal(Out_Data, cl_fix_from_real(Result_v, AddChainFmt_c), "Output data mismatch");
+                    check_equal(ACascOut, cl_fix_from_real(ACascExp_v, AFmt_c), "ACascOut not held");
                     -- Wait a bit
                     wait until falling_edge(Clk);
                     check_equal(Out_Valid, '0', "Unexpected Out_Valid");
@@ -222,12 +233,21 @@ begin
                 InB_Data <= cl_fix_from_real(B2_v, BFmt_c);
                 InC_Data <= cl_fix_from_real(C2_v, CFmt_c);
                 check_equal(Out_Valid, '0', "Unexpected Out_Valid");
-                -- adder
-                if PreAdd_g then
+                check_equal(ACascOut, 0, "ACascOut changed too early");
+                -- adder or second A register
+                if PreAdd_g or ACascade_g then
                     wait until falling_edge(Clk);
                     InAC_Valid <= '0';
                     InB_Valid  <= '0';
                     check_equal(Out_Valid, '0', "Unexpected Out_Valid");
+                end if;
+                ACascExp_v := 0.0;
+                if ACascade_g then
+                    ACascExp_v := A_v;
+                end if;
+                check_equal(ACascOut, cl_fix_from_real(ACascExp_v, AFmt_c), "Wrong ACascOut for first sample");
+                if ACascade_g then
+                    ACascExp_v := A2_v;
                 end if;
                 -- Mult Regs
 
@@ -236,6 +256,7 @@ begin
                     InAC_Valid <= '0';
                     InB_Valid  <= '0';
                     check_equal(Out_Valid, '0', "Unexpected Out_Valid");
+                    check_equal(ACascOut, cl_fix_from_real(ACascExp_v, AFmt_c), "Wrong ACascOut for second sample");
                 end loop;
 
                 MaccIn <= cl_fix_from_real(Macc_v, AddChainFmt_c);
@@ -306,8 +327,8 @@ begin
                     InAC_Valid <= '0';
                     InA_Data   <= (others => 'X');
                     InC_Data   <= (others => 'X');
-                    -- adder
-                    if PreAdd_g then
+                    -- adder or second A register
+                    if PreAdd_g or ACascade_g then
                         wait until falling_edge(Clk);
                         check_equal(Out_Valid, '0', "Unexpected Out_Valid");
                     end if;
@@ -347,6 +368,7 @@ begin
             Operation_g   => Operation_g,
             PreAddOp_g    => PreAddOp_g,
             InBIsCoef_g   => InBIsCoef_g,
+            ACascade_g    => ACascade_g,
             AFmt_g        => to_string(AFmt_c),
             BFmt_g        => to_string(BFmt_c),
             CFmt_g        => to_string(CFmt_c),
@@ -362,6 +384,7 @@ begin
             InAC_Valid  => InAC_Valid,
             InB_Valid   => InB_Valid,
             MaccIn      => MaccIn,
+            ACascOut    => ACascOut,
             Out_Valid   => Out_Valid,
             Out_Data    => Out_Data
         );

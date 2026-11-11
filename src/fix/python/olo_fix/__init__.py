@@ -21,6 +21,7 @@ from .olo_fix_cordic_rot import *
 from .olo_fix_cordic_vect import *
 from .olo_fix_bin_div import *
 from .olo_fix_cic_dec import *
+from .olo_fix_cic_intp import *
 from .olo_fix_pkg_writer import *
 from .olo_fix_cplx_addsub import *
 from .olo_fix_cplx_mult import *
@@ -32,7 +33,10 @@ from .olo_fix_fir_dec import *
 from .olo_fix_lin_approx import *
 from .olo_fix_private_lin_approx_qsin import *
 from .olo_fix_sin import *
+from .olo_fix_dds import *
 from .olo_fix_private_lin_approx_inv import *
 from .olo_fix_inv import *
 from .olo_fix_private_lin_approx_sqrt import *
 from .olo_fix_sqrt import *
+from .olo_fix_private_lin_approx_log2 import *
+from .olo_fix_log2 import *

@@ -36,6 +36,7 @@ entity olo_fix_madd is
         -- Functionality
         PreAdd_g      : boolean := false;
         InBIsCoef_g   : boolean := false;
+        ACascade_g    : boolean := false;
         PreAddOp_g    : string  := "Add";
         Operation_g   : string  := "Add";
         -- Formats / Round / Saturate
@@ -58,6 +59,8 @@ entity olo_fix_madd is
         InB_Data    : in    std_logic_vector(fixFmtWidthFromString(BFmt_g) - 1 downto 0);
         -- Adder Chain
         MaccIn      : in    std_logic_vector(fixFmtWidthFromString(AddChainFmt_g) - 1 downto 0) := (others => '0');
+        -- A Cascade
+        ACascOut    : out   std_logic_vector(fixFmtWidthFromString(AFmt_g) - 1 downto 0);
         -- Output
         Out_Valid   : out   std_logic;
         Out_Data    : out   std_logic_vector(fixFmtWidthFromString(AddChainFmt_g) - 1 downto 0)
@@ -97,6 +100,9 @@ begin
         severity error;
     assert compareNoCase(PreAddOp_g, "Add") or compareNoCase(PreAddOp_g, "Sub")
         report errorMessage(EntityName_c, "Invalid PreAddOp_g. Allowed values are 'Add' and 'Sub'.")
+        severity error;
+    assert not (PreAdd_g and ACascade_g)
+        report errorMessage(EntityName_c, "ACascade_g=true is not supported together with PreAdd_g=true.")
         severity error;
     -- synthesis translate_on
 
@@ -146,37 +152,91 @@ begin
             end if;
         end process;
 
+        ACascOut <= (others => '0');
+
     end generate;
 
     -- No pre-adder
     g_no_preadd : if not PreAdd_g generate
-    begin
 
-        p_in : process (Clk) is
+        -- A cascade: Two input registers, the second one drives multiplier and cascade output
+        g_acascade : if ACascade_g generate
+            signal A_0   : std_logic_vector(cl_fix_width(AFmt_c) - 1 downto 0);
+            signal B_0   : std_logic_vector(cl_fix_width(BFmt_c) - 1 downto 0);
+            signal Vld_0 : std_logic;
         begin
-            if rising_edge(Clk) then
-                -- Input Registers
-                if InAC_Valid = '1' then
-                    MulInAC <= InA_Data;
-                end if;
-                if InB_Valid = '1' then
-                    MulInB <= InB_Data;
-                end if;
 
-                -- Valid handling - do not produce output sample for static coefficient update
-                if InBIsCoef_g then
-                    MulInVld <= InAC_Valid;
-                else
-                    MulInVld <= InAC_Valid or InB_Valid;
-                end if;
+            p_in : process (Clk) is
+            begin
+                if rising_edge(Clk) then
+                    -- Stage 0 (input registers)
+                    if InAC_Valid = '1' then
+                        A_0 <= InA_Data;
+                    end if;
+                    if InB_Valid = '1' then
+                        B_0 <= InB_Data;
+                    end if;
 
-                -- Reset
-                if Rst = '1' then
-                    MulInVld <= '0';
-                end if;
+                    -- Valid handling - do not produce output sample for static coefficient update
+                    if InBIsCoef_g then
+                        Vld_0 <= InAC_Valid;
+                    else
+                        Vld_0 <= InAC_Valid or InB_Valid;
+                    end if;
 
-            end if;
-        end process;
+                    -- Stage 1
+                    MulInAC  <= A_0;
+                    MulInB   <= B_0;
+                    MulInVld <= Vld_0;
+
+                    -- Reset (the A registers are part of the delay line of a cascade, B is not reset)
+                    if Rst = '1' then
+                        A_0      <= (others => '0');
+                        MulInAC  <= (others => '0');
+                        MulInVld <= '0';
+                        Vld_0    <= '0';
+                    end if;
+
+                end if;
+            end process;
+
+            ACascOut <= MulInAC;
+
+        end generate;
+
+        -- No A cascade
+        g_no_acascade : if not ACascade_g generate
+        begin
+
+            p_in : process (Clk) is
+            begin
+                if rising_edge(Clk) then
+                    -- Input Registers
+                    if InAC_Valid = '1' then
+                        MulInAC <= InA_Data;
+                    end if;
+                    if InB_Valid = '1' then
+                        MulInB <= InB_Data;
+                    end if;
+
+                    -- Valid handling - do not produce output sample for static coefficient update
+                    if InBIsCoef_g then
+                        MulInVld <= InAC_Valid;
+                    else
+                        MulInVld <= InAC_Valid or InB_Valid;
+                    end if;
+
+                    -- Reset
+                    if Rst = '1' then
+                        MulInVld <= '0';
+                    end if;
+
+                end if;
+            end process;
+
+            ACascOut <= (others => '0');
+
+        end generate;
 
     end generate;
 
@@ -191,11 +251,13 @@ begin
                 MulReg(i) <= MulReg(i-1);
             end loop;
 
-            -- Add/Sub
+            -- Add/Sub (results that do not fit AddChainFmt_g wrap)
             if compareNoCase(Operation_g, "Add") then
-                Out_Data <= cl_fix_add(MaccIn, AddChainFmt_c, MulReg(MultRegs_g - 1), MultOutFmt_c, AddChainFmt_c);
+                Out_Data <= cl_fix_add(MaccIn, AddChainFmt_c, MulReg(MultRegs_g - 1), MultOutFmt_c, AddChainFmt_c,
+                                       Trunc_s, None_s);
             else
-                Out_Data <= cl_fix_sub(MaccIn, AddChainFmt_c, MulReg(MultRegs_g - 1), MultOutFmt_c, AddChainFmt_c);
+                Out_Data <= cl_fix_sub(MaccIn, AddChainFmt_c, MulReg(MultRegs_g - 1), MultOutFmt_c, AddChainFmt_c,
+                                       Trunc_s, None_s);
             end if;
 
             -- Valid Handling

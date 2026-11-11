@@ -91,7 +91,7 @@ The overall error stays below **one LSB** of the output over the full rotation, 
 | OutFmt_g      | string    | -                | Output format. Must be `(1, 0, 10..20)` or `(1, 1, 10..20)`. |
 | InFmt_g       | string    | -                | Phase input format (in rotations). Any format with at least three fractional bits. |
 | CosOutput_g   | boolean   | false            | If true, _Out_Cos_ is calculated. If false, _Out_Cos_ is driven with zeros and port _B_ of the approximation (second table read port plus second calculation) is omitted. |
-| MemStyle_g    | string    | "auto"           | Resource control for the table (_auto_, _block_ or _distributed_) |
+| MemStyle_g    | string    | "auto"           | Resource control for the table. Applied to the ROM attributes _rom_style_, _romstyle_ and _syn_romstyle_.<br>For values refer to _MemStyle_g_ in [olo_fix_coef_storage](./olo_fix_coef_storage.md#generics) |
 | Round_g       | string    | "NonSymPos_s"    | Rounding mode of the output stage                            |
 | Saturate_g    | string    | "Sat_s"          | Saturation mode of the output stage                          |
 

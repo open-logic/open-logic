@@ -37,6 +37,14 @@ def add_configs(olo_tb):
                 named_config(tb, {'ImplRead_g': ImplRead, 'ImplWrite_g': ImplWrite, 'AxiDataWidth_g': DataWidth})
     #Case reported by customer
     named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiAddrWidth_g': 12, 'AxiDataWidth_g': 8, 'AxiMaxOpenTransactions_g': 1})
+    #Transactions split at AxiMaxBeats_g with fewer beats than bytes per beat (smallest AxiMaxBeats_g, largest below)
+    for DataWidth, MaxBeats in [(32, 1), (64, 7)]:
+        named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiDataWidth_g': DataWidth, 'AxiMaxBeats_g': MaxBeats})
+    #More beats than a 4 KB boundary allows (largest AxiMaxBeats_g, up to the largest AxiDataWidth_g)
+    for DataWidth, MaxBeats in [(512, 256), (1024, 256)]:
+        named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiDataWidth_g': DataWidth, 'AxiMaxBeats_g': MaxBeats})
+    #Fewer command size bits than the beat counter
+    named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiMaxBeats_g': 256, 'UserTransactionSizeBits_g': 6})
 
     ### olo_axi_master_full ###
     axi_master_full_tb = 'olo_axi_master_full_tb'
@@ -60,6 +68,8 @@ def add_configs(olo_tb):
 
             #Skip illegal case where no functionality is implemented
             if (not ImplRead) and (not ImplWrite): continue
+    #Transactions split at AxiMaxBeats_g with fewer beats than bytes per beat
+    named_config(tb, {'ImplRead_g': True, 'ImplWrite_g': True, 'AxiDataWidth_g': 64, 'AxiMaxBeats_g': 7})
 
     ### olo_axi_pl_stage ###
     axi_pl_stage_tb = 'olo_axi_pl_stage_tb'

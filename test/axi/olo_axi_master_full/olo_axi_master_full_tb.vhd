@@ -34,6 +34,7 @@ entity olo_axi_master_full_tb is
         AxiAddrWidth_g              : natural range 12 to 64 := 32;
         AxiDataWidth_g              : natural range 8 to 64  := 32;
         UserDataWidth_g             : natural                := 16;
+        AxiMaxBeats_g               : natural range 1 to 256 := 32;
         ImplRead_g                  : boolean                := true;
         ImplWrite_g                 : boolean                := true;
         RamBehavior_g               : string                 := "RBW";
@@ -47,7 +48,6 @@ architecture sim of olo_axi_master_full_tb is
     -----------------------------------------------------------------------------------------------
     -- Fixed Generics
     -----------------------------------------------------------------------------------------------
-    constant AxiMaxBeats_c            : natural := 32;
     constant DataFifoDepth_c          : natural := 16;
     constant AxiMaxOpenTransactions_c : natural := 2;
 
@@ -294,6 +294,57 @@ architecture sim of olo_axi_master_full_tb is
         return Strb_v;
     end function;
 
+    -- Expect the AXI transactions of a write, split into bursts of at most AxiMaxBeats_g beats
+    procedure expectAxiWrite (
+        signal net : inout network_t;
+        address    : unsigned;
+        startValue : unsigned;
+        bytes      : natural;
+        delay      : time := 0 ns;
+        beatDelay  : time := 0 ns) is
+        constant AxiBeats_c : natural          := to_integer(axiWordAddr(address+bytes-1)-axiWordAddr(address))/AxiBytes_c+1;
+        constant Data_c     : unsigned         := dataAsVectorAligned(address, startValue, bytes => bytes);
+        constant Strb_c     : std_logic_vector := strbAsVectorAligned(address, bytes);
+        variable Beat_v     : natural          := 0;
+        variable Beats_v    : natural;
+    begin
+
+        -- loop through bursts
+        while Beat_v < AxiBeats_c loop
+            Beats_v := minimum(AxiBeats_c-Beat_v, AxiMaxBeats_g);
+            expect_aw (net, AxiSlave_c, axiWordAddr(address)+Beat_v*AxiBytes_c, len => Beats_v, burst => AxiBurst_Incr_c);
+            expect_w_arbitrary (net, AxiSlave_c, Beats_v,
+                                resize(shift_right(Data_c, Beat_v*AxiDataWidth_g), Beats_v*AxiDataWidth_g),
+                                std_logic_vector(resize(shift_right(unsigned(Strb_c), Beat_v*AxiBytes_c), Beats_v*AxiBytes_c)),
+                                delay => delay, beat_delay => beatDelay);
+            push_b(net, AxiSlave_c, resp => AxiResp_Okay_c);
+            Beat_v  := Beat_v + Beats_v;
+        end loop;
+
+    end procedure;
+
+    -- Push the AXI transactions of a read, split into bursts of at most AxiMaxBeats_g beats
+    procedure pushAxiRead (
+        signal net : inout network_t;
+        address    : unsigned;
+        startValue : unsigned;
+        bytes      : natural) is
+        constant AxiBeats_c : natural  := to_integer(axiWordAddr(address+bytes-1)-axiWordAddr(address))/AxiBytes_c+1;
+        constant Data_c     : unsigned := dataAsVectorAligned(address, startValue, bytes => bytes);
+        variable Beat_v     : natural  := 0;
+        variable Beats_v    : natural;
+    begin
+
+        -- loop through bursts
+        while Beat_v < AxiBeats_c loop
+            Beats_v := minimum(AxiBeats_c-Beat_v, AxiMaxBeats_g);
+            expect_ar (net, AxiSlave_c, axiWordAddr(address)+Beat_v*AxiBytes_c, len => Beats_v, burst => AxiBurst_Incr_c);
+            push_r_arbitrary (net, AxiSlave_c, Beats_v, resize(shift_right(Data_c, Beat_v*AxiDataWidth_g), Beats_v*AxiDataWidth_g));
+            Beat_v  := Beat_v + Beats_v;
+        end loop;
+
+    end procedure;
+
 begin
 
     -----------------------------------------------------------------------------------------------
@@ -304,11 +355,8 @@ begin
     p_control : process is
         variable Addr_v      : unsigned(AxiAddrWidth_g -1 downto 0);
         variable Data_v      : unsigned(UserDataWidth_g-1 downto 0);
-        variable AxiBeats_v  : natural;
         variable UserBeats_v : natural;
         variable DataBytes_v : natural;
-        variable Beat_v      : natural;
-        variable Beats_v     : natural;
     begin
         test_runner_setup(runner, runner_cfg);
 
@@ -387,14 +435,9 @@ begin
                         for dataBytes in 2*AxiBytes_c to 3*AxiBytes_c-1 loop
                             Addr_v      := resize(x"0800"+addrOffs, AxiAddrWidth_g);
                             Data_v      := resize(x"10"+dataBytes, UserDataWidth_g);
-                            AxiBeats_v  := to_integer(axiWordAddr(Addr_v+dataBytes-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                             UserBeats_v := (dataBytes+UserBytes_c-1)/UserBytes_c;
                             -- Slave
-                            expect_aw (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => AxiBurst_Incr_c);
-                            expect_w_arbitrary (net, AxiSlave_c, AxiBeats_v,
-                                                dataAsVectorAligned(Addr_v, Data_v, bytes => dataBytes),
-                                                strbAsVectorAligned(Addr_v, dataBytes));
-                            push_b(net, AxiSlave_c, resp => AxiResp_Okay_c);
+                            expectAxiWrite(net, Addr_v, Data_v, dataBytes);
                             -- Master
                             pushCommand(net, WrCmdMaster_c, Addr_v, dataBytes);
                             pushWrData(net, Data_v, beats => UserBeats_v);
@@ -415,14 +458,9 @@ begin
                         Addr_v      := resize(x"08FF"+i, AxiAddrWidth_g);
                         Data_v      := resize(x"10"+16*i, UserDataWidth_g);
                         DataBytes_v := 2*AxiBytes_c;
-                        AxiBeats_v  := to_integer(axiWordAddr(Addr_v+DataBytes_v-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                         UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
                         -- Slave
-                        expect_aw (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => AxiBurst_Incr_c);
-                        expect_w_arbitrary (net, AxiSlave_c, AxiBeats_v,
-                                            dataAsVectorAligned(Addr_v, Data_v, bytes => DataBytes_v),
-                                            strbAsVectorAligned(Addr_v, DataBytes_v));
-                        push_b(net, AxiSlave_c, resp => AxiResp_Okay_c);
+                        expectAxiWrite(net, Addr_v, Data_v, DataBytes_v);
                         -- Master
                         pushCommand(net, WrCmdMaster_c, Addr_v, DataBytes_v);
                         pushWrData(net, Data_v, beats => UserBeats_v);
@@ -444,14 +482,9 @@ begin
                         Addr_v      := resize(x"08FF"+i, AxiAddrWidth_g);
                         Data_v      := resize(x"10"+16*i, UserDataWidth_g);
                         DataBytes_v := 12*AxiBytes_c;
-                        AxiBeats_v  := to_integer(axiWordAddr(Addr_v+DataBytes_v-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                         UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
                         -- Slave
-                        expect_aw (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => AxiBurst_Incr_c);
-                        expect_w_arbitrary (net, AxiSlave_c, AxiBeats_v,
-                                            dataAsVectorAligned(Addr_v, Data_v, bytes => DataBytes_v),
-                                            strbAsVectorAligned(Addr_v, DataBytes_v), delay => 200 ns, beat_delay => 100 ns);
-                        push_b(net, AxiSlave_c, resp => AxiResp_Okay_c);
+                        expectAxiWrite(net, Addr_v, Data_v, DataBytes_v, delay => 200 ns, beatDelay => 100 ns);
                         -- Master
                         pushCommand(net, WrCmdMaster_c, Addr_v, DataBytes_v);
                         pushWrData(net, Data_v, beats => UserBeats_v);
@@ -471,27 +504,10 @@ begin
             if run("WriteMaxSize") then
                 if ImplWrite_g and UserTransactionSizeBits_g <= 10 then
                     DataBytes_v := 2**UserTransactionSizeBits_g-1;
-                    AxiBeats_v  := (DataBytes_v+AxiBytes_c-1)/AxiBytes_c;
                     UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
                     Addr_v      := resize(x"10000", AxiAddrWidth_g);
                     Data_v      := resize(x"10", UserDataWidth_g);
-
-                    -- Slave: bursts of at most AxiMaxBeats_c beats
-                    Beat_v := 0;
-
-                    while Beat_v < AxiBeats_v loop
-                        Beats_v := minimum(AxiBeats_v-Beat_v, AxiMaxBeats_c);
-                        expect_aw (net, AxiSlave_c, Addr_v+Beat_v*AxiBytes_c, len => Beats_v, burst => AxiBurst_Incr_c);
-                        expect_w_arbitrary (net, AxiSlave_c, Beats_v,
-                                            resize(shift_right(dataAsVectorAligned(Addr_v, Data_v, bytes => DataBytes_v),
-                                                               Beat_v*AxiDataWidth_g), Beats_v*AxiDataWidth_g),
-                                            std_logic_vector(resize(shift_right(unsigned(strbAsVectorAligned(Addr_v, DataBytes_v)),
-                                                                                Beat_v*AxiBytes_c), Beats_v*AxiBytes_c)));
-                        push_b(net, AxiSlave_c, resp => AxiResp_Okay_c);
-                        Beat_v  := Beat_v+Beats_v;
-                    end loop;
-
-                    -- Master
+                    expectAxiWrite(net, Addr_v, Data_v, DataBytes_v);
                     pushCommand(net, WrCmdMaster_c, Addr_v, DataBytes_v, CmdLowLat => '1');
                     pushWrData(net, Data_v, beats => UserBeats_v);
                     expectWrResponse(RespSuccess);
@@ -520,11 +536,9 @@ begin
                         for dataBytes in 2*AxiBytes_c to 3*AxiBytes_c-1 loop
                             Addr_v      := resize(x"1800"+addrOffs, AxiAddrWidth_g);
                             Data_v      := resize(x"20"+dataBytes, UserDataWidth_g);
-                            AxiBeats_v  := to_integer(axiWordAddr(Addr_v+dataBytes-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                             UserBeats_v := (dataBytes+UserBytes_c-1)/UserBytes_c;
                             -- Slave
-                            expect_ar (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => AxiBurst_Incr_c);
-                            push_r_arbitrary (net, AxiSlave_c, AxiBeats_v, dataAsVectorAligned(Addr_v, Data_v, bytes => dataBytes));
+                            pushAxiRead(net, Addr_v, Data_v, dataBytes);
                             -- Master
                             pushCommand(net, RdCmdMaster_c, Addr_v, dataBytes);
                             -- Blocking
@@ -545,11 +559,9 @@ begin
                         Addr_v      := resize(x"08FF"+i, AxiAddrWidth_g);
                         Data_v      := resize(x"10"+16*i, UserDataWidth_g);
                         DataBytes_v := 2*AxiBytes_c;
-                        AxiBeats_v  := to_integer(axiWordAddr(Addr_v+DataBytes_v-1)-axiWordAddr(Addr_v))/AxiBytes_c+1;
                         UserBeats_v := (DataBytes_v+UserBytes_c-1)/UserBytes_c;
                         -- Slave
-                        expect_ar (net, AxiSlave_c, axiWordAddr(Addr_v), len => AxiBeats_v, burst => AxiBurst_Incr_c);
-                        push_r_arbitrary (net, AxiSlave_c, AxiBeats_v, dataAsVectorAligned(Addr_v, Data_v, bytes => DataBytes_v));
+                        pushAxiRead(net, Addr_v, Data_v, DataBytes_v);
                         -- Master
                         pushCommand(net, RdCmdMaster_c, Addr_v, DataBytes_v);
                         expectRdData(net, Data_v, beats => UserBeats_v);
@@ -589,7 +601,7 @@ begin
         generic map (
             AxiAddrWidth_g              => AxiAddrWidth_g,
             AxiDataWidth_g              => AxiDataWidth_g,
-            AxiMaxBeats_g               => AxiMaxBeats_c,
+            AxiMaxBeats_g               => AxiMaxBeats_g,
             AxiMaxOpenTransactions_g    => AxiMaxOpenTransactions_c,
             -- User Configuration
             UserTransactionSizeBits_g   => UserTransactionSizeBits_g,

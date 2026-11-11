@@ -69,6 +69,7 @@ src/axi/vhdl/olo_axi_lite_slave.vhd
 3rdParty/en_cl_fix/hdl/en_cl_fix_pkg.vhd
 src/fix/vhdl/olo_fix_private_lin_approx_sqrt_pkg.vhd
 src/fix/vhdl/olo_fix_private_lin_approx_qsin_pkg.vhd
+src/fix/vhdl/olo_fix_private_lin_approx_log2_pkg.vhd
 src/fix/vhdl/olo_fix_private_lin_approx_inv_pkg.vhd
 src/fix/vhdl/olo_fix_pkg.vhd
 src/fix/vhdl/olo_fix_to_real.vhd
@@ -92,10 +93,14 @@ src/fix/vhdl/olo_fix_private_lin_approx_sqrt.vhd
 src/fix/vhdl/olo_fix_sqrt.vhd
 src/fix/vhdl/olo_fix_private_lin_approx_qsin.vhd
 src/fix/vhdl/olo_fix_sin.vhd
+src/fix/vhdl/olo_fix_private_lin_approx_log2.vhd
+src/fix/vhdl/olo_fix_log2.vhd
 src/fix/vhdl/olo_fix_private_lin_approx_inv.vhd
 src/fix/vhdl/olo_fix_limit.vhd
 src/fix/vhdl/olo_fix_inv.vhd
 src/fix/vhdl/olo_fix_from_real.vhd
+src/fix/vhdl/olo_fix_fir_dec_par_chtdm.vhd
+src/fix/vhdl/olo_fix_dds.vhd
 src/fix/vhdl/olo_fix_cplx_mult.vhd
 src/fix/vhdl/olo_fix_cordic_vect.vhd
 src/fix/vhdl/olo_fix_cordic_rot.vhd
@@ -104,6 +109,7 @@ src/fix/vhdl/olo_fix_coef_storage.vhd
 src/fix/vhdl/olo_fix_fir_dec_ser_chtdm.vhd
 src/fix/vhdl/olo_fix_fir_dec_ser_chpar.vhd
 src/fix/vhdl/olo_fix_fir_dec_semi_chtdm.vhd
+src/fix/vhdl/olo_fix_cic_intp_tdm_par.vhd
 src/fix/vhdl/olo_fix_cic_dec_tdm.vhd
 src/fix/vhdl/olo_fix_cic_dec_par_tdm.vhd
 src/fix/vhdl/olo_fix_bin_div.vhd
