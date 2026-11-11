@@ -1,6 +1,6 @@
 CAPI=2:
 
-name : "open-logic:open-logic:fix:4.7.0"
+name : "open-logic:open-logic:fix:4.8.0"
 description : "stable release (downloaded from GitHub); Fixed point mathematics see https://github.com/open-logic/open-logic/blob/main/doc/EntityList.md#fix"
 
 filesets:
@@ -12,12 +12,15 @@ filesets:
       - "src/fix/vhdl/olo_fix_bin_div.vhd"
       - "src/fix/vhdl/olo_fix_cic_dec_par_tdm.vhd"
       - "src/fix/vhdl/olo_fix_cic_dec_tdm.vhd"
+      - "src/fix/vhdl/olo_fix_cic_intp_tdm_par.vhd"
       - "src/fix/vhdl/olo_fix_coef_storage.vhd"
       - "src/fix/vhdl/olo_fix_compare.vhd"
       - "src/fix/vhdl/olo_fix_cordic_rot.vhd"
       - "src/fix/vhdl/olo_fix_cordic_vect.vhd"
       - "src/fix/vhdl/olo_fix_cplx_addsub.vhd"
       - "src/fix/vhdl/olo_fix_cplx_mult.vhd"
+      - "src/fix/vhdl/olo_fix_dds.vhd"
+      - "src/fix/vhdl/olo_fix_fir_dec_par_chtdm.vhd"
       - "src/fix/vhdl/olo_fix_fir_dec_semi_chtdm.vhd"
       - "src/fix/vhdl/olo_fix_fir_dec_ser_chpar.vhd"
       - "src/fix/vhdl/olo_fix_fir_dec_ser_chtdm.vhd"
@@ -25,6 +28,7 @@ filesets:
       - "src/fix/vhdl/olo_fix_inv.vhd"
       - "src/fix/vhdl/olo_fix_limit.vhd"
       - "src/fix/vhdl/olo_fix_lin_approx_calc.vhd"
+      - "src/fix/vhdl/olo_fix_log2.vhd"
       - "src/fix/vhdl/olo_fix_madd.vhd"
       - "src/fix/vhdl/olo_fix_mix_c2r.vhd"
       - "src/fix/vhdl/olo_fix_mix_r2c.vhd"
@@ -34,6 +38,8 @@ filesets:
       - "src/fix/vhdl/olo_fix_pkg.vhd"
       - "src/fix/vhdl/olo_fix_private_lin_approx_inv.vhd"
       - "src/fix/vhdl/olo_fix_private_lin_approx_inv_pkg.vhd"
+      - "src/fix/vhdl/olo_fix_private_lin_approx_log2.vhd"
+      - "src/fix/vhdl/olo_fix_private_lin_approx_log2_pkg.vhd"
       - "src/fix/vhdl/olo_fix_private_lin_approx_qsin.vhd"
       - "src/fix/vhdl/olo_fix_private_lin_approx_qsin_pkg.vhd"
       - "src/fix/vhdl/olo_fix_private_lin_approx_sqrt.vhd"
@@ -53,7 +59,7 @@ filesets:
     file_type : "vhdlSource-2008"
     logical_name : "olo"
     depend :
-      - "^open-logic:open-logic:base:4.7.0"
+      - "^open-logic:open-logic:base:4.8.0"
       - "^open-logic:open-logic:en_cl_fix:2.4.0"
 
 
@@ -65,5 +71,5 @@ provider:
   name    : github
   user    : open-logic
   repo    : open-logic
-  version : 4.7.0
+  version : 4.8.0
   

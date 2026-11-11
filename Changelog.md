@@ -2,6 +2,99 @@
 
 # Changelog
 
+## 4.8.0
+
+11-Nov-2026
+
+### Added Features
+
+- Added _olo_fix_dds_
+  - Direct digital synthesizer (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_log2_
+  - Base-2 logarithm approximation (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_fir_dec_par_chtdm_
+  - Fully parallel FIR decimator with TDM channel handling and optional coefficient symmetry (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added _olo_fix_cic_intp_tdm_par_
+  - CIC interpolator with TDM input and parallel output (fixed-point)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added TDM (multi-channel) support to _olo_fix_mov_avg_ (new generic _Channels_g_, ports _In_Last_ and _Out_Last_)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added A-cascade support to _olo_fix_madd_ (new generic _ACascade_g_ and port _ACascOut_)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added option to generate a plain VHDL testbench (no VUnit required) for _olo_fix_lin_approx_ (`vunit=False`)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Various documentation improvements
+  - Documented that _olo_ft_ entities require TMR synthesis for all logic outside RAM storage
+  - Some contributed by: [obruendl](https://github.com/obruendl)
+
+### Backward Compatible Changes
+
+- _olo_fix_fir_dec_semi_chtdm_: Accumulator and MACC chain now operate in _AccuFmt_ instead of a full-precision
+  format, which allows mapping the MACC chain to DSP cascade paths (results unchanged)
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- _olo_fix_lin_approx_ code generator now uses hex instead of binary tables
+  - Contributed by: [obruendl](https://github.com/obruendl)
+
+- Added support for code coverage with NVC
+  - Contributed by: [obruendl](https://github.com/obruendl) and [tasgomes](https://github.com/tasgomes)
+
+- _olo_axi_master_simple_ and _olo_axi_master_full_: The documented limit for _UserTransactionSizeBits_g_ was
+  corrected to what actually works (see bugfixes). All configurations that elaborated before still do.
+  - Contributed by: [Rustyqt](https://github.com/Rustyqt)
+
+### Non Backward Compatible Changes
+
+- None
+
+### Bugfixes (Backward Compatible)
+
+- Fixed several bugs in _olo_axi_master_simple_ (also affecting _olo_axi_master_full_, which uses it)
+  - Read error on a beat other than the last one of a burst was lost (_Rd_Done_ reported instead of _Rd_Error_)
+  - If the last transaction of a user transfer failed, the error was reported for the _next_ user transfer
+    (_Wr_Error_/_Rd_Error_ although all of its transactions succeeded)
+  - Transfers split into several transactions (more than _AxiMaxBeats_g_ beats or crossing a 4 KB boundary) with
+    _AxiMaxBeats_g_ < _AxiDataWidth_g_/8 (e.g. _AxiMaxBeats_g_ = 1 to 3 at 32 bit) reused the start address for all
+    transactions. Reads returned the data of the first transaction repeatedly and writes all went to the first
+    address, without any error being reported.
+  - Overflow at the first transfer for large _AxiMaxBeats_g_ at wide data (512 bit with _AxiMaxBeats_g_ = 256,
+    1024 bit with _AxiMaxBeats_g_ >= 128)
+  - Elaboration failure for _UserTransactionSizeBits_g_ smaller than the beat counter width (e.g.
+    _UserTransactionSizeBits_g_ = 6 with _AxiMaxBeats_g_ = 256)
+  - numeric_std metavalue warnings after reset until the first command
+  - Contributed by: [Rustyqt](https://github.com/Rustyqt)
+
+- Fixed several bugs in _olo_axi_master_full_
+  - _UserDataWidth_g_ = 8: Write commands waited for one data word more than their size and never completed
+  - _UserDataWidth_g_ > 8: Write commands of a size between 2^_UserTransactionSizeBits_g_ - _UserDataWidth_g_/8 + 1
+    and 2^_UserTransactionSizeBits_g_ - 1 bytes never completed (and the next write command was accepted but never
+    issued)
+  - _AxiDataWidth_g_ = 8 failed with a bound check failure at simulation start
+  - Elaboration failure for _AxiAddrWidth_g_ close to _UserTransactionSizeBits_g_ (e.g. default
+    _UserTransactionSizeBits_g_ = 24 at 32-bit data failed for all _AxiAddrWidth_g_ up to 26). The documented limit
+    is now _UserTransactionSizeBits_g_ < _AxiAddrWidth_g_ - 1 and is checked by an assertion.
+  - Contributed by: [Rustyqt](https://github.com/Rustyqt)
+
+### Reporters
+
+- [Rustyqt](https://github.com/Rustyqt)
+
+### Contributors
+
+- [obruendl](https://github.com/obruendl)
+- [Rustyqt](https://github.com/Rustyqt)
+- [tasgomes](https://github.com/tasgomes)
+
 ## 4.7.0
 
 28-Sep-2026
